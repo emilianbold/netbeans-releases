@@ -395,36 +395,41 @@ public class CompletionResolverImpl implements CompletionResolver {
             clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false, true);
             if (clazz != null) {
                 boolean staticContext = false;
-                boolean inspectOuterClasses = true;
                 // get class methods visible in this method
                 CsmOffsetableDeclaration contextDeclaration = fun != null ? fun : clazz;
-                if (needClassMethods(context, offset)) {
-                    if (clazz != null) {
-                        resImpl.classMethods = contResolver.getMethods(clazz, contextDeclaration, strPrefix, staticContext, match, fun != null, inspectOuterClasses, false);
-                        if (isEnough(strPrefix, match, resImpl.classMethods)) {
+                // if we in resolving mode => use 2 phases
+                // in the first phase we analyze only the current class
+                // in the second phase we analyze outer and parent classes
+                for (int phase = match ? 0 : 1; phase < 2; phase++) {
+                    boolean inspectOuterAndParentClasses = (phase == 1);
+                    if (needClassMethods(context, offset)) {
+                        if (clazz != null) {
+                            resImpl.classMethods = contResolver.getMethods(clazz, contextDeclaration, strPrefix, staticContext, match, inspectOuterAndParentClasses, inspectOuterAndParentClasses, false);
+                            if (isEnough(strPrefix, match, resImpl.classMethods)) {
+                                return true;
+                            }
+                        }
+                    }
+                    if (needClassFields(context, offset)) {
+                        // get class variables visible in this context
+                        resImpl.classFields = contResolver.getFields(clazz, contextDeclaration, strPrefix, staticContext, match, inspectOuterAndParentClasses, inspectOuterAndParentClasses, false);
+                        if (isEnough(strPrefix, match, resImpl.classFields)) {
                             return true;
                         }
                     }
-                }
-                if (needClassFields(context, offset)) {
-                    // get class variables visible in this context
-                    resImpl.classFields = contResolver.getFields(clazz, contextDeclaration, strPrefix, staticContext, match, fun != null, inspectOuterClasses, false);
-                    if (isEnough(strPrefix, match, resImpl.classFields)) {
-                        return true;
+                    if (needClassEnumerators(context, offset)) {
+                        // get class enumerators visible in this context
+                        resImpl.classEnumerators = contResolver.getEnumerators(clazz, contextDeclaration, strPrefix, match, inspectOuterAndParentClasses, inspectOuterAndParentClasses, false);
+                        if (isEnough(strPrefix, match, resImpl.classEnumerators)) {
+                            return true;
+                        }
                     }
-                }
-                if (needClassEnumerators(context, offset)) {
-                    // get class enumerators visible in this context
-                    resImpl.classEnumerators = contResolver.getEnumerators(clazz, contextDeclaration, strPrefix, match, true, inspectOuterClasses, false);
-                    if (isEnough(strPrefix, match, resImpl.classEnumerators)) {
-                        return true;
-                    }
-                }
-                if (needNestedClassifiers(context, offset)) {
-                    // get class nested classifiers visible in this context
-                    resImpl.classesEnumsTypedefs = contResolver.getNestedClassifiers(clazz, contextDeclaration, strPrefix, match, true, inspectOuterClasses);
-                    if (isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) {
-                        return true;
+                    if (needNestedClassifiers(context, offset)) {
+                        // get class nested classifiers visible in this context
+                        resImpl.classesEnumsTypedefs = contResolver.getNestedClassifiers(clazz, contextDeclaration, strPrefix, match, inspectOuterAndParentClasses, inspectOuterAndParentClasses);
+                        if (isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) {
+                            return true;
+                        }
                     }
                 }
             }
