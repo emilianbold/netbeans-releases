@@ -55,6 +55,8 @@ import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
@@ -353,17 +355,10 @@ public class ProjectActionSupport {
 //                        final String projectName = info.getDisplayName();
 //                        runDirectory = MakeActionProvider.REMOTE_BASE_PATH + "/" + projectName;
                 } else {
-                    PathMap mapper = HostInfoProvider.getMapper(conf.getDevelopmentHost().getExecutionEnvironment());
-                    if (!mapper.checkRemotePath(basedir, true)) {
-//                        mapper.showUI();
-//                        if (!mapper.checkRemotePath(basedir)) {
-//                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-//                                    NbBundle.getMessage(DefaultProjectActionHandler.class, "Err_CannotRunLocalProjectRemotely")));
-                        return false;
-//                        }
-                    }
+                    ExecutionEnvironment env = conf.getDevelopmentHost().getExecutionEnvironment();
+                    RemoteSyncWorker syncWorker = ServerList.get(env).getSyncFactory().createNew(new File(basedir), env, null, null);
+                    return syncWorker.synchronize();
                 }
-            //CompilerSetManager rcsm = CompilerSetManager.getDefault(key);
             }
             return true;
         }

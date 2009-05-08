@@ -40,9 +40,15 @@
 package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 
 /**
  *
@@ -50,12 +56,55 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  */
 /*package-local*/ class ScpSyncWorker extends BaseSyncWorker implements RemoteSyncWorker {
 
+    private Logger logger = Logger.getLogger("cnd.remote.logger"); // NOI18N
+
     public ScpSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
         super(localDir, executionEnvironment, out, err);
     }
-    
+
     public boolean synchronize() {
-        return true;
+        try {
+            synchronizeImpl();
+            return true;
+        } catch (InterruptedException ex) {
+            logger.log(Level.FINE, null, ex);
+        } catch (ExecutionException ex) {
+            logger.log(Level.FINE, null, ex);
+        } catch (IOException ex) {
+            logger.log(Level.FINE, null, ex);
+        }
+        return false;
+    }
+    public void synchronizeImpl() throws InterruptedException, ExecutionException, IOException {
+        String remoteDir = getRemoteRoot();
+        CommonTasksSupport.mkDir(executionEnvironment, remoteDir, err);
+        for (File file : localDir.listFiles()) {
+            synchronizeImpl(file, remoteDir);
+        }
+    }
+
+    private void synchronizeImpl(File file, String remoteDir) throws InterruptedException, ExecutionException, IOException {
+        if (file.isDirectory()) {
+            remoteDir += "/"  + file.getName();
+            CommonTasksSupport.mkDir(executionEnvironment, remoteDir, err);
+            for (File child : file.listFiles()) {
+                synchronizeImpl(child, remoteDir);
+            }
+        } else {
+            String path = file.getAbsolutePath();
+            Future<Integer> upload = CommonTasksSupport.uploadFile(path, executionEnvironment, remoteDir, 0777, err);
+            int rc = upload.get();
+            logger.finest("scp: uploading " + path + " to " + remoteDir + " rc=" + rc); //NOI18N
+            if (rc != 0) {
+                throw new IOException();
+            }
+        }
+    }
+
+    private String getRemoteRoot() {
+        // FIXUP
+//        return "/export/home/" + executionEnvironment.getUser(); //NOI18N
+        return "/tmp/remote/" + executionEnvironment.getUser(); //NOI18N
     }
 
     @Override
