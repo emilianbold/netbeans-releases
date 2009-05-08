@@ -29,6 +29,7 @@ made subject to such option by the copyright holder.
     "nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type=
     "text/css">
     <meta content="Helen" name="generator">
+    <meta name="keywords" content="path, mapping, path mapping">
 <style type="text/css">
 <!--
 .comment {
@@ -74,8 +75,8 @@ made subject to such option by the copyright holder.
         Apache http server installed and running.
       </li>
       <li>
-        <a href="#remoteWebSite">Remote Web Site</a> (FTP). To use this configuration, you need a
-        hosting account on a remote server and an FTP account on this server.
+        <a href="#remoteWebSite">Remote Web Site</a> (FTP/SFTP). To use this configuration, you need a
+        hosting account on a remote server and an (S)FTP account on this server.
       </li>
       <li>
         <a href="#script">Script</a>. This run configuration does not require that a web server be
@@ -141,23 +142,26 @@ localhost:&lt;port number&gt;
         <br>
       </li>
     </ol>
+    <p>If you are using Remote Debugging or Symbolic Links, click Advanced and set up
+        path mapping. See <a href="#pathmapping">Path Mapping</a>.</p>
     <h2>
        <a name="remoteWebSite"></a>Remote Web Site
     </h2>
     <ol>
       <li>
-        From Run As dropdown list, choose Remote Web Site (FTP).
+        From Run As dropdown list, choose Remote Web Site (FTP/SFTP).
       </li>
       <li>
-        From the FTP Connection dropdown list, choose the relevant connection profile.<br>
+        From the Remote Connection dropdown list, choose the relevant connection profile.<br>
       </li>
       <li>
-        To create, update, or remove an FTP Connection profile, click Manage. The Manage Remote
-        Connections dialog box opens with the fields showing the current FTP connection profile
-        settings.
+        To create, update, or remove an (S)FTP Connection profile, click Manage. The Manage Remote
+        Connections dialog box opens with the fields showing the current (S)FTP connection profile
+        settings. (If there are no existing connection profiles, the Create New Connection dialog
+        opens automatically when you click Manage.)
       </li>
       <li>
-        To create a new FTP connection profile, click Add. The Create New Connection dialog box
+        To create a new (S)FTP connection profile, click Add. The Create New Connection dialog box
         opens.
       </li>
       <li>
@@ -166,24 +170,24 @@ localhost:&lt;port number&gt;
         Connection Name display field.
       </li>
       <li>
-        From the Type dropdown list, choose FTP.
+        From the Type dropdown list, choose FTP or SFTP.
       </li>
       <li>
-        In the Host Name field, enter the FTP Server name as it is written in the FTP account
+        In the Host Name field, enter the (S)FTP Server name as it is written in the (S)FTP account
         creation confirmation message.
       </li>
       <li>
-        In the Port field, specify 21.
+        In the Port field, specify 21 for an FTP and 22 for an SFTP connection.
       </li>
       <li>
-        In the User Name field, enter your FTP Username as it is written in the FTP account
+        In the User Name field, enter your FTP Username as it is written in the (S)FTP account
         creation confirmation message.
       </li>
       <li>
         Fill in the Password field.
       </li>
       <li>
-        In the Initial Directory field, enter the name of your account directory on the FTP server
+        In the Initial Directory field, enter the name of your account directory on the (S)FTP server
         and click OK. You return to the Run Configuration panel.
       </li>
       <li>
@@ -192,9 +196,13 @@ localhost:&lt;port number&gt;
       </li>
       <li>
         To specify when the files will be uploaded, choose the relevant option from the Upload
-        Files dropdown list. The available options are: Manually and On Run.<br>
+        Files dropdown list. The available options are: Manually, On Save, and On Run.<br>
       </li>
+      <li>You also have the options to Preserve Remote File Permissions or Upload Files Directly.</li>
+
     </ol>
+    <p>If you are using Remote Debugging or Symbolic Links, click Advanced and set up
+        path mapping. See <a href="#pathmapping">Path Mapping</a>.</p>
     <h2>
        <a name="script"></a>Script
     </h2>
@@ -234,6 +242,20 @@ localhost:&lt;port number&gt;
         Click OK. The Options dialog box closes and the system returns to the Run Configuration
         panel.<br>
       </li>
+    </ol>
+    <h2><a name="pathmapping"/>Path Mapping</h2>
+    <p>If you are using Remote Debugging or Symbolic Links, you need to manually define
+        path mapping for individual run configurations. To define path mapping: </p>
+    <ol>
+        <li>In the Run Configuration panel, click Advanced (not available for Script
+            configurations). The Advanced Web Configuration dialog opens. </li>
+        <li>Select the debug URL:<ul><li>The default URL, as shown in the panel</li>
+                <li>Ask Every Time, which prompts you for the URL every time you start a debugging session</li>
+                <li>Do Not Open Browser, which starts the debug session without opening a browser window.
+                    You need to open your web browser and browse for the URL. Note
+                    that the GET (or POST) variable XDEBUG_SESSION_START is needed.</li></ul></li>
+                    <li>Click New to add a mapping. Enter the server path and the project path.</li>
+                    <li>If you are using the Debugger Proxy, enter the host name and port. </li>
     </ol>
     <dl>
       <dt>

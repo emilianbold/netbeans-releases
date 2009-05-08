@@ -1008,20 +1008,36 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
     @Override
     public Mirror visitBinary(BinaryTree arg0, EvaluationContext evaluationContext) {
-        Mirror left = arg0.getLeftOperand().accept(this, evaluationContext);
-        Mirror right = arg0.getRightOperand().accept(this, evaluationContext);
         VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
         if (vm == null) return null;
         Tree.Kind kind = arg0.getKind();
-        if ((left instanceof ObjectReference) && (right instanceof ObjectReference)) {
-            if (kind == Tree.Kind.EQUAL_TO) {
-                return mirrorOf(evaluationContext, left.equals(right));
-            } else if (kind == Tree.Kind.NOT_EQUAL_TO) {
-                return mirrorOf(evaluationContext, !left.equals(right));
+        Mirror left = arg0.getLeftOperand().accept(this, evaluationContext);
+        Mirror right = null; // postpone evaluation of right operand due to boolean binary operators
+        if ((left instanceof ObjectReference) && (kind == Tree.Kind.EQUAL_TO ||
+                kind == Tree.Kind.NOT_EQUAL_TO)) {
+            right = arg0.getRightOperand().accept(this, evaluationContext);
+            if (right instanceof ObjectReference) {
+                if (kind == Tree.Kind.EQUAL_TO) {
+                    return mirrorOf(evaluationContext, left.equals(right));
+                } else {
+                    return mirrorOf(evaluationContext, !left.equals(right));
+                }
             }
         }
         if (left instanceof ObjectReference) {
             left = unboxIfCan(arg0, (ObjectReference) left, evaluationContext);
+        }
+        if ((left instanceof BooleanValue)) {
+            // check whether result of && or || is determined by the left operand
+            boolean op1 = ((BooleanValue) left).booleanValue();
+            if (kind == Tree.Kind.CONDITIONAL_AND && !op1) {
+                return mirrorOf(evaluationContext, false);
+            } else if (kind == Tree.Kind.CONDITIONAL_OR && op1) {
+                return mirrorOf(evaluationContext, true);
+            }
+        }
+        if (right == null) {
+            right = arg0.getRightOperand().accept(this, evaluationContext);
         }
         if (right instanceof ObjectReference) {
             right = unboxIfCan(arg0, (ObjectReference) right, evaluationContext);
@@ -1039,7 +1055,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 case OR: res = op1 | op2; break;
                 case XOR: res = op1 ^ op2; break;
                 default:
-                    throw new IllegalArgumentException("Unhandled binary tree: "+arg0);
+                    reportCannotApplyOperator(arg0);
+                    return null;
             }
             return mirrorOf(evaluationContext, res);
         }
@@ -1073,7 +1090,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         b = l <= r; break;
                     case NOT_EQUAL_TO:
                         b = l != r; break;
-                    default: throw new IllegalStateException("Unhandled binary tree: "+arg0);
+                    default:
+                        reportCannotApplyOperator(arg0);
+                        return null;
                 }
                 if (isBoolean) {
                     return mirrorOf(evaluationContext, b);
@@ -1108,7 +1127,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         b = l <= r; break;
                     case NOT_EQUAL_TO:
                         b = l != r; break;
-                    default: throw new IllegalStateException("Unhandled binary tree: "+arg0);
+                    default:
+                        reportCannotApplyOperator(arg0);
+                        return null;
                 }
                 if (isBoolean) {
                     return mirrorOf(evaluationContext, b);
@@ -1157,7 +1178,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         b = l <= r; isBoolean = true; break;
                     case NOT_EQUAL_TO:
                         b = l != r; isBoolean = true; break;
-                    default: throw new IllegalStateException("Unhandled binary tree: "+arg0);
+                    default:
+                        reportCannotApplyOperator(arg0);
+                        return null;
                 }
                 if (isBoolean) {
                     return mirrorOf(evaluationContext, b);
@@ -1207,7 +1230,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         b = l <= r; isBoolean = true; break;
                     case NOT_EQUAL_TO:
                         b = l != r; isBoolean = true; break;
-                    default: throw new IllegalStateException("Unhandled binary tree: "+arg0);
+                    default:
+                        reportCannotApplyOperator(arg0);
+                        return null;
                 }
                 if (isBoolean) {
                     return mirrorOf(evaluationContext, b);
@@ -1223,7 +1248,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             switch (kind) {
                 case PLUS:
                     return vm.mirrorOf(s1 + s2);
-                default: throw new IllegalStateException("Unhandled binary tree: "+arg0);
+                default:
+                    reportCannotApplyOperator(arg0);
+                    return null;
             }
         }
         if ((left instanceof StringReference || right instanceof StringReference) && kind == Tree.Kind.PLUS) {
@@ -1236,7 +1263,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 return mirrorOf(evaluationContext, left == right || (left != null && left.equals(right)));
             case NOT_EQUAL_TO:
                 return mirrorOf(evaluationContext, left == null && right != null || (left != null && !left.equals(right)));
-            default: throw new IllegalStateException("Unhandled binary tree: "+arg0);
+            default:
+                reportCannotApplyOperator(arg0);
+                return null;
         }
     }
 
@@ -2341,7 +2370,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 if (expr == null) {
                     Assert2.error(arg0, "fieldOnNull", fieldName);
                 }
-                throw new IllegalArgumentException("Wrong expression value: "+expr);
+                Assert2.error(arg0, "invalidMemberReference", arg0.toString());
             case CLASS:
             case INTERFACE:
             case ENUM:
@@ -3392,6 +3421,10 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 throw new IllegalStateException(ieex);
             }
         }
+    }
+
+    private void reportCannotApplyOperator(BinaryTree binaryTree) {
+        Assert2.error(binaryTree, "cannotApplyOperator", binaryTree.toString());
     }
 
     // *************************************************************************

@@ -44,6 +44,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Insets;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import javax.swing.BorderFactory;
 import javax.swing.CellRendererPane;
 import javax.swing.Icon;
@@ -72,6 +74,8 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
     private final JCheckBox theCheckBox;
     private final CellRendererPane fakeCellRendererPane;
     private JCheckBox checkBox;
+    private Reference<RenderDataProvider> lastRendererRef = new WeakReference<RenderDataProvider>(null); // Used by lazy tooltip
+    private Reference<Object> lastRenderedValueRef = new WeakReference<Object>(null);                    // Used by lazy tooltip
     private static final Border expansionBorder = new ExpansionHandleBorder();
     
     /** Creates a new instance of DefaultOutlineTreeCellRenderer */
@@ -226,10 +230,8 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                 if (displayName != null) {
                     setText (displayName);
                 }
-                String toolT = rendata.getTooltipText(value);
-                if (toolT != null && toolT.trim ().length () > 0) {
-                    setToolTipText (toolT.trim ());
-                }
+                lastRendererRef = new WeakReference<RenderDataProvider>(rendata);
+                lastRenderedValueRef = new WeakReference<Object>(value);
                 Color bg = rendata.getBackground(value);
                 Color fg = rendata.getForeground(value);
                 if (bg != null && !isSelected) {
@@ -281,6 +283,20 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
             setShowHandle(false);
             }
         return this;
+    }
+
+    @Override
+    public String getToolTipText() {
+        // Retrieve the tooltip only when someone asks for it...
+        RenderDataProvider rendata = lastRendererRef.get();
+        Object value = lastRenderedValueRef.get();
+        if (rendata != null && value != null) {
+            String toolT = rendata.getTooltipText(value);
+            if (toolT != null && (toolT = toolT.trim ()).length () > 0) {
+                return toolT;
+            }
+        }
+        return super.getToolTipText();
     }
 
     private static class ExpansionHandleBorder implements Border {
