@@ -468,6 +468,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
         file.setLastModified(System.currentTimeMillis());
         file = new File (embeddedFiles[1].toURI());
         file.delete();
+        srcRootWithFiles1.getFileSystem().refresh(true);
+        
         GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1});
         assertTrue (handler.await());
         assertEquals(0, handler.getBinaries().size());
