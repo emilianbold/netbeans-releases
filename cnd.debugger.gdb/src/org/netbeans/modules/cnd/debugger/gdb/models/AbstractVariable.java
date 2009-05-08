@@ -45,8 +45,10 @@ import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -77,7 +79,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
     protected String type;
     protected String value;
 //    protected String derefValue;
-    protected Field[] fields;
+    protected final List<Field> fields = new CopyOnWriteArrayList<Field>();
     protected TypeInfo tinfo;
     private static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
 
@@ -104,7 +106,6 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         assert !SwingUtilities.isEventDispatchThread();
         this.name = name;
         type = getDebugger().requestWhatis(name);
-        fields = new Field[0];
         tinfo = TypeInfo.getTypeInfo(getDebugger(), this);
         getDebugger().addPropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, this);
 
@@ -136,15 +137,13 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
     }
 
     protected void emptyFields() {
-        int i, k = fields.length;
-        for (i=0; i < k; i++) {
-            Field field = fields[i];
+        for (Field field : fields) {
             // we only care about AbstractVariables here, other implementations should care themselves
             if (field instanceof AbstractVariable) {
                 getDebugger().removePropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, (AbstractVariable)field);
             }
         }
-        fields = new Field[0];
+        fields.clear();
     }
 
     /**
@@ -318,7 +317,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
 
     public synchronized void setModifiedValue(String value) {
         this.value = value;
-        if (fields.length > 0) {
+        if (fields.size() > 0) {
             emptyFields();
 //            derefValue = null;
             if (value.length() > 0) {
@@ -431,8 +430,8 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
     public int getFieldsCount() {
         if (getDebugger() == null || !getDebugger().isStopped()) {
             return 0;
-        } else if (fields.length > 0) {
-            return fields.length;
+        } else if (fields.size() > 0) {
+            return fields.size();
         } else if (mightHaveFields()) {
             return estimateFieldCount();
         } else {
@@ -519,12 +518,10 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
      * &lt;<code>from</code>, <code>to</code>).
      */
     public Field[] getFields() {
-        if (fields.length == 0) {
+        if (fields.size() == 0) {
             expandChildren();
         }
-        Field[] fv = new Field[fields.length];
-        System.arraycopy(fields, 0, fv, 0, fields.length);
-        return fv;
+        return fields.toArray(new Field[fields.size()]);
     }
 
     @Override
@@ -550,10 +547,10 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
     }
 
     public synchronized boolean expandChildren() {
-        if (fields.length == 0) {
+        if (fields.size() == 0) {
             createChildren();
         }
-        return fields.length > 0;
+        return fields.size() > 0;
     }
 
     private void createChildren() {
@@ -570,7 +567,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 try {
                     v = getDebugger().requestValueEx('*' + getFullName(false));
                 } catch (GdbErrorException e) {
-                    addField(new ErrorField(e.getMessage()));
+                    fields.add(new ErrorField(e.getMessage()));
                     return;
                 }
             }
@@ -589,9 +586,9 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                     // see issues 162747 and 163290
                     if (v.indexOf('{') == -1) {
                         // an empty map means its a pointer to a non-struct/class/union
-                        addField(new AbstractField(this, '*' + getName(), t, v));
+                        fields.add(new AbstractField(this, '*' + getName(), t, v));
                     } else if (v.equals("<incomplete type>")) { // NOI18N
-                        addField(new AbstractField(this, "", t, v)); // NOI18N
+                        fields.add(new AbstractField(this, "", t, v)); // NOI18N
                     } else if (v.length() > 0) {
                         int pos = v.indexOf('{');
                         assert pos != -1;
@@ -626,7 +623,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             if (v == null || v.length() < 1 || v.endsWith("0x0")) { // NOI18N
                 return;
             }
-            addField(new AbstractField(this, getName() + getIndexStr(maxIndexLog, i++), t2, v));
+            fields.add(new AbstractField(this, getName() + getIndexStr(maxIndexLog, i++), t2, v));
         }
     }
 
@@ -658,7 +655,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             Map<String, Object> typeMap = (Map<String, Object>) map.get(TypeInfo.ANONYMOUS_PREFIX + anon_count + ">"); // NOI18N
             if (typeMap != null) {
                 String fType = (String) typeMap.get(TypeInfo.NAME);
-                addField(new AbstractField(parent, "", fType, info)); // NOI18N
+                fields.add(new AbstractField(parent, "", fType, info)); // NOI18N
                 return ++anon_count;
             } else {
                 log.warning("GdbDebugger.completeFieldDefinition: Missing type information for " + info);
@@ -703,9 +700,9 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                         return anon_count;
                     }
                 }
-                addField(new AbstractField(parent, fName, fType, fValue));
+                fields.add(new AbstractField(parent, fName, fType, fValue));
             } else if (info.trim().equals(TypeInfo.NO_DATA_FIELDS)) { // NOI18N
-                addField(new AbstractField(parent, "", "", info.trim())); // NOI18N
+                fields.add(new AbstractField(parent, "", "", info.trim())); // NOI18N
             }
         }
         return anon_count;
@@ -736,8 +733,8 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                     idx = value.length(); // stop iterating...
                 }
                 parseCharArrayFragment(var, basename, type, maxIndexLog, frag);
-                if (var.fields.length < size && idx >= value.length()) {
-                    var.addField(new AbstractField(var, basename + getIndexStr(maxIndexLog, size-1),
+                if (var.fields.size() < size && idx >= value.length()) {
+                    var.fields.add(new AbstractField(var, basename + getIndexStr(maxIndexLog, size-1),
                             type.substring(0, type.indexOf('[')).trim(), "\'\\000\'")); // NOI18N
                 }
                 if (truncated) {
@@ -749,7 +746,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                         high = "..."; // NOI18N
                     }
 
-                    var.addField(new AbstractField(var, basename + getIndexStr(maxIndexLog, var.fields.length, "-" + high), // NOI18N
+                    var.fields.add(new AbstractField(var, basename + getIndexStr(maxIndexLog, var.fields.size(), "-" + high), // NOI18N
                             "", "...")); // NOI18N
                 }
             } else if (value.charAt(idx) == ' ' || value.charAt(idx) == ',') {
@@ -770,7 +767,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
     private static void parseRepeatArrayFragment(AbstractVariable var, String basename, String type, int maxIndexLog, String value) {
         String t = type.substring(0, type.indexOf('[')).trim();
         int count;
-        int idx = var.fields.length;
+        int idx = var.fields.size();
         int pos = value.indexOf(' ');
         String val = value.substring(0, pos).replace("\\\\", "\\"); // NOI18N
         int pos1 = value.indexOf("<repeats "); // NOI18N
@@ -783,7 +780,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         }
 
         while (--count >=0) {
-            var.addField(new AbstractField(var, basename + getIndexStr(maxIndexLog, idx++), t, val));
+            var.fields.add(new AbstractField(var, basename + getIndexStr(maxIndexLog, idx++), t, val));
         }
     }
 
@@ -792,7 +789,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         int idx = 0;
         value = value.replace("\\\\", "\\"); // NOI18N - gdb doubles all backslashes...
         int count = value.length();
-        int fcount = var.fields.length;
+        int fcount = var.fields.size();
 
         while (idx < count) {
             int vstart = idx;
@@ -840,7 +837,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             } else {
                 val = value.substring(vstart, idx);
             }
-            var.addField(new AbstractField(var, basename + getIndexStr(maxIndexLog, fcount++),
+            var.fields.add(new AbstractField(var, basename + getIndexStr(maxIndexLog, fcount++),
                 t, '\'' + val + '\''));
         }
     }
@@ -890,7 +887,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 } else {
                     vend = GdbUtils.findNextComma(value, vstart);
                 }
-                addField(new AbstractField(this, getName() + getIndexStr(maxIndexLog, i), t,
+                fields.add(new AbstractField(this, getName() + getIndexStr(maxIndexLog, i), t,
                         vend == -1 ? value.substring(vstart) : value.substring(vstart, vend)));
                 vstart = GdbUtils.firstNonWhite(value, vend + 1);
             }
@@ -935,25 +932,6 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 z += " ";  // NOI18N
             }
             return z;
-        }
-    }
-
-    /**
-     * Adds a field.
-     *
-     * Note: completeFieldDefinition returns null for _vptr data. Its easier to let it return null and
-     * ignore it here than to check the return value in expandChildrenFromValue and not call addField
-     * if its null.
-     *
-     * @parameter field A field to add.
-     */
-    private void addField(Field field) {
-        if (field != null) {
-            int n = fields.length;
-            Field[] fv = new Field[n + 1];
-            System.arraycopy(fields, 0, fv, 0, n);
-            fields = fv;
-            fields[n] = field;
         }
     }
 
@@ -1046,7 +1024,6 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 }
             }
             this.parent = parent;
-            fields = new Field[0];
 //            derefValue = null;
             tinfo = null;
 
