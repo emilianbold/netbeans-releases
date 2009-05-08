@@ -40,10 +40,12 @@
  */
 package org.netbeans.modules.cnd.api.compilers;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.BaseFolder;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolchainDescriptor;
 
@@ -70,10 +72,14 @@ public class ReadRegistryTestCase extends NbTestCase {
     }
 
     public void testCygwin() throws Exception {
-        ToolchainDescriptor d = ToolchainManager.getInstance().getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS);
+        ToolchainDescriptor d = ToolchainManager.getImpl().getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS);
         assertNotNull(d);
         assertTrue("Cygwin".equals(d.getName()));
-        String base = d.getBaseFolderPattern();
+        List<BaseFolder> list = d.getBaseFolders();
+        assertNotNull(list);
+        assertTrue(list.size()>1);
+        BaseFolder folder = list.get(1);
+        String base = folder.getFolderPattern();
         assertNotNull(base);
         if (TRACE) {
             System.out.println("Search for [" + base + "]");
@@ -90,20 +96,57 @@ public class ReadRegistryTestCase extends NbTestCase {
             }
         }
         assertNotNull(result);
-        result += "\\" + d.getBaseFolderSuffix();
+        result += "\\" + folder.getFolderSuffix();
         assertTrue("D:\\cygwin\\bin".equals(result));
         if (TRACE) {
             System.out.println("Compiler path [" + result + "]");
         }
-        p = Pattern.compile(d.getBaseFolderPathPattern(), Pattern.CASE_INSENSITIVE);
+        p = Pattern.compile(folder.getFolderPathPattern(), Pattern.CASE_INSENSITIVE);
+        assertTrue(p.matcher(result).find());
+    }
+
+    public void testCygwin17() throws Exception {
+        ToolchainDescriptor d = ToolchainManager.getImpl().getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS);
+        assertNotNull(d);
+        assertTrue("Cygwin".equals(d.getName()));
+        List<BaseFolder> list = d.getBaseFolders();
+        assertNotNull(list);
+        assertTrue(list.size()>1);
+        BaseFolder folder = list.get(0);
+        String base = folder.getFolderPattern();
+        assertNotNull(base);
+        if (TRACE) {
+            System.out.println("Search for [" + base + "]");
+        }
+        Pattern p = Pattern.compile(base);
+        String result = null;
+        for (String line : getCygwin17Regestry().split("\n")) {
+            Matcher m = p.matcher(line);
+            if (m.find() && m.groupCount() == 1) {
+                result = m.group(1).trim();
+                if (TRACE) {
+                    System.out.println("Found [" + result + "]");
+                }
+            }
+        }
+        assertNotNull(result);
+        result += "\\" + folder.getFolderSuffix();
+        assertTrue("C:\\cygwin17\\bin".equals(result));
+        if (TRACE) {
+            System.out.println("Compiler path [" + result + "]");
+        }
+        p = Pattern.compile(folder.getFolderPathPattern(), Pattern.CASE_INSENSITIVE);
         assertTrue(p.matcher(result).find());
     }
 
     public void testMinGW() throws Exception {
-        ToolchainDescriptor d = ToolchainManager.getInstance().getToolchain("MinGW", PlatformTypes.PLATFORM_WINDOWS);
+        ToolchainDescriptor d = ToolchainManager.getImpl().getToolchain("MinGW", PlatformTypes.PLATFORM_WINDOWS);
         assertNotNull(d);
         assertTrue("MinGW".equals(d.getName()));
-        String base = d.getBaseFolderPattern();
+        List<BaseFolder> list = d.getBaseFolders();
+        assertNotNull(list);
+        assertTrue(list.size()>0);
+        String base = list.get(0).getFolderPattern();
         assertNotNull(base);
         if (TRACE) {
             System.out.println("Search for [" + base + "]");
@@ -120,15 +163,18 @@ public class ReadRegistryTestCase extends NbTestCase {
             }
         }
         assertNotNull(result);
-        result += "\\" + d.getBaseFolderSuffix();
+        result += "\\" + list.get(0).getFolderSuffix();
         assertTrue("d:\\MinGW\\bin".equals(result));
         if (TRACE) {
             System.out.println("Compiler path [" + result + "]");
         }
-        p = Pattern.compile(d.getBaseFolderPathPattern(), Pattern.CASE_INSENSITIVE);
+        p = Pattern.compile(list.get(0).getFolderPathPattern(), Pattern.CASE_INSENSITIVE);
         assertTrue(p.matcher(result).find());
 
-        String command = d.getCommandFolderPattern();
+        List<BaseFolder> list2 = d.getCommandFolders();
+        assertNotNull(list2);
+        assertTrue(list2.size()>0);
+        String command = list2.get(0).getFolderPattern();
         assertNotNull(command);
         if (TRACE) {
             System.out.println("Search for [" + command + "]");
@@ -145,12 +191,12 @@ public class ReadRegistryTestCase extends NbTestCase {
             }
         }
         assertNotNull(result);
-        result += "\\" + d.getCommandFolderSuffix();
+        result += "\\" + list2.get(0).getFolderSuffix();
         assertTrue("d:\\msys\\1.0\\bin".equals(result));
         if (TRACE) {
             System.out.println("Command path [" + result + "]");
         }
-        p = Pattern.compile(d.getCommandFolderPathPattern(), Pattern.CASE_INSENSITIVE);
+        p = Pattern.compile(list2.get(0).getFolderPathPattern(), Pattern.CASE_INSENSITIVE);
         assertTrue(p.matcher(result).find());
     }
 
@@ -194,7 +240,7 @@ public class ReadRegistryTestCase extends NbTestCase {
             "-Wall", // More Warnings // NOI18N
             "-Werror", // Convert Warnings to Errors // NOI18N
         };
-        ToolchainDescriptor d = ToolchainManager.getInstance().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
+        ToolchainDescriptor d = ToolchainManager.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
         assertNotNull(d);
         assertTrue("GNU".equals(d.getName()));
         CompilerDescriptor c = d.getC();
@@ -244,7 +290,7 @@ public class ReadRegistryTestCase extends NbTestCase {
             "", // Default // NOI18N
             "", // All // NOI18N
         };
-        ToolchainDescriptor d = ToolchainManager.getInstance().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+        ToolchainDescriptor d = ToolchainManager.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
         assertNotNull(d);
         assertTrue("SunStudio".equals(d.getName()));
         CompilerDescriptor c = d.getC();
@@ -296,7 +342,7 @@ public class ReadRegistryTestCase extends NbTestCase {
             "", // Default // NOI18N
             "-features=extensions,tmplrefstatic,iddollar", // All // NOI18N
         };
-        ToolchainDescriptor d = ToolchainManager.getInstance().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+        ToolchainDescriptor d = ToolchainManager.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
         assertNotNull(d);
         assertTrue("SunStudio".equals(d.getName()));
         CompilerDescriptor c = d.getCpp();
@@ -324,7 +370,7 @@ public class ReadRegistryTestCase extends NbTestCase {
             "-w2", // More Warnings // NOI18N
             "-errwarn", // Convert Warnings to Errors // NOI18N
         };
-        ToolchainDescriptor d = ToolchainManager.getInstance().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+        ToolchainDescriptor d = ToolchainManager.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
         assertNotNull(d);
         CompilerDescriptor c = d.getFortran();
         assertNotNull(c);
@@ -334,25 +380,25 @@ public class ReadRegistryTestCase extends NbTestCase {
 
     public void testUnknownService() throws Exception {
         ToolchainDescriptor d;
-        d = ToolchainManager.getInstance().getToolchain("GNU", PlatformTypes.PLATFORM_SOLARIS_SPARC);
+        d = ToolchainManager.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_SOLARIS_SPARC);
         assertNotNull(d);
         assertTrue("GNU".equals(d.getName()));
-        d = ToolchainManager.getInstance().getToolchain("GNU", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+        d = ToolchainManager.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_SOLARIS_INTEL);
         assertNotNull(d);
         assertTrue("GNU".equals(d.getName()));
-        d = ToolchainManager.getInstance().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
+        d = ToolchainManager.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
         assertNotNull(d);
         assertTrue("GNU".equals(d.getName()));
-        d = ToolchainManager.getInstance().getToolchain("GNU", PlatformTypes.PLATFORM_WINDOWS);
+        d = ToolchainManager.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_WINDOWS);
         assertNotNull(d);
         assertTrue("GNU".equals(d.getName()));
-        d = ToolchainManager.getInstance().getToolchain("GNU", PlatformTypes.PLATFORM_MACOSX);
+        d = ToolchainManager.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_MACOSX);
         assertNotNull(d);
         assertTrue("GNU".equals(d.getName()));
-        d = ToolchainManager.getInstance().getToolchain("GNU", PlatformTypes.PLATFORM_GENERIC);
+        d = ToolchainManager.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_GENERIC);
         assertNotNull(d);
         assertTrue("GNU".equals(d.getName()));
-        d = ToolchainManager.getInstance().getToolchain("GNU", PlatformTypes.PLATFORM_NONE);
+        d = ToolchainManager.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_NONE);
         assertNotNull(d);
         assertTrue("GNU".equals(d.getName()));
 
@@ -533,6 +579,15 @@ public class ReadRegistryTestCase extends NbTestCase {
                 "   native      REG_SZ  D:\\cygwin\n" +
                 "   flags       REG_DWORD       0xa\n" +
                 "\n";
+    }
+
+    private String getCygwin17Regestry() {
+        return "\n" +
+               "HKEY_LOCAL_MACHINE\\software\\cygwin\\Program Options\n" +
+               "\n" +
+               "HKEY_LOCAL_MACHINE\\software\\cygwin\\setup\n" +
+               "   rootdir    REG_SZ    C:\\cygwin17\n" +
+               "\n";
     }
 
     private String getIntelRegestry() {

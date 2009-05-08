@@ -3,8 +3,12 @@
     <toolchain name="MSVC" display="Microsoft Compiler Collection" family="MSVC" qmakespec="win32-msvc"/>
     <platforms stringvalue="windows"/>
     <drive_letter_prefix stringvalue="/"/>
-    <base_folder regestry="hklm\software\Microsoft\VisualStudio\SxS\VC7"  pattern=".*REG_SZ(.*)" suffix="bin" path_patern=".*[\\/]VC7[\\/]bin[\\/]?$"/>
-    <command_folder regestry="hklm\software\microsoft\windows\currentversion\uninstall\msys-1.0_is1" pattern="Inno Setup: App Path.*REG_SZ(.*)" suffix="bin" path_patern=".*[\\/]msys[\\/]1.0[\\/]bin[\\/]?$"/>
+    <base_folders>
+        <base_folder regestry="hklm\software\Microsoft\VisualStudio\SxS\VC7"  pattern=".*REG_SZ(.*)" suffix="bin" path_patern=".*[\\/]VC7[\\/]bin[\\/]?$"/>
+    </base_folders>
+    <command_folders>
+        <command_folder regestry="hklm\software\microsoft\windows\currentversion\uninstall\msys-1.0_is1" pattern="Inno Setup: App Path.*REG_SZ(.*)" suffix="bin" path_patern=".*[\\/]msys[\\/]1.0[\\/]bin[\\/]?$"/>
+    </command_folders>
     <c>
         <compiler name="cl"/>
         <recognizer pattern=".*[\\/]VC7[\\/]bin[\\/]?$"/>

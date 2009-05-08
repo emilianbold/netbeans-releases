@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
+import org.netbeans.modules.cnd.compilers.impl.ToolchainManagerImpl;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -242,7 +243,7 @@ public class CompilerSetManager {
      */
     public static String getCygwinBase() {
         if (cygwinBase == null) {
-            ToolchainManager tcm = ToolchainManager.getInstance();
+            ToolchainManagerImpl tcm = ToolchainManager.getImpl();
             ToolchainDescriptor td = tcm.getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS); // NOI18N
             if (td != null) {
                 String cygwinBin = tcm.getBaseFolder(td, PlatformTypes.PLATFORM_WINDOWS);
@@ -306,7 +307,7 @@ public class CompilerSetManager {
      */
     public static String getMSysBase() {
         if (msysBase == null) {
-            ToolchainManager tcm = ToolchainManager.getInstance();
+            ToolchainManagerImpl tcm = ToolchainManager.getImpl();
             for(ToolchainDescriptor td : tcm.getToolchains(PlatformTypes.PLATFORM_WINDOWS)){
                 if (td != null) {
                     String msysBin = tcm.getCommandFolder(td, PlatformTypes.PLATFORM_WINDOWS);
@@ -530,7 +531,7 @@ public class CompilerSetManager {
      * @return A possibly modified ArrayList
      */
     private ArrayList<String> appendDefaultLocations(int platform, ArrayList<String> dirlist) {
-        for (ToolchainDescriptor d : ToolchainManager.getInstance().getToolchains(platform)) {
+        for (ToolchainDescriptor d : ToolchainManager.getImpl().getToolchains(platform)) {
             Map<String, String> map = d.getDefaultLocations();
             if (map != null) {
                 String pname = getPlatformName(platform);
@@ -554,8 +555,8 @@ public class CompilerSetManager {
     }
 
     private void initKnownCompilers(int platform, Set<CompilerFlavor> flavors) {
-        for (ToolchainDescriptor d : ToolchainManager.getInstance().getToolchains(platform)) {
-            String base = ToolchainManager.getInstance().getBaseFolder(d, platform);
+        for (ToolchainDescriptor d : ToolchainManager.getImpl().getToolchains(platform)) {
+            String base = ToolchainManager.getImpl().getBaseFolder(d, platform);
             if (base != null) {
                 File folder = new File(base);
                 if (folder.exists() && folder.isDirectory()) {
@@ -770,7 +771,7 @@ public class CompilerSetManager {
     private boolean initCompilerSet(String path, CompilerSet cs, boolean known) {
         CompilerFlavor flavor = cs.getCompilerFlavor();
         ToolchainDescriptor d = flavor.getToolchainDescriptor();
-        if (d != null && ToolchainManager.getInstance().isMyFolder(path, d, getPlatform(), known)) {
+        if (d != null && ToolchainManager.getImpl().isMyFolder(path, d, getPlatform(), known)) {
             CompilerDescriptor compiler = d.getC();
             if (compiler != null && !compiler.skipSearch()) {
                 initCompiler(Tool.CCompiler, path, cs, compiler.getNames());

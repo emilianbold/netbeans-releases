@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.compilers;
+package org.netbeans.modules.cnd.compilers.impl;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -57,6 +57,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+import static org.netbeans.modules.cnd.api.compilers.ToolchainManager.*;
 import org.netbeans.modules.cnd.api.execution.LinkSupport;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.openide.filesystems.FileLock;
@@ -75,15 +77,15 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  * @author Alexander Simon
  */
-/*package-local*/ final class ToolchainManagerImpl extends ToolchainManager {
+public final class ToolchainManagerImpl {
 
     private static final boolean TRACE = Boolean.getBoolean("cnd.toolchain.personality.trace"); // NOI18N
     private static final boolean CREATE_SHADOW = Boolean.getBoolean("cnd.toolchain.personality.create_shadow"); // NOI18N
-    /*package-local*/ static final String CONFIG_FOLDER = "CND/ToolChain"; // NOI18N
+    public static final String CONFIG_FOLDER = "CND/ToolChain"; // NOI18N
     private List<ToolchainDescriptor> descriptors = new ArrayList<ToolchainDescriptor>();
     private Logger log = Logger.getLogger("cnd.toolchain.logger"); // NOI18N
 
-    /*package-local*/ ToolchainManagerImpl() {
+    public ToolchainManagerImpl() {
         initToolchainManager();
     }
 
@@ -107,11 +109,11 @@ import org.xml.sax.helpers.DefaultHandler;
                 }
             }
             if (TRACE) {
-                System.err.println("Declared vendors:");
-            } // NOI18N
+                System.err.println("Declared vendors:"); // NOI18N
+            }
             for (CompilerVendor v : vendors.values()) {
                 if (TRACE) {
-                    System.err.println(v.toString());
+                    System.err.println("\t"+v.toolChainName); // NOI18N
                 }
                 descriptors.add(new ToolchainDescriptorImpl(v));
             }
@@ -126,12 +128,12 @@ import org.xml.sax.helpers.DefaultHandler;
     /**
      * available in package for testing only
      */
-    /*package-local*/ void reinitToolchainManager() {
+    public void reinitToolchainManager() {
         descriptors.clear();
         initToolchainManager();
     }
 
-    ToolchainDescriptor getToolchain(String name, int platform) {
+    public ToolchainDescriptor getToolchain(String name, int platform) {
         for (ToolchainDescriptor d : descriptors) {
             if (name.equals(d.getName()) && (isPlatforSupported(platform, d)
                         || isPlatforSupported(PlatformTypes.PLATFORM_NONE, d))) {
@@ -146,11 +148,11 @@ import org.xml.sax.helpers.DefaultHandler;
         return null;
     }
 
-    List<ToolchainDescriptor> getAllToolchains() {
+    public List<ToolchainDescriptor> getAllToolchains() {
         return new ArrayList<ToolchainDescriptor>(descriptors);
     }
 
-    List<ToolchainDescriptor> getToolchains(int platform) {
+    public List<ToolchainDescriptor> getToolchains(int platform) {
         List<ToolchainDescriptor> res = new ArrayList<ToolchainDescriptor>();
         for (ToolchainDescriptor d : descriptors) {
             if (isPlatforSupported(platform, d)) {
@@ -160,7 +162,7 @@ import org.xml.sax.helpers.DefaultHandler;
         return res;
     }
 
-    boolean isPlatforSupported(int platform, ToolchainDescriptor d) {
+    public boolean isPlatforSupported(int platform, ToolchainDescriptor d) {
         switch (platform) {
             case PlatformTypes.PLATFORM_SOLARIS_SPARC:
                 for (String p : d.getPlatforms()) {
@@ -215,7 +217,7 @@ import org.xml.sax.helpers.DefaultHandler;
         return false;
     }
 
-    boolean isMyFolder(String path, ToolchainDescriptor d, int platform, boolean known) {
+    public boolean isMyFolder(String path, ToolchainDescriptor d, int platform, boolean known) {
         boolean res = isMyFolderImpl(path, d, platform, known);
         if (TRACE && res) {
             System.err.println("Path [" + path + "] belongs to tool chain " + d.getName());
@@ -280,49 +282,65 @@ import org.xml.sax.helpers.DefaultHandler;
         return res;
     }
 
-    String getBaseFolder(ToolchainDescriptor d, int platform) {
+    public String getBaseFolder(ToolchainDescriptor d, int platform) {
         if (platform != PlatformTypes.PLATFORM_WINDOWS) {
             return null;
         }
-        String pattern = d.getBaseFolderPattern();
-        String key = d.getBaseFolderKey();
-        if (key == null || pattern == null) {
+        List<BaseFolder> list = d.getBaseFolders();
+        if (list == null || list.isEmpty()) {
             return null;
         }
-        String base = readRegistry(key, pattern);
-        if (base != null && d.getBaseFolderSuffix() != null) {
-            base += "/" + d.getBaseFolderSuffix(); // NOI18N
+        for (BaseFolder folder : list) {
+            String pattern = folder.getFolderPattern();
+            String key = folder.getFolderKey();
+            if (key == null || pattern == null) {
+                return null;
+            }
+            String base = readRegistry(key, pattern);
+            if (base != null && folder.getFolderSuffix() != null) {
+                base += "/" + folder.getFolderSuffix(); // NOI18N
+            }
+            return base;
         }
-        return base;
+        return null;
     }
 
-    String getCommandFolder(ToolchainDescriptor d, int platform) {
+    public String getCommandFolder(ToolchainDescriptor d, int platform) {
         if (platform != PlatformTypes.PLATFORM_WINDOWS) {
             return null;
         }
-        String pattern = d.getCommandFolderPattern();
-        String key = d.getCommandFolderKey();
-        if (key == null || pattern == null) {
+        List<BaseFolder> list = d.getCommandFolders();
+        if (list == null || list.isEmpty()) {
             return null;
         }
-        String base = readRegistry(key, pattern);
-        if (base != null && d.getCommandFolderSuffix() != null) {
-            base += "\\" + d.getCommandFolderSuffix(); // NOI18N
+        String base = null;
+        for (BaseFolder folder : list) {
+            String pattern = folder.getFolderPattern();
+            String key = folder.getFolderKey();
+            if (key == null || pattern == null) {
+                continue;
+            }
+            base = readRegistry(key, pattern);
+            if (base != null && folder.getFolderSuffix() != null) {
+                base += "\\" + folder.getFolderSuffix(); // NOI18N
+            }
+            if (base != null) {
+                return base;
+            }
         }
-        // search for unregistered msys
-        if (base == null) {
-            pattern = d.getCommandFolderPathPattern();
+        for (BaseFolder folder : list) {
+            // search for unregistered msys
+            String pattern = folder.getFolderPathPattern();
             if (pattern != null && pattern.length() > 0) {
                 Pattern p = Pattern.compile(pattern);
                 for (String dir : Path.getPath()) {
                     if (p.matcher(dir).find()) {
-                        base = dir;
-                        break;
+                        return dir;
                     }
                 }
             }
         }
-        return base;
+        return null;
     }
 
     private String readRegistry(String key, String pattern) {
@@ -501,7 +519,7 @@ import org.xml.sax.helpers.DefaultHandler;
     /**
      * available in package for testing only
      */
-    /*package-local for testing*/ void writeToolchains() {
+    /*test*/public void writeToolchains() {
         FileObject folder = FileUtil.getConfigFile(CONFIG_FOLDER);
         if (folder != null && folder.isFolder()) {
             FileObject[] files = folder.getChildren();
@@ -538,45 +556,48 @@ import org.xml.sax.helpers.DefaultHandler;
                             root.appendChild(element);
                         }
 
-                        if (descriptor.getBaseFolderKey() != null ||
-                                descriptor.getBaseFolderPattern() != null ||
-                                descriptor.getBaseFolderPathPattern() != null ||
-                                descriptor.getBaseFolderSuffix() != null) {
-                            element = doc.createElement("base_folder"); // NOI18N
-                            if (descriptor.getBaseFolderKey() != null) {
-                                element.setAttribute("regestry", descriptor.getBaseFolderKey()); // NOI18N
-                            }
-                            if (descriptor.getBaseFolderPattern() != null) {
-                                element.setAttribute("pattern", descriptor.getBaseFolderPattern()); // NOI18N
-                            }
-                            if (descriptor.getBaseFolderPathPattern() != null) {
-                                element.setAttribute("path_patern", descriptor.getBaseFolderPathPattern()); // NOI18N
-                            }
-                            if (descriptor.getBaseFolderSuffix() != null) {
-                                element.setAttribute("suffix", descriptor.getBaseFolderSuffix()); // NOI18N
-                            }
+                        if (descriptor.getBaseFolders() != null) {
+                            element = doc.createElement("base_folders"); // NOI18N
                             root.appendChild(element);
+                            for (BaseFolder info : descriptor.getBaseFolders()) {
+                                Element p = doc.createElement("base_folder"); // NOI18N
+                                if (info.getFolderKey() != null) {
+                                    p.setAttribute("regestry", info.getFolderKey()); // NOI18N
+                                }
+                                if (info.getFolderPattern() != null) {
+                                    p.setAttribute("pattern", info.getFolderPattern()); // NOI18N
+                                }
+                                if (info.getFolderPathPattern() != null) {
+                                    p.setAttribute("path_patern", info.getFolderPathPattern()); // NOI18N
+                                }
+                                if (info.getFolderSuffix() != null) {
+                                    p.setAttribute("suffix", info.getFolderSuffix()); // NOI18N
+                                }
+                                element.appendChild(p);
+                            }
                         }
 
-                        if (descriptor.getCommandFolderKey() != null ||
-                                descriptor.getCommandFolderPattern() != null ||
-                                descriptor.getCommandFolderPathPattern() != null ||
-                                descriptor.getCommandFolderSuffix() != null) {
-                            element = doc.createElement("command_folder"); // NOI18N
-                            if (descriptor.getCommandFolderKey() != null) {
-                                element.setAttribute("regestry", descriptor.getCommandFolderKey()); // NOI18N
-                            }
-                            if (descriptor.getCommandFolderPattern() != null) {
-                                element.setAttribute("pattern", descriptor.getCommandFolderPattern()); // NOI18N
-                            }
-                            if (descriptor.getCommandFolderPathPattern() != null) {
-                                element.setAttribute("path_patern", descriptor.getCommandFolderPathPattern()); // NOI18N
-                            }
-                            if (descriptor.getCommandFolderSuffix() != null) {
-                                element.setAttribute("suffix", descriptor.getCommandFolderSuffix()); // NOI18N
-                            }
+                        if (descriptor.getCommandFolders() != null) {
+                            element = doc.createElement("command_folders"); // NOI18N
                             root.appendChild(element);
+                            for (BaseFolder info : descriptor.getCommandFolders()) {
+                                Element p = doc.createElement("command_folder"); // NOI18N
+                                if (info.getFolderKey() != null) {
+                                    p.setAttribute("regestry", info.getFolderKey()); // NOI18N
+                                }
+                                if (info.getFolderPattern() != null) {
+                                    p.setAttribute("pattern", info.getFolderPattern()); // NOI18N
+                                }
+                                if (info.getFolderPathPattern() != null) {
+                                    p.setAttribute("path_patern", info.getFolderPathPattern()); // NOI18N
+                                }
+                                if (info.getFolderSuffix() != null) {
+                                    p.setAttribute("suffix", info.getFolderSuffix()); // NOI18N
+                                }
+                                element.appendChild(p);
+                            }
                         }
+
                         if (descriptor.getDefaultLocations() != null) {
                             element = doc.createElement("default_locations"); // NOI18N
                             root.appendChild(element);
@@ -1122,14 +1143,8 @@ import org.xml.sax.helpers.DefaultHandler;
         String family;
         String platforms;
         String driveLetterPrefix;
-        String baseFolderKey;
-        String baseFolderPattern;
-        String baseFolderSuffix;
-        String baseFolderPathPattern;
-        String commandFolderKey;
-        String commandFolderPattern;
-        String commandFolderSuffix;
-        String commandFolderPathPattern;
+        List<FolderInfo> baseFolder;
+        List<FolderInfo> commandFolder;
         String qmakespec;
         String makefileWriter;
         Compiler c = new Compiler();
@@ -1149,97 +1164,19 @@ import org.xml.sax.helpers.DefaultHandler;
             return toolChainName != null && toolChainName.length() > 0 &&
                     (c.isValid() || cpp.isValid() || fortran.isValid());
         }
+    }
 
-        @Override
-        public String toString() {
-            StringBuilder buf = new StringBuilder();
-            buf.append("Toolchain [" + toolChainName + "/" + family + "] " + toolChainDisplay + "\n"); // NOI18N
-            buf.append("\tPlatforms [" + platforms + "]\n"); // NOI18N
-            buf.append("\tDrive Letter Prefix [" + driveLetterPrefix + "]\n"); // NOI18N
-            buf.append("\tBase Folder Key [" + baseFolderKey + "] Pattern [" + baseFolderPattern + // NOI18N
-                    "] Suffix [" + baseFolderSuffix + "] Path Pattern[" + baseFolderPattern + "] \n"); // NOI18N
-            buf.append("\tCommand Folder Key [" + commandFolderKey + "] Pattern [" + commandFolderPattern + // NOI18N
-                    "] Suffix [" + commandFolderSuffix + "] Path Pattern[" + commandFolderPattern + "] \n"); // NOI18N
-            buf.append("C compiler [" + c.name + "] Recognize path [" + c.pathPattern + // NOI18N
-                    "] Version [" + c.versionFlags + ";" + c.versionPattern + "]\n"); // NOI18N
-            buf.append("\tInclude flags [" + c.includeFlags + "] parser [" + c.includeOutputParser + // NOI18N
-                    "] remove from path[" + c.removeIncludePathPrefix + "] remove from output [" + c.removeIncludeOutputPrefix + "]\n"); // NOI18N
-            buf.append("\tMacros flags [" + c.macrosFlags + "] parser [" + c.macrosOutputParser + "]\n"); // NOI18N
-            buf.append("\tDevelopment mode " + c.developmentMode + "\n"); // NOI18N
-            buf.append("\tWarning Level " + c.warningLevel + "\n"); // NOI18N
-            buf.append("\tArchitecture " + c.architecture + "\n"); // NOI18N
-            buf.append("\tStrip [" + c.strip + "]\n"); // NOI18N
-            if (c.multithreading.isValid()) {
-                buf.append("\tMultithreading [" + c.multithreading + "]\n");// NOI18N
-            }
-            if (c.standard.isValid()) {
-                buf.append("\tStandard [" + c.standard + "]\n");// NOI18N
-            }
-            if (c.languageExtension.isValid()) {
-                buf.append("\tLanguage [" + c.languageExtension + "]\n");// NOI18N
-            }
-            if (c.library.isValid()) {
-                buf.append("\tLibrary [" + c.library + "]\n");// NOI18N
-            }
-            buf.append("C++ compiler [" + cpp.name + "] Recognize path [" + cpp.pathPattern + // NOI18N
-                    "] Version [" + cpp.versionFlags + ";" + cpp.versionPattern + "]\n"); // NOI18N
-            buf.append("\tInclude flags [" + cpp.includeFlags + "] parser [" + cpp.includeOutputParser + // NOI18N
-                    "] remove from path[" + cpp.removeIncludePathPrefix + "] remove from output [" + cpp.removeIncludeOutputPrefix + "]\n"); // NOI18N
-            buf.append("\tMacros flags [" + cpp.macrosFlags + "] parser [" + cpp.macrosOutputParser + "]\n"); // NOI18N
-            buf.append("\tDevelopment mode " + cpp.developmentMode + "\n"); // NOI18N
-            buf.append("\tWarning Level " + cpp.warningLevel + "\n"); // NOI18N
-            buf.append("\tArchitecture " + cpp.architecture + "\n"); // NOI18N
-            buf.append("\tStrip [" + cpp.strip + "]\n"); // NOI18N
-            buf.append("\tDependency generation flags [" + cpp.dependencyGenerationFlags + "]\n"); // NOI18N
-            if (cpp.multithreading.isValid()) {
-                buf.append("\tMultithreading " + cpp.multithreading + "\n");// NOI18N
-            }
-            if (cpp.standard.isValid()) {
-                buf.append("\tStandard " + cpp.standard + "\n"); // NOI18N
-            }
-            if (cpp.languageExtension.isValid()) {
-                buf.append("\tLanguage " + cpp.languageExtension + "\n"); // NOI18N
-            }
-            if (cpp.library.isValid()) {
-                buf.append("\tLibrary " + cpp.library + "\n"); // NOI18N
-            }
-            if (fortran.isValid()) {
-                buf.append("Fortran compiler [" + fortran.name + "] Recognize path [" + fortran.pathPattern + // NOI18N
-                        "] Version [" + fortran.versionFlags + ";" + fortran.versionPattern + "]\n"); // NOI18N
-                buf.append("\tDevelopment mode " + fortran.developmentMode + "\n"); // NOI18N
-                buf.append("\tWarning Level " + fortran.warningLevel + "\n"); // NOI18N
-                buf.append("\tArchitecture " + fortran.architecture + "\n"); // NOI18N
-                buf.append("\tStrip [" + fortran.strip + "]\n"); // NOI18N
-            }
-            buf.append("Scanner\n"); // NOI18N
-            buf.append("\tChange Directory [" + scanner.changeDirectoryPattern + "]\n"); // NOI18N
-            buf.append("\tEnter Directory [" + scanner.enterDirectoryPattern + "]\n"); // NOI18N
-            buf.append("\tLeave Directory [" + scanner.leaveDirectoryPattern + "]\n"); // NOI18N
-            buf.append("\tStack Header [" + scanner.stackHeaderPattern + "]\n"); // NOI18N
-            buf.append("\tStack Next [" + scanner.stackNextPattern + "]\n"); // NOI18N
-            for (ErrorPattern p : scanner.patterns) {
-                buf.append("\tPattern [" + p.pattern + "] Level [" + p.severity + "] Language [" + p.language + "]\n"); // NOI18N
-            }
-            buf.append("Linker\n"); // NOI18N
-            buf.append("\tLibrary prefix [" + linker.library_prefix + "]\n"); // NOI18N
-            buf.append("\tLibrary search [" + linker.librarySearchFlag + "]\n"); // NOI18N
-            buf.append("\tDynamic library search [" + linker.dynamicLibrarySearchFlag + "]\n"); // NOI18N
-            buf.append("\tLibrary [" + linker.libraryFlag + "]\n"); // NOI18N
-            buf.append("\tPIC [" + linker.PICFlag + "]\n"); // NOI18N
-            buf.append("\tStatic library [" + linker.staticLibraryFlag + "]\n"); // NOI18N
-            buf.append("\tDynamic library [" + linker.dynamicLibraryFlag + "]\n"); // NOI18N
-            buf.append("\tDynamic library basic [" + linker.dynamicLibraryBasicFlag + "]\n"); // NOI18N
-            buf.append("Make [" + make.name + "] Version [" + make.versionFlags + "; " + make.versionPattern + "]\n");  // NOI18N
-            buf.append("\tDependency support code [" + make.dependencySupportCode + "]\n"); // NOI18N
-            buf.append("Debugger [" + debugger.name + "] Version [" + debugger.versionFlags + "; " + debugger.versionPattern + "]\n"); // NOI18N
-            return buf.toString();
-        }
+    static final class FolderInfo {
+        String folderKey;
+        String folderPattern;
+        String folderSuffix;
+        String folderPathPattern;
     }
 
     /**
      * class package-local for testing only
      */
-    static class Tool {
+    public static class Tool {
 
         String name;
         String versionFlags;
@@ -1268,7 +1205,7 @@ import org.xml.sax.helpers.DefaultHandler;
     /**
      * class package-local for testing only
      */
-    static final class Compiler extends Tool {
+    static public final class Compiler extends Tool {
 
         String pathPattern;
         String existFolder;
@@ -1367,12 +1304,6 @@ import org.xml.sax.helpers.DefaultHandler;
         String performance_release;
         int default_selection = 0;
 
-        @Override
-        public String toString() {
-            return "[" + fast_build + ";" + debug + ";" + performance_debug + ";" + test_coverage + ";" + // NOI18N
-                    diagnosable_release + ";" + release + ";" + performance_release + "] default " + default_selection; // NOI18N
-        }
-
         public boolean isValid() {
             return fast_build != null && debug != null && performance_debug != null && test_coverage != null &&
                     diagnosable_release != null && release != null && performance_release != null;
@@ -1398,11 +1329,6 @@ import org.xml.sax.helpers.DefaultHandler;
         String warning2error;
         int default_selection = 0;
 
-        @Override
-        public String toString() {
-            return "[" + no_warnings + ";" + default_level + ";" + more_warnings + ";" + warning2error + "] default " + default_selection; // NOI18N
-        }
-
         public boolean isValid() {
             return no_warnings != null && default_level != null && more_warnings != null && warning2error != null;
         }
@@ -1424,11 +1350,6 @@ import org.xml.sax.helpers.DefaultHandler;
         String bits_32;
         String bits_64;
         int default_selection = 0;
-
-        @Override
-        public String toString() {
-            return "[" + default_architecture + ";" + bits_32 + ";" + bits_64 + "] default " + default_selection; // NOI18N
-        }
 
         public boolean isValid() {
             return default_architecture != null && bits_32 != null && bits_64 != null;
@@ -1453,11 +1374,6 @@ import org.xml.sax.helpers.DefaultHandler;
         String open_mp;
         int default_selection = 0;
 
-        @Override
-        public String toString() {
-            return "[" + none + ";" + safe + ";" + automatic + ";" + open_mp + "] default " + default_selection; // NOI18N
-        }
-
         public boolean isValid() {
             return none != null && safe != null && automatic != null && open_mp != null;
         }
@@ -1481,11 +1397,6 @@ import org.xml.sax.helpers.DefaultHandler;
         String modern;
         int default_selection = 0;
 
-        @Override
-        public String toString() {
-            return "[" + old + ";" + legacy + ";" + default_standard + ";" + modern + "] default " + default_selection; // NOI18N
-        }
-
         public boolean isValid() {
             return old != null && legacy != null && default_standard != null && modern != null;
         }
@@ -1507,11 +1418,6 @@ import org.xml.sax.helpers.DefaultHandler;
         String default_extension;
         String all;
         int default_selection = 0;
-
-        @Override
-        public String toString() {
-            return "[" + none + ";" + default_extension + ";" + all + "] default " + default_selection; // NOI18N
-        }
 
         public boolean isValid() {
             return none != null && default_extension != null && all != null;
@@ -1536,11 +1442,6 @@ import org.xml.sax.helpers.DefaultHandler;
         String binary_standard;
         String conforming_standard;
         int default_selection = 0;
-
-        @Override
-        public String toString() {
-            return "[" + none + ";" + runtime + ";" + classic + ";" + binary_standard + ";" + conforming_standard + "] default " + default_selection; // NOI18N
-        }
 
         public boolean isValid() {
             return none != null && runtime != null && classic != null && binary_standard != null && conforming_standard != null;
@@ -1648,17 +1549,27 @@ import org.xml.sax.helpers.DefaultHandler;
             } else if (path.endsWith(".makefile_writer")) { // NOI18N
                 v.makefileWriter = getValue(attributes, "class"); // NOI18N
                 return;
-            } else if (path.endsWith(".base_folder")) { // NOI18N
-                v.baseFolderKey = getValue(attributes, "regestry"); // NOI18N
-                v.baseFolderPattern = getValue(attributes, "pattern"); // NOI18N
-                v.baseFolderSuffix = getValue(attributes, "suffix"); // NOI18N
-                v.baseFolderPathPattern = getValue(attributes, "path_patern"); // NOI18N
+            } else if (path.endsWith(".base_folders.base_folder")) { // NOI18N
+                if (v.baseFolder == null){
+                    v.baseFolder = new ArrayList<FolderInfo>();
+                }
+                FolderInfo folder = new FolderInfo();
+                v.baseFolder.add(folder);
+                folder.folderKey = getValue(attributes, "regestry"); // NOI18N
+                folder.folderPattern = getValue(attributes, "pattern"); // NOI18N
+                folder.folderSuffix = getValue(attributes, "suffix"); // NOI18N
+                folder.folderPathPattern = getValue(attributes, "path_patern"); // NOI18N
                 return;
-            } else if (path.endsWith(".command_folder")) { // NOI18N
-                v.commandFolderKey = getValue(attributes, "regestry"); // NOI18N
-                v.commandFolderPattern = getValue(attributes, "pattern"); // NOI18N
-                v.commandFolderSuffix = getValue(attributes, "suffix"); // NOI18N
-                v.commandFolderPathPattern = getValue(attributes, "path_patern"); // NOI18N
+            } else if (path.endsWith(".command_folders.command_folder")) { // NOI18N
+                if (v.commandFolder == null){
+                    v.commandFolder = new ArrayList<FolderInfo>();
+                }
+                FolderInfo folder = new FolderInfo();
+                v.commandFolder.add(folder);
+                folder.folderKey = getValue(attributes, "regestry"); // NOI18N
+                folder.folderPattern = getValue(attributes, "pattern"); // NOI18N
+                folder.folderSuffix = getValue(attributes, "suffix"); // NOI18N
+                folder.folderPathPattern = getValue(attributes, "path_patern"); // NOI18N
                 return;
             } else if (path.indexOf(".default_locations.") > 0) { // NOI18N
                 if (path.endsWith(".platform")) { // NOI18N
@@ -1790,7 +1701,7 @@ import org.xml.sax.helpers.DefaultHandler;
                 c.versionPattern = getValue(attributes, "pattern"); // NOI18N
                 c.versionFlags = getValue(attributes, "flags"); // NOI18N
                 return;
-            } else if (path.endsWith(".alternative_path")) { // NOI18N
+            } else if (path.endsWith(".alternative_path")) { // NOI18NBaseFolders
                 c.alternativePath = new ArrayList<AlternativePath>();
                 return;
             } else if (checkAlternativePath(attributes, c.alternativePath)) {
@@ -2086,36 +1997,26 @@ import org.xml.sax.helpers.DefaultHandler;
             return c;
         }
 
-        public String getBaseFolderKey() {
-            return v.baseFolderKey;
+        public List<BaseFolder> getBaseFolders() {
+            if (v.baseFolder == null) {
+                return null;
+            }
+            List<BaseFolder> res = new ArrayList<BaseFolder>(v.baseFolder.size());
+            for(FolderInfo info : v.baseFolder){
+                res.add(new BaseFolderImpl(info));
+            }
+            return res;
         }
 
-        public String getBaseFolderPattern() {
-            return v.baseFolderPattern;
-        }
-
-        public String getBaseFolderSuffix() {
-            return v.baseFolderSuffix;
-        }
-
-        public String getBaseFolderPathPattern() {
-            return v.baseFolderPathPattern;
-        }
-
-        public String getCommandFolderKey() {
-            return v.commandFolderKey;
-        }
-
-        public String getCommandFolderPattern() {
-            return v.commandFolderPattern;
-        }
-
-        public String getCommandFolderSuffix() {
-            return v.commandFolderSuffix;
-        }
-
-        public String getCommandFolderPathPattern() {
-            return v.commandFolderPathPattern;
+        public List<BaseFolder> getCommandFolders() {
+            if (v.commandFolder == null) {
+                return null;
+            }
+            List<BaseFolder> res = new ArrayList<BaseFolder>(v.baseFolder.size());
+            for(FolderInfo info : v.commandFolder){
+                res.add(new BaseFolderImpl(info));
+            }
+            return res;
         }
 
         public String getQmakeSpec() {
@@ -2175,9 +2076,29 @@ import org.xml.sax.helpers.DefaultHandler;
             return debugger;
         }
 
-        @Override
-        public String toString() {
-            return v.toolChainName + "/" + v.family + "/" + v.platforms; // NOI18N
+    }
+
+    private static class BaseFolderImpl implements BaseFolder {
+        private FolderInfo info;
+
+        public BaseFolderImpl(FolderInfo info) {
+            this.info = info;
+        }
+
+        public String getFolderKey() {
+            return info.folderKey;
+        }
+
+        public String getFolderPattern() {
+            return info.folderPattern;
+        }
+
+        public String getFolderSuffix() {
+            return info.folderSuffix;
+        }
+
+        public String getFolderPathPattern() {
+            return info.folderPathPattern;
         }
     }
 

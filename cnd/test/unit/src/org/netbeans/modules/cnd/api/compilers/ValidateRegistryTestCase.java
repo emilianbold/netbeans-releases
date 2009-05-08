@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.api.compilers;
 
+import org.netbeans.modules.cnd.compilers.impl.ToolchainManagerImpl;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;

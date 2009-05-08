@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.api.compilers;
 
+import org.netbeans.modules.cnd.compilers.impl.ToolchainManagerImpl;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
@@ -72,10 +73,10 @@ public class WriteRegistryTestCase extends NbTestCase {
     }
 
     public void testWrtiteDescriptor() throws Exception {
-        List<ToolchainDescriptor> original = ToolchainManager.getInstance().getAllToolchains();
-        ((ToolchainManagerImpl)ToolchainManager.getInstance()).writeToolchains();
-        ((ToolchainManagerImpl)ToolchainManager.getInstance()).reinitToolchainManager();
-        List<ToolchainDescriptor> restored = ToolchainManager.getInstance().getAllToolchains();
+        List<ToolchainDescriptor> original = ToolchainManager.getImpl().getAllToolchains();
+        ToolchainManager.getImpl().writeToolchains();
+        ToolchainManager.getImpl().reinitToolchainManager();
+        List<ToolchainDescriptor> restored = ToolchainManager.getImpl().getAllToolchains();
         for(int i = 0; i < original.size(); i++) {
            assertTrue("Tool chain "+original.get(i)+" not equals "+restored.get(i), deepObjectComparing(original.get(i),restored.get(i)));
         }
