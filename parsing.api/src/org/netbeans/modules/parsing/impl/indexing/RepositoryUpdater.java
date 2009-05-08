@@ -1275,7 +1275,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 try {
                     final Crawler crawler = files.isEmpty() ?
                         new FileObjectCrawler(rootFo, false, null) : // rescan the whole root (no timestamp check)
-                        new FileObjectCrawler(rootFo, files.toArray(new FileObject[files.size()]), false, null); // rescan selected files (no timestamp check)
+                        new FileObjectCrawler(rootFo, files.toArray(new FileObject[files.size()]), null); // rescan selected files (no timestamp check)
 
                     final Map<String,Collection<Indexable>> resources = crawler.getResources();
                     index (resources, root);

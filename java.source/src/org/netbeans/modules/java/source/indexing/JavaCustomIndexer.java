@@ -97,6 +97,10 @@ public class JavaCustomIndexer extends CustomIndexer {
         JavaIndex.LOG.log(Level.FINE, context.isSupplementaryFilesIndexing() ? "index suplementary({0})" :"index({0})", files);
         try {
             final FileObject root = context.getRoot();
+            if (root == null) {
+                JavaIndex.LOG.fine("Ignoring request with no root");
+                return;
+            }
             String sourceLevel = SourceLevelQuery.getSourceLevel(root);
             if (JavaIndex.ensureAttributeValue(context.getRootURI(), SOURCE_LEVEL_ROOT, sourceLevel, true)) {
                 JavaIndex.LOG.fine("forcing reindex due to source level change");
@@ -183,6 +187,10 @@ public class JavaCustomIndexer extends CustomIndexer {
 
     private static void clearFiles(final Context context, final Iterable<? extends Indexable> files) {
         try {
+            if (context.getRoot() == null) {
+                JavaIndex.LOG.fine("Ignoring request with no root");
+                return;
+            }
             ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
                 public Void run() throws IOException, InterruptedException {
                     return TaskCache.getDefault().refreshTransaction(new ExceptionAction<Void>() {

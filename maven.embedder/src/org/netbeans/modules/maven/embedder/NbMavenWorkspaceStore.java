@@ -14,10 +14,15 @@ public class NbMavenWorkspaceStore
     private Map<String, TimedWeakReference<Map>> caches = new HashMap<String, TimedWeakReference<Map>>();
 //    private Logger logger;
 
-    public synchronized void clear() {
+    public void clear() {
 
     //no manual clearing, it happens automatically when the reference is freed.
 
+    }
+
+    //only called from netbeans code on occasions like when a pom file was changed or build was performed
+    public synchronized void doManualClear() {
+        caches.clear();
     }
 
     public synchronized Map getWorkspaceCache( String cacheType )
