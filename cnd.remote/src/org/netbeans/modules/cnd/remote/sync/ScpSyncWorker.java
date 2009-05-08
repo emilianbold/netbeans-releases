@@ -85,7 +85,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 
     private void synchronizeImpl(File file, String remoteDir) throws InterruptedException, ExecutionException, IOException {
         if (file.isDirectory()) {
-            remoteDir += "/"  + file.getName();
+            remoteDir += "/"  + file.getName(); // NOI18N
             CommonTasksSupport.mkDir(executionEnvironment, remoteDir, err);
             for (File child : file.listFiles()) {
                 synchronizeImpl(child, remoteDir);
