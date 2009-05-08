@@ -91,7 +91,6 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     public GdbWatchVariable(Watch watch) {
         this.watch = watch;
         name = watch.getExpression();
-        fields = new Field[0];
         type = null;
         value = null;
         tinfo = null;
