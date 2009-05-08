@@ -66,7 +66,8 @@ import static org.junit.Assert.*;
 public class LocalNativeProcessTest extends NativeExecutionTest {
     ExecutionEnvironment execEnv;
 
-    public LocalNativeProcessTest() {
+    public LocalNativeProcessTest(String name) {
+        super(name);
     }
 
     @BeforeClass
@@ -78,8 +79,9 @@ public class LocalNativeProcessTest extends NativeExecutionTest {
     public static void tearDownClass() throws Exception {
     }
 
-    @Before
-    public void setUp() {
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
         execEnv = ExecutionEnvironmentFactory.getLocal();
 //        execEnv = new ExecutionEnvironment("ak119685", "endif", 22);
 //        try {
@@ -91,8 +93,9 @@ public class LocalNativeProcessTest extends NativeExecutionTest {
 //        }
     }
 
-    @After
-    public void tearDown() {
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
     }
 
     /**

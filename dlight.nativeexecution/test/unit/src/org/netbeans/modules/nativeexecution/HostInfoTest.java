@@ -57,7 +57,8 @@ public class HostInfoTest extends NativeExecutionTest {
 
     private final static String password = ""; // NOI18N
 
-    public HostInfoTest() {
+    public HostInfoTest(String name) {
+        super(name);
     }
 
     @BeforeClass
@@ -68,12 +69,14 @@ public class HostInfoTest extends NativeExecutionTest {
     public static void tearDownClass() throws Exception {
     }
 
-    @Before
-    public void setUp() {
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
     }
 
-    @After
-    public void tearDown() {
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
     }
 
     @Test

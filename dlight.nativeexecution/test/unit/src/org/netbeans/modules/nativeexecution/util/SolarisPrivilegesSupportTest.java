@@ -60,7 +60,8 @@ import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupportPro
  */
 public class SolarisPrivilegesSupportTest extends NativeExecutionTest {
 
-    public SolarisPrivilegesSupportTest() {
+    public SolarisPrivilegesSupportTest(String name) {
+        super(name);
     }
 
     @BeforeClass
@@ -71,12 +72,14 @@ public class SolarisPrivilegesSupportTest extends NativeExecutionTest {
     public static void tearDownClass() throws Exception {
     }
 
-    @Before
-    public void setUp() {
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
     }
 
-    @After
-    public void tearDown() {
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
     }
 
     /**

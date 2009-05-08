@@ -40,12 +40,20 @@
 package org.netbeans.modules.nativeexecution;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.concurrent.CancellationException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 
-public class NativeExecutionTest {
+public class NativeExecutionTest extends NbTestCase {
     static {
         String dirs = System.getProperty("netbeans.dirs", ""); // NOI18N
         File junitWorkdir = new File(System.getProperty("nbjunit.workdir")); // NOI18N
@@ -81,4 +89,70 @@ public class NativeExecutionTest {
             }
         });
     }
+
+    public NativeExecutionTest(String name) {
+        super(name);
+    }
+
+    private static ExecutionEnvironment testExecutionEnvironment;
+
+    protected static ExecutionEnvironment getTestExecutionEnvironment() throws IOException, CancellationException {
+        synchronized(NativeExecutionTest.class) {
+            if (testExecutionEnvironment == null) {
+                String ui = System.getProperty("cnd.remote.testuserinfo");
+                char[] passwd = null;
+                if( ui == null ) {
+                    ui = System.getenv("CND_REMOTE_TESTUSERINFO");
+                }
+                if (ui != null) {
+                    int m = ui.indexOf(':');
+                    if (m>-1) {
+                        int n = ui.indexOf('@');
+                        String strPwd = ui.substring(m+1, n);
+                        String remoteHKey = ui.substring(0,m) + ui.substring(n);
+                        testExecutionEnvironment = ExecutionEnvironmentFactory.fromUniqueID(remoteHKey);
+                        passwd = strPwd.toCharArray();
+                    } else {
+                        String remoteHKey = ui;
+                        testExecutionEnvironment = ExecutionEnvironmentFactory.fromUniqueID(remoteHKey);
+                    }
+                }
+                if (testExecutionEnvironment != null) {
+                    ConnectionManager.getInstance().connectTo(testExecutionEnvironment, passwd, false);
+                }
+            }
+        }
+        return testExecutionEnvironment;
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
+
+    protected void writeFile(File file, CharSequence content) throws IOException {
+        Writer writer = new FileWriter(file);
+        writer.write(content.toString());
+        writer.close();
+    }
+
+    protected File createTempFile(String prefix, String suffix, boolean directory) throws IOException {
+        File tmpFile = File.createTempFile(prefix, suffix);
+        if (directory) {
+            if(!(tmpFile.delete())) {
+                throw new IOException("Could not delete temp file: " + tmpFile.getAbsolutePath());
+            }
+            if (!(tmpFile.mkdir())) {
+                throw new IOException("Could not create temp directory: " + tmpFile.getAbsolutePath());
+            }
+        }
+        tmpFile.deleteOnExit();
+        return tmpFile;
+    }
+
 }
