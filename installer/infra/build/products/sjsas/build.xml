@@ -185,7 +185,6 @@
             <replacefilter token="${token.installhomef}" value="${sjsas.image.token.installhomef}"/> 
             <replacefilter token="${token.javahome}"     value="${sjsas.image.token.javahome}"/>
             <replacefilter token="${token.javahomef}"    value="${sjsas.image.token.javahomef}"/>
-            <replacefilter token="${token.hostname}"     value="${sjsas.image.token.hostname}"/>
             <replacefilter token="${token.adminuser}"    value="${sjsas.image.token.adminuser}"/>
             <replacefilter token="${token.httpport}"     value="${sjsas.image.token.httpport}"/>
             <replacefilter token="${token.adminport}"    value="${sjsas.image.token.adminport}"/>
@@ -205,11 +204,15 @@
             <replacefilter token="${token.installhomef}"  value="${sjsas.image.token.installhomef}"/> 
             <replacefilter token="${token.javahome}"      value="${sjsas.image.token.javahome}"/>
             <replacefilter token="${token.javahomef}"     value="${sjsas.image.token.javahomef}"/>
-            <replacefilter token="${token.hostname}"      value="${sjsas.image.token.hostname}"/>
             <replacefilter token="${token.adminuser}"     value="${sjsas.image.token.adminuser}"/>
             <replacefilter token="${token.httpport}"      value="${sjsas.image.token.httpport}"/>
             <replacefilter token="${token.adminport}"     value="${sjsas.image.token.adminport}"/>
         </replace>
+        
+        <replaceregexp file="${data.directory}/samples/common.properties"
+                       match="${token.hostname}"
+                       replace="${sjsas.image.token.hostname}"
+                       byline="true"/>
     </target>
 
     <target name="replace-platform-tokens">
