@@ -152,6 +152,7 @@ final class ResultPanelTree extends JPanel
         /* Called from the EventDispatch thread */
 
         rootNode.displayMessageSessionFinished(msg);
+        resultBar.stop();
     }
 
     /**
