@@ -221,6 +221,10 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="2100"/>
                 <attr name="extends" stringvalue="GNU"/>
             </file>
+            <file name="Cygwin_4.x.xml" url="toolchain/Cygwin_4.x.xml">
+                <attr name="position" intvalue="2150"/>
+                <attr name="extends" stringvalue="GNU"/>
+            </file>
             <file name="MinGW.xml" url="toolchain/MinGW.xml">
                 <attr name="position" intvalue="2200"/>
                 <attr name="extends" stringvalue="GNU"/>
