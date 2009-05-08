@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.debugger.gdb;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -277,33 +278,42 @@ public class CallStackFrame {
             CsmContext context = CsmOffsetResolver.findContext(csmFile, getOffset(), null);
             CsmScope scope = context.getLastScope();
             if (scope != null) {
+                CsmOffsetable previous = null;
+                final List<int[]> spans = new ArrayList<int[]>();
                 for (CsmScopeElement csmScopeElement : scope.getScopeElements()) {
                     if (CsmKindUtilities.isOffsetable(csmScopeElement)) {
                         CsmOffsetable offs = (CsmOffsetable) csmScopeElement;
                         if (offs.getEndOffset() >= getOffset()) {
-                            final Set<String> autos = new HashSet<String>();
-                            int span[] = getInterestedStatementOffsets(offs);
-                            final int start = span[0];
-                            final int end = span[1];
-                            CsmFileReferences.getDefault().accept(scope, new CsmFileReferences.Visitor() {
-                                public void visit(CsmReferenceContext context) {
-                                    CsmReference reference = context.getReference();
-                                    if (start <= reference.getStartOffset() && reference.getEndOffset() <= end) {
-                                        CsmObject referencedObject = reference.getReferencedObject();
-                                        if (CsmKindUtilities.isVariable(referencedObject) || CsmKindUtilities.isMacro(referencedObject)) {
-                                            autos.add(((CsmNamedElement)referencedObject).getName().toString());
-                                        }
-                                    }
-                                }
-                            });
-                            cachedAutos = new LocalVariable[autos.size()];
-                            int i = 0;
-                            for (String name : autos) {
-                                cachedAutos[i++] = new AbstractVariable(name);
+                            if (previous != null) {
+                                spans.add(getInterestedStatementOffsets(previous));
                             }
+                            spans.add(getInterestedStatementOffsets(offs));
                             break;
+                        } else {
+                            previous = offs;
                         }
                     }
+                }
+                final Set<String> autos = new HashSet<String>();
+                if (!spans.isEmpty()) {
+                    CsmFileReferences.getDefault().accept(scope, new CsmFileReferences.Visitor() {
+                        public void visit(CsmReferenceContext context) {
+                            CsmReference reference = context.getReference();
+                            for (int[] span : spans) {
+                                if (span[0] <= reference.getStartOffset() && reference.getEndOffset() <= span[1]) {
+                                    CsmObject referencedObject = reference.getReferencedObject();
+                                    if (CsmKindUtilities.isVariable(referencedObject) || CsmKindUtilities.isMacro(referencedObject)) {
+                                        autos.add(((CsmNamedElement)referencedObject).getName().toString());
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+                cachedAutos = new LocalVariable[autos.size()];
+                int i = 0;
+                for (String name : autos) {
+                    cachedAutos[i++] = new AbstractVariable(name);
                 }
             }
         }
