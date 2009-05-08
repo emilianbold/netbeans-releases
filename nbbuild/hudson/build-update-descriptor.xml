@@ -1,7 +1,8 @@
 <project name="build-update-descriptor" basedir="../.." default="descriptor">
     <target name="descriptor">
         <taskdef classpath="nbbuild/netbeans/harness/tasks.jar" resource="org/netbeans/nbbuild/taskdefs.properties"/>
-        <makeupdatedesc desc="nbbuild/nbms/updates.xml" distbase="." automaticgrouping="true">
+        <property name="use.license.url.in.catalog" value="true"/>
+        <makeupdatedesc desc="nbbuild/nbms/updates.xml" distbase="." automaticgrouping="true" uselicenseurl="${use.license.url.in.catalog}">
             <fileset dir="nbbuild/nbms">
                 <include name="**/*.nbm"/>
             </fileset>

@@ -134,7 +134,9 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
             } else if (Utilities.isWindows()) {
                 // Profiler is installed in directory with space on Windows
                 // surround the whole -agentpath argument with quotes for NB source module
-                agentArg = "\\\"" + agentArg + "\\\""; //NOI18N
+
+// #164234 shall be done now for all properties directly in the CmdLine Build Executor.
+//                agentArg = "\\\"" + agentArg + "\\\""; //NOI18N
                 return agentArg; //NOI18N
             }
         }
