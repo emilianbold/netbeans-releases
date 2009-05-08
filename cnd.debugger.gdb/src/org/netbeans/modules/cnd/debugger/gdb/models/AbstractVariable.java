@@ -518,18 +518,13 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
      * Returns all fields declared in this type that are in interval
      * &lt;<code>from</code>, <code>to</code>).
      */
-    public Field[] getFields(int from, int to) {
-        if (to != 0) {
-            if (fields.length == 0) {
-                expandChildren();
-            }
-            to = Math.min(fields.length, to);
-            from = Math.min(fields.length, from);
-            Field[] fv = new Field[to - from];
-            System.arraycopy(fields, from, fv, 0, to - from);
-            return fv;
+    public Field[] getFields() {
+        if (fields.length == 0) {
+            expandChildren();
         }
-        return fields;
+        Field[] fv = new Field[fields.length];
+        System.arraycopy(fields, 0, fv, 0, fields.length);
+        return fv;
     }
 
     @Override

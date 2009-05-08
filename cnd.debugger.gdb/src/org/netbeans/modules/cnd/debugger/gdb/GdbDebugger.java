@@ -677,10 +677,6 @@ public class GdbDebugger implements PropertyChangeListener {
         return threadsList;
     }
 
-    public int getThreadCount() {
-        return 1;
-    }
-
     private void resetThreadInfo() {
         threadsList = emptyThreadsList;
     }

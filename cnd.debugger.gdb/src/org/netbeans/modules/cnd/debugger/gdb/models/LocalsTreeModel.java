@@ -96,7 +96,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
     }
     
     public Object[] getChildren(Object o, int from, int to) throws UnknownTypeException {
-        Object[] ch = getChildrenImpl(o, from, to);
+        Object[] ch = getChildrenImpl(o);
         for (int i = 0; i < ch.length; i++) {
             if (ch[i] instanceof Customizer) {
                 ((Customizer) ch[i]).addPropertyChangeListener(this);
@@ -105,16 +105,16 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         return ch;
     }
     
-    public Object[] getChildrenImpl(Object o, int from, int to) throws UnknownTypeException {
+    public Object[] getChildrenImpl(Object o) throws UnknownTypeException {
         if (o.equals(ROOT)) {
             if (VariablesViewButtons.isShowAutos()) {
-                return getAutos(from, to);
+                return getAutos();
             } else {
-                return getLocalVariables(from, to);
+                return getLocalVariables();
             }
         } else if (o instanceof AbstractVariable) {
             AbstractVariable abstractVariable = (AbstractVariable) o;
-            return abstractVariable.getFields(from, to);
+            return abstractVariable.getFields();
         } else {
             return new Object[0];
         }
@@ -203,7 +203,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
     
     // private methods .........................................................
     
-    private Object[] getLocalVariables(int from, int to) {
+    private Object[] getLocalVariables() {
         synchronized (debugger.LOCK) {
             CallStackFrame callStackFrame = debugger.getCurrentCallStackFrame();
             if (callStackFrame == null) {
@@ -213,7 +213,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         } // synchronized
     }
 
-    private Object[] getAutos(int from, int to) {
+    private Object[] getAutos() {
         synchronized (debugger.LOCK) {
             CallStackFrame callStackFrame = debugger.getCurrentCallStackFrame();
             if (callStackFrame == null) {

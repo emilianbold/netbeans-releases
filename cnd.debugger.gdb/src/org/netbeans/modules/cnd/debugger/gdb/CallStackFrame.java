@@ -271,6 +271,9 @@ public class CallStackFrame {
 
     public LocalVariable[] getAutos() {
         if (cachedAutos == null) {
+            if (getDocument() == null) {
+                return null;
+            }
             CsmFile csmFile = CsmUtilities.getCsmFile(getDocument(), false);
             if (csmFile == null || !csmFile.isParsed()) {
                 return null;
