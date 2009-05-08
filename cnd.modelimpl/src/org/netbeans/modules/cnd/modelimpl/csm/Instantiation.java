@@ -1057,9 +1057,9 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
                         CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
                         CsmObject obj;
                         if(ip instanceof InstantiationProviderImpl) {
-                            obj = ((InstantiationProviderImpl)ip).instantiate((CsmTemplate) classifier, getInstantiationParams(), TemplateUtils.gatherMapping(instantiation), getContainingFile(), resolver);
+                            obj = ((InstantiationProviderImpl)ip).instantiate((CsmTemplate) classifier, getInstantiationParams(), TemplateUtils.gatherMapping(instantiation), getContainingFile(), getStartOffset(), resolver);
                         } else {
-                            obj = ip.instantiate((CsmTemplate) classifier, getInstantiationParams(), TemplateUtils.gatherMapping(instantiation), getContainingFile());
+                            obj = ip.instantiate((CsmTemplate) classifier, getInstantiationParams(), TemplateUtils.gatherMapping(instantiation), getContainingFile(), getStartOffset());
                         }
                         if (CsmKindUtilities.isClassifier(obj)) {
                             resolved = (CsmClassifier) obj;
@@ -1173,9 +1173,9 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
                     CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
                     CsmObject obj;
                     if (ip instanceof InstantiationProviderImpl) {
-                        obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) resolved, getInstantiationParams(), this, getContainingFile(), resolver);
+                        obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) resolved, getInstantiationParams(), this, getContainingFile(), resolver, getStartOffset());
                     } else {
-                        obj = ip.instantiate((CsmTemplate) resolved, getInstantiationParams(), this, getContainingFile());
+                        obj = ip.instantiate((CsmTemplate) resolved, getInstantiationParams(), this, getContainingFile(), getStartOffset());
                     }
                     if (CsmKindUtilities.isClassifier(obj)) {
                         resolved = (CsmClassifier) obj;
