@@ -88,8 +88,14 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         this(var.getName(), var.getValue());
     }
 
+    // Used for Autos
     public AbstractVariable(String name) {
         this(name, null);
+        String expr = name;
+        if (!GdbWatchVariable.disableMacros) {
+            expr = GdbWatchVariable.expandMacro(getDebugger(), expr);
+        }
+        value = getDebugger().requestValue(expr);
     }
 
     public AbstractVariable(String name, String value) {
@@ -506,23 +512,6 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             }
         }
         return false;
-    }
-
-    /**
-     * Returns field defined in this object.
-     *
-     * @param name a name of field to be returned
-     * @return field defined in this object
-     */
-    public Field getField(String name) {
-        int i, k = fields.length;
-        for (i=0; i < k; i++) {
-            Field f = fields[i];
-            if (name.equals(f.getName())) {
-                return f;
-            }
-        }
-        return null; // Not found
     }
 
     /**

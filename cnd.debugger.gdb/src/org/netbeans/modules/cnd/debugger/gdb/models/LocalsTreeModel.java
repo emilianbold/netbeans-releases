@@ -131,15 +131,9 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
      */
     public int getChildrenCount(Object node) throws UnknownTypeException {
         if (node.equals(ROOT)) {
-            CallStackFrame callStackFrame = debugger.getCurrentCallStackFrame();
-            if (callStackFrame == null) {
-                return 1;
-            } else {
-                return callStackFrame.getLocalVariables().length;
-            }
+            return Integer.MAX_VALUE;
         } else if (node instanceof AbstractVariable) { // ThisVariable & FieldVariable
-                AbstractVariable abstractVariable = (AbstractVariable) node;
-                return abstractVariable.getFieldsCount();
+            return Integer.MAX_VALUE;
         }
         return 0;
     }
@@ -213,7 +207,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         synchronized (debugger.LOCK) {
             CallStackFrame callStackFrame = debugger.getCurrentCallStackFrame();
             if (callStackFrame == null) {
-                return new String [] {"No current thread"}; // NOI18N
+                return new Object[0];
             }
             return callStackFrame.getLocalVariables();
         } // synchronized
@@ -221,9 +215,16 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
 
     private Object[] getAutos(int from, int to) {
         synchronized (debugger.LOCK) {
-            return new LocalVariable[] {
-                new AbstractVariable("Auto1", "value1"), // NOI18N
-                new AbstractVariable("Auto2", "value2")}; // NOI18N
+            CallStackFrame callStackFrame = debugger.getCurrentCallStackFrame();
+            if (callStackFrame == null) {
+                return new Object[0];
+            }
+            Object[] res = callStackFrame.getAutos();
+            if (res != null) {
+                return res;
+            } else {
+                return new Object[0];
+            }
         } // synchronized
     }
     
