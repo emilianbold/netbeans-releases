@@ -1221,16 +1221,29 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                 stop();
                 return false;
             }
+            return super.onAPT(node, wasInBranch);
+        }
+
+        @Override
+        protected void onInclude(APT node) {
             State cached = cache.getState(node);
-            if(cached != null) {
+            if (cached != null) {
                 getPreprocHandler().setState(cached);
-                return true;
+                return;
             }
-            boolean ret = super.onAPT(node, wasInBranch);
-            if(ret) {
-                cache.addNode(node, getPreprocHandler().getState());
+            super.onInclude(node);
+            cache.addNode(node, getPreprocHandler().getState());
+        }
+
+        @Override
+        protected void onIncludeNext(APT node) {
+            State cached = cache.getState(node);
+            if (cached != null) {
+                getPreprocHandler().setState(cached);
+                return;
             }
-            return ret;
+            super.onIncludeNext(node);
+            cache.addNode(node, getPreprocHandler().getState());
         }
     }
 
