@@ -59,9 +59,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.jar.JarFile;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Pack200;
+import java.util.jar.Pack200.Unpacker;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -70,7 +74,6 @@ import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.helper.FileEntry;
-import org.netbeans.installer.utils.helper.Pair;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.NativeUtils;
@@ -82,7 +85,8 @@ import org.netbeans.installer.utils.system.NativeUtils;
 public final class FileUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Static
-    
+    private final static Unpacker unpacker = Pack200.newUnpacker();
+
     // file/stream read/write ///////////////////////////////////////////////////////
     public static String readFile(
             final File file, String charset) throws IOException {
@@ -1135,7 +1139,7 @@ public final class FileUtils {
         final String name = source.getName();
         final File target = new File(source.getParentFile(),
                 name.substring(0, name.length() - PACK_GZ_SUFFIX.length()));
-        
+
         if(SystemUtils.isWindows() && source.getAbsolutePath().length() > 255) {
             /*
              * WORKAROUND for two issues (and 6612389 in BugTrack):
@@ -1164,6 +1168,10 @@ public final class FileUtils {
                     deleteFile(tmpTarget);
                 }
             }
+        } else if(System.getProperty("os.name").equals("AIX") && System.getProperty("java.version").startsWith("1.6")) {
+            //workaround the bug when unpack200 command from Java6 on AIX corrupts the jar
+            //by using inverting zip magic numbers
+            unpack200Internal(source, target);
         } else {
             ExecutionResults er = SystemUtils.executeCommand(
                     SystemUtils.getUnpacker().getAbsolutePath(),
@@ -1188,6 +1196,25 @@ public final class FileUtils {
             }
         }
         return target;
+    }
+
+    private static void unpack200Internal (File source, File target) throws IOException {
+        InputStream is = null;
+        JarOutputStream os = null;
+        try {
+            //Unpacker has memory leaks so use with care
+            LogManager.log("unpacking " + source);
+            is = new GZIPInputStream(new FileInputStream(source));
+            os = new JarOutputStream(new FileOutputStream(target));
+            unpacker.unpack(is, os);
+        } finally {
+            if(is!=null) {
+                is.close();
+            }
+            if(os!=null) {
+                os.close();
+            }
+        }
     }
     
     // miscellaneous ////////////////////////////////////////////////////////////////

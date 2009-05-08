@@ -138,24 +138,6 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
 
         btnSetupNewer.setVisible(false);
 
-        txtArtifactId.getAccessibleContext().setAccessibleDescription(
-                lblArtifactId.getAccessibleContext().getAccessibleName());
-        txtGroupId.getAccessibleContext().setAccessibleDescription(
-                lblGroupId.getAccessibleContext().getAccessibleName());
-        txtVersion.getAccessibleContext().setAccessibleDescription(
-                lblVersion.getAccessibleContext().getAccessibleName());
-        txtPackage.getAccessibleContext().setAccessibleDescription(
-                lblPackage.getAccessibleContext().getAccessibleName());
-        projectLocationTextField.getAccessibleContext().setAccessibleDescription(
-                projectLocationLabel.getAccessibleContext().getAccessibleName());
-        projectNameTextField.getAccessibleContext().setAccessibleDescription(
-                projectNameLabel.getAccessibleContext().getAccessibleName());
-        createdFolderTextField.getAccessibleContext().setAccessibleDescription(
-                createdFolderLabel.getAccessibleContext().getAccessibleName());
-        browseButton.getAccessibleContext().setAccessibleDescription(
-                browseButton.getAccessibleContext().getAccessibleName());
-        btnSetupNewer.getAccessibleContext().setAccessibleDescription(
-                btnSetupNewer.getAccessibleContext().getAccessibleName());
         getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(BasicPanelVisual.class, "LBL_CreateProjectStep2"));
 
@@ -236,12 +218,14 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "LBL_Optional")); // NOI18N
 
+        lblAdditionalProps.setLabelFor(tblAdditionalProps);
         org.openide.awt.Mnemonics.setLocalizedText(lblAdditionalProps, "jLabel2");
 
         tblAdditionalProps.setModel(createPropModel());
         tblAdditionalProps.setColumnSelectionAllowed(true);
         jScrollPane1.setViewportView(tblAdditionalProps);
         tblAdditionalProps.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        tblAdditionalProps.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "BasicPanelVisual.tblAdditionalProps.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(btnSetupNewer, org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "BTN_SetupNewer.text")); // NOI18N
         btnSetupNewer.addActionListener(new java.awt.event.ActionListener() {
@@ -272,6 +256,8 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
                 .add(btnSetupNewer))
         );
 
+        btnSetupNewer.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "BasicPanelVisual.btnSetupNewer.AccessibleContext.accessibleDescription")); // NOI18N
+
         lblEEVersion.setLabelFor(comboEEVersion);
         org.openide.awt.Mnemonics.setLocalizedText(lblEEVersion, org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "LBL_JavaEE")); // NOI18N
 
@@ -297,13 +283,13 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
                     .add(projectNameLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
-                    .add(txtPackage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
-                    .add(txtVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
-                    .add(txtGroupId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
-                    .add(txtArtifactId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
+                    .add(txtPackage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
+                    .add(txtVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
+                    .add(txtGroupId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
+                    .add(txtArtifactId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(browseButton)
@@ -354,6 +340,18 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(pnlAdditionals, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        projectNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "BasicPanelVisual.projectNameTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        projectLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "BasicPanelVisual.projectLocationTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "BasicPanelVisual.browseButton.AccessibleContext.accessibleDescription")); // NOI18N
+        createdFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "BasicPanelVisual.createdFolderTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        txtArtifactId.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "BasicPanelVisual.txtArtifactId.AccessibleContext.accessibleDescription")); // NOI18N
+        txtGroupId.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "BasicPanelVisual.txtGroupId.AccessibleContext.accessibleDescription")); // NOI18N
+        txtVersion.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "BasicPanelVisual.txtVersion.AccessibleContext.accessibleDescription")); // NOI18N
+        txtPackage.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "BasicPanelVisual.txtPackage.AccessibleContext.accessibleDescription")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "BasicPanelVisual.jLabel1.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "BasicPanelVisual.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
