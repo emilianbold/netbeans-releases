@@ -136,9 +136,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
     }
 
     protected void emptyFields() {
-        int i, k = fields.length;
-        for (i=0; i < k; i++) {
-            Field field = fields[i];
+        for (Field field : fields) {
             // we only care about AbstractVariables here, other implementations should care themselves
             if (field instanceof AbstractVariable) {
                 getDebugger().removePropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, (AbstractVariable)field);
