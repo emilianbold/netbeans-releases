@@ -116,6 +116,8 @@ public class NativeExecutionTest extends NbTestCase {
                         String remoteHKey = ui;
                         testExecutionEnvironment = ExecutionEnvironmentFactory.fromUniqueID(remoteHKey);
                     }
+                } else {
+                    testExecutionEnvironment = ExecutionEnvironmentFactory.createNew(System.getProperty("user.name"), "127.0.0.1");
                 }
                 if (testExecutionEnvironment != null) {
                     ConnectionManager.getInstance().connectTo(testExecutionEnvironment, passwd, false);

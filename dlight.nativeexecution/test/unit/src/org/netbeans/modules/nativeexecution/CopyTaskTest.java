@@ -40,9 +40,7 @@ package org.netbeans.modules.nativeexecution;
 
 import java.io.CharArrayWriter;
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.junit.AfterClass;
@@ -120,7 +118,7 @@ public class CopyTaskTest extends NativeExecutionTest {
 //            StringBuilder err = new StringBuilder();
 //
 //            NativeTask task = CommonTasksSupport.getCopyLocalFileTask(
-//                    new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, err);
+//                    getTestExecutionEnvironment(), srcFileName, dstFileName, 700, err);
 //
 ////            CommonTasksSupport.CommonTask task = CommonTasksSupport.getCopyLocalFileTask(
 ////                    new ExecutionEnvironment(), srcFileName, dstFileName, 700);
@@ -144,7 +142,7 @@ public class CopyTaskTest extends NativeExecutionTest {
 //        CopyTask task = null;
 //
 //        try {
-////        task = CopyTask.uploadFile(new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, showProgress);
+////        task = CopyTask.uploadFile(getTestExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
 //            task = CopyTask.uploadFile(new ExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
 //
 //            try {
@@ -164,7 +162,7 @@ public class CopyTaskTest extends NativeExecutionTest {
 //        CopyTask task = null;
 //
 //        try {
-////        task = CopyTask.uploadFile(new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, showProgress);
+////        task = CopyTask.uploadFile(getTestExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
 //            task = CopyTask.uploadFile(new ExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
 //
 //            try {
@@ -191,7 +189,7 @@ public class CopyTaskTest extends NativeExecutionTest {
 //            StringBuilder err = new StringBuilder();
 //
 //            NativeTask task = CommonTasksSupport.getCopyLocalFileTask(
-//                    new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, err);
+//                    getTestExecutionEnvironment(), srcFileName, dstFileName, 700, err);
 //
 ////            CommonTasksSupport.CommonTask task = CommonTasksSupport.getCopyLocalFileTask(
 ////                    new ExecutionEnvironment(), srcFileName, dstFileName, 700);
@@ -217,7 +215,7 @@ public class CopyTaskTest extends NativeExecutionTest {
 //        CopyTask task = null;
 //
 //        try {
-////        task = CopyTask.uploadFile(new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, showProgress);
+////        task = CopyTask.uploadFile(getTestExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
 //            task = CopyTask.uploadFile(new ExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
 //
 //            try {
@@ -238,7 +236,7 @@ public class CopyTaskTest extends NativeExecutionTest {
 //        CopyTask task = null;
 //
 //        try {
-////        task = CopyTask.uploadFile(new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, showProgress);
+////        task = CopyTask.uploadFile(getTestExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
 //            task = CopyTask.uploadFile(new ExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
 //
 //            try {

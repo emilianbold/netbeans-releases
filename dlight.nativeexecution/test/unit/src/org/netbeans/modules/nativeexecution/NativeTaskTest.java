@@ -225,7 +225,7 @@ public class NativeTaskTest extends NativeExecutionTest {
         System.out.println("run"); // NOI18N
 
         final ExecutionEnvironment ee =
-                ExecutionEnvironmentFactory.createNew("ak119685", "localhost", 22); // NOI18N
+                ExecutionEnvironmentFactory.createNew(System.getProperty("user.name"), "localhost", 22); // NOI18N
 
 //        MacroExpander macroExpander = MacroExpanderFactory.getExpander(ee);
 //        try {

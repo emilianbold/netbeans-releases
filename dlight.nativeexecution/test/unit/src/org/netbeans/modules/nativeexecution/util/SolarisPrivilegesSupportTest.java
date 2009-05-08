@@ -42,9 +42,7 @@ import java.io.IOException;
 import java.security.acl.NotOwnerException;
 import java.util.Arrays;
 import java.util.concurrent.CancellationException;
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.modules.nativeexecution.NativeExecutionTest;
@@ -87,7 +85,7 @@ public class SolarisPrivilegesSupportTest extends NativeExecutionTest {
      */
     @Test
     public void test() {
-        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew("ak119685", "blackbox.russia.sun.com"); // NOI18N
+        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew(System.getProperty("user.name"), "blackbox.russia.sun.com"); // NOI18N
         try {
             ConnectionManager.getInstance().connectTo(execEnv);
             SolarisPrivilegesSupport sps = SolarisPrivilegesSupportProvider.getSupportFor(execEnv);

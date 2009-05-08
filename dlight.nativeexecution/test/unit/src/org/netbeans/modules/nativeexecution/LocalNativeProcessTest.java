@@ -83,7 +83,7 @@ public class LocalNativeProcessTest extends NativeExecutionTest {
     public void setUp() throws Exception {
         super.setUp();
         execEnv = ExecutionEnvironmentFactory.getLocal();
-//        execEnv = new ExecutionEnvironment("ak119685", "endif", 22);
+//        execEnv = getTestExecutionEnvironment();
 //        try {
 //            ConnectionManager.getInstance().connectTo(execEnv, "".toCharArray(), false);
 //        } catch (IOException ex) {
