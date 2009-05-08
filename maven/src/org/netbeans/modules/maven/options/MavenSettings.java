@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.maven.options;
 
+import hidden.org.codehaus.plexus.util.StringUtils;
 import hidden.org.codehaus.plexus.util.cli.Arg;
 import hidden.org.codehaus.plexus.util.cli.CommandLineException;
 import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
@@ -49,6 +50,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
@@ -174,7 +176,12 @@ public class MavenSettings  {
         if (text != null && text.trim().length() == 0) {
             text = null;
         }
+        String oldText = getCustomLocalRepository();
         putProperty(PROP_CUSTOM_LOCAL_REPOSITORY, text);
+        //reset the project embedder to use the new local repo value.
+        if (!StringUtils.equals(oldText, text)) {
+            EmbedderFactory.resetProjectEmbedder();
+        }
     }
     
     public String getCustomLocalRepository() {
