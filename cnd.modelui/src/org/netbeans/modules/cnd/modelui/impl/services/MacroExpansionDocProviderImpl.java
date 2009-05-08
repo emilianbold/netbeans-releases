@@ -58,6 +58,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.event.DocumentEvent;
@@ -422,36 +423,37 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         ProjectBase base = (ProjectBase) project;
 
         StopOnOffsetParseFileWalkerCache cache;
-        Object obj = doc.getProperty(MACRO_EXPANSION_STOP_ON_OFFSET_PARSE_FILE_WALKER_CACHE);
-        if(obj == null) {
-            synchronized(doc) {
-                cache = new StopOnOffsetParseFileWalkerCache(doc, DocumentUtilities.getDocumentVersion(doc), CsmFileInfoQuery.getDefault().getFileVersion(file));
+        State startState = handler.getState();
+        synchronized(doc) {
+            cache = (StopOnOffsetParseFileWalkerCache) doc.getProperty(MACRO_EXPANSION_STOP_ON_OFFSET_PARSE_FILE_WALKER_CACHE);
+            long documentVersion = DocumentUtilities.getDocumentVersion(doc);
+            long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
+            if (cache == null || !cache.isValid(documentVersion, fileVersion, startState)) {
+                if (cache != null) {
+                    cache.dispose(doc);
+                }
+                cache = new StopOnOffsetParseFileWalkerCache(doc, documentVersion, fileVersion, startState);
                 doc.putProperty(MACRO_EXPANSION_STOP_ON_OFFSET_PARSE_FILE_WALKER_CACHE, cache);
             }
-        } else {
-            cache = (StopOnOffsetParseFileWalkerCache) obj;
         }
         synchronized(cache) {
-            cache.update(DocumentUtilities.getDocumentVersion(doc), CsmFileInfoQuery.getDefault().getFileVersion(file));
             StopOnOffsetParseFileWalker walker = new StopOnOffsetParseFileWalker(base, aptLight, fileImpl, offset, handler, cache);
             walker.visit();
         }
         TokenStream ts = APTTokenStreamBuilder.buildTokenStream(code);
         if (ts != null) {
-            if (handler != null) {
-                ts = new APTMacroExpandedStream(ts, handler.getMacroMap());
-                StringBuilder sb = new StringBuilder(""); // NOI18N
-                try {
-                    APTToken t = (APTToken) ts.nextToken();
-                    while (t != null && !APTUtils.isEOF(t)) {
-                        sb.append(t.getText());
-                        t = (APTToken) ts.nextToken();
-                    }
-                } catch (TokenStreamException ex) {
-                    Exceptions.printStackTrace(ex);
+            ts = new APTMacroExpandedStream(ts, handler.getMacroMap());
+            StringBuilder sb = new StringBuilder(""); // NOI18N
+            try {
+                APTToken t = (APTToken) ts.nextToken();
+                while (t != null && !APTUtils.isEOF(t)) {
+                    sb.append(t.getText());
+                    t = (APTToken) ts.nextToken();
                 }
-                return sb.toString();
+            } catch (TokenStreamException ex) {
+                Exceptions.printStackTrace(ex);
             }
+            return sb.toString();
         }
         return code;
     }
@@ -1247,30 +1249,50 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         }
     }
 
-    private static class StopOnOffsetParseFileWalkerCache implements DocumentListener {
+    private static final class StopOnOffsetParseFileWalkerCache implements DocumentListener {
 
-        private final Map<APT, State> cache = new HashMap<APT, State>();
-        private long docVersion;
-        private long fileVersion;
+        private final Map<APT, State> cache = new LinkedHashMap<APT, State>();
+        private final long docVersion;
+        private final long fileVersion;
         private int lastOffset;
+        private final State startState;
 
-        public StopOnOffsetParseFileWalkerCache(Document doc, long docVersion, long fileVersion) {
+        public StopOnOffsetParseFileWalkerCache(Document doc, long docVersion, long fileVersion, State startState) {
             this.docVersion = docVersion;
             this.fileVersion = fileVersion;
+            this.startState = startState;
             doc.addDocumentListener(this);
         }
 
-        public void cleanCache() {
-            lastOffset = 0;
-            cache.clear();
+        public void dispose(Document doc) {
+            doc.removeDocumentListener(this);
         }
 
-        public void update(long docVersion, long fileVersion) {
-            if(this.docVersion != docVersion || this.fileVersion != fileVersion) {
-                cleanCache();
-                this.docVersion = docVersion;
-                this.fileVersion = fileVersion;
+        private void fixCache(Document doc, int modificationOffset) {
+            if (modificationOffset < lastOffset) {
+                lastOffset = 0;
+                cache.clear();
+//                Iterator<Entry<APT, State>> iterator = cache.entrySet().iterator();
+//                boolean removing = false;
+//                while (iterator.hasNext()) {
+//                    if (removing) {
+//                        iterator.remove();
+//                    } else {
+//                        Entry<APT, State> next = iterator.next();
+//                        if (next.getKey().getEndOffset() >= modificationOffset) {
+//                            iterator.remove();
+//                            removing = true;
+//                        }
+//                    }
+//                }
             }
+        }
+
+        public boolean isValid(long docVersion, long fileVersion, State curStartState) {
+            if (this.docVersion != docVersion || this.fileVersion != fileVersion || !this.startState.equals(curStartState)) {
+                return false;
+            }
+            return true;
         }
 
         public void addNode(APT node, State state) {
@@ -1287,21 +1309,19 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         }
 
         public void insertUpdate(DocumentEvent e) {
-            if(lastOffset <= e.getOffset()) {
-                cleanCache();
-            }
+            checkEvent(e);
         }
 
         public void removeUpdate(DocumentEvent e) {
-            if(lastOffset <= e.getOffset()) {
-                cleanCache();
-            }
+            checkEvent(e);
         }
 
         public void changedUpdate(DocumentEvent e) {
-            if(lastOffset <= e.getOffset()) {
-                cleanCache();
-            }
+            checkEvent(e);
+        }
+
+        private void checkEvent(DocumentEvent e) {
+            fixCache(e.getDocument(), e.getOffset());
         }
     }
 }
