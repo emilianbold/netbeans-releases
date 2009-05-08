@@ -440,6 +440,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                         }
                     }
                 }
+                APTFile fullAPT = getFullAPT();
+                if (fullAPT == null) {
+                    // probably file was removed
+                    return;
+                }
                 switch (curState) {
                     case PARSED: // even if it was parsed, but there was entry in queue with handler => need additional parse
                     case INITIAL:
@@ -450,7 +455,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                         time = System.currentTimeMillis();
                         try {
                             for (APTPreprocHandler preprocHandler : handlers) {
-                                _parse(preprocHandler);
+                                _parse(preprocHandler, fullAPT);
                                 if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
                                     break; // does not make sense parsing old data
                                 }
@@ -476,10 +481,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                         try {
                             for (APTPreprocHandler preprocHandler : handlers) {
                                 if (first) {
-                                    _reparse(preprocHandler);
+                                    _reparse(preprocHandler, fullAPT);
                                     first = false;
                                 } else {
-                                    _parse(preprocHandler);
+                                    _parse(preprocHandler, fullAPT);
                                 }
                                 if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
                                     break; // does not make sense parsing old data
@@ -620,7 +625,23 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         new AstRenderer(this).render(tree);
     }
 
-    private void _reparse(APTPreprocHandler preprocHandler) {
+    private APTFile getFullAPT() {
+        APTFile aptFull = null;
+        ChangedSegment changedSegment = null;
+        try {
+            aptFull = APTDriver.getInstance().findAPT(this.getBuffer());
+            if (getBuffer() instanceof FileBufferDoc) {
+                changedSegment = ((FileBufferDoc) getBuffer()).getLastChangedSegment();
+            }
+        } catch (FileNotFoundException ex) {
+            APTUtils.LOG.log(Level.WARNING, "FileImpl: file {0} not found, probably removed", new Object[]{getBuffer().getFile().getAbsolutePath()});// NOI18N
+        } catch (IOException ex) {
+            DiagnosticExceptoins.register(ex);
+        }
+        return aptFull;
+    }
+    
+    private void _reparse(APTPreprocHandler preprocHandler, APTFile aptFull) {
         if (TraceFlags.DEBUG) {
             Diagnostic.trace("------ reparsing " + fileBuffer.getFile().getName()); // NOI18N
         }
@@ -630,7 +651,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (reportParse || logState || TraceFlags.DEBUG) {
             logParse("ReParsing", preprocHandler); //NOI18N
         }
-        AST ast = doParse(preprocHandler);
+        AST ast = doParse(preprocHandler, aptFull);
         if (ast != null) {
             if (isValid()) {
                 disposeAll(false);
@@ -737,17 +758,18 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     /** for debugging/tracing purposes only */
     public AST debugParse() {
         synchronized (stateLock) {
-            return _parse(getPreprocHandler());
+            return _parse(getPreprocHandler(), getFullAPT());
         }
     }
 
-    private AST _parse(APTPreprocHandler preprocHandler) {
+
+    private AST _parse(APTPreprocHandler preprocHandler, APTFile aptFull) {
 
         Diagnostic.StopWatch sw = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
         if (reportParse || logState || TraceFlags.DEBUG) {
             logParse("Parsing", preprocHandler); //NOI18N
         }
-        AST ast = doParse(preprocHandler);
+        AST ast = doParse(preprocHandler, aptFull);
         if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) {
             sw.stopAndReport("Parsing of " + fileBuffer.getFile().getName() + " took \t"); // NOI18N
         }
@@ -779,15 +801,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     private TokenStream createFullTokenStream(boolean filtered, int startContext, int endContext, AtomicReference<FilePreprocessorConditionState> outPcState) {
-        APTFile apt = null;
-        try {
-            apt = APTDriver.getInstance().findAPT(fileBuffer);
-        } catch (FileNotFoundException ex) {
-            // file could be removed
-            apt = null;
-        } catch (IOException ex) {
-            DiagnosticExceptoins.register(ex);
-        }
+        APTFile apt = getFullAPT();
         if (apt == null) {
             return null;
         }
@@ -974,19 +988,15 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
         }
         try {
-            APTFile aptFull = APTDriver.getInstance().findAPT(this.getBuffer());
-            APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, false, null);
-            CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter(ppState)), flags);
-            parser.setErrorDelegate(delegate);
-            parser.setLazyCompound(false);
-            parser.translation_unit();
-            return new ParserBasedTokenBuffer(parser);
-        } catch (FileNotFoundException ex) {
-            // probably file was removed
-            return null;
-        } catch (IOException ex) {
-            DiagnosticExceptoins.register(ex);
-            return null;
+            APTFile aptFull = getFullAPT();
+            if (aptFull != null) {
+                APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, false, null);
+                CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter(ppState)), flags);
+                parser.setErrorDelegate(delegate);
+                parser.setLazyCompound(false);
+                parser.translation_unit();
+                return new ParserBasedTokenBuffer(parser);
+            }
         } catch (Error ex) {
             System.err.println(ex.getClass().getName() + " at parsing file " + fileBuffer.getFile().getAbsolutePath()); // NOI18N
             throw ex;
@@ -995,9 +1005,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 System.err.printf("<<< Done parsing (getting errors) %s %d ms\n\n\n", getName(), System.currentTimeMillis() - time);
             }
         }
+        return null;
     }
 
-    private AST doParse(APTPreprocHandler preprocHandler) {
+    private AST doParse(APTPreprocHandler preprocHandler, APTFile aptFull) {
 
         if (reportErrors) {
             if (!ParserThreadManager.instance().isParserThread() && !ParserThreadManager.instance().isStandalone()) {
@@ -1018,25 +1029,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
         }
 
-        APTPreprocHandler.State oldState = preprocHandler.getState();
-
-        // 1. get cache with AST
-        // 2a if cache has AST => use AST and APTLight
-        // 2b otherwise if cache has APT full => use APT full to generate parser's
-        //     token stream and save in cache
-        AST ast = null;
-        APTFile aptFull = null;
-        ChangedSegment changedSegment = null;
-        try {
-            aptFull = APTDriver.getInstance().findAPT(this.getBuffer());
-            if (getBuffer() instanceof FileBufferDoc) {
-                changedSegment = ((FileBufferDoc)getBuffer()).getLastChangedSegment();
-            }
-        } catch (FileNotFoundException ex) {
-            APTUtils.LOG.log(Level.WARNING, "FileImpl: file {0} not found, probably removed", new Object[]{getBuffer().getFile().getAbsolutePath()});// NOI18N
-        } catch (IOException ex) {
-            DiagnosticExceptoins.register(ex);
-        }
 //        if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
 //            if (getAbsolutePath().toString().endsWith(".h")) { // NOI18N
 //                try {
@@ -1046,6 +1038,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 //                }
 //            }
 //        }
+        AST ast = null;
         if (aptFull != null) {
             // use full APT for generating token stream
             if (TraceFlags.TRACE_CACHE) {
@@ -1064,7 +1057,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, true, pcBuilder);
             walker.addMacroAndIncludes(true);
             if (TraceFlags.DEBUG) {
-                System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocState(oldState));
+                System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocState(ppState));
             }
 
 //            if (reportParse && logEmptyTokenStream) {
