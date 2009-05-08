@@ -61,10 +61,11 @@
               <tocitem text="Kenai Project Tasks: Quick Reference" target="kenai_quickref" />
               <tocitem text="Opening a Kenai Project" target="kenai_opening" />
               <tocitem text="Working With Kenai Projects" target="kenai_workingwith" />
-              <tocitem text="Collaborating With Kenai Project Members" target="kenai_members" />
+              <tocitem text="Messaging Project Members" target="kenai_members" />
           </tocitem>
           <tocitem text="Working With Issue Tracking">
               <tocitem text="About Issue Trackers" target="issues_trackers" />
+              <tocitem text="Issue Tracking Tasks: Quick Reference" target="issues_quickref" />
               <tocitem text="Working With Issues" target="issues_workingwith" />
               <tocitem text="Adding an Issue Tracker" target="issues_external" />
           </tocitem>
