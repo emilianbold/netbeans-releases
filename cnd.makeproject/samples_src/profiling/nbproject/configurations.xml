@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="62">
+  <logicalFolder name="root" displayName="root" projectFiles="true">
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+      <itemPath>barrier.h</itemPath>
+      <itemPath>common.h</itemPath>
+      <itemPath>join.h</itemPath>
+      <itemPath>mutex.h</itemPath>
+      <itemPath>parallel.h</itemPath>
+      <itemPath>rwlock.h</itemPath>
+      <itemPath>sequential.h</itemPath>
+      <itemPath>spinlock.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <itemPath>barrier.c</itemPath>
+      <itemPath>common.c</itemPath>
+      <itemPath>join.c</itemPath>
+      <itemPath>main.c</itemPath>
+      <itemPath>mutex.c</itemPath>
+      <itemPath>parallel.c</itemPath>
+      <itemPath>rwlock.c</itemPath>
+      <itemPath>sequential.c</itemPath>
+      <itemPath>spinlock.c</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Default" type="1">
+      <compileType>
+        <linkerTool>
+          <linkerLibItems>
+            <linkerLibStdlibItem>PosixThreads</linkerLibStdlibItem>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+    </conf>
+  </confs>
+</configurationDescriptor>
