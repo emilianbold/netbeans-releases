@@ -425,16 +425,14 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         Object obj = doc.getProperty(MACRO_EXPANSION_STOP_ON_OFFSET_PARSE_FILE_WALKER_CACHE);
         if(obj == null) {
             synchronized(doc) {
-                cache = new StopOnOffsetParseFileWalkerCache(doc);
+                cache = new StopOnOffsetParseFileWalkerCache(doc, DocumentUtilities.getDocumentVersion(doc), CsmFileInfoQuery.getDefault().getFileVersion(file));
                 doc.putProperty(MACRO_EXPANSION_STOP_ON_OFFSET_PARSE_FILE_WALKER_CACHE, cache);
             }
         } else {
             cache = (StopOnOffsetParseFileWalkerCache) obj;
         }
         synchronized(cache) {
-            if(cache.getVersion() != DocumentUtilities.getDocumentVersion(doc)) {
-                cache.cleanCache();
-            }
+            cache.update(DocumentUtilities.getDocumentVersion(doc), CsmFileInfoQuery.getDefault().getFileVersion(file));
             StopOnOffsetParseFileWalker walker = new StopOnOffsetParseFileWalker(base, aptLight, fileImpl, offset, handler, cache);
             walker.visit();
         }
@@ -1239,17 +1237,27 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
     private static class StopOnOffsetParseFileWalkerCache implements DocumentListener {
 
         private final Map<APT, State> cache = new HashMap<APT, State>();
-        private final long version;
+        private long docVersion;
+        private long fileVersion;
         private int lastOffset;
 
-        public StopOnOffsetParseFileWalkerCache(Document doc) {
-            version = DocumentUtilities.getDocumentVersion(doc);
+        public StopOnOffsetParseFileWalkerCache(Document doc, long docVersion, long fileVersion) {
+            this.docVersion = docVersion;
+            this.fileVersion = fileVersion;
             doc.addDocumentListener(this);
         }
 
         public void cleanCache() {
             lastOffset = 0;
             cache.clear();
+        }
+
+        public void update(long docVersion, long fileVersion) {
+            if(this.docVersion != docVersion || this.fileVersion != fileVersion) {
+                cleanCache();
+                this.docVersion = docVersion;
+                this.fileVersion = fileVersion;
+            }
         }
 
         public void addNode(APT node, State state) {
@@ -1262,7 +1270,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         }
 
         public long getVersion() {
-            return version;
+            return docVersion;
         }
 
         public void insertUpdate(DocumentEvent e) {
