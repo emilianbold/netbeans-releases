@@ -26,6 +26,13 @@
                             <attr name="position" intvalue="100"/>
                         </file>
                     </folder>
+                    <folder name="x-h">
+                        <file name="TabsAndIndents.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getHController"/>
+                            <attr name="position" intvalue="100"/>
+                        </file>
+                    </folder>
                     <folder name="x-c++">
                         <file name="TabsAndIndents.instance">
                             <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
@@ -45,7 +52,7 @@
         </folder>
         <folder name="PreviewExamples">
             <folder name="text">
-                <file name="x-h" url="resources/cplusplus/CCExample"/>
+                <file name="x-h" url="resources/cplusplus/HExample"/>
                 <file name="x-c++" url="resources/cplusplus/CCExample"/>
                 <file name="x-c" url="resources/cplusplus/CExample"/>
                 <file name="x-fortran" url="resources/fortran/FExample"/>
@@ -98,7 +105,7 @@
             <folder name="x-h">
                  <folder name="Preferences">
                     <folder name="Defaults">
-                        <file name="cpp-preferences.xml" url="cpp-preferences.xml"/>
+                        <file name="h-preferences.xml" url="h-preferences.xml"/>
                     </folder>
                 </folder>
                 <file name="EditorKit.instance">
@@ -130,7 +137,7 @@
 
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
-                        <file name="codetemplates.xml" url="resources/cplusplus/CC-DefaultAbbrevs.xml">
+                        <file name="codetemplates.xml" url="resources/cplusplus/H-DefaultAbbrevs.xml">
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.cplusplus.Bundle"/>
                         </file>
                     </folder>

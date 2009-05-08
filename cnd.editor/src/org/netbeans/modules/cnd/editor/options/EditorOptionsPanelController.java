@@ -56,8 +56,7 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-public class EditorOptionsPanelController extends OptionsPanelController
-        implements PreviewProvider {
+public class EditorOptionsPanelController extends OptionsPanelController implements PreviewProvider {
 
     private JEditorPane previewPane;
     private final EditorPropertySheet panel;
@@ -77,17 +76,17 @@ public class EditorOptionsPanelController extends OptionsPanelController
     public void update() {
         if (TRACE) {System.out.println("EditorOptionsPanelController.update()");} // NOI18N
         changed = false;
-	panel.load();
+        panel.load();
     }
     
     public void applyChanges() {
         if (TRACE) {System.out.println("EditorOptionsPanelController.applyChanges()");} // NOI18N
-	panel.store();
+        panel.store();
     }
     
     public void cancel() {
         if (TRACE) {System.out.println("EditorOptionsPanelController.cancel()");} // NOI18N
-	panel.cancel();
+        panel.cancel();
     }
     
     public boolean isValid() {
@@ -97,7 +96,7 @@ public class EditorOptionsPanelController extends OptionsPanelController
     
     public boolean isChanged() {
         if (TRACE) {System.out.println("EditorOptionsPanelController.isChanged()");} // NOI18N
-	return changed;
+        return changed;
     }
 
     public HelpCtx getHelpCtx() {
@@ -109,19 +108,19 @@ public class EditorOptionsPanelController extends OptionsPanelController
     }
 
     public void addPropertyChangeListener(PropertyChangeListener l) {
-	pcs.addPropertyChangeListener(l);
+        pcs.addPropertyChangeListener(l);
     }
     
     public void removePropertyChangeListener(PropertyChangeListener l) {
-	pcs.removePropertyChangeListener(l);
+        pcs.removePropertyChangeListener(l);
     }
         
     void changed() {
-	if (!changed) {
-	    changed = true;
-	    pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
-	}
-	pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
+        if (!changed) {
+            changed = true;
+            pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
+        }
+        pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
 
     public JComponent getPreviewComponent() {
@@ -130,10 +129,17 @@ public class EditorOptionsPanelController extends OptionsPanelController
             previewPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(EditorOptionsPanelController.class, "AN_Preview")); //NOI18N
             previewPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(EditorOptionsPanelController.class, "AD_Preview")); //NOI18N
             previewPane.putClientProperty("HighlightsLayerIncludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.SyntaxHighlighting$"); //NOI18N
-            if (language == CodeStyle.Language.C) {
-                previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(MIMENames.C_MIME_TYPE));
-            } else { // header or C++
-                previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(MIMENames.CPLUSPLUS_MIME_TYPE));
+            switch (language){
+                case C:
+                    previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(MIMENames.C_MIME_TYPE));
+                    break;
+                case HEADER:
+                    previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(MIMENames.HEADER_MIME_TYPE));
+                    break;
+                case CPP:
+                default:
+                    previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(MIMENames.CPLUSPLUS_MIME_TYPE));
+                    break;
             }
             previewPane.setEditable(false);
         }
@@ -150,6 +156,10 @@ public class EditorOptionsPanelController extends OptionsPanelController
 
     public static OptionsPanelController getCCController() {
         return new EditorOptionsPanelController(CodeStyle.Language.CPP);
+    }
+
+    public static OptionsPanelController getHController() {
+        return new EditorOptionsPanelController(CodeStyle.Language.HEADER);
     }
 
 }

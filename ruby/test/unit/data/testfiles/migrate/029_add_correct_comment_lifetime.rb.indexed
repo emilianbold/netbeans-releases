@@ -8,6 +8,7 @@ Searchable Keys:
   fqn : AddCorrectCommentLifetime
   method : down|STATIC|
   method : up|STATIC|
+  require : 029_add_correct_comment_lifetime
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -19,6 +20,7 @@ Searchable Keys:
   class-ig : article
   extends : Content
   fqn : AddCorrectCommentLifetime::Article
+  require : 029_add_correct_comment_lifetime
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -31,6 +33,7 @@ Searchable Keys:
   class-ig : content
   extends : ActiveRecord::Base
   fqn : AddCorrectCommentLifetime::Content
+  require : 029_add_correct_comment_lifetime
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -43,6 +46,7 @@ Searchable Keys:
   class-ig : site
   extends : ActiveRecord::Base
   fqn : AddCorrectCommentLifetime::Site
+  require : 029_add_correct_comment_lifetime
 
 Not Searchable Keys:
   attrs : |CLASS|

@@ -70,6 +70,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.kenai.api.Kenai;
@@ -79,6 +81,7 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.treelist.TreeListUI;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -129,6 +132,19 @@ public class KenaiSearchPanel extends JPanel {
             remove(createButtonPanel);
         }
 
+        final ListSelectionModel selModel = kenaiProjectsList.getSelectionModel();
+        selModel.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    if (selModel.isSelectionEmpty()) {
+                        firePropertyChange(KenaiDialogDescriptor.PROP_SELECTION_VALID, null, Boolean.FALSE);
+                    } else {
+                        firePropertyChange(KenaiDialogDescriptor.PROP_SELECTION_VALID, null, Boolean.TRUE);
+                    }
+                }
+            }
+        });
+        
     }
 
     /**

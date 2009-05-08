@@ -95,6 +95,11 @@ public class MethodTest3 extends GeneratorTest {
         js.runModificationTask(new Task<WorkingCopy>() {
 
             public void run(WorkingCopy wc) {
+                try {
+                    wc.toPhase(JavaSource.Phase.PARSED);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
                 RemoveException remove = new RemoveException(0);
                 SourceUtilsTestUtil2.run(wc, remove);
                 

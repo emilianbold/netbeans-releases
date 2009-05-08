@@ -54,7 +54,7 @@ public final class OpenKenaiProjectAction implements ActionListener {
     public void actionPerformed(ActionEvent e) {
 
         KenaiSearchPanel openPanel = new KenaiSearchPanel(KenaiSearchPanel.PanelType.OPEN, true);
-        DialogDescriptor dialogDesc = new DialogDescriptor(openPanel, dialogTitle, true, null);
+        DialogDescriptor dialogDesc = new KenaiDialogDescriptor(openPanel, dialogTitle, true, null);
 
         Object option = DialogDisplayer.getDefault().notify(dialogDesc);
 
