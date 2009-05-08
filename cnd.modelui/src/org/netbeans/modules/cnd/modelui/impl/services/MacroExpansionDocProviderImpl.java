@@ -51,10 +51,9 @@
  */
 package org.netbeans.modules.cnd.modelui.impl.services;
 
-import antlr.ANTLRLexer;
-import antlr.InputBuffer;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -71,12 +70,19 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.apt.structure.APT;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTMacroExpandedStream;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionDocProvider;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
@@ -386,25 +392,47 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         if (doc == null) {
             return code;
         }
-        final CsmFile file = CsmUtilities.getCsmFile(doc, true);
-        if (file == null) {
+        CsmFile file = CsmUtilities.getCsmFile(doc, true);
+        if (!(file instanceof FileImpl)) {
             return code;
         }
-        TokenStream ts = new ANTLRLexer(new InputBuffer(code.toCharArray()));
-        APTPreprocHandler handler = ((FileImpl)file).getPreprocHandler(offset);
-        if (handler != null) {
-            ts = new APTMacroExpandedStream(ts, handler.getMacroMap());
-            StringBuilder sb = new StringBuilder(""); // NOI18N
-            try {
-                APTToken t = (APTToken) ts.nextToken();
-                while (t != null && !APTUtils.isEOF(t)) {
-                    sb.append(t.getText());
-                    t = (APTToken) ts.nextToken();
+        FileImpl fileImpl = (FileImpl) file;
+        APTPreprocHandler handler = ((FileImpl) file).getPreprocHandler(offset);
+        if (handler == null) {
+            return code;
+        }
+        APTFile aptLight = null;
+        try {
+            aptLight = APTDriver.getInstance().findAPTLight((fileImpl).getBuffer());
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (aptLight == null) {
+            return code;
+        }
+        CsmProject project = file.getProject();
+        if(!(project instanceof ProjectBase)) {
+            return code;
+        }
+        ProjectBase base = (ProjectBase) project;
+        StopOnOffsetParseFileWalker walker = new StopOnOffsetParseFileWalker(base, aptLight, fileImpl, offset, handler);
+        walker.visit();
+        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(code);
+        if (ts != null) {
+            if (handler != null) {
+                ts = new APTMacroExpandedStream(ts, handler.getMacroMap());
+                StringBuilder sb = new StringBuilder(""); // NOI18N
+                try {
+                    APTToken t = (APTToken) ts.nextToken();
+                    while (t != null && !APTUtils.isEOF(t)) {
+                        sb.append(t.getText());
+                        t = (APTToken) ts.nextToken();
+                    }
+                } catch (TokenStreamException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            } catch (TokenStreamException ex) {
-                Exceptions.printStackTrace(ex);
+                return sb.toString();
             }
-            return sb.toString();
         }
         return code;
     }
@@ -1155,5 +1183,25 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             }
         }
         return tt;
+    }
+
+    private static class StopOnOffsetParseFileWalker extends APTParseFileWalker {
+
+        private final int stopOffset;
+
+        public StopOnOffsetParseFileWalker(ProjectBase base, APTFile apt, FileImpl file, int offset, APTPreprocHandler preprocHandler) {
+            super(base, apt, file, preprocHandler, null);
+            stopOffset = offset;
+        }
+
+        @Override
+        protected boolean onAPT(APT node, boolean wasInBranch) {
+            boolean ret = super.onAPT(node, wasInBranch);
+            if(node.getEndOffset() > stopOffset) {
+                stop();
+            }
+            return ret;
+        }
+
     }
 }
