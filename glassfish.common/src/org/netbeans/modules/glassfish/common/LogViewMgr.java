@@ -95,6 +95,8 @@ public class LogViewMgr {
 
     private static final Logger LOGGER = Logger.getLogger("glassfish"); //  NOI18N
 
+    private static final boolean strictFilter = Boolean.getBoolean("glassfish.logger.strictfilter");
+
     /**
      * Amount of time in milliseconds to wait between checks of the input
      * stream
@@ -454,6 +456,9 @@ public class LogViewMgr {
             if(LOGGER.isLoggable(Level.FINEST)) {
                 LOGGER.log(Level.FINEST, "processing text: '" + line + "'"); // NOI18N
             }
+            if(!strictFilter && filter(line)) {
+                return;
+            }
             OutputListener listener = null;
             Iterator<Recognizer> iterator = recognizers.iterator();
             while(iterator.hasNext() && listener == null) {
@@ -468,6 +473,14 @@ public class LogViewMgr {
             }
             selectIO();
         }
+    }
+
+    private boolean filter(String line) {
+        return line.startsWith("INFO: Started bundle ")
+                || line.startsWith("INFO: Stopped bundle ")
+//                || line.startsWith("felix.")
+//                || line.startsWith("log4j:")
+                ;
     }
 
     private static final String stripNewline(String s) {
