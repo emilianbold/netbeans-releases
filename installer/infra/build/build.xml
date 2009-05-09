@@ -596,6 +596,7 @@ portletcontainer.build.number=${portletcontainer.build.number}
 portletcontainer.macro.number=${portletcontainer.macro.number}
 portletcontainer.micro.number=${portletcontainer.micro.number}
 portletcontainer.minor.number=${portletcontainer.minor.number}
+portletcontainer.build.date=${portletcontainer.build.date}
 
 wsrp.macro.number=${wsrp.macro.number}
 wsrp.micro.number=${wsrp.micro.number}
