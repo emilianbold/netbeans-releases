@@ -51,12 +51,12 @@ made subject to such option by the copyright holder.
     </base_folders>
     <c>
         <recognizer pattern=".*[\\/].*cygwin.*[\\/]bin[\\/]?$"/>
-        <version flags="--version" pattern=".*\\(GCC\\) 4\\.[3-9]"/>
+        <version flags="--version" pattern=".*\(GCC\) 4\.[3-9]"/>
         <system_include_paths flags="-x c -E -v" parser="GNU" remove_in_path="/bin" remove_in_output=""/>
     </c>
     <cpp>
         <recognizer pattern=".*[\\/].*cygwin.*[\\/]bin[\\/]?$"/>
-        <version flags="--version" pattern=".*\\(GCC\\) 4\\.[3-9]"/>
+        <version flags="--version" pattern=".*\(GCC\) 4\.[3-9]"/>
         <system_include_paths flags="-x c++ -E -v" parser="GNU" remove_in_path="/bin" remove_in_output=""/>
     </cpp>
     <fortran>
