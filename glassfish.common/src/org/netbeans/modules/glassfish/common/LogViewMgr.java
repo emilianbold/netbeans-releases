@@ -760,20 +760,16 @@ public class LogViewMgr {
     
     public static InputOutput getServerIO(String uri) {
 
-        // TODO -- avoid depending on the static methods
-        GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
         ServerInstance si = null;
-        if (null != gip) {
-            si = gip.getInstance(uri);
-            gip = GlassfishInstanceProvider.getEe6();
-            if (si == null && null != gip) {
-                si = gip.getInstance(uri);
-            }
-            if (null == si) {
-                return null;
-            }
+        Iterator<GlassfishInstanceProvider> iterator = GlassfishInstanceProvider.getProviders(true).iterator();
+        while(si == null && iterator.hasNext()) {
+            GlassfishInstanceProvider provider = iterator.next();
+            si = provider.getInstance(uri);
         }
-        
+        if(null == si) {
+            return null;
+        }
+
         synchronized (ioWeakMap) {
             // look in the cache
             InputOutput serverIO = ioWeakMap.get(si);
