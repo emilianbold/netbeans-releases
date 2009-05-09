@@ -114,7 +114,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
     private transient InstanceContent ic;
     private transient Lookup lookup;
     private transient Lookup.Result<GlassfishModuleFactory> lookupResult;
-    private transient Collection<GlassfishModuleFactory> currentFactories;
+    private transient Collection<? extends GlassfishModuleFactory> currentFactories;
     
     // api instance
     private ServerInstance commonInstance;
@@ -159,7 +159,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
         //Set<GlassfishModuleFactory> removed = new HashSet<GlassfishModuleFactory>();
         added.addAll(lookupResult.allInstances());
         added.removeAll(currentFactories);
-        currentFactories = (Collection<GlassfishModuleFactory>) lookupResult.allInstances();
+        currentFactories = lookupResult.allInstances();
         for (GlassfishModuleFactory moduleFactory : added) {
             if(moduleFactory.isModuleSupported(homeFolder, asenvProps)) {
                 Object t = moduleFactory.createModule(lookup);
@@ -175,7 +175,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
     private void updateModuleSupport() {
         // Find all modules that have NetBeans support, add them to lookup if server
         // supports them.
-        currentFactories = Collections.EMPTY_LIST;
+        currentFactories = Collections.emptyList();
         lookupResult = Lookups.forPath(Util.GF_LOOKUP_PATH).lookupResult(GlassfishModuleFactory.class);
         updateFactories();
         lookupResult.addLookupListener(this);
