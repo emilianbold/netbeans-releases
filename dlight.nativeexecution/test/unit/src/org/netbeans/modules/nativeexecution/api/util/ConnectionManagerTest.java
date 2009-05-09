@@ -40,22 +40,21 @@
 package org.netbeans.modules.nativeexecution.api.util;
 
 import java.util.concurrent.CountDownLatch;
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.modules.nativeexecution.NativeExecutionTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author ak119685
  */
-public class ConnectionManagerTest {
+public class ConnectionManagerTest extends NativeExecutionTest {
 
-    public ConnectionManagerTest() {
+    public ConnectionManagerTest(String name) {
+        super(name);
     }
 
     @BeforeClass
@@ -66,20 +65,20 @@ public class ConnectionManagerTest {
     public static void tearDownClass() throws Exception {
     }
 
-    @Before
-    public void setUp() {
+    @Override
+    public void setUp() throws Exception {
     }
 
-    @After
-    public void tearDown() {
+    @Override
+    public void tearDown() throws Exception {
     }
 
 
 //    @Test
-    public void testGetConnectToAction() {
+    public void testGetConnectToAction() throws Exception {
         System.out.println("getConnectToAction"); // NOI18N
 
-        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew("ak119685", "129.159.127.94", 22); // NOI18N
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         
         try {
             ConnectionManager.getInstance().connectTo(execEnv);
@@ -91,7 +90,7 @@ public class ConnectionManagerTest {
     }
 
     @Test
-    public void concurrentAccess() {
+    public void concurrentAccess() throws Exception {
         System.out.println("Concurrent access"); // NOI18N
 
         int threadsNum = 10;
@@ -105,7 +104,7 @@ public class ConnectionManagerTest {
             }
         };
 
-        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew("ak119685", "129.159.127.252", 22); // NOI18N
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
 
         for (int i = 0; i < threadsNum; i++) {
             final AsynchronousAction action = ConnectionManager.getInstance().getConnectToAction(execEnv, onConnect);

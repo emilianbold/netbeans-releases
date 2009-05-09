@@ -142,8 +142,7 @@ int main(int argc, char** argv) {
             }
         }
         if (numget) {
-            silence = 0;
-        } else {
+            ++silence;
             struct failmsg fbuf;
             if (msgrcv(msqid, &fbuf, sizeof (fbuf) - sizeof (fbuf.type), FAILMSG, IPC_NOWAIT) == 0) {
                 if (fbuf.type == MEMMSG) {
@@ -165,8 +164,9 @@ int main(int argc, char** argv) {
                 fprintf(stderr, "Communication with process %ld has been lost\n", pid);
                 return -4;
             }
-            silence++;
             sleep(1);
+        } else {
+            silence = 0;
         }
     }
     if (user_term) {

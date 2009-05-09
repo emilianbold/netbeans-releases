@@ -92,7 +92,7 @@ import org.openide.util.Utilities;
 
     private static class LocalPathMap implements PathMap {
 
-        public boolean isRemote(String path, boolean fixMissingPath) {
+        public boolean checkRemotePath(String path, boolean fixMissingPath) {
             return false;
         }
 

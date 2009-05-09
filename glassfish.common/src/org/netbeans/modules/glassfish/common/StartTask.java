@@ -51,6 +51,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -61,6 +66,8 @@ import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
 import org.netbeans.modules.glassfish.spi.Recognizer;
+import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
+import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.openide.DialogDisplayer;
@@ -106,9 +113,53 @@ public class StartTask extends BasicTask<OperationState> {
      * @param jvmArgs used for starting in profile mode
      * @param stateListener state monitor to track start progress
      */
-    public StartTask(CommonServerSupport support, List<Recognizer> recognizers,
+    public StartTask(final CommonServerSupport support, List<Recognizer> recognizers,
             FileObject jdkRoot, String[] jvmArgs, OperationStateListener... stateListener) {
         super(support.getInstanceProperties(), stateListener);
+        List<OperationStateListener> listeners = new ArrayList<OperationStateListener>();
+        listeners.addAll(Arrays.asList(stateListener));
+        listeners.add(new OperationStateListener() {
+            public void operationStateChanged(OperationState newState, String message) {
+                if (OperationState.COMPLETED.equals(newState)) {
+                RequestProcessor.getDefault().post(new Runnable() {
+
+                    public void run() {
+                        GetPropertyCommand gpc = new GetPropertyCommand("*.enable-comet-support");
+                        Future<OperationState> result = support.execute(gpc);
+                                //((GlassfishModule) si.getBasicNode().getLookup().lookup(GlassfishModule.class)).execute(gpc);
+                        try {
+                            if (result.get(10, TimeUnit.SECONDS) == OperationState.COMPLETED) {
+                                Map<String, String> retVal = gpc.getData();
+                                String newValue = support.getInstanceProperties().get(GlassfishModule.COMET_FLAG);
+                                if (null == newValue || newValue.trim().length() < 1) {
+                                    newValue = "false";
+                                }
+                                for (Entry<String,String> entry : retVal.entrySet()) {
+                                    String key = entry.getKey();
+                                    // do not update the admin listener....
+                                    if (null != key && !key.contains("admin-listener")) {
+                                        SetPropertyCommand spc = new SetPropertyCommand(key,newValue);
+                                        Future<OperationState> results = support.execute(spc);
+                                            //((GlassfishModule) si.getBasicNode().getLookup().lookup(GlassfishModule.class)).execute(gpc);
+                                        results.get(10, TimeUnit.SECONDS);
+                                    }
+                                }
+                            }
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
+                        } catch (ExecutionException ex) {
+                            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
+                        } catch (TimeoutException ex) {
+                            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
+                        }
+                    }
+                });
+                    // attempt to sync the comet support
+                }
+            }
+
+        });
+        this.stateListener = listeners.toArray(new OperationStateListener[listeners.size()]);
         this.support = support;
         this.recognizers = recognizers;
         this.jdkHome = jdkRoot;
@@ -260,7 +311,16 @@ public class StartTask extends BasicTask<OperationState> {
             NotifyDescriptor nd = new NotifyDescriptor.Message(message);
             DialogDisplayer.getDefault().notifyLater(nd);
         }
-        return  envp.toArray(new String[envp.size()]);
+        appendSystemEnvVar(envp, GlassfishModule.GEM_HOME);
+        appendSystemEnvVar(envp, GlassfishModule.GEM_PATH);
+        return envp.toArray(new String[envp.size()]);
+    }
+    
+    private void appendSystemEnvVar(List<String> envp, String key) {
+        String value = ip.get(key);
+        if(value != null && value.length() > 0) {
+            envp.add(key + "=" + value);
+        }
     }
 
     private FileObject getJavaPlatformRoot(CommonServerSupport support) throws IOException {
