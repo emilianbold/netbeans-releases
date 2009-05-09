@@ -54,28 +54,20 @@ import org.openide.util.ChangeSupport;
  */
 public final class RubyInstanceProviderImpl implements RubyInstanceProvider, ChangeListener {
 
-    // XXX not real happy about the separation of providers for V3 vs V3 prelude
-    // but that's what we have for now.
-    private static final RubyInstanceProviderImpl v3FullSupport =
-            new RubyInstanceProviderImpl(ServerUtilities.getEe6Utilities());
-    private static final RubyInstanceProviderImpl v3PreludeSupport =
+    private static final RubyInstanceProviderImpl singleton = 
             new RubyInstanceProviderImpl(ServerUtilities.getPreludeUtilities());
     
     private final ChangeSupport support = new ChangeSupport(this);
-    private ServerUtilities serverUtilities;
+    private ServerUtilities su;
     
-    private RubyInstanceProviderImpl(ServerUtilities serverUtilities) {
-        this.serverUtilities = serverUtilities;
-        ServerInstanceProvider provider = serverUtilities.getServerProvider();
+    private RubyInstanceProviderImpl(ServerUtilities su) {
+        this.su = su;
+        ServerInstanceProvider provider = su.getServerProvider();
         provider.addChangeListener(this);
     }
 
-    public static RubyInstanceProviderImpl getV3Provider() {
-        return v3FullSupport;
-    }
-
-    public static RubyInstanceProviderImpl getV3PreludeProvider() {
-        return v3PreludeSupport;
+    public static RubyInstanceProviderImpl getDefault() {
+        return singleton;
     }
 
     // Additional interesting API's
@@ -87,11 +79,11 @@ public final class RubyInstanceProviderImpl implements RubyInstanceProvider, Cha
     // RubyInstanceProvider interface implementation
     // ------------------------------------------------------------------------
     public List<? extends RubyInstance> getInstances() {
-        return serverUtilities.getInstancesByCapability(RubyInstance.class);
+        return su.getInstancesByCapability(RubyInstance.class);
     }
 
     public RubyInstance getInstance(String uri) {
-        return serverUtilities.getInstanceByCapability(uri, RubyInstance.class);
+        return su.getInstanceByCapability(uri, RubyInstance.class);
     }
 
     public void addChangeListener(ChangeListener listener) {
