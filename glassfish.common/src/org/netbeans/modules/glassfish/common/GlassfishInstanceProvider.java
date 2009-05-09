@@ -87,7 +87,22 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     static private String EE6_INSTANCES_PATH = "/GlassFishEE6/Instances"; // NOI18N
     static private String PRELUDE_INSTANCES_PATH = "/GlassFish/Instances"; // NOI18N
 
-    public static GlassfishInstanceProvider getEe6() {
+    public static List<GlassfishInstanceProvider> getProviders(boolean initialize) {
+        List<GlassfishInstanceProvider> providerList = new ArrayList<GlassfishInstanceProvider>();
+        if(initialize) {
+            getPrelude();
+            getEe6();
+        }
+        if(preludeProvider != null) {
+            providerList.add(preludeProvider);
+        }
+        if(ee6Provider != null) {
+            providerList.add(ee6Provider);
+        }
+        return providerList;
+    }
+
+    public static synchronized GlassfishInstanceProvider getEe6() {
         FileObject fo = FileUtil.getConfigFile("GlassFish v3/Enable Experimental Features"); // NOI18N
         String v3Root = System.getProperty(EE6_INSTALL_ROOT_PROP);
         if ("true".equals(System.getProperty(PRELUDE_PROP_ROOT + ENABLE_EXPERIMENTAL_SUFFIX)) || // NOI18N
@@ -111,7 +126,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         return ee6Provider;
     }
 
-    public static GlassfishInstanceProvider getPrelude() {
+    public static synchronized GlassfishInstanceProvider getPrelude() {
         if ("true".equals(System.getProperty(PRELUDE_PROP_ROOT + DISABLE_PRELUDE_SUFFIX))) { // NOI18N
             return preludeProvider;
         }

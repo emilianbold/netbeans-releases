@@ -166,6 +166,28 @@ class GlassFishGem implements RubyServer, ServerInstanceImplementation {
         changeSupport.removeChangeListener(listener);
     }
 
+    public int compareVersion(String targetVersion) {
+        int [] sv = extractVersion(version);
+        int [] tv = extractVersion(targetVersion);
+        for(int i = 0; i < 3; i++) {
+            if(sv[i] < tv[i]) {
+                return -1;
+            } else if(sv[i] > tv[i]) {
+                return 1;
+            }
+        }
+        return 0;
+    }
+
+    private int [] extractVersion(String vs) {
+        int [] v = new int [] { 0, 0, 0 };
+        String [] parts = vs.split("\\.");
+        for(int i = 0; i < 3 && i < parts.length; i++) {
+            v[i] = Integer.valueOf(parts[i]);
+        }
+        return v;
+    }
+
     // ServerInstanceImplementation methods
     public String getServerDisplayName() {
         return getNodeName();
