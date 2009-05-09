@@ -84,7 +84,6 @@ import org.openide.util.NbBundle;
         // add unknown as well
         cbFamily.addItem(CompilerFlavor.getUnknown(csm.getPlatform()));
         tfName.setText(""); // NOI18N
-        taInfo.setBackground(getBackground());
         validateData();
         
         setPreferredSize(new Dimension(700, 300));
@@ -245,6 +244,7 @@ import org.openide.util.NbBundle;
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        infoLabel = new javax.swing.JLabel();
         lbBaseDirectory = new javax.swing.JLabel();
         tfName = new javax.swing.JTextField();
         btBaseDirectory = new javax.swing.JButton();
@@ -253,10 +253,17 @@ import org.openide.util.NbBundle;
         lbName = new javax.swing.JLabel();
         tfBaseDirectory = new javax.swing.JTextField();
         lbError = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        taInfo = new javax.swing.JTextArea();
 
         setLayout(new java.awt.GridBagLayout());
+
+        infoLabel.setText(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.taInfo.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(16, 16, 0, 16);
+        add(infoLabel, gridBagConstraints);
 
         lbBaseDirectory.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("lbBaseDirectory_MN").charAt(0));
         lbBaseDirectory.setLabelFor(tfBaseDirectory);
@@ -352,26 +359,6 @@ import org.openide.util.NbBundle;
         gridBagConstraints.insets = new java.awt.Insets(0, 16, 16, 16);
         add(lbError, gridBagConstraints);
 
-        jScrollPane1.setBorder(null);
-
-        taInfo.setColumns(20);
-        taInfo.setEditable(false);
-        taInfo.setLineWrap(true);
-        taInfo.setText(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.taInfo.text")); // NOI18N
-        taInfo.setWrapStyleWord(true);
-        taInfo.setBorder(null);
-        jScrollPane1.setViewportView(taInfo);
-        taInfo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.taInfo.AccessibleContext.accessibleName")); // NOI18N
-        taInfo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.taInfo.AccessibleContext.accessibleDescription")); // NOI18N
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(16, 16, 0, 16);
-        add(jScrollPane1, gridBagConstraints);
-
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
@@ -406,12 +393,11 @@ private void cbFamilyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btBaseDirectory;
     private javax.swing.JComboBox cbFamily;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel infoLabel;
     private javax.swing.JLabel lbBaseDirectory;
     private javax.swing.JLabel lbError;
     private javax.swing.JLabel lbFamily;
     private javax.swing.JLabel lbName;
-    private javax.swing.JTextArea taInfo;
     private javax.swing.JTextField tfBaseDirectory;
     private javax.swing.JTextField tfName;
     // End of variables declaration//GEN-END:variables

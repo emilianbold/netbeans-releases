@@ -55,17 +55,15 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
-import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
-import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.completion.csm.CsmContextUtilities;
-import org.netbeans.modules.cnd.completion.csm.CsmOffsetUtilities;
 import org.netbeans.modules.cnd.completion.csm.CsmProjectContentResolver;
 
 /**
@@ -88,6 +86,8 @@ public final class FileReferencesContext {
             csmFile = (CsmFile) csmScope;
         } else if (CsmKindUtilities.isFunction(csmScope)) {
             csmFile = ((CsmFunction)csmScope).getContainingFile();
+        } else if (CsmKindUtilities.isOffsetable(csmScope)) {
+            csmFile = ((CsmOffsetable)csmScope).getContainingFile();
         }
         lastOffset = 0;
     }

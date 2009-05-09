@@ -53,31 +53,32 @@ public class ValuePresenter {
     private static Presenter[] presenters = new Presenter[]{new StdStringPresenter()};
 
     public static String getValue(Variable var) {
+        return getValue(var.getType(), var.getValue());
+    }
+
+    public static String getValue(String type, String value) {
         for (Presenter vp : presenters) {
-            if (vp.accepts(var)) {
-                return vp.present(var);
+            if (vp.accepts(type, value)) {
+                return vp.present(type, value);
             }
         }
-        return var.getValue();
+        return value;
     }
 
     private static interface Presenter {
-        boolean accepts(Variable var);
-        String present(Variable var);
+        boolean accepts(String type, String value);
+        String present(String type, String value);
     }
 
     private static class StdStringPresenter implements Presenter {
         private static final String VALUE_PREFIX = "_M_p"; // NOI18N
         private static final String TYPE_NAME = "string"; // NOI18N
 
-        public boolean accepts(Variable var) {
-            String type = var.getType();
-            String value = var.getValue();
+        public boolean accepts(String type, String value) {
             return TYPE_NAME.equals(type) && value != null && value.contains(VALUE_PREFIX);
         }
 
-        public String present(Variable var) {
-            String value = var.getValue();
+        public String present(String type, String value) {
             int pos = value.indexOf(VALUE_PREFIX);
             assert pos > 0;
             pos = value.indexOf('"', pos);

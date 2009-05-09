@@ -1,0 +1,15 @@
+// -*- C++ -*-
+/* 
+ * File:   %<%NAME%>%.%<%EXTENSION%>%
+ * Author: %<%USER%>%
+ *
+ * Created on %<%DATE%>%, %<%TIME%>%
+ */
+
+#ifndef _%<%GUARD_NAME%>%
+#define	_%<%GUARD_NAME%>%
+
+
+
+#endif	/* _%<%GUARD_NAME%>% */
+

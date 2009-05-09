@@ -129,7 +129,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         macroCache.remove(name.getTextID());
     }
 
-    protected APTMacro createMacro(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
+    protected APTMacro createMacro(CharSequence file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
         APTMacro macro = new APTMacroImpl(file, name, params, value, macroType);
         APTMacro prev = null;
         if (APTTraceFlags.APT_SHARE_MACROS) {

@@ -338,23 +338,7 @@ made subject to such option by the copyright holder.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
             <attr name="position" intvalue="550"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/cppFiles.html"/>
-            
-            <file name="class.cc" url="templates/cpp/class-cc.template">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
-                <attr name="position" intvalue="400"/>
-                <attr name="template" boolvalue="true"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/class.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CndClassWizardIterator"/>
-                <attr name="templateCategory" stringvalue="cpp-types"/>
-            </file>
-
-            <file name="class.h" url="templates/cpp/class-h.template">
-                <attr name="position" intvalue="410"/>
-                <attr name="template" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="hidden"/>
-            </file>
-            
+                       
             <file name="file.cc" url="templates/cpp/empty-cc.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
@@ -384,7 +368,32 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
                 <attr name="templateCategory" stringvalue="cpp-types"/>
             </file>
+
+            <file name="file" url="templates/cpp/header.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/HDataIcon.gif"/>
+                <attr name="position" intvalue="400"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-cc-standard-header.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
+                <attr name="templateCategory" stringvalue="cpp-types"/>
+            </file>
             
+            <file name="class.cc" url="templates/cpp/class-cc.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
+                <attr name="position" intvalue="500"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/class.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CndClassWizardIterator"/>
+                <attr name="templateCategory" stringvalue="cpp-types"/>
+            </file>
+
+            <file name="class.h" url="templates/cpp/class-h.template">
+                <attr name="position" intvalue="510"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="hidden"/>
+            </file>
         </folder> <!-- End cppFiles folder -->
 
         <folder name="qtFiles">

@@ -44,8 +44,12 @@ made subject to such option by the copyright holder.
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <toolchain name="MinGW_TDM" display="GNU Compiler Collection from MinGW TDM" family="GNU"/>
     <platforms stringvalue="windows"/>
-    <base_folder regestry="hklm\software\microsoft\windows\currentversion\uninstall\TDM-GCC" pattern="InstallLocation.*REG_SZ(.*)" suffix="bin" path_patern=".*[\\/]mingw[\\/]bin[\\/]?$"/>
-    <command_folder regestry="hklm\software\microsoft\windows\currentversion\uninstall\msys-1.0_is1" pattern="Inno Setup: App Path.*REG_SZ(.*)" suffix="bin" path_patern=".*[\\/]msys[\\/]1.0[\\/]bin[\\/]?$"/>
+    <base_folders>
+        <base_folder regestry="hklm\software\microsoft\windows\currentversion\uninstall\TDM-GCC" pattern="InstallLocation.*REG_SZ(.*)" suffix="bin" path_patern=".*[\\/]mingw[\\/]bin[\\/]?$"/>
+    </base_folders>
+    <command_folders>
+        <command_folder regestry="hklm\software\microsoft\windows\currentversion\uninstall\msys-1.0_is1" pattern="Inno Setup: App Path.*REG_SZ(.*)" suffix="bin" path_patern=".*[\\/]msys[\\/]1.0[\\/]bin[\\/]?$"/>
+    </command_folders>
     <c>
         <recognizer pattern=".*[\\/]mingw[\\/]bin[\\/]?$"/>
         <system_include_paths flags="-x c -E -v" parser="GNU" remove_in_path="/bin" remove_in_output="/mingw"/>
