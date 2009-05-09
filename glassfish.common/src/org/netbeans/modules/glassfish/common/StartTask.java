@@ -311,7 +311,16 @@ public class StartTask extends BasicTask<OperationState> {
             NotifyDescriptor nd = new NotifyDescriptor.Message(message);
             DialogDisplayer.getDefault().notifyLater(nd);
         }
-        return  envp.toArray(new String[envp.size()]);
+        appendSystemEnvVar(envp, GlassfishModule.GEM_HOME);
+        appendSystemEnvVar(envp, GlassfishModule.GEM_PATH);
+        return envp.toArray(new String[envp.size()]);
+    }
+    
+    private void appendSystemEnvVar(List<String> envp, String key) {
+        String value = ip.get(key);
+        if(value != null && value.length() > 0) {
+            envp.add(key + "=" + value);
+        }
     }
 
     private FileObject getJavaPlatformRoot(CommonServerSupport support) throws IOException {
