@@ -75,7 +75,7 @@ import org.openide.util.NbBundle;
 
     public void addData(long value) {
         if (graph.getUpperLimit() < value) {
-            graph.setUpperLimit((int)value * 3 / 2);
+            graph.setUpperLimit(2 * graph.getUpperLimit());
         }
         graph.addData((int)value);
         if (value > max) {

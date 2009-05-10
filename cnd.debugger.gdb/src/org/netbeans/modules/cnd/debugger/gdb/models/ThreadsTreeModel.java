@@ -92,7 +92,7 @@ public class ThreadsTreeModel implements TreeModel {
      */
     public int getChildrenCount(Object parent) throws UnknownTypeException {
         if (parent.equals(ROOT)) {
-            return debugger.getThreadCount();
+            return Integer.MAX_VALUE;
         } else {
 	    throw new UnknownTypeException(parent);
 	}

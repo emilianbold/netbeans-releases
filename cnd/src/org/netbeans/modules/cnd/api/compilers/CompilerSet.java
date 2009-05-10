@@ -85,7 +85,7 @@ public class CompilerSet {
         private static final List<CompilerFlavor> flavors = new ArrayList<CompilerFlavor>();
         private static final Map<Integer, CompilerFlavor> unknown = new HashMap<Integer, CompilerFlavor>();
         static {
-            for(ToolchainDescriptor descriptor : ToolchainManager.getInstance().getAllToolchains()){
+            for(ToolchainDescriptor descriptor : ToolchainManager.getImpl().getAllToolchains()){
                 flavors.add(new CompilerFlavor(descriptor.getName(), descriptor));
             }
         }
@@ -133,7 +133,7 @@ public class CompilerSet {
         public String getCommandFolder(int platform){
             ToolchainDescriptor d = getToolchainDescriptor();
             if (d != null) {
-                return ToolchainManager.getInstance().getCommandFolder(d, platform);
+                return ToolchainManager.getImpl().getCommandFolder(d, platform);
             }
             return null;
         }
@@ -151,9 +151,9 @@ public class CompilerSet {
             synchronized(unknown) {
                 unknownFlavor = unknown.get(platform);
                 if (unknownFlavor == null) {
-                    ToolchainDescriptor d = ToolchainManager.getInstance().getToolchain("GNU", platform); // NOI18N
+                    ToolchainDescriptor d = ToolchainManager.getImpl().getToolchain("GNU", platform); // NOI18N
                     if (d == null) {
-                        List<ToolchainDescriptor> list = ToolchainManager.getInstance().getToolchains(platform);
+                        List<ToolchainDescriptor> list = ToolchainManager.getImpl().getToolchains(platform);
                         if (list.size()>0){
                             d = list.get(0);
                         }
@@ -170,7 +170,7 @@ public class CompilerSet {
                 return getUnknown(platform);
             }
             for (CompilerFlavor flavor : flavors) {
-                if (name.equals(flavor.sval) && ToolchainManager.getInstance().isPlatforSupported(platform, flavor.getToolchainDescriptor())) {
+                if (name.equals(flavor.sval) && ToolchainManager.getImpl().isPlatforSupported(platform, flavor.getToolchainDescriptor())) {
                     return flavor;
                 }
             }
@@ -216,7 +216,7 @@ public class CompilerSet {
         private static boolean isPlatforSupported(CompilerFlavor flavor, int platform){
             ToolchainDescriptor d = flavor.getToolchainDescriptor();
             if (d != null){
-                return ToolchainManager.getInstance().isPlatforSupported(platform, d);
+                return ToolchainManager.getImpl().isPlatforSupported(platform, d);
             }
             return true;
         }
@@ -314,8 +314,8 @@ public class CompilerSet {
     
     public static List<CompilerFlavor> getCompilerSetFlavor(String directory, int platform) {
         List<CompilerFlavor> list = new ArrayList<CompilerFlavor>();
-        for(ToolchainDescriptor d : ToolchainManager.getInstance().getToolchains(platform)) {
-            if (ToolchainManager.getInstance().isMyFolder(directory, d, platform, false)){
+        for(ToolchainDescriptor d : ToolchainManager.getImpl().getToolchains(platform)) {
+            if (ToolchainManager.getImpl().isMyFolder(directory, d, platform, false)){
                 CompilerFlavor f = CompilerFlavor.toFlavor(d.getName(), platform);
                 if (f != null) {
                     list.add(f);
