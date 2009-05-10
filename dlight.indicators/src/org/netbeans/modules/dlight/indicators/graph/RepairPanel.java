@@ -58,7 +58,7 @@ public class RepairPanel extends JPanel {
     private final JEditorPane label;
     private JButton button;
 
-    public RepairPanel(ValidationStatus status, ActionListener action) {
+    public RepairPanel(ValidationStatus status) {
         setOpaque(false);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         add(Box.createVerticalGlue());
@@ -76,10 +76,23 @@ public class RepairPanel extends JPanel {
         if (!status.isKnown()) {
             button = new JButton(buttonText);
             button.setAlignmentX(0.5f);
-            button.addActionListener(action);
             add(button);
         }
         add(Box.createVerticalGlue());
+    }
+
+    public void addActionListener(ActionListener listener) {
+        if (button != null) {
+            button.addActionListener(listener);
+        }
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        if (button != null) {
+            button.setEnabled(enabled);
+        }
     }
 
     @Override

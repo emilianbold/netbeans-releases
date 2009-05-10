@@ -151,17 +151,24 @@ import org.openide.util.NbBundle;
     @Override
     protected void repairNeeded(boolean needed) {
         if (needed) {
-            final RepairPanel repairPanel = new RepairPanel(getRepairActionProvider().getValidationStatus(), new ActionListener() {
+            final RepairPanel repairPanel = new RepairPanel(getRepairActionProvider().getValidationStatus());
+            repairPanel.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    final Future<Boolean> result = getRepairActionProvider().asyncRepair();
+                    final Future<Boolean> repairResult = getRepairActionProvider().asyncRepair();
                     DLightExecutorService.submit(new Callable<Boolean>() {
                         public Boolean call() throws Exception {
                             UIThread.invoke(new Runnable() {
                                 public void run() {
-                                    panel.getPanel().setOverlay(null);
+                                    repairPanel.setEnabled(false);
                                 }
                             });
-                            return result.get();
+                            Boolean retValue = repairResult.get();
+                            UIThread.invoke(new Runnable() {
+                                public void run() {
+                                    repairPanel.setEnabled(true);
+                                }
+                            });
+                            return retValue;
                         }
                     }, "Click On Repair in CPU Indicator task");//NOI18N
                 }

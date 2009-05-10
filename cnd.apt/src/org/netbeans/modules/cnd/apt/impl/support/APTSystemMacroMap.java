@@ -69,7 +69,7 @@ public class APTSystemMacroMap extends APTBaseMacroMap {
         fill(sysMacros, true);
     }
     
-    protected APTMacro createMacro(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
+    protected APTMacro createMacro(CharSequence file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
         return new APTMacroImpl(file, name, params, value, macroType);
     }
     
