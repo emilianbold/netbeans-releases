@@ -171,8 +171,8 @@ public class HtmlParserResult extends ParserResult {
                                     msg,
                                     msg,
                                     getSnapshot().getSource().getFileObject(),
-                                    node.startOffset(),
-                                    node.endOffset(),
+                                    getSnapshot().getOriginalOffset(node.startOffset()),
+                                    getSnapshot().getOriginalOffset(node.endOffset()),
                                     false /* not line error */,
                                     Severity.WARNING); //NOI18N
                             _errors.add(error);
@@ -191,8 +191,8 @@ public class HtmlParserResult extends ParserResult {
                                         desc.getText(),
                                         desc.getText(),
                                         getSnapshot().getSource().getFileObject(),
-                                        desc.getFrom(),
-                                        desc.getTo(),
+                                        getSnapshot().getOriginalOffset(desc.getFrom()),
+                                        getSnapshot().getOriginalOffset(desc.getTo()),
                                         false /* not line error */,
                                         desc.getType() == Description.WARNING ? Severity.WARNING : Severity.ERROR); //NOI18N
                                 _errors.add(error);
