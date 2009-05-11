@@ -188,7 +188,7 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
         
         PasswordAuthentication pa = support.getPasswordAuthentication(true);
         if(pa == null) {
-            return;
+            throw new RuntimeException(new InterruptedException(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_ActionCanceledByUser"))); //NOI18N
         }
         String user = pa.getUserName();
         char[] psswd = pa.getPassword();

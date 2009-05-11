@@ -223,6 +223,10 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
             } catch (IOException exc) {
                 //TODO
                 err.notify(exc);
+            } catch (IllegalArgumentException exc) {
+                // #161903: thrown from removeSection/Attribute means entry is probably already deleted,
+                // can be ignored here
+                err.notify(exc);
             } finally {
                 if (instream != null) {
                     try {
