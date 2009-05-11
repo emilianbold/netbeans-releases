@@ -66,8 +66,16 @@ import org.openide.windows.WindowManager;
  */
 public class CreateChatAction extends AbstractAction {
 
-    public CreateChatAction(String name) {
-        super(name);
+    private String simpleName;
+    public CreateChatAction(String simpleName) {
+        super();
+        this.simpleName = simpleName;
+        try {
+            String name = Kenai.getDefault().getProject(simpleName).getDisplayName();
+            putValue(Action.NAME, name);
+        } catch (KenaiException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -82,7 +90,7 @@ public class CreateChatAction extends AbstractAction {
 
             public void run() {
                 try {
-                    if (!Kenai.getDefault().isAuthorized(Kenai.getDefault().getProject((String) getValue(Action.NAME)), KenaiActivity.PROJECTS_ADMIN)) {
+                    if (!Kenai.getDefault().isAuthorized(Kenai.getDefault().getProject(simpleName), KenaiActivity.PROJECTS_ADMIN)) {
                         SwingUtilities.invokeLater(new Runnable() {
 
                             public void run() {
@@ -116,7 +124,7 @@ public class CreateChatAction extends AbstractAction {
 
                                 public void run() {
                                     try {
-                                        final KenaiProject prj = Kenai.getDefault().getProject((String) getValue(Action.NAME));
+                                        final KenaiProject prj = Kenai.getDefault().getProject(simpleName);
                                         final KenaiFeature f = prj.createProjectFeature(
                                                 prj.getName(),
                                                 NbBundle.getMessage(CreateChatAction.class, "CTL_ChatRoomName", prj.getName()),

@@ -54,7 +54,9 @@ import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
+import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 
@@ -70,17 +72,18 @@ public class PresenceIndicator {
 
     private JLabel label;
     private MouseL helper;
+    private Status status = Status.OFFLINE;
 
     public static enum Status {
         ONLINE,
         OFFLINE
     }
-
     public void setStatus(Status status) {
+        this.status=status;
         label.setIcon(status == Status.ONLINE?ONLINE:OFFLINE);
         if (status==Status.OFFLINE) {
             label.setText("");
-            label.setToolTipText("");
+            label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_Offline"));
         }
     }
 
@@ -92,11 +95,7 @@ public class PresenceIndicator {
         if (instance == null) {
             instance = new PresenceIndicator();
             if (System.getProperty(("kenai.com.url"), "https://kenai.com").endsWith("testkenai.com")) {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        KenaiConnection.getDefault();
-                    }
-                });
+                KenaiConnection.getDefault();
             }
         }
         return instance;
@@ -105,6 +104,7 @@ public class PresenceIndicator {
     
     private PresenceIndicator() {
         label = new JLabel(OFFLINE, JLabel.HORIZONTAL);
+        label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_Offline"));
         /*
         * TODO: delete this
         */
@@ -126,7 +126,10 @@ public class PresenceIndicator {
         @Override
         public void mouseClicked(MouseEvent event) {
             if (event.getClickCount() == 2) {
-                ChatTopComponent.openAction(ChatTopComponent.findInstance(), "", "", false).actionPerformed(new ActionEvent(event,event.getID(),"")); // NOI18N
+                if (status==Status.ONLINE)
+                    ChatTopComponent.openAction(ChatTopComponent.findInstance(), "", "", false).actionPerformed(new ActionEvent(event,event.getID(),"")); // NOI18N
+                else
+                    UIUtils.showLogin();
             }
         }
     }

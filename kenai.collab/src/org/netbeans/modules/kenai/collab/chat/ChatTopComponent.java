@@ -43,18 +43,23 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -90,6 +95,7 @@ public class ChatTopComponent extends TopComponent {
 
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/kenai/collab/resources/online.png"; // NOI18N
+    static final String PLUS = "org/netbeans/modules/kenai/collab/resources/plus.png"; // NOI18N
 
     private static final String PREFERRED_ID = "ChatTopComponent"; // NOI18N
     private final KenaiConnection kec = KenaiConnection.getDefault();
@@ -113,22 +119,27 @@ public class ChatTopComponent extends TopComponent {
         Component c = chats.getSelectedComponent();
         if (c!=null) {
             c.requestFocus();
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    if (chats.getTabCount()==1)
+                        showPopup(null);
+                }
+            });
         }
     }
 
     private ChatTopComponent() {
         initComponents();
+        newPanel.putClientProperty(TabbedPaneFactory.NO_CLOSE_BUTTON, Boolean.TRUE);
         setName(NbBundle.getMessage(ChatTopComponent.class, "CTL_ChatTopComponent"));
         setToolTipText(NbBundle.getMessage(ChatTopComponent.class, "HINT_ChatTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
 
         LayoutManager overlay = new OverlayLayout(chatsPanel);
         chatsPanel.setLayout(overlay);
-        glassPane.setAlignmentX(0);
-        glassPane.setAlignmentY(0);
         chats.setAlignmentX(0);
         chats.setAlignmentY(0);
-        chatsPanel.add(glassPane);
         chatsPanel.add(chats);
 
         ChangeListener changeListener = new ChangeListener() {
@@ -136,7 +147,8 @@ public class ChatTopComponent extends TopComponent {
                 int index = chats.getSelectedIndex();
                 if (index>=0) {
                     chats.setForegroundAt(index, Color.BLACK);
-                    ChatNotifications.getDefault().removeGroup(chats.getTitleAt(index));
+                    if (!initInProgress)
+                        ChatNotifications.getDefault().removeGroup(chats.getComponentAt(index).getName());
                     chats.getComponentAt(index).requestFocus();
                 }
             }
@@ -156,7 +168,7 @@ public class ChatTopComponent extends TopComponent {
             if (open.isEmpty()) {
                 SwingUtilities.invokeLater(new Runnable(){
                     public void run() {
-                        showPopup();
+                        showPopup(null);
                     }
                 });
             }
@@ -181,6 +193,7 @@ public class ChatTopComponent extends TopComponent {
                 add(chatsPanel, BorderLayout.CENTER);
                 putChats();
                 validate();
+                repaint();
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -198,6 +211,7 @@ public class ChatTopComponent extends TopComponent {
                 open.clear();
                 add(loginScreen, BorderLayout.CENTER);
                 validate();
+                repaint();
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -215,6 +229,7 @@ public class ChatTopComponent extends TopComponent {
                 open.clear();
                 add(errorScreen, BorderLayout.CENTER);
                 validate();
+                repaint();
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -234,6 +249,7 @@ public class ChatTopComponent extends TopComponent {
                 ((JXBusyLabel) initLabel).setBusy(true);
                 add(initPanel, BorderLayout.CENTER);
                 validate();
+                repaint();
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -243,25 +259,48 @@ public class ChatTopComponent extends TopComponent {
         }
     }
 
+    private int getTab(String name) {
+        for (int i= 0; i<chats.getTabCount(); i++) {
+            if (name.equals(chats.getComponentAt(i).getName())) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public void setActive(String name) {
         ChatNotifications.getDefault().removeGroup(name);
-        int indexOfTab = chats.indexOfTab(name+"    "); // NOI18N
+        int indexOfTab = getTab(name); 
         if (indexOfTab < 0) {
             MultiUserChat muc = kec.getChat(name);
             if (muc != null) {
                 ChatPanel chatPanel = new ChatPanel(muc);
                 addChat(chatPanel);
                 indexOfTab=chats.getTabCount()-1;
+                chats.setSelectedComponent(chatPanel);
             }
 
+        } else {
+            chats.setSelectedIndex(indexOfTab);
         }
-        chats.setSelectedIndex(indexOfTab);
     }
 
 
-    public void addChat(ChatPanel chatPanel) {
-        ChatNotifications.getDefault().removeGroup(chatPanel.getName());
+    public void addChat(ChatPanel chatPanel) { 
+        chats.remove(newPanel);
+        //ChatNotifications.getDefault().removeGroup(chatPanel.getName());
+        int idx = chats.getTabCount();
         chats.add(chatPanel);
+        try {
+            chats.setTitleAt(idx, Kenai.getDefault().getProject(chatPanel.getName()).getDisplayName());
+        } catch (KenaiException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        chats.add(newPanel);
+        chats.setDisabledIconAt(idx+1, ImageUtilities.loadImageIcon(PLUS, true));
+        chats.setEnabledAt(idx+1, false);
+
         open.add(chatPanel.getName());
         chats.setSelectedComponent(chatPanel);
         validate();
@@ -271,8 +310,11 @@ public class ChatTopComponent extends TopComponent {
     void removeChat(Component chatPanel) {
         int index = chats.indexOfComponent(chatPanel);
         assert index>=0: "Component not found in CloseButtonTabbedPane " + chatPanel;
-        open.remove(chats.getTitleAt(index).trim());
+        open.remove(chatPanel.getName());
         chats.remove(chatPanel);
+        if (chats.getSelectedIndex()==chats.getTabCount()-1) {
+            chats.setSelectedIndex(chats.getSelectedIndex()-1);
+        }
         kec.leave(chatPanel.getName());
         validate();
         storeOpenChats();
@@ -283,7 +325,7 @@ public class ChatTopComponent extends TopComponent {
         chats.setForegroundAt(i, Color.BLUE);
     }
 
-    void showPopup() {
+    void showPopup(MouseEvent evt) {
         JPopupMenu menu = new JPopupMenu();
         HashSet<String> projectNames = new HashSet<String>();
         try {
@@ -293,29 +335,48 @@ public class ChatTopComponent extends TopComponent {
         } catch (KenaiException kenaiException) {
             Exceptions.printStackTrace(kenaiException);
         }
+        ArrayList<Action> tree = new ArrayList<Action>();
+
         for (KenaiFeature prj : kec.getMyChats()) {
             projectNames.remove(prj.getName());
             if (!open.contains(prj.getName())) {
-                menu.add(new OpenChatAction(prj));
+                System.out.println("");
+                tree.add(new OpenChatAction(prj));
             }
         }
         for (String name:projectNames) {
-            menu.add(new CreateChatAction(name));
+            tree.add(new CreateChatAction(name));
+        }
+        
+        Collections.sort(tree, new Comparator<Action>() {
+            public int compare(Action o1, Action o2) {
+                return ((String) o1.getValue(Action.NAME)).compareTo((String) o2.getValue(Action.NAME));
+            }
+        });
+
+        for (Action a:tree) {
+            menu.add(a);
         }
         if (menu.getComponentCount()==0) {
             final JMenuItem jMenuItem = new JMenuItem(org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "CTL_NoMoreChats")); // NOI18N
             jMenuItem.setEnabled(false);
             menu.add(jMenuItem);
         }
-        menu.show(addChat, 0, addChat.getSize().height);
+        if (evt!=null) {
+            menu.show((Component) evt.getSource(),evt.getX(), evt.getY());
+        } else {
+            menu.show(chats, 0, 0);
+        }
     }
 
 
     public static boolean isInitedAndVisible(String name) {
-        return instance==null?false:instance.isVisible()&&instance.isOpened()&&instance.open.contains(name);
+        return instance==null?false:instance.isVisible()&&instance.isOpened()&&instance.open.contains(name) && name.equals(instance.chats.getSelectedComponent().getName());
     }
 
+    private boolean initInProgress = false;
     private void putChats() {
+        initInProgress =true;
         final Collection<MultiUserChat> chs = kec.getChats();
         if (chs.size()==1) {
             final MultiUserChat next = chs.iterator().next();
@@ -324,18 +385,22 @@ public class ChatTopComponent extends TopComponent {
         } else if (chs.size()!=0) {
             String s = prefs.get("kenai.open.chats." + Kenai.getDefault().getPasswordAuthentication().getUserName(),""); // NOI18N
             if (s.length() > 1) {
+                ChatPanel chatPanel = null;
                 for (String chat : s.split(",")) { // NOI18N
                     MultiUserChat muc = kec.getChat(chat);
                     if (muc != null) {
-                        ChatPanel chatPanel = new ChatPanel(muc);
+                        chatPanel = new ChatPanel(muc);
                         addChat(chatPanel);
                     } else {
                         Logger.getLogger(ChatTopComponent.class.getName()).warning("Cannot find chat " + chat);
                     }
                 }
+                if (chatPanel!=null)
+                    ChatNotifications.getDefault().removeGroup(chatPanel.getName());
             }
         }
         validate();
+        initInProgress =false;
     }
 
     /** This method is called from within the constructor to
@@ -347,8 +412,7 @@ public class ChatTopComponent extends TopComponent {
     private void initComponents() {
 
         chats = TabbedPaneFactory.createCloseButtonTabbedPane();
-        glassPane = new javax.swing.JPanel();
-        addChat = new javax.swing.JButton();
+        newPanel = new javax.swing.JPanel();
         loginScreen = new javax.swing.JPanel();
         lblNotLoggedIn = new javax.swing.JLabel();
         loginLink = new javax.swing.JLabel();
@@ -356,36 +420,32 @@ public class ChatTopComponent extends TopComponent {
         lblXmppError = new javax.swing.JLabel();
         retryLink = new javax.swing.JLabel();
         initPanel = new javax.swing.JPanel();
-        initLabel = new JXBusyLabel();
+        initLabel = new JXBusyLabel(new Dimension(16,16));
 
-        chats.setTabLayoutPolicy(javax.swing.JTabbedPane.SCROLL_TAB_LAYOUT);
-
-        glassPane.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 2, 2, 4));
-        glassPane.setOpaque(false);
-
-        addChat.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/collab/resources/plus.gif"))); // NOI18N
-        addChat.setIconTextGap(0);
-        addChat.setPreferredSize(new java.awt.Dimension(15, 15));
-        addChat.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addChatActionPerformed(evt);
+        chats.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                chatsMouseClicked(evt);
             }
         });
 
-        org.jdesktop.layout.GroupLayout glassPaneLayout = new org.jdesktop.layout.GroupLayout(glassPane);
-        glassPane.setLayout(glassPaneLayout);
-        glassPaneLayout.setHorizontalGroup(
-            glassPaneLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, glassPaneLayout.createSequentialGroup()
-                .addContainerGap(173, Short.MAX_VALUE)
-                .add(addChat, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        newPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                newPanelMouseClicked(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout newPanelLayout = new org.jdesktop.layout.GroupLayout(newPanel);
+        newPanel.setLayout(newPanelLayout);
+        newPanelLayout.setHorizontalGroup(
+            newPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 38, Short.MAX_VALUE)
         );
-        glassPaneLayout.setVerticalGroup(
-            glassPaneLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(glassPaneLayout.createSequentialGroup()
-                .add(addChat, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(125, Short.MAX_VALUE))
+        newPanelLayout.setVerticalGroup(
+            newPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 0, Short.MAX_VALUE)
         );
+
+        chats.addTab(org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.newPanel.TabConstraints.tabTitle"), newPanel); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(lblNotLoggedIn, org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.lblNotLoggedIn.text")); // NOI18N
 
@@ -411,7 +471,7 @@ public class ChatTopComponent extends TopComponent {
                 .add(lblNotLoggedIn)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(loginLink)
-                .addContainerGap(61, Short.MAX_VALUE))
+                .addContainerGap(70, Short.MAX_VALUE))
         );
         loginScreenLayout.setVerticalGroup(
             loginScreenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -470,7 +530,7 @@ public class ChatTopComponent extends TopComponent {
             .add(initPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(initLabel)
-                .addContainerGap(271, Short.MAX_VALUE))
+                .addContainerGap(285, Short.MAX_VALUE))
         );
         initPanelLayout.setVerticalGroup(
             initPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -482,22 +542,6 @@ public class ChatTopComponent extends TopComponent {
 
         add(initPanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
-
-    private void addChatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addChatActionPerformed
-        showPopup();
-}//GEN-LAST:event_addChatActionPerformed
-
-    private void loginLinkMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_loginLinkMouseClicked
-        UIUtils.showLogin();
-}//GEN-LAST:event_loginLinkMouseClicked
-
-    private void loginLinkMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_loginLinkMouseEntered
-        loginLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-}//GEN-LAST:event_loginLinkMouseEntered
-
-    private void loginLinkMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_loginLinkMouseExited
-         loginLink.setCursor(Cursor.getDefaultCursor());
-}//GEN-LAST:event_loginLinkMouseExited
 
     private void retryLinkMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_retryLinkMouseClicked
         RequestProcessor.getDefault().post(new Runnable() {
@@ -521,20 +565,42 @@ public class ChatTopComponent extends TopComponent {
 }//GEN-LAST:event_retryLinkMouseEntered
 
     private void retryLinkMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_retryLinkMouseExited
-        loginLink.setCursor(Cursor.getDefaultCursor());
+        retryLink.setCursor(Cursor.getDefaultCursor());
 }//GEN-LAST:event_retryLinkMouseExited
 
+    private void chatsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_chatsMouseClicked
+        int tab = chats.getUI().tabForCoordinate(chats, evt.getX(), evt.getY());
+        if (tab == chats.getTabCount() - 1) {
+            showPopup(evt);
+        }
+    }//GEN-LAST:event_chatsMouseClicked
+
+    private void newPanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_newPanelMouseClicked
+        showPopup(evt);
+    }//GEN-LAST:event_newPanelMouseClicked
+
+    private void loginLinkMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_loginLinkMouseExited
+        loginLink.setCursor(Cursor.getDefaultCursor());
+}//GEN-LAST:event_loginLinkMouseExited
+
+    private void loginLinkMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_loginLinkMouseEntered
+        loginLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+}//GEN-LAST:event_loginLinkMouseEntered
+
+    private void loginLinkMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_loginLinkMouseClicked
+        UIUtils.showLogin();
+}//GEN-LAST:event_loginLinkMouseClicked
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addChat;
     private javax.swing.JTabbedPane chats;
     private javax.swing.JPanel errorScreen;
-    private javax.swing.JPanel glassPane;
     private javax.swing.JLabel initLabel;
     private javax.swing.JPanel initPanel;
     private javax.swing.JLabel lblNotLoggedIn;
     private javax.swing.JLabel lblXmppError;
     private javax.swing.JLabel loginLink;
     private javax.swing.JPanel loginScreen;
+    private javax.swing.JPanel newPanel;
     private javax.swing.JLabel retryLink;
     // End of variables declaration//GEN-END:variables
     /**
@@ -644,7 +710,13 @@ public class ChatTopComponent extends TopComponent {
         private KenaiFeature f;
 
         public OpenChatAction(KenaiFeature f) {
-            super(f.getName());
+            super();
+            try {
+                String name = Kenai.getDefault().getProject(f.getName()).getDisplayName();
+                putValue(Action.NAME, name);
+            } catch (KenaiException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             this.f = f;
         }
 
