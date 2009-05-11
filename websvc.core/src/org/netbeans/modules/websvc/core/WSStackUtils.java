@@ -172,42 +172,43 @@ public class WSStackUtils {
     public ErrorMessage getErrorMessage(WizardType wizardType) {
         switch (wizardType) {
             case WS:
-                ServerType serverType = getServerType();
-                if (Util.isJavaEE5orHigher(project)) {
-                    if (Util.isSourceLevel14orLower(project)) { // src level must be >= 1.5
-                        return new ErrorMessage(ErrorType.ERROR,
-                                NbBundle.getMessage(WSStackUtils.class, "MSG_NeedProperSourceLevel"));
-                    }
-                    
-                    if (ServerType.GLASSFISH_V3 == serverType && !isWsitSupported()) {
-                        return new ErrorMessage(ErrorType.INFO,
-                                NbBundle.getMessage(WSStackUtils.class, "MSG_NoMetroInstalled"), false);
-                    }
-                } else {
-                    if (ServerType.GLASSFISH_V3 == serverType && !isWsitSupported()) {
-                        return new ErrorMessage(ErrorType.ERROR,
-                                NbBundle.getMessage(WSStackUtils.class, "MSG_NoMetroForJaxRpcInstalled"));
-                    }
-                    boolean noJsr109InWeb = isWebModule() && !isJsr109Supported() && !isJsr109OldSupported();
-                    boolean jBoss = (ServerType.JBOSS == getServerType());
-                    if ((noJsr109InWeb || jBoss) && Util.isSourceLevel14orLower(project)) {
-                        return new ErrorMessage(ErrorType.ERROR,
-                                NbBundle.getMessage(WSStackUtils.class, "MSG_NeedProperSourceLevel"));
-                    }
-                    if (!noJsr109InWeb && !jBoss && WebServicesSupport.getWebServicesSupport(project.getProjectDirectory()) == null) {
-                        return new ErrorMessage(ErrorType.ERROR,
-                                NbBundle.getMessage(WSStackUtils.class, "MSG_NoJaxrpcPluginFound"));
-                    }
-
-                }
-                break;
+                return getWSErrorMessage();
             case WS_FROM_WSDL:
-
-                break;
+                return getWSErrorMessage();
             case WS_CLIENT:
-
                 break;
             default:
+        }
+        return null;
+    }
+
+    private ErrorMessage getWSErrorMessage() {
+        ServerType serverType = getServerType();
+        if (Util.isJavaEE5orHigher(project)) {
+            if (Util.isSourceLevel14orLower(project)) { // src level must be >= 1.5
+                return new ErrorMessage(ErrorType.ERROR,
+                        NbBundle.getMessage(WSStackUtils.class, "MSG_NeedProperSourceLevel"));
+            }
+
+            if (ServerType.GLASSFISH_V3 == serverType && !isWsitSupported()) {
+                return new ErrorMessage(ErrorType.INFO,
+                        NbBundle.getMessage(WSStackUtils.class, "MSG_NoMetroInstalled"), false);
+            }
+        } else {
+            if (ServerType.GLASSFISH_V3 == serverType && !isWsitSupported()) {
+                return new ErrorMessage(ErrorType.ERROR,
+                        NbBundle.getMessage(WSStackUtils.class, "MSG_NoMetroForJaxRpcInstalled"));
+            }
+            boolean noJsr109InWeb = isWebModule() && !isJsr109Supported() && !isJsr109OldSupported();
+            boolean jBoss = (ServerType.JBOSS == getServerType());
+            if ((noJsr109InWeb || jBoss) && Util.isSourceLevel14orLower(project)) {
+                return new ErrorMessage(ErrorType.ERROR,
+                        NbBundle.getMessage(WSStackUtils.class, "MSG_NeedProperSourceLevel"));
+            }
+            if (!noJsr109InWeb && !jBoss && WebServicesSupport.getWebServicesSupport(project.getProjectDirectory()) == null) {
+                return new ErrorMessage(ErrorType.ERROR,
+                        NbBundle.getMessage(WSStackUtils.class, "MSG_NoJaxrpcPluginFound"));
+            }
         }
         return null;
     }
