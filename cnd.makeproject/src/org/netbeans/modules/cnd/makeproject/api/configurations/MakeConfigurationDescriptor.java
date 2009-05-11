@@ -146,6 +146,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             for (Folder f : folder.getAllFolders(false)) {
                 f.detachListener();
             }
+            folder.detachListener();
         }
     }
 
