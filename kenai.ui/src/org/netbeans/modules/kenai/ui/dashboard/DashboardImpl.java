@@ -373,7 +373,7 @@ public final class DashboardImpl extends Dashboard {
 
             requestProcessor.post(new Runnable() {
                 public void run() {
-                    UIUtils.tryLogin();
+                    UIUtils.waitStartupFinished();
                     if (null != login && !memberProjectsLoaded) {
                         startLoadingMemberProjects(false);
                     }

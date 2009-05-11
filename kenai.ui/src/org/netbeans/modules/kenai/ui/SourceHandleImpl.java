@@ -143,7 +143,11 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
             String uriString = prefs.get("working.dir." + feature.getLocation(), null);
             if (uriString!=null) {
                 URI uri = new URI(uriString);
-                return new File(uri);
+                final File file = new File(uri);
+                FileObject f = FileUtil.toFileObject(file);
+                if (f==null || !f.isValid())
+                    return null;
+                return file;
             } else {
                 return guessWorkdir();
             }
@@ -201,7 +205,10 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
             return null;
         }
         try {
-            return FileUtil.toFile(((NbProjectHandleImpl) recent.iterator().next()).getProject().getProjectDirectory().getParent());
+            final FileObject parent = ((NbProjectHandleImpl) recent.iterator().next()).getProject().getProjectDirectory().getParent();
+            if (parent.isValid())
+                return FileUtil.toFile(parent);
+            return null;
         } catch (Throwable t) {
             return null;
         }
