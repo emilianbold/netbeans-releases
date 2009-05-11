@@ -101,10 +101,10 @@ public final class Configurations {
         } finally {
             configurationsLock.writeLock().unlock();
         }
-        if (def != null) {
-            pcs.firePropertyChange(PROP_ACTIVE_CONFIGURATION, null, def);
-            pcs.firePropertyChange(PROP_DEFAULT, null, null);
-        }
+//        if (def != null) {
+//            pcs.firePropertyChange(PROP_ACTIVE_CONFIGURATION, null, def);
+//            pcs.firePropertyChange(PROP_DEFAULT, null, null);
+//        }
         for (Runnable task : toRun) {
             runOnCodeModelReadiness(task, false);
         }

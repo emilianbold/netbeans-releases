@@ -73,6 +73,7 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
     }
     
     public OffsetableBase(CsmFile file, int start, int end) {
+        // Parameters.notNull("file can not be null", file); // NOI18N
         this.fileUID = UIDCsmConverter.fileToUID(file);
         this.fileRef = null;// to prevent error with "final"
         this.startPosition = start;

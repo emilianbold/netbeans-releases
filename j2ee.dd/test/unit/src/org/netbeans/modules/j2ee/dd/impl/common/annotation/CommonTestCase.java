@@ -42,7 +42,6 @@
 package org.netbeans.modules.j2ee.dd.impl.common.annotation;
 
 import java.io.File;
-import org.netbeans.modules.j2ee.dd.impl.ejb.annotation.*;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
@@ -58,7 +57,7 @@ import org.netbeans.modules.j2ee.dd.spi.ejb.EjbJarMetadataModelFactory;
 import org.netbeans.modules.j2ee.dd.spi.web.WebAppMetadataModelFactory;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.support.JavaSourceTestCase;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -79,7 +78,7 @@ public class CommonTestCase extends JavaSourceTestCase {
     }
     
     public MetadataModel<EjbJarMetadata> createEjbJarModel() throws IOException, InterruptedException {
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         MetadataUnit metadataUnit = MetadataUnit.create(
                 ClassPath.getClassPath(srcFO, ClassPath.BOOT),
                 ClassPath.getClassPath(srcFO, ClassPath.COMPILE),
@@ -94,7 +93,7 @@ public class CommonTestCase extends JavaSourceTestCase {
     }
 
     public MetadataModel<WebAppMetadata> createWebAppModel(boolean withDD) throws IOException, InterruptedException {
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         MetadataUnit metadataUnit = MetadataUnit.create(
                 ClassPath.getClassPath(srcFO, ClassPath.BOOT),
                 ClassPath.getClassPath(srcFO, ClassPath.COMPILE),
@@ -105,7 +104,7 @@ public class CommonTestCase extends JavaSourceTestCase {
     }
     
     public MetadataModel<AppClientMetadata> createAppClientModel() throws IOException, InterruptedException {
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         MetadataUnit metadataUnit = MetadataUnit.create(
                 ClassPath.getClassPath(srcFO, ClassPath.BOOT),
                 ClassPath.getClassPath(srcFO, ClassPath.COMPILE),

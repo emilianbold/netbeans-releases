@@ -46,12 +46,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
+import org.netbeans.modules.maven.LogicalViewProviderImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataFolder;
+import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.lookup.Lookups;
 
@@ -63,7 +65,7 @@ class OthersRootNode extends AnnotatedAbstractNode {
     private FileObject file;
     
     OthersRootNode(NbMavenProjectImpl mavproject, boolean testResource, FileObject fo) {
-        super(new OthersRootChildren(mavproject, testResource), Lookups.fixed(fo, DataFolder.findFolder(fo)));
+        super(new OthersRootChildren(mavproject, testResource), Lookups.fixed(fo, DataFolder.findFolder(fo), new ChildDelegateFind()));
         setName(testResource ? "OtherTestRoots" : "OtherRoots"); //NOI18N
         setDisplayName(testResource ? org.openide.util.NbBundle.getMessage(OthersRootNode.class, "LBL_Other_Test_Sources") : org.openide.util.NbBundle.getMessage(OthersRootNode.class, "LBL_Other_Sources"));
         // can do so, since we depend on it..
@@ -131,5 +133,11 @@ class OthersRootNode extends AnnotatedAbstractNode {
          return super.getHtmlDisplayName();
     }
 
+
+    static class ChildDelegateFind implements LogicalViewProviderImpl.FindDelegate {
+        public Node[] getDelegates(Node current) {
+            return current.getChildren().getNodes(true);
+        }
+    }
 }
 

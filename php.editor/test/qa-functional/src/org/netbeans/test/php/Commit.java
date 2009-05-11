@@ -229,6 +229,27 @@ public class Commit extends GeneralPHP
     return sCode + sSuffix;
   }
 
+  protected int GetNumber( EditorOperator eo, Object[] oo, String sType )
+  {
+    int iResult = 0;
+    for( Object o : oo )
+    {
+      if( eo.getAnnotationType( o ).equals( sType ) )
+        iResult++;
+    }
+    return iResult;
+  }
+
+  protected int GetErrorNumber( EditorOperator eo, Object[] oo )
+  {
+    return GetNumber( eo, oo, "org-netbeans-spi-editor-hints-parser_annotation_err" );
+  }
+
+  protected int GetWarningNumber( EditorOperator eo, Object[] oo )
+  {
+    return GetNumber( eo, oo, "org-netbeans-spi-editor-hints-parser_annotation_warn" );
+  }
+
   protected void TestPHPFile(
       String sProjectName,
       String sFileName,
@@ -237,7 +258,8 @@ public class Commit extends GeneralPHP
       String sCodeLocator,
       boolean bInclass,
       boolean bFormat,
-      int iAnnotations
+      int iAnnotations,
+      int iWarningsExpected
     )
   {
     // Check file in tree
@@ -396,8 +418,18 @@ public class Commit extends GeneralPHP
     {
       Sleep( 5000 );
       Object[] oo = eoPHP.getAnnotations( );
-      if( iAnnotations == oo.length )
+      int iErrors = GetErrorNumber( eoPHP, oo );
+      int iWarnings = GetWarningNumber( eoPHP, oo );
+      if( iAnnotations == iErrors )
       {
+        if( iWarningsExpected != iWarnings )
+        {
+          for( Object o : oo )
+          {
+            System.out.println( "***" + eoPHP.getAnnotationType( o ) + " : " + eoPHP.getAnnotationShortDescription( o ) );
+          }
+          fail( "Invalid number of detected warnings. Found: " + iWarnings + ", expected: " + iWarningsExpected );
+        }
         bRecheck = false;
       }
       else
@@ -407,7 +439,7 @@ public class Commit extends GeneralPHP
         {
           System.out.println( "***" + eoPHP.getAnnotationType( o ) + " : " + eoPHP.getAnnotationShortDescription( o ) );
         }
-        fail( "Invalid number of detected errors. Found: " + oo.length + ", expected: " + iAnnotations );
+        fail( "Invalid number of detected errors. Found: " + iErrors + ", expected: " + iAnnotations );
       }
       else
       {
@@ -498,7 +530,8 @@ public class Commit extends GeneralPHP
         "// put your code here",
         false,
         true,
-        4
+        5,
+        0
       );
 
     endTest( );
@@ -525,7 +558,8 @@ public class Commit extends GeneralPHP
         "*/",
         false,
         true,
-        4
+        5,
+        0
       );
 
     endTest( );
@@ -552,6 +586,7 @@ public class Commit extends GeneralPHP
         "//put your code here",
         true,
         false,
+        0,
         0
       );
 
@@ -656,7 +691,8 @@ public class Commit extends GeneralPHP
         "<?",
         false,
         false,
-        4
+        6,
+        1
       );
 
     endTest( );

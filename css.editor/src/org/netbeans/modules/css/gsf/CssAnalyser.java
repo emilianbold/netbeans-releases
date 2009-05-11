@@ -65,6 +65,8 @@ public class CssAnalyser {
     private static final String UNKNOWN_PROPERTY = "unknown_property";
     private static final String INVALID_PROPERTY_VALUE = "invalid_property_value";
     private static final String INVALID_CONTENT = "invalid_content";
+
+    private static final String INVALID_CONTENT_MSG = NbBundle.getMessage(CssAnalyser.class, INVALID_CONTENT);
     
     public static List<Error> checkForErrors(final Snapshot snapshot, final SimpleNode node) {
         final ArrayList<Error> errors = new ArrayList<Error>();
@@ -82,11 +84,16 @@ public class CssAnalyser {
                         Property property = model.getProperty(propertyName);
                         if (!CssGSFParser.containsGeneratedCode(propertyName) && !isVendorSpecificProperty(propertyName) && property == null) {
                             //unknown property - report
+                            String msg = NbBundle.getMessage(CssAnalyser.class, UNKNOWN_PROPERTY, propertyName);
                             Error error =
-                                    new DefaultError(UNKNOWN_PROPERTY,
-                                    NbBundle.getMessage(CssAnalyser.class, UNKNOWN_PROPERTY, propertyName),
-                                    null, snapshot.getSource().getFileObject(),
-                                    propertyNode.startOffset(), propertyNode.endOffset(), Severity.WARNING);
+                                    DefaultError.createDefaultError(UNKNOWN_PROPERTY,
+                                    msg,
+                                    msg,
+                                    snapshot.getSource().getFileObject(),
+                                    propertyNode.startOffset(),
+                                    propertyNode.endOffset(),
+                                    false /* not line error */,
+                                    Severity.WARNING);
                             errors.add(error);
                         }
 
@@ -112,10 +119,14 @@ public class CssAnalyser {
                                     }
 
                                     Error error =
-                                            new DefaultError(INVALID_PROPERTY_VALUE,
+                                            DefaultError.createDefaultError(INVALID_PROPERTY_VALUE,
                                             errorMsg,
-                                            null, snapshot.getSource().getFileObject(),
-                                            valueNode.startOffset(), valueNode.endOffset(), Severity.WARNING);
+                                            errorMsg,
+                                            snapshot.getSource().getFileObject(),
+                                            valueNode.startOffset(),
+                                            valueNode.endOffset(),
+                                            false /* not line error */,
+                                            Severity.WARNING);
                                     errors.add(error);
                                 }
                             }
@@ -126,9 +137,12 @@ public class CssAnalyser {
                 } else if(node.kind() == CssParserTreeConstants.JJTERROR_SKIP_TO_WHITESPACE && node.image().length() > 0) {
                     Error error =
                             new DefaultError(INVALID_CONTENT,
-                            NbBundle.getMessage(CssAnalyser.class, INVALID_CONTENT),
-                            null, snapshot.getSource().getFileObject(),
-                            node.startOffset(), node.endOffset(), Severity.ERROR);
+                            INVALID_CONTENT_MSG,
+                            INVALID_CONTENT_MSG,
+                            snapshot.getSource().getFileObject(),
+                            node.startOffset(), 
+                            node.endOffset(),
+                            Severity.ERROR);
                     errors.add(error);
                 }
             }

@@ -274,6 +274,10 @@ class OpenedEditors implements PropertyChangeListener {
             String fileMimeType = FileUtil.getMIMEType(f);
             
             Logger.getLogger(OpenedEditors.class.getName()).log(Level.FINER, "fileMimeType={0}", fileMimeType);
+
+            if (fileMimeType == null) {
+                continue;
+            }
             
             if (mimeTypesList.contains(fileMimeType)) {
                 result.add(f);

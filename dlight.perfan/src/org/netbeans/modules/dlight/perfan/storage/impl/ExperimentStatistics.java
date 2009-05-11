@@ -91,11 +91,17 @@ public final class ExperimentStatistics {
             }
 
             String id = s.substring(0, scidx).trim();
-            if (id.startsWith("User Lock")) {
+            if (id.startsWith("User Lock")) { // NOI18N
                 int bidx = s.lastIndexOf('(');
                 try {
                     _t_usrLock = nf.parse(s.substring(scidx + 1, bidx).trim()).doubleValue();
                     _t_usrLock_p = nf.parse(s.substring(bidx + 1).trim()).doubleValue();
+                } catch (ParseException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            } else if (id.startsWith("Total Thread Time")) { // NOI18N
+                try {
+                    _totalThreadTime = nf.parse(s.substring(scidx + 1).trim()).doubleValue();
                 } catch (ParseException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -117,7 +123,11 @@ public final class ExperimentStatistics {
         t_usrLock_p = _t_usrLock_p;
     }
 
-    public Double getULock_p() {
-        return t_usrLock_p;
+    public Double getTotalThreadTime() {
+        return totalThreadTime;
+    }
+
+    public Double getULock() {
+        return t_usrLock;
     }
 }

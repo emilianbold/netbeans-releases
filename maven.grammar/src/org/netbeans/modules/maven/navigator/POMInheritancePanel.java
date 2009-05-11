@@ -118,7 +118,7 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
             // can be null for stuff in jars?
             if (file != null) {
                 try {
-                    ModelLineage lin = EmbedderFactory.createModelLineage(file, EmbedderFactory.createOnlineEmbedder(), false);
+                    ModelLineage lin = EmbedderFactory.createModelLineage(file, EmbedderFactory.getOnlineEmbedder(), false);
                     final Children ch = new PomChildren(lin);
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {

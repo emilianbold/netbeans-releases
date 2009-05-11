@@ -152,6 +152,7 @@ final class ResultPanelTree extends JPanel
         /* Called from the EventDispatch thread */
 
         rootNode.displayMessageSessionFinished(msg);
+        resultBar.stop();
     }
 
     /**
@@ -186,8 +187,10 @@ final class ResultPanelTree extends JPanel
         /* Called from the EventDispatch thread */
 
         TestsuiteNode node = rootNode.displayReport(report);
-        if ((node != null) && (report.containsFailed() || Status.PENDING == report.getStatus())) {
-            treeView.expandReportNode(node);
+        if ((node != null) && report.completed && (report.containsFailed() || Status.PENDING == report.getStatus())) {
+            if (node.getChildren().getNodesCount() != 0){
+                treeView.expandReportNode(node);
+            }
         }
         resultBar.setPassedPercentage(rootNode.getPassedPercentage());
     }

@@ -42,6 +42,7 @@
 package org.netbeans.modules.subversion.ui.repository;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
@@ -87,7 +88,14 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
     public final static int FLAG_SHOW_REMOVE            = 16;
     public final static int FLAG_SHOW_HINTS             = 32;    
     public final static int FLAG_SHOW_PROXY             = 64;    
-               
+
+    private static final String FILE_PANEL        = "file-panel";       //NOI18N
+    private static final String HTTP_PANEL        = "http-panel";       //NOI18N
+    private static final String SSH_PANEL         = "ssh-panel";        //NOI18N
+    private static final String INVALID_URL_PANEL = "invalid-url-panel";//NOI18N
+
+    private String currentConnPanelType;
+
     private ConnectionType currentPanel;
     private RepositoryPanel repositoryPanel;
     private boolean valid = true;
@@ -157,15 +165,22 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
 
     private void initPanel() {        
         repositoryPanel = new RepositoryPanel();
-        http = new ConnectionType.Http(this);
-        file = new ConnectionType.FileUrl(this);
-        svnSSHCli = new ConnectionType.SvnSSHCli(this);
-        invalidUrlPanel = new ConnectionType.InvalidUrl(this);
+        repositoryPanel.connPanel.add(
+                (http = new ConnectionType.Http(this)).getPanel(),
+                HTTP_PANEL);
+        repositoryPanel.connPanel.add(
+                (file = new ConnectionType.FileUrl(this)).getPanel(),
+                FILE_PANEL);
+        repositoryPanel.connPanel.add(
+                (svnSSHCli = new ConnectionType.SvnSSHCli(this)).getPanel(),
+                SSH_PANEL);
+        repositoryPanel.connPanel.add(
+                (invalidUrlPanel = new ConnectionType.InvalidUrl(this)).getPanel(),
+                INVALID_URL_PANEL);
 
         svnSSHCli.showHints(isSet(FLAG_SHOW_HINTS));
 
-        currentPanel = file;
-        repositoryPanel.connPanel.add(file.getPanel(), BorderLayout.CENTER);
+        updateVisibility(FILE_PANEL);
         
         repositoryPanel.urlComboBox.addActionListener(this);
         getUrlComboEditor().getDocument().addDocumentListener(this);
@@ -340,29 +355,64 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
     }
 
     private void updateVisibility() {
+        String selectedUrlString;
         try {
-            String selectedUrlString = getUrlString();
-            repositoryPanel.connPanel.remove(currentPanel.getPanel());
-            if(selectedUrlString.startsWith("http:")) {                             // NOI18N
-                currentPanel = http;
-            } else if(selectedUrlString.startsWith("https:")) {                     // NOI18N
-                currentPanel = http;
-            } else if(selectedUrlString.startsWith("svn:")) {                       // NOI18N
-                currentPanel = http;
-            } else if(selectedUrlString.startsWith("svn+")) {                       // NOI18N
-                currentPanel = svnSSHCli;
-            } else if(selectedUrlString.startsWith("file:")) {                      // NOI18N
-                currentPanel = file;
-            } else {
-                currentPanel = invalidUrlPanel;
-            }
-            repositoryPanel.tipLabel.setText(currentPanel.getTip(selectedUrlString));
-            currentPanel.updateVisibility(selectedUrlString);
-            repositoryPanel.connPanel.add(currentPanel.getPanel(), BorderLayout.CENTER);
-            repositoryPanel.connPanel.repaint();
+            selectedUrlString = getUrlString();
         } catch (InterruptedException ex) {
             return;
-        }        
+        }
+
+        String connPanelType;
+
+        if(selectedUrlString.startsWith("http:")) {                             // NOI18N
+            connPanelType = HTTP_PANEL;
+        } else if(selectedUrlString.startsWith("https:")) {                     // NOI18N
+            connPanelType = HTTP_PANEL;
+        } else if(selectedUrlString.startsWith("svn:")) {                       // NOI18N
+            connPanelType = HTTP_PANEL;
+        } else if(selectedUrlString.startsWith("svn+")) {                       // NOI18N
+            connPanelType = SSH_PANEL;
+        } else if(selectedUrlString.startsWith("file:")) {                      // NOI18N
+            connPanelType = FILE_PANEL;
+        } else {
+            connPanelType = INVALID_URL_PANEL;
+        }
+
+        updateVisibility(connPanelType, selectedUrlString);
+    }
+
+    private void updateVisibility(String connPanelTypeId) {
+        String selectedUrlString;
+        try {
+            selectedUrlString = getUrlString();
+        } catch (InterruptedException ex) {
+            return;
+        }
+
+        updateVisibility(connPanelTypeId, selectedUrlString);
+    }
+
+    private void updateVisibility(String connPanelTypeId,
+                                  String selectedUrlString) {
+
+        if (connPanelTypeId == HTTP_PANEL) {
+            currentPanel = http;
+        } else if (connPanelTypeId == SSH_PANEL) {
+            currentPanel = svnSSHCli;
+        } else if (connPanelTypeId == FILE_PANEL) {
+            currentPanel = file;
+        } else if (connPanelTypeId == INVALID_URL_PANEL) {
+            currentPanel = invalidUrlPanel;
+        } else {
+            assert false;
+        }
+
+        if (connPanelTypeId != currentConnPanelType) {
+            ((CardLayout) repositoryPanel.connPanel.getLayout()).show(repositoryPanel.connPanel, connPanelTypeId);
+            currentConnPanelType = connPanelTypeId;
+        }
+        repositoryPanel.tipLabel.setText(currentPanel.getTip(selectedUrlString));
+        currentPanel.updateVisibility(selectedUrlString);
     }           
             
     /**

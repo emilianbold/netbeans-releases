@@ -435,7 +435,7 @@ public class JSFClientGenerator {
                 }
             }
             
-            String find = "<h1><h:outputText value=\"JavaServer Faces\" /></h1>"; //NOI18N
+            String find = "<h1><h:outputText value=\"JavaServer Faces\"/></h1>"; //NOI18N
             if ( content.indexOf(find) > -1){
                 StringBuffer replace = new StringBuffer();
                 String findForm = "<h:form>";

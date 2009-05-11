@@ -46,6 +46,7 @@ import java.lang.ref.WeakReference;
 
 import java.util.*;
 import java.util.concurrent.Executor;
+import org.openide.util.Lookup.Item;
 
 
 /** A special content implementation that can be passed to AbstractLookup
@@ -86,7 +87,17 @@ public final class InstanceContent extends AbstractLookup.Content {
         addPair(new SimpleItem<Object>(inst));
     }
 
-    /** The method to add instance to the lookup with.
+    /** Adds a convertible instance into the lookup. The <code>inst</code>
+     * argument is just a key, not the actual value to appear in the lookup.
+     * The value will be created on demand, later when it is really needed
+     * by calling <code>convertor</code> methods.
+     * <p>
+     * This method is useful to delay creation of heavy weight objects.
+     * Instead just register lightweight key and a convertor.
+     * <p>
+     * To remove registered object from lookup use {@link #remove(java.lang.Object, org.openide.util.lookup.InstanceContent.Convertor)}
+     * with the same arguments.
+     *
      * @param inst instance
      * @param conv convertor which postponing an instantiation,
      * if <code>conv==null</code> then the instance is registered directly.
@@ -138,29 +149,33 @@ public final class InstanceContent extends AbstractLookup.Content {
      */
     public static interface Convertor<T,R> {
         /** Convert obj to other object. There is no need to implement
-         * cache mechanism. It is provided by InstanceLookup.Item.getInstance().
-         * Method should be called more than once because Lookup holds
-         * just weak reference.
+         * cache mechanism. It is provided by
+         * {@link Item#getInstance()} method itself. However the
+         * method can be called more than once because instance is held
+         * just by weak reference.
          *
          * @param obj the registered object
          * @return the object converted from this object
          */
         public R convert(T obj);
 
-        /** Return type of converted object.
+        /** Return type of converted object. Accessible via
+         * {@link Item#getType()}
          * @param obj the registered object
          * @return the class that will be produced from this object (class or
          *      superclass of convert (obj))
          */
         public Class<? extends R> type(T obj);
 
-        /** Computes the ID of the resulted object.
+        /** Computes the ID of the resulted object. Accessible via
+         * {@link Item#getId()}.
          * @param obj the registered object
          * @return the ID for the object
          */
         public String id(T obj);
 
-        /** The human presentable name for the object.
+        /** The human presentable name for the object. Accessible via
+         * {@link Item#getDisplayName()}.
          * @param obj the registered object
          * @return the name representing the object for the user
          */

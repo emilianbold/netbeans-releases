@@ -45,10 +45,10 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
-import org.jruby.nb.ast.HashNode;
-import org.jruby.nb.ast.ListNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
+import org.jrubyparser.ast.HashNode;
+import org.jrubyparser.ast.ListNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
@@ -105,7 +105,13 @@ public class HashListConvert extends RubyAstRule {
     private static int getCommaOffset(RubyRuleContext context, ListNode listNode, int pair) {
         int prevEnd = listNode.get(2*pair).getPosition().getEndOffset();
         int nextStart = listNode.get(2*pair+1).getPosition().getStartOffset();
-        OffsetRange lexRange = LexUtilities.getLexerOffsets(context.parserResult, 
+        //XXX: there is a bug in the parser that causes it to return invalid offsets
+        // for keys in hashes that use the new 1.9 syntax (e.g. {one: "one"})
+        if (nextStart < prevEnd) {
+            return -1;
+        }
+
+        OffsetRange lexRange = LexUtilities.getLexerOffsets(context.parserResult,
                 new OffsetRange(prevEnd, nextStart));
         if (lexRange == OffsetRange.NONE) {
             return -1;

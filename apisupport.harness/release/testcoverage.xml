@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="testcoverage">
+
+<!--
+  Test coverage measurement for apisupport module projects.
+
+  At present, this only measure coverage for unit tests.  Functional
+  tests, performance tests and other types of tests are not considered.
+
+  NOTE: Implemented using Cobertura, will be moved to separate module.
+  General contract for test coverage implementation for module projects is
+  to create Ant script testcoverage.xml in ${netbeans.dest.dir}/harness.
+  Script must:
+  * set property testcoverage.present to true outside of any target
+  * define target 'coverage-report' in the script
+  * set property testcoverage.report.dir in 'coverage-report' target to dir
+    with index.html file with results.
+    Clients should make no other assumptions beyond this contract.
+-->
+    <property name="testcoverage.present" value="true"/>
+    <condition property="cobertura.dir" value="${harness.dir}/testcoverage/cobertura" else="${netbeans.dest.dir}/harness/testcoverage/cobertura">
+        <isset property="harness.dir"/>
+    </condition>
+    <path id="cobertura.classpath">
+        <fileset dir="${cobertura.dir}">
+            <include name="cobertura-1.9.jar" />
+            <include name="lib/**/*.jar" />
+        </fileset>
+    </path>
+
+    <taskdef classpathref="cobertura.classpath" resource="tasks.properties"/>
+
+    <target name="cobertura-init" depends="build-init,init,test-init">
+        <property name="build.test.cobertura.classes.dir" value="build/cobertura-instrumented-classes"/>
+        <property name="testcoverage.report.dir" value="${basedir}/build/test/cobertura-report"/>
+        <property name="cobertura.datafile" value="${basedir}/build/test/cobertura.ser"/>
+        <property name="continue.after.failing.tests" value="true" />
+
+        <path id="cobertura.test.cp"> 
+            <pathelement location="${build.test.cobertura.classes.dir}" />
+            <pathelement location="${cobertura.dir}/cobertura-1.9.jar" />
+            <pathelement location="${test.unit.lib.cp}"/>
+            <path refid="test.unit.run.cp"/>
+            <pathelement location="build/classes" />
+        </path>
+    </target>
+
+    <target name="-copy-cobertura-datafile" depends="cobertura-init">
+        <!-- rename using code-name-base so the files will be unique in the suite -->
+        <copy file="${cobertura.datafile}" tofile="${suite.merge.dir}/${code.name.base.dashes}.ser" failonerror="false" />
+    </target>
+
+
+    <target name="-copy-source-folder" depends="cobertura-init">
+        <!--
+            note that this does not inherently handle if there are multiple source 
+            folders; it might be possible to handle this by overriding in the
+            module's build.xml.
+        -->
+        <property name="cobertura.src.dir" value="${suite.sources.dir}" />
+        <mkdir dir="${cobertura.src.dir}" />
+        <copy todir="${cobertura.src.dir}/">
+            <fileset dir="${src.dir}" includes="**/*.java"/>
+        </copy>
+    </target>
+
+    <target name="cobertura-instrument" depends="cobertura-init, test-build">
+        <condition property="nbjdk.active.print" value="${nbjdk.active}" else="UNSET">
+            <isset property="nbjdk.active"/>
+        </condition>
+        <condition property="nbjdk.home.print" value="${nbjdk.home}" else="UNSET">
+            <isset property="nbjdk.home"/>
+        </condition>
+        <condition property="nbjdk.home.defaulted.print" value="YES" else="NO">
+            <isset property="nbjdk.home.defaulted"/>
+        </condition>
+        <fail if="nbjdk.valid">
+Test coverage tasks can be currently run only with default java platform, that is
+with property nbjdk.active unset or set to 'default' and with property nbjdk.home
+unset.
+
+For NB.org module, specify properties:
+nbjdk.home.defaulted=true
+permit.jdk6.builds=true
+when running the target.
+
+Current java platform setup is:
+  nbjdk.active:         ${nbjdk.active.print}
+  nbjdk.home:           ${nbjdk.home.print}
+  nbjdk.home defaulted: ${nbjdk.home.defaulted.print}
+        </fail>
+        <delete dir="${build.test.cobertura.classes.dir}" failonerror="false"/>
+        <delete file="${cobertura.datafile}" failonerror="false"/>
+        <cobertura-instrument todir="${build.test.cobertura.classes.dir}" datafile="${cobertura.datafile}">
+            <fileset dir="${build.classes.dir}" includes="**/*.class" excludes="${test.coverage.exclude.files}"/>
+        </cobertura-instrument>
+    </target>
+
+    <target name="test-with-cobertura" depends="cobertura-init,init,test-init,netbeans,test-build">
+        <pathconvert pathsep="${line.separator} " property="echo.cobertura.test.cp" refid="cobertura.test.cp"/>
+        <mkdir dir="${build.test.unit.results.dir}"/>
+
+        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}" tempdir="${build.test.unit.results.dir}" timeout="${test.timeout}">
+            <batchtest todir="${build.test.unit.results.dir}">
+                <fileset dir="${build.test.unit.classes.dir}">
+                    <include name="**/*Test.class"/>
+                </fileset>
+
+            </batchtest>
+            <!-- 
+               This somewhat duplicates the normal JUnit testing target, but the 
+               cobertura.test.cp  must come first in the testing classpath for 
+               coverage to work properly and there is no other good way to inject it.
+            -->
+            <classpath refid="cobertura.test.cp"/>
+            <syspropertyset refid="test.unit.properties"/>
+            <jvmarg line="${test.run.args}"/>
+            <sysproperty key="net.sourceforge.cobertura.datafile" file="${cobertura.datafile}" />
+            <formatter type="brief" usefile="false"/>
+            <formatter type="xml"/>
+        </junit>
+        <fail if="tests.failed" unless="continue.after.failing.tests">Some tests failed; see details above.</fail>
+    </target>
+
+    <target name="test-coverage" depends="cobertura-init, cobertura-instrument, test-with-cobertura"/>
+
+    <target name="coverage-report" depends="netbeans, test-coverage" description="Creates test coverage report for this module">
+            <delete dir="${testcoverage.report.dir}" failonerror="false"/>
+        <cobertura-report datafile="${cobertura.datafile}" srcdir="${src.dir}" destdir="${testcoverage.report.dir}"/>
+    </target>
+    
+</project>

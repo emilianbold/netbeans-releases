@@ -128,8 +128,10 @@ public class DbgpMethodBreakpointPanel extends JPanel implements Controller {
 
         setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(DbgpMethodBreakpointPanel.class, "LBL_Settings"))); // NOI18N
 
+        myMethodLbl.setLabelFor(myMethodName);
         org.openide.awt.Mnemonics.setLocalizedText(myMethodLbl, org.openide.util.NbBundle.getMessage(DbgpMethodBreakpointPanel.class, "LBL_MethodName")); // NOI18N
 
+        myStopOnLbl.setLabelFor(myStopType);
         org.openide.awt.Mnemonics.setLocalizedText(myStopOnLbl, org.openide.util.NbBundle.getMessage(DbgpMethodBreakpointPanel.class, "LBL_StopOn")); // NOI18N
 
         myMethodName.setText("");
@@ -166,8 +168,10 @@ public class DbgpMethodBreakpointPanel extends JPanel implements Controller {
                     .add(myStopType, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
 
-        myMethodLbl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DbgpMethodBreakpointPanel.class, "A11_MethodNameLbl")); // NOI18N
-        myStopOnLbl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DbgpMethodBreakpointPanel.class, "A11_StopOnLbl")); // NOI18N
+        myMethodLbl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DbgpMethodBreakpointPanel.class, "DbgpMethodBreakpointPanel.myMethodLbl.AccessibleContext.accessibleName")); // NOI18N
+        myMethodLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DbgpMethodBreakpointPanel.class, "DbgpMethodBreakpointPanel.myMethodLbl.AccessibleContext.accessibleDescription")); // NOI18N
+        myStopOnLbl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DbgpMethodBreakpointPanel.class, "DbgpMethodBreakpointPanel.myStopOnLbl.AccessibleContext.accessibleName")); // NOI18N
+        myStopOnLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DbgpMethodBreakpointPanel.class, "DbgpMethodBreakpointPanel.myStopOnLbl.AccessibleContext.accessibleDescription")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DbgpMethodBreakpointPanel.class, "A11_SettingsName")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents

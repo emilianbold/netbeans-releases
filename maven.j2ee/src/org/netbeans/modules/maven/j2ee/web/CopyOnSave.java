@@ -80,6 +80,30 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
         mavenproject = project.getLookup().lookup(NbMavenProject.class);
     }
 
+    private void copySrcToDest( FileObject srcFile, FileObject destFile) throws IOException {
+        if (destFile != null && !srcFile.isFolder()) {
+            InputStream is = null;
+            OutputStream os = null;
+            FileLock fl = null;
+            try {
+                is = srcFile.getInputStream();
+                fl = destFile.lock();
+                os = destFile.getOutputStream(fl);
+                FileUtil.copy(is, os);
+            } finally {
+                if (is != null) {
+                    is.close();
+                }
+                if (os != null) {
+                    os.close();
+                }
+                if (fl != null) {
+                    fl.releaseLock();
+                }
+            }
+        }
+    }
+
     private WebModule getWebModule() {
         return provider.findWebModule(project.getProjectDirectory());
     }
@@ -165,14 +189,13 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
             }
 
             FileObject fo = fe.getFile();
-            FileObject docBase = getWebModule().getDocumentBase();
-            if (docBase != null && FileUtil.isParentOf(docBase, fo)) {
-                // inside docbase
+            FileObject base = findAppropriateResourceRoots(fo);
+            if (base != null) {
                 handleCopyFileToDestDir(fo);
                 FileObject parent = fo.getParent();
                 String path;
-                if (FileUtil.isParentOf(docBase, parent)) {
-                    path = FileUtil.getRelativePath(docBase, fo.getParent()) +
+                if (FileUtil.isParentOf(base, parent)) {
+                    path = FileUtil.getRelativePath(base, fo.getParent()) +
                             "/" + fe.getName() + "." + fe.getExt(); //NOI18N
                 } else {
                     path = fe.getName() + "." + fe.getExt(); //NOI18N
@@ -180,7 +203,7 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
                 if (!isSynchronizationAppropriate(path)) {
                     return;
                 }
-                handleDeleteFileInDestDir(path);
+                handleDeleteFileInDestDir(fo, path);
             }
         } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -194,15 +217,7 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
                 return;
             }
             FileObject fo = fe.getFile();
-            FileObject ducumentBase = getWebModule().getDocumentBase();
-            if (ducumentBase != null && FileUtil.isParentOf(ducumentBase, fo)) {
-                // inside docbase
-                String path = FileUtil.getRelativePath(ducumentBase, fo);
-                if (!isSynchronizationAppropriate(path)) {
-                    return;
-                }
-                handleDeleteFileInDestDir(path);
-            }
+            handleDeleteFileInDestDir(fo, null);
         } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
@@ -221,13 +236,25 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
         return true;
     }
 
-    private void handleDeleteFileInDestDir(String resourcePath) throws IOException {
-        FileObject webBuildBase = getJ2eeModule().getContentDirectory();
-        if (webBuildBase != null) {
-            // project was built
-            FileObject toDelete = webBuildBase.getFileObject(resourcePath);
-            if (toDelete != null) {
-                toDelete.delete();
+    private void handleDeleteFileInDestDir(FileObject fo, String path) throws IOException {
+        FileObject root = findAppropriateResourceRoots(fo);
+        if (root != null) {
+            // inside docbase
+            path = path != null ? path : FileUtil.getRelativePath(root, fo);
+            if (!isSynchronizationAppropriate(path)) {
+                return;
+            }
+
+            FileObject webBuildBase = getJ2eeModule().getContentDirectory();
+            if (webBuildBase != null) {
+                // project was built
+                FileObject webInfClasses = comesFromWebappRoot(fo) ? webBuildBase : webBuildBase.getFileObject("WEB-INF/classes");
+                if (webInfClasses != null) {
+                    FileObject toDelete = webInfClasses.getFileObject(path);
+                    if (toDelete != null) {
+                        toDelete.delete();
+                    }
+                }
             }
         }
     }
@@ -245,39 +272,26 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
                     return;
                 }
                 FileObject webBuildBase = getJ2eeModule().getContentDirectory();
+                
                 if (webBuildBase != null) {
                     // project was built
                     if (FileUtil.isParentOf(documentBase, webBuildBase) || FileUtil.isParentOf(webBuildBase, documentBase)) {
                         //cannot copy into self
                         return;
                     }
-                    FileObject destFile = ensureDestinationFileExists(webBuildBase, path, fo.isFolder());
-                    if (destFile != null && !fo.isFolder()) {
-                        InputStream is = null;
-                        OutputStream os = null;
-                        FileLock fl = null;
-                        try {
-                            is = fo.getInputStream();
-                            fl = destFile.lock();
-                            os = destFile.getOutputStream(fl);
-                            FileUtil.copy(is, os);
-                        } finally {
-                            if (is != null) {
-                                is.close();
-                            }
-                            if (os != null) {
-                                os.close();
-                            }
-                            if (fl != null) {
-                                fl.releaseLock();
-                            }
-                        }
-                    //System.out.println("copied + " + FileUtil.copy(fo.getInputStream(), destDir, fo.getName(), fo.getExt()));
-                    }
+                    FileObject destinationFolder = comesFromWebappRoot(fo) ? webBuildBase : webBuildBase.getFileObject("WEB-INF/classes");
+                    FileObject destFile = ensureDestinationFileExists(destinationFolder, path, fo.isFolder());
+                    copySrcToDest(fo, destFile);
                 }
             }
         }
     }
+
+    private boolean comesFromWebappRoot(FileObject child) {
+        FileObject documentBase = getWebModule().getDocumentBase();
+        return documentBase != null && FileUtil.isParentOf(documentBase, child);
+    }
+
     //#106522 make sure we also copy src/main/resource.. TODO for now ignore resource filtering or repackaging..
     private FileObject findAppropriateResourceRoots(FileObject child) {
         FileObject documentBase = getWebModule().getDocumentBase();

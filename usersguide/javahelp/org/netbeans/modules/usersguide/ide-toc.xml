@@ -41,23 +41,6 @@
     <tocitem text="General Editor Shortcuts" target="shortcuts.editor" />
   </tocitem>
 
-  <tocitem text="Collaborative Development">
-          <tocitem text="About Collaborative Development" target="collab_about" />
-          <tocitem text="Working With Kenai Projects">
-              <tocitem text="About Kenai Projects" target="kenai_projects" />
-              <tocitem text="Creating a Kenai Project" target="kenai_create" />
-              <tocitem text="Kenai Project Tasks: Quick Reference" target="kenai_quickref" />
-              <tocitem text="Working With Kenai Projects" target="kenai_workingwith" />
-              <tocitem text="Collaborating With Project Members" target="kenai_members" />
-              <tocitem text="Opening a Kenai Project" target="kenai_opening" />
-          </tocitem>
-          <tocitem text="Working With Issue Tracking">
-              <tocitem text="About Issue Trackers" target="issues_trackers" />
-              <tocitem text="Working With Issues" target="issues_workingwith" />
-              <tocitem text="Using an External Issue Tracking Tool" target="issues_external" />
-          </tocitem>
-    </tocitem>
-
     <tocitem text="Version Control and File History">
       <tocitem text="Local History">
           <tocitem text="About Local File History" target="hist_about" />
@@ -68,7 +51,27 @@
           <tocitem text="Adjusting Local History Settings" target="hist_settings" />
       </tocitem>
     </tocitem>
-    
+
+<tocitem text="Collaborative Development">
+          <tocitem text="About Collaborative Development" target="collab_about" />
+          <tocitem text="Working With Kenai Projects">
+              <tocitem text="About Kenai Projects" target="kenai_projects" />
+              <tocitem text="Sharing a Local Project" target="kenai_share" />
+              <tocitem text="Creating a Kenai Project" target="kenai_create" />
+              <tocitem text="Kenai Project Tasks: Quick Reference" target="kenai_quickref" />
+              <tocitem text="Opening a Kenai Project" target="kenai_opening" />
+              <tocitem text="Working With Kenai Projects" target="kenai_workingwith" />
+              <tocitem text="Messaging Project Members" target="kenai_members" />
+          </tocitem>
+          <tocitem text="Working With Issue Tracking">
+              <tocitem text="About Issue Trackers" target="issues_trackers" />
+              <tocitem text="Issue Tracking Tasks: Quick Reference" target="issues_quickref" />
+              <tocitem text="Working With Issues" target="issues_workingwith" />
+              <tocitem text="Adding an Issue Tracker" target="issues_external" />
+          </tocitem>
+    </tocitem>
+
+
   <tocitem text="Servers and Databases">
 
    <tocitem text="Web Browsers" >

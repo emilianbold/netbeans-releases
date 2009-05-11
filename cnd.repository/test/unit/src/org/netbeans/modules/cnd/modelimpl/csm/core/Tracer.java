@@ -50,8 +50,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileContainer.MyFile;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileContainer.FileEntry;
 
 /**
  *
@@ -160,8 +159,8 @@ public final class Tracer {
         printStream.println("\n========== Dumping File container");
         Map<CharSequence, Object/*CharSequence or CharSequence[]*/> names = fileContainer.getCanonicalNames();
         //for unit test only
-        Map<CharSequence, MyFile> files = fileContainer.getFileStorage();
-        for(Map.Entry<CharSequence, MyFile> entry : files.entrySet()){
+        Map<CharSequence, FileEntry> files = fileContainer.getFileStorage();
+        for(Map.Entry<CharSequence, FileEntry> entry : files.entrySet()){
             CharSequence key = entry.getKey();
             printStream.println("\tFile "+key.toString());
             Object name = names.get(key);
@@ -172,11 +171,11 @@ public final class Tracer {
             } else if (name instanceof CharSequence) {
                 printStream.println("\t\tAlias "+name.toString());
             }
-            MyFile file = entry.getValue();
+            FileEntry file = entry.getValue();
             CsmFile csmFile = file.getFileUID().getObject();
             printStream.println("\t\tModel File "+csmFile.getAbsolutePath());
             printStream.println("\t\tNumber of states "+file.getPrerocStates().size());
-            for (FileContainer.StatePair statePair : file.getStates()) {
+            for (FileContainer.StatePair statePair : file.getStatePairs()) {
                 StringTokenizer st = new StringTokenizer(FilePreprocessorConditionState.toStringBrief(statePair.pcState),"\n");
                 boolean first = true;
                 while (st.hasMoreTokens()) {

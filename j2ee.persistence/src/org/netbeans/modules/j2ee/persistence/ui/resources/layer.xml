@@ -63,7 +63,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="persistence"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/persistence/ui/resources/EntityEJB.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.persistence.wizard.entity.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="RelatedCMP">
                 <attr name="position" intvalue="200"/>
@@ -72,7 +72,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="persistence"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/persistence/ui/resources/EntityDatabase.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.persistence.wizard.fromdb.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
 
             </file>
             <file name="JpaControllersFromEntities">
@@ -82,7 +82,7 @@ made subject to such option by the copyright holder.
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/persistence/ui/resources/JpaController.html"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerIterator"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="PersistenceUnit">
                 <attr name="position" intvalue="300"/>
@@ -100,7 +100,7 @@ made subject to such option by the copyright holder.
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="ejb-types_3_0"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/persistence/wizard/dao/ejbFacade.html"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
         </folder>    
     </folder>

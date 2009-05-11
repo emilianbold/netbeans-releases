@@ -134,8 +134,7 @@ class OutWriter extends PrintWriter {
     }
     
     boolean isEmpty() {
-        return storage == null ? true : lines == null ? true : 
-            storage.size() == 0;
+        return storage == null ? true : storage.size() == 0;
     }
 
     @Override
@@ -143,23 +142,21 @@ class OutWriter extends PrintWriter {
         return "OutWriter@" + System.identityHashCode(this) + " for " + owner + " closed ";
     }
 
+    private int errorCount = 0;
+
     /** Generic exception handling, marking the error flag and notifying it with ErrorManager */
-    private void handleException (Exception e) {
+    private void handleException(Exception e) {
         setError();
-        String msg = Exceptions.findLocalizedMessage(e);
-        if (msg == null) {
-            Exceptions.attachLocalizedMessage(e,
-                                              NbBundle.getMessage(OutWriter.class,
-                                                                  "MSG_GenericError")); //NOI18N
-        }
         if (Controller.LOG) {
             StackTraceElement[] el = e.getStackTrace();
-            Controller.log ("EXCEPTION: " + e.getClass() + e.getMessage());
-            for (int i=1; i < el.length; i++) {
-                Controller.log (el[i].toString());
+            Controller.log("EXCEPTION: " + e.getClass() + e.getMessage());
+            for (int i = 1; i < el.length; i++) {
+                Controller.log(el[i].toString());
             }
         }
-        Exceptions.printStackTrace(e);
+        if (errorCount++ < 3) {
+            Exceptions.printStackTrace(e);
+        }
     }
 
     /**
@@ -248,6 +245,7 @@ class OutWriter extends PrintWriter {
         if (Controller.LOG) Controller.log (this + ": OutWriter.dispose - owner is " + (owner == null ? "null" : owner.getName()));
         clearListeners();
         if (storage != null) {
+            lines.onDispose(storage.size());
             storage.dispose();
             storage = null;
         }
@@ -264,7 +262,7 @@ class OutWriter extends PrintWriter {
             return;
         }
         synchronized (this) {
-            if (lines != null && lines.hasHyperlinks()) {
+            if (lines.hasHyperlinks()) {
                 int[] listenerLines = lines.allListenerLines();
                 Controller.ControllerOutputEvent e = new Controller.ControllerOutputEvent(owner, 0);
                 for (int i=0; i < listenerLines.length; i++) {
@@ -308,9 +306,7 @@ class OutWriter extends PrintWriter {
             if (storage != null) {
                 storage.close();
             }
-            if (lines != null) {
-                lines.fire();
-            }
+            lines.fire();
         } catch (IOException ioe) {
             onWriteException();
         }
@@ -329,9 +325,7 @@ class OutWriter extends PrintWriter {
         }
         try {
             getStorage().flush();
-            if (lines != null) {
-                lines.fire();
-            }
+            lines.fire();
         } catch (IOException e) {
             onWriteException();
         }

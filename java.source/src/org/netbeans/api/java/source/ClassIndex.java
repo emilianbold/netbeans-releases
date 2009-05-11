@@ -61,7 +61,6 @@ import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
-import org.netbeans.modules.java.source.classpath.GlobalSourcePath;
 import org.netbeans.modules.java.source.usages.ClassIndexFactory;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexImplEvent;
@@ -70,6 +69,7 @@ import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
 import org.netbeans.modules.java.source.usages.ResultConvertor;
+import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
@@ -438,37 +438,27 @@ public final class ClassIndex {
         });        
     }
     
-    private synchronized Iterable<? extends ClassIndexImpl> getQueries (final Set<SearchScope> scope) {        
-        Set<ClassIndexImpl> result = new HashSet<ClassIndexImpl> ();
-        if (scope.contains(SearchScope.SOURCE)) {            
-            result.addAll(this.sourceIndeces);
-        }        
-        if (scope.contains(SearchScope.DEPENDENCIES)) {
-            result.addAll(this.depsIndeces);
+    private Iterable<? extends ClassIndexImpl> getQueries (final Set<SearchScope> scope) {
+        final Set<ClassIndexImpl> result = new HashSet<ClassIndexImpl> ();
+        synchronized (this) {
+            if (scope.contains(SearchScope.SOURCE)) {
+                result.addAll(this.sourceIndeces);
+            }
+            if (scope.contains(SearchScope.DEPENDENCIES)) {
+                result.addAll(this.depsIndeces);
+            }
         }
         LOGGER.fine(String.format("ClassIndex.queries[Scope=%s, sourcePath=%s, bootPath=%s, classPath=%s] => %s\n",scope,sourcePath,bootPath,classPath,result));
         return result;
-    }
-    
-    private synchronized Set<? extends URL> getOldState (final Set<SearchScope> scope) {
-        final Set<URL> result = new HashSet<URL>();
-        if (scope.contains(SearchScope.SOURCE)) {
-            result.addAll(this.oldSources);
-        }
-        if (scope.contains(SearchScope.DEPENDENCIES)) {
-            result.addAll(this.oldBoot);
-            result.addAll(this.oldCompile);
-        }
-        return result;
-    }
+    }        
     
     private void createQueriesForRoots (final ClassPath cp, final boolean sources, final Set<? super ClassIndexImpl> queries, final Set<? super URL> oldState) {
-        final GlobalSourcePath gsp = GlobalSourcePath.getDefault();
+        final PathRegistry preg = PathRegistry.getDefault();
         List<ClassPath.Entry> entries = cp.entries();
 	for (ClassPath.Entry entry : entries) {
             URL[] srcRoots;
             if (!sources) {
-                srcRoots = gsp.getSourceRootForBinaryRoot (entry.getURL(), cp, true);                        
+                srcRoots = preg.sourceForBinaryQuery(entry.getURL(), cp, true);
                 if (srcRoots == null) {
                     srcRoots = new URL[] {entry.getURL()};
                 }
@@ -576,13 +566,13 @@ public final class ClassIndex {
         
         private boolean containsRoot (final ClassPath cp, final Set<? extends URL> roots, final List<? super URL> affectedRoots, final boolean translate) {
             final List<ClassPath.Entry> entries = cp.entries();
-            final GlobalSourcePath gsp = GlobalSourcePath.getDefault();
+            final PathRegistry preg = PathRegistry.getDefault();
             boolean result = false;
             for (ClassPath.Entry entry : entries) {
                 URL url = entry.getURL();
                 URL[] srcRoots = null;
                 if (translate) {
-                    srcRoots = gsp.getSourceRootForBinaryRoot (entry.getURL(), cp, false);
+                    srcRoots = preg.sourceForBinaryQuery(entry.getURL(), cp, false);
                 }                
                 if (srcRoots == null) {
                     if (roots.contains(url)) {
@@ -606,14 +596,14 @@ public final class ClassIndex {
                 final List<? super URL> newRoots, final List<? super URL> removedRoots,
                 final boolean translate) throws IOException {
             final List<ClassPath.Entry> entries = cp.entries();
-            final GlobalSourcePath gsp = GlobalSourcePath.getDefault();
+            final PathRegistry preg = PathRegistry.getDefault();
             final ClassIndexManager mgr = ClassIndexManager.getDefault();
             boolean result = false;
             for (ClassPath.Entry entry : entries) {
                 URL url = entry.getURL();
                 URL[] srcRoots = null;
                 if (translate) {
-                    srcRoots = gsp.getSourceRootForBinaryRoot (entry.getURL(), cp, false);
+                    srcRoots = preg.sourceForBinaryQuery(entry.getURL(), cp, false);
                 }                
                 if (srcRoots == null) {
                     if (!roots.remove(url) && mgr.getUsagesQuery(url)!=null) {

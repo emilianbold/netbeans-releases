@@ -80,17 +80,22 @@ public class PhpUnitTest extends NbTestCase {
     }
 
     public void testLinePatternTestRunner() {
-        Matcher matcher = PhpUnit.LINE_PATTERN.matcher(PhpUnit.AT_I18N + "/home/gapon/test/Calculator.php:635");
+        Matcher matcher = PhpUnit.LINE_PATTERN.matcher("/home/gapon/test/Calculator.php:635");
         assertTrue(matcher.matches());
         assertEquals("/home/gapon/test/Calculator.php", matcher.group(1));
         assertEquals("635", matcher.group(2));
-        assertTrue(PhpUnit.LINE_PATTERN.matcher(PhpUnit.AT_I18N + "/h o m e/gapon/test/Calculator.php:635").matches());
-        assertTrue(PhpUnit.LINE_PATTERN.matcher(PhpUnit.AT_I18N + "C:\\home\\gapon\\test\\Calculator.php:635").matches());
+        assertTrue(PhpUnit.LINE_PATTERN.matcher("/h o m e/gapon/test/Calculator.php:635").matches());
+        assertTrue(PhpUnit.LINE_PATTERN.matcher("C:\\home\\gapon\\test\\Calculator.php:635").matches());
 
         assertFalse(PhpUnit.LINE_PATTERN.matcher("").matches());
     }
 
     public void testLinePatternOutput() {
         assertTrue(PhpUnit.LINE_PATTERN.matcher("/home/gapon/test/Calculator.php:635").matches());
+
+        Matcher matcher = PhpUnit.LINE_PATTERN.matcher("0.1077    6609264   6. PHPUnit_Util_Fileloader::checkAndLoad() /usr/share/php/PHPUnit/Framework/TestSuite.php:385");
+        assertTrue(matcher.matches());
+        assertEquals("/usr/share/php/PHPUnit/Framework/TestSuite.php", matcher.group(1));
+        assertEquals("385", matcher.group(2));
     }
 }

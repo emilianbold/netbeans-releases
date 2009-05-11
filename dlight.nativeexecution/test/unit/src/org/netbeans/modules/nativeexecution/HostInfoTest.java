@@ -39,27 +39,24 @@
 package org.netbeans.modules.nativeexecution;
 
 import java.io.IOException;
-import java.net.ConnectException;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.util.Exceptions;
 import static org.junit.Assert.*;
 
-/**
- *
- * @author ak119685
- */
-public class HostInfoTest {
-    private final static String password = "";
-    
-    public HostInfoTest() {
+public class HostInfoTest extends NativeExecutionTest {
+
+    private final static String password = ""; // NOI18N
+
+    public HostInfoTest(String name) {
+        super(name);
     }
 
     @BeforeClass
@@ -70,32 +67,39 @@ public class HostInfoTest {
     public static void tearDownClass() throws Exception {
     }
 
-    @Before
-    public void setUp() {
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
     }
 
-    @After
-    public void tearDown() {
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
     }
 
     @Test
-    public void testGetHostInfo() {
-        ExecutionEnvironment execEnv = new ExecutionEnvironment("ak119685", "129.159.127.252", 22);
+    public void testGetHostInfo() throws Exception {
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         ConnectionManager cm = ConnectionManager.getInstance();
         try {
             cm.connectTo(execEnv, password.toCharArray(), false);
+        } catch (IOException ex) {
+            System.out.println(ex);
+        } catch (CancellationException ex) {
+            System.out.println(ex);
+        }
+
+        HostInfo hi = null;
+        try {
+            hi = HostInfoUtils.getHostInfo(execEnv);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (CancellationException ex) {
             Exceptions.printStackTrace(ex);
         }
-
-        try {
-            System.out.println("Tempdir is " + HostInfoUtils.getTempDir(execEnv));
-        } catch (ConnectException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        HostInfoUtils.dumpInfo(hi, System.out);
     }
+
     /**
      * Test of getOS method, of class HostInfo.
      */
@@ -104,19 +108,21 @@ public class HostInfoTest {
         System.out.println("getOS"); // NOI18N
         String expResult = "SunOS"; // NOI18N
         String result;
-
+        expResult = "SunOS"; // NOI18N
+        HostInfo hi = null; // NOI18N
         try {
-            expResult = "SunOS"; // NOI18N
-            result = HostInfoUtils.getOS(new ExecutionEnvironment("ak119685", "127.0.0.1")); // NOI18N
-            System.out.printf("Expected result is %s, actual result is %s\n", expResult, result); // NOI18N
-            assertEquals(expResult, result);
-        } catch (ConnectException ex) {
+            hi = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.createNew(System.getProperty("user.name"), "127.0.0.1"));
+        } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-            fail("Wrong exception"); // NOI18N
+        } catch (CancellationException ex) {
+            Exceptions.printStackTrace(ex);
         }
+        result = hi.getOS().getName();
+        System.out.printf("Expected result is %s, actual result is %s\n", expResult, result); // NOI18N
+        assertEquals(expResult, result);
 //
 //        try {
-//            result = HostInfo.getOS(new ExecutionEnvironment("ak119685", "129.159.127.252"));
+//            result = HostInfo.getOS(new ExecutionEnvironment(System.getProperty("user.name"), "129.159.127.252"));
 //            assertEquals(expResult, result);
 //        } catch (HostNotConnectedException ex) {
 //            Exceptions.printStackTrace(ex);
@@ -124,21 +130,21 @@ public class HostInfoTest {
 //        }
 //
 //        try {
-//            result = HostInfo.getOS(new ExecutionEnvironment("ak119685", "129.159.127.13"));
+//            result = HostInfo.getOS(new ExecutionEnvironment(System.getProperty("user.name"), "129.159.127.13"));
 //            fail("Exception expected");
 //        } catch (HostNotConnectedException ex) {
 //            System.out.println("Expected exception");
 //        }
 //
 //        try {
-////    NativeTask nt = new NativeTask(host, "ak119685", "/bin/ls", null);
+////    NativeTask nt = new NativeTask(host, System.getProperty("user.name"), "/bin/ls", null);
 ////    nt.submit();
 ////    System.out.println("ls exit status is " + nt.exitValue());
 ////    System.out.println("ls output is " + nt.getOutput());
 ////      host = "129.159.127.13";
 ////    allowUserInteraction = false;
 //            expResult = "SunOS";
-//            result = HostInfo.getOS(new ExecutionEnvironment("ak119685", "129.159.127.13"));
+//            result = HostInfo.getOS(new ExecutionEnvironment(System.getProperty("user.name"), "129.159.127.13"));
 //            assertEquals(expResult, result);
 //        // TODO review the generated test code and remove the default call to fail.
 ////    fail("The test case is a prototype.");
@@ -157,7 +163,7 @@ public class HostInfoTest {
         boolean result;
         boolean expResult;
 
-        ExecutionEnvironment ee = new ExecutionEnvironment("ak119685", "129.159.127.252"); // NOI18N
+        ExecutionEnvironment ee = ExecutionEnvironmentFactory.getLocal();
 //        try {
 //            CharArrayWriter writer = new CharArrayWriter();
 //
@@ -198,14 +204,14 @@ public class HostInfoTest {
 //
 //        try {
 //            fname = "/etc/passwd";
-//            result = HostInfo.fileExists(new ExecutionEnvironment("ak119685", "129.159.127.13"), fname);
+//            result = HostInfo.fileExists(new ExecutionEnvironment(System.getProperty("user.name"), "129.159.127.13"), fname);
 //            fail("Exception expected");
 //        } catch (HostNotConnectedException ex) {
 //            System.out.println("Expected exception");
 //        }
 //
 //        CharArrayWriter taskOutput = new CharArrayWriter();
-//        NativeTask nt = new NativeTask(new ExecutionEnvironment("ak119685", "localhost"), "/bin/ls", null);
+//        NativeTask nt = new NativeTask(new ExecutionEnvironment(System.getProperty("user.name"), "localhost"), "/bin/ls", null);
 //        nt.redirectOutTo(taskOutput);
 //        nt.submit(true, false);
 //
@@ -242,7 +248,7 @@ public class HostInfoTest {
 //            System.out.println(".. " + i + " ..");
 //            try {
 //                fname = "/etc/passwd1";
-//                result = HostInfo.fileExists(new ExecutionEnvironment("ak119685", "localhost"), fname);
+//                result = HostInfo.fileExists(new ExecutionEnvironment(System.getProperty("user.name"), "localhost"), fname);
 //                expResult = false;
 //                assertEquals(expResult, result);
 //            } catch (HostNotConnectedException ex) {
@@ -263,20 +269,6 @@ public class HostInfoTest {
         boolean expResult = true;
         boolean result = HostInfoUtils.isLocalhost(host);
         assertEquals(expResult, result);
-    }
-
-//    @Test
-    public void testGetPlatformPath() {
-        System.out.println("getPlatformPath"); // NOI18N
-        String expResult = "intel-S2"; // NOI18N
-        String result = ""; // NOI18N
-
-        for (int i = 0; i < 3; i++) {
-//            result = HostInfoUtils.getPlatformPath(new ExecutionEnvironment(null, null));
-            System.out.println("Platform PATH is " + result); // NOI18N
-        }
-        assertEquals(expResult, result);
-
     }
 }
 

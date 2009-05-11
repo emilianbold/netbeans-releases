@@ -145,28 +145,14 @@ public class HudsonManagerImpl {
         return instance;
     }
     
-    /**
-     *
-     * @param url
-     * @return
-     */
     public HudsonInstance getInstance(String url) {
         return getInstancesMap().get(url);
     }
     
-    /**
-     *
-     * @return
-     */
-    public synchronized Collection<HudsonInstance> getInstances() {
-        return Arrays.asList(getInstancesMap().values().toArray(new HudsonInstance[] {}));
+    public synchronized Collection<HudsonInstanceImpl> getInstances() {
+        return Arrays.asList(getInstancesMap().values().toArray(new HudsonInstanceImpl[] {}));
     }
     
-    /**
-     *
-     * @param name
-     * @return
-     */
     public HudsonInstance getInstanceByName(String name) {
         for (HudsonInstance h : getInstances()) {
             if (h.getName().equals(name))

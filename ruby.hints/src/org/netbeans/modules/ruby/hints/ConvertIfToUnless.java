@@ -45,9 +45,9 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
-import org.jruby.nb.ast.IfNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
+import org.jrubyparser.ast.IfNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -102,14 +102,14 @@ public class ConvertIfToUnless extends RubyAstRule {
         }
         
         // Can't convert if !x/elseif blocks
-        if (ifNode.getElseBody() != null && ifNode.getElseBody().nodeId == NodeType.IFNODE) {
+        if (ifNode.getElseBody() != null && ifNode.getElseBody().getNodeType() == NodeType.IFNODE) {
             return;
         }
         
-        if (condition.nodeId == NodeType.NOTNODE ||
-                (condition.nodeId == NodeType.NEWLINENODE &&
+        if (condition.getNodeType() == NodeType.NOTNODE ||
+                (condition.getNodeType() == NodeType.NEWLINENODE &&
                 condition.childNodes().size() == 1 &&
-                condition.childNodes().get(0).nodeId == NodeType.NOTNODE)) {
+                condition.childNodes().get(0).getNodeType() == NodeType.NOTNODE)) {
             try {
                 BaseDocument doc = context.doc;
                 int keywordOffset = findKeywordOffset(context, ifNode);
@@ -276,11 +276,11 @@ public class ConvertIfToUnless extends RubyAstRule {
 
             try {
                 Node notNode = ifNode.getCondition();
-                if (notNode.nodeId != NodeType.NOTNODE) {
-                    assert notNode.nodeId == NodeType.NEWLINENODE;
+                if (notNode.getNodeType() != NodeType.NOTNODE) {
+                    assert notNode.getNodeType() == NodeType.NEWLINENODE;
                     Node firstChild = notNode.childNodes().size() == 1 ?
                         notNode.childNodes().get(0) : null;
-                    if (firstChild != null && firstChild.nodeId == NodeType.NOTNODE) {
+                    if (firstChild != null && firstChild.getNodeType() == NodeType.NOTNODE) {
                         notNode = firstChild;
                     } else {
                         // Unexpected!

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.maven.options;
 
+import hidden.org.codehaus.plexus.util.StringUtils;
 import hidden.org.codehaus.plexus.util.cli.Arg;
 import hidden.org.codehaus.plexus.util.cli.CommandLineException;
 import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
@@ -49,6 +50,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
@@ -69,6 +71,7 @@ public class MavenSettings  {
     public static final String PROP_BINARY_DOWNLOAD = "binaryDownload"; //NOI18N
     public static final String PROP_LAST_ARCHETYPE_GROUPID = "lastArchetypeGroupId"; //NOI18N
     public static final String PROP_CUSTOM_LOCAL_REPOSITORY = "localRepository"; //NOI18N
+    public static final String PROP_SKIP_TESTS = "skipTests"; //NOI18N
 
     
     private static final MavenSettings INSTANCE = new MavenSettings();
@@ -173,7 +176,12 @@ public class MavenSettings  {
         if (text != null && text.trim().length() == 0) {
             text = null;
         }
+        String oldText = getCustomLocalRepository();
         putProperty(PROP_CUSTOM_LOCAL_REPOSITORY, text);
+        //reset the project embedder to use the new local repo value.
+        if (!StringUtils.equals(oldText, text)) {
+            EmbedderFactory.resetProjectEmbedder();
+        }
     }
     
     public String getCustomLocalRepository() {
@@ -203,10 +211,18 @@ public class MavenSettings  {
       getPreferences().putBoolean(PROP_SHOW_RUN_DIALOG, b);
     }
 
+    public boolean isSkipTests() {
+        return getPreferences().getBoolean(PROP_SKIP_TESTS, false);
+    }
+
+    public void setSkipTests(boolean skipped) {
+        getPreferences().putBoolean(PROP_SKIP_TESTS, skipped);
+    }
+
     public static enum DownloadStrategy {
-        EVERY_OPEN,
+        NEVER,
         FIRST_OPEN,
-        NEVER
+        EVERY_OPEN
     }
 
     public DownloadStrategy getSourceDownloadStrategy() {
@@ -215,6 +231,14 @@ public class MavenSettings  {
             return DownloadStrategy.valueOf(val);
         } catch (IllegalArgumentException ex) {
             return DownloadStrategy.NEVER;
+        }
+    }
+
+    public void setSourceDownloadStrategy(DownloadStrategy ds) {
+        if (ds != null) {
+            getPreferences().put(PROP_SOURCE_DOWNLOAD, ds.name());
+        } else {
+            getPreferences().remove(PROP_SOURCE_DOWNLOAD);
         }
     }
 
@@ -227,6 +251,14 @@ public class MavenSettings  {
         }
     }
 
+    public void setJavadocDownloadStrategy(DownloadStrategy ds) {
+        if (ds != null) {
+            getPreferences().put(PROP_JAVADOC_DOWNLOAD, ds.name());
+        } else {
+            getPreferences().remove(PROP_JAVADOC_DOWNLOAD);
+        }
+    }
+
     public DownloadStrategy getBinaryDownloadStrategy() {
         String val = getPreferences().get(PROP_BINARY_DOWNLOAD, DownloadStrategy.NEVER.name());
         try {
@@ -236,6 +268,14 @@ public class MavenSettings  {
         }
     }
     
+    public void setBinaryDownloadStrategy(DownloadStrategy ds) {
+        if (ds != null) {
+            getPreferences().put(PROP_BINARY_DOWNLOAD, ds.name());
+        } else {
+            getPreferences().remove(PROP_BINARY_DOWNLOAD);
+        }
+    }
+
     private static Boolean cachedMaven = null;
     
     public static boolean canFindExternalMaven() {

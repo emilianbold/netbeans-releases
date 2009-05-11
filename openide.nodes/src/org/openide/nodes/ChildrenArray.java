@@ -63,9 +63,6 @@ final class ChildrenArray extends NodeAdapter {
 
     private Map<Info, Collection<Node>> map;
 
-    /** the reference that points to us */
-    private Reference<ChildrenArray> ref;
-
     private static final Logger LOG_NODES_FOR = Logger.getLogger(
             "org.openide.nodes.ChildrenArray.nodesFor"); // NOI18N
 
@@ -75,18 +72,6 @@ final class ChildrenArray extends NodeAdapter {
 
     public Children getChildren() {
         return entrySupport == null ? null : entrySupport.children;
-    }
-
-    /** When finalized notify the children.
-    */
-    @Override
-    protected void finalize() {
-        entrySupport.finalizedChildrenArray(ref);
-    }
-        
-    /** Now points to me */
-    final void pointedBy(Reference<ChildrenArray> ref) {
-        this.ref = ref;
     }
 
     /** Getter method to receive a set of computed nodes.
@@ -150,12 +135,13 @@ final class ChildrenArray extends NodeAdapter {
     * @param info the info
     * @return the nodes
     */
-    public synchronized Collection<Node> nodesFor(Info info) {
+    public synchronized Collection<Node> nodesFor(Info info, boolean hasToExist) {
         final boolean IS_LOG = LOG_NODES_FOR.isLoggable(Level.FINE);
         if (IS_LOG) {
             LOG_NODES_FOR.finer("nodesFor(" +logInfo(info) + ") on " + Thread.currentThread()); // NOI18N
         }
         if (map == null) {
+            assert !hasToExist : "Should be already initialized";
             map = new WeakHashMap<Info, Collection<Node>>(7);
         }
         Collection<Node> nodes = map.get(info);
@@ -165,6 +151,7 @@ final class ChildrenArray extends NodeAdapter {
         }
 
         if (nodes == null) {
+            assert !hasToExist : "Cannot find nodes for " + info + " in " + map;
             nodes = info.entry.nodes(null);
             info.length = nodes.size();
             map.put(info, nodes);

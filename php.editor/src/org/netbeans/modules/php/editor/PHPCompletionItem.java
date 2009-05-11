@@ -697,9 +697,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
     }
 
-    static class FunctionDeclarationItem extends FunctionItem {
+    public static class FunctionDeclarationItem extends FunctionItem {
         private boolean isIface;
-        public FunctionDeclarationItem(IndexedFunction function, CompletionRequest request, int optionalArgCount,boolean isIface) {
+            public FunctionDeclarationItem(IndexedFunction function, CompletionRequest request, int optionalArgCount,boolean isIface) {
             super(function, request, optionalArgCount);
             this.isIface = isIface;
         }

@@ -56,6 +56,7 @@ import org.netbeans.modules.dlight.spi.impl.IndicatorRepairActionProviderAccesso
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -69,8 +70,8 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
     private ValidationStatus currentStatus;
     private final List<IndicatorDataProvider<?>> toReValidate;
     private final List<ChangeListener> changeListeners = new ArrayList<ChangeListener>();
-    private final Object listenersLock = new String("IndicatorRepairActionProvider.Listeners");
-
+    private final Object listenersLock = new String("IndicatorRepairActionProvider.Listeners"); // NOI18N
+    private Future<Boolean> repairTask;
 
     static {
         IndicatorRepairActionProviderAccessor.setDefault(new IndicatorRepairActionProviderAccessorImpl());
@@ -86,7 +87,7 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
         List<IndicatorDataProvider<?>> providers = configuration.getConfigurationOptions(false).getIndicatorDataProviders(currentTool);
         toReValidate = new ArrayList<IndicatorDataProvider<?>>();
         for (IndicatorDataProvider idp : providers) {
-            if (!idp.getValidationStatus().isKnown()) {
+            if (!idp.getValidationStatus().isKnown() || (idp.getValidationStatus().isKnown() && idp.getValidationStatus().isInvalid())) {
                 idp.addValidationListener(this);
                 toReValidate.add(idp);
                 currentStatus = idp.getValidationStatus();
@@ -119,6 +120,18 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
         }
     }
 
+    public final String getMessage(ValidationStatus status) {
+        if (status.isValid()) {
+            String message=  NbBundle.getMessage(IndicatorRepairActionProvider.class, "NextRun");
+            if (!configuration.getConfigurationOptions(false).areCollectorsTurnedOn()) {
+                message =  NbBundle.getMessage(IndicatorRepairActionProvider.class, "DataCollectorDisabled");
+            }
+            return message;
+
+        }
+        return status.getReason();
+    }
+
     public boolean isValid() {
         return currentStatus.isValid();
     }
@@ -131,43 +144,50 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
         return currentStatus.getReason();
     }
 
+    public final ValidationStatus getValidationStatus() {
+        return currentStatus;
+    }
+
     public Future<Boolean> asyncRepair() {
-        Future<Boolean> task = DLightExecutorService.submit(new Callable<Boolean>() {
+        synchronized (this) {
+            if (repairTask == null || repairTask.isDone()) {
+                repairTask = DLightExecutorService.submit(new Callable<Boolean>() {
 
-            public Boolean call() throws Exception {
-                for (IndicatorDataProvider<?> idp : toReValidate) {
-                    final ValidateableSupport<DLightTarget> support = new ValidateableSupport<DLightTarget>(idp);
-                    final Future<ValidationStatus> taskStatus = support.asyncValidate(targetToRepairFor, true);
-                    Future<Boolean> result = DLightExecutorService.submit(new Callable<Boolean>() {
+                    public Boolean call() throws Exception {
+                        for (IndicatorDataProvider<?> idp : toReValidate) {
+                            final ValidateableSupport<DLightTarget> support = new ValidateableSupport<DLightTarget>(idp);
+                            final Future<ValidationStatus> taskStatus = support.asyncValidate(targetToRepairFor, true);
+                            Future<Boolean> result = DLightExecutorService.submit(new Callable<Boolean>() {
 
-                        public Boolean call() throws Exception {
-                            final ValidationStatus status = taskStatus.get();
-                            UIThread.invoke(new Runnable() {
+                                public Boolean call() throws Exception {
+                                    final ValidationStatus status = taskStatus.get();
+                                    UIThread.invoke(new Runnable() {
 
-                                public void run() {
-                                    currentStatus = status;
-                                //   updateUI(c);
+                                        public void run() {
+                                            currentStatus = status;
+                                        //   updateUI(c);
+                                        }
+                                    });
+                                    return status.isKnown();
                                 }
-                            });
-                            return status.isKnown();
+                            }, "IndicatorRepairActionProvider task for " + idp.getName());//NOI18N
+                            try {
+                                //NOI18N
+                                if (result.get().booleanValue()) {
+                                    return true;
+                                }
+                            } catch (InterruptedException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } catch (ExecutionException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
                         }
-                    }, "IndicatorRepairActionProvider task for " + idp.getName());//NOI18N
-                    try {
-                        //NOI18N
-                        if (result.get().booleanValue()) {
-                            return true;
-                        }
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (ExecutionException ex) {
-                        Exceptions.printStackTrace(ex);
+                        return true;
                     }
-                }
-                return true;
+                }, "IndicatorRepairActionProvider asyncRepair"); //NOI18N
             }
-        }, "IndicatorRepairActionProvider asyncRepair");
-        return task;
-
+        }
+        return repairTask;
     }
 
     public void validationStateChanged(Validateable source, ValidationStatus oldStatus, ValidationStatus newStatus) {
@@ -185,5 +205,4 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
             return new IndicatorRepairActionProvider(configuration, tool, targetToRepairFor);
         }
     }
-
 }

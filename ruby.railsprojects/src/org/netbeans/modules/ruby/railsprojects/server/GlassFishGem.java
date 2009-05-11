@@ -52,6 +52,7 @@ import org.netbeans.modules.ruby.platform.gems.GemInfo;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -67,7 +68,10 @@ class GlassFishGem implements RubyServer, ServerInstanceImplementation {
     /**
      * The pattern for recognizing when an instance of GlassFish has started.
      */
-    private static final Pattern PATTERN = Pattern.compile("\\bINFO: Glassfish v3 started.+", Pattern.DOTALL);
+    private static final Pattern[] PATTERNS = {
+        Pattern.compile(".*INFO: Glassfish v3 started.*", Pattern.DOTALL),
+        Pattern.compile(".*Press Ctrl\\+C to stop.*", Pattern.DOTALL)
+    };
     
     private final List<RailsApplication> applications = new ArrayList<RailsApplication>();
     private final RubyPlatform platform;
@@ -123,7 +127,12 @@ class GlassFishGem implements RubyServer, ServerInstanceImplementation {
     }
 
     public boolean isStartupMsg(String outputLine) {
-        return PATTERN.matcher(outputLine).find();
+        for (Pattern each : PATTERNS) {
+            if (each.matcher(outputLine).matches()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public List<RailsApplication> getApplications() {
@@ -155,6 +164,28 @@ class GlassFishGem implements RubyServer, ServerInstanceImplementation {
 
     public void removeChangeListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
+    }
+
+    public int compareVersion(String targetVersion) {
+        int [] sv = extractVersion(version);
+        int [] tv = extractVersion(targetVersion);
+        for(int i = 0; i < 3; i++) {
+            if(sv[i] < tv[i]) {
+                return -1;
+            } else if(sv[i] > tv[i]) {
+                return 1;
+            }
+        }
+        return 0;
+    }
+
+    private int [] extractVersion(String vs) {
+        int [] v = new int [] { 0, 0, 0 };
+        String [] parts = vs.split("\\.");
+        for(int i = 0; i < 3 && i < parts.length; i++) {
+            v[i] = Integer.valueOf(parts[i]);
+        }
+        return v;
     }
 
     // ServerInstanceImplementation methods

@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.dlight.management.ui.spi.impl;
 
+import java.awt.Font;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -50,8 +52,11 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.Validateable;
@@ -63,6 +68,7 @@ import org.netbeans.modules.dlight.api.tool.DLightTool;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
+import org.netbeans.modules.dlight.util.UIUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -84,61 +90,94 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
         this.targetToValidateWith = targetToValidateWith;
         this.currentTool = tool;
         List<DataCollector<?>> collectors = configuration.getConfigurationOptions(false).getCollectors(currentTool);
+        List<DataCollector<?>> toRepairList = new ArrayList<DataCollector<?>>();
         panelsList = new ArrayList<JPanel>();
         //get the first one
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         JPanel repairPanel = new JPanel();
         repairPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
         repairPanel.setLayout(new BoxLayout(repairPanel, BoxLayout.Y_AXIS));
-        for (final DataCollector c : collectors) {
-            if (!c.getValidationStatus().isKnown()) {
-                c.addValidationListener(this);
-                //validate one more time
-                states.put(c, c.getValidationStatus());
-                JPanel p = new JPanel();
-                p.setBorder(new EmptyBorder(10, 10, 10, 10));
-                p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-                JLabel label = new JLabel(c.getValidationStatus().getReason());
-                label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-                p.add(label);
-                p.add(Box.createVerticalStrut(10));
-                JButton repairButton = new JButton(NbBundle.getMessage(EmptyDetailsViewPanel.class, "Repair"));
-                repairButton.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-                repairButton.addActionListener(new ActionListener() {
+        if (collectors == null || collectors.size() == 0) {
+            JPanel p = new JPanel();
+            p.setBorder(new EmptyBorder(10, 10, 10, 10));
+            p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
+            JEditorPane editorPane = UIUtilities.createJEditorPane(NbBundle.getMessage(EmptyDetailsViewPanel.class, "NoCollectorsFound"), true);//NOI18N
+            p.add(editorPane);
+            repairPanel.add(p);
 
-                    public void actionPerformed(ActionEvent e) {
-                        repair(c);
+        } else {
+            for (final DataCollector c : collectors) {
+                if (c.getValidationStatus() == ValidationStatus.initialStatus()) {
+                    c.addValidationListener(this);
+                    //validate one more time
+                    states.put(c, c.getValidationStatus());
+                    JPanel p = new JPanel();
+                    p.setBorder(new EmptyBorder(10, 10, 10, 10));
+                    p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
+                    JEditorPane label = UIUtilities.createJEditorPane(NbBundle.getMessage(EmptyDetailsViewPanel.class, "Validating") , true);//NOI18N
+                    p.add(label);
+                    repairPanel.add(p);
+                    panelsList.add(p);
+                    panels.put(c, panelsList.indexOf(p));
+                    repair(c);
+                } else if (!c.getValidationStatus().isKnown()) {
+                    c.addValidationListener(this);
+                    //validate one more time
+                    states.put(c, c.getValidationStatus());
+                    JPanel p = new JPanel();
+                    p.setBorder(new EmptyBorder(10, 10, 10, 10));
+                    p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
+                    JEditorPane label = UIUtilities.createJEditorPane(c.getValidationStatus().getReason(), false);//NOI18N
+                    p.add(label);
+                    p.add(Box.createVerticalStrut(10));
+                    JButton repairButton = new JButton(NbBundle.getMessage(EmptyDetailsViewPanel.class, "Repair"));//NOI18N
+                    repairButton.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+                    repairButton.addActionListener(new ActionListener() {
+
+                        public void actionPerformed(ActionEvent e) {
+                            repair(c);
+                        }
+                    });
+                    p.add(repairButton);
+                    repairPanel.add(p);
+                    panelsList.add(p);
+                    panels.put(c, panelsList.indexOf(p));
+
+                } else {
+                    ValidationStatus status = c.getValidationStatus();
+                    JPanel p = new JPanel();
+                    p.setBorder(new EmptyBorder(10, 10, 10, 10));
+                    p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
+                    if (!status.isKnown()) {
+                        p.add(UIUtilities.createJEditorPane(status.getReason(), false));//NOI18N
+                    } else if (status.isValid()) {
+                        String message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "NextRun");//NOI18N
+                        if (!configuration.getConfigurationOptions(false).areCollectorsTurnedOn()) {
+                            message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "DataCollectorDisabled");//NOI18N
+                        }
+                        p.add(UIUtilities.createJEditorPane(message, true));
+                    } else if (status.isInvalid()) {
+                        JEditorPane editorPane = UIUtilities.createJEditorPane(status.getReason(), false);//NOI18N
+                        p.add(editorPane);
                     }
-                });
-                p.add(repairButton);
-                repairPanel.add(p);
-                panelsList.add(p);
-                panels.put(c, panelsList.indexOf(p));
-            } else {
-                ValidationStatus status = c.getValidationStatus();
-                JPanel p = new JPanel();
-                p.setBorder(new EmptyBorder(10, 10, 10, 10));
-                p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-                if (!status.isKnown()) {
-                    p.add(new JLabel(status.getReason()));
-                } else if (status.isValid()) {
-                    p.add(new JLabel("Will show details on the next run"));//NOI18N
-                } else if (status.isInvalid()) {
-                    p.add(new JLabel(status.getReason()));
-
+                    repairPanel.add(p);
+                    panelsList.add(p);
+                    panels.put(c, panelsList.indexOf(p));
                 }
-                JLabel label = new JLabel(c.getValidationStatus().getReason());
-                label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-                p.add(label);
-                repairPanel.add(p);
-                panelsList.add(p);
-                panels.put(c, panelsList.indexOf(p));
+
             }
         }
         repairPanel.setAlignmentX(CENTER_ALIGNMENT);
         repairPanel.setAlignmentY(CENTER_ALIGNMENT);
         this.add(repairPanel);
+        if (!toRepairList.isEmpty()) {
+            for (DataCollector c : toRepairList) {
+                repair(c);
+            }
+        }
     }
+
+  
 
     private void repair(final DataCollector<?> c) {
         final ValidateableSupport<DLightTarget> support = new ValidateableSupport<DLightTarget>(c);
@@ -165,17 +204,24 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
         p.removeAll();
         ValidationStatus status = v.getValidationStatus();
         if (!status.isKnown()) {
-            p.add(new JLabel(status.getReason()));
+            p.add(UIUtilities.createJEditorPane(status.getReason(), false));//NOI18N
+            p.repaint();
             repaint();
             return;
         }
         if (status.isValid()) {
-            p.add(new JLabel("Will show details on the next run"));//NOI18N
+            String message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "NextRun");//NOI18N
+            if (!configuration.getConfigurationOptions(false).areCollectorsTurnedOn()) {
+                message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "DataCollectorDisabled");//NOI18N
+            }
+            p.add(UIUtilities.createJEditorPane(message, true));
+            p.repaint();
             repaint();
             return;
         }
         if (status.isInvalid()) {
-            p.add(new JLabel(status.getReason()));
+            p.add(UIUtilities.createJEditorPane(status.getReason(), false));
+            p.repaint();
             repaint();
             return;
 
@@ -190,12 +236,17 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
             p.removeAll();
             ValidationStatus status = v.getValidationStatus();
             if (!status.isKnown()) {
-                p.add(new JLabel(status.getReason()));
+                p.add(UIUtilities.createJEditorPane(status.getReason(), false));
             } else if (status.isValid()) {
-                p.add(new JLabel("Will show details on the next run"));//NOI18N
+                String message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "NextRun");//NOI18N
+                if (!configuration.getConfigurationOptions(false).areCollectorsTurnedOn()) {
+                    message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "DataCollectorDisabled");//NOI18N
+                }
+                p.add(UIUtilities.createJEditorPane(message, true));
             } else if (status.isInvalid()) {
-                p.add(new JLabel(status.getReason()));
+                p.add(UIUtilities.createJEditorPane(status.getReason(), false));//NOI18N
             }
+            p.repaint();
         }
         repaint();
     }

@@ -57,7 +57,7 @@ public final class WhoIsOnlineDisabled extends AbstractAction {
     }
     @Override
     public boolean isEnabled() {
-        return Boolean.parseBoolean(System.getProperty(("kenai.chat.enabled"), "false"));
+        return System.getProperty(("kenai.com.url"), "https://kenai.com").endsWith("testkenai.com");
     }
 
 }

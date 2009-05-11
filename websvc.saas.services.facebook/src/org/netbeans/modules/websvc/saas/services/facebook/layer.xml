@@ -50,25 +50,25 @@
                   url="/org/netbeans/modules/websvc/saas/services/facebook/resources/j2ee/FacebookAuthenticator.template">
                 <attr name="position" intvalue="3610"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="FacebookLogin.java" 
                   url="/org/netbeans/modules/websvc/saas/services/facebook/resources/j2ee/FacebookLogin.template">
                 <attr name="position" intvalue="3620"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="FacebookCallback.java" 
                   url="/org/netbeans/modules/websvc/saas/services/facebook/resources/j2ee/FacebookCallback.template">
                 <attr name="position" intvalue="3630"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="FacebookAuthenticatorDesktop.java" 
                   url="/org/netbeans/modules/websvc/saas/services/facebook/resources/java/FacebookAuthenticator.template">
                 <attr name="position" intvalue="3640"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             
             <!-- PHP templates -->

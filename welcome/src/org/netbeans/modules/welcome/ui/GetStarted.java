@@ -86,8 +86,23 @@ class GetStarted extends JPanel implements Constants {
     
     private void buildContent() {
         FileObject root = FileUtil.getConfigFile( "WelcomePage/GettingStartedLinks" ); // NOI18N
+        if( null == root ) {
+            Logger.getLogger(GetStarted.class.getName()).log(Level.INFO,
+                    "Start page content not found: " + "FileObject: WelcomePage/GettingStartedLinks" ); //NOI18N
+            return;
+        }
         DataFolder folder = DataFolder.findFolder( root );
+        if( null == folder ) {
+            Logger.getLogger(GetStarted.class.getName()).log(Level.INFO,
+                    "Start page content not found: " + "DataFolder: WelcomePage/GettingStartedLinks" ); //NOI18N
+            return;
+        }
         DataObject[] children = folder.getChildren();
+        if( null == children ) {
+            Logger.getLogger(GetStarted.class.getName()).log(Level.INFO,
+                    "Start page content not found: " + "DataObject: WelcomePage/GettingStartedLinks" ); //NOI18N
+            return;
+        }
         for( int i=0; i<children.length; i++ ) {
             if( children[i].getPrimaryFile().isFolder() ) {
                 String headerText = children[i].getNodeDelegate().getDisplayName();

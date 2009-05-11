@@ -343,17 +343,19 @@ is divided into following sections:
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">sourcepath</xsl:attribute>
-                        <xsl:attribute name="default">/does/not/exist</xsl:attribute>
+                        <xsl:attribute name="default">${empty.dir}</xsl:attribute>
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">gensrcdir</xsl:attribute>
-                        <xsl:attribute name="default">/does/not/exist</xsl:attribute>
+                        <xsl:attribute name="default">${empty.dir}</xsl:attribute>
                     </attribute>
                     <element>
                         <xsl:attribute name="name">customize</xsl:attribute>
                         <xsl:attribute name="optional">true</xsl:attribute>
                     </element>
                     <sequential>
+                        <property name="empty.dir" location="${{build.dir}}/empty"/><!-- #157692 -->
+                        <mkdir dir="${{empty.dir}}"/>
                         <javac>
                             <xsl:attribute name="srcdir">@{srcdir}</xsl:attribute>
                             <xsl:attribute name="sourcepath">@{sourcepath}</xsl:attribute>
@@ -939,14 +941,34 @@ is divided into following sections:
                         <xsl:otherwise>java</xsl:otherwise>
                 </xsl:choose> -jar "${dist.jar.resolved}"</echo>                
             </target>
-            
+            <target name="-do-jar-with-libraries-without-manifest">
+                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
+                <xsl:attribute name="if">libs.CopyLibs.classpath</xsl:attribute>
+                <xsl:attribute name="unless">manifest.available+main.class</xsl:attribute>
+                  <property name="build.classes.dir.resolved" location="${{build.classes.dir}}"/>
+                <pathconvert property="run.classpath.without.build.classes.dir">
+                    <path path="${{run.classpath}}"/>
+                    <map from="${{build.classes.dir.resolved}}" to=""/>
+                </pathconvert>
+                <pathconvert property="jar.classpath" pathsep=" ">
+                    <path path="${{run.classpath.without.build.classes.dir}}"/>
+                    <chainedmapper>
+                        <flattenmapper/>
+                        <globmapper from="*" to="lib/*"/>
+                    </chainedmapper>
+                </pathconvert>
+                <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" name="copylibs" classpath="${{libs.CopyLibs.classpath}}"/>
+                <copylibs runtimeclasspath="${{run.classpath.without.build.classes.dir}}" jarfile="${{dist.jar}}" compress="${{jar.compress}}">
+                    <fileset dir="${{build.classes.dir}}"/>
+                </copylibs>
+            </target>
             <target name="-post-jar">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
             
             <target name="jar">
-                <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar-with-manifest,-do-jar-without-manifest,-do-jar-with-mainclass,-do-jar-with-libraries,-post-jar</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar-with-manifest,-do-jar-without-manifest,-do-jar-with-mainclass,-do-jar-with-libraries,-do-jar-with-libraries-without-manifest,-post-jar</xsl:attribute>
                 <xsl:attribute name="description">Build JAR.</xsl:attribute>
             </target>
             

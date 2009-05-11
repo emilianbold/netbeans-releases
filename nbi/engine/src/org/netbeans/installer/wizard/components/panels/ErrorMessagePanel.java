@@ -167,7 +167,8 @@ public class ErrorMessagePanel extends WizardPanel {
         @Override
         public void evaluateBackButtonClick() {
             if (validatingThread != null) {
-                validatingThread.pause();
+                validatingThread.finish();
+                validatingThread = null;
             }
             
             super.evaluateBackButtonClick();
@@ -183,6 +184,10 @@ public class ErrorMessagePanel extends WizardPanel {
             
             if (errorMessage == null) {
                 saveInput();
+                if(validatingThread != null) {
+                    validatingThread.finish();
+                    validatingThread = null;
+                }
                 component.getWizard().next();
             } else {
                 ErrorManager.notifyError(errorMessage);
@@ -206,7 +211,10 @@ public class ErrorMessagePanel extends WizardPanel {
                 }
                 return;
             }
-            
+            if (validatingThread != null) {
+                validatingThread.finish();
+                validatingThread = null;
+            }
             component.getWizard().getFinishHandler().cancel();
         }
         
@@ -216,7 +224,7 @@ public class ErrorMessagePanel extends WizardPanel {
             updateErrorMessage();
             
             if (validatingThread == null) {
-                validatingThread = new ValidatingThread(this);
+                validatingThread = new ValidatingThread(this, component);
                 validatingThread.start();
             } else {
                 validatingThread.play();
@@ -284,8 +292,7 @@ public class ErrorMessagePanel extends WizardPanel {
         // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
             // errorLabel ///////////////////////////////////////////////////////////
-            errorLabel = new NbiLabel();
-            errorLabel.setFocusable(true);
+            errorLabel = new NbiLabel();           
             
             // this /////////////////////////////////////////////////////////////////
             add(errorLabel, new GridBagConstraints(
@@ -305,20 +312,27 @@ public class ErrorMessagePanel extends WizardPanel {
             // Instance
             private ErrorMessagePanelSwingUi swingUi;
             private boolean paused;
+            private boolean stopped;
             
-            public ValidatingThread(final ErrorMessagePanelSwingUi swingUi) {
+            public ValidatingThread(final ErrorMessagePanelSwingUi swingUi, WizardPanel panel) {
                 super();
-                
+
                 this.swingUi = swingUi;
                 this.paused = false;
+                this.stopped = false;
             }
             
             public void run() {
                 while (true) {
+                    if(stopped) {
+                        break;
+                    }
                     if (!paused) {
                         swingUi.updateErrorMessage();
                     }
-                    
+                    if(stopped) {
+                        break;
+                    }
                     try {
                         sleep(VALIDATION_DELAY);
                     } catch (InterruptedException e) {
@@ -331,8 +345,14 @@ public class ErrorMessagePanel extends WizardPanel {
                 paused = true;
             }
             
+            public void finish() {
+                paused = true;
+                stopped = true;
+            }
+            
             public void play() {
                 paused = false;
+                stopped = false;
             }
             
             /////////////////////////////////////////////////////////////////////////

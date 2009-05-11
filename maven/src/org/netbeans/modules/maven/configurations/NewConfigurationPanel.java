@@ -127,12 +127,13 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
         lblHint = new javax.swing.JLabel();
         txtActivate = new javax.swing.JTextField();
 
-        lblId.setText(org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.lblId.text")); // NOI18N
+        lblId.setLabelFor(txtId);
+        org.openide.awt.Mnemonics.setLocalizedText(lblId, org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.lblId.text")); // NOI18N
 
-        cbShared.setText(org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.cbShared.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cbShared, org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.cbShared.text")); // NOI18N
 
         lblActivate.setLabelFor(txtActivate);
-        lblActivate.setText(org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.lblActivate.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblActivate, org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.lblActivate.text")); // NOI18N
 
         lblHint.setText(org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.lblHint.text")); // NOI18N
         lblHint.setVerticalAlignment(javax.swing.SwingConstants.TOP);
@@ -149,12 +150,12 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(cbShared)
-                            .add(txtId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)))
+                            .add(txtId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .add(lblActivate)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(txtActivate, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, lblHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE))
+                        .add(txtActivate, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, lblHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -174,6 +175,10 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
                 .add(lblHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
+
+        txtId.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.txtId.AccessibleContext.accessibleDescription")); // NOI18N
+        cbShared.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.cbShared.AccessibleContext.accessibleDescription")); // NOI18N
+        txtActivate.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.txtActivate.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 

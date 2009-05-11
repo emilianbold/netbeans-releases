@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.makeproject;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.SharedClassObject;
@@ -123,15 +122,15 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     }
     
     // Platform
-    public int getPlatform() {
-        return getPreferences().getInt(PLATFORM, Platform.getDefaultPlatform());
-        }
-    public void setPlatform(int value) {
-        int oldValue = getPlatform();
-        getPreferences().putInt(PLATFORM, value);
-        if (oldValue != value)
-            firePropertyChange(PLATFORM, "" + oldValue, "" + value); // NOI18N
-    }
+//    public int getPlatform() {
+//        return getPreferences().getInt(PLATFORM, Platform.getDefaultPlatform());
+//        }
+//    public void setPlatform(int value) {
+//        int oldValue = getPlatform();
+//        getPreferences().putInt(PLATFORM, value);
+//        if (oldValue != value)
+//            firePropertyChange(PLATFORM, "" + oldValue, "" + value); // NOI18N
+//    }
     
     // Path Mode
     public int getPathMode() {

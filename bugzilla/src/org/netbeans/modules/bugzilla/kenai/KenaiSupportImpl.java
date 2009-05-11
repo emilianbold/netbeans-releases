@@ -41,7 +41,9 @@ package org.netbeans.modules.bugzilla.kenai;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -56,6 +58,7 @@ import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiService;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -80,8 +83,16 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
                 if (!KenaiService.Names.BUGZILLA.equals(f.getService())) {
                     return null;
                 }
-                String host = f.getLocation().getHost();
-                String location = f.getLocation().toString();
+                final URL loc;
+                try {
+                    loc = new URL(f.getLocation());
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                    return null;
+                }
+
+                String host = loc.getHost();
+                String location = f.getLocation();
                 int idx = location.indexOf(IBugzillaConstants.URL_BUGLIST);
                 if (idx <= 0) {
                     Bugzilla.LOG.warning("can't get issue tracker url from [" + project.getName() + ", " + location + "]"); // NOI18N
@@ -92,7 +103,7 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
                     url = "https" + url.substring(4);                           // NOI18N
                 }
                 String productParamUrl = null;
-                String productAttribute = "product=";
+                String productAttribute = "product=";                           // NOI18N
                 String product = null;
                 idx = location.indexOf(productAttribute);
                 if (idx <= 0) {
@@ -107,6 +118,7 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
                     repositories.add(repo);
                 }
 
+                repo.getConfiguration(); // force repo configuration init before controler populate
                 return repo;
             }
         } catch (KenaiException kenaiException) {

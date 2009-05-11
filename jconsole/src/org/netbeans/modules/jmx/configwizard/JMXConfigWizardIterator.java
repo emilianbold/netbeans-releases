@@ -205,6 +205,8 @@ public class JMXConfigWizardIterator implements TemplateWizard.Iterator
             if (configPanel == null) {
                 configPanel = new ConfigPanel.ConfigWizardPanel();
             }
+            if(propSrcGroups != null && propSrcGroups.length == 0)
+                propSrcGroups = null;
             WizardDescriptor.Panel targetChooserPanel = 
                     Templates.createSimpleTargetChooser(project,
                                                         propSrcGroups,

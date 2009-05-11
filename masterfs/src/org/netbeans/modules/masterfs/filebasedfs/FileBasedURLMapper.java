@@ -117,13 +117,7 @@ public final class FileBasedURLMapper extends URLMapper {
         try {
             file = FileUtil.normalizeFile(new File(url.toURI()));
         } catch (URISyntaxException e) {
-            StringBuilder sb = new StringBuilder();            
-            sb.append(e.getLocalizedMessage()).append(" [").append(url.toExternalForm()).append(']');//NOI18N
-            IllegalArgumentException iax = new IllegalArgumentException(sb.toString());
-            if (Utilities.isWindows() && url.getAuthority() != null) {
-                Exceptions.attachLocalizedMessage(iax,NbBundle.getMessage(FileBasedURLMapper.class, "MSG_UNC_PATH"));//NOI18N
-            }            
-            Exceptions.printStackTrace(iax);
+            Exceptions.printStackTrace(e);
             return null;
         } catch (IllegalArgumentException iax) {
             // catch possible IAE from File constructor and re-throw with URL

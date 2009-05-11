@@ -43,6 +43,7 @@ package org.netbeans.modules.gsf.testrunner.api;
 
 import org.netbeans.modules.gsf.testrunner.api.StatisticsPanel;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.lang.ref.WeakReference;
@@ -182,6 +183,7 @@ final class ResultWindow extends TopComponent {
         assert EventQueue.isDispatchThread();
         
         this.view = view;
+        view.setMinimumSize(new Dimension(0, 0));
         add(view);
     }
     

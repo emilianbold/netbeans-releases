@@ -57,27 +57,11 @@ public final class KenaiFeature {
 
     private FeatureData featureData;
     private URL webL;
-    private URI loc;
+    private String loc;
     
     KenaiFeature(FeatureData data) {
         this.featureData = data;
-        try {
-            this.loc = featureData.url == null ? null : new URI(featureData.url);
-            assert loc != null ? loc.isAbsolute() : true;
-        } catch (URISyntaxException uRISyntaxException) {
-            //workaround for #161838
-            for (String part: featureData.url.split(" ")) {
-                try {
-                    this.loc = new URI(part);
-                    if (this.loc.isAbsolute())
-                        break;
-                } catch (URISyntaxException uRISyntaxException1) {
-                    //ignore
-                }
-            }
-            if (this.loc==null || !this.loc.isAbsolute())
-                Logger.getLogger(KenaiFeature.class.getName()).log(Level.SEVERE, null, uRISyntaxException);
-        }
+        this.loc = featureData.url;
         try {
             this.webL = featureData.web_url==null?null:new URL(featureData.web_url);
         } catch (MalformedURLException malformedURLException) {
@@ -85,26 +69,51 @@ public final class KenaiFeature {
         }
     }
 
+    /**
+     * Getter for feature name
+     * @return name of feature
+     */
     public String getName() {
         return featureData.name;
     }
 
+    /**
+     * getter for feature type
+     * @return type of feature
+     */
     public Type getType() {
         return Type.forId(featureData.type);
     }
 
+    /**
+     * getter for service name
+     * @return name of service
+     * @see KenaiService.Names
+     */
     public String getService() {
         return featureData.service;
     }
 
-    public URI getLocation() {
+    /**
+     * getter for location of this feature
+     * @return location of feature
+     */
+    public String getLocation() {
         return loc;
     }
 
+    /**
+     * getter for web location of this feature
+     * @return web location of feature
+     */
     public URL getWebLocation() {
         return webL;
     }
 
+    /**
+     * Getter for diplay name of this feature
+     * @return display name
+     */
     public String getDisplayName() {
         return featureData.display_name;
     }

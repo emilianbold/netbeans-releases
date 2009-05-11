@@ -1,57 +1,33 @@
-downloads
-DOWNLOADS
-Downloads
-http://testkenai.com/projects/golden-project-1/downloads
-downloads
-http://testkenai.com/projects/golden-project-1/downloads
+wiki
+WIKI
+Wiki
+null
+wiki
+http://testkenai.com/projects/golden-project-1/pages/Home
 forum
 FORUM
 General Discussion
 null
 forum
 http://testkenai.com/projects/golden-project-1/forums/forum
-bz
-ISSUES
-Issue Tracking
-http://testkenai.com/bugzilla/buglist.cgi?product=golden-project-1
-bugzilla
-http://testkenai.com/bugzilla/buglist.cgi?product=golden-project-1
-jira
-ISSUES
-Jira Tracking
-http://testkenai.com/jira/browse/GOLDEN_PROJECT_1
-jira
-http://testkenai.com/jira/browse/GOLDEN_PROJECT_1
-commits
-LISTS
-Commits Mailing List
-null
-lists
-http://testkenai.com/projects/golden-project-1/lists/commits/archive
-issues
-LISTS
-Issues Mailing List
-null
-lists
-http://testkenai.com/projects/golden-project-1/lists/issues/archive
-dev
-LISTS
-Dev Mailing List
-null
-lists
-http://testkenai.com/projects/golden-project-1/lists/dev/archive
-users
-LISTS
-Users Mailing List
-null
-lists
-http://testkenai.com/projects/golden-project-1/lists/users/archive
+downloads
+DOWNLOADS
+Downloads
+http://testkenai.com/projects/golden-project-1/downloads
+downloads
+http://testkenai.com/projects/golden-project-1/downloads
 source-code-repository-svn
 SOURCE
 Source Code Repository Svn
 https://testkenai.com/svn/golden-project-1~source-code-repository-svn
 subversion
 http://testkenai.com/projects/golden-project-1/sources/source-code-repository-svn/show
+commits
+LISTS
+Commits Mailing List
+null
+lists
+http://testkenai.com/projects/golden-project-1/lists/commits/archive
 source-code-repository-hg
 SOURCE
 Source Code Repository Hg
@@ -64,9 +40,33 @@ Source Code Repository Git
 git://testkenai.com/golden-project-1~source-code-repository-git
 git
 http://testkenai.com/projects/golden-project-1/sources/source-code-repository-git/show
-wiki
-WIKI
-Wiki
+bz
+ISSUES
+Issue Tracking
+http://testkenai.com/bugzilla/buglist.cgi?product=golden-project-1
+bugzilla
+http://testkenai.com/bugzilla/buglist.cgi?product=golden-project-1
+issues
+LISTS
+Issues Mailing List
 null
-wiki
-http://testkenai.com/projects/golden-project-1/pages/Home
+lists
+http://testkenai.com/projects/golden-project-1/lists/issues/archive
+jira
+ISSUES
+Jira Tracking
+http://testkenai.com/jira/browse/GOLDEN_PROJECT_1
+jira
+http://testkenai.com/jira/browse/GOLDEN_PROJECT_1
+dev
+LISTS
+Dev Mailing List
+null
+lists
+http://testkenai.com/projects/golden-project-1/lists/dev/archive
+users
+LISTS
+Users Mailing List
+null
+lists
+http://testkenai.com/projects/golden-project-1/lists/users/archive

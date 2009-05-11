@@ -157,8 +157,6 @@ public class DependenciesNode extends AbstractNode {
             super();
             project = proj;
             this.type = type;
-            Preferences prefs = NbPreferences.root().node(PREF_DEPENDENCIES_UI); //NOI18N
-            prefs.addPreferenceChangeListener(this);
         }
         
         public void showNonCP() {
@@ -197,12 +195,16 @@ public class DependenciesNode extends AbstractNode {
         protected void addNotify() {
             super.addNotify();
             NbMavenProject.addPropertyChangeListener(project, this);
+            Preferences prefs = NbPreferences.root().node(PREF_DEPENDENCIES_UI); //NOI18N
+            prefs.addPreferenceChangeListener(this);
         }
         
         @Override
         protected void removeNotify() {
             setKeys(Collections.<DependencyWrapper>emptyList());
             NbMavenProject.removePropertyChangeListener(project, this);
+            Preferences prefs = NbPreferences.root().node(PREF_DEPENDENCIES_UI); //NOI18N
+            prefs.removePreferenceChangeListener(this);
             super.removeNotify();
         }
         
@@ -339,6 +341,7 @@ public class DependenciesNode extends AbstractNode {
             String typeString = type == TYPE_RUNTIME ? "runtime" : (type == TYPE_TEST ? "test" : "compile"); //NOI18N
             pnl.setSelectedScope(typeString);
         
+            pnl.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DependenciesNode.class, "TIT_Add_Library"));
             DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(DependenciesNode.class, "TIT_Add_Library"));
             dd.setClosingOptions(new Object[] {
                 pnl.getOkButton(),

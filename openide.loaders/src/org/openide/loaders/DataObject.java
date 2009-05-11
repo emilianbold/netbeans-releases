@@ -1175,6 +1175,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
 
     private static final class ModifiedRegistry extends HashSet<DataObject> {
         static final long serialVersionUID =-2861723614638919680L;
+        private static final Logger REGLOG = Logger.getLogger("org.openide.loaders.DataObject.Registry"); // NOI18N
         
         private final ChangeSupport cs = new ChangeSupport(this);
 
@@ -1199,6 +1200,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         @Override
         public boolean add (DataObject o) {
             boolean result = super.add(o);
+            REGLOG.log(Level.FINER, "Data Object {0} modified, change {1}", new Object[] { o, result }); // NOI18N
             if (result) {
                 cs.fireChange();
             }
@@ -1208,6 +1210,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         @Override
         public boolean remove (Object o) {
             boolean result = super.remove(o);
+            REGLOG.log(Level.FINER, "Data Object {0} unmodified, change {1}", new Object[] { o, result }); // NOI18N
             if (result) {
                 cs.fireChange();
             }

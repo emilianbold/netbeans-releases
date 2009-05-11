@@ -1,5 +1,6 @@
 #include <dlfcn.h>
 #include <malloc.h>
+#include <sched.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,13 +10,20 @@
 #include <sys/times.h>
 #include <sys/types.h>
 #include <errno.h>
+#include <unistd.h>
 
 #include "instruments.h"
+
+#ifdef TRACE
+#define LOG(args...) fprintf(stderr, ## args)
+#else
+#define LOG(...)
+#endif
 
 volatile int trace_sync = 0;
 volatile int trace_mem = 0;
 volatile int trace_cpu = 0;
-volatile static int thr_count = 1; // main thread is always here
+volatile static int thr_count = 0; /*1; // main thread is always here */
 
 //---- control and reporting section --------------------------
 
@@ -23,15 +31,7 @@ static int msqid = -1;
 static void* hndl = NULL;
 static struct mallinfo (*mall_hndl)(void) = NULL;
 
-static void* reporter(void* arg);
-
-static void start_reporting() {
-    int tid;
-    void* (*pcreate)(void*, void*, void*(*)(void*), void*) = dlsym(hndl, "pthread_create");
-    if (pcreate) {
-        pcreate(&tid, NULL, reporter, NULL);
-    }
-}
+static int reporter(void* arg);
 
 static int init_sync_tracing();
 
@@ -53,28 +53,29 @@ void cleanup(void* p) {
     }
 }
 
-void
+static void start_reporting();
+static void start_main();
+static void setup();
+
+//int main(int argc, void** argv);
+
+static void
 __attribute((constructor))
 init_function(void) {
-    pthreads_enabled = init_sync_tracing();
-    void* hndl = dlopen(NULL, RTLD_GLOBAL);
-    mall_hndl  = dlsym(hndl, "mallinfo");
+    LOG("init started\n");
+    pthreads_enabled = 1; //init_sync_tracing();
+    mall_hndl  = dlsym((void*)-1 /*RTLD_NEXT*/, "mallinfo");
+    if(!mall_hndl)
+        mall_hndl  = dlsym((void*)0 /*RTLD_DEFAULT*/, "mallinfo");
     mallinfo_enabled = (mall_hndl != NULL);
 
-    key_t key = getpid(); // use pid as a name of queue
-    int msgflg = IPC_CREAT | 0666;
-
-    /*
-     * Get the message queue id for the
-     * "pid" and create it
-     */
-    if((msqid = msgget(key, msgflg)))
-        start_reporting();
-    // init_sync_tracing(); // JUST FOR TESTING!!!!
+    start_main(); // this sets up everything for main
+    start_reporting();
+    LOG("init done\n");
 }
 
 
-void
+static void
 __attribute((destructor))
 fini_function(void) {
     cleanup(0);
@@ -118,8 +119,10 @@ static void unlock() {
 #define ACTUAL2 , p1, p2
 
 #define INSTRUMENT(func, param, actual) \
-static int (* ORIG(func))(void* p param) = NULL; \
 int func (void * p param) { \
+    static int (* ORIG(func))(void* p param) = NULL; \
+    INIT(func); \
+    LOG(QUOTE(func) " called\n"); \
     thlock++; \
     int ret = ORIG(func) (p actual); \
     thlock--; \
@@ -127,10 +130,15 @@ int func (void * p param) { \
 }
 
 static __thread int thlock = 0;
-static __thread int tid;
 
 #define INIT(func) \
-    ORIG(func) = dlsym(hndl, QUOTE(func))
+    if(!ORIG(func)) { \
+        ORIG(func) = dlsym((void*)-1 /*RTLD_NEXT*/, QUOTE(func)); \
+        if(ORIG(func) && ORIG(func)==func) \
+            ORIG(func) = dlsym((void*)-1 /*RTLD_NEXT*/, QUOTE(func)); \
+        if(!ORIG(func)) \
+            ORIG(func) = dlsym((void*)0 /*RTLD_DEFAULT*/, QUOTE(func)); \
+    }
 
 INSTRUMENT(pthread_cond_wait, VOID1P, ACTUAL1)
 INSTRUMENT(pthread_cond_timedwait, VOID2P, ACTUAL2)
@@ -139,11 +147,12 @@ INSTRUMENT(pthread_mutex_setprioceiling, INT2P, ACTUAL2)
 INSTRUMENT(pthread_rwlock_rdlock, , )
 INSTRUMENT(pthread_rwlock_wrlock, , )
 INSTRUMENT(pthread_barrier_wait, , )
-INSTRUMENT(pthread_join, VOID1P, ACTUAL1)
+//INSTRUMENT(pthread_join, VOID1P, ACTUAL1)
 INSTRUMENT(pthread_mutex_timedlock, VOID1P, ACTUAL1)
 INSTRUMENT(pthread_rwlock_timedrdlock, VOID1P, ACTUAL1)
 INSTRUMENT(pthread_rwlock_timedwrlock, VOID1P, ACTUAL1)
 INSTRUMENT(pthread_spin_lock, , )
+//INSTRUMENT(pthread_cleanup_push);
 
 static int (* ORIG(pthread_create))(void *newthread,
                                     void *attr,
@@ -163,6 +172,8 @@ static int* flags[MAXTHR];
 
 
 void* start_routine(void* pkg) {
+    LOG("new thread started\n");
+    int tid = 0;
     start_pkg * user_data = (start_pkg *)pkg;
     void *(*user_start_routine) (void *) = user_data->entry_point;
     void *arg = user_data->arg;
@@ -191,6 +202,27 @@ void* start_routine(void* pkg) {
     }
     thr_count--;
     unlock();
+    LOG("a thread exited\n");
+}
+
+static void start_main() {
+    int tid = 0;
+    thlock = 0;
+ //   lock();
+    int steps = 0;
+    while(flags[carret] && steps < (MAXTHR + 1)) {
+        carret = (carret + 1) % MAXTHR;
+        steps++;
+    }
+    int found = (flags[carret] == 0);
+    if(found) {
+        tid = carret;
+        flags[tid] = &thlock;
+        thlock = 0;
+        carret = (carret + 1) % MAXTHR;
+    }
+    thr_count++;
+   // unlock();
 }
 
 int pthread_create(void *newthread,
@@ -198,12 +230,14 @@ int pthread_create(void *newthread,
 		   void *(*user_start_routine) (void *),
 		   void *arg)
 {
+    LOG("pthread_create called\n");
+    INIT(pthread_create);
     start_pkg * user_data = malloc(sizeof(start_pkg));
     user_data->entry_point = user_start_routine;
     user_data->arg = arg;
     return ORIG(pthread_create)(newthread, attr, start_routine, user_data);
 }
-
+/*
 int init_sync_tracing() {
     if ((hndl = dlopen("libpthread.so.0", RTLD_LAZY))) {
         INIT(pthread_cond_wait);
@@ -223,6 +257,19 @@ int init_sync_tracing() {
     }
 
     return (_orig_pthread_mutex_lock != NULL);
+}
+*/
+static unsigned char reporter_stack[2000];
+
+static void start_reporting() {
+    LOG("start_reporting called\n");
+#ifdef linux
+    clone(reporter, (void*)(reporter_stack+sizeof(reporter_stack)), 
+          CLONE_DETACHED | CLONE_THREAD | CLONE_SIGHAND | CLONE_VM, NULL);
+#else
+    int tid;
+    pthread_create(&tid, NULL, reporter, NULL);
+#endif
 }
 
 static void check_control(int wait) {
@@ -250,7 +297,12 @@ static void check_control(int wait) {
     //printf("%d, %d, %d\n", trace_cpu, trace_mem, trace_sync);
 }
 
-void* reporter(void* arg) {
+int reporter(void* arg) {
+    LOG("reporter started\n");
+    key_t key = getpid(); // use pid as a name of queue
+    int msgflg = IPC_CREAT | 0666;
+    if(!(msqid = msgget(key, msgflg)))
+ 	return -1;
     long resolution = DEF_RES;
     struct timespec w;
     if (clock_getres(CLOCK_REALTIME, &w) == 0) {
@@ -287,8 +339,8 @@ void* reporter(void* arg) {
             if (trace_sync) {
                 struct syncmsg syncbuf = {
                     SYNCMSG,
-                    sync_wait,
-                    thr_count
+                    (I32) sync_wait,
+                    (I32) thr_count
                 };
                 msgsnd(msqid, &syncbuf, sizeof (syncbuf) - sizeof (syncbuf.type), IPC_NOWAIT);
             }
@@ -298,8 +350,8 @@ void* reporter(void* arg) {
                 long delta = (long) (cur_clock - prev_clock);
                 struct cpumsg cpubuf = {
                     CPUMSG,
-                    100.0 * (cur_times.tms_utime - prev_times.tms_utime) / delta,
-                    100.0 * (cur_times.tms_stime - prev_times.tms_stime) / delta
+                    (I32) (100.0 * (cur_times.tms_utime - prev_times.tms_utime) / delta),
+                    (I32) (100.0 * (cur_times.tms_stime - prev_times.tms_stime) / delta)
                 };
                 msgsnd(msqid, &cpubuf, sizeof (cpubuf) - sizeof (cpubuf.type), IPC_NOWAIT);
                 prev_clock = cur_clock;
@@ -310,12 +362,12 @@ void* reporter(void* arg) {
                 struct mallinfo mi = mall_hndl();
                 struct memmsg membuf = {
                     MEMMSG,
-                    mi.uordblks
+                    mi.uordblks + mi.hblkhd
                 };
                 msgsnd(msqid, &membuf, sizeof (membuf) - sizeof (membuf.type), IPC_NOWAIT);
             }
             check_control(0);
         }
     }
-    return NULL;
+    return 0;
 }

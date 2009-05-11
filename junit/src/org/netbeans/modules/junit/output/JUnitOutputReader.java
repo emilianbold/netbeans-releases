@@ -73,6 +73,7 @@ import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.gsf.testrunner.api.OutputLine;
+import org.netbeans.modules.gsf.testrunner.api.Status;
 import org.netbeans.modules.junit.output.antutils.AntProject;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -563,11 +564,16 @@ final class JUnitOutputReader {
                                 for(OutputLine l: tc.getOutput()){
                                     output.add(l.getLine());
                                 }
-                                findTest(reportSuite, tc.getName()).addOutputLines(output);
+                                Testcase rtc = findTest(reportSuite, tc.getName());
+
+                                if (rtc != null)
+                                    rtc.addOutputLines(output);
                             }
                         }
-                        currentSuite.getTestcases().clear();
-                        currentSuite.getTestcases().addAll(reportSuite.getTestcases());
+                        if (!reportSuite.getTestcases().isEmpty()){
+                            currentSuite.getTestcases().clear();
+                            currentSuite.getTestcases().addAll(reportSuite.getTestcases());
+                        }
                     }
                 }
             }
@@ -617,12 +623,33 @@ final class JUnitOutputReader {
     }
     
     private void suiteFinished(int total, int failures, int errors ,long time) {
-        while (testSession.getCurrentSuite().getTestcases().size() < (total - errors - failures)){
-            JUnitTestcase tc = new JUnitTestcase("Unknown", "Unknown", testSession);
-            testSession.addTestCase(tc); //NOI18N
+        int addFail = failures;
+        int addError = errors;
+        int addPass = total - failures - errors;
+        for(Testcase tc: testSession.getCurrentSuite().getTestcases()){
+            switch(tc.getStatus()){
+                case ERROR: addError--;break;
+                case FAILED: addFail--;break;
+                default: addPass--;
+            }
         }
+        for(int i=0; i<addPass; i++){
+            JUnitTestcase tc = new JUnitTestcase("Unknown", "Unknown", testSession); //NOI18N
+            tc.setStatus(Status.PASSED);
+            testSession.addTestCase(tc);
+        }
+        for(int i=0; i<addFail; i++){
+            JUnitTestcase tc = new JUnitTestcase("Unknown", "Unknown", testSession); //NOI18N
+            tc.setStatus(Status.FAILED);
+            testSession.addTestCase(tc);
+        }
+        for(int i=0; i<addError; i++){
+            JUnitTestcase tc = new JUnitTestcase("Unknown", "Unknown", testSession); //NOI18N
+            tc.setStatus(Status.ERROR);
+            testSession.addTestCase(tc);
+        }
+
         lastSuiteTime = time;
-//        manager.displayReport(testSession, testSession.getReport(time));
         state = State.SUITE_FINISHED;
     }
 

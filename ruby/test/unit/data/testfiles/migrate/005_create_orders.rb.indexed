@@ -17,7 +17,6 @@ Not Searchable Keys:
 Document 1
 Searchable Keys:
   dbtable : orders
-  require : 005_create_orders
 
 Not Searchable Keys:
   dbcolumn : address;text

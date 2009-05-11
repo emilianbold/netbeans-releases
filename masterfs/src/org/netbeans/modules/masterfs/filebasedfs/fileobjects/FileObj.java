@@ -209,10 +209,12 @@ public class FileObj extends BaseFileObj {
     }
 
     final void setLastModified(long lastModified) {
-        if (this.lastModified != -1 && !realLastModifiedCached) {
-            realLastModifiedCached = true;
+        if (this.lastModified != 0) { // #130998 - don't set when already invalidated
+            if (this.lastModified != -1 && !realLastModifiedCached) {
+                realLastModifiedCached = true;
+            }
+            this.lastModified = lastModified;
         }
-        this.lastModified = lastModified;
     }
     
     
@@ -261,6 +263,10 @@ public class FileObj extends BaseFileObj {
         boolean isModified = (isReal) ? (oldLastModified != lastModified) : (oldLastModified < lastModified);
         if (fire && oldLastModified != -1 && lastModified != -1 && lastModified != 0 && isModified) {
             fireFileChangedEvent(expected);
+        }
+        if (fire && lastModified != 0) {
+            // #129178 - event consumed in org.openide.text.DataEditorSupport and used to change editor read-only state
+            fireFileAttributeChangedEvent("DataEditorSupport.read-only.refresh", null, null);  //NOI18N
         }
     }
     

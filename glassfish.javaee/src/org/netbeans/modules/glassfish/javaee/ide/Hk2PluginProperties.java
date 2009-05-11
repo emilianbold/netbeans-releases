@@ -210,6 +210,8 @@ public class Hk2PluginProperties {
             jars.add("jstl-impl"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
             jars.add("jsf-impl"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
             jars.add("jsf-api"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            jars.add("bean-validator"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            jars.add("webbeans-osgi-bundle"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
 
             for (String jarStr : jars) {
                 File jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), jarStr);
@@ -417,8 +419,10 @@ public class Hk2PluginProperties {
         try {
             return isRunning(host, Integer.parseInt(port));
         } catch (NumberFormatException e) {
+            Logger.getLogger("glassfish-javaee").log(Level.INFO, host+"  "+port, e); // NOI18N
             return false;
         } catch (IOException ioe) {
+            Logger.getLogger("glassfish-javaee").log(Level.INFO, host+"  "+port, ioe); // NOI18N
             return false;
         }
     }

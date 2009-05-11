@@ -94,6 +94,17 @@ public interface CsmMacroExpansionDocProvider {
     public String expand(Document doc, CsmFile file, int startOffset, int endOffset);
 
     /**
+     * Macro expands specified string in specified contest.
+     *
+     * @param doc - document for macro expansion
+     * @param doc - file of the document
+     * @param startOffset - start offset for expansion
+     * @param endOffset - end offset for expansion
+     * @return - expansion, null otherwise
+     */
+    public String expand(Document doc, int offset, String code);
+
+    /**
      * returns interval of macro expansion for offset in original text
      * @param doc document
      * @param offset offset in document
@@ -138,4 +149,13 @@ public interface CsmMacroExpansionDocProvider {
      * @return offset of the next macro expansion
      */
     public int getPrevMacroExpansionStartOffset(Document expandedDoc, int expandedOffset);
+
+    /**
+     * Returns usages of token on offset
+     *
+     * @param expandedDoc - document
+     * @param offset - offset
+     * @return array of usages
+     */
+    public int[][] getUsages(Document expandedDoc, int offset);
 }

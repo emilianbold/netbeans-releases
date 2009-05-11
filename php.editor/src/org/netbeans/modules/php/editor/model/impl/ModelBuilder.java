@@ -69,7 +69,7 @@ class ModelBuilder {
     private Program program;
     private final Map<VariableContainerImpl, Map<String, VariableNameImpl>> vars;
 
-    ModelBuilder(FileScopeImpl fileScope, int offset) {
+    ModelBuilder(FileScopeImpl fileScope) {
         this.fileScope = fileScope;
         this.currentScope = new Stack<ScopeImpl>();
         this.vars = new HashMap<VariableContainerImpl, Map<String, VariableNameImpl>>();

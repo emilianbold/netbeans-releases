@@ -206,6 +206,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             startTime = System.currentTimeMillis();
         }
 
+        String prefix = completionContext.getPrefix();
+        prefix = prefix.startsWith("@") ? prefix.substring(1) : prefix;//NOI18N
+        
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
         BaseDocument doc = (BaseDocument) completionContext.getParserResult().getSnapshot().getSource().getDocument(false);
 
@@ -217,7 +220,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         try{
             ParserResult info = completionContext.getParserResult();
             int caretOffset = completionContext.getCaretOffset();
-            String prefix = completionContext.getPrefix();
+            
             this.caseSensitive = completionContext.isCaseSensitive();
             this.nameKind = caseSensitive ? QuerySupport.Kind.PREFIX : QuerySupport.Kind.CASE_INSENSITIVE_PREFIX;
 
@@ -338,7 +341,22 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             LOGGER.fine(String.format("complete() took %d ms, result contains %d items", time, proposals.size()));
         }
 
-        return new PHPCompletionResult(completionContext, proposals);
+        // a hotfix for #151890
+        // TODO: move the check forward to optimize performance
+        List<CompletionProposal> filteredProposals = proposals;
+
+        if (!completionContext.isPrefixMatch()){
+            filteredProposals = new ArrayList<CompletionProposal>();
+
+            for (CompletionProposal proposal : proposals){
+                if (prefix.equals(proposal.getName())){
+                    filteredProposals.add(proposal);
+                }
+            }
+        }
+        // end of hotfix for #151890
+
+        return new PHPCompletionResult(completionContext, filteredProposals);
     }
 
     private void autoCompleteClassNames(List<CompletionProposal> proposals,

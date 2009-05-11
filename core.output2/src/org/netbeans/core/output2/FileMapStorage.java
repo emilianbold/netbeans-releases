@@ -266,11 +266,6 @@ class FileMapStorage implements Storage {
     public ByteBuffer getReadBuffer(int start, int byteCount) throws IOException {
         ByteBuffer cont;
         synchronized (this) {
-            //XXX Some optimizations possible here:
-            // - Don't map the entire file, just what is requested (perhaps if the mapped
-            //    start - currentlyMappedStart > someThreshold
-            // - Use RandomAccessFile and use one buffer for reading and writing (this may
-            //    cause contention problems blocking repaints)
             cont = this.contents;
             if (cont == null || start + byteCount > mappedRange || start < mappedStart) {
                 FileChannel ch = fileChannel();
@@ -279,25 +274,18 @@ class FileMapStorage implements Storage {
                 long map = byteCount > (MAX_MAP_RANGE / 2) ? (byteCount + byteCount / 10) : (MAX_MAP_RANGE / 2);
                 mappedRange = Math.min(ch.size(), start + map);
                 try {
-                    cont = ch.map(FileChannel.MapMode.READ_ONLY, mappedStart, mappedRange - mappedStart);
-                    this.contents = cont;
-                    
-                    /*try {
-                        cont = ch.map(FileChannel.MapMode.READ_ONLY,
-                            mappedStart, mappedRange - mappedStart);
+                    try {
+                        cont = ch.map(FileChannel.MapMode.READ_ONLY, mappedStart, mappedRange - mappedStart);
                         this.contents = cont;
                     } catch (IOException ioe) {
-                        Logger.getAnonymousLogger().info("Failed to memory map output file for " + //NOI18N
-                                "reading.  Trying to read it normally."); //NOI18N
+                        Logger.getAnonymousLogger().info("Failed to memory map output file for reading. Trying to read it normally."); //NOI18N
                         Exceptions.printStackTrace(ioe);
 
-                        //If a lot of processes have crashed with mapped files (generally when testing),
-                        //this exception may simply be that the memory cannot be allocated for mapping.
-                        //Try to do it non-mapped
+                        // Memory mapping failed, fallback to non-mapped
                         cont = ByteBuffer.allocate((int) (mappedRange - mappedStart));
-                        ch.position(mappedStart).read(cont);
+                        ch.read(cont, mappedStart);
                         this.contents = cont;
-                    }*/
+                    }
                 } catch (IOException ioe) {
                     Logger.getAnonymousLogger().info("Failed to read output file. Start:" + start + " bytes reqd=" + //NOI18N
                         byteCount + " mapped range=" + mappedRange + //NOI18N

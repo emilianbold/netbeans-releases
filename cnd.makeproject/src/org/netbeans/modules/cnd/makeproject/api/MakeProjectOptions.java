@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.makeproject.api;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.settings.CppSettings;
 
@@ -70,7 +70,7 @@ public class MakeProjectOptions {
         // Set the default name in global setting
         CppSettings.getDefault().setCompilerSetName(name);
         // Also set the default compiler set in the localhost set. Remote sets will look at the setting in CppSettings.
-        CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(ExecutionEnvironmentFactory.getLocalExecutionEnvironment());
+        CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(ExecutionEnvironmentFactory.getLocal());
         CompilerSet compilerSet = compilerSetManager.getCompilerSet(name);
         if (compilerSet != null) {
             compilerSetManager.setDefault(compilerSet);
@@ -102,16 +102,16 @@ public class MakeProjectOptions {
     /**
      * @Deprecated
      */
-    public static void setDefaultPlatform(int platform) {
-        MakeOptions.getInstance().setPlatform(platform);
-    }
+//    public static void setDefaultPlatform(int platform) {
+//        MakeOptions.getInstance().setPlatform(platform);
+//    }
 
     /**
      * @Deprecated
      */
-    public static int getDefaultPlatform() {
-        return MakeOptions.getInstance().getPlatform();
-    }
+//    public static int getDefaultPlatform() {
+//        return MakeOptions.getInstance().getPlatform();
+//    }
 
     /**
      * @Deprecated

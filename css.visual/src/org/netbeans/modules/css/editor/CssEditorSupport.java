@@ -138,6 +138,7 @@ public class CssEditorSupport {
                                 //add the new rule at the end of the rule block:
                                 List<CssRuleItem> items = myRule.items();
                                 final int INDENT = doc.getFormatter().getShiftWidth();
+                                int insertOffset = myRule.getRuleCloseBracketOffset();
 
                                 boolean initialNewLine = false;
                                 if (!items.isEmpty()) {
@@ -148,6 +149,7 @@ public class CssEditorSupport {
                                     //add it if there is no semicolon
                                     if (last.semicolonOffset() == -1) {
                                         doc.insertString(last.value().offset() + last.value().name().trim().length(), ";", null); //NOI18N
+                                        insertOffset++; //shift the insert offset because of the added semicolon
                                     }
 
                                     initialNewLine = Utilities.getLineOffset(doc, myRule.getRuleCloseBracketOffset()) == Utilities.getLineOffset(doc, last.key().offset());
@@ -155,7 +157,6 @@ public class CssEditorSupport {
                                     initialNewLine = Utilities.getLineOffset(doc, myRule.getRuleCloseBracketOffset()) == Utilities.getLineOffset(doc, myRule.getRuleOpenBracketOffset());
                                 }
 
-                                int insertOffset = myRule.getRuleCloseBracketOffset();
                                 String text = (initialNewLine ? LINE_SEPARATOR : "") +
                                         makeIndentString(INDENT) +
                                         newRule.key().name() + ": " + newRule.value().name() + ";" +

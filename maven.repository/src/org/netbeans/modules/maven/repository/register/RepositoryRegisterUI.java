@@ -108,7 +108,8 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
 
         lblHeader.setText(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_Register_Header", new Object[] {})); // NOI18N
 
-        lblRepoId.setText(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_ID", new Object[] {})); // NOI18N
+        lblRepoId.setLabelFor(txtRepoId);
+        org.openide.awt.Mnemonics.setLocalizedText(lblRepoId, org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_ID", new Object[] {})); // NOI18N
 
         txtRepoId.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
@@ -116,7 +117,8 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
             }
         });
 
-        lblRepoName.setText(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_Name", new Object[] {})); // NOI18N
+        lblRepoName.setLabelFor(txtRepoName);
+        org.openide.awt.Mnemonics.setLocalizedText(lblRepoName, org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_Name", new Object[] {})); // NOI18N
 
         txtRepoName.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
@@ -125,7 +127,7 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
         });
 
         lblType.setLabelFor(comType);
-        lblType.setText(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "RepositoryRegisterUI.lblType.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblType, org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "RepositoryRegisterUI.lblType.text")); // NOI18N
 
         comType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
@@ -133,7 +135,7 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
 
         buttonGroup1.add(jraLocal);
         jraLocal.setSelected(true);
-        jraLocal.setText(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_Type_Local", new Object[] {})); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jraLocal, org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_Type_Local", new Object[] {})); // NOI18N
         jraLocal.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jraLocalActionPerformed(evt);
@@ -141,14 +143,15 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
         });
 
         buttonGroup1.add(jraRemote);
-        jraRemote.setText(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_Type_Remote", new Object[] {})); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jraRemote, org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_Type_Remote", new Object[] {})); // NOI18N
         jraRemote.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jraRemoteActionPerformed(evt);
             }
         });
 
-        lblRepoPath.setText(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_Path", new Object[] {})); // NOI18N
+        lblRepoPath.setLabelFor(txtRepoPath);
+        org.openide.awt.Mnemonics.setLocalizedText(lblRepoPath, org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_Path", new Object[] {})); // NOI18N
 
         txtRepoPath.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent evt) {
@@ -156,16 +159,18 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
             }
         });
 
-        btnBrowse.setText(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "CMD_Repo_Path_Browse", new Object[] {})); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(btnBrowse, org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "CMD_Repo_Path_Browse", new Object[] {})); // NOI18N
         btnBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnBrowseActionPerformed(evt);
             }
         });
 
-        lblRepoUrl.setText(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_URL", new Object[] {})); // NOI18N
+        lblRepoUrl.setLabelFor(txtRepoUrl);
+        org.openide.awt.Mnemonics.setLocalizedText(lblRepoUrl, org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_URL", new Object[] {})); // NOI18N
 
-        lblIndexUrl.setText(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_Index_Url", new Object[] {})); // NOI18N
+        lblIndexUrl.setLabelFor(txtIndexUrl);
+        org.openide.awt.Mnemonics.setLocalizedText(lblIndexUrl, org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_Index_Url", new Object[] {})); // NOI18N
 
         txtIndexUrl.setEditable(false);
         txtIndexUrl.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -224,10 +229,10 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
                                                 .add(org.jdesktop.layout.GroupLayout.LEADING, lblRepoUrl)))))))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(txtIndexUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 611, Short.MAX_VALUE)
-                            .add(txtRepoUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 611, Short.MAX_VALUE)
+                            .add(txtIndexUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
+                            .add(txtRepoUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
-                                .add(txtRepoPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
+                                .add(txtRepoPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 555, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(btnBrowse)))))
                 .addContainerGap())
@@ -271,6 +276,16 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 24, Short.MAX_VALUE)
                 .add(lblValidate, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
+
+        txtRepoId.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "RepositoryRegisterUI.txtRepoId.AccessibleContext.accessibleDescription")); // NOI18N
+        txtRepoName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "RepositoryRegisterUI.txtRepoName.AccessibleContext.accessibleDescription")); // NOI18N
+        comType.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "RepositoryRegisterUI.comType.AccessibleContext.accessibleDescription")); // NOI18N
+        jraLocal.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "RepositoryRegisterUI.jraLocal.AccessibleContext.accessibleDescription")); // NOI18N
+        jraRemote.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "RepositoryRegisterUI.jraRemote.AccessibleContext.accessibleDescription")); // NOI18N
+        txtRepoPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "RepositoryRegisterUI.txtRepoPath.AccessibleContext.accessibleDescription")); // NOI18N
+        btnBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "RepositoryRegisterUI.btnBrowse.AccessibleContext.accessibleDescription")); // NOI18N
+        txtIndexUrl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "RepositoryRegisterUI.txtIndexUrl.AccessibleContext.accessibleDescription")); // NOI18N
+        txtRepoUrl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "RepositoryRegisterUI.txtRepoUrl.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void btnBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBrowseActionPerformed

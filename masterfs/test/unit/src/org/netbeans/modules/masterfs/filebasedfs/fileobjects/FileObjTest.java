@@ -62,6 +62,7 @@ public class FileObjTest extends NbTestCase {
      * - create FO2
      * - delete FO1 => FO1 is invalid now
      * - rename FO2 to FO1
+     * - rename FO1 to FO1 => FO1 still invalid
      * - try to write to FO1.getOutputStream() => it should not be possible because FO1 is still invalid
      */
     public void testDuplicateFileObject130998() throws IOException {
@@ -75,6 +76,12 @@ public class FileObjTest extends NbTestCase {
         FileLock lock = fileObject2.lock();
         fileObject2.rename(lock, fileObject1.getName(), null);
         lock.releaseLock();
+        assertTrue("fileObject2 should be valid.", fileObject2.isValid());
+
+        lock = fileObject1.lock();
+        fileObject1.rename(lock, fileObject1.getName(), null);
+        lock.releaseLock();
+        assertFalse("fileObject1 should remain invalid after rename.", fileObject1.isValid());
 
         try {
             fileObject1.getOutputStream();

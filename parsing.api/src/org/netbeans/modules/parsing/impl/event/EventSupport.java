@@ -58,6 +58,7 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
@@ -84,7 +85,10 @@ import org.openide.util.WeakListeners;
 public final class EventSupport {
     
     private static final Logger LOGGER = Logger.getLogger(EventSupport.class.getName());
-    
+
+    // make sure that RP is initialized before anything else happens (#163056)
+    private static final RequestProcessor RP = new RequestProcessor ("parsing-event-collector",1);       //NOI18N
+
     private final Source source;
     private volatile boolean initialized;
     private volatile boolean k24;
@@ -92,16 +96,14 @@ public final class EventSupport {
     private FileChangeListener fileChangeListener;
     private DataObjectListener dobjListener;
     private ChangeListener parserListener;
-    private static final EditorRegistryListener editorRegistryListener  = new EditorRegistryListener();
-    
-    
-    private static final RequestProcessor RP = new RequestProcessor ("parsing-event-collector",1);       //NOI18N
     
     private final RequestProcessor.Task resetTask = RP.create(new Runnable() {
         public void run() {
             resetStateImpl();
         }
     });
+
+    private static final EditorRegistryListener editorRegistryListener  = new EditorRegistryListener();
     
     public EventSupport (final Source source) {
         assert source != null;
@@ -316,10 +318,12 @@ public final class EventSupport {
                 if (lastEditor != null) {
                     lastEditor.removeCaretListener(this);
                     lastEditor.removePropertyChangeListener(this);
-                    final Document doc = lastEditor.getDocument();
+                    final Document document = lastEditor.getDocument();
                     Source source = null;
-                    if (doc != null) {
-                        source = Source.create(doc);
+                    if (document != null) {
+                        String mimeType = NbEditorUtilities.getMimeType (document);
+                        if (mimeType != null)
+                            source = Source.create (document);
                     }
                     if (source != null) {
                         SourceAccessor.getINSTANCE().getEventSupport(source).k24 = false;
@@ -365,22 +369,17 @@ public final class EventSupport {
                 }
                 if (source != null) {
                     Object rawValue = evt.getNewValue();
-                    assert rawValue instanceof Boolean;
-                    if (rawValue instanceof Boolean) {
-                        final boolean value = (Boolean)rawValue;
-                        if (value) {
-                            assert this.request == null;
-                            this.request = TaskProcessor.resetState(source, false, false);
-                            SourceAccessor.getINSTANCE().getEventSupport(source).k24 = true;
-                        }
-                        else {
-                            TaskProcessor.Request _request = this.request;
-                            this.request = null;
-                            final EventSupport support = SourceAccessor.getINSTANCE().getEventSupport(source);
-                            support.k24 = false;
-                            support.resetTask.schedule(TaskProcessor.reparseDelay);
-                            TaskProcessor.resetStateImplAsync(_request);
-                        }
+                    if (rawValue instanceof Boolean && ((Boolean) rawValue).booleanValue()) {
+                        assert this.request == null;
+                        this.request = TaskProcessor.resetState(source, false, false);
+                        SourceAccessor.getINSTANCE().getEventSupport(source).k24 = true;
+                    } else {
+                        TaskProcessor.Request _request = this.request;
+                        this.request = null;
+                        final EventSupport support = SourceAccessor.getINSTANCE().getEventSupport(source);
+                        support.k24 = false;
+                        support.resetTask.schedule(TaskProcessor.reparseDelay);
+                        TaskProcessor.resetStateImplAsync(_request);
                     }
                 }
             }

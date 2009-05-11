@@ -44,7 +44,6 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -55,18 +54,14 @@ import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.project.InvalidProjectModelException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.validation.ModelValidationResult;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
-import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.NbArtifact;
 import org.netbeans.modules.maven.nodes.DependenciesNode;
-import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -225,11 +220,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                                 new OpenPomAction(nbproject));
                         addReport(report);
                     } else if (art.getFile() == null || !art.getFile().exists()) {
-                        File f = art.getFile();
-                        if (f == null || MavenFileOwnerQueryImpl.getInstance().getOwner(f.toURI()) == null) {
-                            //#160440 don't consider missing jar files that have a project associated as missing
-                            missingJars.add(art);
-                        }
+                        missingJars.add(art);
                     }
                 }
                 if (missingJars.size() > 0) {
@@ -255,6 +246,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     }
     
     private void checkParent(final MavenProject project) {
+        //mkleint: this code is never properly reached..
         Artifact art = project.getParentArtifact();
         if (art != null && art instanceof NbArtifact) {
             
@@ -263,16 +255,8 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                 return;
             }
             NbArtifact nbart = (NbArtifact)art;
-            try {
-                // shouldnot be necessary after update to maven embedder sources 20/9/2006 and later.
-                EmbedderFactory.getProjectEmbedder().resolve(nbart, Collections.EMPTY_LIST, EmbedderFactory.getProjectEmbedder().getLocalRepository());
-                //getFile to create the fake file etc..
-                nbart.getFile();
-            } catch (ArtifactResolutionException ex) {
-                ex.printStackTrace();
-            } catch (ArtifactNotFoundException ex) {
-                ex.printStackTrace();
-            }
+            //getFile to create the fake file etc..
+            nbart.getFile();
             if (nbart.getNonFakedFile() != null && !nbart.getNonFakedFile().exists()) {
                 //TODO create a correction action for this.
                 ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,

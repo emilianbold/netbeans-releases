@@ -67,9 +67,9 @@ public class TimeEditor extends PropertyEditorSupport {
     @Override
     public String getAsText() {
         if (!(getValue() instanceof Time)){
-            return getValue() + "";
+            return String.valueOf(getValue());
         }
-        return ((Time) getValue() == null ? "0" : ((Time) getValue()).equals(zeroTime) ? "0" : format.format(((Time) getValue()).getNanos() / 1e9));
+        return ((Time) getValue()).equals(zeroTime) ? "0" : format.format(((Time) getValue()).getNanos() / 1e9); // NOI18N
     }
 
     @Override

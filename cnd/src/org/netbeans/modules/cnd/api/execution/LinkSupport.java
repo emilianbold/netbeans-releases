@@ -42,6 +42,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -54,6 +55,38 @@ public class LinkSupport {
 
     public static String getOriginalFile(String linkPath) {
         return getOriginalFile(linkPath, 10);
+    }
+
+    public static String resolveWindowsLink(String linkPath) {
+        if (Utilities.isWindows()){
+            File file = new File(linkPath);
+            if (file.exists()){
+                if (!isLinkFile(linkPath)) {
+                    return linkPath;
+                }
+            } else {
+                file = new File(linkPath+".lnk"); // NOI18N
+                if (!file.exists()) {
+                    return linkPath;
+                }
+            }
+            String resolved = getOriginalFile(file.getAbsolutePath());
+            if (resolved != null) {
+                return resolved;
+            }
+        }
+        return linkPath;
+    }
+
+    public static boolean isLinkFile(String linkPath) {
+        try {
+            LinkReader lr = new LinkReader(linkPath);
+            return true;
+        } catch (FileNotFoundException ex) {
+            return false;
+        } catch (IOException ex) {
+            return false;
+        }
     }
 
     private static String getOriginalFile(String linkPath, int level) {
@@ -75,6 +108,8 @@ public class LinkSupport {
         }
         if (new File(linkPath).exists()) {
             if (linkPath.endsWith(".lnk")) { // NOI18N
+                return getOriginalFile(linkPath, level);
+            } else if (isLinkFile(linkPath)) {
                 return getOriginalFile(linkPath, level);
             }
             return linkPath;
@@ -102,6 +137,74 @@ public class LinkSupport {
             return sourcePath;
         }
 
+        private boolean readCygwinLink() throws IOException {
+            StringBuilder buf = new StringBuilder();
+            int first = reader.readShort() & 0xFFFF; // FF FE
+            if (first == 0xFFFE) {
+                int length = (int) (reader.length() - 12) / 2;
+                if (length > 512) {
+                    return false;
+                }
+                while (length > 0) {
+                    length--;
+                    int ch1 = reader.readByte();
+                    int ch2 = reader.readByte();
+                    if (ch1 == 0 && ch2 == 0) {
+                        break;
+                    }
+                    char c = (char) (ch1 + (ch2 << 8));
+                    buf.append(c);
+                }
+            } else {
+                reader.seek(10);
+                int length = (int) (reader.length() - 10);
+                if (length > 512) {
+                    return false;
+                }
+                while (length > 0) {
+                    length--;
+                    int ch = reader.readByte();
+                    char c = (char) (ch);
+                    if (c == 0 || c == 0xD || c == 0xA){
+                        break;
+                    }
+                    buf.append(c);
+                }
+            }
+            sourcePath = buf.toString();
+            // Resolve cygwin path to windows file path
+            if (sourcePath.startsWith("/")) { // NOI18N
+                int i = path.indexOf("\\bin\\"); // NOI18N
+                if (i < 0) {
+                    i = path.indexOf("/bin/"); // NOI18N
+                }
+                if (i < 0) {
+                    i = path.indexOf("\\etc\\"); // NOI18N
+                }
+                if (i < 0) {
+                    i = path.indexOf("/etc/"); // NOI18N
+                }
+                if (i > 0) {
+                    sourcePath = path.substring(0, i) + sourcePath;
+                }
+                i = sourcePath.indexOf("/usr/bin/"); // NOI18N
+                if (i > 0) {
+                    sourcePath = sourcePath.substring(0, i + 1) + sourcePath.substring(i + 5);
+                }
+            } else if (sourcePath.length() > 2 && sourcePath.charAt(1)==':') {
+                // already absolute path
+            } else {
+                int i = path.lastIndexOf("\\"); // NOI18N
+                if (i < 0) {
+                    i = path.lastIndexOf("/"); // NOI18N
+                }
+                if (i > 0) {
+                    sourcePath = path.substring(0, i + 1) + sourcePath;
+                }
+            }
+            return true;
+        }
+
         private void readMagic() throws IOException {
             byte[] bytes = new byte[4];
             try {
@@ -120,53 +223,16 @@ public class LinkSupport {
 //1 dword 	Reserved 	Always 0
 //1 dword 	Reserved 	Always 0
                 reader.readFully(bytes);
-                if (!isLinkMagic(bytes)) {
-                    throw new IOException(); // NOI18N
-                }
-                // skip GUID
-                reader.seek(0x14);
-                reader.readFully(bytes);
-                readFlags(bytes);
-                int position = 0x4C;
-                int size;
-                reader.seek(position);
-                if (isShellItemPresent) {
-                    size = (int) readNumber(2);
-                    position += size;
-                    reader.seek(position);
-                }
-                // file location always present
-                size = (int) readNumber(2);
-                if (size == 0) {
-                    position += 2;
-                    reader.seek(position);
-                } else {
-                    reader.seek(position);
-                }
-                if (isDescriptionPresent) {
-                    size = (int) readNumber(2);
-                    String description = getString(size);
-                    position += size + 2;
-                    reader.seek(position);
-                    if (reader.length() == position){
-                        sourcePath = description;
+                if (isWindowsLinkMagic(bytes)) {
+                    if (readWindowsLink(bytes)) {
+                        return;
+                    }
+                } else if (isCygwinLinkMagic(bytes)) {
+                    if (readCygwinLink()){
                         return;
                     }
                 }
-                if (isRelativePathPresent) {
-                    size = (int) readNumber(2);
-                    sourcePath = getString(size);
-                    if (sourcePath.length() > 1 && sourcePath.charAt(1) != ':') {
-                        int i = path.lastIndexOf('\\');
-                        if (i < 0) {
-                            i = path.lastIndexOf('/');
-                        }
-                        if (i > 0) {
-                            sourcePath = path.substring(0, i + 1) + sourcePath;
-                        }
-                    }
-                    return;
-                }
+                throw new IOException(); // NOI18N
             } finally {
                 dispose();
             }
@@ -183,8 +249,23 @@ public class LinkSupport {
             }
         }
 
-        private boolean isLinkMagic(byte[] bytes) {
+        private boolean isWindowsLinkMagic(byte[] bytes) {
             return bytes[0] == 'L' && bytes[1] == 0 && bytes[2] == 0 && bytes[3] == 0;
+        }
+
+        private boolean isCygwinLinkMagic(byte[] bytes) throws IOException {
+            //First symbol is '!'
+            //Then follow string '<symlink>'
+            //Then follow path
+            //Last symbol is '\0'
+            if (bytes[0] == '!' && bytes[1] == '<' && bytes[2] == 's' && bytes[3] == 'y'){
+                bytes = new byte[6];
+                reader.readFully(bytes);
+                if (bytes[0] == 'm' && bytes[1] == 'l' && bytes[2] == 'i' && bytes[3] == 'n' && bytes[4] == 'k' && bytes[5] == '>'){
+                    return true;
+                }
+            }
+            return false;
         }
         private boolean isShellItemPresent;
         //private boolean isFileLocationItemPresent;
@@ -256,6 +337,54 @@ public class LinkSupport {
                 str.append((char) bytes[i]);
             }
             return str.toString();
+        }
+
+        private boolean readWindowsLink(byte[] bytes) throws IOException {
+            // skip GUID
+            reader.seek(0x14);
+            reader.readFully(bytes);
+            readFlags(bytes);
+            int position = 0x4C;
+            int size;
+            reader.seek(position);
+            if (isShellItemPresent) {
+                size = (int) readNumber(2);
+                position += size;
+                reader.seek(position);
+            }
+            // file location always present
+            size = (int) readNumber(2);
+            if (size == 0) {
+                position += 2;
+                reader.seek(position);
+            } else {
+                reader.seek(position);
+            }
+            if (isDescriptionPresent) {
+                size = (int) readNumber(2);
+                String description = getString(size);
+                position += size + 2;
+                reader.seek(position);
+                if (reader.length() == position) {
+                    sourcePath = description;
+                    return true;
+                }
+            }
+            if (isRelativePathPresent) {
+                size = (int) readNumber(2);
+                sourcePath = getString(size);
+                if (sourcePath.length() > 1 && sourcePath.charAt(1) != ':') {
+                    int i = path.lastIndexOf('\\');
+                    if (i < 0) {
+                        i = path.lastIndexOf('/');
+                    }
+                    if (i > 0) {
+                        sourcePath = path.substring(0, i + 1) + sourcePath;
+                    }
+                }
+                return true;
+            }
+            return false;
         }
     }
 }

@@ -39,14 +39,15 @@
 package org.netbeans.modules.nativeexecution;
 
 import java.io.CharArrayWriter;
+import java.io.File;
+import java.io.PrintWriter;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.openide.util.Exceptions;
 
@@ -54,9 +55,10 @@ import org.openide.util.Exceptions;
  *
  * @author ak119685
  */
-public class CopyTaskTest {
+public class CopyTaskTest extends NativeExecutionTest {
 
-    public CopyTaskTest() {
+    public CopyTaskTest(String name) {
+        super(name);
     }
 
     @BeforeClass
@@ -67,27 +69,30 @@ public class CopyTaskTest {
     public static void tearDownClass() throws Exception {
     }
 
-    @Before
-    public void setUp() {
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
     }
 
-    @After
-    public void tearDown() {
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
     }
 
     /**
      * Test of uploadFile method, of class CopyTask.
      */
     @Test
-    public void testCopyTo() throws InterruptedException {
+    public void testCopyToLocal() throws Exception {
         System.out.println("copyTo"); // NOI18N
-        String srcFileName = "/tmp/src"; // NOI18N
+        File srcFile = createTempFile("src", null, false);
+        writeFile(srcFile, "123\n456\n789");
         String dstFileName = "/tmp/trg_x"; // NOI18N
 
         CharArrayWriter err = new CharArrayWriter();
         Future<Integer> fresult = CommonTasksSupport.uploadFile(
-                srcFileName,
-                new ExecutionEnvironment(),
+                srcFile.getAbsolutePath(),
+                ExecutionEnvironmentFactory.getLocal(),
                 dstFileName, 0777, err);
 
         if (fresult == null) {
@@ -113,7 +118,7 @@ public class CopyTaskTest {
 //            StringBuilder err = new StringBuilder();
 //
 //            NativeTask task = CommonTasksSupport.getCopyLocalFileTask(
-//                    new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, err);
+//                    getTestExecutionEnvironment(), srcFileName, dstFileName, 700, err);
 //
 ////            CommonTasksSupport.CommonTask task = CommonTasksSupport.getCopyLocalFileTask(
 ////                    new ExecutionEnvironment(), srcFileName, dstFileName, 700);
@@ -137,7 +142,7 @@ public class CopyTaskTest {
 //        CopyTask task = null;
 //
 //        try {
-////        task = CopyTask.uploadFile(new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, showProgress);
+////        task = CopyTask.uploadFile(getTestExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
 //            task = CopyTask.uploadFile(new ExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
 //
 //            try {
@@ -157,7 +162,7 @@ public class CopyTaskTest {
 //        CopyTask task = null;
 //
 //        try {
-////        task = CopyTask.uploadFile(new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, showProgress);
+////        task = CopyTask.uploadFile(getTestExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
 //            task = CopyTask.uploadFile(new ExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
 //
 //            try {
@@ -184,7 +189,7 @@ public class CopyTaskTest {
 //            StringBuilder err = new StringBuilder();
 //
 //            NativeTask task = CommonTasksSupport.getCopyLocalFileTask(
-//                    new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, err);
+//                    getTestExecutionEnvironment(), srcFileName, dstFileName, 700, err);
 //
 ////            CommonTasksSupport.CommonTask task = CommonTasksSupport.getCopyLocalFileTask(
 ////                    new ExecutionEnvironment(), srcFileName, dstFileName, 700);
@@ -210,7 +215,7 @@ public class CopyTaskTest {
 //        CopyTask task = null;
 //
 //        try {
-////        task = CopyTask.uploadFile(new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, showProgress);
+////        task = CopyTask.uploadFile(getTestExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
 //            task = CopyTask.uploadFile(new ExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
 //
 //            try {
@@ -231,7 +236,7 @@ public class CopyTaskTest {
 //        CopyTask task = null;
 //
 //        try {
-////        task = CopyTask.uploadFile(new ExecutionEnvironment("ak119685", "129.159.127.252", 22), srcFileName, dstFileName, 700, showProgress);
+////        task = CopyTask.uploadFile(getTestExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
 //            task = CopyTask.uploadFile(new ExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
 //
 //            try {
@@ -253,5 +258,17 @@ public class CopyTaskTest {
     // TODO review the generated test code and remove the default call to fail.
 //    fail("The test case is a prototype.");
     }
-}
 
+    @Test
+    public void testCopyToRemote() throws Exception {
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        assertNotNull(execEnv);
+        File src = createTempFile("test-upload-1", null, false);
+        writeFile(src, "qwe/nasd/nzxc");
+        String dst = "/tmp/" + /* execEnv.getUser() + "/" +  */ src.getName();
+        System.err.printf("testUploadFile: %s to %s:%s\n", src.getAbsolutePath(), execEnv.getDisplayName(), dst);
+        Future<Integer> upload = CommonTasksSupport.uploadFile(src.getAbsolutePath(), execEnv, dst, 0755, new PrintWriter(System.err));
+        int rc = upload.get();
+        assertEquals(0, rc);
+    }
+}

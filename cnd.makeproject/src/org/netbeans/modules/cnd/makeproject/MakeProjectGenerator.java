@@ -57,7 +57,6 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
@@ -131,14 +130,18 @@ public class MakeProjectGenerator {
         if (confs == null) {
             confs = new MakeConfiguration[0];
         }
+
+        // work in a copy of confs
+        MakeConfiguration[] copyConfs = new MakeConfiguration[confs.length];
         for (int i = 0; i < confs.length; i++) {
-            confs[i].setBaseDir(projectNameFile.getPath());
-            RunProfile profile = (RunProfile) confs[i].getAuxObject(RunProfile.PROFILE_ID);
+            copyConfs[i] = (MakeConfiguration) confs[i].clone();
+            copyConfs[i].setBaseDir(projectNameFile.getPath());
+            RunProfile profile = (RunProfile) copyConfs[i].getAuxObject(RunProfile.PROFILE_ID);
             profile.setBuildFirst(false);
         }
 
         FileObject dirFO = createProjectDir(projectNameFile);
-        createProject(dirFO, projectName, makefileName, confs, null, null, true, null);
+        createProject(dirFO, projectName, makefileName, copyConfs, null, null, null, true, null);
         MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
 
@@ -157,9 +160,9 @@ public class MakeProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static MakeProject createProject(File dir, String name, String makefileName, MakeConfiguration[] confs, Iterator<SourceFolderInfo> sourceFolders, Iterator<String> importantItems, String mainFile) throws IOException {
+    public static MakeProject createProject(File dir, String name, String makefileName, MakeConfiguration[] confs, Iterator<SourceFolderInfo> sourceFolders, String sourceFoldersFilter, Iterator<String> importantItems, String mainFile) throws IOException {
         FileObject dirFO = createProjectDir(dir);
-        AntProjectHelper h = createProject(dirFO, name, makefileName, confs, sourceFolders, importantItems, false, mainFile); //NOI18N
+        AntProjectHelper h = createProject(dirFO, name, makefileName, confs, sourceFolders, sourceFoldersFilter, importantItems, false, mainFile); //NOI18N
         MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         //FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
@@ -208,7 +211,7 @@ public class MakeProjectGenerator {
     return null;
     }
      */
-    private static AntProjectHelper createProject(FileObject dirFO, String name, String makefileName, Configuration[] confs, final Iterator<SourceFolderInfo> sourceFolders, final Iterator<String> importantItems, boolean saveNow, String mainFile) throws IOException {
+    private static AntProjectHelper createProject(FileObject dirFO, String name, String makefileName, Configuration[] confs, final Iterator<SourceFolderInfo> sourceFolders, final String sourceFoldersFilter, final Iterator<String> importantItems, boolean saveNow, String mainFile) throws IOException {
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, MakeProjectType.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -244,7 +247,11 @@ public class MakeProjectGenerator {
         } else {
             mainFilePath = null;
         }
+        if (sourceFoldersFilter != null && !MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN.equals(sourceFoldersFilter)) {
+            projectDescriptor.setFolderVisibilityQuery(sourceFoldersFilter);
+        }
         Runnable task = new Runnable() {
+
             public void run() {
                 projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, importantItems, mainFilePath); // FIXUP: need a better check whether logical folder should be ccreated or not.
                 projectDescriptor.save();

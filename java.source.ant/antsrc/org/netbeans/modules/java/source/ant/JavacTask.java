@@ -49,7 +49,7 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Javac;
 import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 
 /**
@@ -110,7 +110,7 @@ public class JavacTask extends Javac {
 
                     try {
                         p.log("Forcing rescan of: " + f.getAbsolutePath(), Project.MSG_VERBOSE);
-                        RepositoryUpdater.getDefault().rebuildRoot(f.toURI().toURL(), false);
+                        IndexingManager.getDefault().refreshIndex(f.toURI().toURL(), null);
                     } catch (MalformedURLException ex) {
                         p.log(ex.getMessage(), ex, Project.MSG_VERBOSE);
                     }

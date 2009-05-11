@@ -63,6 +63,7 @@ import org.netbeans.modules.autoupdate.ui.Containers;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.WizardDescriptor;
 import org.openide.modules.Dependency;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -255,8 +256,13 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
         if (dep != null && dep.startsWith ("module")) { // NOI18N
             String codeName = dep.substring (6).trim ();
             int end = codeName.indexOf ('/'); // NOI18N
+            String releaseVersion = null;
             if (end == -1) {
                 end = codeName.indexOf (' '); // NOI18N
+            } else {
+                int spaceIndex = codeName.indexOf(' ');
+                int index = (spaceIndex != -1) ? spaceIndex : codeName.length();
+                releaseVersion = codeName.substring(end + 1, index).trim();
             }
             if (end != -1) {
                 codeName = codeName.substring (0, end);
@@ -294,14 +300,24 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                 } else if (version != null) {
                     if (other != null) {
                         // The module {0} was requested in version >= {1} but only {2} was found.
+                        int compare = new SpecificationVersion(other.getSpecificationVersion()).compareTo(new SpecificationVersion(version));
+                        if(releaseVersion!=null && (equals > 0 ? (compare>=0) : (compare>0)) ) {
+                            reason = getBundle ("OperationDescriptionStep_BrokenModuleReleaseVersionDep",
+                                other.getDisplayName (),
+                                version,
+                                releaseVersion,
+                                other.getSpecificationVersion ());
+
+                        } else {
                         reason = getBundle ("OperationDescriptionStep_BrokenModuleVersionDep",
-                                other == null ? codeName : other.getDisplayName (),
+                                other.getDisplayName (),
                                 version,
                                 other.getSpecificationVersion ());
+                        }
                     } else {
                         // The module {0} was requested in version >= {1}.
                         reason = getBundle ("OperationDescriptionStep_BrokenModuleOnlyVersionDep",
-                                other == null ? codeName : other.getDisplayName (),
+                                codeName,
                                 version);
                     }
                 } else {

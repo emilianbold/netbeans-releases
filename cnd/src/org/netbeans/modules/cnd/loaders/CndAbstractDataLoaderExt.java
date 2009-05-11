@@ -43,16 +43,17 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.util.Exceptions;
 
@@ -98,12 +99,14 @@ public abstract class CndAbstractDataLoaderExt extends CndAbstractDataLoader {
             EditorKit kit = createEditorKit(getFile().getMIMEType());
             Document doc = kit.createDefaultDocument();
 
-            BufferedReader r = new BufferedReader(new InputStreamReader(getFile().getInputStream()));
+            BufferedReader r = new BufferedReader(new InputStreamReader(
+                    getFile().getInputStream(), FileEncodingQuery.getEncoding(getFile())));
             try {
                 FileLock lock = fo.lock();
                 try {
-                    BufferedWriter w = new BufferedWriter(new OutputStreamWriter(fo.getOutputStream(lock)));
-
+                    Charset encoding = FileEncodingQuery.getEncoding(fo);
+                    BufferedWriter w = new BufferedWriter(new OutputStreamWriter(
+                            fo.getOutputStream(lock), encoding));
                     try {
                         String current;
                         String line = null;
@@ -146,22 +149,6 @@ public abstract class CndAbstractDataLoaderExt extends CndAbstractDataLoader {
             setTemplate(fo, false);
 
             return fo;
-        }
-
-        private static boolean setTemplate(FileObject fo, boolean newTempl) throws IOException {
-            boolean oldTempl = false;
-
-            Object o = fo.getAttribute(DataObject.PROP_TEMPLATE);
-            if ((o instanceof Boolean) && ((Boolean) o).booleanValue()) {
-                oldTempl = true;
-            }
-            if (oldTempl == newTempl) {
-                return false;
-            }
-
-            fo.setAttribute(DataObject.PROP_TEMPLATE, (newTempl ? Boolean.TRUE : null));
-
-            return true;
         }
 
         private EditorKit createEditorKit(String mimeType) {

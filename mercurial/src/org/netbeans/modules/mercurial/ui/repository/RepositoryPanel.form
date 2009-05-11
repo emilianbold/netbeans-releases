@@ -47,12 +47,11 @@
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="103" alignment="0" groupAlignment="0" attributes="0">
-                      <Component id="tipLabel" alignment="0" max="32767" attributes="1"/>
+                      <Component id="tipLabel" alignment="0" pref="601" max="32767" attributes="1"/>
                       <Group type="102" alignment="1" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="urlComboBox" max="32767" attributes="2"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="removeButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                          <Component id="urlComboBox" pref="601" max="32767" attributes="2"/>
+                          <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="1" max="-2" attributes="0">
@@ -60,7 +59,7 @@
                               <Component id="userTextField" alignment="0" max="32767" attributes="3"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="leaveBlankLabel" max="32767" attributes="1"/>
+                          <Component id="leaveBlankLabel" pref="431" max="32767" attributes="1"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -68,7 +67,7 @@
           </Group>
           <Group type="102" alignment="1" attributes="0">
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="tunnelHelpLabel" alignment="0" max="32767" attributes="0"/>
+                  <Component id="tunnelHelpLabel" alignment="0" pref="779" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="tunnelLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -87,10 +86,9 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="removeButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="urlComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="tipLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -212,24 +210,6 @@
           <Dimension value="[32767, 32767]"/>
         </Property>
       </Properties>
-      <AuxValues>
-        <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
-      </AuxValues>
-    </Component>
-    <Component class="javax.swing.JButton" name="removeButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/mercurial/ui/repository/Bundle.properties" key="BK0008" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/mercurial/ui/repository/Bundle.properties" key="ACSN_RemoveHistory" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/mercurial/ui/repository/Bundle.properties" key="ACSD_RemoveHistory" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
       </AuxValues>

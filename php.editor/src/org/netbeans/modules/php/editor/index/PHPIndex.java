@@ -186,6 +186,10 @@ public class PHPIndex {
                     if (!constName.startsWith(name)) {
                         continue;
                     }
+                } else if (kind == QuerySupport.Kind.EXACT) {
+                    if (!constName.toLowerCase().equals(name.toLowerCase())) {
+                        continue;
+                    }
                 }
                 int offset = sig.integer(2);
                 IndexedConstant constant = new IndexedConstant(constName, null, this, map.getUrl().toString(), offset, 0, null);
@@ -331,7 +335,7 @@ public class PHPIndex {
     static String getClusterUrl() {
         if (clusterUrl == null) {
             File f =
-                    InstalledFileLocator.getDefault().locate("modules/org-netbeans-modules-javascript-editing.jar", null, false); // NOI18N
+                    InstalledFileLocator.getDefault().locate("modules/org-netbeans-modules-php-editor.jar", null, false); // NOI18N
 
             if (f == null) {
                 throw new RuntimeException("Can't find cluster");
@@ -767,7 +771,17 @@ public class PHPIndex {
         
         Collection<? extends IndexResult> idIndexResult =search(PHPIndexer.FIELD_IDENTIFIER, identifierName.toLowerCase(), QuerySupport.Kind.PREFIX, PHPIndexer.FIELD_BASE);
         for (IndexResult indexResult : idIndexResult) {
-            result.add(FileUtil.toFileObject(new File(URI.create(indexResult.getUrl().toString()))));
+            URL url = indexResult.getUrl();
+            FileObject fo = null;
+            try {
+                fo = "file".equals(url.getProtocol()) ? //NOI18N
+                    FileUtil.toFileObject(new File(url.toURI())) : URLMapper.findFileObject(url);
+            } catch (URISyntaxException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            if (fo != null) {
+                result.add(fo);
+            }
         }
         return result;
     }

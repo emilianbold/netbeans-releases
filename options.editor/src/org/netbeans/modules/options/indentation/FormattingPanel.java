@@ -192,6 +192,7 @@ public final class FormattingPanel extends JPanel implements PropertyChangeListe
             // add the preview component to the preview area
             previewScrollPane.setViewportView(previewComponent);
             previewScrollPane.setVisible(true);
+            previewLabel.setLabelFor(previewComponent);
 
             if (c instanceof PreviewProvider) {
                 final PreviewProvider pp = (PreviewProvider) c;
@@ -282,8 +283,11 @@ public final class FormattingPanel extends JPanel implements PropertyChangeListe
                     .add(categoryLabel)
                     .add(categoryCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(18, 18, 18)
-                .add(categoryPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE))
+                .add(categoryPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE))
         );
+
+        languageCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormattingPanel.class, "FormattingPanel.languageCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        categoryCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormattingPanel.class, "FormattingPanel.categoryCombo.AccessibleContext.accessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;

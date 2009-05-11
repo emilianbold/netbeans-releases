@@ -49,6 +49,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.kenai.FeatureData;
 import org.netbeans.modules.kenai.ProjectData;
+import org.netbeans.modules.kenai.ProjectFeatureCreateData;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 
 /**
@@ -117,7 +118,7 @@ public final class KenaiProject {
 
     /**
      * Unique name of project
-     * @return
+     * @return project name
      */
     public synchronized String getName() {
         return data.name;
@@ -125,7 +126,7 @@ public final class KenaiProject {
 
     /**
      * web location of this project
-     * @return
+     * @return web location of this project
      */
     public synchronized URL getWebLocation() {
         try {
@@ -137,15 +138,15 @@ public final class KenaiProject {
 
     /**
      * Display name of this project
-     * @return
+     * @return display name
      */
     public synchronized String getDisplayName() {
         return data.display_name;
     }
 
     /**
-     * Display name of this project
-     * @return
+     * Description of this project
+     * @return project description
      */
     public synchronized String getDescription() throws KenaiException {
         fetchDetailsIfNotAvailable();
@@ -199,12 +200,11 @@ public final class KenaiProject {
         return features;
     }
 
-    private static final String CHAT_ROOM = "@" + System.getProperty("kenai.xmpp.muc.url", "conference.127.0.0.1");
-
     /**
      * get features of given type
      * @param type
-     * @return
+     * @return array of KenaiFetaures of given type
+     * @throws KenaiException 
      */
     public synchronized KenaiFeature[] getFeatures(Type type) throws KenaiException {
         ArrayList<KenaiFeature> fs= new ArrayList();
@@ -212,15 +212,6 @@ public final class KenaiProject {
             if (f.getType().equals(type)) {
                 fs.add(f);
             }
-        }
-
-        //TODO: remove me as soon as xmpp server will work on kenai
-        if (type==Type.CHAT && Boolean.parseBoolean(System.getProperty(("kenai.chat.enabled"), "false"))) {
-            FeatureData chat = new FeatureData();
-            chat.name = getName() + CHAT_ROOM;
-            chat.display_name = getDisplayName() + " chat room"; //NOI18N
-            KenaiFeature f = new KenaiFeature(chat);
-            fs.add(f);
         }
         return fs.toArray(new KenaiFeature[fs.size()]);
     }
@@ -234,8 +225,9 @@ public final class KenaiProject {
      * @param url
      * @param repository_url
      * @param browse_url
-     * @return
+     * @return project feature
      * @throws org.netbeans.modules.kenai.api.KenaiException
+     * @see KenaiFeature
      */
     public KenaiFeature createProjectFeature(
             String name,

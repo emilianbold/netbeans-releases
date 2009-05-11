@@ -43,7 +43,7 @@ import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.NbBundle;
 
-public class IntNodeProp extends PropertySupport.ReadWrite<Integer> {
+public class IntNodeProp extends PropertySupport<Integer> {
 
     private final CodeStyle.Language language;
     private final String optionID;
@@ -51,11 +51,20 @@ public class IntNodeProp extends PropertySupport.ReadWrite<Integer> {
     private int state;
 
     public IntNodeProp(CodeStyle.Language language, PreviewPreferences preferences, String optionID) {
-        super(optionID, Integer.class, getString("LBL_" + optionID), getString("HINT_" + optionID)); // NOI18N
+        super(optionID, Integer.class, getString("LBL_" + optionID), getString("HINT_" + optionID), true, true); // NOI18N
         this.language = language;
         this.optionID = optionID;
         this.preferences = preferences;
         init();
+    }
+
+    // create read only property
+    public IntNodeProp(CodeStyle.Language language, PreviewPreferences preferences, String optionID, int state) {
+        super(optionID, Integer.class, getString("LBL_" + optionID), getString("HINT_" + optionID), true, false); // NOI18N
+        this.language = language;
+        this.optionID = optionID;
+        this.preferences = preferences;
+        this.state = state;
     }
 
     private static String getString(String key) {

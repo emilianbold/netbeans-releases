@@ -74,7 +74,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.AntSettings;
-import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.ChangeSupport;
@@ -388,7 +387,7 @@ public final class AntBridge {
         URL[] cp = new URL[mainClassPath.size()];
         int i = 0;
         for (File entry : mainClassPath) {
-            cp[i++] = FileUtil.urlForArchiveOrDir(entry);
+            cp[i++] = /* #162158: do not use FileUtil.urlForArchiveOrDir(entry) */entry.toURI().toURL();
         }
         if (AntSettings.getAntHome() != null) {
             ClassLoader parent = ClassLoader.getSystemClassLoader()/* #152620 */.getParent();

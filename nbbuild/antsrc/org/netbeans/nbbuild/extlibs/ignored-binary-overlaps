@@ -18,8 +18,17 @@ java2/modules/ext/jdom-1.0.jar mobility8/modules/ext/jdom-1.0.jar
 enterprise5/modules/ext/struts/oro-2.0.8.jar ide11/modules/ext/jakarta-oro-2.0.8.jar
 enterprise5/modules/ext/struts/bsf-2.3.0.jar ruby2/jruby-1.2.0/lib/bsf.jar
 
+# More maintainable to have Cobertura libs separately than to modify its Ant scripts
+harness/testcoverage/cobertura/lib/jakarta-oro-2.0.8.jar enterprise5/modules/ext/struts/oro-2.0.8.jar
+harness/testcoverage/cobertura/lib/jakarta-oro-2.0.8.jar ide11/modules/ext/jakarta-oro-2.0.8.jar
+
+# impractical to modify jruby dist build to use the same yydebug as libs.jrubyparser
+libs.yydebug/external/yydebug.jar ruby2/jruby-1.2.0/lib/yydebug.jar 
+
 # We don't care about contrib modules for now.
 extra/ */
 
 # Bundles its own stuff.
 python*/jython-*/javalib/ */
+
+

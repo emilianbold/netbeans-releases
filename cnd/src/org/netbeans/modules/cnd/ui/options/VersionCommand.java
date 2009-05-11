@@ -84,14 +84,8 @@ import org.openide.util.Lookup;
     private void run() {
         if (tool.getExecutionEnvironment().isLocal()) {
             // we're dealing with a local toolchain
+            path = LinkSupport.resolveWindowsLink(path);
             File file = new File(path);
-            if (!file.exists() && new File(path+".lnk").exists()){ // NOI18N
-                String resolved = LinkSupport.getOriginalFile(path+".lnk"); // NOI18N
-                if (resolved != null) {
-                    path = resolved;
-                    file = new File(path);
-                }
-            }
             if (file.exists()) {
                 ProcessBuilder pb = new ProcessBuilder(path, getVersionFlags());
                 pb.redirectErrorStream(true);

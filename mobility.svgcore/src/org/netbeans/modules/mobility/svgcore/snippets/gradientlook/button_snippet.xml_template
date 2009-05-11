@@ -1,22 +1,10 @@
    <g transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)" id="%%COMPONENT_ID%%">
-        <image width="334" height="125" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAVIAAAB9CAYAAADwWOu4AAAACXBIWXMAAC4jAAAuIwF4pT92AAAA
-            GXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAxNJREFUeNrs3U9r03Acx/H8Sp+K
-            iAd1IDKYAxUV9SIeBPEwLz4uL3oQQcSLqIioUMQx8N/JB7MmTtgEmW3TfIYh6+t1EIRkhxzefL9J
-            2paqo2ZPBTBQZc+R/S3xBEQ1i2rrk0UUENSOIRVQQEyDkIooIKhBSEUUENN2MS0iCpDFdCSiAGFs
-            RRQgm0pHLhHAfIuGzJFpFOAIVnsRBei+4lvtAUJCCtDSrO19ZK0HMJECCCmAkAKsiH/dDhVSABMp
-            gJACCCmAkAIgpABCCiCkAEIKgJACCCmAkAIIKQBCCiCkAEIKIKQACCnA/zGuKj8iCmAiBRBSACEF
-            WFnjxi1SABMpgJACCCmAkAIgpAD98MkmABMpgJACCCmAkAIgpAB9GVe1p/YAJlIAIQUQUgAhBUBI
-            AYQUYIjGjS8tAchCWvnRJgCrPYCQAgx5tW+s9gAmUoBeJ1I/NQJgIgXodyJ1ixTARAogpAADX+3t
-            9gAmUgAhBRjwal9XtasAYCIF6HEi9ckmgDCkjc0eIJ1IlRQgm0ir4ioAZBOpe6QAWUhrqz1AFlKb
-            PUAW0qa22gNkE6mn9gBhSE2kAOlEKqQAUUhrH20CyELaeP0JIJ1IrfYAUUirauoqACQhndrsAbKQ
-            Nh42AYQhra32AFFIvUcKYLUH6DukLgJAFlIv5AOEIXWPFMBECtBzSE2kAGFIvUcKkIXUNQAIQ+r9
-            J4AwpNNdVwEgCmkxkQJkIfXUHiALab3rqT1ANpH60hKANKRWe4C2Tpy+UA6H1EdEAdKJ1D1SgCik
-            J9culZ9fP9jvAbqG9Pc/Te2lfIBFTp27WmaGtPbFJQCd/anrj+3X1nuAGc6s3yhzV/uDg75/fimm
-            AEsa//U/Kz7AIWc3bpVWq/2Bb5MXplKAfWubt8tyE+n+SV8mz8UUoKWZpd35+ExMgZV2/uKd0ua4
-            uQftvH8qpsBqRvTy3dL22IUHbr97IqbAyli/cq8se07rEz69fSyowLG2cW2rdDlvqZMmbx6JKXDs
-            bF6/X5LzO588efVQVIHhxvPmg3JUf+uXAAMANjzXcWAvxG4AAAAASUVORK5CYII="
-            transform="matrix(0.24,0.0,0.0,0.24,0.0,0.0)" id="_20" >
-        </image>
+        <image id="_0" transform="matrix(78.79452,0.0,0.0,0.9702,0.75,5.25)"  width="1" height="25"
+              xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAZCAIAAAB/8tMoAAAAAXNSR0IArs4c6QAAAARnQU1BAACx
+              jwv8YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAF9JREFU
+              GFdFw80KRUAAgNHv/R/FmqWyUOSmRN2bJLEgkvw2Y4xJ2dxTB2MM/zdG6/d9KbQ6uU6JkgIpD4TY
+              OPaZfR1Zpo5xqOnbgrb50pQJVR5RZD6/2CUNHT6eRRLYDwfARHOzUoReAAAAAElFTkSuQmCC">
+              </image>
         <rect transform=""  id="_102" x="0.0" y="0.0" rx="5" ry="5"  width="80" height="30" fill="none" stroke="rgb(73,46,55)" stroke-width="1.5">   
         </rect>
         <g>

@@ -82,6 +82,9 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
     private IndexedMethod(String signature, RubyIndex index, FileObject file, String fqn,
             String clz, String require, String attributes, int flags, FileObject context) {
         super(index, file, fqn, clz, require, attributes, flags, context, null);
+        if (signature.contains("at_exit")) {
+            String s = "asfd";
+        }
         this.signature = signature;
     }
 

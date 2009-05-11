@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,19 +53,19 @@ import java.util.Set;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jruby.nb.ast.CallNode;
-import org.jruby.nb.ast.ClassNode;
-import org.jruby.nb.ast.Colon2Node;
-import org.jruby.nb.ast.FCallNode;
-import org.jruby.nb.ast.ListNode;
-import org.jruby.nb.ast.MethodDefNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.SClassNode;
-import org.jruby.nb.ast.SelfNode;
-import org.jruby.nb.ast.StrNode;
-import org.jruby.nb.ast.types.INameNode;
-import org.jruby.util.ByteList;
+import org.jrubyparser.ast.CallNode;
+import org.jrubyparser.ast.ClassNode;
+import org.jrubyparser.ast.Colon2Node;
+import org.jrubyparser.ast.FCallNode;
+import org.jrubyparser.ast.ListNode;
+import org.jrubyparser.ast.MethodDefNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.SClassNode;
+import org.jrubyparser.ast.SelfNode;
+import org.jrubyparser.ast.StrNode;
+import org.jrubyparser.ast.INameNode;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -86,8 +85,6 @@ import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.elements.ModuleElement;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
 /**
@@ -111,6 +108,7 @@ public class RubyIndexer extends EmbeddingIndexer {
 
     // for unit tests
     static boolean preindexingTest = false;
+    static boolean skipTypeInferenceForTests = false;
 
     private static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
     
@@ -348,6 +346,7 @@ public class RubyIndexer extends EmbeddingIndexer {
         private int docMode;
         private final List<IndexDocument> documents;
         private String url;
+        private final boolean platform;
 
         private TreeAnalyzer(RubyParseResult result, IndexingSupport support, Indexable indexable) {
             this.result = result;
@@ -355,6 +354,7 @@ public class RubyIndexer extends EmbeddingIndexer {
             this.support = support;
             this.indexable = indexable;
             this.documents = new ArrayList<IndexDocument>();
+            this.platform = RubyUtils.isPlatformFile(file);
         }
 
         private String getRequireString(Set<String> requireSet) {
@@ -441,6 +441,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                     return;
                 } else if ("active_record.rb".equals(fileName)) { // NOI18N
                     handleRailsBase("ActiveRecord"); // NOI18N
+//                    handleRailsClass("ActiveRecord", "ActiveRecord" + "::Migration", "Migration", "migration");
                     // HACK
                     handleMigrations();
                     return;
@@ -699,7 +700,7 @@ public class RubyIndexer extends EmbeddingIndexer {
         }
         
         private void scanMigration(Node node, Map<String,List<String>> items, String currentTable) {
-            if (node.nodeId == NodeType.FCALLNODE) {
+            if (node.getNodeType() == NodeType.FCALLNODE) {
                 // create_table etc.
                 String name = AstUtilities.getCallName(node);
                 if ("create_table".equals(name)) { // NOI18N
@@ -707,17 +708,17 @@ public class RubyIndexer extends EmbeddingIndexer {
                     List childNodes = node.childNodes();
                     if (childNodes.size() > 0) {
                         Node child = (Node)childNodes.get(0);
-                        if (child.nodeId == NodeType.ARRAYNODE) {
+                        if (child.getNodeType() == NodeType.ARRAYNODE) {
                             List grandChildren = child.childNodes();
                             if (grandChildren.size() > 0) {
                                 Node grandChild = (Node)grandChildren.get(0);
-                                if (grandChild.nodeId == NodeType.SYMBOLNODE || 
-                                        grandChild.nodeId == NodeType.STRNODE) {
+                                if (grandChild.getNodeType() == NodeType.SYMBOLNODE || 
+                                        grandChild.getNodeType() == NodeType.STRNODE) {
                                     String tableName = getString(grandChild);
                                     items.put(tableName, new ArrayList<String>());
                                     if (childNodes.size() > 1) {
                                         Node n = (Node) childNodes.get(1);
-                                        if (n.nodeId == NodeType.ITERNODE) {
+                                        if (n.getNodeType() == NodeType.ITERNODE) {
                                             scanMigration(n, items, tableName);
                                         }
                                     }
@@ -784,14 +785,14 @@ public class RubyIndexer extends EmbeddingIndexer {
                     
                     return;
                 }
-            } else if (node.nodeId == NodeType.CALLNODE && currentTable != null) {
+            } else if (node.getNodeType() == NodeType.CALLNODE && currentTable != null) {
                 // t.column, applying to an outer table
                 String name = AstUtilities.getCallName(node);
                 if ("column".equals(name)) {  // NOI18N
                     List childNodes = node.childNodes();
                     if (childNodes.size() >= 2) {
                         Node child = (Node)childNodes.get(0);
-                        if (child.nodeId != NodeType.DVARNODE) {
+                        if (child.getNodeType() != NodeType.DVARNODE) {
                             // Not a call on the block var corresponding to the table 
                             // Later, validate more closely that we're making a call
                             // on the actual block variable passed in from the create_table call!
@@ -824,7 +825,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                     List childNodes = node.childNodes();
                     if (childNodes.size() >= 1) {
                         Node child = (Node)childNodes.get(0);
-                        if (child.nodeId != NodeType.DVARNODE) {
+                        if (child.getNodeType() != NodeType.DVARNODE) {
                             // Not a call on the block var corresponding to the table 
                             // Later, validate more closely that we're making a call
                             // on the actual block variable passed in from the create_table call!
@@ -850,7 +851,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                         List childNodes = node.childNodes();
                         if (childNodes.size() >= 2) {
                             Node child = (Node)childNodes.get(0);
-                            if (child.nodeId != NodeType.DVARNODE) {
+                            if (child.getNodeType() != NodeType.DVARNODE) {
                                 // Not a call on the block var corresponding to the table 
                                 // Later, validate more closely that we're making a call
                                 // on the actual block variable passed in from the create_table call!
@@ -860,7 +861,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                             child = (Node)childNodes.get(1);
                             List<Node> args = child.childNodes();
                             for (Node n : args) {
-                                if (n.nodeId == NodeType.SYMBOLNODE || n.nodeId == NodeType.STRNODE) {
+                                if (n.getNodeType() == NodeType.SYMBOLNODE || n.getNodeType() == NodeType.STRNODE) {
                                     String columnName = getString(n);
                                     
                                     List<String> list = items.get(currentTable);
@@ -894,7 +895,7 @@ public class RubyIndexer extends EmbeddingIndexer {
         }
 
         private String getString(Node node) {
-            if (node.nodeId == NodeType.STRNODE) {
+            if (node.getNodeType() == NodeType.STRNODE) {
                 return ((StrNode)node).getValue().toString();
             } else {
                 return ((INameNode)node).getName();
@@ -958,7 +959,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                             // but I can't handle these anyway
                         
                             if (n instanceof StrNode) {
-                                ByteList require = ((StrNode)n).getValue();
+                                String require = ((StrNode)n).getValue();
 
                                 if ((require != null) && (require.length() > 0)) {
                                     requires.add(require.toString());
@@ -1070,7 +1071,7 @@ public class RubyIndexer extends EmbeddingIndexer {
         
         private boolean shouldIndexTopLevel() {
             // Don't index top level methods in the libraries
-            if (/*!file.isPlatform() && */!isPreindexing()) {
+            if (!platform || preindexingTest) {
                 String name = file.getNameExt();
                 // Don't index spec methods or test methods
                 if (!name.endsWith("_spec.rb") && !name.endsWith("_test.rb")) {
@@ -1091,7 +1092,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                 int flags = 0;
 
                 boolean nodoc = false;
-                if (/*file.isPlatform() || */isPreindexing()) {
+                if (platform) {
                     // Should we skip this class? This is true for :nodoc: marked
                     // classes for example. We do NOT want to skip all children;
                     // in ActiveRecord for example we have this:
@@ -1377,8 +1378,10 @@ public class RubyIndexer extends EmbeddingIndexer {
                 sb.append(IndexedElement.flagToSecondChar(flags));
                 signature = sb.toString();
             }
-            
-            if (/*file.isPlatform() || */isPreindexing()) {
+
+            //XXX: this will skip TI for tests as it did in GSF where
+            // platform was always false.
+            if (platform && !skipTypeInferenceForTests) {
                 Node root = AstUtilities.getRoot(result);
                 signature = RubyIndexerHelper.getMethodSignature(
                         child, root, flags, signature, file, result.getSnapshot());
@@ -1477,7 +1480,7 @@ public class RubyIndexer extends EmbeddingIndexer {
 
         private void indexGlobal(AstElement child, IndexDocument document/*, boolean nodoc*/) {
             // Don't index globals in the libraries
-            if (/*!file.isPlatform() && */!isPreindexing()) {
+            if (!platform || preindexingTest) {
 
                 String signature = child.getName();
 //            int flags = getModifiersFlag(child.getModifiers());
@@ -1533,7 +1536,7 @@ public class RubyIndexer extends EmbeddingIndexer {
             String folder = (file.getParent() != null) && file.getParent().getParent() != null ?
                 file.getParent().getParent().getNameExt() : "";
 
-            if (folder.equals("rubystubs") && file.getName().startsWith("stub_")) {
+            if (folder.equals(RubyPlatform.RUBYSTUBS) && file.getName().startsWith("stub_")) {
                 return;
             }
 
@@ -1549,27 +1552,30 @@ public class RubyIndexer extends EmbeddingIndexer {
         }
     }
 
-    private static FileObject preindexedDb;
 
     
-    /** For testing only */
-    public static void setPreindexedDb(FileObject preindexedDb) {
-        RubyIndexer.preindexedDb = preindexedDb;
-    }
-    
-    public FileObject getPreindexedDb() {
-        if (preindexedDb == null) {
-            File preindexed = InstalledFileLocator.getDefault().locate(
-                    "preindexed", "org.netbeans.modules.ruby", false); // NOI18N
-            if (preindexed == null || !preindexed.isDirectory()) {
-                throw new RuntimeException("Can't locate preindexed directory. Installation might be damaged"); // NOI18N
-            }
-            preindexedDb = FileUtil.toFileObject(preindexed);
-        }
-        return preindexedDb;
-    }
-    
-    static boolean isPreindexing() {
-        return PREINDEXING || preindexingTest;
-    }
+// no preindexing in parsing API
+//
+//    private static FileObject preindexedDb;
+//    /** For testing only */
+//    public static void setPreindexedDb(FileObject preindexedDb) {
+//        RubyIndexer.preindexedDb = preindexedDb;
+//    }
+//
+//    public FileObject getPreindexedDb() {
+//        if (preindexedDb == null) {
+//            File preindexed = InstalledFileLocator.getDefault().locate(
+//                    "preindexed", "org.netbeans.modules.ruby", false); // NOI18N
+//            if (preindexed == null || !preindexed.isDirectory()) {
+//                throw new RuntimeException("Can't locate preindexed directory. Installation might be damaged"); // NOI18N
+//            }
+//            preindexedDb = FileUtil.toFileObject(preindexed);
+//        }
+//        return preindexedDb;
+//    }
+//
+//    static boolean isPreindexing() {
+//        // part of a platform
+//        return false;
+//    }
 }

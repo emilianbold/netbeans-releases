@@ -98,15 +98,16 @@ public class FindInRepoPanel extends javax.swing.JPanel {
         cbDescription = new javax.swing.JCheckBox();
         cbClasses = new javax.swing.JCheckBox();
 
-        lblFind.setText(org.openide.util.NbBundle.getMessage(FindInRepoPanel.class, "FindInRepoPanel.lblFind.text")); // NOI18N
+        lblFind.setLabelFor(txtFind);
+        org.openide.awt.Mnemonics.setLocalizedText(lblFind, org.openide.util.NbBundle.getMessage(FindInRepoPanel.class, "FindInRepoPanel.lblFind.text")); // NOI18N
 
         pnlIncludes.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(FindInRepoPanel.class, "FindInRepoPanel.pnlIncludes.border.title"))); // NOI18N
 
-        cbName.setText(org.openide.util.NbBundle.getMessage(FindInRepoPanel.class, "FindInRepoPanel.cbName.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cbName, org.openide.util.NbBundle.getMessage(FindInRepoPanel.class, "FindInRepoPanel.cbName.text")); // NOI18N
 
-        cbDescription.setText(org.openide.util.NbBundle.getMessage(FindInRepoPanel.class, "FindInRepoPanel.cbDescription.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cbDescription, org.openide.util.NbBundle.getMessage(FindInRepoPanel.class, "FindInRepoPanel.cbDescription.text")); // NOI18N
 
-        cbClasses.setText(org.openide.util.NbBundle.getMessage(FindInRepoPanel.class, "FindInRepoPanel.cbClasses.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cbClasses, org.openide.util.NbBundle.getMessage(FindInRepoPanel.class, "FindInRepoPanel.cbClasses.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout pnlIncludesLayout = new org.jdesktop.layout.GroupLayout(pnlIncludes);
         pnlIncludes.setLayout(pnlIncludesLayout);
@@ -118,7 +119,7 @@ public class FindInRepoPanel extends javax.swing.JPanel {
                     .add(cbName)
                     .add(cbDescription)
                     .add(cbClasses))
-                .addContainerGap(273, Short.MAX_VALUE))
+                .addContainerGap(355, Short.MAX_VALUE))
         );
         pnlIncludesLayout.setVerticalGroup(
             pnlIncludesLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -132,6 +133,10 @@ public class FindInRepoPanel extends javax.swing.JPanel {
                 .addContainerGap(15, Short.MAX_VALUE))
         );
 
+        cbName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindInRepoPanel.class, "FindInRepoPanel.cbName.AccessibleContext.accessibleDescription")); // NOI18N
+        cbDescription.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindInRepoPanel.class, "FindInRepoPanel.cbDescription.AccessibleContext.accessibleDescription")); // NOI18N
+        cbClasses.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindInRepoPanel.class, "FindInRepoPanel.cbClasses.AccessibleContext.accessibleDescription")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -143,7 +148,7 @@ public class FindInRepoPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(lblFind)
                         .add(18, 18, 18)
-                        .add(txtFind, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE)))
+                        .add(txtFind, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -156,6 +161,8 @@ public class FindInRepoPanel extends javax.swing.JPanel {
                 .add(18, 18, 18)
                 .add(pnlIncludes, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
+
+        txtFind.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindInRepoPanel.class, "FindInRepoPanel.txtFind.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 

@@ -666,6 +666,7 @@ public class WebProjectValidation extends J2eeTestCase {
         caretPosition = verifyNavigator(new EditorOperator("HTML.html"));
         assertEquals("NAVIGATION TARGET", 144, caretPosition);
         EditorOperator.closeDiscardAll();
+        compareReferenceFiles();
     }
     
     public void testJSPNavigator()throws Exception{
@@ -679,13 +680,14 @@ public class WebProjectValidation extends J2eeTestCase {
         caretPosition = verifyNavigator(new EditorOperator("page2.jsp"));
         assertEquals("NAVIGATION TARGET", 325, caretPosition);
         EditorOperator.closeDiscardAll();
+        compareReferenceFiles();
     }
 
     private void dumpNode(TreeModel model, Object node, int offset) {
         for (int i = 0; i < offset; i++) {
-            getLog().print("\t");
+            getRef().print("\t");
         }
-        getLog().println(node.toString());
+        getRef().println(node.toString());
         if (model.isLeaf(node)){
             return;
         }
@@ -727,14 +729,14 @@ public class WebProjectValidation extends J2eeTestCase {
         Object root = model.getRoot();
         assertNotNull(root);
         dumpNode(model, root, 0);
-        assertEquals(1, treeOperator.getChildCount(root));
+//        assertEquals(1, treeOperator.getChildCount(root));
         Object htmlChild = treeOperator.getChild(root, 0);//HTML
         assertNotNull(htmlChild);
-        assertEquals(2, treeOperator.getChildCount(htmlChild));// HEAD, BODY
+//        assertEquals(2, treeOperator.getChildCount(htmlChild));// HEAD, BODY
         Object bodyChild = treeOperator.getChild(htmlChild, 1);
-        assertEquals(2, treeOperator.getChildCount(bodyChild));// H1, TABLE
+//        assertEquals(2, treeOperator.getChildCount(bodyChild));// H1, TABLE
         Object tableChild = treeOperator.getChild(bodyChild, 1);
-        assertEquals(2, treeOperator.getChildCount(tableChild));// 2 rows
+//        assertEquals(2, treeOperator.getChildCount(tableChild));// 2 rows
         Object[] pathObjects = {root, htmlChild, bodyChild, tableChild};
         TreePath path = new TreePath(pathObjects);
         treeOperator.clickOnPath(path, 2);
@@ -880,7 +882,15 @@ public class WebProjectValidation extends J2eeTestCase {
     public void waitBuildSuccessful() {
         OutputTabOperator console = new OutputTabOperator(PROJECT_NAME);
         console.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 180000);
-        console.waitText(BUILD_SUCCESSFUL);
+        boolean ok = false;
+        try{
+            console.waitText(BUILD_SUCCESSFUL);
+            ok = true;
+        }finally{
+            if (!ok){
+                System.err.println(console.getText());
+            }
+        }
     }
 
     public void initDisplayer() {

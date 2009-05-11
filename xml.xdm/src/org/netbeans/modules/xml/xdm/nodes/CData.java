@@ -64,23 +64,26 @@ public class CData extends Text implements CDATASection {
     }
 
     private void stripCDataMarkers(String data) {
-	// remove start and end CDATA
-	String normalizedData = ""; //NOI18N
-	assert data.startsWith(Token.CDATA_START.getValue());
-	if (data.length() > Token.CDATA_START.getValue().length() +
-	    Token.CDATA_END.getValue().length()) {
-	    normalizedData = 
-		data.substring(Token.CDATA_START.getValue().length(),
-		data.length() - Token.CDATA_END.getValue().length());
-	}
-	setData(normalizedData);
+        String normalizedData = data == null ? "" : data; //NOI18N
+
+        // remove start and end CDATA
+        if (data != null && data.startsWith(Token.CDATA_START.getValue()) 
+                && data.endsWith(Token.CDATA_END.getValue())) 
+        {
+            assert data.length() >= Token.CDATA_START.getValue().length() +
+            Token.CDATA_END.getValue().length();
+            normalizedData = 
+                data.substring(Token.CDATA_START.getValue().length(),
+                data.length() - Token.CDATA_END.getValue().length());
+        }
+        setData(normalizedData);
     }
     
     private void addCDataTokens() {
-	List<Token> tokens = getTokensForWrite();
-	tokens.add(0,Token.CDATA_START);
-	tokens.add(Token.CDATA_END);
-	setTokens(tokens);
+        List<Token> tokens = getTokensForWrite();
+        tokens.add(0,Token.CDATA_START);
+        tokens.add(Token.CDATA_END);
+        setTokens(tokens);
     }
     
     @Override
@@ -90,8 +93,8 @@ public class CData extends Text implements CDATASection {
     
     @Override
     public void setData(String data) {
-	super.setData(data);
-	addCDataTokens();
+        super.setData(data);
+        addCDataTokens();
     }
     
     @Override

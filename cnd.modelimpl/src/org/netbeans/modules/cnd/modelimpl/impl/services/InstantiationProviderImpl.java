@@ -54,6 +54,7 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -62,15 +63,19 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
+import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImplSpecialization;
@@ -93,18 +98,18 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     private static final int MAX_DEPTH = 20;
 
     @Override
-    public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmFile contextFile) {
-        return instantiate(template, params, contextFile, null);
+    public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmFile contextFile, int contextOffset) {
+        return instantiate(template, params, contextFile, contextOffset, null);
     }
 
     @Override
-    public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, CsmFile contextFile) {
-        return instantiate(template, params, mapping, contextFile, null);
+    public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, CsmFile contextFile, int contextOffset) {
+        return instantiate(template, params, mapping, contextFile, contextOffset, null);
     }
     
     @Override
-    public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmType type, CsmFile contextFile) {
-        return instantiate(template, params, type, contextFile, null);
+    public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmType type, CsmFile contextFile, int contextOffset) {
+        return instantiate(template, params, type, contextFile, null, contextOffset);
     }
 
     @Override
@@ -112,7 +117,80 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         return Instantiation.getInstantiatedText(type);
     }
 
-    private CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmFile contextFile, Resolver resolver) {
+    @Override
+    public CharSequence getTemplateSignature(CsmTemplate template) {
+        StringBuilder sb = new StringBuilder();
+        if (CsmKindUtilities.isQualified(template)) {
+            sb.append(((CsmQualifiedNamedElement)template).getQualifiedName());
+        } else if (CsmKindUtilities.isNamedElement(template)) {
+            sb.append(((CsmNamedElement)template).getName());
+        } else {
+            System.err.println("uknown template object " + template);
+        }
+        appendTemplateParamsSignature(template.getTemplateParameters(), sb);
+        return sb;
+    }
+
+    private static final int PARAMETERS_LIMIT = 1000; // do not produce too long signature
+
+    public static void appendParametersSignature(Collection<CsmParameter> params, StringBuilder sb) {
+        sb.append('(');
+        int limit = 0;
+        for (Iterator<CsmParameter> iter = params.iterator(); iter.hasNext();) {
+            if (limit >= PARAMETERS_LIMIT) {
+                break;
+            }
+            limit++;
+            CsmParameter param = iter.next();
+            CsmType type = param.getType();
+            if (type != null) {
+                sb.append(type.getCanonicalText());
+                if (iter.hasNext()) {
+                    sb.append(',');
+                }
+            } else if (param.isVarArgs()) {
+                sb.append("..."); // NOI18N
+            }
+        }
+        sb.append(')');
+    }
+
+    public static void appendTemplateParamsSignature(List<CsmTemplateParameter> params, StringBuilder sb) {
+        if (params != null && params.size() > 0) {
+            sb.append('<');
+            int limit = 0;
+            for (Iterator<CsmTemplateParameter> iter = params.iterator(); iter.hasNext();) {
+                if (limit >= PARAMETERS_LIMIT) {
+                    break;
+                }
+                limit++;
+                CsmTemplateParameter param = iter.next();
+                if (CsmKindUtilities.isVariableDeclaration(param)) {
+                    CsmVariable var = (CsmVariable) param;
+                    CsmType type = var.getType();
+                    if (type != null) {
+                        sb.append(type.getCanonicalText());
+                        if (iter.hasNext()) {
+                            sb.append(',');
+                        }
+                    }
+                }
+                if (CsmKindUtilities.isClassifier(param)) {
+                    CsmClassifier classifier = (CsmClassifier) param;
+                    sb.append("class"); // NOI18N // Name of parameter does not matter
+                    if (CsmKindUtilities.isTemplate(param)) {
+                        appendTemplateParamsSignature(((CsmTemplate) classifier).getTemplateParameters(), sb);
+                    }
+                    if (iter.hasNext()) {
+                        sb.append(',');
+                    }
+                }
+            }
+            sb.append('>');
+        }
+    }
+
+    private CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmFile contextFile, int contextOffset, Resolver resolver) {
         if (CsmKindUtilities.isClass(template) || CsmKindUtilities.isFunction(template)) {
             List<CsmTemplateParameter> templateParams = template.getTemplateParameters();
             // check that all params are resolved
@@ -129,7 +207,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             }
             if (!hasUnresolvedParams) {
                 if (CsmKindUtilities.isClassifier(template)) {
-                    CsmClassifier specialization = specialize((CsmClassifier) template, params, contextFile, resolver);
+                    CsmClassifier specialization = specialize((CsmClassifier) template, params, contextFile, contextOffset, resolver);
                     if (CsmKindUtilities.isTemplate(specialization)) {
                         template = (CsmTemplate) specialization;
                     } else {
@@ -142,12 +220,12 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         return template;
     }
 
-    public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, CsmFile contextFile, Resolver resolver) {
+    public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, CsmFile contextFile, int contextOffset, Resolver resolver) {
         CsmObject result = template;
         if (CsmKindUtilities.isClass(template) || CsmKindUtilities.isFunction(template)) {
             result = Instantiation.create(template, mapping);
             if (CsmKindUtilities.isClassifier(result)) {
-                CsmClassifier specialization = specialize((CsmClassifier) result, params, contextFile, resolver);
+                CsmClassifier specialization = specialize((CsmClassifier) result, params, contextFile, contextOffset, resolver);
                 if (CsmKindUtilities.isTemplate(specialization)) {
                     result = (CsmTemplate) specialization;
                 } else {
@@ -158,12 +236,12 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         return result;
     }
   
-    public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmType type, CsmFile contextFile, Resolver resolver) {
+    public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmType type, CsmFile contextFile, Resolver resolver, int contextOffset) {
         CsmObject result = template;
         if (CsmKindUtilities.isClass(template) || CsmKindUtilities.isFunction(template)) {
             result = Instantiation.create(template, type);
             if (CsmKindUtilities.isClassifier(result)) {
-                CsmClassifier specialization = specialize((CsmClassifier) result, params, contextFile, resolver);
+                CsmClassifier specialization = specialize((CsmClassifier) result, params, contextFile, contextOffset, resolver);
                 if (CsmKindUtilities.isTemplate(specialization)) {
                     result = (CsmTemplate) specialization;
                 } else {
@@ -174,7 +252,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         return result;
     }
 
-    private CsmClassifier specialize(CsmClassifier classifier, List<CsmSpecializationParameter> params, CsmFile contextFile, Resolver resolver) {
+    private CsmClassifier specialize(CsmClassifier classifier, List<CsmSpecializationParameter> params, CsmFile contextFile, int contextOffset, Resolver resolver) {
         CsmClassifier specialization = null;
         if (CsmKindUtilities.isTemplate(classifier)) {
             List<CsmTemplateParameter> templateParams = ((CsmTemplate) classifier).getTemplateParameters();

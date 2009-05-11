@@ -46,13 +46,16 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.openide.util.NbBundle;
 
-public final class CreateHostVisualPanel1 extends JPanel {
+/*package*/ final class CreateHostVisualPanel1 extends JPanel {
 
     private final HostsListTableModel tableModel = new HostsListTableModel();
+    private final CreateHostData data;
 
-    public CreateHostVisualPanel1(final ChangeListener listener) {
+    public CreateHostVisualPanel1(CreateHostData data, final ChangeListener listener) {
+        this.data = data;
         initComponents();
         textPort.setText(Integer.toString(ExecutionEnvironmentFactory.DEFAULT_PORT));
         textHostname.getDocument().addDocumentListener(new DocumentListener() {
@@ -89,15 +92,13 @@ public final class CreateHostVisualPanel1 extends JPanel {
         });
     }
 
-    void init(Integer port) {
-        if (port != null) {
-            textPort.setText(port.toString());
-        }
+    void init() {
+        textPort.setText(Integer.toString(data.getPort()));
     }
 
     @Override
     public String getName() {
-        return CreateHostWizardIterator.getString("CreateHostVisualPanel1.Title");
+        return NbBundle.getMessage(getClass(), "CreateHostVisualPanel1.Title");
     }
 
     public String getHostname() {
@@ -161,26 +162,23 @@ public final class CreateHostVisualPanel1 extends JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 510, Short.MAX_VALUE)
-                    .add(pbarStatusPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 510, Short.MAX_VALUE)
-                    .add(jLabel2)
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(textHostname, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 320, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 32, Short.MAX_VALUE)
-                        .add(jLabel3)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(textPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 46, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(textHostname, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 26, Short.MAX_VALUE)
+                .add(jLabel3)
+                .add(4, 4, 4)
+                .add(textPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 46, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            .add(layout.createSequentialGroup()
+                .add(jLabel2)
+                .addContainerGap(364, Short.MAX_VALUE))
+            .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
+            .add(pbarStatusPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(textHostname, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel1)
@@ -190,7 +188,7 @@ public final class CreateHostVisualPanel1 extends JPanel {
                 .add(jLabel2)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(18, 18, 18)
                 .add(pbarStatusPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 13, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents

@@ -41,14 +41,14 @@
 
 package org.openide.util.lookup;
 
-import org.openide.util.*;
+import java.util.concurrent.ExecutionException;
 
 import java.lang.ref.WeakReference;
 import java.util.*;
-import junit.framework.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.netbeans.junit.*;
-import java.io.Serializable;
-import org.openide.util.io.NbMarshalledObject;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup.Pair;
 
 public class AbstractLookupTest extends AbstractLookupBaseHid implements AbstractLookupBaseHid.Impl {
@@ -176,7 +176,13 @@ public class AbstractLookupTest extends AbstractLookupBaseHid implements Abstrac
                 if (direct) {
                     run ();
                 } else {
-                    RequestProcessor.getDefault().post (this).waitFinished ();
+                    try {
+                        Executors.newSingleThreadScheduledExecutor().schedule(this, 0, TimeUnit.MICROSECONDS).get();
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    } catch (ExecutionException ex) {
+                        ex.printStackTrace();
+                    }
                 }
             }
             
@@ -255,9 +261,7 @@ public class AbstractLookupTest extends AbstractLookupBaseHid implements Abstrac
         al.addPair(item);
         al.removePair(item);
 
-        NbMarshalledObject mar = new NbMarshalledObject(al);
-
-        AbstractLookup newLookup = (AbstractLookup)mar.get();
+        AbstractLookup newLookup = (AbstractLookup)reserialize(al);
 
         newLookup.lookup(Number.class);
 

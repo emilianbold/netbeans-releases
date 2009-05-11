@@ -881,6 +881,14 @@ jnlp.sign.jars [since 6.0] - defaults to true. If set to false the jars
   will not be signed, only the main (startup) jar. This should allow for 
   faster startup but might compromise JNLP security. Use with extreme care.
 
+jnlp.generate.versions [since 6.7] - Defaults to false, which means versioning 
+  info is not generated (see 
+  http://java.sun.com/j2se/1.5.0/docs/guide/javaws/developersguide/downloadservletguide.html#resources).
+  If set true, build-jnlp target creates versioning info in jnlp descriptors and version.xml files.
+  This allows for incremental updates of Webstart applications, but requires download via
+  JnlpDownloadServlet (thus run-jnlp and debug-jnlp does not create versioning info even with this
+  property set to true).
+  
 [XXX some of the above should be listed in "Suite Properties"]
 
 

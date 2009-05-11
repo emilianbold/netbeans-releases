@@ -40,31 +40,25 @@
 package org.netbeans.modules.bugzilla.issue;
 
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.event.MouseInputAdapter;
-import javax.swing.event.MouseInputListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -90,23 +84,23 @@ import org.openide.util.RequestProcessor;
  */
 public class CommentsPanel extends JPanel {
     private static final DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm"); // NOI18N
-    private final static String STACKTRACE_ATTRIBUTE = "stacktrace"; // NOI18N
     private final static String ISSUE_ATTRIBUTE = "issue"; // NOI18N
     private final static String REPLY_TO_PROPERTY = "replyTo"; // NOI18N
     private final static String QUOTE_PREFIX = "> "; // NOI18N
     private BugzillaIssue issue;
-    private MouseInputListener listener;
+    private MouseAdapter listener;
     private NewCommentHandler newCommentHandler;
 
     public CommentsPanel() {
         setBackground(UIManager.getColor("EditorPane.background")); // NOI18N
-        listener = new MouseInputAdapter() {
+        listener = new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 try {
                     if (SwingUtilities.isLeftMouseButton(e)) {
-                        openStackTrace(e, false);
-                        Element elem = element(e);
+                        JTextPane pane = (JTextPane)e.getSource();
+                        StyledDocument doc = pane.getStyledDocument();
+                        Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
                         AttributeSet as = elem.getAttributes();
                         IssueAction issueAction = (IssueAction)as.getAttribute(ISSUE_ATTRIBUTE);
                         if (issueAction != null) {
@@ -115,63 +109,6 @@ public class CommentsPanel extends JPanel {
                     }
                 } catch(Exception ex) {
                     Bugzilla.LOG.log(Level.SEVERE, null, ex);
-                }
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                showMenu(e);
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                showMenu(e);
-            }
-
-            private void showMenu(MouseEvent e) {
-                if (e.isPopupTrigger()) {
-                    try {
-                        Element elem = element(e);
-                        String stackFrame = elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset());
-                        JPopupMenu menu = new JPopupMenu();
-                        menu.add(new StackTraceAction(stackFrame, false));
-                        menu.add(new StackTraceAction(stackFrame, true));
-                        menu.show((JTextPane)e.getSource(), e.getX(), e.getY());
-                    } catch(Exception ex) {
-                        Bugzilla.LOG.log(Level.SEVERE, null, ex);
-                    }
-                }
-            }
-
-            private Element element(MouseEvent e) {
-                JTextPane pane = (JTextPane)e.getSource();
-                StyledDocument doc = pane.getStyledDocument();
-                return doc.getCharacterElement(pane.viewToModel(e.getPoint()));
-            }
-
-            private void openStackTrace(MouseEvent e, boolean showHistory) {
-                Element elem = element(e);
-                AttributeSet as = elem.getAttributes();
-                StackTraceAction stacktraceAction = (StackTraceAction) as.getAttribute(STACKTRACE_ATTRIBUTE);
-                if (stacktraceAction != null) {
-                    try {
-                        StackTraceAction.openStackTrace(elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset()), showHistory);
-                    } catch(Exception ex) {
-                        Bugzilla.LOG.log(Level.SEVERE, null, ex);
-                    }
-                }
-            }
-
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                JTextPane pane = (JTextPane)e.getSource();
-                StyledDocument doc = pane.getStyledDocument();
-                Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
-                AttributeSet as = elem.getAttributes();
-                if (StyleConstants.isUnderline(as)) {
-                    pane.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                } else {
-                    pane.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                 }
             }
         };
@@ -197,7 +134,7 @@ public class CommentsPanel extends JPanel {
         } catch (ParseException pex) {
             Bugzilla.LOG.log(Level.INFO, null, pex);
         }
-        addSection(layout, issue.getFieldValue(BugzillaIssue.IssueField.DESCRIPTION), issue.getFieldValue(BugzillaIssue.IssueField.REPORTER), creationTxt, horizontalGroup, verticalGroup, true);
+        addSection(layout, issue.getFieldValue(BugzillaIssue.IssueField.DESCRIPTION), issue.getFieldValue(BugzillaIssue.IssueField.REPORTER_NAME), creationTxt, horizontalGroup, verticalGroup, true);
         for (BugzillaIssue.Comment comment : issue.getComments()) {
             String when = format.format(comment.getWhen());
             addSection(layout, comment.getText(), comment.getWho(), when, horizontalGroup, verticalGroup, false);
@@ -227,9 +164,11 @@ public class CommentsPanel extends JPanel {
         String rightFormat = bundle.getString("CommentsPanel.rightLabel.format"); // NOI18N
         String rightTxt = MessageFormat.format(rightFormat, dateTimeString, author);
         rightLabel.setText(rightTxt);
+        rightLabel.setLabelFor(textPane);
         LinkButton replyButton = new LinkButton(bundle.getString("Comments.replyButton.text")); // NOI18N
         replyButton.addActionListener(getReplyListener());
         replyButton.putClientProperty(REPLY_TO_PROPERTY, textPane);
+        replyButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.replyButton.AccessibleContext.accessibleDescription")); // NOI18N
         setupTextPane(textPane, text);
 
         // Layout
@@ -258,38 +197,9 @@ public class CommentsPanel extends JPanel {
             ((DefaultCaret)caret).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
         }
 
-        // Stack traces
-        List<StackTraceSupport.StackTracePosition> stacktraces = StackTraceSupport.find(comment);
-        if(stacktraces.isEmpty()) {
-            textPane.setText(comment);
-        } else {
-            Style defStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
-            Style hlStyle = doc.addStyle("regularBlue", defStyle); // NOI18N
-            hlStyle.addAttribute(STACKTRACE_ATTRIBUTE, new StackTraceAction());
-            StyleConstants.setForeground(hlStyle, Color.BLUE);
-            StyleConstants.setUnderline(hlStyle, true);
-
-            int last = 0;
-            textPane.setText(""); // NOI18N
-            for (StackTraceSupport.StackTracePosition stp : stacktraces) {
-                int start = stp.getStartOffset();
-                int end = stp.getEndOffset();
-
-                String st = comment.substring(start, end);
-                try {
-                    doc.insertString(doc.getLength(), comment.substring(last, start), defStyle);
-                    doc.insertString(doc.getLength(), st, hlStyle);
-                } catch (BadLocationException ex) {
-                    Bugzilla.LOG.log(Level.SEVERE, null, ex);
-                }
-                last = end;
-            }
-            try {
-                doc.insertString(doc.getLength(), comment.substring(last), defStyle);
-            } catch (BadLocationException ex) {
-                Bugzilla.LOG.log(Level.SEVERE, null, ex);
-            }
-        }
+        // Stack-traces
+        textPane.setText(comment);
+        StackTraceSupport.addHyperlinks(textPane);
 
         // Issues/bugs
         int[] pos = IssueFinder.getIssueSpans(comment);
@@ -317,7 +227,8 @@ public class CommentsPanel extends JPanel {
                 BorderFactory.createEmptyBorder(3,3,3,3)));
         textPane.setEditable(false);
         textPane.addMouseListener(listener);
-        textPane.addMouseMotionListener(listener);
+        textPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleName")); // NOI18N
+        textPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleDescription")); // NOI18N
     }
 
     private ActionListener replyListener;
@@ -345,33 +256,6 @@ public class CommentsPanel extends JPanel {
             };
         }
         return replyListener;
-    }
-
-    private static class StackTraceAction extends AbstractAction {
-        private String stackFrame;
-        private boolean showHistory;
-
-        StackTraceAction() {
-        }
-
-        StackTraceAction(String stackFrame, boolean showHistory) {
-            this.stackFrame = stackFrame;
-            this.showHistory = showHistory;
-            String name = NbBundle.getMessage(StackTraceAction.class, showHistory ? "CommentsPanel.StackTraceAction.showHistory" : "CommentsPanel.StackTraceAction.open"); // NOI18N
-            putValue(Action.NAME, name);
-        }
-
-        static void openStackTrace(String text, boolean showHistory) {
-            if (showHistory) {
-                StackTraceSupport.findAndShowHistory(text);
-            } else {
-                StackTraceSupport.findAndOpen(text);
-            }
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            openStackTrace(stackFrame, showHistory);
-        }
     }
 
     private class IssueAction {

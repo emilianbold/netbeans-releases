@@ -164,7 +164,7 @@ public class ConfigurationMakefileWriterTest {
         try {
             ConfigurationMakefileWriter configurationMakefileWriter = new ConfigurationMakefileWriter(makeConfigurationDescriptor);
             bw.write("LDLIBSOPTIONS=" + conf.getLinkerConfiguration().getLibraryItems() + "\n"); // NOI18N
-            configurationMakefileWriter.writeLinkTarget(makeConfigurationDescriptor, conf, bw);
+            ConfigurationMakefileWriter.writeLinkTarget(makeConfigurationDescriptor, conf, bw);
             bw.flush();
             bw.close();
         } catch (IOException ioe) {
@@ -229,8 +229,8 @@ public class ConfigurationMakefileWriterTest {
         // Generate (parts of) makefile
         try {
             ConfigurationMakefileWriter configurationMakefileWriter = new ConfigurationMakefileWriter(makeConfigurationDescriptor);
-            configurationMakefileWriter.writeCompileTargets(makeConfigurationDescriptor, conf, bw);
-            configurationMakefileWriter.writeLinkTarget(makeConfigurationDescriptor, conf, bw);
+            ConfigurationMakefileWriter.writeCompileTargets(makeConfigurationDescriptor, conf, bw);
+            ConfigurationMakefileWriter.writeLinkTarget(makeConfigurationDescriptor, conf, bw);
             bw.flush();
             bw.close();
         } catch (IOException ioe) {
@@ -332,7 +332,7 @@ public class ConfigurationMakefileWriterTest {
     public void testDynLib_GNU_MacOSX() {
         StringBuilder golden = new StringBuilder();
         golden.append("\n");
-        golden.append("${OBJECTDIR}/test.o: test.cc \n");
+        golden.append("${OBJECTDIR}/test.o: nbproject/Makefile-${CND_CONF}.mk test.cc \n");
         golden.append("\t${MKDIR} -p ${OBJECTDIR}\n");
         golden.append("\t${RM} $@.d\n");
         golden.append("\t$(COMPILE.cc) -g -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/test.o test.cc\n");
@@ -346,7 +346,7 @@ public class ConfigurationMakefileWriterTest {
     public void testDynLib_SunStudio_Solaris_Intel() {
         StringBuilder golden = new StringBuilder();
         golden.append("\n");
-        golden.append("${OBJECTDIR}/test.o: test.cc \n");
+        golden.append("${OBJECTDIR}/test.o: nbproject/Makefile-${CND_CONF}.mk test.cc \n");
         golden.append("\t${MKDIR} -p ${OBJECTDIR}\n");
         golden.append("\t$(COMPILE.cc) -g -KPIC  -o ${OBJECTDIR}/test.o test.cc\n");
         golden.append("dist/Default/MyCompilerSet-Solaris-x86/libXxx.so: ${OBJECTFILES}\n");
@@ -359,7 +359,7 @@ public class ConfigurationMakefileWriterTest {
     public void testDynLib_GNU_Solaris_Intel() {
         StringBuilder golden = new StringBuilder();
         golden.append("\n");
-        golden.append("${OBJECTDIR}/test.o: test.cc \n");
+        golden.append("${OBJECTDIR}/test.o: nbproject/Makefile-${CND_CONF}.mk test.cc \n");
         golden.append("\t${MKDIR} -p ${OBJECTDIR}\n");
         golden.append("\t${RM} $@.d\n");
         golden.append("\t$(COMPILE.cc) -g -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/test.o test.cc\n");
@@ -373,7 +373,7 @@ public class ConfigurationMakefileWriterTest {
     public void testDynLib_MinGW_Windows() {
         StringBuilder golden = new StringBuilder();
         golden.append("\n");
-        golden.append("${OBJECTDIR}/test.o: test.cc \n");
+        golden.append("${OBJECTDIR}/test.o: nbproject/Makefile-${CND_CONF}.mk test.cc \n");
         golden.append("\t${MKDIR} -p ${OBJECTDIR}\n");
         golden.append("\t${RM} $@.d\n");
         golden.append("\t$(COMPILE.cc) -g -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/test.o test.cc\n");
@@ -387,7 +387,7 @@ public class ConfigurationMakefileWriterTest {
     public void testDynLib_Cygwin_Windows() {
         StringBuilder golden = new StringBuilder();
         golden.append("\n");
-        golden.append("${OBJECTDIR}/test.o: test.cc \n");
+        golden.append("${OBJECTDIR}/test.o: nbproject/Makefile-${CND_CONF}.mk test.cc \n");
         golden.append("\t${MKDIR} -p ${OBJECTDIR}\n");
         golden.append("\t${RM} $@.d\n");
         golden.append("\t$(COMPILE.cc) -g -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/test.o test.cc\n");

@@ -141,7 +141,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 /**
- * Provede Parsing API parser build on the top of Javac (JSR 199)
+ * Provides Parsing API parser built atop Javac (using JSR 199).
  * @author Tomas Zezula
  */
 //@NotThreadSafe
@@ -242,18 +242,15 @@ public class JavacParser extends Parser {
     }
     
     private void init (final Snapshot snapshot, final Task task, final boolean singleSource) {
-        boolean explicitCpInfo = false;
+        final boolean explicitCpInfo = (task instanceof ClasspathInfoProvider) && ((ClasspathInfoProvider)task).getClasspathInfo() != null;
         if (!initialized) {
             final Source source = snapshot.getSource();
             final FileObject sourceFile = source.getFileObject();
             assert sourceFile != null;
             this.file = sourceFile;
-            ClasspathInfo _tmpInfo;
             final ClasspathInfo oldInfo = this.cpInfo;
-            if (task instanceof ClasspathInfoProvider &&
-                    (_tmpInfo = ((ClasspathInfoProvider)task).getClasspathInfo()) != null) {
-                cpInfo = _tmpInfo;
-                explicitCpInfo = true;
+            if (explicitCpInfo) {
+                cpInfo = ((ClasspathInfoProvider)task).getClasspathInfo();
             }
             else {
                 cpInfo = ClasspathInfo.create(sourceFile);
@@ -273,7 +270,7 @@ public class JavacParser extends Parser {
                 initialized = true;
             }
         }
-        else if (!explicitCpInfo) {
+        else if (singleSource && !explicitCpInfo) {     //tzezula: MultiSource should ever be explicitCpInfo, but JavaSource.create(CpInfo, List<Fo>) allows null!
             //Recheck ClasspathInfo if still valid
             assert this.file != null;
             assert cpInfo != null;
@@ -283,7 +280,12 @@ public class JavacParser extends Parser {
                 final Project owner = FileOwnerQuery.getOwner(this.file);
                 LOGGER.warning("ClassPath identity changed for " + this.file + ", class path owner: " +       //NOI18N
                         (owner == null ? "null" : (FileUtil.getFileDisplayName(owner.getProjectDirectory())+" ("+owner.getClass()+")")));       //NOI18N
+                if (this.weakCpListener != null) {
+                    cpInfo.removeChangeListener(weakCpListener);
+                }
                 cpInfo = ClasspathInfo.create(this.file);
+                this.weakCpListener = WeakListeners.change(cpInfoListener, cpInfo);
+                cpInfo.addChangeListener (this.weakCpListener);
                 JavaSourceAccessor.getINSTANCE().invalidateCachedClasspathInfo(this.file);                
             }
         }
@@ -647,7 +649,7 @@ public class JavacParser extends Parser {
     private static JavacTaskImpl createJavacTask(final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, final String sourceLevel, final boolean backgroundCompilation, ClassNamesForFileOraculum cnih) {
         final List<String> options = new ArrayList<String>();
         String lintOptions = CompilerSettings.getCommandLine();
-        com.sun.tools.javac.code.Source validatedSourceLevel = validateSourceLevel(sourceLevel, cpInfo.getClassPath(PathKind.BOOT));
+        com.sun.tools.javac.code.Source validatedSourceLevel = validateSourceLevel(sourceLevel, cpInfo);
         if (lintOptions.length() > 0) {
             options.addAll(Arrays.asList(lintOptions.split(" ")));
         }
@@ -689,7 +691,8 @@ public class JavacParser extends Parser {
         }
     }
     
-    private static com.sun.tools.javac.code.Source validateSourceLevel (String sourceLevel, ClassPath bootClassPath) {
+    private static com.sun.tools.javac.code.Source validateSourceLevel(String sourceLevel, ClasspathInfo cpInfo) {
+        ClassPath bootClassPath = cpInfo.getClassPath(PathKind.BOOT);
         com.sun.tools.javac.code.Source[] sources = com.sun.tools.javac.code.Source.values();
         if (sourceLevel == null) {
             //Should never happen but for sure
@@ -699,13 +702,17 @@ public class JavacParser extends Parser {
             if (source.name.equals(sourceLevel)) {
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_4) >= 0) {
                     if (bootClassPath != null && bootClassPath.findResource("java/lang/AssertionError.class") == null) { //NOI18N
-                        LOGGER.warning("Even thought the source level is set to: " + sourceLevel + ", 'java.lang.AssertionError' class cannot be found on the bootclasspath: " + bootClassPath + "\nChanging source level to 1.3"); //NOI18N
+                        LOGGER.warning("Even though the source level of " + cpInfo.getClassPath(PathKind.SOURCE) + " is set to: " + sourceLevel +
+                                ", java.lang.AssertionError cannot be found on the bootclasspath: " + bootClassPath +
+                                "\nChanging source level to 1.3"); //NOI18N
                         return com.sun.tools.javac.code.Source.JDK1_3;
                     }
                 }
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_5) >= 0) {
                     if (bootClassPath != null && bootClassPath.findResource("java/lang/StringBuilder.class") == null) { //NOI18N
-                        LOGGER.warning("Even thought the source level is set to: " + sourceLevel + ", 'java.lang.StringBuilder' class cannot be found on the bootclasspath: " + bootClassPath + "\nChanging source level to 1.4"); //NOI18N
+                        LOGGER.warning("Even though the source level of " + cpInfo.getClassPath(PathKind.SOURCE) + " is set to: " + sourceLevel +
+                                ", java.lang.StringBuilder cannot be found on the bootclasspath: " + bootClassPath +
+                                "\nChanging source level to 1.4"); //NOI18N
                         return com.sun.tools.javac.code.Source.JDK1_4;
                     }
                 }

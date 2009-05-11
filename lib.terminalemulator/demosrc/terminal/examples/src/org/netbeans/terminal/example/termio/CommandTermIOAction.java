@@ -27,7 +27,7 @@ public final class CommandTermIOAction extends CallableSystemAction {
             return;
 
         IOProvider iop = TerminalIOProviderSupport.getIOProvider();
-        support.performAction(iop, cmd);
+        support.executeCommand(iop, cmd);
     }
 
     public String getName() {
