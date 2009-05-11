@@ -47,6 +47,20 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="Hide-close-button-in-CloseButtonTabbedPane">
+        <api name="awt"/>
+        <summary>API to hide close button in CloseButtonTabbedPane</summary>
+        <version major="7" minor="8"/>
+        <date day="6" month="5" year="2009"/>
+        <author login="jbecicka"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            Added possibility to hide close button in CloseButtonTabbedPane
+            through tab's client property
+            component.putClientProperty(TabbedPaneFactory.NO_CLOSE_BUTTON, Boolean.TRUE)
+        </description>
+        <issue number="164578"/>
+    </change>
     <change id="AlwaysEnabledAction-extra-properties-and-name-sync">
         <api name="awt"/>
         <summary>AlwaysEnabledAction extra properties and Action.NAME synchronization</summary>

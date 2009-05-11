@@ -391,6 +391,7 @@ made subject to such option by the copyright holder.
                 <!-- if project.xml doesn't contain test dependencies -->
                 <property name="test.@{test.type}.folder" location="build/test/@{test.type}/dist"/>
                 <property name="test.@{test.type}.out.folder" location="${test.@{test.type}.folder}"/>
+                <property name="test-@{test.type}-sys-prop.cluster.path.final" value="${cluster.path.final}"/> <!-- #153178 -->
                 <property name="test.@{test.type}.cp.extra" value=""/>
                 <path id="test.@{test.type}.cp">
                     <!-- Cannot use <path refid="cp"/> since that uses ${module.classpath} and we want ${module.run.classpath}: -->
