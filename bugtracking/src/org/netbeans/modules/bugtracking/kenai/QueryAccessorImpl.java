@@ -63,6 +63,7 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
+import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
 import org.netbeans.modules.kenai.ui.spi.QueryHandle;
@@ -84,6 +85,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
 
     public QueryAccessorImpl() {
         Kenai.getDefault().addPropertyChangeListener(this);
+        Dashboard.getDefault().addPropertyChangeListener(this);
     }
 
     @Override
@@ -127,18 +129,21 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
             // XXX is this possible - at least preset queries
             return Collections.emptyList();
         }
-        
-        Map<String, QueryHandle> m = queryHandles.get(repo.getUrl());
-        if(m == null) {
-            m = new HashMap<String, QueryHandle>();
-            queryHandles.put(repo.getUrl(), m);
-        } else {
-            // remove all which aren't in the returned query list
-            List<String> l = new ArrayList<String>();
-            for (Query q : queries) {
-                l.add(q.getDisplayName());
+
+        Map<String, QueryHandle> m;
+        synchronized(queryHandles) {
+            m = queryHandles.get(repo.getUrl());
+            if(m == null) {
+                m = new HashMap<String, QueryHandle>();
+                queryHandles.put(repo.getUrl(), m);
+            } else {
+                // remove all which aren't in the returned query list
+                List<String> l = new ArrayList<String>();
+                for (Query q : queries) {
+                    l.add(q.getDisplayName());
+                }
+                m.keySet().retainAll(l);
             }
-            m.keySet().retainAll(l);
         }
 
         List<QueryHandle> ret = new ArrayList<QueryHandle>();
@@ -232,7 +237,17 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(Kenai.PROP_LOGIN) && evt.getNewValue() == null) {
+        /*if(evt.getPropertyName().equals(Dashboard.PROP_REFRESH)) {
+            synchronized(projectListeners) {
+                projectListeners.clear();
+            }
+            synchronized(kenaiRepoListeners) {
+                kenaiRepoListeners.clear();
+            }
+            synchronized(queryHandles) {
+                queryHandles.clear();
+            }
+        } else */ if(evt.getPropertyName().equals(Kenai.PROP_LOGIN) && evt.getNewValue() == null) {
             ProjectHandleListener[] pls;
             synchronized(projectListeners) {
                 pls = projectListeners.values().toArray(new ProjectHandleListener[projectListeners.values().size()]);
