@@ -59,7 +59,7 @@ public class JaxRpc {
     }
     
     public static enum Feature implements WSStack.Feature {
-        JSR109_OLD;
+        JSR109;
 
         public String getName() {
             return name();

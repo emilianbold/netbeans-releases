@@ -228,12 +228,10 @@ public class NbJiraIssueTest extends NbTestCase {
     private void addAttachment (NbJiraIssue issue, File attachmentFile, int attachmentCount) throws IOException {
         String key = issue.getID();
         String comment = "Comment for the attachment: " + attachmentFile.getName();
-        String description = "Description for the attachment: " + attachmentFile.getName();
         String author = getRepository().getUsername();
         FileObject fo = FileUtil.toFileObject(attachmentFile);
-        String contentType = fo.getMIMEType();
         long size = fo.getSize();
-        issue.addAttachment(attachmentFile, comment, description, null, attachmentFile.getName().endsWith(".patch"));
+        issue.addAttachment(attachmentFile, comment, null);
 
         issue = (NbJiraIssue) repository.getIssue(key);
         assertNotNull(issue);
@@ -249,7 +247,6 @@ public class NbJiraIssueTest extends NbTestCase {
         }
         assertEquals(config.getUser(author).getFullName(), attachment.getAuthor());
         assertEquals(size, Integer.parseInt(attachment.getSize()));
-        assertEquals(fo.getNameExt(), attachment.getDesc());
         assertNotNull(attachment.getDate());
         assertEquals(fo.getNameExt(), attachment.getFilename());
         assertNotNull(attachment.getUrl());

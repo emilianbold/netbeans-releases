@@ -569,6 +569,10 @@ public class DataNode extends AbstractNode {
 
         @Override
         public void setValue(String newExt) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            if (getValue().equals(newExt)) {
+                // #164819 - no change when string editor canceled
+                return;
+            }
             try {
                 if (obj.isModified()) {
                     String message = DataObject.getString("ERROR_extension");  //NOI18N
