@@ -80,7 +80,6 @@ import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.ProxySettings;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -195,7 +194,7 @@ public class SvnClientExceptionHandler {
 
         SvnKenaiSupport support = SvnKenaiSupport.getInstance();
         if(support.isKenai(url.toString())) {
-            return handleKenaiAuthorisation(support, url.toString());
+            return support.showLogin() && handleKenaiAuthorisation(support, url.toString());
         } else {
             Repository repository = new Repository(Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
             repository.selectUrl(url, true);

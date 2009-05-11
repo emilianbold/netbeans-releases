@@ -672,11 +672,17 @@ class J2SEActionProvider implements ActionProvider {
                         targetNames = new String[] {"debug-applet"}; // NOI18N
                     }
                 } else {
-                    //Fallback to normal (non-main-method-based) unit test run
-                    if (command.equals(COMMAND_RUN_SINGLE)) {
-                        targetNames = setupTestSingle(p, files);
+                    if (isTest) {
+                        //Fallback to normal (non-main-method-based) unit test run
+                        if (command.equals(COMMAND_RUN_SINGLE)) {
+                            targetNames = setupTestSingle(p, files);
+                        } else {
+                            targetNames = setupDebugTestSingle(p, files);
+                        }
                     } else {
-                        targetNames = setupDebugTestSingle(p, files);
+                        NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(J2SEActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
+                        DialogDisplayer.getDefault().notify(nd);
+                        return null;
                     }
                 }
             } else {

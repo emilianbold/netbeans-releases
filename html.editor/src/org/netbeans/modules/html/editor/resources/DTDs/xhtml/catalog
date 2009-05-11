@@ -1,14 +1,8 @@
 OVERRIDE YES
 
-PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" strict.dtd
-PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" loose.dtd
-PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" frameset.dtd
-PUBLIC "-//W3C//ENTITIES Latin 1 for XHTML//EN" HTMLlat1.ent
-PUBLIC "-//W3C//ENTITIES Symbols for XHTML//EN" HTMLsymbol.ent
-PUBLIC "-//W3C//ENTITIES Special for XHTML//EN" HTMLspecial.ent
-PUBLIC "-//W3C//DTD HTML 4.01//EN" strict.dtd
-PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" loose.dtd
-PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" frameset.dtd
-PUBLIC "-//W3C//ENTITIES Latin1//EN//HTML" HTMLlat1.ent
-PUBLIC "-//W3C//ENTITIES Special//EN//HTML" HTMLspecial.ent
-PUBLIC "-//W3C//ENTITIES Symbols//EN//HTML" HTMLsymbol.ent
+PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" xhtml1-strict.dtd
+PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" xhtml1-transitional.dtd
+PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" xhtml1-frameset.dtd
+PUBLIC "-//W3C//ENTITIES Latin 1 for XHTML//EN" xhtml-lat1.ent
+PUBLIC "-//W3C//ENTITIES Symbols for XHTML//EN" xhtml-symbol.ent
+PUBLIC "-//W3C//ENTITIES Special for XHTML//EN" xhtml-special.ent

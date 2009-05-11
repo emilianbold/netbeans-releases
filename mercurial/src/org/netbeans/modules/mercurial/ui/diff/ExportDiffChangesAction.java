@@ -129,7 +129,7 @@ public class ExportDiffChangesAction extends ContextAction {
         ExportDiffSupport exportDiffSupport = new ExportDiffSupport(new File[] {HgUtils.getRootFile(context)}, HgModuleConfig.getDefault().getPreferences()) {
             @Override
             public void writeDiffFile(final File toFile) {
-                HgModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", toFile.getParent()); // NOI18N
+                ExportDiffAction.saveFolderToPrefs(toFile);
                 File root = HgUtils.getRootFile(context);
                 RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
                 HgProgressSupport ps = new HgProgressSupport() {

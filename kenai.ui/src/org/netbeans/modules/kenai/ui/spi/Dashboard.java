@@ -20,7 +20,7 @@ public abstract class Dashboard {
      * in Dashboard occurs. Firing this property doesn't neccessary mean that number
      * of opened project has changed.
      */
-    public static final String PROP_OPENED_PROJECTS = "openedProjects";
+    public static final String PROP_OPENED_PROJECTS = "openedProjects"; // NOI18N
 
     public static Dashboard getDefault() {
         return DashboardImpl.getInstance();
