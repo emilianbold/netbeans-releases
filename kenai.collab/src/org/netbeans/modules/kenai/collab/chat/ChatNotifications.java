@@ -94,22 +94,22 @@ public class ChatNotifications {
         String title = null;
         try {
             title = NbBundle.getMessage(ChatTopComponent.class, "LBL_GroupChatNotification", new Object[]{Kenai.getDefault().getProject(chatRoomName).getDisplayName(), r.getNewMessageCount()});
+            final String description = NbBundle.getMessage(ChatTopComponent.class, "LBL_ReadIt");
+
+            final ActionListener l = new ActionListener() {
+
+                public void actionPerformed(ActionEvent arg0) {
+                    final ChatTopComponent chatTc = ChatTopComponent.findInstance();
+                    ChatTopComponent.openAction(chatTc, "", "", false).actionPerformed(arg0); // NOI18N
+                    chatTc.setActive(chatRoomName);
+                }
+            };
+
+            Notification n = NotificationDisplayer.getDefault().notify(title, getIcon(), description, l, Priority.NORMAL);
+            r.updateNotification(n);
         } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);
         }
-        final String description = NbBundle.getMessage(ChatTopComponent.class, "LBL_ReadIt");
-
-        final ActionListener l = new ActionListener() {
-
-            public void actionPerformed(ActionEvent arg0) {
-                final ChatTopComponent chatTc = ChatTopComponent.findInstance();
-                ChatTopComponent.openAction(chatTc, "", "", false).actionPerformed(arg0); // NOI18N
-                chatTc.setActive(chatRoomName);
-            }
-        };
-
-        Notification n = NotificationDisplayer.getDefault().notify(title, getIcon(), description, l, Priority.NORMAL);
-        r.updateNotification(n);
     }
 
     void addPrivateMessage(Message msg) {
