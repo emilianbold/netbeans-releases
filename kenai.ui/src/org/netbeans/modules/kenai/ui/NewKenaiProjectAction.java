@@ -64,7 +64,7 @@ public final class NewKenaiProjectAction implements ActionListener {
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
         wizardDescriptor.setTitle(NbBundle.getMessage(NewKenaiProjectAction.class,
-                "NewKenaiProjectAction.dialogTitle"));
+                "NewKenaiProjectAction.dialogTitle")); // NOI18N
 
         DialogDisplayer.getDefault().notify(wizardDescriptor);
         
@@ -102,7 +102,7 @@ public final class NewKenaiProjectAction implements ActionListener {
             if (newProjectAction != null) {
                 ProjectChooser.setProjectsFolder(new File(localPath));
                 newProjectAction.actionPerformed(new ActionEvent(NewKenaiProjectAction.class,
-                        ActionEvent.ACTION_PERFORMED, "command"));
+                        ActionEvent.ACTION_PERFORMED, "command")); // NOI18N
             }
         }
 

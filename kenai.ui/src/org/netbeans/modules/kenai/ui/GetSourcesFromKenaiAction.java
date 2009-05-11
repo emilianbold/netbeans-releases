@@ -129,10 +129,10 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
 
                             if (passwdAuth != null) {
                                 Mercurial.cloneRepository(feature.getLocation(), new File(sourcesInfo.localFolderPath),
-                                    "", "", "", passwdAuth.getUserName(), new String(passwdAuth.getPassword()));
+                                    "", "", "", passwdAuth.getUserName(), new String(passwdAuth.getPassword())); // NOI18N
                             } else {
                                 Mercurial.cloneRepository(feature.getLocation(), new File(sourcesInfo.localFolderPath),
-                                    "", "", "");
+                                    "", "", ""); // NOI18N
                             }
 
                         } catch (MalformedURLException ex) {

@@ -85,6 +85,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private static final Color TIME_SPENT_COLOR = new Color(81, 168, 37);
     private NbJiraIssue issue;
     private CommentsPanel commentsPanel;
+    private AttachmentsPanel attachmentsPanel;
     private boolean submitting;
 
     public IssuePanel() {
@@ -101,6 +102,7 @@ public class IssuePanel extends javax.swing.JPanel {
         BugtrackingUtil.issue163946Hack(fixVersionScrollPane);
         BugtrackingUtil.issue163946Hack(environmentScrollPane);
         BugtrackingUtil.issue163946Hack(addCommentScrollPane);
+        initAttachmentsPanel();
     }
 
     void setIssue(NbJiraIssue issue) {
@@ -114,6 +116,13 @@ public class IssuePanel extends javax.swing.JPanel {
         initCommentsPanel();
 
         reloadForm(true);
+    }
+
+    private void initAttachmentsPanel() {
+        attachmentsPanel = new AttachmentsPanel();
+        GroupLayout layout = (GroupLayout)getLayout();
+        layout.replace(dummyAttachmentPanel, attachmentsPanel);
+        attachmentLabel.setLabelFor(attachmentsPanel);
     }
 
     private void initRenderers() {
@@ -277,6 +286,10 @@ public class IssuePanel extends javax.swing.JPanel {
         // Comments
         commentsPanel.setIssue(issue);
         BugtrackingUtil.keepFocusedComponentVisible(commentsPanel);
+
+        // Attachments
+        attachmentsPanel.setIssue(issue);
+        BugtrackingUtil.keepFocusedComponentVisible(attachmentsPanel);
     }
 
     private void reloadField(JComponent fieldComponent, Object fieldValue) {

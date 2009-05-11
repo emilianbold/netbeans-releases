@@ -56,6 +56,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -89,7 +90,7 @@ import org.openide.util.WeakListeners;
  * @author Dusan Balek
  * @author Sam Halliday
  */
-public class Utilities {
+public final class Utilities {
     
     private static final String CAPTURED_WILDCARD = "<captured wildcard>"; //NOI18N
     private static final String ERROR = "<error>"; //NOI18N
@@ -99,11 +100,12 @@ public class Utilities {
     private static boolean showDeprecatedMembers = true;
     private static boolean guessMethodArguments = true;
     private static boolean autoPopupOnJavaIdentifierPart = true;
+    private static boolean javaCompletionExcluderMethods;
     private static String javaCompletionAutoPopupTriggers = null;
     private static String javaCompletionSelectors = null;
     private static String javadocCompletionAutoPopupTriggers = null;
     
-    private static boolean inited;
+    private static final AtomicBoolean inited = new AtomicBoolean(false);
     private static Preferences preferences;
     private static final PreferenceChangeListener preferencesTracker = new PreferenceChangeListener() {
         public void preferenceChange(PreferenceChangeEvent evt) {
@@ -131,11 +133,14 @@ public class Utilities {
             }
             if (settingName == null || CodeCompletionPanel.JAVA_COMPLETION_BLACKLIST.equals(settingName)) {
                 String blacklist = preferences.get(CodeCompletionPanel.JAVA_COMPLETION_BLACKLIST, CodeCompletionPanel.JAVA_COMPLETION_BLACKLIST_DEFAULT);
-                updateExcluder(exclude, blacklist);
+                updateExcluder(excludeRef, blacklist);
             }
             if (settingName == null || CodeCompletionPanel.JAVA_COMPLETION_WHITELIST.equals(settingName)) {
                 String whitelist = preferences.get(CodeCompletionPanel.JAVA_COMPLETION_WHITELIST, CodeCompletionPanel.JAVA_COMPLETION_WHITELIST_DEFAULT);
-                updateExcluder(include, whitelist);
+                updateExcluder(includeRef, whitelist);
+            }
+            if (settingName == null || CodeCompletionPanel.JAVA_COMPLETION_EXCLUDER_METHODS.equals(settingName)) {
+                javaCompletionExcluderMethods = preferences.getBoolean(CodeCompletionPanel.JAVA_COMPLETION_EXCLUDER_METHODS, CodeCompletionPanel.JAVA_COMPLETION_EXCLUDER_METHODS_DEFAULT);
             }
         }
     };
@@ -225,8 +230,8 @@ public class Utilities {
         return javadocCompletionAutoPopupTriggers;
     }
 
-    static private volatile AtomicReference<Collection<String>> exclude;
-    static private volatile AtomicReference<Collection<String>> include;
+    static private final AtomicReference<Collection<String>> excludeRef = new AtomicReference<Collection<String>>();
+    static private final AtomicReference<Collection<String>> includeRef = new AtomicReference<Collection<String>>();
 
     private static void updateExcluder(AtomicReference<Collection<String>> existing, String updated) {
         Collection<String> nue = new LinkedList<String>();
@@ -236,7 +241,7 @@ public class Utilities {
         }
         String[] entries = updated.split(","); //NOI18N
         for (String entry : entries) {
-            if (entry != null && entry.length() != 0) {
+            if (entry.length() != 0) {
                 nue.add(entry);
             }
         }
@@ -244,18 +249,29 @@ public class Utilities {
     }
 
     /**
+     * @return the user setting for whether the excluder should operate on methods
+     */
+    public static boolean isExcludeMethods(){
+        lazyInit();
+        return javaCompletionExcluderMethods;
+    }
+
+    /**
      * @param fqn Fully Qualified Name (including method names). Packages names are expected to
-     * end in a trailing "."
+     * end in a trailing "." except the default package.
      * @return
      */
     public static boolean isExcluded(final CharSequence fqn) {
-        if (fqn == null || fqn.length() == 0 || fqn.equals(".")) { //NOI18N
+        if (fqn == null || fqn.length() == 0) {
             return true;
         }
         lazyInit();
         String s = fqn.toString();
-        if (!include.get().isEmpty()) {
-            for (String entry : include.get()) {
+        Collection<String> include = includeRef.get();
+        Collection<String> exclude = excludeRef.get();
+
+        if (include != null && !include.isEmpty()) {
+            for (String entry : include) {
                 if (entry.length() > fqn.length()) {
                     if (entry.startsWith(s)) {
                         return false;
@@ -266,8 +282,8 @@ public class Utilities {
             }
         }
 
-        if (!exclude.get().isEmpty()) {
-            for (String entry : exclude.get()) {
+        if (exclude != null && !exclude.isEmpty()) {
+            for (String entry : exclude) {
                 if (entry.length() <= fqn.length() && s.startsWith(entry)) {
                     return true;
                 }
@@ -278,11 +294,7 @@ public class Utilities {
     }
 
     private static void lazyInit() {
-        if (!inited) {
-            inited = true;
-            Collection<String> empty = Collections.emptySet();
-            exclude = new AtomicReference<Collection<String>>(empty);
-            include = new AtomicReference<Collection<String>>(empty);
+        if (inited.compareAndSet(false, true)) {
             preferences = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
             preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, preferencesTracker, preferences));
             preferencesTracker.preferenceChange(null);
@@ -850,6 +862,9 @@ public class Utilities {
         }
 
         return found;
+    }
+
+    private Utilities() {
     }
     
     
