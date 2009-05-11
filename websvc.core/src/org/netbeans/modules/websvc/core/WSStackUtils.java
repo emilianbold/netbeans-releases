@@ -115,7 +115,7 @@ public class WSStackUtils {
     public boolean isJsr109OldSupported() {
         if (j2eePlatform != null) {
             WSStack<JaxRpc> wsStack = JaxRpcStackProvider.getJaxWsStack(j2eePlatform);
-            return wsStack != null && wsStack.isFeatureSupported(JaxRpc.Feature.JSR109_OLD);
+            return wsStack != null && wsStack.isFeatureSupported(JaxRpc.Feature.JSR109);
         }
         return false;
     }

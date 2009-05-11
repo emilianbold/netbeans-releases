@@ -88,7 +88,7 @@ public class GlassFishV3JaxRpcStack implements WSStackImplementation<JaxRpc> {
     }
     
     public boolean isFeatureSupported(Feature feature) {
-        if (feature == JaxRpc.Feature.JSR109_OLD && isMetroInstalled()) {
+        if (feature == JaxRpc.Feature.JSR109 && isMetroInstalled()) {
             return true;
         }
         return false;   
