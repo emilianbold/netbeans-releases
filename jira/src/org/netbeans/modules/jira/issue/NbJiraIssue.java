@@ -535,8 +535,8 @@ public class NbJiraIssue extends Issue {
     }
 
     @Override
-    public void attachPatch(File file, String description) {
-        addAttachment(file, null, null);
+    public void attachPatch(File file, String comment) {
+        addAttachment(file, comment, null);
     }
 
     @Override
