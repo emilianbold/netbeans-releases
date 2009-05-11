@@ -497,7 +497,7 @@ public class NbJiraIssue extends Issue {
         }
     }
 
-    void addAttachment(File file, final String comment, final String desc, String contentType, final boolean patch) {
+    void addAttachment(File file, final String comment, String contentType) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         final FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(file);
         if (contentType == null) {
@@ -512,10 +512,6 @@ public class NbJiraIssue extends Issue {
         attachmentSource.setContentType(contentType);
 
         TaskAttachmentMapper mapper = new TaskAttachmentMapper();
-        if (desc != null) {
-            mapper.setDescription(desc);
-        }
-        mapper.setPatch(new Boolean(patch));
         mapper.setContentType(contentType);
         final TaskAttribute attAttribute = new TaskAttribute(taskData.getRoot(),  TaskAttribute.TYPE_ATTACHMENT);
         mapper.applyTo(attAttribute);
@@ -539,8 +535,8 @@ public class NbJiraIssue extends Issue {
     }
 
     @Override
-    public void attachPatch(File file, String description) {
-        addAttachment(file, null, description, null, true);
+    public void attachPatch(File file, String comment) {
+        addAttachment(file, comment, null);
     }
 
     @Override
@@ -903,15 +899,11 @@ public class NbJiraIssue extends Issue {
     }
 
     public final class Attachment {
-        private final String desc;
         private final String filename;
         private final String author;
         private final Date date;
         private final String id;
-//        private String contentType;
-//        private String isDeprecated;
         private String size;
-//        private String isPatch;
         private String url;
         private final TaskAttribute attachmentAttribute;
 
@@ -922,12 +914,8 @@ public class NbJiraIssue extends Issue {
             id = taskAttachment.getAttachmentId();
             date = taskAttachment.getCreationDate();
             filename = taskAttachment.getFileName();
-            desc = taskAttachment.getDescription();
             IRepositoryPerson person = taskAttachment.getAuthor();
             author = person == null ? null : person.getName();
-//            contentType = taskAttachment.getContentType();
-//            isDeprecated = JiraUtils.getMappedValue(ta, TaskAttribute.ATTACHMENT_IS_DEPRECATED);
-//            isPatch = JiraUtils.getMappedValue(ta, TaskAttribute.ATTACHMENT_IS_PATCH);
             size = JiraUtils.getMappedValue(ta, TaskAttribute.ATTACHMENT_SIZE);
             url = taskAttachment.getUrl();
         }
@@ -940,29 +928,13 @@ public class NbJiraIssue extends Issue {
             return date;
         }
 
-        public String getDesc() {
-            return desc;
-        }
-
         public String getFilename() {
             return filename;
         }
 
-//        public String getContentType() {
-//            return contentType;
-//        }
-
         public String getId() {
             return id;
         }
-
-//        public String getIsDeprected() {
-//            return isDeprecated;
-//        }
-//
-//        public String getIsPatch() {
-//            return isPatch;
-//        }
 
         public String getSize() {
             return size;
