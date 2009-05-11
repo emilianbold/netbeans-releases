@@ -131,13 +131,13 @@ public class SourceAccessorImpl extends SourceAccessor {
                     ((NbProjectHandleImpl) prj).remove();
                 } else {
                     OpenProjects.getDefault().open(new Project[]{project}, false);
-                    WindowManager.getDefault().findTopComponent("projectTabLogical_tc").requestActive();
+                    WindowManager.getDefault().findTopComponent("projectTabLogical_tc").requestActive(); // NOI18N
                     selectProject(project);
                 }
             }
 
             private void selectProject(final Project p) {
-                final ExplorerManager em = ((ExplorerManager.Provider) WindowManager.getDefault().findTopComponent("projectTabLogical_tc")).getExplorerManager();
+                final ExplorerManager em = ((ExplorerManager.Provider) WindowManager.getDefault().findTopComponent("projectTabLogical_tc")).getExplorerManager(); // NOI18N
 
                 Node root = em.getRootContext();
                 // Node projNode = root.getChildren ().findChild( p.getProjectDirectory().getName () );
@@ -205,7 +205,7 @@ public class SourceAccessorImpl extends SourceAccessor {
                     OpenProjects.getDefault().open(
                             projectsArray, // Put the project into OpenProjectList
                             false);
-                    WindowManager.getDefault().findTopComponent("projectTabLogical_tc").requestActive();
+                    WindowManager.getDefault().findTopComponent("projectTabLogical_tc").requestActive(); // NOI18N
                 }
             }
         };

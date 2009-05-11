@@ -87,7 +87,7 @@ public class TreeList extends JList {
 
     private final TreeListRenderer renderer = new TreeListRenderer();
 
-    static final int ROW_HEIGHT = Math.max( 16, Math.max(RendererPanel.getExpandedIcon().getIconHeight(), new JLabel("X").getPreferredSize().height+INSETS_TOP+INSETS_BOTTOM) );
+    static final int ROW_HEIGHT = Math.max( 16, Math.max(RendererPanel.getExpandedIcon().getIconHeight(), new JLabel("X").getPreferredSize().height+INSETS_TOP+INSETS_BOTTOM) ); // NOI18N
 
     public TreeList( TreeListModel model ) {
         super( model );

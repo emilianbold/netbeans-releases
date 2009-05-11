@@ -87,7 +87,7 @@ public class MessagingHandleImpl extends MessagingHandle {
         } else {
             onlineCount = -1;
         }
-        lastMessage = lastMessageRead = new Date(Long.parseLong(prefs.get(id+LASTMESSAGEAT,"0")));
+        lastMessage = lastMessageRead = new Date(Long.parseLong(prefs.get(id+LASTMESSAGEAT,"0"))); // NOI18N
     }
     /**
      * Get the value of messageCount

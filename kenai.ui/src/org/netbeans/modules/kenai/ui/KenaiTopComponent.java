@@ -55,8 +55,8 @@ final class KenaiTopComponent extends TopComponent {
 
     private static KenaiTopComponent instance;
     /** path to the icon used by the component and its open action */
-    static final String ICON_PATH = "org/netbeans/modules/kenai/ui/resources/kenai-small.png";
-    private static final String PREFERRED_ID = "KenaiTopComponent";
+    static final String ICON_PATH = "org/netbeans/modules/kenai/ui/resources/kenai-small.png"; // NOI18N
+    private static final String PREFERRED_ID = "KenaiTopComponent"; // NOI18N
 
     private KenaiTopComponent() {
         initComponents();
@@ -99,15 +99,15 @@ final class KenaiTopComponent extends TopComponent {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
             Logger.getLogger(KenaiTopComponent.class.getName()).warning(
-                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
+                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system."); // NOI18N
             return getDefault();
         }
         if (win instanceof KenaiTopComponent) {
             return (KenaiTopComponent) win;
         }
         Logger.getLogger(KenaiTopComponent.class.getName()).warning(
-                "There seem to be multiple components with the '" + PREFERRED_ID +
-                "' ID. That is a potential source of errors and unexpected behavior.");
+                "There seem to be multiple components with the '" + PREFERRED_ID + // NOI18N
+                "' ID. That is a potential source of errors and unexpected behavior."); // NOI18N
         return getDefault();
     }
 

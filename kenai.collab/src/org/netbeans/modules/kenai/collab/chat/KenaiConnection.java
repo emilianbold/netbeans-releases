@@ -307,7 +307,7 @@ public class KenaiConnection implements PropertyChangeListener {
     
     //TODO this should be removed when xmpp server starts working on kenai.com
     private static final String XMPP_SERVER = System.getProperty("kenai.com.url","https://kenai.com").substring(System.getProperty("kenai.com.url","https://kenai.com").lastIndexOf("/")+1);
-    private static final String CHAT_ROOM = "@muc." + XMPP_SERVER;
+    private static final String CHAT_ROOM = "@muc." + XMPP_SERVER; // NOI18N
 
     /**
      * TODO: should return kenai account name
