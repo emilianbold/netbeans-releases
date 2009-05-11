@@ -85,12 +85,12 @@ made subject to such option by the copyright holder.
         <folder name="xhtml">
             <file name="catalog" url="DTDs/xhtml/catalog"/>
             
-            <file name="HTMLlat1.ent" url="DTDs/4_01/HTMLlat1.ent"/>
-            <file name="HTMLspecial.ent" url="DTDs/4_01/HTMLspecial.ent"/>
-            <file name="HTMLsymbol.ent" url="DTDs/4_01/HTMLsymbol.ent"/>
-            <file name="frameset.dtd" url="DTDs/4_01/frameset.dtd"/>
-            <file name="loose.dtd" url="DTDs/4_01/loose.dtd"/>
-            <file name="strict.dtd" url="DTDs/4_01/strict.dtd"/>
+            <file name="xhtml-lat1.ent" url="DTDs/xhtml/xhtml-lat1.ent"/>
+            <file name="xhtml-special.ent" url="DTDs/xhtml/xhtml-special.ent"/>
+            <file name="xhtml-symbol.ent" url="DTDs/xhtml/xhtml-symbol.ent"/>
+            <file name="xhtml1-frameset.dtd" url="DTDs/xhtml/xhtml1-frameset.dtd"/>
+            <file name="xhtml1-transitional.dtd" url="DTDs/xhtml/xhtml1-transitional.dtd"/>
+            <file name="xhtml1-strict.dtd" url="DTDs/xhtml/xhtml1-strict.dtd"/>
         </folder>
     </folder>
     
