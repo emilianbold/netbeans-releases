@@ -44,6 +44,9 @@ package org.netbeans.editor.ext.html.dtd;
 import java.util.*;
 import java.io.Reader;
 import java.lang.ref.WeakReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.util.Exceptions;
 
 /** This class stores references to DTDReaderProviders. It also acts as a cache
  * for parsed DTDs and as the only factory for creating DTDs.
@@ -216,7 +219,7 @@ public class Registry {
             }
             return dtd;
         } catch( DTDParser.WrongDTDException exc ) {
-//System.err.println("TODO (DTD.java:90): Notify the error during parsing." );
+            Logger.global.log(Level.WARNING, "Error parsing DTD for identfier \"" + identifier + "\"; file = " + fileName, exc);
             return null;
         }
     }
