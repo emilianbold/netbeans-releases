@@ -116,9 +116,11 @@ public class BuildNumberPortletContainer extends Task {
 				"0" : matcher.group(4);                // NOMAGI
                 final String milestoneNumber =
                         matcher.group(5);                              // NOMAGI
-                
+
+                final String buildDate = matcher.group(6);
+
                 final String buildNumber = FORMAT_OUT.format(
-                        FORMAT_IN.parse(matcher.group(6))); // NOMAGI
+                        FORMAT_IN.parse(buildDate)); // NOMAGI
                 
                 getProject().setProperty(
                         prefix + MACRO_BUILD_SUFFIX,
@@ -135,6 +137,10 @@ public class BuildNumberPortletContainer extends Task {
                 getProject().setProperty(
                         prefix + BUILD_NUMBER_SUFFIX,
                         buildNumber);
+                getProject().setProperty(
+                        prefix + BUILD_DATE_SUFFIX,
+                        buildDate);
+
             } else {
                 throw new BuildException(
                         "Cannot parse the input file."); // NOI18N
@@ -201,4 +207,10 @@ public class BuildNumberPortletContainer extends Task {
      */
     private static final String BUILD_NUMBER_SUFFIX =
             ".build.number"; // NOI18N
+
+    /**
+     * Build number property suffix.
+     */
+    private static final String BUILD_DATE_SUFFIX =
+            ".build.date"; // NOI18N
 }

@@ -102,12 +102,12 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     static final String REPO_NAME_PREVIEW_MSG = "https://kenai.com/{0}/{1}~{2}";
 
     // names used in repository name preview
-    private static final String HG_REPO_NAME =  "hg";
-    static final String SVN_REPO_NAME = "svn";
+    private static final String HG_REPO_NAME =  "hg"; // NOI18N
+    static final String SVN_REPO_NAME = "svn"; // NOI18N
 
     // {0} - project name
     // {1} - repository name
-    private static final String DEFAULT_REPO_FOLDER = "{0}~{1}";
+    private static final String DEFAULT_REPO_FOLDER = "{0}~{1}"; // NOI18N
 
     // XXX maybe move to bundle
     private static final String SVN_REPO_ITEM = "Subversion (on Kenai.com)";
@@ -190,7 +190,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     @Override
     public String getName() {
         return NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class,
-                "SourceAndIssuesWizardPanelGUI.panelName");
+                "SourceAndIssuesWizardPanelGUI.panelName"); // NOI18N
     }
 
     private void setupServicesListModels() {
@@ -229,9 +229,9 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                 } else { // no services available
                     someServicesFound = false;
                     repoModel.addElement(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class,
-                            "SourceAndIssuesWizardPanelGUI.noRepoAvailable"));
+                            "SourceAndIssuesWizardPanelGUI.noRepoAvailable")); // NOI18N
                     issuesModel.addElement(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class,
-                            "SourceAndIssuesWizardPanelGUI.noIssuesAvailable"));
+                            "SourceAndIssuesWizardPanelGUI.noIssuesAvailable")); // NOI18N
                 }
 
                 if (!repoList.isEmpty()) {

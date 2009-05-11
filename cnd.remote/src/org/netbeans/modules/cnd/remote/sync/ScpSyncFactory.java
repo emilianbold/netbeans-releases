@@ -55,7 +55,7 @@ class ScpSyncFactory extends RemoteSyncFactory {
 
     @Override
     public RemoteSyncWorker createNew(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
-        return new SharedSyncWorker(localDir, executionEnvironment, out, err);
+        return new ScpSyncWorker(localDir, executionEnvironment, out, err);
     }
 
     @Override

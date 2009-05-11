@@ -113,6 +113,7 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
 
         cbOpenOutputWindow.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(cbOpenOutputWindow, org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.cbOpenOutputWindow.text")); // NOI18N
+        cbOpenOutputWindow.setToolTipText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "ACSD_SvnOptionsPanel.cbOpenOutput.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

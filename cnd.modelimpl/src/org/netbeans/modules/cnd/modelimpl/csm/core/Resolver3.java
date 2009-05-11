@@ -66,9 +66,6 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  * @author Vladimir Kvasihn
  */
 public class Resolver3 implements Resolver {
-    private static final boolean TRACE_RECURSION = false;
-    private static final int INFINITE_RECURSION = 200;
-    private static final int LIMITED_RECURSION = 5;
     
     private ProjectBase project;
     private CsmFile file;
@@ -326,7 +323,7 @@ public class Resolver3 implements Resolver {
         return fd.getDeclaration();
     }
     
-    private boolean isRecursionOnResolving(int maxRecursion) {
+    public boolean isRecursionOnResolving(int maxRecursion) {
         Resolver3 parent = (Resolver3)parentResolver;
         int count = 0;
         while(parent != null) {

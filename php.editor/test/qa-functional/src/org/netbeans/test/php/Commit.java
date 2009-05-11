@@ -258,7 +258,8 @@ public class Commit extends GeneralPHP
       String sCodeLocator,
       boolean bInclass,
       boolean bFormat,
-      int iAnnotations
+      int iAnnotations,
+      int iWarningsExpected
     )
   {
     // Check file in tree
@@ -421,13 +422,13 @@ public class Commit extends GeneralPHP
       int iWarnings = GetWarningNumber( eoPHP, oo );
       if( iAnnotations == iErrors )
       {
-        if( 0 != iWarnings )
+        if( iWarningsExpected != iWarnings )
         {
           for( Object o : oo )
           {
             System.out.println( "***" + eoPHP.getAnnotationType( o ) + " : " + eoPHP.getAnnotationShortDescription( o ) );
           }
-          fail( "Invalid number of detected warnings. Found: " + iWarnings + ", expected: 0" );
+          fail( "Invalid number of detected warnings. Found: " + iWarnings + ", expected: " + iWarningsExpected );
         }
         bRecheck = false;
       }
@@ -529,7 +530,8 @@ public class Commit extends GeneralPHP
         "// put your code here",
         false,
         true,
-        4
+        5,
+        0
       );
 
     endTest( );
@@ -556,7 +558,8 @@ public class Commit extends GeneralPHP
         "*/",
         false,
         true,
-        4
+        5,
+        0
       );
 
     endTest( );
@@ -583,6 +586,7 @@ public class Commit extends GeneralPHP
         "//put your code here",
         true,
         false,
+        0,
         0
       );
 
@@ -687,7 +691,8 @@ public class Commit extends GeneralPHP
         "<?",
         false,
         false,
-        4
+        6,
+        1
       );
 
     endTest( );

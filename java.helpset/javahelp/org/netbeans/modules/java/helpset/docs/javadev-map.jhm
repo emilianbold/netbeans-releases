@@ -452,6 +452,7 @@
 <!-- Mappings for breakpoint customizer dialog topics -->
 <mapID target="NetbeansDebuggerBreakpointExceptionJPDA" url="debug/CSH/breakpoint_exception.html" />
 <mapID target="NetbeansDebuggerBreakpointLineJPDA" url="debug/CSH/breakpoint_line.html" />
+<mapID target="NetbeansDebuggerBreakpointLine" url="debug/CSH/breakpoint_line.html" />
 <mapID target="NetbeansDebuggerBreakpointFieldJPDA" url="debug/CSH/breakpoint_variable.html" />
 <mapID target="NetbeansDebuggerBreakpointMethodJPDA" url="debug/CSH/breakpoint_method.html" />
 <mapID target="NetbeansDebuggerBreakpointThreadJPDA" url="debug/CSH/breakpoint_thread.html" />

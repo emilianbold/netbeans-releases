@@ -37,28 +37,48 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.sync;
+package org.netbeans.modules.html.editor;
 
-import java.io.File;
-import java.io.PrintWriter;
-import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.editor.ext.html.dtd.Registry;
+import org.netbeans.modules.html.editor.test.TestBase;
 
 /**
- * A common base class for RemoteSyncWorker implementations
- * @author Vladimir Kvashin
+ *
+ * @author marekfukala
  */
-/*package-local*/ abstract class BaseSync implements RemoteSyncWorker {
+public class NbReaderProviderTest extends TestBase {
 
-    protected final File localDir;
-    protected final ExecutionEnvironment executionEnvironment;
-    protected final PrintWriter out;
-    protected final PrintWriter err;
-
-    public BaseSync(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
-        this.localDir = localDir;
-        this.executionEnvironment = executionEnvironment;
-        this.out = out;
-        this.err = err;
+    public NbReaderProviderTest() {
+        super(NbReaderProviderTest.class.getName());
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        NbReaderProvider.setupReaders();
+        super.setUp();
+    }
+
+
+    public void testHTML32() {
+        assertNotNull(Registry.getDTD("-//W3C//DTD HTML 3.2 Final//EN", null));
+    }
+
+    public void testHTML40() {
+        assertNotNull(Registry.getDTD("-//W3C//DTD HTML 4.0//EN", null));
+        assertNotNull(Registry.getDTD("-//W3C//DTD HTML 4.0 Transitional//EN", null));
+        assertNotNull(Registry.getDTD("-//W3C//DTD HTML 4.0 Frameset//EN", null));
+    }
+
+    public void testHTML401() {
+        assertNotNull(Registry.getDTD("-//W3C//DTD HTML 4.01//EN", null));
+        assertNotNull(Registry.getDTD("-//W3C//DTD HTML 4.01 Transitional//EN", null));
+        assertNotNull(Registry.getDTD("-//W3C//DTD HTML 4.01 Frameset//EN", null));
+    }
+
+    public void testXHTML() {
+        assertNotNull(Registry.getDTD("-//W3C//DTD XHTML 1.0 Strict//EN", null));
+        assertNotNull(Registry.getDTD("-//W3C//DTD XHTML 1.0 Transitional//EN", null));
+        assertNotNull(Registry.getDTD("-//W3C//DTD XHTML 1.0 Frameset//EN", null));
+    }
+
 }

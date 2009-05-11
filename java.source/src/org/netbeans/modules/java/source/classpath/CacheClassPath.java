@@ -164,7 +164,15 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
                 }
                 try {
                     File sigs = JavaIndex.getClassFolder(url);
-                    _cache.add (ClassPathSupport.createResource(sigs.toURI().toURL()));
+                    URL orl = sigs.toURI ().toURL ();
+                    if (sigs.isDirectory ()) {
+                        // #155742 - URL for folder must always end with slash
+                        if (!orl.toExternalForm ().endsWith("/")) {
+                            //TODO: string concatenation
+                            orl = new URL(orl.toExternalForm () + "/");
+                        }
+                    }
+                    _cache.add (ClassPathSupport.createResource(orl));
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }

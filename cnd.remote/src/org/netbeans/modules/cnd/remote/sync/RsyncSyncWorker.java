@@ -48,7 +48,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  *
  * @author Vladimir Kvashin
  */
-/*package-local*/ class RsyncSyncWorker extends BaseSync implements RemoteSyncWorker {
+/*package-local*/ class RsyncSyncWorker extends BaseSyncWorker implements RemoteSyncWorker {
 
     public RsyncSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
         super(localDir, executionEnvironment, out, err);

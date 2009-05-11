@@ -62,7 +62,6 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
 import org.netbeans.modules.maven.embedder.NbArtifact;
 import org.netbeans.modules.maven.nodes.DependenciesNode;
-import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -221,11 +220,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                                 new OpenPomAction(nbproject));
                         addReport(report);
                     } else if (art.getFile() == null || !art.getFile().exists()) {
-                        File f = art.getFile();
-                        if (f == null || MavenFileOwnerQueryImpl.getInstance().getOwner(f.toURI()) == null) {
-                            //#160440 don't consider missing jar files that have a project associated as missing
-                            missingJars.add(art);
-                        }
+                        missingJars.add(art);
                     }
                 }
                 if (missingJars.size() > 0) {

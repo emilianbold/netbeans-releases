@@ -86,7 +86,7 @@ import org.openide.filesystems.FileUtil;
 class FileContainer extends ProjectComponent implements Persistent, SelfPersistent {
     private static final boolean TRACE_PP_STATE_OUT = DebugUtils.getBoolean("cnd.dump.preproc.state", false);
     private final Object lock = new Object();
-    private Map<CharSequence, MyFile> myFiles = new ConcurrentHashMap<CharSequence, MyFile>();
+    private Map<CharSequence, FileEntry> myFiles = new ConcurrentHashMap<CharSequence, FileEntry>();
     private Map<CharSequence, Object/*CharSequence or CharSequence[]*/> canonicFiles = new ConcurrentHashMap<CharSequence, Object/*CharSequence or CharSequence[]*/>();
 
     // empty stub
@@ -116,7 +116,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     
     public FileContainer (DataInput input) throws IOException {
 	super(input);
-        readStringToMyFileMap(input, myFiles);
+        readStringToFileEntryMap(input, myFiles);
         readStringToStringsArrMap(input, canonicFiles);
 	//trace(canonicFiles, "Read in ctor:");
     }
@@ -139,10 +139,10 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     
     public void putFile(File file, FileImpl impl, APTPreprocHandler.State state) {
         CharSequence path = getFileKey(file, true);
-        MyFile newEntry;
+        FileEntry newEntry;
         CsmUID<CsmFile> uid = RepositoryUtils.<CsmFile>put(impl);
-        newEntry = new MyFile(uid, state, path);
-        MyFile old;
+        newEntry = new FileEntry(uid, state, path);
+        FileEntry old;
 
         old = myFiles.put(path, newEntry);
         addAlternativeFileKey(path, newEntry.canonical);
@@ -155,7 +155,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     
     public void removeFile(CharSequence file) {
         CharSequence path = getFileKey(file, false);
-        MyFile f;
+        FileEntry f;
 
         f = myFiles.remove(path);
         if (f != null) {
@@ -172,7 +172,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     }
     
     public FileImpl getFile(File file, boolean treatSymlinkAsSeparateFile) {
-        MyFile f = getMyFile(file, treatSymlinkAsSeparateFile, false);
+        FileEntry f = getFileEntry(file, treatSymlinkAsSeparateFile, false);
         if (f == null) {
             return null;
         }
@@ -190,13 +190,13 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
      * e.g., when creating new file, when invalidating state of a *source* (not a header) file, etc
      */
     public void putPreprocState(File file, APTPreprocHandler.State state) {
-        MyFile f = getMyFile(file, false, true);
+        FileEntry f = getFileEntry(file, false, true);
         f.setState(state, FilePreprocessorConditionState.PARSING);
         put();
     }
 
     public void invalidatePreprocState(File file) {
-        MyFile f = getMyFile(file, false, false);
+        FileEntry f = getFileEntry(file, false, false);
         if (f == null){
             return;
         }
@@ -211,7 +211,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     
     //@Deprecated
     public APTPreprocHandler.State getPreprocState(File file) {
-        MyFile f = getMyFile(file, false, false);
+        FileEntry f = getFileEntry(file, false, false);
         if (f == null){
             return null;
         }
@@ -219,7 +219,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     }
     
     public Collection<APTPreprocHandler.State> getPreprocStates(File file) {
-        MyFile f = getMyFile(file, false, false);
+        FileEntry f = getFileEntry(file, false, false);
         if (f == null){
             return Collections.<APTPreprocHandler.State>emptyList();
         }
@@ -227,26 +227,26 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     }
 
     public Collection<StatePair> getStatePairs(File file) {
-        MyFile f = getMyFile(file, false, false);
+        FileEntry f = getFileEntry(file, false, false);
         if (f == null) {
             return Collections.<StatePair>emptyList();
         }
         return f.getStatePairs();
     }
 
-    public Entry getEntry(File file) {
-        return getMyFile(file, false, false);
+    public FileEntry getEntry(File file) {
+        return getFileEntry(file, false, false);
     }
 
     public Object getLock(File file) {
-        MyFile f = getMyFile(file, false, false);
+        FileEntry f = getFileEntry(file, false, false);
         return f == null ? lock : f.getLock();
     }
     
     public void debugClearState(){
-        List<MyFile> files;
-        files = new ArrayList<MyFile>(myFiles.values());
-        for (MyFile file : files){
+        List<FileEntry> files;
+        files = new ArrayList<FileEntry>(myFiles.values());
+        for (FileEntry file : files){
             synchronized (file.getLock()) {
                 file.debugClearState();
             }
@@ -273,9 +273,9 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     }
     
     private void getFiles2(List<CsmUID<CsmFile>> res) {
-        List<MyFile> files;
-        files = new ArrayList<MyFile>(myFiles.values());
-        for(MyFile f : files){
+        List<FileEntry> files;
+        files = new ArrayList<FileEntry>(myFiles.values());
+        for(FileEntry f : files){
             res.add(f.fileNew);
         }
     }
@@ -293,7 +293,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     public void write(DataOutput aStream) throws IOException {
 	super.write(aStream);
 	// maps are concurrent, so we don't need synchronization here
-        writeStringToMyFileMap(aStream, myFiles);
+        writeStringToFileEntryMap(aStream, myFiles);
         writeStringToStringsArrMap(aStream, canonicFiles);
 	//trace(canonicFiles, "Wrote in write()");
     }
@@ -332,9 +332,9 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         return null;
     }
     
-    private MyFile getMyFile(File file, boolean treatSymlinkAsSeparateFile, boolean sharedText) {
+    private FileEntry getFileEntry(File file, boolean treatSymlinkAsSeparateFile, boolean sharedText) {
         CharSequence path = getFileKey(file, sharedText);
-        MyFile f = myFiles.get(path);
+        FileEntry f = myFiles.get(path);
         if (f == null && (!treatSymlinkAsSeparateFile || !TraceFlags.SYMLINK_AS_OWN_FILE)) {
             // check alternative expecting that 'path' is canonical path
             CharSequence path2 = getAlternativeFileKey(path);
@@ -417,8 +417,8 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         }
     }
     
-    private static void writeStringToMyFileMap (
-            final DataOutput output, Map<CharSequence, MyFile> aMap) throws IOException {
+    private static void writeStringToFileEntryMap (
+            final DataOutput output, Map<CharSequence, FileEntry> aMap) throws IOException {
         assert output != null;
         assert aMap != null;
         int size = aMap.size();
@@ -427,10 +427,10 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         output.writeInt(size);
         
         // write the map
-        final Set<Map.Entry<CharSequence, MyFile>> entrySet = aMap.entrySet();
-        final Iterator <Map.Entry<CharSequence, MyFile>> setIterator = entrySet.iterator();
+        final Set<Map.Entry<CharSequence, FileEntry>> entrySet = aMap.entrySet();
+        final Iterator <Map.Entry<CharSequence, FileEntry>> setIterator = entrySet.iterator();
         while (setIterator.hasNext()) {
-            final Map.Entry<CharSequence, MyFile> anEntry = setIterator.next();
+            final Map.Entry<CharSequence, FileEntry> anEntry = setIterator.next();
 
             PersistentUtils.writeUTF(anEntry.getKey(), output);
             assert anEntry.getValue() != null;
@@ -438,8 +438,8 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         }
     }
     
-    private static void  readStringToMyFileMap(
-            final DataInput input, Map<CharSequence, MyFile> aMap) throws IOException {
+    private static void  readStringToFileEntryMap(
+            final DataInput input, Map<CharSequence, FileEntry> aMap) throws IOException {
         
         assert input != null; 
         assert aMap != null;
@@ -451,7 +451,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         
         for (int i = 0; i < size; i++) {
             CharSequence key = PersistentUtils.readUTF(input, pathManager);
-            MyFile value = new MyFile(input);
+            FileEntry value = new FileEntry(input);
             
             assert key != null;
             assert value != null;
@@ -533,8 +533,8 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     }
 
     //for unit test only
-    Map<CharSequence, MyFile> getFileStorage() {
-        return new TreeMap<CharSequence, MyFile>(myFiles);
+    Map<CharSequence, FileEntry> getFileStorage() {
+        return new TreeMap<CharSequence, FileEntry>(myFiles);
     }
 
     //for unit test only
@@ -557,61 +557,34 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             return "(" + pcState + "\n" + state + ')'; //NOI18N
         }
     }
-            
-    public static interface Entry {
-
-        /** Gets the states collection */
-        Collection<StatePair> getStatePairs();
-        
-        void setState(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState);
-        //void setStates(Collection<StatePair> pairs);
-        void setStates(Collection<StatePair> pairs, StatePair yetOneMore);
-
-        public void invalidateStates();
-
-        /**
-         * Sets (replaces) new conditions state for the existent pair
-         * @return true in the case of success, otherwise (if no ppState found) false
-         */
-        //boolean setPCState(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState);
-        
-//        int size();
-
-//        /**
-//         * Gets mod count; mod count allows to understand whether the entry was changed:
-//         * each modification changes mod count
-//         */
-//        int getModCount();
-        
-        public Object getLock();
-
-//        /**
-//         * Used to sync between ProjectBase.onFileIncluded concerning the same file
-//         * that run simultaneously on different threads.
-//         * Set to true in ProjectBase.onFileIncluded in the case it removes some of
-//         * the previous state => decides that the file should be REparsed
-//         * Should be used ONLY WHEN LOCKED (see getLock() method) !!!
-//         */
-//        public boolean isPendingReparse();
 //
-//        /** See comments to isPendingReparse */
-//        public void setPendingReparse(boolean pendingReparse);
-
-        /** sets pc state for preproc state if needed */
-        public boolean setParsedPCState(State ppState, FilePreprocessorConditionState pcState);
-    }
+//    public static interface FileEntry {
+//
+//        /** Gets the states collection */
+//        Collection<StatePair> getStatePairs();
+//
+//        void setState(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState);
+//        //void setStates(Collection<StatePair> pairs);
+//        void setStates(Collection<StatePair> pairs, StatePair yetOneMore);
+//
+//        public void invalidateStates();
+//
+//        public Object getLock();
+//
+//        /** sets pc state for preproc state if needed */
+//        public boolean setParsedPCState(State ppState, FilePreprocessorConditionState pcState);
+//    }
 
     // package access for unit tests only
-    static final class MyFile implements Persistent, SelfPersistent, Entry {
+    public static final class FileEntry {
 
         private final CsmUID<CsmFile> fileNew;
         private final CharSequence canonical;
         private volatile Object data; // either StatePair or List<StatePair>
         private volatile int modCount;
-        private volatile boolean pendingReparse = false; // "transient"
 
         @SuppressWarnings("unchecked")
-        private MyFile (final DataInput input) throws IOException {
+        private FileEntry (final DataInput input) throws IOException {
             fileNew = UIDObjectFactory.getDefaultFactory().readUID(input);
             canonical = PersistentUtils.readUTF(input, FilePathCache.getManager());
             modCount = input.readInt();
@@ -628,22 +601,14 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             }
         }
 
-        public boolean isPendingReparse() {
-            return pendingReparse;
-        }
-
-        public void setPendingReparse(boolean pendingReparse) {
-            this.pendingReparse = pendingReparse;
-        }
-        
-        private MyFile(CsmUID<CsmFile> fileNew, APTPreprocHandler.State state, CharSequence fileKey) {
+        private FileEntry(CsmUID<CsmFile> fileNew, APTPreprocHandler.State state, CharSequence fileKey) {
             this.fileNew = fileNew;
             this.data = new StatePair(state, FilePreprocessorConditionState.PARSING);
             this.canonical = getCanonicalKey(fileKey);
             this.modCount = 0;
         }
         
-        public void write(final DataOutput output) throws IOException {
+        private void write(final DataOutput output) throws IOException {
             UIDObjectFactory.getDefaultFactory().writeUID(fileNew, output);
             PersistentUtils.writeUTF(canonical, output);
             output.writeInt(modCount);

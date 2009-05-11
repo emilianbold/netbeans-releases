@@ -49,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -60,17 +59,18 @@ import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
  * @author Vladimir Voskresensky
  */
 public final class APTMacroImpl implements APTMacro {
-    private final APTFile file;
+    private final CharSequence file;
     private final APTToken name;
     private final APTToken[] paramsArray;
     private final List<APTToken> body;
     private final Kind macroType;
     private int hashCode = 0;
 
-    public APTMacroImpl(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> body, Kind macroType) {
+    public APTMacroImpl(CharSequence file, APTToken name, Collection<APTToken> params, List<APTToken> body, Kind macroType) {
         assert (name != null);
         this.file = file;
-        assert file == null || macroType == Kind.DEFINED : "file info has only #defined macro " + file;
+        assert file != null;
+        assert file.length() == 0 || macroType == Kind.DEFINED : "file info has only #defined macro " + file;
         this.name = name;
         //this.params = params;
         if (params != null) {
@@ -82,7 +82,7 @@ public final class APTMacroImpl implements APTMacro {
         this.macroType = macroType;
     }
 
-    public APTFile getFile() {
+    public CharSequence getFile() {
         return file;
     }
     

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,17 +34,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.mapper;
+package org.netbeans.modules.cnd.remote.sync;
+
+import java.io.File;
+import java.io.PrintWriter;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- *
- * @author Sergey Grinev
+ * A common base class for RemoteSyncWorker implementations
+ * @author Vladimir Kvashin
  */
-public interface HostMapping {
-    boolean isApplicable(int platform);
-    String getForeignName(int platform);
-    String getInnerName();
+/*package-local*/ abstract class BaseSyncWorker implements RemoteSyncWorker {
+
+    protected final File localDir;
+    protected final ExecutionEnvironment executionEnvironment;
+    protected final PrintWriter out;
+    protected final PrintWriter err;
+
+    public BaseSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
+        this.localDir = localDir;
+        this.executionEnvironment = executionEnvironment;
+        this.out = out;
+        this.err = err;
+    }
+
+    protected boolean checkRemotePath() {
+        PathMap mapper = HostInfoProvider.getMapper(executionEnvironment);
+        return mapper.checkRemotePath(localDir.getAbsolutePath(), true);
+    }
+
 }

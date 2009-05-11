@@ -905,7 +905,7 @@ public class CasualDiff {
         localPointer = diffTree(oldT.selector, newT.selector, selectorBounds);
 
         tokenSequence.move(selectorBounds[1]);
-        while (tokenSequence.moveNext() && JavaTokenId.LBRACE != tokenSequence.token().id()) ;
+        do { } while (tokenSequence.moveNext() && JavaTokenId.LBRACE != tokenSequence.token().id());
         tokenSequence.moveNext();
         copyTo(localPointer, localPointer = tokenSequence.offset());
         PositionEstimator est = EstimatorFactory.cases(oldT.getCases(), newT.getCases(), workingCopy);
@@ -922,7 +922,8 @@ public class CasualDiff {
             copyTo(localPointer, patBounds[0]);
             localPointer = diffTree(oldT.pat, newT.pat, patBounds);
             tokenSequence.move(patBounds[1]);
-            while (tokenSequence.moveNext() && JavaTokenId.COLON != tokenSequence.token().id()) ;
+            do { } while (tokenSequence.moveNext() && JavaTokenId.COLON != tokenSequence.token().id());
+            tokenSequence.moveNext();
             copyTo(localPointer, localPointer = tokenSequence.offset());
         }
         // todo (#pf): hot-fix of #113313, think about correct matching later

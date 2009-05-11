@@ -492,25 +492,28 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 if (length < 0 || (from+length) > max) {
                     throw new IndexOutOfBoundsException("from = "+from+", to = "+to+", frame count = "+max);
                 }
+                l = null;
                 try {
                     l = ThreadReferenceWrapper.frames (threadReference, from, length);
                 } catch (IndexOutOfBoundsException ioobex) {
                     ioobex = Exceptions.attachMessage(ioobex, "from = "+from+", to = "+to+", frame count = "+max+", length = "+length+", fresh frame count = "+ThreadReferenceWrapper.frameCount(threadReference));
                     // Terrible attempt to hack a magic issue
-                    if (to == 13) { // Magic number in issue http://www.netbeans.org/issues/show_bug.cgi?id=156601
-                        length = to = 12;
+                    while (length > 0) {
+                        // Try to obtain at least something...
+                        length--;
+                        to--;
                         try {
                             l = ThreadReferenceWrapper.frames (threadReference, from, length);
+                            break;
                         } catch (IndexOutOfBoundsException ioobex2) {
-                            Exceptions.printStackTrace(ioobex);
-                            ioobex2 = Exceptions.attachMessage(ioobex2, "from = "+from+", to = "+to+", frame count = "+max+", length = "+length+", fresh frame count = "+ThreadReferenceWrapper.frameCount(threadReference));
-                            throw ioobex2;
                         }
-                    } else {
-                        throw ioobex;
                     }
+                    ioobex = Exceptions.attachMessage(ioobex, "Finally got "+length+" frames from "+threadReference);
+                    logger.log(Level.INFO, "Stack frames "+to+" - "+max+" can not be retrieved from thread "+threadReference, ioobex);
                 }
-            
+                if (l == null) {
+                    l = java.util.Collections.emptyList();
+                }
             int n = l.size();
             CallStackFrame[] frames = new CallStackFrame[n];
             for (int i = 0; i < n; i++) {
