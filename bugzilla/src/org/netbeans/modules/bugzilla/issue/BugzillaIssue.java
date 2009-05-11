@@ -538,10 +538,20 @@ public class BugzillaIssue extends Issue {
     }
 
     void resolve(String resolution) {
+        assert !data.isNew();
+
         setOperation(BugzillaOperation.resolve);
         TaskAttribute rta = data.getRoot();
-        TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.resolve.getInputId());
-        ta.setValue(resolution);
+        String value = getFieldValue(IssueField.STATUS);
+        if(!value.equals("RESOLVED")) {                                         // NOI18N
+            TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.resolve.getInputId());
+            assert ta != null;
+            if(ta != null) {
+                ta.setValue(resolution);
+            } else {
+                Bugzilla.LOG.warning("Can't set resolve operation for issue " + getID()); // NOI18N
+            }
+        }
     }
 
     void accept() {

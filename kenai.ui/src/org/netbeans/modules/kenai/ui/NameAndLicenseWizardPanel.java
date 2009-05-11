@@ -83,7 +83,7 @@ public class NameAndLicenseWizardPanel implements WizardDescriptor.Panel,
 
     public HelpCtx getHelp() {
         return new HelpCtx(isShareExistingProject?
-            NameAndLicenseWizardPanel.class.getPackage().getName()+".ShareOnKenai":
+            NameAndLicenseWizardPanel.class.getPackage().getName()+".ShareOnKenai": // NOI18N
             NameAndLicenseWizardPanel.class.getName());
     }
 
