@@ -376,7 +376,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         
         KenaiSearchPanel browsePanel = new KenaiSearchPanel(KenaiSearchPanel.PanelType.BROWSE, false);
         String title = NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
-                "GetSourcesFromKenaiPanel.BrowseKenaiProjectsTitle");
+                "GetSourcesFromKenaiPanel.BrowseKenaiProjectsTitle"); // NOI18N
         DialogDescriptor dialogDesc = new KenaiDialogDescriptor(browsePanel, title, true, null);
 
         Object option = DialogDisplayer.getDefault().notify(dialogDesc);
@@ -413,7 +413,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         String svnFolders[] = null;
         if (featureItem != null) {
             String title = NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
-                    "GetSourcesFromKenaiPanel.SelectRepositoryFolderTitle");
+                    "GetSourcesFromKenaiPanel.SelectRepositoryFolderTitle"); // NOI18N
             String repoUrl = featureItem.feature.getLocation();
             try {
                 if (passwdAuth != null) {
@@ -556,18 +556,18 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         if (featureItem != null) {
             String serviceName = featureItem.feature.getService(); // XXX service or name
             String repositoryText = NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
-                    "GetSourcesFromKenaiPanel.RepositoryLabel");
+                    "GetSourcesFromKenaiPanel.RepositoryLabel"); // NOI18N
             if (KenaiService.Names.SUBVERSION.equals(serviceName)) {
                 enableFolderToGetUI(true);
                 localFolderDescLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
-                        "GetSourcesFromKenaiPanel.localFolderDescLabel.svnText"));
-                projectPreviewLabel.setText("(" + featureItem.project.getDisplayName() +
+                        "GetSourcesFromKenaiPanel.localFolderDescLabel.svnText")); // NOI18N
+                projectPreviewLabel.setText("(" + featureItem.project.getDisplayName() + // NOI18N
                         "; Subversion " + repositoryText + ")"); // NOI18N
             } else if (KenaiService.Names.MERCURIAL.equals(serviceName)) {
                 enableFolderToGetUI(false);
                 localFolderDescLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
-                        "GetSourcesFromKenaiPanel.localFolderDescLabel.hgText"));
-                projectPreviewLabel.setText("(" + featureItem.project.getDisplayName() +
+                        "GetSourcesFromKenaiPanel.localFolderDescLabel.hgText")); // NOI18N
+                projectPreviewLabel.setText("(" + featureItem.project.getDisplayName() + // NOI18N
                         "; Mercurial " + repositoryText + ")"); // NOI18N
             } else {
                 enableFolderToGetUI(false);
@@ -620,7 +620,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
             usernameLabel.setEnabled(true);
         } else {
             usernameLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
-                    "GetFromKenaiPanel.notLoggedIn"));
+                    "GetFromKenaiPanel.notLoggedIn")); // NOI18N
             usernameLabel.setForeground(Color.BLACK);
             usernameLabel.setEnabled(false);
         }
