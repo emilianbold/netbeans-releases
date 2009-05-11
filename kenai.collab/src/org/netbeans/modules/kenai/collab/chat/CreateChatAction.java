@@ -80,7 +80,7 @@ public class CreateChatAction extends AbstractAction {
 
     public void actionPerformed(ActionEvent e) {
         final JButton source = (e.getSource() instanceof JButton)?(JButton) e.getSource():null;
-        final TopComponent mainWindow = WindowManager.getDefault().findTopComponent("KenaiTopComponent");
+        final TopComponent mainWindow = WindowManager.getDefault().findTopComponent("KenaiTopComponent"); // NOI18N
         mainWindow.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         final ProgressHandle progress = ProgressHandleFactory.createSystemHandle(NbBundle.getMessage(CreateChatAction.class, "LBL_CheckPermissions"));
         progress.setInitialDelay(0);
