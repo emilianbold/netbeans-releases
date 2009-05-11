@@ -51,6 +51,7 @@ package org.netbeans.test.umllib.project;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.nodes.JavaProjectRootNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.JDialogOperator;
@@ -77,7 +78,7 @@ public class JavaProject extends Project {
     
     
     String mainClass;
-    ProjectRootNode rootNode;
+    JavaProjectRootNode rootNode;
     
     
     JavaClassLoader classLoader;
@@ -121,7 +122,7 @@ public class JavaProject extends Project {
     public JavaProject(String name, ProjectType type, String location, String mainClass) {
 	super(name, type, location);
 	this.mainClass = mainClass;
-	rootNode = new ProjectRootNode( ProjectsTabOperator.invoke().tree(), name);
+	rootNode = new JavaProjectRootNode( ProjectsTabOperator.invoke().tree(), name);
     }
     
     
