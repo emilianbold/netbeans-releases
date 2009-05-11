@@ -74,7 +74,7 @@ public final class UIUtils {
         String s = url.substring(url.lastIndexOf("/")+1); //NOI18N
         KENAI_USERNAME_PREF= s + ".username"; //NOI18N
         KENAI_PASSWORD_PREF= s + ".password"; //NOI18N
-        ONLINE_STATUS_PREF = s + ".online";
+        ONLINE_STATUS_PREF = s + ".online"; // NOI18N
 
     }
     
@@ -156,7 +156,7 @@ public final class UIUtils {
         }
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
 
-        String online = preferences.get(ONLINE_STATUS_PREF, "false");
+        String online = preferences.get(ONLINE_STATUS_PREF, "false"); // NOI18N
         if (!Boolean.parseBoolean(online)) {
             return false;
         }

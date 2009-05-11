@@ -91,7 +91,7 @@ public final class DashboardImpl extends Dashboard {
     private static final String PREF_ALL_PROJECTS = "allProjects"; //NOI18N
     private static final String PREF_COUNT = "count"; //NOI18N
     private static final String PREF_ID = "id"; //NOI18N
-    private static final String PREF_IGNORED_PROJECTS = "ignoredProjects";
+    private static final String PREF_IGNORED_PROJECTS = "ignoredProjects"; // NOI18N
     private LoginHandle login;
     private final TreeListModel model = new TreeListModel();
     private static final ListModel EMPTY_MODEL = new AbstractListModel() {
@@ -102,7 +102,7 @@ public final class DashboardImpl extends Dashboard {
             return null;
         }
     };
-    private RequestProcessor requestProcessor = new RequestProcessor("Kenai Dashboard");
+    private RequestProcessor requestProcessor = new RequestProcessor("Kenai Dashboard"); // NOI18N
     private final TreeList treeList = new TreeList(model);
     private final ArrayList<ProjectHandle> memberProjects = new ArrayList<ProjectHandle>(50);
     private final ArrayList<ProjectHandle> allProjects = new ArrayList<ProjectHandle>(50);

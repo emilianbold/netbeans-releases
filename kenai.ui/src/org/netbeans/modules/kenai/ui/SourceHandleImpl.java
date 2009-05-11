@@ -81,7 +81,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
     private Preferences prefs;
     private ProjectHandle projectHandle;
     private static final int MAX_PROJECTS = 5;
-    private static final String RECENTPROJECTS_PREFIX = "recent.projects.";
+    private static final String RECENTPROJECTS_PREFIX = "recent.projects."; // NOI18N
     private String externalScmType=SCM_TYPE_UNKNOWN;
     public static final String SCM_TYPE_UNKNOWN = "unknown";//NOI18N
     public static final String SCM_TYPE_CVS = "cvs";//NOI18N
@@ -140,7 +140,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         if (prefs==null)
             return guessWorkdir();
         try {
-            String uriString = prefs.get("working.dir." + feature.getLocation(), null);
+            String uriString = prefs.get("working.dir." + feature.getLocation(), null); // NOI18N
             if (uriString!=null) {
                 URI uri = new URI(uriString);
                 final File file = new File(uri);
@@ -243,7 +243,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
     }
 
     private boolean isUnder(FileObject projectDirectory) {
-        String remoteLocation = (String) projectDirectory.getAttribute("ProvidedExtensions.RemoteLocation");
+        String remoteLocation = (String) projectDirectory.getAttribute("ProvidedExtensions.RemoteLocation"); // NOI18N
         if (remoteLocation==null || remoteLocation.length()==0) {
             return false;
         }
@@ -277,7 +277,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
                 String k = keys[i];
                 if (k != null && k.startsWith(key)) {
                     int idx = Integer.parseInt(k.substring(k.lastIndexOf('.') + 1));
-                    retval.add(idx + "." + prefs.get(k, null));
+                    retval.add(idx + "." + prefs.get(k, null)); // NOI18N
                 }
             }
             List<String> rv = new ArrayList<String>(retval.size());
@@ -306,13 +306,13 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
             String[] keys = prefs.keys();
             for (int i = 0; i < keys.length; i++) {
                 String k = keys[i];
-                if (k != null && k.startsWith(key + ".")) {
+                if (k != null && k.startsWith(key + ".")) { // NOI18N
                     prefs.remove(k);
                 }
             }
             int idx = 0;
             for (String s : value) {
-                prefs.put(key + "." + idx++, s);
+                prefs.put(key + "." + idx++, s); // NOI18N
             }
         } catch (BackingStoreException ex) {
             Logger.getLogger(SourceHandleImpl.class.getName()).log(Level.INFO, null, ex);
