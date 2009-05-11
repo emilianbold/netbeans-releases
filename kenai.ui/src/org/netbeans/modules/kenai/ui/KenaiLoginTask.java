@@ -36,69 +36,37 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.kenai.ui;
 
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.prefs.Preferences;
-import javax.swing.AbstractAction;
-import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
-import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
-
-
+import org.openide.util.Exceptions;
 
 /**
+ *
  * @author Jan Becicka
  */
-public final class LoginAction extends AbstractAction {
+public class KenaiLoginTask implements Runnable {
 
-    private static LoginAction instance;
-    private boolean logout;
-
-    private LoginAction() {
-        setLogout(Kenai.getDefault().getPasswordAuthentication()!=null);
-    }
-
-    public static synchronized LoginAction getDefault() {
-        if (instance==null) {
-            instance=new LoginAction();
-            Kenai.getDefault().addPropertyChangeListener(Kenai.PROP_LOGIN, new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent pce) {
-                    if (pce.getNewValue()==null) {
-                        instance.setLogout(false);
-                    } else {
-                       instance.setLogout(true);
-                    }
-                    final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
-                    preferences.put(UIUtils.ONLINE_STATUS_PREF, Boolean.toString(pce.getNewValue()!=null));
-
-                    }
-                });
+    public static boolean isFinished = false;
+    public static final Object monitor = new Object();
+    public void run() {
+        synchronized (monitor) {
+            UIUtils.tryLogin();
+            isFinished = true;
+            monitor.notify();
         }
-        return instance;
     }
 
-    public void actionPerformed(ActionEvent e) {
-        if (logout) {
-            Kenai.getDefault().logout();
-        } else {
-            if (!UIUtils.showLogin()) {
-                return;
+    public static void waitStartupFinished() {
+        synchronized (monitor) {
+            if (!isFinished) {
+                try {
+                    monitor.wait();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
-            KenaiTopComponent.findInstance().open();
-            KenaiTopComponent.findInstance().requestActive();
-        }
-    }
-
-    private void setLogout(boolean b) {
-        this.logout=b;
-        if (b) {
-            putValue(NAME, NbBundle.getMessage(LoginAction.class, "CTL_LogoutAction"));
-        } else {
-            putValue(NAME, NbBundle.getMessage(LoginAction.class, "CTL_LoginAction"));
         }
     }
 }
