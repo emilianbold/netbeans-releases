@@ -55,7 +55,7 @@ public class CompileCNDAction extends Action {
                                             +Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_CompileSingleAction_Name");
     private static final KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
     // Compile File
-    private static final String compilePopup = Bundle.getString("org.netbeans.modules.java.project.Bundle", "LBL_CompileFile_Action");
+    private static final String compilePopup = Bundle.getString("org.netbeans.modules.cnd.makeproject.ui.Bundle", "CTL_CompileSingleAction");
     
     /** creates new CompileAction instance */    
     public CompileCNDAction() {

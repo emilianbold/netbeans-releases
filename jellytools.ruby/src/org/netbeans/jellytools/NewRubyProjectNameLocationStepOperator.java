@@ -174,7 +174,7 @@ public class NewRubyProjectNameLocationStepOperator extends NewProjectWizardOper
     /** Returns operator for checkbox 'Create Main File'
      * @return JCheckBoxOperator
      */
-    public JCheckBoxOperator cbCreateMainClass() {
+    public JCheckBoxOperator cbCreateMainFile() {
         if ( _cbCreateMainFile == null ) {
             _cbCreateMainFile = new JCheckBoxOperator(this,
                                         Bundle.getStringTrimmed("org.netbeans.modules.ruby.rubyproject.ui.wizards.Bundle",

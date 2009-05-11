@@ -44,7 +44,7 @@ import org.netbeans.jellytools.actions.*;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
 /**
- * Java-specific extension to ProjectRootNode - adds "Build Project" and "Clean Project"
+ * CND-specific extension to ProjectRootNode - adds "Build Project" and "Clean Project"
  * actions.
  *  
  * @author Vojtech.Sigler@sun.com
