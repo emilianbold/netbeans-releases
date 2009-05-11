@@ -38,12 +38,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.jellytools.modules.ruby;
+package org.netbeans.jellytools;
 
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;

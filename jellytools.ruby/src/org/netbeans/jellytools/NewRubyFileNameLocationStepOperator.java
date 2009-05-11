@@ -36,14 +36,12 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.jellytools.modules.ruby;
+package org.netbeans.jellytools;
 
 import java.awt.Component;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
