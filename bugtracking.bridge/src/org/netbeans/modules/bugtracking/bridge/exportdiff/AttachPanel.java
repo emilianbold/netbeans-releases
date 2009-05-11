@@ -210,6 +210,9 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         Repository repo = BugtrackingUtil.createRepository();
+        if(repo == null) {
+            return;
+        }
         repositoryComboBox.addItem(repo);
         repositoryComboBox.setSelectedItem(repo);
     }//GEN-LAST:event_jButton2ActionPerformed
