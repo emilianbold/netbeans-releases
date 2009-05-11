@@ -593,7 +593,8 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     private void projectNameTextFieldFocusLost(FocusEvent evt) {//GEN-FIRST:event_projectNameTextFieldFocusLost
 
         if (getProjectName().length()<2) {
-            prjNameCheckMessage = "Project Name length must be between 2 and 20 characters.";
+            prjNameCheckMessage = NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
+                    "NameAndLicenseWizardPanelGUI.prjNameLengthErrMsg");
             panel.fireChangeEvent();
             return;
         }
@@ -709,14 +710,17 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         String prjName = getProjectName();
 
         if (prjName.length()>20) {
-            return "Project Name length must be between 2 and 20 characters.";
+            return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
+                    "NameAndLicenseWizardPanelGUI.prjNameLengthErrMsg");
         } else if (prjName.length() > 2 && !checkPrjName(prjName)) {
             return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
                     "NameAndLicenseWizardPanelGUI.invalidPrjName");
         } else if (/*getProjectTitle().length() < 2 ||*/ getProjectTitle().length() > 40) {
-            return "Project Title length must be between 2 and 40 characters.";
+            return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
+                    "NameAndLicenseWizardPanelGUI.prjTitleLengthErrMsg");
         } else if (getProjectDesc().length() > 500) {
-            return "Project Description must to be shorter than 500 characters.";
+            return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
+                    "NameAndLicenseWizardPanelGUI.prjDescLengthErrMsg");
         } else if (prjNameCheckMessage!=null) {
             return prjNameCheckMessage;
         } else if (!licensesLoaded) {
