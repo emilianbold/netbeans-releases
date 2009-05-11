@@ -212,6 +212,9 @@ public class KenaiConnection implements PropertyChangeListener {
                 public void run() {
                     if (listener == null || !ChatTopComponent.isInitedAndVisible(name)) {
                         chatNotifications.addGroupMessage(msg);
+                    } else {
+                        chatNotifications.getMessagingHandle(name).notifyMessageReceived(msg);
+                        chatNotifications.getMessagingHandle(name).notifyMessagesRead();
                     }
                 }
             });

@@ -55,6 +55,7 @@ import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.StyleSheet;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.ui.KenaiLoginTask;
 import org.netbeans.modules.kenai.ui.LoginPanel;
 import org.netbeans.modules.kenai.ui.Utilities;
 import org.openide.DialogDescriptor;
@@ -73,11 +74,18 @@ public final class UIUtils {
         String s = url.substring(url.lastIndexOf("/")+1); //NOI18N
         KENAI_USERNAME_PREF= s + ".username"; //NOI18N
         KENAI_PASSWORD_PREF= s + ".password"; //NOI18N
+        ONLINE_STATUS_PREF = s + ".online";
+
     }
     
     private final static String KENAI_PASSWORD_PREF;
     private final static String KENAI_USERNAME_PREF;
+    public final static String ONLINE_STATUS_PREF;
 
+    public static void waitStartupFinished() {
+        KenaiLoginTask.waitStartupFinished();
+    }
+    
     private UIUtils() {
     }
 
@@ -142,11 +150,17 @@ public final class UIUtils {
      * @return true if logged in, false otherwise
      */
     @Deprecated
-    public static boolean tryLogin() {
+    public static synchronized boolean tryLogin() {
         if (Kenai.getDefault().getPasswordAuthentication()!=null) {
             return true;
         }
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
+
+        String online = preferences.get(ONLINE_STATUS_PREF, "false");
+        if (!Boolean.parseBoolean(online)) {
+            return false;
+        }
+
         String uname=preferences.get(KENAI_USERNAME_PREF, null); // NOI18N
         if (uname==null) {
             return false;
