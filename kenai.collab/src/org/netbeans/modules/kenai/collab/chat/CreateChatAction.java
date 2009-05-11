@@ -66,30 +66,38 @@ import org.openide.windows.WindowManager;
  */
 public class CreateChatAction extends AbstractAction {
 
-    public CreateChatAction(String name) {
-        super(name);
+    private String simpleName;
+    public CreateChatAction(String simpleName) {
+        super();
+        this.simpleName = simpleName;
+        try {
+            String name = Kenai.getDefault().getProject(simpleName).getDisplayName();
+            putValue(Action.NAME, name);
+        } catch (KenaiException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     public void actionPerformed(ActionEvent e) {
-        final JButton source = (JButton) e.getSource();
-        final TopComponent mainWindow = WindowManager.getDefault().findTopComponent("KenaiTopComponent");
+        final JButton source = (e.getSource() instanceof JButton)?(JButton) e.getSource():null;
+        final TopComponent mainWindow = WindowManager.getDefault().findTopComponent("KenaiTopComponent"); // NOI18N
         mainWindow.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         final ProgressHandle progress = ProgressHandleFactory.createSystemHandle(NbBundle.getMessage(CreateChatAction.class, "LBL_CheckPermissions"));
         progress.setInitialDelay(0);
         progress.start();
-        source.setEnabled(false);
+        if (source!=null) source.setEnabled(true);
         RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
                 try {
-                    if (!Kenai.getDefault().isAuthorized(Kenai.getDefault().getProject((String) getValue(Action.NAME)), KenaiActivity.PROJECTS_ADMIN)) {
+                    if (!Kenai.getDefault().isAuthorized(Kenai.getDefault().getProject(simpleName), KenaiActivity.PROJECTS_ADMIN)) {
                         SwingUtilities.invokeLater(new Runnable() {
 
                             public void run() {
                                 JOptionPane.showMessageDialog(null, NbBundle.getMessage(CreateChatAction.class, "CTL_NotAuthorizedToCreateChat"));
                                 progress.finish();
                                 mainWindow.setCursor(Cursor.getDefaultCursor());
-                                source.setEnabled(true);
+                                if (source!=null) source.setEnabled(true);
                             }
                         });
                         return;
@@ -116,7 +124,7 @@ public class CreateChatAction extends AbstractAction {
 
                                 public void run() {
                                     try {
-                                        final KenaiProject prj = Kenai.getDefault().getProject((String) getValue(Action.NAME));
+                                        final KenaiProject prj = Kenai.getDefault().getProject(simpleName);
                                         final KenaiFeature f = prj.createProjectFeature(
                                                 prj.getName(),
                                                 NbBundle.getMessage(CreateChatAction.class, "CTL_ChatRoomName", prj.getName()),
@@ -134,7 +142,7 @@ public class CreateChatAction extends AbstractAction {
                                                 chatTc.addChat(new ChatPanel(KenaiConnection.getDefault().createChat(f)));
                                                 mainWindow.setCursor(Cursor.getDefaultCursor());
                                                 progress.finish();
-                                                source.setEnabled(true);
+                                                if (source!=null) source.setEnabled(true);
                                                 chatTc.requestActive();
                                             }
                                         });
@@ -142,7 +150,7 @@ public class CreateChatAction extends AbstractAction {
                                         Exceptions.printStackTrace(kenaiException);
                                         mainWindow.setCursor(Cursor.getDefaultCursor());
                                         progress.finish();
-                                        source.setEnabled(true);
+                                        if (source!=null) source.setEnabled(true);
                                     }
                                 }
                             });
@@ -150,7 +158,7 @@ public class CreateChatAction extends AbstractAction {
                         } else {
                             mainWindow.setCursor(Cursor.getDefaultCursor());
                             progress.finish();
-                            source.setEnabled(true);
+                            if (source!=null) source.setEnabled(true);
                         }
                     }
                 });

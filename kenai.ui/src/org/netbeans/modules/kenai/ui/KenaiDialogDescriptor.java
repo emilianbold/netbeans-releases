@@ -52,7 +52,7 @@ import org.openide.DialogDescriptor;
  */
 public class KenaiDialogDescriptor extends DialogDescriptor implements PropertyChangeListener {
 
-    public static final String PROP_SELECTION_VALID = "selectionValid";
+    public static final String PROP_SELECTION_VALID = "selectionValid"; // NOI18N
     
     public KenaiDialogDescriptor(JPanel p, String s, boolean b, ActionListener l) {
         super(p, s, b, l);
