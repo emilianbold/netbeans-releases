@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,50 +31,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.openide.awt;
+package org.netbeans.modules.kenai.ui;
 
-import javax.swing.JTabbedPane;
+import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.openide.util.Exceptions;
 
 /**
- * Factory class for TabbedPanes with closeable tabs.
  *
- * @author S. Aubrecht
- * @since 6.10
+ * @author Jan Becicka
  */
-public class TabbedPaneFactory {
-    
-    /**
-     * Name of the property that is fired from the closeable tabbed pane
-     * when the user clicks close button on a tab.
-     */
-    public static final String PROP_CLOSE = CloseButtonTabbedPane.PROP_CLOSE;
+public class KenaiLoginTask implements Runnable {
 
-    /**
-     * To hide close button feature on specific tab, put value Boolean.TRUE
-     * as a client property of your tab:<br>
-     * <pre>
-     * component.putClientProperty(TabbedPaneFactory.NO_CLOSE_BUTTON, Boolean.TRUE)
-     * </pre>
-     * @since 7.8
-     */
-    public static final String NO_CLOSE_BUTTON = "noCloseButton";
-    
-    /** Creates a new instance of TabbedPaneFactory */
-    private TabbedPaneFactory() {
+    public static boolean isFinished = false;
+    public static final Object monitor = new Object();
+    public void run() {
+        synchronized (monitor) {
+            UIUtils.tryLogin();
+            isFinished = true;
+            monitor.notify();
+        }
     }
-    
-    /**
-     * Creates a special {@link JTabbedPane} that displays a small 'close' button in each tab.
-     * When user clicks the close button a {@link java.beans.PropertyChangeEvent} is fired from the
-     * tabbed pane. The property name is {@link #PROP_CLOSE} and the property
-     * value is the inner component inside the clicked tab.
-     * 
-     * @return Special TabbedPane with closeable tabs.
-     * @see TabbedPaneFactory#NO_CLOSE_BUTTON
-     */
-    public static JTabbedPane createCloseButtonTabbedPane() {
-        return new CloseButtonTabbedPane();
+
+    public static void waitStartupFinished() {
+        synchronized (monitor) {
+            if (!isFinished) {
+                try {
+                    monitor.wait();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
     }
 }

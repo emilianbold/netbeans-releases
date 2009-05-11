@@ -83,7 +83,7 @@ public class FileChooserAccessory extends javax.swing.JPanel
     private JFileChooser chooser;
     private List<String> copiedRelativeFiles = null;
     /** In RelativizeFilePathCustomizer scenario this property holds preselected file */
-    private File usetThisFileInsteadOfOneFromChooser = null;
+    private File useThisFileInsteadOfOneFromChooser = null;
     private VariablesModel varModel;
     private boolean enableVariableBasedSelection = false;
 
@@ -93,9 +93,9 @@ public class FileChooserAccessory extends javax.swing.JPanel
      */
     public FileChooserAccessory(File baseFolder, File sharedLibrariesFolder, boolean copyAllowed, File selectedFile) {
         this(null, baseFolder, sharedLibrariesFolder, copyAllowed);
-        usetThisFileInsteadOfOneFromChooser = selectedFile;
+        useThisFileInsteadOfOneFromChooser = selectedFile;
         enableAccessory(true);
-        update(Collections.singletonList(usetThisFileInsteadOfOneFromChooser));
+        update(Collections.singletonList(useThisFileInsteadOfOneFromChooser));
         enableVariableBasedSelection(enableVariableBasedSelection);
     }
 
@@ -233,8 +233,8 @@ public class FileChooserAccessory extends javax.swing.JPanel
     }
 
     private File[] getSelectedFiles() {
-        if (usetThisFileInsteadOfOneFromChooser != null) {
-            return new File[]{usetThisFileInsteadOfOneFromChooser};
+        if (useThisFileInsteadOfOneFromChooser != null) {
+            return new File[]{ FileUtil.normalizeFile(useThisFileInsteadOfOneFromChooser) };
         }
         File files[];
         if (chooser.isMultiSelectionEnabled()) {
@@ -249,9 +249,7 @@ public class FileChooserAccessory extends javax.swing.JPanel
         for (int i = 0; i < files.length; i++) {
             // #135677 - user could type "../folder" and pressed OK 
             //           normalize such a filename:
-            if (files[i].getPath().contains("..")) { // NOI18N
-                files[i] = FileUtil.normalizeFile(files[i]);
-            }
+            files[i] = FileUtil.normalizeFile(files[i]);
         }
         return files;
     }
