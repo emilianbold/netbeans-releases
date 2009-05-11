@@ -846,9 +846,26 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             pref = DataFolder.findFolder (getTemplatesRoot ());
             assert pref != null : "DataFolder found for FO " + getTemplatesRoot ();
         }
-        
+
+        //#161963: Create new DataFolder if DataFolder with given name already exists
+        String baseName = NbBundle.getBundle(TemplatesPanel.class).getString("TXT_TemplatesPanel_NewFolderName");
+        String name = baseName;
+        DataObject [] arr = pref.getChildren();
+        boolean exists = true;
+        int counter = 0;
+        while (exists) {
+            exists = false;
+            for (int i = 0; i < arr.length; i++) {
+                if (name.equals(arr[i].getName())) {
+                    counter++;
+                    name = baseName + " " + counter;
+                    exists = true;
+                    break;
+                }
+            }
+        }
         try {
-            df = DataFolder.create (pref, NbBundle.getBundle(TemplatesPanel.class).getString("TXT_TemplatesPanel_NewFolderName")); // NOI18N
+            df = DataFolder.create (pref, name);
             assert df != null : "New subfolder found in folder " + pref;
         } catch (IOException ioe) {
             Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ioe);
