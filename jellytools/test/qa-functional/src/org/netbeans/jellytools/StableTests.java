@@ -41,7 +41,7 @@ package org.netbeans.jellytools;
 
 import junit.framework.Test;
 import org.netbeans.jellytools.actions.AttachWindowActionTest;
-import org.netbeans.jellytools.actions.CleanProjectActionTest;
+import org.netbeans.jellytools.actions.CleanJavaProjectActionTest;
 import org.netbeans.jellytools.actions.CustomizeActionTest;
 import org.netbeans.jellytools.actions.EditActionTest;
 import org.netbeans.jellytools.actions.ExploreFromHereActionTest;
@@ -79,7 +79,7 @@ public class StableTests {
         addTest(AttachWindowActionTest.class, AttachWindowActionTest.tests).
         addTest(BreakpointsWindowActionTest.class).
         addTest(BreakpointsWindowOperatorTest.class).
-        addTest(CleanProjectActionTest.class).
+        addTest(CleanJavaProjectActionTest.class).
         addTest(CustomizeActionTest.class).
         addTest(DatabasesNodeTest.class).
         addTest(DbActionsTest.class).
@@ -94,7 +94,7 @@ public class StableTests {
         addTest(MaximizeWindowActionTest.class).
         addTest(MethodPickerOperatorTest.class, MethodPickerOperatorTest.tests).
         addTest(OpenActionTest.class).
-        addTest(NewFileNameLocationStepOperatorTest.class, NewFileNameLocationStepOperatorTest.tests).
+        addTest(NewJavaFileNameLocationStepOperatorTest.class, NewJavaFileNameLocationStepOperatorTest.tests).
         addTest(PaletteViewActionTest.class).
         addTest(ParametersPickerOperatorTest.class, ParametersPickerOperatorTest.tests).
         addTest(ProjectsTabOperatorTest.class, ProjectsTabOperatorTest.tests).
