@@ -237,7 +237,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        /*if(evt.getPropertyName().equals(Dashboard.PROP_REFRESH)) {
+        if(evt.getPropertyName().equals(Dashboard.PROP_REFRESH_REQUEST)) {
             synchronized(projectListeners) {
                 projectListeners.clear();
             }
@@ -247,7 +247,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
             synchronized(queryHandles) {
                 queryHandles.clear();
             }
-        } else */ if(evt.getPropertyName().equals(Kenai.PROP_LOGIN) && evt.getNewValue() == null) {
+        } else if(evt.getPropertyName().equals(Kenai.PROP_LOGIN) && evt.getNewValue() == null) {
             ProjectHandleListener[] pls;
             synchronized(projectListeners) {
                 pls = projectListeners.values().toArray(new ProjectHandleListener[projectListeners.values().size()]);
