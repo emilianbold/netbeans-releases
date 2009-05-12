@@ -52,8 +52,6 @@ import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 
-//TODO: write a test for this class
-
 /**
  * Handle "Project Name And Location" panel of the New File wizard (CND).
  * Components on the panel differs according to type of Object selected.

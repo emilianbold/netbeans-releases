@@ -39,6 +39,7 @@
 
 package org.netbeans.jellytools;
 
+import org.netbeans.jellyools.NewJavaFileNameLocationStepOperatorTest;
 import junit.framework.Test;
 import org.netbeans.jellytools.actions.AttachWindowActionTest;
 import org.netbeans.jellytools.actions.CleanJavaProjectActionTest;

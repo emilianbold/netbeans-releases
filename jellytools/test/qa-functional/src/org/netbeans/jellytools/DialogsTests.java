@@ -39,6 +39,8 @@
 
 package org.netbeans.jellytools;
 
+import org.netbeans.jellyools.NewJavaFileNameLocationStepOperatorTest;
+import org.netbeans.jellyools.NewJavaProjectNameLocationStepOperatorTest;
 import junit.framework.Test;
 import org.netbeans.jellytools.modules.debugger.BreakpointsWindowOperatorTest;
 import org.netbeans.jellytools.modules.javacvs.CheckoutWizardOperatorTest;

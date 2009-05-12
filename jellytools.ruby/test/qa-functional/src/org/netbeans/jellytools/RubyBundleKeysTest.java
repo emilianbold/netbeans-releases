@@ -41,27 +41,52 @@
 
 package org.netbeans.jellytools;
 
-import org.netbeans.jellytools.nodes.CNDProjectRootNode;
+import junit.framework.Test;
 
-/**
- * Java-specific extension to ProjectsTabOperator.
- *
- * @author Vojtech.Sigler@sun.com
- */
-public class CNDProjectsTabOperator extends ProjectsTabOperator {
 
-    /** Gets JavaProjectRootNode
-     * @param projectName display name of project
-     * @return ProjectsRootNode
+public class RubyBundleKeysTest extends TestBundleKeys
+{
+
+    public static String propertiesName = "org/netbeans/jellytools/RubyBundleKeysTest.properties";
+
+
+    public RubyBundleKeysTest(String isBundleName) {
+        this(isBundleName, null);
+    }
+
+    /** Constructor required by JUnit.
+     * @param testName method name to be used as testcase
      */
-    public CNDProjectRootNode getCNDProjectRootNode(String projectName) {
-        return new CNDProjectRootNode(tree(), projectName);
+    public RubyBundleKeysTest(String bundleName, String keys) {
+        super(bundleName);
+        this.keys=keys;
     }
 
-    /** invokes Projects and returns new instance of ProjectsTabOperator
-     * @return new instance of ProjectsTabOperator */
-    public static CNDProjectsTabOperator invoke() {
-        viewAction.perform();
-        return new CNDProjectsTabOperator();
+    protected ClassLoader getDescendantClassLoader()
+    {
+        return RubyBundleKeysTest.class.getClassLoader();
     }
+
+    /*
+     * Overriden for the use in the non-static part of this class.
+     */
+    public String getPropertiesName()
+    {
+        return propertiesName;
+    }
+
+    /** Method used for explicit testsuite definition
+     * @return  created suite
+     */
+    public static Test suite() {
+       return prepareSuite(RubyBundleKeysTest.class, propertiesName);
+    }
+
+    /** Use for internal test execution inside IDE
+     * @param args command line arguments
+     */
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(suite());
+    }
+    
 }

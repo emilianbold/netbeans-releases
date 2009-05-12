@@ -47,44 +47,9 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import javax.swing.JTextField;
 
 
-//TODO: write a test for this class
 /**
- * Handle "Name And Location" panel of the New Project wizard.
- * Components on the panel differs according to type of project selected.<br><br>
- * <u>Java Application</u><br>
- * <ol>
- * <li>Label and TextField Project Name: <code>txtProjectName().setText()</code>
- * <li>Label and TextField Project Location: <code>txtProjectLocation().setText()</code>
- * <li>Label and TextField Project Folder: <code>txtProjectFolder().getText()</code>
- * <li>Button for browsing Project Location: <code>btBrowseProjectLocation().pushNoBlock()</code>
- * <li>CheckBox Set as Main Project: <code>cbSetAsMainProject().setSelected(true)</code>
- * <li>CheckBox Create Main Class: <code>cbCreateMainClass().setSelected(true)</code>
- * </ol>
- * <u>Java Class Library</u><br>
- * <ol>
- * <li>Label and TextField Project Name: <code>txtProjectName().setText()</code>
- * <li>Label and TextField Project Location: <code>txtProjectLocation().setText()</code>
- * <li>Label and TextField Project Folder: <code>txtProjectFolder().getText()</code>
- * <li>Button for browsing Project Location: <code>btBrowseProjectLocation().pushNoBlock()</code>
- * </ol>
- * <u>Java Project With Existing Ant script</u><br>
- * <ol>
- * <li>Label and TextField Location: <code>txtLocation().setText()</code>
- * <li>Label and TextField Build Script: <code>txtBuildScript().setText()</code>
- * <li>Label and TextField Project Name: <code>txtProjectName().setText()</code>
- * <li>Label and TextField Project Folder: <code>txtProjectFolder().setText()</code>
- * <li>Button Browse... for browsing Location <code>btBrowseLocation().pushNoBlock()</code>
- * <li>Button Browse... for browsing Build Script <code>btBrowseBuildScript().pushNoBlock()</code>
- * <li>Button Browse... for browsing Project Folder <code>btBrowseProjectFolder().pushNoBlock()</code>
- * <li>CheckBox Set as Main Project <code>cbSetAsMainProject().setSelected(true)</code> 
- * </ol>
- * <u>Java project With Existing Sources</u><br>
- * <ol>
- * <li>Label and TextField Project Name: <code>txtProjectName().setText()</code>
- * <li>Label and TextField Project Folder: <code>txtProjectFolder().setText()</code>
- * <li>Button for browsing Project location: <code>btBrowseProjectLocation().pushNoBlock()</code>
- * </ol>
- * 
+ * Handle "Name And Location" panel of the New Project wizard (CND).
+ * Components on the panel differs according to type of project selected. 
  */
 public class NewCNDProjectNameLocationStepOperator extends NewProjectWizardOperator {
     
