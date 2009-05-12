@@ -685,17 +685,16 @@ public class ChatTopComponent extends TopComponent {
 
         public void propertyChange(final PropertyChangeEvent e) {
             if (Kenai.PROP_LOGIN.equals(e.getPropertyName())) {
-                kec.post(new Runnable() {
-
-                    public void run() {
-                        if (e.getNewValue() == null) {
-                            putLoginScreen();
-                        } else {
+                if (e.getNewValue() == null) {
+                    putLoginScreen();
+                } else {
+                    kec.post(new Runnable() {
+                        public void run() {
                             kec.getMyChats();
                             putChatsScreen();
                         }
-                    }
-                });
+                    });
+                }
             } else if (Kenai.PROP_LOGIN_STARTED.equals(e.getPropertyName())) {
                 putConnectingScreen();
             } else if (Kenai.PROP_LOGIN_FAILED.equals(e.getPropertyName())) {

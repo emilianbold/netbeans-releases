@@ -333,6 +333,7 @@ public final class DashboardImpl extends Dashboard {
     }
 
     void refreshProjects() {
+        changeSupport.firePropertyChange(PROP_REFRESH_REQUEST, null, null);
         synchronized( LOCK ) {
             memberProjects.clear();
             memberProjectsLoaded = false;
