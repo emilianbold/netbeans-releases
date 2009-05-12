@@ -93,7 +93,7 @@ public class CssGSFParser extends Parser {
         }
 
         List<Error> errors = new ArrayList<Error>();
-        errors.addAll(errors(parseExceptions, snapshot.getSource().getFileObject())); //parser errors
+        errors.addAll(errors(parseExceptions, snapshot)); //parser errors
         errors.addAll(CssAnalyser.checkForErrors(snapshot, root));
         
         this.lastResult = new CssParserResult(this, snapshot, root, errors);
@@ -119,10 +119,10 @@ public class CssGSFParser extends Parser {
         //no-op, no state changes supported
     }
 
-    public List<Error> errors(List<ParseException> parseExceptions, FileObject fo) {
+    public List<Error> errors(List<ParseException> parseExceptions, Snapshot snapshot) {
         List<Error> errors = new ArrayList<Error>(parseExceptions.size());
         for (ParseException pe : parseExceptions) {
-            Error e = createError(pe, fo);
+            Error e = createError(pe, snapshot);
             if (e != null) {
                 errors.add(e);
             }
@@ -134,7 +134,8 @@ public class CssGSFParser extends Parser {
         return CharSequenceUtilities.indexOf(text, GENERATED_CODE) != -1;
     }
 
-    private Error createError(ParseException pe, FileObject fo) {
+    private Error createError(ParseException pe, Snapshot snapshot) {
+        FileObject fo = snapshot.getSource().getFileObject();
         Token lastSuccessToken = pe.currentToken;
         if (lastSuccessToken == null) {
             //The pe was created in response to a TokenManagerError
@@ -146,8 +147,11 @@ public class CssGSFParser extends Parser {
 
         if (!(containsGeneratedCode(lastSuccessToken.image) || containsGeneratedCode(errorToken.image))) {
             String errorMessage = buildErrorMessage(pe);
+            int documentStartOffset = snapshot.getOriginalOffset(from);
+            int documentEndOffset = snapshot.getOriginalOffset(from + errorToken.image.length());
+
             return new DefaultError(PARSE_ERROR_KEY, errorMessage, errorMessage, fo,
-                    from, from, Severity.ERROR);
+                    documentStartOffset, documentEndOffset, Severity.ERROR);
         }
         return null;
     }
