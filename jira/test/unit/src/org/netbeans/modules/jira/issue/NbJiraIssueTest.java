@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.netbeans.modules.jira.*;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -52,8 +53,11 @@ import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.jira.core.JiraCorePlugin;
 import org.eclipse.mylyn.internal.jira.core.JiraRepositoryConnector;
+import org.eclipse.mylyn.internal.jira.core.model.Component;
+import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
+import org.eclipse.mylyn.internal.jira.core.model.Version;
 import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
@@ -84,6 +88,7 @@ public class NbJiraIssueTest extends NbTestCase {
     private TaskRepository taskRepository;
     private static final String ATTACHMENTS_FOLDER = "attachments";     //NOI18N
     private static final String TAG_FIELD = "Tags:";                    //NOI18N
+    private static final String USER2 = "tester2";                      //NOI18N
 
     public enum JiraIssueResolutionStatus {
 
@@ -103,7 +108,9 @@ public class NbJiraIssueTest extends NbTestCase {
 
         RESOLVED("Resolved"),
         OPEN("Open"),
-        REOPENED("Reopened");
+        REOPENED("Reopened"),
+        CLOSED("Closed"),
+        INPROGRESS("In Progress");
         public final String statusName;
 
         private JiraIssueStatus(String name) {
@@ -147,21 +154,112 @@ public class NbJiraIssueTest extends NbTestCase {
      * <ul>
      * <li>Create issue</li>
      * <li>Resolve issue - fixed</li>
+     *
+     * <li>Reopen issue</li>
+     * <li>Resolve issue - fixed</li>
+     * <li>Close issue - fixed</li>
+     *
+     * <li>Reopen issue</li>
+     * <li>Close issue - fixed</li>
+     *
      * <li>Reopen issue</li>
      * <li>Resolve issue - wontfix</li>
+     *
+     * <li>Reopen issue</li>
+     * <li>Resolve issue - wontfix</li>
+     * <li>Close issue - wontfix</li>
+     *
+     * <li>Reopen issue</li>
+     * <li>Close issue - wontfix</li>
+     *
+     * <li>Reopen issue</li>
+     * <li>Resolve issue - duplicate</li>
+     *
+     * <li>Reopen issue</li>
+     * <li>Resolve issue - duplicate</li>
+     * <li>Close issue - duplicate</li>
+     *
+     * <li>Reopen issue</li>
+     * <li>Close issue - duplicate</li>
+     *
      * <li>Reopen issue</li>
      * <li>Resolve issue - incomplete</li>
+     *
+     * <li>Reopen issue</li>
+     * <li>Resolve issue - incomplete</li>
+     * <li>Close issue - incomplete</li>
+     *
+     * <li>Reopen issue</li>
+     * <li>Close issue - incomplete</li>
+     *
      * <li>Reopen issue</li>
      * <li>Resolve issue - cannot reproduce</li>
+     *
+     * <li>Reopen issue</li>
+     * <li>Resolve issue - cannot reproduce</li>
+     * <li>Close issue - cannot reproduce</li>
+     *
+     * <li>Reopen issue</li>
+     * <li>Close issue - cannot reproduce</li>
+     *
+     * <li>Reopen issue</li>
+     * <li>Start progress</li>
+     * <li>Stop progress</li>
+     * <li>Close issue - fixed</li>
      * </ul>
      */
-    public void testIssueCloseAndReopen() throws CoreException, JiraException {
-        // TODO incomplete
+    public void testIssueWorkflow() throws CoreException, JiraException {
         NbJiraIssue issue = createIssue();
         assertNotNull(issue);
         resolveIssue(issue, JiraIssueResolutionStatus.FIXED);
+
+        reopenIssue(issue);
+        resolveIssue(issue, JiraIssueResolutionStatus.FIXED);
+        closeIssue(issue, JiraIssueResolutionStatus.FIXED);
+
+        reopenIssue(issue);
+        closeIssue(issue, JiraIssueResolutionStatus.FIXED);
+
+        /********************/
         reopenIssue(issue);
         resolveIssue(issue, JiraIssueResolutionStatus.WONTFIX);
+
+        reopenIssue(issue);
+        resolveIssue(issue, JiraIssueResolutionStatus.WONTFIX);
+        closeIssue(issue, JiraIssueResolutionStatus.WONTFIX);
+
+        reopenIssue(issue);
+        closeIssue(issue, JiraIssueResolutionStatus.WONTFIX);
+
+        /********************/
+        reopenIssue(issue);
+        resolveIssue(issue, JiraIssueResolutionStatus.INCOMPLETE);
+
+        reopenIssue(issue);
+        resolveIssue(issue, JiraIssueResolutionStatus.INCOMPLETE);
+        closeIssue(issue, JiraIssueResolutionStatus.INCOMPLETE);
+
+        reopenIssue(issue);
+        closeIssue(issue, JiraIssueResolutionStatus.INCOMPLETE);
+
+        /********************/
+        reopenIssue(issue);
+        resolveIssue(issue, JiraIssueResolutionStatus.CANNOTREPRODUCE);
+
+        reopenIssue(issue);
+        resolveIssue(issue, JiraIssueResolutionStatus.CANNOTREPRODUCE);
+        closeIssue(issue, JiraIssueResolutionStatus.CANNOTREPRODUCE);
+
+        reopenIssue(issue);
+        closeIssue(issue, JiraIssueResolutionStatus.CANNOTREPRODUCE);
+
+        /*******************/
+        reopenIssue(issue);
+        assignTo(issue, USER2);
+        assignToMe(issue);
+        startIssueProgress(issue);
+        stopIssueProgress(issue);
+        closeIssue(issue, JiraIssueResolutionStatus.FIXED);
     }
 
     public void testAddComments() throws CoreException {
@@ -248,6 +346,57 @@ public class NbJiraIssueTest extends NbTestCase {
         assertEquals(newValue, values.get(0));
     }
 
+    public void testFields () throws CoreException, JiraException {
+        NbJiraIssue issue = createIssue();
+
+        long estimate = Long.parseLong(issue.getFieldValue(NbJiraIssue.IssueField.ESTIMATE));
+        String priority = issue.getFieldValue(NbJiraIssue.IssueField.PRIORITY);
+        String type = issue.getFieldValue(NbJiraIssue.IssueField.TYPE);
+        List<String> affectedVersions = issue.getFieldValues(NbJiraIssue.IssueField.AFFECTSVERSIONS);
+        List<String> fixedVersions = issue.getFieldValues(NbJiraIssue.IssueField.FIXVERSIONS);
+        List<String> components = issue.getFieldValues(NbJiraIssue.IssueField.COMPONENT);
+
+        long newEstimate = estimate + 10 * 60; // +10 minutes
+        String newPriority = getAnotherPriority(priority);
+        String newType = getAnotherType(type);
+        affectedVersions = setVersions(affectedVersions);
+        fixedVersions = setVersions(fixedVersions);
+        components = setComponents(components);
+        issue.setFieldValue(NbJiraIssue.IssueField.ESTIMATE, Long.toString(newEstimate));
+        issue.setFieldValue(NbJiraIssue.IssueField.PRIORITY, newPriority);
+        issue.setFieldValue(NbJiraIssue.IssueField.TYPE, newType);
+        issue.setFieldValues(NbJiraIssue.IssueField.AFFECTSVERSIONS, affectedVersions);
+        issue.setFieldValues(NbJiraIssue.IssueField.FIXVERSIONS, fixedVersions);
+        issue.setFieldValues(NbJiraIssue.IssueField.COMPONENT, components);
+
+        submit(issue);
+
+        String id = issue.getID();
+        issue = (NbJiraIssue) getRepository().getIssueCache().getIssue(id);
+
+        assertEquals(newType, issue.getFieldValue(NbJiraIssue.IssueField.TYPE));
+        assertEquals(newPriority, issue.getFieldValue(NbJiraIssue.IssueField.PRIORITY));
+        assertEquals(newEstimate, Long.parseLong(issue.getFieldValue(NbJiraIssue.IssueField.ESTIMATE)));
+        List<String> newAffectedVersions = issue.getFieldValues(NbJiraIssue.IssueField.AFFECTSVERSIONS);
+        assertEquals(affectedVersions, newAffectedVersions);
+        List<String> newFixedVersions = issue.getFieldValues(NbJiraIssue.IssueField.FIXVERSIONS);
+        assertEquals(fixedVersions, newFixedVersions);
+        List<String> newComponents = issue.getFieldValues(NbJiraIssue.IssueField.COMPONENT);
+        assertEquals(components, newComponents);
+
+        affectedVersions = setVersions(affectedVersions);
+        fixedVersions = setVersions(fixedVersions);
+        issue.setFieldValues(NbJiraIssue.IssueField.AFFECTSVERSIONS, affectedVersions);
+        issue.setFieldValues(NbJiraIssue.IssueField.FIXVERSIONS, fixedVersions);
+        resolveIssue(issue, JiraIssueResolutionStatus.FIXED);
+
+        issue = (NbJiraIssue) getRepository().getIssueCache().getIssue(id);
+        newAffectedVersions = issue.getFieldValues(NbJiraIssue.IssueField.AFFECTSVERSIONS);
+        assertEquals(affectedVersions, newAffectedVersions);
+        newFixedVersions = issue.getFieldValues(NbJiraIssue.IssueField.FIXVERSIONS);
+        assertEquals(fixedVersions, newFixedVersions);
+    }
+
     private CustomField getTagField(CustomField[] customFields) {
         CustomField customField = null;
         for (NbJiraIssue.CustomField cf : customFields) {
@@ -274,6 +423,7 @@ public class NbJiraIssueTest extends NbTestCase {
         issue.setFieldValue(NbJiraIssue.IssueField.TYPE, "1");
         issue.setFieldValue(NbJiraIssue.IssueField.SUMMARY, summary);
         issue.setFieldValue(NbJiraIssue.IssueField.DESCRIPTION, description);
+        issue.setFieldValue(NbJiraIssue.IssueField.ESTIMATE, "600");
 
         submit(issue);
 
@@ -353,6 +503,75 @@ public class NbJiraIssueTest extends NbTestCase {
         assertEquals(resolution.statusName, issue.getResolution().getName());
     }
 
+    private void closeIssue(NbJiraIssue issue, JiraIssueResolutionStatus resolution) throws JiraException {
+        String description = "closing issue";
+        issue.close(getResolutionByName(resolution.statusName), description);
+        submit(issue);
+        String id = issue.getID();
+        issue = (NbJiraIssue) getRepository().getIssueCache().getIssue(id);
+        assertNotNull(issue.getKey());
+        assertFalse("".equals(issue.getKey()));
+        assertEquals(JiraIssueStatus.CLOSED.statusName, issue.getStatus().getName());
+        assertEquals(resolution.statusName, issue.getResolution().getName());
+    }
+
+    private void startIssueProgress(NbJiraIssue issue) throws JiraException {
+        issue.startProgress();
+        submit(issue);
+        String id = issue.getID();
+        issue = (NbJiraIssue) getRepository().getIssueCache().getIssue(id);
+        assertNotNull(issue.getKey());
+        assertFalse("".equals(issue.getKey()));
+        assertEquals(JiraIssueStatus.INPROGRESS.statusName, issue.getStatus().getName());
+    }
+
+    private void stopIssueProgress(NbJiraIssue issue) throws JiraException {
+        issue.stopProgress();
+        submit(issue);
+        String id = issue.getID();
+        issue = (NbJiraIssue) getRepository().getIssueCache().getIssue(id);
+        assertNotNull(issue.getKey());
+        assertFalse("".equals(issue.getKey()));
+        assertEquals(JiraIssueStatus.OPEN.statusName, issue.getStatus().getName());
+    }
+
+    private void assignTo (NbJiraIssue issue, String user) {
+        issue.setFieldValue(NbJiraIssue.IssueField.ASSIGNEE, user);
+        submit(issue);
+        String id = issue.getID();
+        issue = (NbJiraIssue) getRepository().getIssueCache().getIssue(id);
+        assertEquals(user, issue.getFieldValue(NbJiraIssue.IssueField.ASSIGNEE));
+    }
+
+    private void assignToMe (NbJiraIssue issue) {
+        assignTo(issue, getRepository().getUsername());
+    }
+
+    private List<String> setVersions (List<String> versions) {
+        LinkedList<String> newVersions = new LinkedList<String>();
+        Version[] allVersions = config.getVersions(config.getProjectByKey(TEST_PROJECT));
+        for (Version v : allVersions) {
+            if (!versions.contains(v.getId())) {
+                newVersions.add(v.getId());
+            }
+        }
+        if (newVersions.size() == allVersions.length) {
+            newVersions.remove((int)Math.round((Math.random() * (allVersions.length - 1))));
+        }
+        return newVersions;
+    }
+
+    private List<String> setComponents (List<String> components) {
+        LinkedList<String> newComponents = new LinkedList<String>();
+        Component[] allComponents = config.getComponents(config.getProjectByKey(TEST_PROJECT));
+        for (Component c : allComponents) {
+            if (!components.contains(c.getId())) {
+                newComponents.add(c.getId());
+            }
+        }
+        return newComponents;
+    }
+
     private void reopenIssue(NbJiraIssue issue) throws JiraException {
         String description = "reopening issue";
         issue.reopen(description);
@@ -422,5 +641,27 @@ public class NbJiraIssueTest extends NbTestCase {
             }
         }
         throw new IllegalStateException("Unknown type: " + name);
+    }
+
+    private String getAnotherPriority(String priority) {
+        Priority[] priorities = config.getPriorities();
+        for (Priority p : priorities) {
+            if (!p.getId().equals(priority)) {
+                return p.getId();
+            }
+        }
+
+        return priority;
+    }
+
+    private String getAnotherType(String type) {
+        IssueType[] types = config.getIssueTypes();
+        for (IssueType t : types) {
+            if (!t.getId().equals(type)) {
+                return t.getId();
+            }
+        }
+
+        return type;
     }
 }

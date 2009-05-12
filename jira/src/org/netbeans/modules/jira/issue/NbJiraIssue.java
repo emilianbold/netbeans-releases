@@ -414,6 +414,105 @@ public class NbJiraIssue extends Issue {
     }
 
     /**
+     * Tries to update the taskdata and set issue to closed:resolution.
+     * <strong>Do not forget to submit the issue</strong>
+     * @param resolution
+     * @param comment can be null, in such case no comment will be set
+     * @throws org.eclipse.mylyn.internal.jira.core.service.JiraException
+     * @throws java.lang.IllegalStateException if resolve operation is not permitted for this issue
+     */
+    public void close(Resolution resolution, String comment) throws JiraException {
+        if (Jira.LOG.isLoggable(Level.FINE)) {
+            Jira.LOG.fine(getClass().getName() + ": close issue " + getKey() + ": " + resolution.getName());    //NOI18N
+        }
+        TaskAttribute rta = taskData.getRoot();
+
+        Map<String, TaskOperation> operations = getAvailableOperations();
+        TaskOperation operation = null;
+        for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
+            String operationLabel = entry.getValue().getLabel();
+            if (Jira.LOG.isLoggable(Level.FINEST)) {
+                Jira.LOG.finest(getClass().getName() + ": closing issue" + getKey() + ": available operation: " + operationLabel + "(" + entry.getValue().getOperationId() + ")"); //NOI18N
+            }
+            if (JiraUtils.isCloseOperation(operationLabel)) {
+                operation = entry.getValue();
+                break;
+            }
+        }
+        if (operation == null) {
+            throw new IllegalStateException("Close operation not permitted"); //NOI18N
+        } else {
+            setOperation(operation);
+        }
+
+        TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.RESOLUTION);
+        ta.setValue(resolution.getId());
+        addComment(comment);
+    }
+
+    /**
+     * Tries to update the taskdata and set issue to started.
+     * <strong>Do not forget to submit the issue</strong>
+     * @throws org.eclipse.mylyn.internal.jira.core.service.JiraException
+     * @throws java.lang.IllegalStateException if resolve operation is not permitted for this issue
+     */
+    public void startProgress() throws JiraException {
+        if (Jira.LOG.isLoggable(Level.FINE)) {
+            Jira.LOG.fine(getClass().getName() + ": starting issue " + getKey());    //NOI18N
+        }
+        TaskAttribute rta = taskData.getRoot();
+
+        Map<String, TaskOperation> operations = getAvailableOperations();
+        TaskOperation operation = null;
+        for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
+            String operationLabel = entry.getValue().getLabel();
+            if (Jira.LOG.isLoggable(Level.FINEST)) {
+                Jira.LOG.finest(getClass().getName() + ": starting issue" + getKey() + ": available operation: " + operationLabel + "(" + entry.getValue().getOperationId() + ")"); //NOI18N
+            }
+            if (JiraUtils.isStartProgressOperation(operationLabel)) {
+                operation = entry.getValue();
+                break;
+            }
+        }
+        if (operation == null) {
+            throw new IllegalStateException("Start progress operation not permitted"); //NOI18N
+        } else {
+            setOperation(operation);
+        }
+    }
+
+    /**
+     * Tries to update the taskdata and stops the progress.
+     * <strong>Do not forget to submit the issue</strong>
+     * @throws org.eclipse.mylyn.internal.jira.core.service.JiraException
+     * @throws java.lang.IllegalStateException if resolve operation is not permitted for this issue
+     */
+    public void stopProgress() throws JiraException {
+        if (Jira.LOG.isLoggable(Level.FINE)) {
+            Jira.LOG.fine(getClass().getName() + ": starting issue " + getKey());    //NOI18N
+        }
+        TaskAttribute rta = taskData.getRoot();
+
+        Map<String, TaskOperation> operations = getAvailableOperations();
+        TaskOperation operation = null;
+        for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
+            String operationLabel = entry.getValue().getLabel();
+            if (Jira.LOG.isLoggable(Level.FINEST)) {
+                Jira.LOG.finest(getClass().getName() + ": starting issue" + getKey() + ": available operation: " + operationLabel + "(" + entry.getValue().getOperationId() + ")"); //NOI18N
+            }
+            if (JiraUtils.isStopProgressOperation(operationLabel)) {
+                operation = entry.getValue();
+                break;
+            }
+        }
+        if (operation == null) {
+            throw new IllegalStateException("Stop progress operation not permitted"); //NOI18N
+        } else {
+            setOperation(operation);
+        }
+    }
+
+    /**
      * Updates task data and sets the operation field
      * @param operationId id of requested operation
      * @throws java.lang.IllegalArgumentException if the operation is not permitted for this issue
