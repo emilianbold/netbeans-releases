@@ -139,6 +139,7 @@ import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper
 import org.netbeans.modules.debugger.jpda.jdi.IntegerValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
@@ -391,7 +392,20 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public Variable evaluate (String expression, CallStackFrame csf, ObjectVariable var)
     throws InvalidExpressionException {
         Value v = evaluateIn (expression, csf, var);
-        return getLocalsTreeModel ().getVariable (v);
+        Variable rv;
+        //try {
+            rv = getLocalsTreeModel ().getVariable (v);
+        /* Uncomment when returns a variable with disabled collection. When not used any more,
+        // it's collection must be enabled again.
+        } finally {
+            if (v instanceof ObjectReference) {
+                try {
+                    // We must enable the variable collection here so that the pairing is kept.
+                    ObjectReferenceWrapper.enableCollection((ObjectReference) v);
+                } catch (Exception ex) {}
+            }
+        }*/
+        return rv;
     }
 
     /**
@@ -740,23 +754,26 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     /**
-     * Used by AbstractVariable.
+     * Used by AbstractVariable and watches.
      */
+    // * Might be changed to return a variable with disabled collection. When not used any more,
+    // * it's collection must be enabled again.
     public Value evaluateIn (String expression) throws InvalidExpressionException {
         return evaluateIn(expression, null);
     }
 
     /**
-     * Used by AbstractVariable.
+     * Not Used by AbstractVariable.
      */
-    public Value evaluateIn (String expression, CallStackFrame csf) throws InvalidExpressionException {
+    // * Might be changed to return a variable with disabled collection. When not used any more,
+    // * it's collection must be enabled again.
+    private Value evaluateIn (String expression, CallStackFrame csf) throws InvalidExpressionException {
         return evaluateIn(expression, null, null);
     }
 
-    /**
-     * Used by AbstractVariable.
-     */
-    public Value evaluateIn (String expression, CallStackFrame csf, ObjectVariable var) throws InvalidExpressionException {
+    // * Might be changed to return a variable with disabled collection. When not used any more,
+    // * it's collection must be enabled again.
+    private Value evaluateIn (String expression, CallStackFrame csf, ObjectVariable var) throws InvalidExpressionException {
         Expression expr = null;
         expr = new Expression (expression, Expression.LANGUAGE_JAVA_1_5);
         return evaluateIn (expr, csf, var);
@@ -774,12 +791,14 @@ public class JPDADebuggerImpl extends JPDADebugger {
     /**
      * Used by WatchesModel & BreakpointImpl.
      */
+    // * Might be changed to return a variable with disabled collection. When not used any more,
+    // * it's collection must be enabled again.
     public Value evaluateIn (Expression expression) throws InvalidExpressionException {
         return evaluateIn(expression, null, null);
     }
-    /**
-     * Used by WatchesModel & BreakpointImpl.
-     */
+
+    // * Might be changed to return a variable with disabled collection. When not used any more,
+    // * it's collection must be enabled again.
     private Value evaluateIn (Expression expression, CallStackFrame c, ObjectVariable var) throws InvalidExpressionException {
         ObjectReference v = null;
         if (var instanceof JDIVariable) {
@@ -871,11 +890,15 @@ public class JPDADebuggerImpl extends JPDADebugger {
     /**
      * Used by BreakpointImpl.
      */
+    // * Might be changed to return a variable with disabled collection. When not used any more,
+    // * it's collection must be enabled again.
     public  Value evaluateIn (Expression expression, final StackFrame frame, int frameDepth)
     throws InvalidExpressionException {
         return evaluateIn(expression, frame, frameDepth, null);
     }
 
+    // * Might be changed to return a variable with disabled collection. When not used any more,
+    // * it's collection must be enabled again.
     private Value evaluateIn (Expression expression,
                               final StackFrame frame, int frameDepth,
                               ObjectReference var) throws InvalidExpressionException {
@@ -893,6 +916,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 getEngineContext ().getURL (frame, "Java")
             )));
             final ThreadReference tr = StackFrameWrapper.thread(frame);
+            JPDAThreadImpl trImpl = getThread(tr);
             final List<EventRequest>[] disabledBreakpoints =
                     new List[] { null };
             final JPDAThreadImpl[] resumedThread = new JPDAThreadImpl[] { null };
@@ -903,7 +927,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 org.netbeans.modules.debugger.jpda.expr.TreeEvaluator evaluator2 =
                     expression2.evaluator(
                         context = new EvaluationContext(
-                            tr,
+                            trImpl,
                             frame,
                             frameDepth,
                             var,
@@ -950,7 +974,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 org.netbeans.modules.debugger.jpda.expr.Evaluator evaluator =
                     expression.evaluator (
                         context = new EvaluationContext (
-                            tr,
+                            trImpl,
                             frame,
                             frameDepth,
                             var,
@@ -1438,7 +1462,17 @@ public class JPDADebuggerImpl extends JPDADebugger {
             VirtualMachine vm;
             synchronized (virtualMachineLock) {
                 vm = virtualMachine;
+                virtualMachine = null;
             }
+            setState (STATE_DISCONNECTED);
+            if (jsr45EngineProviders != null) {
+                for (Iterator<JSR45DebuggerEngineProvider> i = jsr45EngineProviders.iterator(); i.hasNext();) {
+                    JSR45DebuggerEngineProvider provider = i.next();
+                    provider.getDesctuctor().killEngine();
+                }
+                jsr45EngineProviders = null;
+            }
+            javaEngineProvider.getDestructor ().killEngine ();
             if (vm != null) {
                 try {
                     if (di instanceof AttachingDICookie) {
@@ -1455,18 +1489,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     // debugee VM is already disconnected (it finished normally)
                 }
             }
-            synchronized (virtualMachineLock) {
-                virtualMachine = null;
-            }
-            setState (STATE_DISCONNECTED);
-            if (jsr45EngineProviders != null) {
-                for (Iterator<JSR45DebuggerEngineProvider> i = jsr45EngineProviders.iterator(); i.hasNext();) {
-                    JSR45DebuggerEngineProvider provider = i.next();
-                    provider.getDesctuctor().killEngine();
-                }
-                jsr45EngineProviders = null;
-            }
-            javaEngineProvider.getDestructor ().killEngine ();
             logger.fine (" StartActionProvider.finish() end.");
 
             //Notify LOCK2 so that no one is waiting forever

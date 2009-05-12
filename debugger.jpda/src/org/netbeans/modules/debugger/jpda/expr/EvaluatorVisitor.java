@@ -999,7 +999,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     v += e; break;
                 default: throw new IllegalStateException("Unknown assignment: "+kind+" of "+arg0);
             }
-            Value value = vm.mirrorOf(v);
+            StringReference value = createStringMirrorWithDisabledCollection(v, vm, evaluationContext);
             setToMirror(arg0.getVariable(), value, evaluationContext);
             return value;
         }
@@ -1222,14 +1222,14 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             String s2 = (right == null) ? null : ((StringReference) right).value();
             switch (kind) {
                 case PLUS:
-                    return vm.mirrorOf(s1 + s2);
+                    return createStringMirrorWithDisabledCollection(s1 + s2, vm, evaluationContext);
                 default: throw new IllegalStateException("Unhandled binary tree: "+arg0);
             }
         }
         if ((left instanceof StringReference || right instanceof StringReference) && kind == Tree.Kind.PLUS) {
             String s1 = (left instanceof StringReference) ? ((StringReference) left).value() : toString(arg0, left, evaluationContext);
             String s2 = (right instanceof StringReference) ? ((StringReference) right).value() : toString(arg0, right, evaluationContext);
-            return vm.mirrorOf(s1 + s2);
+            return createStringMirrorWithDisabledCollection(s1 + s2, vm, evaluationContext);
         }
         switch (kind) {
             case EQUAL_TO:
@@ -1521,12 +1521,20 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         if (field != null) {
             if (field.isStatic()) {
                 evaluationContext.putField(arg0, field, null);
-                return field.declaringType().getValue(field);
+                Value v = field.declaringType().getValue(field);
+                if (v instanceof ObjectReference) {
+                    evaluationContext.disableCollectionOf((ObjectReference) v);
+                }
+                return v;
             }
             ObjectReference thisObject = evaluationContext.getContextObject();
             if (thisObject != null) {
                 evaluationContext.putField(arg0, field, thisObject);
-                return thisObject.getValue(field);
+                Value v = thisObject.getValue(field);
+                if (v instanceof ObjectReference) {
+                    evaluationContext.disableCollectionOf((ObjectReference) v);
+                }
+                return v;
             }
         }
         ObjectReference thiz = evaluationContext.getContextObject();
@@ -1633,7 +1641,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 }
                 if (field.isStatic()) {
                     evaluationContext.putField(arg0, field, null);
-                    return declaringType.getValue(field);
+                    Value v = declaringType.getValue(field);
+                    if (v instanceof ObjectReference) {
+                        evaluationContext.disableCollectionOf((ObjectReference) v);
+                    }
+                    return v;
                 }
                 ObjectReference thisObject = evaluationContext.getContextObject();
                 if (thisObject != null) {
@@ -1650,7 +1662,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 if (thisObject != null) {
                     evaluationContext.putField(arg0, field, thisObject);
                     try {
-                        return thisObject.getValue(field);
+                        Value v = thisObject.getValue(field);
+                        if (v instanceof ObjectReference) {
+                            evaluationContext.disableCollectionOf((ObjectReference) v);
+                        }
+                        return v;
                     } catch (IllegalArgumentException iaex) {
                         Logger.getLogger(getClass().getName()).severe("field = "+field+", thisObject = "+thisObject); // NOI18N
                         throw iaex;
@@ -1864,7 +1880,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             return mirrorOf(evaluationContext, value);
         }
         if (value instanceof String) {
-            StringReference str = vm.mirrorOf((String) value);
+            StringReference str = createStringMirrorWithDisabledCollection((String) value, vm, evaluationContext);
             ClassType strClass = (ClassType) vm.classesByName("java.lang.String").get(0);
             try {
                 List<Value> args = Collections.emptyList();
@@ -1918,19 +1934,19 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 }
                 arrayTypes[i] = (ArrayType) rt;
             }
-            return constructNewArray(arrayTypes, dimensions, numDimensions - 1);
+            return constructNewArray(arrayTypes, dimensions, numDimensions - 1, evaluationContext);
         } else {
             List<? extends ExpressionTree> initializerTrees = arg0.getInitializers();
             return constructNewArray(arg0, type, initializerTrees, evaluationContext);
         }
     }
 
-    private ArrayReference constructNewArray(ArrayType[] arrayTypes, int[] dimensions, int dimension) {
-        ArrayReference array = arrayTypes[dimension].newInstance(dimensions[dimension]);
+    private ArrayReference constructNewArray(ArrayType[] arrayTypes, int[] dimensions, int dimension, EvaluationContext evaluationContext) {
+        ArrayReference array = createArrayMirrorWithDisabledCollection(arrayTypes[dimension], dimensions[dimension], evaluationContext);
         if (dimension > 0) {
             List<ArrayReference> elements = new ArrayList<ArrayReference>(dimensions[dimension]);
             for (int i = 0; i < dimensions[dimension]; i++) {
-                ArrayReference subArray = constructNewArray(arrayTypes, dimensions, dimension - 1);
+                ArrayReference subArray = constructNewArray(arrayTypes, dimensions, dimension - 1, evaluationContext);
                 elements.add(subArray);
             }
             try {
@@ -1958,7 +1974,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             elements.add(elementValue);
         }
         int depth = 1;
-        ArrayReference array = getArrayType(arg0, type, depth, evaluationContext).newInstance(n);
+        ArrayReference array = createArrayMirrorWithDisabledCollection(getArrayType(arg0, type, depth, evaluationContext), n, evaluationContext);
         autoboxElements(arg0, type, elements, evaluationContext);
         try {
             array.setValues(elements);
@@ -2115,10 +2131,12 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
             evaluationContext.methodToBeInvoked();
             Method constructorMethod = getConcreteMethodAndReportProblems(arg0, classType, "<init>", firstParamSignature, paramTypes, argTypes);
-            return classType.newInstance(evaluationContext.getFrame().thread(),
-                                         constructorMethod,
-                                         argVals,
-                                         ObjectReference.INVOKE_SINGLE_THREADED);
+            ObjectReference o = classType.newInstance(evaluationContext.getFrame().thread(),
+                                                      constructorMethod,
+                                                      argVals,
+                                                      ObjectReference.INVOKE_SINGLE_THREADED);
+            //evaluationContext.disableCollectionOf(o); - Not necessary, new instances are not collected!
+            return o;
         } catch (InvalidTypeException itex) {
             throw new IllegalStateException(new InvalidExpressionException (itex));
         } catch (ClassNotLoadedException cnlex) {
@@ -2175,7 +2193,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         Method valueOfMethod = enumType.methodsByName("valueOf").get(0);
         VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
         if (vm == null) return null;
-        StringReference constantNameRef = vm.mirrorOf(constantName);
+        StringReference constantNameRef = createStringMirrorWithDisabledCollection(constantName, vm, evaluationContext);
         Value enumValue = invokeMethod(arg0, valueOfMethod, true, (ClassType) enumType, null,
                      Collections.singletonList((Value) constantNameRef), evaluationContext, false);
         return enumValue;
@@ -2223,7 +2241,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 Field f = clazz.fieldByName(name);
                 if (f != null) {
                     evaluationContext.putField(arg0, f, null);
-                    return clazz.getValue(f);
+                    Value v = clazz.getValue(f);
+                    if (v instanceof ObjectReference) {
+                        evaluationContext.disableCollectionOf((ObjectReference) v);
+                    }
+                    return v;
                 }
             } else if (expr instanceof InterfaceType) {
                 if (name.equals("class")) {
@@ -2244,7 +2266,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 Field f = type.fieldByName(name);
                 if (f != null) {
                     evaluationContext.putField(arg0, f, (ObjectReference) expr);
-                    return ((ObjectReference) expr).getValue(f);
+                    Value v = ((ObjectReference) expr).getValue(f);
+                    if (v instanceof ObjectReference) {
+                        evaluationContext.disableCollectionOf((ObjectReference) v);
+                    }
+                    return v;
                 }
             }
             if (expr == null) {
@@ -2296,7 +2322,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                             return null;
                         }
                         evaluationContext.putField(arg0, f, null);
-                        return clazz.getValue(f);
+                        Value v = clazz.getValue(f);
+                        if (v instanceof ObjectReference) {
+                            evaluationContext.disableCollectionOf((ObjectReference) v);
+                        }
+                        return v;
                     } else {
                         Assert2.error(arg0, "unknownField", fieldName);
                         return null;
@@ -2309,7 +2339,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     }
                     Field f = intrfc.fieldByName(fieldName);
                     if (f != null) {
-                        return intrfc.getValue(f);
+                        Value v = intrfc.getValue(f);
+                        if (v instanceof ObjectReference) {
+                            evaluationContext.disableCollectionOf((ObjectReference) v);
+                        }
+                        return v;
                     } else {
                         Assert2.error(arg0, "unknownField", fieldName);
                         return null;
@@ -2332,7 +2366,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     Field f = type.fieldByName(fieldName);
                     if (f != null) {
                         evaluationContext.putField(arg0, f, (ObjectReference) expr);
-                        return ((ObjectReference) expr).getValue(f);
+                        Value v = ((ObjectReference) expr).getValue(f);
+                        if (v instanceof ObjectReference) {
+                            evaluationContext.disableCollectionOf((ObjectReference) v);
+                        }
+                        return v;
                     } else {
                         Assert2.error(arg0, "unknownField", fieldName);
                         return null;
@@ -2869,6 +2907,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                                             ObjectReference.INVOKE_SINGLE_THREADED |
                                             ((nonVirtual) ? ObjectReference.INVOKE_NONVIRTUAL : 0));
             }
+            if (value instanceof ObjectReference) {
+                //evaluationContext.disableCollectionOf((ObjectReference) value); - Not necessary, values returned from methods are not collected!
+            }
             if (loggerMethod.isLoggable(Level.FINE)) {
                 loggerMethod.fine("   return = "+value);
             }
@@ -3167,7 +3208,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             if (evaluationContext != null) {
                 evaluationContext.methodToBeInvoked();
             }
-            return ((ClassType) type).newInstance(thread, constructor, Arrays.asList(new Value[] { v }), ObjectReference.INVOKE_SINGLE_THREADED);
+            ObjectReference o = ((ClassType) type).newInstance(thread, constructor, Arrays.asList(new Value[] { v }), ObjectReference.INVOKE_SINGLE_THREADED);
+            //evaluationContext.disableCollectionOf(o); - Not necessary, new objects are not collected!
+            return o;
         } catch (InvalidTypeException itex) {
             throw itex;
         } catch (ClassNotLoadedException cnlex) {
@@ -3376,10 +3419,12 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             StackFrame frame = evaluationContext.getFrame();
             ClassLoaderReference executingClassloader = frame.location().declaringType().classLoader();
             List args = new ArrayList();
-            args.add(vm.mirrorOf(name));
+            StringReference className = createStringMirrorWithDisabledCollection(name, vm, evaluationContext);
+            args.add(className);
             args.add(vm.mirrorOf(true));
             args.add(executingClassloader);
             ClassObjectReference cor = (ClassObjectReference) clazz.invokeMethod(frame.thread(), forName, args, 0);
+            //evaluationContext.disableCollectionOf(cor); - Not necessary, values returned from methods are not collected!
             return cor.reflectedType();
         } catch (Exception ex) {
             return null;
@@ -3392,6 +3437,32 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 throw new IllegalStateException(ieex);
             }
         }
+    }
+
+    private static StringReference createStringMirrorWithDisabledCollection(String s, VirtualMachine vm, EvaluationContext evaluationContext) {
+        StringReference sr;
+        do {
+            sr = vm.mirrorOf(s);
+            try {
+                evaluationContext.disableCollectionOf(sr);
+            } catch (ObjectCollectedException oce) {
+                sr = null; // Already collected! Create a new value and try again...
+            }
+        } while (sr == null);
+        return sr;
+    }
+
+    private static ArrayReference createArrayMirrorWithDisabledCollection(ArrayType arrayType, int dimension, EvaluationContext evaluationContext) {
+        ArrayReference array;
+        do {
+            array = arrayType.newInstance(dimension);
+            try {
+                evaluationContext.disableCollectionOf(array);
+            } catch (ObjectCollectedException oce) {
+                array = null; // Already collected! Create a new value and try again...
+            }
+        } while (array == null);
+        return array;
     }
 
     // *************************************************************************

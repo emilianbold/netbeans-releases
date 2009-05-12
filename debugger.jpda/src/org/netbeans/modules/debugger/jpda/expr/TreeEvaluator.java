@@ -159,10 +159,11 @@ public class TreeEvaluator {
         }*/
         //Tree exprTree = EditorContextBridge.getExpressionTree(expression.getExpression(), url, line);
         //if (exprTree == null) return null;
+        Mirror mirror = null;
         try {
-            Mirror mirror = EditorContextBridge.parseExpression(expression.getExpression(), url, line,
-                                                              new EvaluatorVisitor(expression), evaluationContext,
-                                                              evaluationContext.getDebugger().getEngineContext().getContext());
+            mirror = EditorContextBridge.parseExpression(expression.getExpression(), url, line,
+                                                         new EvaluatorVisitor(expression), evaluationContext,
+                                                         evaluationContext.getDebugger().getEngineContext().getContext());
             if (mirror instanceof Value || mirror == null) {
                 return (Value) mirror;
             } else {
@@ -189,6 +190,7 @@ public class TreeEvaluator {
             throw new InvalidExpressionException(NbBundle.getMessage(
                 Evaluator.class, "CTL_EvalError_disconnected"));
         } catch (ObjectCollectedException e) {
+            Exceptions.printStackTrace(e);
             throw new InvalidExpressionException(NbBundle.getMessage(
                 Evaluator.class, "CTL_EvalError_collected"));
         } catch (ClassNotPreparedException e) {
@@ -202,6 +204,9 @@ public class TreeEvaluator {
         } catch (UnsupportedOperationException e) {
             throw new InvalidExpressionException(NbBundle.getMessage(
                 Evaluator.class, "CTL_UnsupportedOperationException"));
+        } finally {
+            // Garbage collection for the returned value "mirror" is left disabled. Context enable it as soon as the thread is resumed.
+            evaluationContext.enableCollectionOfObjects((mirror instanceof Value) ? ((Value) mirror) : null);
         }
         //return (Value) rootNode.jjtAccept(this, null);
         //return null;

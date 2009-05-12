@@ -123,6 +123,14 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
         String id
     ) {
         super(debugger, value, id);
+        /*if (value instanceof ObjectReference) {
+            try {
+                // Disable collection of the value so that we do not loose it in the mean time.
+                // Enable collection is called as soon as we do not need it.
+                System.err.println("DISABLING collection for "+value);
+                ObjectReferenceWrapper.disableCollection((ObjectReference) value);
+            } catch (Exception ex) {}
+        }*/
         debugger.addPropertyChangeListener(
                 WeakListeners.propertyChange(stateChangeListener, debugger));
     }
@@ -278,9 +286,14 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
         return inheritedFields;
     }
 
+    private volatile Super superClass;
+
     public Super getSuper () {
         if (getInnerValue () == null) 
             return null;
+        if (superClass != null) {
+            return superClass;
+        }
         try {
             Type t = ValueWrapper.type(this.getInnerValue());
             if (!(t instanceof ClassType)) 
@@ -289,12 +302,14 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
             superType = ClassTypeWrapper.superclass((ClassType) t);
             if (superType == null) 
                 return null;
-            return new SuperVariable(
+            Super s = new SuperVariable(
                     getDebugger(), 
                     (ObjectReference) this.getInnerValue(),
                     superType,
                     getID()
                     );
+            superClass = s;
+            return s;
         } catch (ObjectCollectedExceptionWrapper ocex) {
             return null;
         } catch (InternalExceptionWrapper ex) {
@@ -526,6 +541,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
      *
      * @return declared type of this local
      */
+    @Override
     public String getType () {
         if (genericType != null) return genericType;
         Value v = getInnerValue ();
@@ -563,22 +579,37 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
         }
     }
     
+    @Override
     public boolean equals (Object o) {
         return  (o instanceof AbstractObjectVariable) &&
                 (getID().equals (((AbstractObjectVariable) o).getID()));
     }
     
+    @Override
     public int hashCode() {
         return getID().hashCode();
     }
     
     // other methods............................................................
     
+    @Override
     protected void setInnerValue (Value v) {
+        /*Value old = getInnerValue();
+        if (old instanceof ObjectReference) {
+            try {
+                ObjectReferenceWrapper.enableCollection((ObjectReference) old);
+            } catch (Exception ex) {}
+        }
         super.setInnerValue(v);
+        if (v instanceof ObjectReference) {
+            try {
+                ObjectReferenceWrapper.disableCollection((ObjectReference) v);
+            } catch (Exception ex) {}
+        }*/
         fields = null;
         staticFields = null;
         inheritedFields = null;
+        superClass = null;
     }
     
     private static String getTypeDescription (PushbackReader signature) 
@@ -707,7 +738,17 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
             int from,
             int to
         ) {
-            List l = ArrayReferenceWrapper.getValues0(ar, from, to - from);
+            List l;
+            try {
+                l = ArrayReferenceWrapper.getValues(ar, from, to - from);
+            } catch (InternalExceptionWrapper ex) {
+                return new Field[0];
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return new Field[0];
+            } catch (ObjectCollectedExceptionWrapper ex) {
+                Exceptions.printStackTrace(ex);
+                return new Field[0];
+            }
             int i, k = l.size ();
             Field[] ch = new Field [k];
             for (i = 0; i < k; i++) {
@@ -866,16 +907,30 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
     
     private int cloneNumber = 1;
     
+    @Override
     public Variable clone() {
         AbstractObjectVariable clon = new AbstractObjectVariable(getDebugger(), getJDIValue(), getID() + "_clone"+(cloneNumber++));
         clon.genericType = this.genericType;
         return clon;
     }
     
+    @Override
     public String toString () {
         return "ObjectVariable ";
     }
-    
+
+    /*@Override
+    protected void finalize() throws Throwable {
+        Value v = getInnerValue();
+        if (v instanceof ObjectReference) {
+            try {
+                System.err.println("ENABLING collection for "+v);
+                ObjectReferenceWrapper.enableCollection((ObjectReference) v);
+            } catch (Exception ex) {}
+        }
+        super.finalize();
+    }*/
+
     /* Uncomment when needed. Was used to create "readable" String and Char values.
     private static String convertToStringInitializer (String s) {
         StringBuffer sb = new StringBuffer ();
