@@ -39,14 +39,11 @@
 package org.netbeans.modules.css.gsf;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.Map;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.css.editor.Css;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.CssParserTreeConstants;
 import org.netbeans.modules.css.parser.NodeVisitor;
@@ -83,15 +80,6 @@ public class CssSemanticAnalyzer extends  SemanticAnalyzer {
         
         final Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<OffsetRange, Set<ColoringAttributes>>();
 
-//        //XXX fixthis - the css parser always parses the whole css content!
-//
-//        Iterator<? extends ParserResult> presultIterator = ci.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator();
-//        if(!presultIterator.hasNext()) {
-//            return;
-//        }
-//
-//        ParserResult presult = presultIterator.next();
-//        final TranslatedSource source = presult.getTranslatedSource();
         SimpleNode root = ((CssParserResult) result).root();
         final Snapshot snapshot = result.getSnapshot();
         
