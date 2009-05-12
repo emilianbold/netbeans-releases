@@ -58,7 +58,7 @@ import javax.lang.model.element.*;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
 import org.openide.util.Exceptions;
@@ -177,8 +177,6 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
             if(workingCopy.getTreeUtilities().isInterface(enclosingClass)) modifiers.remove(Modifier.ABSTRACT);
 
             //Compute new imports
-            List<String> imports = new ArrayList<String>();
-
             for (VariableTree vt : newParameters) {
                 Set<ElementHandle<TypeElement>> declaredTypes = workingCopy.getClasspathInfo().getClassIndex().getDeclaredTypes(vt.getType().toString(), NameKind.SIMPLE_NAME, EnumSet.allOf(ClassIndex.SearchScope.class));
                 Set<ElementHandle<TypeElement>> declaredTypesMirr = new HashSet<ElementHandle<TypeElement>>(declaredTypes);
@@ -215,7 +213,13 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                     if (packageOf.getQualifiedName().toString().equals("java.lang")) {
                         continue;
                     }
-                    imports.add(type.getQualifiedName().toString());
+                    try {
+                        SourceUtils.resolveImport(workingCopy, path, type.getQualifiedName().toString());
+                    } catch (NullPointerException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
 
@@ -229,14 +233,6 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                     current.getBody(),
                     (ExpressionTree) current.getDefaultValue());
             rewrite(tree, nju);
-
-            //add imports, if necessary
-            try {
-                CompilationUnitTree cut = RetoucheUtils.addImports(workingCopy.getCompilationUnit(), imports, make);
-                workingCopy.rewrite(workingCopy.getCompilationUnit(), cut);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
 
             return;
         }
