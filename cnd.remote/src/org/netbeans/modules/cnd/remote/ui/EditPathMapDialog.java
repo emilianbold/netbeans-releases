@@ -102,7 +102,8 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     public static boolean showMe(ExecutionEnvironment execEnv, String pathToValidate) {
         return showMe(ServerList.get(execEnv), pathToValidate);
     }
-    public static boolean showMe(ServerRecord host, String pathToValidate) {
+    
+    private static boolean showMe(ServerRecord host, String pathToValidate) {
         return showMe(host, pathToValidate, ServerList.getRecords());
     }
 
