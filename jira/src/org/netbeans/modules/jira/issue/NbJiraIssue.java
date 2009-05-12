@@ -61,6 +61,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.internal.jira.core.IJiraConstants;
 import org.eclipse.mylyn.internal.jira.core.JiraAttribute;
 import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
@@ -279,6 +280,35 @@ public class NbJiraIssue extends Issue {
             attachments.add(new Attachment(taskAttribute));
         }
         return attachments.toArray(new Attachment[attachments.size()]);
+    }
+
+    CustomField[] getCustomFields () {
+        Map<String, TaskAttribute> attrs = taskData.getRoot().getAttributes();
+        if (attrs == null) {
+            return new CustomField[0];
+        }
+        List<CustomField> fields = new ArrayList<CustomField>(10);
+        
+        for (TaskAttribute attribute : attrs.values()) {
+            if (attribute.getId().startsWith(IJiraConstants.ATTRIBUTE_CUSTOM_PREFIX)) {
+                CustomField field = new CustomField(attribute);
+                fields.add(field);
+            }
+        }
+        return fields.toArray(new CustomField[fields.size()]);
+    }
+
+    void setCustomField(CustomField customField) {
+        Map<String, TaskAttribute> attrs = taskData.getRoot().getAttributes();
+        if (attrs == null) {
+            return;
+        }
+        for (TaskAttribute attribute : attrs.values()) {
+            if (attribute.getId().startsWith(IJiraConstants.ATTRIBUTE_CUSTOM_PREFIX)
+                    && customField.getId().equals(attribute.getId().substring(IJiraConstants.ATTRIBUTE_CUSTOM_PREFIX.length()))) {
+                attribute.setValues(customField.getValues());
+            }
+        }
     }
 
     /**
@@ -996,6 +1026,46 @@ public class NbJiraIssue extends Issue {
         @Override
         public String getTaskKey() {
             return key;
+        }
+    }
+
+    public static final class CustomField {
+        private final String id;
+        private final String label;
+        private final String type;
+        private List<String> values;
+        private final boolean readOnly;
+
+        private CustomField(TaskAttribute attribute) {
+            id = attribute.getId().substring(IJiraConstants.ATTRIBUTE_CUSTOM_PREFIX.length());
+            label = attribute.getMetaData().getValue(TaskAttribute.META_LABEL);
+            type = attribute.getMetaData().getValue(IJiraConstants.META_TYPE);
+            values = attribute.getValues();
+            readOnly = attribute.getMetaData().isReadOnly();
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public boolean isReadOnly () {
+            return readOnly;
+        }
+
+        public List<String> getValues() {
+            return values;
+        }
+
+        public void setValues (List<String> values) {
+            this.values = values;
         }
     }
 }

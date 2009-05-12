@@ -45,8 +45,13 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -59,6 +64,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.BinaryForSourceQuery.Result;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -81,6 +87,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -271,15 +278,33 @@ public class HibernateUtil {
         return buildFO;
     }
 
+    /**
+     * @return {@link JavaProjectConstants#SOURCES_TYPE_RESOURCES} if exists, {@link JavaProjectConstants#SOURCES_TYPE_JAVA} otherwise.
+     */
     public static SourceGroup[] getSourceGroups(Project project) {
         Sources projectSources = ProjectUtils.getSources(project);
-        SourceGroup[] javaSourceGroup = projectSources.getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_RESOURCES);
-        if (javaSourceGroup == null || javaSourceGroup.length == 0) {
-            javaSourceGroup = projectSources.getSourceGroups(
-                    JavaProjectConstants.SOURCES_TYPE_JAVA);
+        // first, try to get resources
+        SourceGroup[] resources = projectSources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+        if (resources.length > 0) {
+            return resources;
         }
-        return javaSourceGroup;
+        // try to create it
+        SourceGroup resourcesSourceGroup = SourceGroupModifier.createSourceGroup(
+            project, JavaProjectConstants.SOURCES_TYPE_RESOURCES, JavaProjectConstants.SOURCES_HINT_MAIN);
+        if (resourcesSourceGroup != null) {
+            return new SourceGroup[] {resourcesSourceGroup};
+        }
+        // fallback to java sources
+        return projectSources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+    }
+
+    /**
+     * Get the 1st source group.
+     * @see #getSourceGroups(Project)
+     */
+    public static SourceGroup getFirstSourceGroup(Project project) {
+        // well, we should always get some sources
+        return getSourceGroups(project)[0];
     }
 
     /**
@@ -450,17 +475,7 @@ public class HibernateUtil {
 
     public static List<FileObject> getAllHibernateReverseEnggFileObjects(Project project) {
         List<FileObject> reverseEnggFiles = new ArrayList<FileObject>();
-        Sources projectSources = ProjectUtils.getSources(project);
-        // src/main/resources does not need to exist
-        SourceGroup resourcesSourceGroup = SourceGroupModifier.createSourceGroup(project, JavaProjectConstants.SOURCES_TYPE_RESOURCES, JavaProjectConstants.SOURCES_HINT_MAIN);
-        if (resourcesSourceGroup != null) {
-            addFileObjects(reverseEnggFiles, new SourceGroup[] {resourcesSourceGroup}, HibernateRevengDataLoader.REQUIRED_MIME);
-        }
-        if (reverseEnggFiles.isEmpty()) {
-            // possible fallback
-            addFileObjects(reverseEnggFiles, projectSources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA), HibernateRevengDataLoader.REQUIRED_MIME);
-        }
-
+        addFileObjects(reverseEnggFiles, getSourceGroups(project), HibernateRevengDataLoader.REQUIRED_MIME);
         return reverseEnggFiles;
     }
 
@@ -649,5 +664,67 @@ public class HibernateUtil {
             return null;
         }
         return getDBConnection(hibernateConfiguration).getJDBCConnection();
+    }
+
+    public static List<SourceGroup> getJavaSourceGroups(Project project) {
+        assert project != null;
+        SourceGroup[] sourceGroups = getSourceGroups(project);
+        Set<SourceGroup> testGroups = getTestSourceGroups(sourceGroups);
+        List<SourceGroup> result = new ArrayList<SourceGroup>();
+        for(SourceGroup sourceGroup : sourceGroups){
+            if (!testGroups.contains(sourceGroup)) {
+                result.add(sourceGroup);
+            }
+        }
+        return result;
+    }
+
+    private static Set<SourceGroup> getTestSourceGroups(SourceGroup[] sourceGroups) {
+        Map<FileObject, SourceGroup> foldersToSourceGroupsMap = createFoldersToSourceGroupsMap(sourceGroups);
+        Set<SourceGroup> testGroups = new HashSet<SourceGroup>();
+        for (SourceGroup sourceGroup : sourceGroups) {
+            testGroups.addAll(getTestTargets(sourceGroup, foldersToSourceGroupsMap));
+        }
+        return testGroups;
+    }
+
+    private static Map<FileObject, SourceGroup> createFoldersToSourceGroupsMap(final SourceGroup[] sourceGroups) {
+        if (sourceGroups.length == 0) {
+            return Collections.emptyMap();
+        }
+        Map<FileObject, SourceGroup> result = new HashMap<FileObject, SourceGroup>(2 * sourceGroups.length);
+        for (SourceGroup sourceGroup : sourceGroups) {
+            result.put(sourceGroup.getRootFolder(), sourceGroup);
+        }
+        return result;
+    }
+
+    private static List<SourceGroup> getTestTargets(SourceGroup sourceGroup, Map<FileObject, SourceGroup> foldersToSourceGroupsMap) {
+        final URL[] rootURLs = UnitTestForSourceQuery.findUnitTests(sourceGroup.getRootFolder());
+        if (rootURLs.length == 0) {
+            return Collections.emptyList();
+        }
+        List<FileObject> sourceRoots = getFileObjects(rootURLs);
+        List<SourceGroup> result = new ArrayList<SourceGroup>(sourceRoots.size());
+        for (FileObject sourceRoot : sourceRoots) {
+            SourceGroup srcGroup = foldersToSourceGroupsMap.get(sourceRoot);
+            if (srcGroup != null) {
+                result.add(srcGroup);
+            }
+        }
+        return result;
+    }
+
+    private static List<FileObject> getFileObjects(URL[] urls) {
+        List<FileObject> result = new ArrayList<FileObject>(urls.length);
+        for (URL url : urls) {
+            FileObject sourceRoot = URLMapper.findFileObject(url);
+            if (sourceRoot != null) {
+                result.add(sourceRoot);
+            } else {
+                Exceptions.printStackTrace(new IllegalStateException("No FileObject found for the following URL: " + url));
+            }
+        }
+        return result;
     }
 }

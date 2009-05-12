@@ -116,7 +116,6 @@ public class RunAsWebAdvanced extends JPanel {
             NbBundle.getMessage(RunAsWebAdvanced.class, "LBL_ServerPath"),
             NbBundle.getMessage(RunAsWebAdvanced.class, "LBL_LocalPath"),
         };
-        // tmysik init data
         pathMappingTableModel = new PathMappingTableModel(columnNames, getPathMappings(properties.remotePaths, properties.localPaths));
         pathMappingTable.setModel(pathMappingTableModel);
         pathMappingTable.setDefaultRenderer(LocalPathCell.class, new LocalPathCellRenderer());
@@ -692,6 +691,10 @@ public class RunAsWebAdvanced extends JPanel {
 
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             LocalPathCell localPathCell = (LocalPathCell) value;
+            // #164688 - sorry, no idea how this can happen
+            if (localPathCell == null) {
+                localPathCell = new LocalPathCell(DEFAULT_LOCAL_PATH);
+            }
             if (isSelected) {
                 localPathCell.setBgColor(table.getSelectionBackground());
                 localPathCell.setFgColor(table.getSelectionForeground());
