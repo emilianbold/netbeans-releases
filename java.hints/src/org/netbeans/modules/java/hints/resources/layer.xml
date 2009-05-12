@@ -313,21 +313,27 @@ made subject to such option by the copyright holder.
       </folder>
   </folder>
   
-    <folder name="Actions">
+    <folder name="Menu">
         <folder name="Refactoring">
             <file name="org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMenuVariable"/>
+                <attr name="position" intvalue="410"/>
             </file>
             <file name="org-netbeans-modules-java-hints-introduce-IntroduceConstantAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMenuConstant"/>
+                <attr name="position" intvalue="420"/>
             </file>
             <file name="org-netbeans-modules-java-hints-introduce-IntroduceFieldAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMenuField"/>
+                <attr name="position" intvalue="430"/>
             </file>
             <file name="org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMenuMethod"/>
+                <attr name="position" intvalue="440"/>
             </file>
-            <file name="org-netbeans-modules-java-hints-ConvertAnonymousToInnerAction.instance"/>
+            <file name="org-netbeans-modules-java-hints-ConvertAnonymousToInnerAction.instance">
+                <attr name="position" intvalue="400"/>
+            </file>
         </folder>
     </folder>
     
