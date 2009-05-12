@@ -96,12 +96,11 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
 
         List<WizardDescriptor.Panel<WizardDescriptor>> pList = new ArrayList<Panel<WizardDescriptor>>();
         HostSetupWorker worker;
-        if (providers.size() == 1) {
-            worker = providers.get(0).createHostSetupWorker();
-        } else {
-            pList.add(panel0);
-            worker = panel0.getSelectedWorker();
+        if (providers.size() > 1) {
+            pList.add(panel0);            
         }
+        // even in the case we don't show panel0
+        worker = panel0.getSelectedWorker();
 
         pList.addAll(worker.getWizardPanels(new HostValidatorImpl(cacheManager)));
 
