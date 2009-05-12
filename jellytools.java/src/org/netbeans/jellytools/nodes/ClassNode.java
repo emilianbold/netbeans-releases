@@ -44,7 +44,6 @@ package org.netbeans.jellytools.nodes;
 import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.PropertiesAction;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
 /** Node representing Class file */

@@ -65,19 +65,13 @@ public class NewRubyFileNameLocationStepOperatorTest extends JellyTestCase {
     /** Method used for explicit testsuite definition
      * @return  created suite
      */
-    public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new NewFileNameLocationStepOperatorTest("testInvoke"));
-        suite.addTest(new NewFileNameLocationStepOperatorTest("testComponents"));
-        return suite;
-         */
+    public static Test suite() {        
         return createModuleTest(NewRubyFileNameLocationStepOperatorTest.class, tests);
     }
     
     protected void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
-        openDataProjects("SampleProject");
+        openDataProjects("SampleRubyProject");
     }
     
     /** Constructor required by JUnit.
@@ -89,31 +83,30 @@ public class NewRubyFileNameLocationStepOperatorTest extends JellyTestCase {
 
     /** Test of invoke method. Opens New File wizard and waits for the dialog. */
     public void testInvoke() {
-        /*
+        
         NewFileWizardOperator wop = NewFileWizardOperator.invoke();
-        wop.selectProject("SampleProject"); //NOI18N
-        // Java Classes
-        String javaClassesLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes");
-        // Java Class
-        String javaClassLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes/Class.java");
-        wop.selectCategory(javaClassesLabel);
-        wop.selectFileType(javaClassLabel);
+        wop.selectProject("SampleRubyProject"); //NOI18N
+        // Ruby
+        String rubyLabel = "Ruby"; //TODO: find appropriate bundle and load messages from it
+        // Ruby File
+        String rubyFileLabel = "Ruby File"; //TODO: find appropriate bundle and load messages from it
+        wop.selectCategory(rubyLabel);
+        wop.selectFileType(rubyFileLabel);
         wop.next();
-        op = new NewRubyFileNameLocationStepOperator();*/
+        op = new NewRubyFileNameLocationStepOperator();
     }
     
-    public void testComponents() {
-        /*
+    public void testComponents() {        
         op.txtObjectName().setText("NewObject"); // NOI18N
-        assertEquals("Project name not propagated from previous step", "SampleProject", op.txtProject().getText()); // NOI18N
-        op.selectSourcePackagesLocation();
-        op.selectPackage("sample1"); // NOI18N
+        assertEquals("Project name not propagated from previous step", "SampleRubyProject", op.txtProject().getText()); // NOI18N
+        op.selectTestFilesLocation();
+        op.selectSourceFilesLocation();
+        
         String filePath = op.txtCreatedFile().getText();
-        assertTrue("Created file path doesn't contain SampleProject.", filePath.indexOf("SampleProject") > 0);  // NOI18N
-        assertTrue("Created file path doesn't contain sample1 package name.", filePath.indexOf("sample1") > 0);  // NOI18N
+        assertTrue("Created file path doesn't contain SampleProject.", filePath.indexOf("SampleRubyProject") > 0);  // NOI18N
+        assertTrue("Created file path doesn't contain lib folder name.", filePath.indexOf("lib") > 0);  // NOI18N
         assertTrue("Created file path doesn't contain NewObject name.", filePath.indexOf("NewObject") > 0);  //NOI18N
-        op.cancel();
-         */
+        op.cancel();         
     }
     
 }
