@@ -46,6 +46,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -63,8 +65,21 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
     }
 
     public boolean synchronize() {
+
+        // determine the remote directory
+        PathMap mapper = HostInfoProvider.getMapper(executionEnvironment);
+        String localParent = this.localDir.getParentFile().getAbsolutePath();
+        String remoteParent = mapper.getRemotePath(localParent);
+        if (!HostInfoProvider.fileExists(executionEnvironment, remoteParent)) {
+            if (mapper.checkRemotePath(localParent, true)) {
+                remoteParent = mapper.getRemotePath(localParent);
+            } else {
+                return false;
+            }
+        }
+        String remoteDir = remoteParent + '/' + localDir.getName(); //NOI18N
         try {
-            synchronizeImpl();
+            synchronizeImpl(remoteDir);
             return true;
         } catch (InterruptedException ex) {
             logger.log(Level.FINE, null, ex);
@@ -75,8 +90,8 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         }
         return false;
     }
-    public void synchronizeImpl() throws InterruptedException, ExecutionException, IOException {
-        String remoteDir = getRemoteRoot();
+
+    public void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
         CommonTasksSupport.mkDir(executionEnvironment, remoteDir, err);
         for (File file : localDir.listFiles()) {
             synchronizeImpl(file, remoteDir);
@@ -96,15 +111,10 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
             int rc = upload.get();
             logger.finest("scp: uploading " + path + " to " + remoteDir + " rc=" + rc); //NOI18N
             if (rc != 0) {
-                throw new IOException();
+                throw new IOException("uploading " + path + " to " + remoteDir + // NOI18N
+                        "finished with error code " + rc); // NOI18N
             }
         }
-    }
-
-    private String getRemoteRoot() {
-        // FIXUP
-//        return "/export/home/" + executionEnvironment.getUser(); //NOI18N
-        return "/tmp/remote/" + executionEnvironment.getUser(); //NOI18N
     }
 
     @Override
