@@ -46,13 +46,14 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.debugger.gdb.GdbContext;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
-import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
+import org.netbeans.modules.cnd.debugger.gdb.proxy.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -168,11 +169,11 @@ final class MemoryViewTopComponent extends TopComponent implements PropertyChang
 
     private void update() {
         taResult.setText("");
-        GdbProxy gdb = GdbContext.getCurrentGdb();
-        if (gdb == null) {
+        final GdbDebugger debugger = GdbDebugger.getGdbDebugger();
+        if (debugger == null) {
             return;
         }
-        String addr = tfAddress.getText();
+        final String addr = tfAddress.getText();
         if (addr == null || addr.length() == 0) {
             return;
         }
@@ -180,7 +181,7 @@ final class MemoryViewTopComponent extends TopComponent implements PropertyChang
         if (length == null || length.length() == 0) {
             return;
         }
-        int len;
+        final int len;
         try {
             len = Integer.decode(length);
         } catch (NumberFormatException nfe) {
@@ -189,29 +190,36 @@ final class MemoryViewTopComponent extends TopComponent implements PropertyChang
         if (len < 1) {
             return;
         }
-        CommandBuffer cb = gdb.data_read_memory(addr, (len-1)/GdbProxy.MEMORY_READ_WIDTH+1);
-        if (cb.isError()) {
-            taResult.setText(cb.getError());
-        } else {
-            // parse output
-            Map<String,String> res = GdbUtils.createMapFromString(cb.getResponse());
-            String mem = res.get("memory"); // NOI18N
-            List<String> lines = GdbUtils.createListOfValues(mem);
-            StringBuilder text = new StringBuilder();
-            for (String line : lines) {
-                if (text.length() > 0) {
-                    text.append("\n"); // NOI18N
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                if (!debugger.isStopped()) {
+                    return;
                 }
-                Map<String,String> fields = GdbUtils.createMapFromString(line);
-                text.append(fields.get("addr")); // NOI18N
-                text.append("  "); // NOI18N
-                text.append(prepareHex(fields.get("data"))); // NOI18N
-                text.append(" "); // NOI18N
-                text.append(fields.get("ascii")); // NOI18N
+                CommandBuffer cb = debugger.getGdbProxy().data_read_memory(addr, (len-1)/GdbProxy.MEMORY_READ_WIDTH+1);
+                if (cb.isError()) {
+                    taResult.setText(cb.getError());
+                } else if (cb.isOK()) {
+                    // parse output
+                    Map<String,String> res = GdbUtils.createMapFromString(cb.getResponse());
+                    String mem = res.get("memory"); // NOI18N
+                    List<String> lines = GdbUtils.createListOfValues(mem);
+                    StringBuilder text = new StringBuilder();
+                    for (String line : lines) {
+                        if (text.length() > 0) {
+                            text.append("\n"); // NOI18N
+                        }
+                        Map<String,String> fields = GdbUtils.createMapFromString(line);
+                        text.append(fields.get("addr")); // NOI18N
+                        text.append("  "); // NOI18N
+                        text.append(prepareHex(fields.get("data"))); // NOI18N
+                        text.append(" "); // NOI18N
+                        text.append(fields.get("ascii")); // NOI18N
+                    }
+                    taResult.append(text.toString());
+                    taResult.setCaretPosition(0);
+                }
             }
-            taResult.append(text.toString());
-            taResult.setCaretPosition(0);
-        }
+        });
     }
 
     /*
@@ -290,8 +298,8 @@ final class MemoryViewTopComponent extends TopComponent implements PropertyChang
 
     @Override
     public void componentClosed() {
-        GdbContext.getInstance().addPropertyChangeListener(GdbContext.PROP_STEP, this);
-        GdbContext.getInstance().addPropertyChangeListener(GdbContext.PROP_EXIT, this);
+        GdbContext.getInstance().removePropertyChangeListener(GdbContext.PROP_STEP, this);
+        GdbContext.getInstance().removePropertyChangeListener(GdbContext.PROP_EXIT, this);
     }
 
     @Override
@@ -300,11 +308,7 @@ final class MemoryViewTopComponent extends TopComponent implements PropertyChang
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                update();
-            }
-        });
+        update();
     }
 
     /** replaces this in object stream */

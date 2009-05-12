@@ -28,6 +28,7 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
+import com.sun.source.util.TreeScanner;
 import org.junit.Test;
 import org.netbeans.api.java.source.*;
 import org.netbeans.junit.NbTestSuite;
@@ -37,13 +38,14 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * This test verifies issues from netbeans issueszila about rewriting trees.
  *
  * @author Rastislav Komara (<a href="mailto:moonko@netbeans.org">RKo</a>)
- * @todo documentation
  */
 public class RewriteOccasionalStatements extends GeneratorTest {
     private static final String TEST_CONTENT = "\n" +
@@ -232,7 +234,7 @@ public class RewriteOccasionalStatements extends GeneratorTest {
                 // filter out obsolete members
                 List<Tree> members2Add = new ArrayList<Tree>();
                 // filter out obsolete implements trees
-                List<Tree> impls2Add = Collections.singletonList(interfaceTree);                
+                List<Tree> impls2Add = Collections.singletonList(interfaceTree);
 
                 ClassTree nc;
                 if (clazz.getKind() == ElementKind.CLASS) {
@@ -399,4 +401,86 @@ public class RewriteOccasionalStatements extends GeneratorTest {
     }
 
 
+/*  This issue has been waived for yet.
+    @Test
+    public void test159941() throws Exception {
+        File testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "\n" +
+                        "public class NewArrayTest {\n" +
+                        "   void m4(int[] p) {\n" +
+                        "        if (p[0] > 0) {\n" +
+                        "            if (p[1] > 0) {\n" +
+                        "                System.out.println(\"x\");\n" +
+                        "            }\n" +
+                        "            if (p[1] > 0) {\n" +
+                        "                System.out.println(\"y\");\n" +
+                        "            }\n" +
+                        "        }\n" +
+                        "        if (p[0] > 0) {\n" +
+                        "            if (p[1] > 0) {\n" +
+                        "                System.out.println(\"z\");\n" +
+                        "            }\n" +
+                        "            if (p[1] > 0) {\n" +
+                        "                System.out.println(\"w\");\n" +
+                        "            }\n" +
+                        "        }\n" +
+                        "    }" +
+                        "}\n");
+        String golden = "\n" +
+                "public class NewArrayTest {\n" +
+                "   void m4(int[] p) {\n" +
+                "        if (p[0] > 0) {\n" +
+                "            if (p[1] > 0) {\n" +
+                "                System.out.println(\"x\");\n" +
+                "            }\n" +
+                "        }\n" +
+                "    }" +
+                "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy wc) throws Exception {
+                wc.toPhase(JavaSource.Phase.RESOLVED);                
+                SimpleScanner ss = new SimpleScanner(wc);
+                ss.scan(wc.getCompilationUnit().getTypeDecls().get(0), null);
+            }
+
+        };
+
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.out.println(res);
+        assertEquals(golden, res);
+    }
+*/
+
+
+    class SimpleScanner extends TreeScanner<Void, Void> {
+        private final WorkingCopy wc;
+        protected GeneratorUtilities gu;
+
+        SimpleScanner(WorkingCopy wc) {
+            this.wc = wc;
+            gu = GeneratorUtilities.get(this.wc);
+        }
+
+        @Override
+        public Void visitBlock(BlockTree node, Void p) {
+            List<? extends StatementTree> st = node.getStatements();
+            if (st.size() == 2) {
+                List<StatementTree> st2 = new ArrayList<StatementTree>();
+                st2.add(st.get(0));
+                TreeMaker make = wc.getTreeMaker();
+                BlockTree modified = make.Block(st2, node.isStatic());
+                modified = gu.importFQNs(modified);                         
+                System.out.println("original: " + node);
+                System.out.println("modified: " + modified);
+                wc.rewrite(node, modified);
+            }
+            return super.visitBlock(node, p);
+        }
+
+    }
 }

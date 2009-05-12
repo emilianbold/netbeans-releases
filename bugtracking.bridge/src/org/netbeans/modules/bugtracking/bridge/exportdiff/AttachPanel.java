@@ -55,7 +55,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Tomas Stupka, Jan Stola
  */
 public class AttachPanel extends javax.swing.JPanel implements ItemListener, PropertyChangeListener {
     private QuickSearchComboBar qs;
@@ -66,6 +66,7 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
         this.issueListener = issueListener;
         qs = new QuickSearchComboBar(this);
         issuePanel.add(qs, BorderLayout.NORTH);
+        issueLabel.setLabelFor(qs.getCommand());
     }
 
     void init(Repository[] repos, Repository toSelect) {
@@ -99,17 +100,6 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
         return qs.getIssue();
     }
 
-    private void enableFields() {
-        boolean repoSelected = repositoryComboBox.getSelectedItem() != null;
-        boolean enableFields = getIssue() != null && repoSelected;
-
-        descriptionTextField.setEnabled(enableFields);
-        descriptionLabel.setEnabled(enableFields);
-        
-        issueLabel.setEnabled(repoSelected);
-        qs.enableFields(repoSelected);
-    }
-
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -128,21 +118,22 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
         issuePanel = new javax.swing.JPanel();
         descriptionLabel = new javax.swing.JLabel();
 
-        repositoryLabel.setText(org.openide.util.NbBundle.getMessage(AttachPanel.class, "AttachPanel.repositoryLabel.text")); // NOI18N
+        repositoryLabel.setLabelFor(repositoryComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(repositoryLabel, org.openide.util.NbBundle.getMessage(AttachPanel.class, "AttachPanel.repositoryLabel.text")); // NOI18N
 
         repositoryComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        jButton2.setText(org.openide.util.NbBundle.getMessage(AttachPanel.class, "AttachPanel.jButton2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jButton2, org.openide.util.NbBundle.getMessage(AttachPanel.class, "AttachPanel.jButton2.text")); // NOI18N
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
             }
         });
 
-        issueLabel.setText(org.openide.util.NbBundle.getMessage(AttachPanel.class, "AttachPanel.issueLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(issueLabel, org.openide.util.NbBundle.getMessage(AttachPanel.class, "AttachPanel.issueLabel.text")); // NOI18N
 
         jLabel2.setForeground(javax.swing.UIManager.getDefaults().getColor("Button.disabledText"));
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(AttachPanel.class, "AttachPanel.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(AttachPanel.class, "AttachPanel.jLabel2.text")); // NOI18N
 
         issuePanel.setLayout(new java.awt.BorderLayout());
 
@@ -161,7 +152,8 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
                 .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
-        descriptionLabel.setText(org.openide.util.NbBundle.getMessage(AttachPanel.class, "AttachPanel.descriptionLabel.text")); // NOI18N
+        descriptionLabel.setLabelFor(descriptionTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(descriptionLabel, org.openide.util.NbBundle.getMessage(AttachPanel.class, "AttachPanel.descriptionLabel.text")); // NOI18N
 
         descriptionTextField.setText(org.openide.util.NbBundle.getMessage(AttachPanel.class, "AttachPanel.descriptionTextField.text")); // NOI18N
 
@@ -199,10 +191,17 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
                     .add(descriptionLabel)
                     .add(descriptionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
+
+        repositoryComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AttachPanel.class, "AttachPanel.repositoryComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+        jButton2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AttachPanel.class, "AttachPanel.jButton2.AccessibleContext.accessibleDescription")); // NOI18N
+        descriptionTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AttachPanel.class, "AttachPanel.descriptionTextField.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         Repository repo = BugtrackingUtil.createRepository();
+        if(repo == null) {
+            return;
+        }
         repositoryComboBox.addItem(repo);
         repositoryComboBox.setSelectedItem(repo);
     }//GEN-LAST:event_jButton2ActionPerformed
@@ -254,13 +253,26 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
     @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
-        descriptionTextField.setEnabled(enabled);
-        descriptionLabel.setEnabled(enabled);
 
-        issueLabel.setEnabled(enabled);
-        qs.enableFields(enabled);
+        enableFields(enabled);
+
         repositoryLabel.setEnabled(enabled);
         repositoryComboBox.setEnabled(enabled);
+    }
+
+    private void enableFields() {
+        enableFields(true);
+    }
+
+    private void enableFields(boolean enable) {
+        boolean repoSelected = repositoryComboBox.getSelectedItem() != null;
+        boolean enableFields = getIssue() != null && repoSelected;
+
+        descriptionTextField.setEnabled(enableFields && enable);
+        descriptionLabel.setEnabled(enableFields && enable);
+
+        issueLabel.setEnabled(repoSelected && enable);
+        qs.enableFields(repoSelected && enable);
     }
 
 }

@@ -40,13 +40,10 @@
 package org.netbeans.modules.bugzilla.repository;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCustomField;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.netbeans.modules.bugzilla.Bugzilla;
@@ -57,35 +54,37 @@ import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
  * @author Tomas Stupka
  */
 public class BugzillaConfiguration {
+
+    // XXX simplify this. no need to hold this.
+    // its cached in bugzillacoreplugin - get it from there.
     private RepositoryConfiguration rc;
 
-    public BugzillaConfiguration(RepositoryConfiguration rc) {
-        this.rc = rc;
+    public synchronized void initialize(BugzillaRepository repository, boolean forceRefresh) {
+        this.rc = getRepositoryConfiguration(repository, forceRefresh);
     }
 
-    public static <T extends BugzillaConfiguration> T create(final BugzillaRepository repository, Class<T> clazz) {
-        final RepositoryConfiguration[] rc = new RepositoryConfiguration[1];
+    protected RepositoryConfiguration getRepositoryConfiguration(final BugzillaRepository repository, final boolean forceRefresh) {
+        final RepositoryConfiguration[] conf = new RepositoryConfiguration[1];
         BugzillaCommand cmd = new BugzillaCommand() {
             @Override
             public void execute() throws CoreException, IOException, MalformedURLException {
-                rc[0] = Bugzilla.getInstance()
-                                .getRepositoryConnector()
-                                .getClientManager()
-                                .getClient(repository.getTaskRepository(), new NullProgressMonitor())
-                                .getRepositoryConfiguration(new NullProgressMonitor());
+                boolean refresh = forceRefresh;
+                String b = System.getProperty("org.netbeans.modules.bugzilla.persistentRepositoryConfiguration", "false"); // NOI18N
+                if("true".equals(b)) {
+                    refresh = true;
+                }
+                conf[0] = Bugzilla.getInstance().getRepositoryConfiguration(repository, refresh);
             }
         };
         repository.getExecutor().execute(cmd);
         if(!cmd.hasFailed()) {
-            try {
-                Constructor<T> c = clazz.getConstructor(RepositoryConfiguration.class);
-                return c.newInstance(rc[0]);
-            } catch (Exception ex) {
-                Bugzilla.LOG.log(Level.SEVERE, null, ex);
-                return null;
-            } 
+            return conf[0];
         }
         return null;
+    }
+
+    public boolean isValid() {
+        return rc != null;
     }
 
     /**
@@ -264,4 +263,5 @@ public class BugzillaConfiguration {
             return rc.getTargetMilestones(product);
         }
     }
+
 }

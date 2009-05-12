@@ -116,7 +116,7 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
 
         // name & url
         populate(c, REPO_NAME, REPO_URL, "", "");
-        assertFalse(c.isValid());
+        assertTrue(c.isValid());
 
         // full house
         populate(c, REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD);
@@ -145,7 +145,7 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         // save query
         long lastRefresh = System.currentTimeMillis();
         String parameters = "&product=zaibatsu";
-        BugzillaQuery bq = new BugzillaQuery(QUERY_NAME, repo, parameters, lastRefresh);
+        BugzillaQuery bq = new BugzillaQuery(QUERY_NAME, repo, parameters, lastRefresh, false);
         repo.saveQuery(bq);
         queries = repo.getQueries();
         assertEquals(1, queries.length); // returns only saved queries

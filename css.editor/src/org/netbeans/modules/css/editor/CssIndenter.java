@@ -105,7 +105,7 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
         // start from the end offset to properly calculate braces balance and
         // find correfct formatting start (consider case of a rule defined
         // within a media rule):
-        ts.move(endOffset);
+        ts.move(endOffset, false);
 
         if (!ts.moveNext() && !ts.movePrevious()) {
             return LexUtilities.getTokenSequenceStartOffset(ts);
@@ -322,8 +322,10 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
                         iis.add(ic);
                     }
             } else if (token.id() == CssTokenId.MEDIA_SYM) {
-                assert blockStack.size() == 0 : blockStack;
-                inMedia = true;
+                // #164493:
+                if (blockStack.size() == 0) {
+                    inMedia = true;
+                }
             }
         }
         if (context.isBlankLine() && inComment && iis.isEmpty()) {

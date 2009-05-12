@@ -58,7 +58,7 @@ import org.openide.util.Lookup;
  *
  * @author Martin Grebac
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.wseditor.WSEditorProvider.class)
+//@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.wseditor.WSEditorProvider.class)
 public class TubesEditorProvider implements WSEditorProvider {
     
     /**

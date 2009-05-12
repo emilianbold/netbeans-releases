@@ -25,7 +25,7 @@
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
  * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
+ * single choiceget of license, a recipient has the option to distribute
  * your version of this file under either the CDDL, the GPL Version 2 or
  * to extend the choice of license to its licensees as provided above.
  * However, if you add GPL Version 2 code and therefore, elected the GPL
@@ -43,6 +43,8 @@ import org.netbeans.modules.bugzilla.*;
 import java.awt.Image;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Constructor;
+import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -50,8 +52,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
+import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
@@ -64,6 +69,7 @@ import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.IssueCache;
+import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
 import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
@@ -119,7 +125,8 @@ public class BugzillaRepository extends Repository {
 
     @Override
     public Query createQuery() {
-        if(getConfiguration() == null) {
+        BugzillaConfiguration conf = getConfiguration();
+        if(conf == null || !conf.isValid()) {
             // invalid connection data?
             return null;
         }
@@ -129,7 +136,8 @@ public class BugzillaRepository extends Repository {
 
     @Override
     public Issue createIssue() {
-        if(getConfiguration() == null) {
+        BugzillaConfiguration conf = getConfiguration();
+        if(conf == null || !conf.isValid()) {
             // invalid connection data?
             return null;
         }
@@ -293,7 +301,8 @@ public class BugzillaRepository extends Repository {
 
     @Override
     public Query[] getQueries() {
-        return getQueriesIntern().toArray(new Query[queries.size()]);
+        Set<Query> l = getQueriesIntern();
+        return l.toArray(new Query[l.size()]);
     }
 
     public IssueCache getIssueCache() {
@@ -339,7 +348,7 @@ public class BugzillaRepository extends Repository {
     }
 
     static TaskRepository createTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
-        TaskRepository repository = new TaskRepository(name, url);
+        TaskRepository repository = new TaskRepository(Bugzilla.getInstance().getRepositoryConnector().getConnectorKind(), url);
         AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user, password);
         repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
         
@@ -404,8 +413,16 @@ public class BugzillaRepository extends Repository {
         return bc;
     }
 
+    public synchronized void refreshConfiguration() {
+        BugzillaConfiguration conf = new BugzillaConfiguration();
+        conf.initialize(this, true);
+        bc = conf;
+    }
+
     protected BugzillaConfiguration createConfiguration() {
-        return BugzillaConfiguration.create(this, BugzillaConfiguration.class);
+        BugzillaConfiguration conf = new BugzillaConfiguration();
+        conf.initialize(this, false);
+        return conf;
     }
 
     private void setupIssueRefreshTask() {

@@ -227,6 +227,7 @@ public class JobCreator extends JPanel implements ProjectHudsonJobCreator {
             box.setSelected(t.selected());
             box.setEnabled(t.enabled());
             Mnemonics.setLocalizedText(box, t.labelWithMnemonic());
+            box.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JobCreator.class, "JobCreator.checkbox.a11y", t.antName()));
         }
         GroupLayout layout = new GroupLayout(this);
         setLayout(layout);

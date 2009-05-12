@@ -46,11 +46,11 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.*;
-import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
 
 /**
@@ -99,18 +99,29 @@ public final class APTMacroMapSnapshot {
     }
     
     public static void addAllMacros(APTMacroMapSnapshot snap, Map<CharSequence, APTMacro> out) {
-        if (snap.parent != null) {
-            addAllMacros(snap.parent, out);
-        }
-        for (Map.Entry<CharSequence, APTMacro> cur : snap.macros.entrySet()) {
-            if (cur.getValue() != UNDEFINED_MACRO) {
-                out.put(cur.getKey(), cur.getValue());
-            } else {
-                out.remove(cur.getKey());
+        if (snap != null) {
+            if (snap.parent != null) {
+                addAllMacros(snap.parent, out);
+            }
+            for (Map.Entry<CharSequence, APTMacro> cur : snap.macros.entrySet()) {
+                if (cur.getValue() != UNDEFINED_MACRO) {
+                    out.put(cur.getKey(), cur.getValue());
+                } else {
+                    out.remove(cur.getKey());
+                }
             }
         }
     }    
-    
+
+    public static int getMacroSize(APTMacroMapSnapshot snap) {
+        int size = 0;
+        while (snap != null) {
+            size += snap.macros.size();
+            snap = snap.parent;
+        }
+        return size;
+    }
+
     public boolean isEmtpy() {
         return macros.isEmpty();
     }
@@ -137,8 +148,8 @@ public final class APTMacroMapSnapshot {
             return "Macro undefined"; // NOI18N
         }
 
-        public APTFile getFile() {
-            return null;
+        public CharSequence getFile() {
+            return CharSequenceKey.empty();
         }
         
         public Kind getKind() {

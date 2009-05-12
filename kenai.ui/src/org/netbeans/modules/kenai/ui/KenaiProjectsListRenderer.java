@@ -46,89 +46,79 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.FontMetrics;
-import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.net.URL;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.JTextArea;
-import javax.swing.ListCellRenderer;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.ui.dashboard.ColorManager;
 import org.netbeans.modules.kenai.ui.dashboard.LinkButton;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
+ * Renderer for list item to show found Kenai project
  * 
- * 
- * @author Milan
+ * @author Milan Kubec
  */
-public class KenaiProjectsListRenderer extends javax.swing.JPanel implements ListCellRenderer {
+public class KenaiProjectsListRenderer extends javax.swing.JPanel {
+
     private URL url;
 
-    public KenaiProjectsListRenderer() {
+    public KenaiProjectsListRenderer(JList jlist, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        
         initComponents();
-    }
-
-    private class URLDisplayer implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            new URLDisplayerAction("", url).actionPerformed(e);
-        }
-    }
-
-    public Component getListCellRendererComponent(JList jlist, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 
         KenaiSearchPanel.KenaiProjectSearchInfo searchInfo = (KenaiSearchPanel.KenaiProjectSearchInfo) value;
 
-        projectNameLabel.setText("<html><b>" + searchInfo.kenaiProject.getDisplayName() + " (" + searchInfo.kenaiProject.getName() + ")</b></html>");
+        projectNameLabel.setText("<html><b>" + searchInfo.kenaiProject.getDisplayName() +
+                " (" + searchInfo.kenaiProject.getName() + ")</b></html>"); // NOI18N
+        if (searchInfo.kenaiFeature != null) {
+            repoPathLabel.setText(searchInfo.kenaiFeature.getLocation());
+            repoTypeLabel.setText("(" + searchInfo.kenaiFeature.getService() + ")"); // NOI18N
+        }
         try {
-            projectDescLabel.setText(searchInfo.kenaiProject.getDescription());//highlighthPattern(searchInfo.kenaiProject.getDescription(), searchInfo.searchPattern));
+            String description = searchInfo.kenaiProject.getDescription();
+            description = description.replaceAll("\n+", " "); // NOI18N
+            description = description.replaceAll("\t+", " "); // NOI18N
+            projectDescLabel.setText(description);
             projectDescLabel.setRows(searchInfo.kenaiProject.getDescription().length()/100 + 1);
-            tagsLabel.setText("Tags: " + searchInfo.kenaiProject.getTags());
+            tagsLabel.setText(NbBundle.getMessage(KenaiProjectsListRenderer.class, "KenaiProjectsListRenderer.tagsLabel.text") + " " +
+                    searchInfo.kenaiProject.getTags());
         } catch (KenaiException kenaiException) {
             Exceptions.printStackTrace(kenaiException);
         }
         if (isSelected) {
             setBackground(jlist.getSelectionBackground());
             projectDescLabel.setBackground(jlist.getSelectionBackground());
+            repoPanel.setBackground(jlist.getSelectionBackground());
         } else {
             if (index % 2 == 0) {
                 setBackground(new Color(225, 225, 225));
                 projectDescLabel.setBackground(new Color(225, 225, 225));
+                repoPanel.setBackground(new Color(225, 225, 225));
             } else {
                 setBackground(jlist.getBackground());
                 projectDescLabel.setBackground(jlist.getBackground());
+                repoPanel.setBackground(jlist.getBackground());
             }
         }
 
         this.url=searchInfo.kenaiProject.getWebLocation();
-
-        Graphics2D g2d = (Graphics2D) new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB).getGraphics();
-        FontMetrics fm = g2d.getFontMetrics(new JLabel().getFont());
-
-        //descPane.setText(getSubstrWithElipsis(kenaiProject.kenaiProject.getDescription(), fm, getWidth(), 5.0f, g2d));
-        //descArea.setText("<html>" + kenaiProject.kenaiProject.getDescription() + "</html>");
-        return this;
+        
     }
 
-    private String highlighthPattern(String txt, String ptrn) {
-        Pattern pattern = Pattern.compile(ptrn);
-        Matcher matcher = pattern.matcher(txt);
-        return "<html>" + matcher.replaceAll(makeBold(ptrn)) + "</html>";
-    }
-
-    private String makeBold(String txt) {
-        return "<b>" + txt + "</b>";
+    private class URLDisplayer implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            new URLDisplayerAction("", url).actionPerformed(e); // NOI18N
+        }
     }
 
     /** This method is called from within the constructor to
@@ -141,21 +131,15 @@ public class KenaiProjectsListRenderer extends javax.swing.JPanel implements Lis
     private void initComponents() {
         GridBagConstraints gridBagConstraints;
 
-        repoPathLabel = new JLabel();
         projectNameLabel = new JLabel();
         tagsLabel = new JLabel();
         projectDescLabel = new JTextArea();
         detailsButton = new LinkButton(NbBundle.getMessage(KenaiProjectsListRenderer.class, "KenaiProjectsListRenderer.detailsLabel.text"), new URLDisplayer());
+        repoPanel = new JPanel();
+        repoPathLabel = new JLabel();
+        repoTypeLabel = new JLabel();
 
         setLayout(new GridBagLayout());
-
-        repoPathLabel.setText(NbBundle.getMessage(KenaiProjectsListRenderer.class, "KenaiProjectsListRenderer.repoPathLabel.text")); // NOI18N
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(4, 6, 0, 0);
-        add(repoPathLabel, gridBagConstraints);
 
         projectNameLabel.setText(NbBundle.getMessage(KenaiProjectsListRenderer.class, "KenaiProjectsListRenderer.projectNameLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
@@ -173,7 +157,7 @@ public class KenaiProjectsListRenderer extends javax.swing.JPanel implements Lis
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new Insets(10, 6, 4, 0);
+        gridBagConstraints.insets = new Insets(8, 6, 6, 0);
         add(tagsLabel, gridBagConstraints);
 
         projectDescLabel.setLineWrap(true);
@@ -185,14 +169,48 @@ public class KenaiProjectsListRenderer extends javax.swing.JPanel implements Lis
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new Insets(8, 6, 0, 0);
+        gridBagConstraints.insets = new Insets(8, 6, 0, 14);
         add(projectDescLabel, gridBagConstraints);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = GridBagConstraints.EAST;
+        gridBagConstraints.anchor = GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.insets = new Insets(0, 0, 6, 6);
         add(detailsButton, gridBagConstraints);
+
+        repoPanel.setLayout(new GridBagLayout());
+
+        repoPathLabel.setForeground(ColorManager.getDefault().getLinkColor());
+        repoPathLabel.setText(NbBundle.getMessage(KenaiProjectsListRenderer.class, "KenaiProjectsListRenderer.repoPathLabel.text")); // NOI18N
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        repoPanel.add(repoPathLabel, gridBagConstraints);
+
+        repoTypeLabel.setText(NbBundle.getMessage(KenaiProjectsListRenderer.class, "KenaiProjectsListRenderer.repoTypeLabel.text")); // NOI18N
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new Insets(0, 4, 0, 0);
+        repoPanel.add(repoTypeLabel, gridBagConstraints);
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new Insets(6, 6, 0, 0);
+        add(repoPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 
@@ -200,40 +218,10 @@ public class KenaiProjectsListRenderer extends javax.swing.JPanel implements Lis
     private JButton detailsButton;
     private JTextArea projectDescLabel;
     private JLabel projectNameLabel;
+    private JPanel repoPanel;
     private JLabel repoPathLabel;
+    private JLabel repoTypeLabel;
     private JLabel tagsLabel;
     // End of variables declaration//GEN-END:variables
-
-    private String getSubstrWithElipsis(String text, FontMetrics fm, int reqWidth, float charWidth, Graphics2D context) {
-
-        int textCharLen = text.length();
-        int mIndex = textCharLen;
-
-        int textPixWidth = (int) fm.getStringBounds(text, 0, mIndex, context).getWidth();
-
-        // text is already smaller than required width
-        if (reqWidth > textPixWidth) {
-            return text;
-        }
-
-        // find longest possible substring that would fit into the required
-        // width by binary division over text length
-        while (Math.abs(reqWidth - textPixWidth) > charWidth) {
-
-            textCharLen = textCharLen == 1 ? 1 : textCharLen / 2;
-
-            if (reqWidth - textPixWidth < 0) {
-                mIndex = mIndex - textCharLen;
-            } else {
-                mIndex = mIndex + textCharLen;
-            }
-
-            textPixWidth = (int) fm.getStringBounds(text, 0, mIndex, context).getWidth();
-
-        }
-
-        return text.substring(0, mIndex) + "...";
-
-    }
 
 }

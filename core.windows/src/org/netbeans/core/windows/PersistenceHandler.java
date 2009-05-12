@@ -135,7 +135,7 @@ final public class PersistenceHandler implements PersistenceObserver {
                 wmc = ConfigFactory.createDefaultConfig();
             }
         }
-
+        
         ToolbarPool.getDefault().setPreferredIconSize(wmc.preferredToolbarIconSize);
         
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
@@ -995,12 +995,21 @@ final public class PersistenceHandler implements PersistenceObserver {
             buffer.append("\n-- -- state: " + mc.state + " "
             + ((mc.state == Constants.MODE_STATE_JOINED) ? "joined" : "separated"));
             if (mc.constraints != null) {
+                buffer.append("\n-- -- constraints.sz: " + mc.constraints.length);
                 for (int j = 0; j < mc.constraints.length; j++) {
                     buffer.append("\n-- -- co[" + j + "]: " + mc.constraints[j]);
                 }
             }
-            buffer.append("\n-- -- kind: " + mc.kind + " "
-            + ((mc.kind == Constants.MODE_KIND_EDITOR) ? "editor" : "view"));
+            buffer.append("\n-- -- kind: " + mc.kind + " ");
+            if (mc.kind == Constants.MODE_KIND_EDITOR) {
+                buffer.append("editor");
+            } else if (mc.kind == Constants.MODE_KIND_VIEW) {
+                buffer.append("view");
+            } else if (mc.kind == Constants.MODE_KIND_SLIDING) {
+                buffer.append("sliding");
+            } else {
+                buffer.append("unknown");
+            }
             buffer.append("\n-- --         bounds: " + mc.bounds);
             buffer.append("\n-- -- relativeBounds: " + mc.relativeBounds);
             buffer.append("\n-- --          state: " + mc.frameState);

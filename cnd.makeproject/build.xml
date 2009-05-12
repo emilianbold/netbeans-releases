@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
     <import file="../nbbuild/templates/projectized.xml"/>
     
     <!-- zip up samples before creating the jar file -->
-    <property name="sample-src" value="src/org/netbeans/modules/cnd/makeproject/samples"/>
+    <property name="sample-src" value="samples_src"/>
     <property name="sample-dist" value="build/classes/org/netbeans/modules/cnd/makeproject/ui/resources/samples"/>
     <patternset id="sample-src-pattern-set">
         <include name="**/*"/>
@@ -113,6 +113,11 @@ made subject to such option by the copyright holder.
         </zip>
         <zip zipfile="${sample-dist}/helloqt.zip" >
             <fileset dir="${sample-src}/helloqt">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${sample-dist}/profiling.zip" >
+            <fileset dir="${sample-src}/profiling">
                 <patternset refid="sample-src-pattern-set"/>
             </fileset>
         </zip>

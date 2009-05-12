@@ -73,7 +73,7 @@
                 <attr name="templateCategory" stringvalue="groovy"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.grailsproject.templates.GrailsTemplates.createArtifactIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/DomainClass.html"/>
             </file>
             <file name="Controller.groovy">
@@ -82,7 +82,7 @@
                 <attr name="templateCategory" stringvalue="groovy"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.grailsproject.templates.GrailsTemplates.createArtifactIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/Controller.html"/>
             </file>
             <file name="IntegrationTest.groovy">
@@ -91,7 +91,7 @@
                 <attr name="templateCategory" stringvalue="groovy"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.grailsproject.templates.GrailsTemplates.createArtifactIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/IntegrationTest.html"/>
             </file>
             <file name="GantScript.groovy">
@@ -100,7 +100,7 @@
                 <attr name="templateCategory" stringvalue="groovy"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.grailsproject.templates.GrailsTemplates.createArtifactIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/GantScript.html"/>
             </file>
             <file name="Service.groovy">
@@ -109,7 +109,7 @@
                 <attr name="templateCategory" stringvalue="groovy"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.grailsproject.templates.GrailsTemplates.createArtifactIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/Service.html"/>
             </file>
             <file name="TagLib.groovy">
@@ -118,7 +118,7 @@
                 <attr name="templateCategory" stringvalue="groovy"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.grailsproject.templates.GrailsTemplates.createArtifactIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/TagLib.html"/>
             </file>
             <file name="UnitTest.groovy">
@@ -127,7 +127,7 @@
                 <attr name="templateCategory" stringvalue="groovy"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.grailsproject.templates.GrailsTemplates.createArtifactIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/UnitTest.html"/>
             </file>
         </folder>

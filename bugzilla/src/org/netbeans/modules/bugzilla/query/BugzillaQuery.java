@@ -69,13 +69,15 @@ public class BugzillaQuery extends Query {
     private final BugzillaRepository repository;
     protected QueryController controller;
     private final Set<String> issues = new HashSet<String>();
-    private Set<String> obsoleteIssues = new HashSet<String>();
+    private Set<String> archivedIssues = new HashSet<String>();
 
     protected String urlParameters;
+    private boolean initialUrlDef;
+    
     private boolean firstRun = true;
 
     public BugzillaQuery(BugzillaRepository repository) {
-        this(null, repository, null, false, -1);
+        this(null, repository, null, false, -1, false);
     }
 
     protected BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean saved) {
@@ -83,19 +85,21 @@ public class BugzillaQuery extends Query {
         this.name = name;
         this.repository = repository;
         this.urlParameters = urlParameters;
+        this.initialUrlDef = false;
         this.saved = saved;
         // let the subclass create the controller
     }
 
-    public BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, long lastRefresh) {
-        this(name, repository, urlParameters, true, lastRefresh);
+    public BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, long lastRefresh, boolean urlDef) {
+        this(name, repository, urlParameters, true, lastRefresh, urlDef);
     }
 
-    private BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean saved, long lastRefresh) {
+    private BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean saved, long lastRefresh, boolean urlDef) {
         this.repository = repository;
         this.saved = saved;
         this.name = name;
         this.urlParameters = urlParameters;
+        this.initialUrlDef = urlDef;
         this.setLastRefresh(lastRefresh);
         controller = createControler(repository, this, urlParameters);
     }
@@ -124,7 +128,7 @@ public class BugzillaQuery extends Query {
     }
 
     protected QueryController createControler(BugzillaRepository r, BugzillaQuery q, String parameters) {
-        return new QueryController(r, q, parameters);
+        return new QueryController(r, q, parameters, initialUrlDef);
     }
 
     @Override
@@ -153,26 +157,19 @@ public class BugzillaQuery extends Query {
                     // - and the obsolete ones
                     Set<String> queryIssues = new HashSet<String>();
                     
+                    issues.clear();
+                    archivedIssues.clear();
                     if(isSaved()) {
-                        if(!wasRun()) {
-                            if(issues.size() != 0) {
+                        if(!wasRun() && issues.size() != 0) {
                                 Bugzilla.LOG.warning("query " + getDisplayName() + " supposed to be run for the first time yet already contains issues."); // NOI18N
                                 assert false;
-                            }
-                            // read the stored state if query wasn't run yet ...
-                            // we have to query them ...
-                            queryIssues.addAll(repository.getIssueCache().readQuery(BugzillaQuery.this.getDisplayName()));
-                            // ... and they might be rendered obsolete if not returned by the query
-                            obsoleteIssues.addAll(queryIssues);
-                        } else {
-                            // all previously queried issues are candidates to become obsolete
-                            obsoleteIssues.addAll(issues);
-                            queryIssues.addAll(obsoleteIssues);
                         }
-                        // ... and store all you got
-                        repository.getIssueCache().storeQuery(BugzillaQuery.this.getDisplayName(), queryIssues.toArray(new String[queryIssues.size()]));
+                        // read the stored state ...
+                        queryIssues.addAll(repository.getIssueCache().readQueryIssues(getStoredQueryName()));
+                        queryIssues.addAll(repository.getIssueCache().readArchivedQueryIssues(getStoredQueryName()));
+                        // ... and they might be rendered obsolete if not returned by the query
+                        archivedIssues.addAll(queryIssues);
                     }
-                    issues.clear();
                     firstRun = false;
 
                     // run query to know what matches the criteria
@@ -188,11 +185,16 @@ public class BugzillaQuery extends Query {
                     }
 
                     // only issues not returned by the query are obsolete
-                    obsoleteIssues.removeAll(issues);
+                    archivedIssues.removeAll(issues);
+                    if(isSaved()) {
+                        // ... and store all you got
+                        repository.getIssueCache().storeQueryIssues(getStoredQueryName(), issues.toArray(new String[issues.size()]));
+                        repository.getIssueCache().storeArchivedQueryIssues(getStoredQueryName(), archivedIssues.toArray(new String[archivedIssues.size()]));
+                    }
 
                     // now get the task data for
                     // - all issue returned by the query
-                    // - and issues which were returned by some previous run
+                    // - and issues which were returned by some previous run and are archived now
                     queryIssues.addAll(issues);
 
                     GetMultiTaskDataCommand dataCmd = new GetMultiTaskDataCommand(repository, queryIssues, new IssuesCollector());
@@ -205,6 +207,10 @@ public class BugzillaQuery extends Query {
             }
         });
         return ret[0];
+    }
+
+    protected String getStoredQueryName() {
+        return getDisplayName();
     }
 
     protected void logQueryEvent(int count, boolean autoRefresh) {
@@ -248,6 +254,10 @@ public class BugzillaQuery extends Query {
 
     public String getUrlParameters() {
         return getController().getUrlParameters();
+    }
+
+    public boolean isUrlDefined() {
+        return getController().isUrlDefined();
     }
 
     public void setName(String name) {

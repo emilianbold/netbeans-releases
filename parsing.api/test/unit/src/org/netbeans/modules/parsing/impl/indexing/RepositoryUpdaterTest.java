@@ -109,6 +109,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
+ * TODO:
+ * - test that modifying .zip/.jar triggeres rescan of this binary
  *
  * @author Tomas Zezula
  */
@@ -144,7 +146,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
     private URL[] embeddedFiles;
 
     private final BinIndexerFactory binIndexerFactory = new BinIndexerFactory();
-    private final BinIndexerFactory jarIndexerFactory = new BinIndexerFactory();
+// Binary indexer have to be registered for MimePath.EMPTY, no mime-type specific binary indexers
+//    private final BinIndexerFactory jarIndexerFactory = new BinIndexerFactory();
     private final FooIndexerFactory indexerFactory = new FooIndexerFactory();
     private final EmbIndexerFactory eindexerFactory = new EmbIndexerFactory();
 
@@ -154,6 +157,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+//        TopLogging.initializeQuietly();
         super.setUp();
         this.clearWorkDir();
         final File _wd = this.getWorkDir();
@@ -163,7 +167,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
         MockServices.setServices(FooPathRecognizer.class, EmbPathRecognizer.class, SFBQImpl.class, OpenProject.class);
         MockMimeLookup.setInstances(MimePath.EMPTY, binIndexerFactory);
-        MockMimeLookup.setInstances(MimePath.get(JARMIME), jarIndexerFactory);
+//        MockMimeLookup.setInstances(MimePath.get(JARMIME), jarIndexerFactory);
         MockMimeLookup.setInstances(MimePath.get(MIME), indexerFactory);
         MockMimeLookup.setInstances(MimePath.get(EMIME), eindexerFactory, new EmbParserFactory());
         Set<String> mt = new HashSet<String>();
@@ -464,6 +468,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
         file.setLastModified(System.currentTimeMillis());
         file = new File (embeddedFiles[1].toURI());
         file.delete();
+        srcRootWithFiles1.getFileSystem().refresh(true);
+        
         GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1});
         assertTrue (handler.await());
         assertEquals(0, handler.getBinaries().size());
@@ -482,15 +488,16 @@ public class RepositoryUpdaterTest extends NbTestCase {
         logger.addHandler(handler);
 
         binIndexerFactory.indexer.setExpectedRoots(bootRoot2.getURL(), bootRoot3.getURL());
-        jarIndexerFactory.indexer.setExpectedRoots(bootRoot3.getURL());
+//        jarIndexerFactory.indexer.setExpectedRoots(bootRoot3.getURL());
         ClassPath cp = ClassPathSupport.createClassPath(new FileObject[] {bootRoot2, bootRoot3});
         GlobalPathRegistry.getDefault().register(PLATFORM,new ClassPath[] {cp});
         assertTrue(handler.await());
         assertEquals(2, handler.getBinaries().size());
-        assertEquals(1, jarIndexerFactory.indexer.getCount());
+//        assertEquals(1, jarIndexerFactory.indexer.getCount());
         assertEquals(2, binIndexerFactory.indexer.getCount());
     }
 
+    @RandomlyFails
     public void testFileChanges() throws Exception {
         final TestHandler handler = new TestHandler();
         final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
@@ -586,6 +593,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(1, eindexerFactory.indexer.getDeletedCount());
     }
 
+    @RandomlyFails
     public void testFileRenamed() throws Exception {
         final TestHandler handler = new TestHandler();
         final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
@@ -625,6 +633,19 @@ public class RepositoryUpdaterTest extends NbTestCase {
         out.close();
     }
 
+    public void testFileListWork164622() throws FileStateInvalidException {
+        RepositoryUpdater.FileListWork flw1 = new RepositoryUpdater.FileListWork(srcRootWithFiles1.getURL(), false, false);
+        RepositoryUpdater.FileListWork flw2 = new RepositoryUpdater.FileListWork(srcRootWithFiles1.getURL(), false, false);
+        assertTrue("The flw2 job was not absorbed", flw1.absorb(flw2));
+
+        FileObject [] children = srcRootWithFiles1.getChildren();
+        assertTrue(children.length > 0);
+        RepositoryUpdater.FileListWork flw3 = new RepositoryUpdater.FileListWork(srcRootWithFiles1.getURL(), Collections.singleton(children[0]), false, false);
+        assertTrue("The flw3 job was not absorbed", flw1.absorb(flw3));
+
+        RepositoryUpdater.FileListWork flw4 = new RepositoryUpdater.FileListWork(srcRoot1.getURL(), false, false);
+        assertFalse("The flw4 job should not have been absorbed", flw1.absorb(flw4));
+    }
 
     public static class TestHandler extends Handler {
 
@@ -754,7 +775,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
     }        
     
 
-    private static class MutableClassPathImplementation implements ClassPathImplementation {
+    public static class MutableClassPathImplementation implements ClassPathImplementation {
 
         private final List<PathResourceImplementation> res;
         private final PropertyChangeSupport support;
@@ -764,19 +785,33 @@ public class RepositoryUpdaterTest extends NbTestCase {
             support = new PropertyChangeSupport (this);
         }
 
-        public void addResource (FileObject fo) throws IOException {
-            res.add(ClassPathSupport.createResource(fo.getURL()));
+        public void addResource (FileObject... fos) throws IOException {
+            synchronized (res) {
+                for(FileObject f : fos) {
+                    res.add(ClassPathSupport.createResource(f.getURL()));
+                }
+            }
             this.support.firePropertyChange(PROP_RESOURCES,null,null);
         }
 
-        public void removeResource (FileObject fo) throws IOException {
-            URL url = fo.getURL();
-            for (Iterator<PathResourceImplementation> it = res.iterator(); it.hasNext(); ) {
-                PathResourceImplementation r = it.next();
-                if (url.equals(r.getRoots()[0])) {
-                    it.remove();
-                    this.support.firePropertyChange(PROP_RESOURCES,null,null);
+        public void removeResource (FileObject... fos) throws IOException {
+            boolean fire = false;
+
+            synchronized (res) {
+                for(FileObject f : fos) {
+                    URL url = f.getURL();
+                    for (Iterator<PathResourceImplementation> it = res.iterator(); it.hasNext(); ) {
+                        PathResourceImplementation r = it.next();
+                        if (url.equals(r.getRoots()[0])) {
+                            it.remove();
+                            fire = true;
+                        }
+                    }
                 }
+            }
+
+            if (fire) {
+                this.support.firePropertyChange(PROP_RESOURCES, null, null);
             }
         }
 
@@ -788,8 +823,10 @@ public class RepositoryUpdaterTest extends NbTestCase {
             support.addPropertyChangeListener(listener);
         }
 
-        public List<PathResourceImplementation> getResources() {
-            return res;
+        public List<? extends PathResourceImplementation> getResources() {
+            synchronized (res) {
+                return new LinkedList<PathResourceImplementation>(res);
+            }
         }
 
     }
@@ -946,7 +983,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
             return new Project[0];
         }
 
-        public @Override void openAPI(Project[] projects, boolean openRequiredProjects) {
+        public @Override void openAPI(Project[] projects, boolean openRequiredProjects, boolean showProgress) {
 
         }
 

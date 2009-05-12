@@ -57,7 +57,9 @@ public class GeneralInformationPanel extends javax.swing.JPanel {
         initComponents();
         projectFolderTextField.setText(FileUtil.getFileDisplayName(helper.getProjectDirectory()));
         FileObject baseFolderFO = FileUtil.toFileObject(Util.getProjectLocation(helper, evaluator));
-        contentsFolderTextField.setText(FileUtil.getFileDisplayName(baseFolderFO));
+        if (baseFolderFO != null) {
+            contentsFolderTextField.setText(FileUtil.getFileDisplayName(baseFolderFO));
+        }
         FileObject antScriptFO = FreeformProjectGenerator.getAntScript(helper, evaluator);
         if (antScriptFO != null) {
             buildScriptTextField.setText(FileUtil.getFileDisplayName(antScriptFO));
@@ -80,6 +82,7 @@ public class GeneralInformationPanel extends javax.swing.JPanel {
         buildScriptTextField = new javax.swing.JTextField();
         contentsFolderTextField = new javax.swing.JTextField();
         projectFolderTextField = new javax.swing.JTextField();
+        jPanel1 = new javax.swing.JPanel();
 
         setPreferredSize(new java.awt.Dimension(600, 500));
         setLayout(new java.awt.GridBagLayout());
@@ -94,25 +97,24 @@ public class GeneralInformationPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
         add(projectFolderLabel, gridBagConstraints);
 
         contentsFolderLabel.setText(org.openide.util.NbBundle.getMessage(GeneralInformationPanel.class, "GeneralInformationPanel.contentsFolderLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(contentsFolderLabel, gridBagConstraints);
 
         buildScriptLabel.setText(org.openide.util.NbBundle.getMessage(GeneralInformationPanel.class, "GeneralInformationPanel.buildScriptLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(buildScriptLabel, gridBagConstraints);
 
         buildScriptTextField.setEditable(false);
@@ -120,9 +122,8 @@ public class GeneralInformationPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(buildScriptTextField, gridBagConstraints);
 
@@ -145,6 +146,14 @@ public class GeneralInformationPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(10, 6, 0, 0);
         add(projectFolderTextField, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(jPanel1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     
@@ -153,6 +162,7 @@ public class GeneralInformationPanel extends javax.swing.JPanel {
     private javax.swing.JTextField buildScriptTextField;
     private javax.swing.JLabel contentsFolderLabel;
     private javax.swing.JTextField contentsFolderTextField;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel panelLabel;
     private javax.swing.JLabel projectFolderLabel;
     private javax.swing.JTextField projectFolderTextField;

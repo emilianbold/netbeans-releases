@@ -36,12 +36,12 @@ Searchable Keys:
   method : report(output)
   method : report_html(output)
   method : report_li(dialog,marker,text)
-  method : report_text;;Array;
+  method : report_text
   method : save_dialog(name,actor)|DOCUMENTED|
   method : show_crumbs(key)
   method : show_message(crumb,tf)
   method : start_list(message)
-  method : step(message);;Array;
+  method : step(message)
   method : test_entry_posts(entry_collection)
   method : test_media_linkage(coll)
   method : test_media_posts(media_collection)

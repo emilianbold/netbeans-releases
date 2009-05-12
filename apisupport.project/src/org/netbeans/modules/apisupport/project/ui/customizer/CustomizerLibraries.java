@@ -48,6 +48,8 @@ import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -146,18 +148,20 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         });
     }
 
-    private DependencyListModel newModel;
-
+    private Logger LOG = Logger.getLogger(CustomizerLibraries.class.getName());
+    
     private void runDependenciesListModelRefresh() {
         dependencyList.setModel(CustomizerComponentFactory.createListWaitModel());
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 // generate fresh dependencies list
-                newModel = getProperties().getDependenciesListModel();
+                final DependencyListModel newModel = getProperties().getDependenciesListModel();
+                LOG.log(Level.FINER, "DependenciesListModel generated");
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
+                        LOG.log(Level.FINER, "DependenciesListModel invokeLater entered");
                         dependencyList.setModel(newModel);
-                        newModel = null;
+                        LOG.log(Level.FINER, "DependenciesListModel model set");
                         updateEnabled();
                     }
                 });
@@ -553,7 +557,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         ModuleDependency[] newDeps = AddModulePanel.selectDependencies(getProperties());
         for (int i = 0; i < newDeps.length; i++) {
             ModuleDependency dep = newDeps[i];
-            if ("0".equals(dep.getReleaseVersion())) { // #72216 NOI18N
+            if ("0".equals(dep.getReleaseVersion()) && !dep.hasImplementationDepedendency()) { // #72216 NOI18N
                 getDepListModel().addDependency(new ModuleDependency(
                             dep.getModuleEntry(), "0-1", dep.getSpecificationVersion(), // NOI18N
                             dep.hasCompileDependency(), dep.hasImplementationDepedendency()));

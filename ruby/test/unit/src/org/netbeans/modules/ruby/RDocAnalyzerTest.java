@@ -41,6 +41,7 @@ package org.netbeans.modules.ruby;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 public final class RDocAnalyzerTest extends RubyTestBase {
 
@@ -141,6 +142,48 @@ public final class RDocAnalyzerTest extends RubyTestBase {
      */
     public void testAllStubs() throws Exception {
         checkTypesForComments("testfiles/all_stubs.rb.comments");
+    }
+
+    public void testGetStandardNameVariants() {
+        String type = "my_type";
+        List<String> result = RDocAnalyzer.getStandardNameVariants(type);
+        assertEquals(9, result.size());
+        assertTrue(result.contains("a_my_type"));
+        assertTrue(result.contains("my_type"));
+        assertTrue(result.contains("MyType"));
+        assertTrue(result.contains("aMyType"));
+    }
+
+    public void testResolveType() {
+        String type = "aString";
+        assertEquals("String", RDocAnalyzer.resolveType(type));
+
+        type = "string";
+        assertEquals("String", RDocAnalyzer.resolveType(type));
+
+        type = "a_string";
+        assertEquals("String", RDocAnalyzer.resolveType(type));
+
+        type = "String";
+        assertEquals("String", RDocAnalyzer.resolveType(type));
+
+        type = "anIdObject";
+        assertEquals("IdObject", RDocAnalyzer.resolveType(type));
+
+        type = "an_id_object";
+        assertEquals("IdObject", RDocAnalyzer.resolveType(type));
+
+        type = "id_object";
+        assertEquals("IdObject", RDocAnalyzer.resolveType(type));
+
+        type = "77";
+        assertNull(RDocAnalyzer.resolveType(type));
+
+        type = "";
+        assertNull(RDocAnalyzer.resolveType(type));
+
+        type = "&)(";
+        assertNull(RDocAnalyzer.resolveType(type));
     }
 
 }

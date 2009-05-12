@@ -147,8 +147,13 @@ public final class CssModel {
                                 SimpleNode property = SimpleNodeUtil.getChildByType(declaration, CssParserTreeConstants.JJTPROPERTY);
                                 SimpleNode value = SimpleNodeUtil.getChildByType(declaration, CssParserTreeConstants.JJTEXPR);
 
+                                if(property == null || value == null) {
+                                    //likely a parse error, do not create the rule
+                                    return ;
+                                }
+
                                 int semicolonOffset = i < semicolons.size() ? semicolons.get(i) : -1; //there may not be the semicolon after last declaration
-                                int colonOffset = colons.get(i);
+                                int colonOffset = i < colons.size() ? colons.get(i) : -1; //missing colon in declaration
 
                                 CssRuleItem ruleItem = new CssRuleItem(property.image().trim(), property.startOffset(), value.image().trim(), value.startOffset(), colonOffset, semicolonOffset);
 

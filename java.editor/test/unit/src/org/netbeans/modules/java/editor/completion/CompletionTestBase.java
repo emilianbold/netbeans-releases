@@ -76,7 +76,6 @@ import org.netbeans.modules.editor.java.JavaCompletionProvider;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.JavaDataLoader;
-import org.netbeans.modules.java.source.classpath.GlobalSourcePathTestUtil;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.usages.BinaryAnalyser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
@@ -98,7 +97,6 @@ import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
 import org.openide.util.lookup.Lookups;
@@ -142,7 +140,8 @@ public class CompletionTestBase extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
-        GlobalSourcePathTestUtil.setUseLibraries (false);
+// this call did not do anything
+//        GlobalSourcePathTestUtil.setUseLibraries (false);
         XMLFileSystem system = new XMLFileSystem();
         system.setXmlUrls(new URL[] {
             JavaCompletionProviderBasicTest.class.getResource("/org/netbeans/modules/java/editor/resources/layer.xml"),

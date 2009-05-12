@@ -49,6 +49,7 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.ArrayList;
@@ -70,6 +71,7 @@ import javax.swing.UIManager;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.LoginAction;
 import org.netbeans.modules.kenai.ui.LoginHandleImpl;
+import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
 import org.netbeans.modules.kenai.ui.treelist.TreeList;
 import org.netbeans.modules.kenai.ui.treelist.TreeListModel;
 import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
@@ -90,7 +92,7 @@ public final class DashboardImpl extends Dashboard {
     private static final String PREF_ALL_PROJECTS = "allProjects"; //NOI18N
     private static final String PREF_COUNT = "count"; //NOI18N
     private static final String PREF_ID = "id"; //NOI18N
-    private static final String PREF_IGNORED_PROJECTS = "ignoredProjects";
+    private static final String PREF_IGNORED_PROJECTS = "ignoredProjects"; // NOI18N
     private LoginHandle login;
     private final TreeListModel model = new TreeListModel();
     private static final ListModel EMPTY_MODEL = new AbstractListModel() {
@@ -101,7 +103,7 @@ public final class DashboardImpl extends Dashboard {
             return null;
         }
     };
-    private RequestProcessor requestProcessor = new RequestProcessor("Kenai Dashboard");
+    private RequestProcessor requestProcessor = new RequestProcessor("Kenai Dashboard"); // NOI18N
     private final TreeList treeList = new TreeList(model);
     private final ArrayList<ProjectHandle> memberProjects = new ArrayList<ProjectHandle>(50);
     private final ArrayList<ProjectHandle> allProjects = new ArrayList<ProjectHandle>(50);
@@ -123,6 +125,8 @@ public final class DashboardImpl extends Dashboard {
     private final ErrorNode otherProjectsError;
 
     private final Object LOCK = new Object();
+
+    private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
 
     private DashboardImpl() {
         dashboardComponent = new JScrollPane();
@@ -183,6 +187,16 @@ public final class DashboardImpl extends Dashboard {
             }
         }
         return open;
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.addPropertyChangeListener(listener);
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.removePropertyChangeListener(listener);
     }
 
     private static class Holder {
@@ -268,6 +282,7 @@ public final class DashboardImpl extends Dashboard {
                 switchContent();
             }
         }
+        changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
     }
 
     public void removeProject( ProjectHandle project ) {
@@ -289,6 +304,7 @@ public final class DashboardImpl extends Dashboard {
             }
         }
         project.firePropertyChange(ProjectHandle.PROP_CLOSE, null, null);
+        changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
     }
 
     ActionListener createLoginAction() {
@@ -318,6 +334,7 @@ public final class DashboardImpl extends Dashboard {
     }
 
     void refreshProjects() {
+        changeSupport.firePropertyChange(PROP_REFRESH_REQUEST, null, null);
         synchronized( LOCK ) {
             memberProjects.clear();
             memberProjectsLoaded = false;
@@ -358,7 +375,7 @@ public final class DashboardImpl extends Dashboard {
 
             requestProcessor.post(new Runnable() {
                 public void run() {
-                    UIUtils.tryLogin();
+                    UIUtils.waitStartupFinished();
                     if (null != login && !memberProjectsLoaded) {
                         startLoadingMemberProjects(false);
                     }
@@ -424,7 +441,7 @@ public final class DashboardImpl extends Dashboard {
         JPanel res = new JPanel( new GridBagLayout() );
         res.setOpaque(false);
 
-        JLabel lbl = new JLabel(NbBundle.getMessage(DashboardImpl.class, "LBL_No_Kenai_Project_Open")); //NOI18N
+        JLabel lbl = new TreeLabel(NbBundle.getMessage(DashboardImpl.class, "LBL_No_Kenai_Project_Open")); //NOI18N
         lbl.setForeground(ColorManager.getDefault().getDisabledColor());
         lbl.setHorizontalAlignment(JLabel.CENTER);
         LinkButton btnWhatIs = new LinkButton(NbBundle.getMessage(DashboardImpl.class, "LBL_WhatIsKenai"), createWhatIsKenaiAction() ); //NOI18N
@@ -486,11 +503,15 @@ public final class DashboardImpl extends Dashboard {
 
     private void storeAllProjects() {
         Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node(PREF_ALL_PROJECTS); //NOI18N
-        prefs.putInt(PREF_COUNT, allProjects.size()); //NOI18N
         int index = 0;
         for( ProjectHandle project : allProjects ) {
-            prefs.put(PREF_ID+index++, project.getId()); //NOI18N
+            //do not store private projects
+            if (!project.isPrivate()) {
+                prefs.put(PREF_ID+index++, project.getId()); //NOI18N
+            }
         }
+        //store size
+        prefs.putInt(PREF_COUNT, index); //NOI18N
     }
 
     private void setOtherProjects(ArrayList<ProjectHandle> projects) {
@@ -514,6 +535,7 @@ public final class DashboardImpl extends Dashboard {
                 switchContent();
             }
         }
+        changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
     }
 
     private void switchMemberProjects() {
@@ -573,6 +595,7 @@ public final class DashboardImpl extends Dashboard {
                 switchContent();
             }
         }
+        changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
     }
 
     private void addProjectsToModel( int index, List<ProjectHandle> projects ) {

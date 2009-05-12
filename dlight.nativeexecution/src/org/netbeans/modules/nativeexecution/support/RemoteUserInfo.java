@@ -50,7 +50,7 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 
-final class RemoteUserInfo implements UserInfo {
+final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
 
     private final static PasswordManager pm = PasswordManager.getInstance();
     private final ExecutionEnvironment env;
@@ -83,11 +83,23 @@ final class RemoteUserInfo implements UserInfo {
     public void showMessage(String message) {
     }
 
+    public String[] promptKeyboardInteractive(String destination,
+            String name,
+            String instruction,
+            String[] prompt,
+            boolean[] echo) {
+        if (prompt.length == 1 && !echo[0]) {
+            // this is a password request
+            return new String[]{new String(pm.get(env))};
+        } else {
+            return null;
+        }
+    }
+
     static final class Interractive implements UserInfo, UIKeyboardInteractive {
 
         private final static Object lock = new String(RemoteUserInfo.Interractive.class.getName());
         private final static PasswordManager pm = PasswordManager.getInstance();
-
         private final Component parent;
         private final ExecutionEnvironment env;
         private volatile boolean cancelled = false;
@@ -124,7 +136,7 @@ final class RemoteUserInfo implements UserInfo {
                 PasswordDlg pwdDlg = new PasswordDlg();
 
                 synchronized (lock) {
-                    result = pwdDlg.askPassword(env.toString());
+                    result = pwdDlg.askPassword(env);
                 }
 
                 if (result) {
@@ -172,7 +184,7 @@ final class RemoteUserInfo implements UserInfo {
                 boolean[] echo) {
 
             if (prompt.length == 1 && !echo[0]) {
-                // this is password request
+                // this is a password request
                 if (!promptPassword(loc("MSG_PasswordInteractive", // NOI18N
                         destination, prompt[0]))) {
                     return null;

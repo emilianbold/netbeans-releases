@@ -54,7 +54,7 @@ import org.netbeans.junit.NbPerformanceTest;
 import org.netbeans.junit.NbPerformanceTest.PerformanceData;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.usages.IndexUtil;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
@@ -101,7 +101,7 @@ public class RefPerfTestCase extends NbTestCase implements NbPerformanceTest {
         cache.mkdirs();
         IndexUtil.setCacheFolder(cache);
 
-        RepositoryUpdater.getDefault();
+        IndexingManager.getDefault();
 
         String work = getWorkDirPath();
         //String zipPath = work + "/../../../../../../../../../nbextra/qa/projectized/jEdit41.zip";
@@ -138,7 +138,7 @@ public class RefPerfTestCase extends NbTestCase implements NbPerformanceTest {
                 Lookups.metaInfServices(l),
                 Lookups.singleton(l));
 
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(fo, fo).await();
+        IndexingManager.getDefault().refreshIndexAndWait(fo.getURL(), null);
     }
 
     /**

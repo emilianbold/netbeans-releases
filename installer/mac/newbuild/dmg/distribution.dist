@@ -110,11 +110,12 @@ function checkChoiceUpgradeAction() {
         <line choice="netbeans">
             <line choice="baseide"></line>
             <line choice="javase"></line>
-            <line choice="webcommon"></line>
             <line choice="javaee"></line>
             <line choice="cpp"></line>
             <line choice="ruby"></line>
+            <line choice="groovy"></line>
             <line choice="php"></line>
+            <line choice="webcommon"></line>
             <line choice="ergonomics"></line>
         </line>
         <line choice="glassfish"></line>
@@ -153,6 +154,9 @@ function checkChoiceUpgradeAction() {
     <choice id="ruby" title="ruby-title" description="ruby-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.ruby.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.ruby"></pkg-ref>
     </choice>
+    <choice id="groovy" title="groovy-title" description="groovy-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.groovy.selected &amp;&amp; choices.javase.selected" enabled="choices.javase.selected">
+        <pkg-ref id="ident.pkg.groovy"></pkg-ref>
+    </choice>
     <choice id="php" title="php-title" description="php-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.php.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.php"></pkg-ref>
     </choice>
@@ -170,6 +174,7 @@ function checkChoiceUpgradeAction() {
     <pkg-ref id="ident.pkg.javaee" version="0.0.0.0.1" installKBytes="@SIZE_JAVAEE@" auth="Root" onConclusion="None">file:./Contents/Packages/javaee.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.cpp" version="0.0.0.0.1" installKBytes="@SIZE_CPP@" auth="Root" onConclusion="None">file:./Contents/Packages/cpp.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.ruby" version="0.0.0.0.1" installKBytes="@SIZE_RUBY@" auth="Root" onConclusion="None">file:./Contents/Packages/ruby.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.groovy" version="0.0.0.0.1" installKBytes="@SIZE_GROOVY@" auth="Root" onConclusion="None">file:./Contents/Packages/groovy.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.php" version="0.0.0.0.1" installKBytes="@SIZE_PHP@" auth="Root" onConclusion="None">file:./Contents/Packages/php.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.ergonomics" version="0.0.0.0.1" installKBytes="@SIZE_ERGONOMICS@" auth="Root" onConclusion="None">file:./Contents/Packages/ergonomics.pkg</pkg-ref>
 </installer-gui-script>

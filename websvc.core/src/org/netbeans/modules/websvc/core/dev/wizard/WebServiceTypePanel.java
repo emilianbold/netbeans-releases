@@ -55,11 +55,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
-import org.netbeans.modules.websvc.core.ServerType;
 import org.netbeans.modules.websvc.core.WSStackUtils;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.DialogDescriptor;
@@ -85,10 +82,8 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
     
     private boolean jsr109Supported;
     private boolean jsr109oldSupported;
-    //private boolean jwsdpSupported;
-    private boolean jaxWsInJ2ee14Supported;
-    private boolean noMetroInstalledOnGlassFishV3;
     private boolean isWebModule;
+    WSStackUtils stackUtils;
     
     /** Creates new form WebServiceTypePanel */
     public WebServiceTypePanel(Project project) {
@@ -96,11 +91,9 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         
         initComponents();
         
-        WSStackUtils stackUtils = new WSStackUtils(project);
+        stackUtils = new WSStackUtils(project);
         jsr109Supported = stackUtils.isJsr109Supported();
         jsr109oldSupported = stackUtils.isJsr109OldSupported();
-        jaxWsInJ2ee14Supported = (ServerType.JBOSS == stackUtils.getServerType());
-        noMetroInstalledOnGlassFishV3 = !stackUtils.isWsitSupported() && ServerType.GLASSFISH_V3 == stackUtils.getServerType();
         
         //convert Java class not implemented for 5.5 release, disable components
         jRadioButtonConvert.setEnabled(false);
@@ -117,10 +110,9 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         if (j2eeModuleProvider != null) {
             isWebModule = J2eeModule.WAR.equals(j2eeModuleProvider.getJ2eeModule().getModuleType());
         }
-                if ((j2eeModuleProvider == null)
-        ||  //disable encapsulate session beans for Tomcat
-                ((!jsr109Supported && !jsr109oldSupported ||
-                (!jsr109Supported && jsr109oldSupported/* && jwsdpSupported*/ ))) ) {
+                if ( (j2eeModuleProvider == null) ||
+                //disable encapsulate session beans for Tomcat
+                (!jsr109Supported && !jsr109oldSupported) ) {
             disableDelegateToEJB();
         }
         
@@ -290,48 +282,23 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
     }
     
     boolean valid(WizardDescriptor wizardDescriptor) {
-        //first check for JDK compliance (for non-JSR 109)
-        if(!checkNonJsr109Valid(wizardDescriptor)){
-            return false;
-        }
-        boolean noJsr109InWeb = isWebModule && !jsr109Supported && !jsr109oldSupported;
-        boolean jaxWsInWeb14 = isWebModule && jaxWsInJ2ee14Supported;
-        if (!Util.isJavaEE5orHigher(project) && !noJsr109InWeb && !jaxWsInWeb14 && WebServicesSupport.getWebServicesSupport(project.getProjectDirectory()) == null) {
-            // check if jaxrpc plugin installed
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_NoJaxrpcPluginFound")); // NOI18N
-            return false;
-        }
         
         if (getServiceType() == WizardProperties.ENCAPSULATE_SESSION_BEAN &&
             jTextFieldDelegate.getText().length() == 0) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, NbBundle.getMessage(WebServiceTypePanel.class, "LBL_SelectOneEJB")); //NOI18N
             return false;        
         }
-        if (noMetroInstalledOnGlassFishV3) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, NbBundle.getMessage(WebServiceTypePanel.class, "LBL_NoMetroInstalled")); //NOI18N            
-        } else {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
-        }
-        
-        return true;
-    }
-    
-    /**
-     * If the project the web service is being created is not on a JSR 109 platform,
-     * its Java source level must be at least 1.5
-     */
-    private boolean checkNonJsr109Valid(WizardDescriptor wizardDescriptor){
-        if( (!jsr109Supported && !jsr109oldSupported) || jaxWsInJ2ee14Supported || 
-                (!jsr109Supported && jsr109oldSupported/* && jwsdpSupported */)){
-            if (Util.isSourceLevel14orLower(project)) {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                        NbBundle.getMessage(WebServiceTypePanel.class, "ERR_NeedProperSourceLevel")); // NOI18N
+
+        WSStackUtils.ErrorMessage message = stackUtils.getErrorMessage(WSStackUtils.WizardType.WS);
+        if (message != null) {
+            wizardDescriptor.putProperty(message.getWizardMessageProperty(), message.getText());
+            if (message.isSerious()) {
                 return false;
             }
         }
+
         return true;
-    }
-    
+    }  
     
     void store(WizardDescriptor d) {
         d.putProperty(WizardProperties.WEB_SERVICE_TYPE, Integer.valueOf(getServiceType()));

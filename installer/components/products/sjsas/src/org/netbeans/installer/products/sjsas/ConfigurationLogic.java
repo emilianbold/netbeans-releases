@@ -564,7 +564,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         shortcut.setRelativePath(getString(AS_RELATIVE_SHORTCUT_LOCATION));
         return shortcut;
     }
-    
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final String WIZARD_COMPONENTS_URI =

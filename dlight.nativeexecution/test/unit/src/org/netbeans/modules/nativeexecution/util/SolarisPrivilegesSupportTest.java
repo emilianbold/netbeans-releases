@@ -38,37 +38,46 @@
  */
 package org.netbeans.modules.nativeexecution.util;
 
-import org.junit.After;
+import java.io.IOException;
+import java.security.acl.NotOwnerException;
+import java.util.Arrays;
+import java.util.concurrent.CancellationException;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.modules.nativeexecution.NativeExecutionTest;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupport;
+import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupportProvider;
 
 /**
  *
  * @author ak119685
  */
-public class SolarisPrivilegesSupportTest {
+public class SolarisPrivilegesSupportTest extends NativeExecutionTest {
 
-    public SolarisPrivilegesSupportTest() {
+    public SolarisPrivilegesSupportTest(String name) {
+        super(name);
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        String dirs = System.getProperty("netbeans.dirs", ""); // NOI18N
-        System.setProperty("netbeans.dirs", "/export/home/ak119685/netbeans-src/main/dlight.suite/build/cluster:" + dirs); // NOI18N
     }
 
     @AfterClass
     public static void tearDownClass() throws Exception {
     }
 
-    @Before
-    public void setUp() {
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
     }
 
-    @After
-    public void tearDown() {
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
     }
 
     /**
@@ -76,5 +85,21 @@ public class SolarisPrivilegesSupportTest {
      */
     @Test
     public void test() {
+        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew(System.getProperty("user.name"), "blackbox.russia.sun.com"); // NOI18N
+        try {
+            ConnectionManager.getInstance().connectTo(execEnv);
+            SolarisPrivilegesSupport sps = SolarisPrivilegesSupportProvider.getSupportFor(execEnv);
+            System.out.println(sps.getExecutionPrivileges());
+            try {
+                sps.requestPrivileges(Arrays.asList("dtrace_kernel"), true); // NOI18N
+            } catch (NotOwnerException ex) {
+                System.out.println(ex);
+            }
+            System.out.println(sps.getExecutionPrivileges());
+        } catch (IOException ex) {
+            System.out.println(ex);
+        } catch (CancellationException ex) {
+            System.out.println(ex);
+        }
     }
 }

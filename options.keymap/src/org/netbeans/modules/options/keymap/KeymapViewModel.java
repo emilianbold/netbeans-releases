@@ -476,7 +476,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
     void addShortcut (ShortcutAction action, String shortcut) {
         // delete old shortcut
         ShortcutAction act = findActionForShortcut (shortcut);
-        if (act != null) {
+        if (act != null && act != action) {
             removeShortcut (act, shortcut);
             this.fireTableDataChanged();
             update();

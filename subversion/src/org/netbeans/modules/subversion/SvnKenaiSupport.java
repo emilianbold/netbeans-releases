@@ -40,8 +40,6 @@
 package org.netbeans.modules.subversion;
 
 import java.net.PasswordAuthentication;
-import java.util.HashSet;
-import java.util.Set;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport;
 import org.openide.util.Lookup;
 
@@ -53,7 +51,6 @@ public class SvnKenaiSupport {
 
     private static SvnKenaiSupport instance;
     private VCSKenaiSupport kenaiSupport = null;
-    private Set<String> queriedUrls = new HashSet<String>(5);
 
     private SvnKenaiSupport() {
         kenaiSupport = Lookup.getDefault().lookup(VCSKenaiSupport.class);
@@ -70,17 +67,16 @@ public class SvnKenaiSupport {
         return kenaiSupport != null && kenaiSupport.isKenai(url);
     }
 
-    public PasswordAuthentication getPasswordAuthentication(String url, boolean forceRelogin) {
-        if(forceRelogin && queriedUrls.contains(url)) {
-            // we already queried the authentication for this url, but it didn't
-            // seem to be accepted -> force a new login, the current user
-            // might not be authorized for the given kenai project (url).
-            if(!kenaiSupport.showLogin()) {
-                return null;
-            }
-        }
-        queriedUrls.add(url);
-        return kenaiSupport.getPasswordAuthentication();
+    public PasswordAuthentication getPasswordAuthentication(boolean forceRelogin) {
+        return kenaiSupport.getPasswordAuthentication(forceRelogin);
     }
+
+    /**
+     * Shows a login dialog
+     * @return true if successfully logged in
+     */
+    public boolean showLogin () {
+        return kenaiSupport.showLogin();
+}
 
 }

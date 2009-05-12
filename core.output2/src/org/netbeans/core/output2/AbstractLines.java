@@ -86,6 +86,8 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     private SparseIntList knownLogicalLineCounts = null;
     private IntList errLines = null;
 
+    /** last storage size (after dispose), in bytes */
+    private int lastStorageSize;
 
     AbstractLines() {
         if (Controller.LOG) Controller.log ("Creating a new AbstractLines");
@@ -98,45 +100,33 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
 
     protected abstract void handleException (Exception e);
 
-    public char[] getText (int start, int end, char[] chars) {
-        if (isDisposed()) {
-             //There is a breif window of opportunity for a window to display
-             //a disposed document.  Should never appear on screen, but it can
-             //be requested to calculate the preferred size this will
-             //make sure it's noticable if it does.
-             if (Controller.LOG) {
-                 Controller.log (this + "  !!!!!REQUEST FOR SUBRANGE " + start + "-" + end + " AFTER OUTWRITER HAS BEEN DISPOSED!!");
-
-             }
-             char[] msg = "THIS OUTPUT HAS BEEN DISPOSED! ".toCharArray();
-             if (chars == null) {
-                 chars = new char[end - start];
-             }
-             int pos = 0;
-             for (int i=0; i < chars.length; i++) {
-                 if (pos == msg.length - 1) {
-                     pos = 0;
-                 }
-                 chars[i] = msg[pos];
-                 pos++;
-             }
-             return chars;
+    public char[] getText(int start, int end, char[] chars) {
+        if (chars == null) {
+            chars = new char[end - start];
         }
-        if (end < start) {
-            throw new IllegalArgumentException ("Illogical text range from " +
-                start + " to " + end);
+        if (end < start || start < 0) {
+            throw new IllegalArgumentException ("Illogical text range from " + start + " to " + end);
+        }
+        if (end - start > chars.length) {
+            throw new IllegalArgumentException("Array size is too small");
         }
         synchronized(readLock()) {
-            int fileStart = AbstractLines.toByteIndex(start);
-            int byteCount = AbstractLines.toByteIndex(end - start);
+            if (isDisposed()) {
+                // dispose is performed asynchronously, data may be required by
+                // events fired before (during) dispose(), return just zeros
+                // (output will be cleared soon anyway)
+                for (int i = 0; i < end - start; i++) {
+                    chars[i] = 0;
+                }
+                return chars;
+            }
+            int fileStart = toByteIndex(start);
+            int byteCount = toByteIndex(end - start);
             try {
                 CharBuffer chb = getStorage().getReadBuffer(fileStart, byteCount).asCharBuffer();
                 //#68386 satisfy the request as much as possible, but if there's not enough remaining
                 // content, not much we can do..
                 int len = Math.min(end - start, chb.remaining());
-                if (chars.length < len) {
-                    chars = new char[len];
-                }
                 chb.get(chars, 0, len);
                 return chars;
             } catch (Exception e) {
@@ -147,14 +137,16 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     }
 
     public String getText (int start, int end) {
-        if (isDisposed()) {
-            return new String (new char[end - start]);
-        }
-        if (end < start) {
-            throw new IllegalArgumentException ("Illogical text range from " +
-                start + " to " + end);
+        if (end < start || start < 0) {
+            throw new IllegalArgumentException ("Illogical text range from " + start + " to " + end);
         }
         synchronized(readLock()) {
+            if (isDisposed()) {
+                // dispose is performed asynchronously, data may be required by
+                // events fired before (during) dispose(), return just zeros
+                // (output will be cleared soon anyway)
+                return new String(new char[end - start]);
+            }
             int fileStart = AbstractLines.toByteIndex(start);
             int byteCount = AbstractLines.toByteIndex(end - start);
             int available = getStorage().size();
@@ -172,9 +164,23 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         }
     }
 
+    void onDispose(int lastStorageSize) {
+        this.lastStorageSize = lastStorageSize;
+    }
+
+    int getByteSize() {
+        synchronized (readLock()) {
+            if (lastStorageSize > 0) {
+                return lastStorageSize;
+            }
+            Storage storage = getStorage();
+            return storage == null ? 0 : storage.size();
+        }
+    }
+
     private int lastErrLineMarked = -1;
     void markErr() {
-        if (getStorage().isClosed()) {
+        if (isDisposed() || getStorage().isClosed()) {
             return;
         }
         if (errLines == null) {
@@ -289,53 +295,34 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         return linesToListeners.getKeys();
     }
 
-    void clear() {
-        init();
-    }
-
     public int getCharCount() {
-        if (isDisposed()) {
-            return 0;
-        }
-        Storage storage = getStorage();
-        return storage == null ? 0 : AbstractLines.toCharIndex(storage.size());
+        return AbstractLines.toCharIndex(getByteSize());
     }
 
     /**
      * Get a single getLine as a string.
      */
     public String getLine (int idx) throws IOException {
-        if (isDisposed()) {
-            return ""; //NOI18N
-        }
-        int lineStart = getByteLineStart(idx);
-        int lineEnd = idx < lineStartList.size() - 1 ? lineStartList.get(idx + 1) : getStorage().size();
-        CharBuffer cb = getStorage().getReadBuffer(lineStart,
-            lineEnd - lineStart).asCharBuffer();
-
-        char chars[] = new char[cb.limit()];
-        cb.get (chars);
-        return new String (chars);
+        int lineStart = getCharLineStart(idx);
+        int lineEnd = toCharIndex(idx < lineStartList.size() - 1 ? lineStartList.get(idx + 1) : getByteSize());
+        return getText(lineStart, lineEnd);
     }
 
     /**
      * Get a length of single line in bytes.
      */
     private int getByteLineLength(int idx) {
-        if (isDisposed()) {
-            return 0;
-        }
         if (idx == lineStartList.size()-1) {
             return Math.max(0, toByteIndex(lastLineLength));
         }
         int lineStart = getByteLineStart(idx);
-        int lineEnd = idx < lineStartList.size() - 1 ? lineStartList.get(idx + 1) - 2 : getStorage().size();
+        int lineEnd = idx < lineStartList.size() - 1 ? lineStartList.get(idx + 1) - 2 : getByteSize();
         return lineEnd - lineStart;
     }
 
     public boolean isLineStart (int chpos) {
         int bpos = toByteIndex(chpos);
-        return lineStartList.contains (bpos) || bpos == 0 || (bpos == getStorage().size() && lastLineFinished);
+        return lineStartList.contains (bpos) || bpos == 0 || (bpos == getByteSize() && lastLineFinished);
     }
 
     /**
@@ -353,15 +340,12 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
      * the output file.
      */
     public int getLineStart (int line) {
-        if (isDisposed()) {
-            return 0;
-        }
         return getCharLineStart(line);
     }
 
     private int getByteLineStart(int line) {
         if (line == lineStartList.size() && lastLineFinished) {
-            return getStorage().size();
+            return getByteSize();
         }
         return lineStartList.get(line);
     }
@@ -374,20 +358,14 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
      * file (as distinct from a byte position)
      */
     public int getLineAt (int position) {
-        if (isDisposed()) {
-            return -1;
-        }
         int bytePos = toByteIndex (position);
-        if (bytePos >= getStorage().size()) {
+        if (bytePos >= getByteSize()) {
             return getLineCount() - 1;
         }
         return lineStartList.findNearest(bytePos);
     }
 
     public int getLineCount() {
-        if (isDisposed()) {
-            return 0;
-        }
         return lineStartList.size();
     }
 
@@ -638,11 +616,12 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     }
 
     public void saveAs(String path) throws IOException {
-        if (getStorage()== null) {
+        Storage storage = getStorage();
+        if (storage == null) {
             throw new IOException ("Data has already been disposed"); //NOI18N
         }
         File f = new File (path);
-        CharBuffer cb = getStorage().getReadBuffer(0, getStorage().size()).asCharBuffer();
+        CharBuffer cb = storage.getReadBuffer(0, storage.size()).asCharBuffer();
 
         FileOutputStream fos = new FileOutputStream (f);
         try {
@@ -688,7 +667,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
 
         Color hyperlinkImp = UIManager.getColor("nb.output.link.foreground.important"); //NOI18N
         if (hyperlinkImp == null) {
-            hyperlinkImp = Color.RED;
+            hyperlinkImp = err;
         }
 
         DEF_COLORS = new Color[]{out, err, hyperlink, hyperlinkImp};
@@ -728,9 +707,9 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     private static final int MAX_FIND_SIZE = 16*1024;
     private Pattern pattern;
 
-   private boolean regExpChanged(String pattern, boolean matchCase) {
-       return this.pattern != null && (!this.pattern.toString().equals(pattern) || (this.pattern.flags() == Pattern.CASE_INSENSITIVE) == matchCase);
-   }
+    private boolean regExpChanged(String pattern, boolean matchCase) {
+        return this.pattern != null && (!this.pattern.toString().equals(pattern) || (this.pattern.flags() == Pattern.CASE_INSENSITIVE) == matchCase);
+    }
 
     public int[] find(int start, String pattern, boolean regExp, boolean matchCase) {
         Storage storage = getStorage();

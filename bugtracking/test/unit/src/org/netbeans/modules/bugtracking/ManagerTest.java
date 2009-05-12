@@ -72,7 +72,7 @@ public class ManagerTest extends NbTestCase {
     public void testGetRepositories() {
         BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
         assertNotNull(connectors);
-        assertTrue(connectors.length == 2);
+        assertTrue(connectors.length == 1);
         Set<String> repos = new HashSet<String>();
         for (BugtrackingConnector c : connectors) {
             repos.add(c.getDisplayName());

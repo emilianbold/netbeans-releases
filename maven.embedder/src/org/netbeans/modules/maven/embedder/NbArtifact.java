@@ -118,6 +118,7 @@ public class NbArtifact implements Artifact {
     }
     
     public File getFile() {
+        /** #163919 **/
         if ("pom".equals(getType()) && isResolved()) {
             if (original.getFile() != null && !original.getFile().exists()) {
                 File orig = NbArtifact.getCachedPom(getId());

@@ -41,9 +41,10 @@
 
 package org.openide.util.lookup;
 
-import org.openide.util.*;
-
 import java.util.concurrent.Executor;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 public class AbstractLookupExecutorTest extends AbstractLookupBaseHid 
 implements AbstractLookupBaseHid.Impl, Executor, LookupListener {

@@ -44,7 +44,10 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
@@ -97,8 +100,9 @@ public class SvnHookImpl extends SvnHook {
         File file = context.getFiles()[0];
         LOG.log(Level.FINE, "svn beforeCommit start for " + file);                // NOI18N
 
-        if(panel.addIssueCheckBox1.isSelected()) {
-            String msg = context.getMessage();
+        String msg = context.getMessage();
+        if(panel.addIssueCheckBox.isSelected()) {
+            
 
             final Format format = VCSHooksConfig.getInstance().getSvnIssueFormat();
             String formatString = format.getFormat();
@@ -117,15 +121,16 @@ public class SvnHookImpl extends SvnHook {
 
             LOG.log(Level.FINER, " svn commit hook issue info '" + issueInfo + "'");     // NOI18N
             if(format.isAbove()) {
-                msg = issueInfo + "\n" + msg;
+                msg = issueInfo + "\n" + msg;                                   // NOI18N
             } else {
-                msg = msg + "\n" + issueInfo;
+                msg = msg + "\n" + issueInfo;                                   // NOI18N
             }
-
-            context = new SvnHookContext(context.getFiles(), msg, context.getLogEntries());
-            return context;
         }
-        return null;
+        List<LogEntry> logEntries = null;
+        if(panel.addRevisionCheckBox.isSelected()) {
+            logEntries = new ArrayList<LogEntry>();
+        }
+        return new SvnHookContext(context.getFiles(), msg, logEntries);
     }
 
     @Override
@@ -153,12 +158,13 @@ public class SvnHookImpl extends SvnHook {
         }
         
         String msg = context.getMessage();
-        if(!panel.addCommentCheckBox.isSelected() || msg == null || msg.trim().equals("")) {
+        if(!panel.addCommentCheckBox.isSelected() || msg == null || msg.trim().equals("")) { // NOI18N
             msg = null;
         }
         if(panel.addRevisionCheckBox.isSelected()) {
-            LogEntry[] entries = context.getLogEntries();
-            LogEntry logEntry = entries[0]; 
+            List<LogEntry> entries = context.getLogEntries();
+            assert entries.size() > 0;
+            LogEntry logEntry = entries.get(0);
 
             String author = logEntry.getAuthor();
             String revisions = getRevisions(entries);
@@ -221,12 +227,13 @@ public class SvnHookImpl extends SvnHook {
         return name;
     }
 
-    private String getRevisions(LogEntry[] entries) {
+    private String getRevisions(List<LogEntry> entries) {
         StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < entries.length; i++) {
-            LogEntry logEntry = entries[i];
+        Iterator<LogEntry> it = entries.iterator();
+        while(it.hasNext()) {
+            LogEntry logEntry = it.next();
             sb.append(logEntry.getRevision());
-            if(i < entries.length -1) sb.append(", ");                          // NOI18N
+            if(it.hasNext()) sb.append(", ");                                   // NOI18N
         }
         return sb.toString();
     }

@@ -5,30 +5,46 @@
 -->
 <html>
     <head><meta http-equiv="content-type" content="text/html; charset=UTF-8">
-        <title>Create Issue Tracker</title>
+        <title>Issue Tracking: Create Issue Tracker Dialog Box</title>
         <link rel="StyleSheet" href="../../ide.css" type="text/css">
     </head>
     
     <body>
-        <h2>Create Issue Tracker</h2>
+        <h2>Issue Tracking: Create Issue Tracker Dialog Box</h2>
         
         <p><small><a href="#seealso">See Also</a></small></p>
-        
+        <p>The Create Issue Tracker dialog box enables you to specify the connection
+        details for an issue tracker.
+        After you create a tracker, a node for the tracker appears under the
+        Issue Tracker node in the Services window and you can view, submit and resolve issues
+        in the IDE.
+        </p>
+
+
+        <p>To create an issue tracker, specify the following properties.</p>
     <ul>
-        <li><strong>Connector.</strong> The type of issue tracker from the drop down list.</li>
+        <li><strong>Connector.</strong> Select the type of issue tracker from the drop down list.</li>
         <li><strong>Name.</strong> The name of the tracker as it will be displayed in the IDE under the
-    Issue Tracking node in the Services window.
-    The name will also be listed in the drop down menu when you open the Find Issues tab from
-    the Services window.</li>
-        <li><strong>Issue Tracker URL.</strong></li>
-        <li><strong>Username.</strong></li>
-        <li><strong>Password.</strong></li>
-        <li><strong>Use HTTP Authentication.</strong></li>
+            Issue Tracking node in the Services window.
+            The name will also be listed in the drop down menu when you open the Find Issues tab from
+            the Services window.</li>
+        <li><strong>Issue Tracker URL.</strong> Specify the URL for the tracker.</li>
+        <li><strong>Username.</strong> Specify the username that is registered with the issue tracker.</li>
+        <li><strong>Password.</strong> Specify the username that is registered with the issue tracker.</li>
+        <li><strong>Use HTTP Authentication.</strong> Select if the issue tracker requires authentication.
+            If selected, you need to specify the username and password.
+            Click Validate to connect to the tracker and check that the authentication details are correct.</li>
     </ul>
 
+        <ul class="notes">
+            <li>Your username and password must be registered with the issue tracker to add the tracker.</li>
+        </ul>
 
            
-        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../issues_working.html">Working With Issues</a></dd>
+        </dl>
         
         <hr>
         <small><a href="../../credits.html">Legal Notices</a></small>

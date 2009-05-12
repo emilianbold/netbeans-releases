@@ -541,7 +541,7 @@ public class ProfilesModelHelper {
                 stmh.setTokenType(bt, ComboConstants.TRANSPORT, ComboConstants.HTTPS);
                 spmh.setLayout(bt, ComboConstants.LAX);
                 spmh.enableIncludeTimestamp(bt, true);
-                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128);
+                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128SHA256);
                 spmh.enableWss(c, false);
                 spmh.disableTrust(c);
                 SecurityTokensModelHelper.removeSupportingTokens(c);
@@ -550,7 +550,7 @@ public class ProfilesModelHelper {
                 stmh.setTokenType(bt, ComboConstants.TRANSPORT, ComboConstants.HTTPS);
                 spmh.setLayout(bt, ComboConstants.LAX);
                 spmh.enableIncludeTimestamp(bt, true);
-                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128);
+                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128SHA256);
                 WssElement wss = spmh.enableWss(c, false);
                 spmh.disableTrust(c);
 //                spmh.enableMustSupportRefKeyIdentifier(wss, true);
@@ -561,7 +561,7 @@ public class ProfilesModelHelper {
                 stmh.setTokenType(bt, ComboConstants.TRANSPORT, ComboConstants.HTTPS);
                 spmh.setLayout(bt, ComboConstants.LAX);
                 spmh.enableIncludeTimestamp(bt, true);
-                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128);
+                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128SHA256);
                 WssElement wss = spmh.enableWss(c, false);
                 spmh.disableTrust(c);
 //                spmh.enableMustSupportRefKeyIdentifier(wss, true);
@@ -575,7 +575,7 @@ public class ProfilesModelHelper {
                 spmh.setLayout(bt, ComboConstants.STRICT);
                 spmh.enableIncludeTimestamp(bt, true);
                 spmh.enableSignEntireHeadersAndBody(bt, true);
-                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128);
+                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128SHA256);
                 WssElement wss = spmh.enableWss(c, true);
                 spmh.disableTrust(c);
 //                spmh.enableMustSupportRefKeyIdentifier(wss, true);
@@ -595,7 +595,7 @@ public class ProfilesModelHelper {
                 spmh.setLayout(bt, ComboConstants.STRICT);
                 spmh.enableIncludeTimestamp(bt, true);
                 spmh.enableSignEntireHeadersAndBody(bt, true);
-                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128);
+                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128SHA256);
                 WssElement wss = spmh.enableWss(c, false);
                 spmh.disableTrust(c);
 //                spmh.enableMustSupportRefKeyIdentifier(wss, true);
@@ -609,7 +609,7 @@ public class ProfilesModelHelper {
                 spmh.setLayout(bt, ComboConstants.LAX);
                 spmh.enableIncludeTimestamp(bt, true);
                 spmh.enableSignEntireHeadersAndBody(bt, true);
-                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128);
+                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128SHA256);
                 //wss
                 WssElement wss = spmh.enableWss(c, true);
                 spmh.disableTrust(c);
@@ -629,7 +629,7 @@ public class ProfilesModelHelper {
                 spmh.setLayout(bt, ComboConstants.STRICT);
                 spmh.enableIncludeTimestamp(bt, true);
                 spmh.enableSignEntireHeadersAndBody(bt, true);
-                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128);
+                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128SHA256);
                 //wss
                 WssElement wss = spmh.enableWss(c, false);
                 spmh.disableTrust(c);
@@ -650,7 +650,7 @@ public class ProfilesModelHelper {
                 spmh.setLayout(bt, ComboConstants.STRICT);
                 spmh.enableIncludeTimestamp(bt, true);
                 spmh.enableSignEntireHeadersAndBody(bt, true);
-                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128);
+                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128SHA256);
                 //wss
                 WssElement wss = spmh.enableWss(c, false);
                 spmh.disableTrust(c);
@@ -664,7 +664,7 @@ public class ProfilesModelHelper {
                 spmh.setLayout(bt, ComboConstants.STRICT);
                 spmh.enableIncludeTimestamp(bt, true);
                 spmh.enableSignEntireHeadersAndBody(bt, true);
-                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128);
+                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128SHA256);
                 //wss
                 WssElement wss = spmh.enableWss(c, true);
                 spmh.disableTrust(c);
@@ -680,7 +680,7 @@ public class ProfilesModelHelper {
                 spmh.setLayout(bt, ComboConstants.LAX);
                 spmh.enableIncludeTimestamp(bt, true);
                 spmh.enableSignEntireHeadersAndBody(bt, true);
-                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128);
+                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128SHA256);
                 //wss
                 WssElement wss = spmh.enableWss(c, true);
 //                spmh.enableMustSupportRefKeyIdentifier(wss, true);
@@ -702,7 +702,7 @@ public class ProfilesModelHelper {
                 spmh.setLayout(bt, ComboConstants.LAX);
                 spmh.enableIncludeTimestamp(bt, true);
                 spmh.enableSignEntireHeadersAndBody(bt, true);
-                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128);
+                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128SHA256);
                 //wss
                 WssElement wss = spmh.enableWss(c, true);
 //                spmh.enableMustSupportRefKeyIdentifier(wss, true);
@@ -723,7 +723,7 @@ public class ProfilesModelHelper {
                 spmh.setLayout(bt, ComboConstants.LAX);
                 spmh.enableIncludeTimestamp(bt, true);
                 spmh.enableSignEntireHeadersAndBody(bt, true);
-                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128);
+                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128SHA256);
                 //wss
                 WssElement wss = spmh.enableWss(c, true);
                 spmh.enableMustSupportRefKeyIdentifier(wss, true);
@@ -746,7 +746,7 @@ public class ProfilesModelHelper {
                 spmh.setLayout(bt, ComboConstants.LAX);
                 spmh.enableIncludeTimestamp(bt, true);
                 spmh.enableSignEntireHeadersAndBody(bt, true);
-                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128);
+                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128SHA256);
                 //wss
                 WssElement wss = spmh.enableWss(c, true);
 //                spmh.enableMustSupportRefKeyIdentifier(wss, true);
@@ -1007,7 +1007,7 @@ public class ProfilesModelHelper {
                 if (algoSuite != null) {
                     AlgoSuiteModelHelper.getInstance(configVersion).setAlgorithmSuite(bType, algoSuite);
                 } else {
-                    AlgoSuiteModelHelper.getInstance(configVersion).setAlgorithmSuite(bType, ComboConstants.BASIC128);
+                    AlgoSuiteModelHelper.getInstance(configVersion).setAlgorithmSuite(bType, ComboConstants.BASIC128SHA256);
                 }
                 if (includeTimestamp) {
                     spmh.enableIncludeTimestamp(bType, true);

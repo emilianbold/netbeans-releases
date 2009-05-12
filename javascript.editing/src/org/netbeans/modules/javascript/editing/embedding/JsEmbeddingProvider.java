@@ -60,7 +60,10 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
  *
- * @author vita
+ * @see "org.netbeans.modules.parsing.impl.SourceCache.resortTaskFactories() which
+ * depends on fully qualified name of this class Factory. See issue #162990 for more information."
+ *
+ * @author vita, mfukala@netbeans.org
  */
 public final class JsEmbeddingProvider extends EmbeddingProvider {
 
@@ -104,6 +107,12 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         public
         @Override
         Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+            //filter out transitive embedding creations like JSP -> HTML -> JavaScript
+            //we have a direct translator for them JSP -> JavaScript
+            if(snapshot.getMimeType().equals("text/html") && snapshot.getMimePath().size() > 1) { //NOI18N
+                return null;
+            }
+
             Translator t = translators.get(snapshot.getMimeType());
             if (t != null) {
                 return Collections.singleton(new JsEmbeddingProvider(snapshot.getMimeType(), t));
@@ -239,22 +248,17 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                     extractJavaScriptFromHtml(snapshot, ts, state, embeddings);
                 }
                 if (state.in_inlined_javascript || state.in_javascript) {
-                    int sourceStart = tokenSequence.offset();
-
                     //find end of the php code
-                    while (tokenSequence.moveNext()) {
-                        token = tokenSequence.token();
-                        if (token.id().name().equals(T_INLINE_HTML)) {
-                            //we are out of php code
-                            tokenSequence.movePrevious();
-                            int sourceEnd = sourceStart + token.length();
+                    boolean wasInPhp = false;
+                    while (tokenSequence.moveNext() && !tokenSequence.token().id().name().equals(T_INLINE_HTML)) {
+                        wasInPhp = true;
+                    }
 
-                            embeddings.add(snapshot.create(GENERATED_IDENTIFIER, JsTokenId.JAVASCRIPT_MIME_TYPE));
-//                            embeddings.add(snapshot.create("/*", JsTokenId.JAVASCRIPT_MIME_TYPE));
-//                            embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, JsTokenId.JAVASCRIPT_MIME_TYPE));
-//                            embeddings.add(snapshot.create("*/", JsTokenId.JAVASCRIPT_MIME_TYPE));
-                            break;
-                        }
+                    //we are out of php code, lets move back to the previous token
+                    tokenSequence.movePrevious();
+
+                    if (wasInPhp) {
+                        embeddings.add(snapshot.create(GENERATED_IDENTIFIER, JsTokenId.JAVASCRIPT_MIME_TYPE));
                     }
                 }
             }

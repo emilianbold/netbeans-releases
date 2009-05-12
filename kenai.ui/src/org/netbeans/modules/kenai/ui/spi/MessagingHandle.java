@@ -26,8 +26,10 @@ public abstract class MessagingHandle {
     public static final String PROP_MESSAGE_COUNT = "messageCount"; // NOI18N
 
     /**
-     * @return Number of online project members or -1 if the user isn't logged in
-     * or the user isn't a member of project this handle is associated with.
+     * Returns number of online project members.
+     * @return if number is >= 0 it is number of online project members.<br>
+     * -1 means user is offline<br>
+     * -2 means chat is not available<br>
      */
     public abstract int getOnlineCount();
 

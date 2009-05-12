@@ -316,6 +316,10 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
 
         // plug this popup into layered pane if needed
         JLayeredPane lPane = JLayeredPane.getLayeredPaneAbove(comboBar);
+        if (lPane == null) {
+            // #162075 - return when comboBar not yet seeded in AWT hierarchy
+            return;
+        }
         if (!isDisplayable()) {
             lPane.add(this, new Integer(JLayeredPane.POPUP_LAYER + 1) );
         }
@@ -424,6 +428,13 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
         boolean isInProgress = evalTask != null;
         searchingSep.setVisible(isInProgress);
         searchingLabel.setVisible(isInProgress);
+        if (comboBar instanceof QuickSearchComboBar) {
+            if (isInProgress) {
+                ((QuickSearchComboBar) comboBar).startProgressAnimation();
+            } else {
+                ((QuickSearchComboBar) comboBar).stopProgressAnimation();
+            }
+        }
         shouldBeVisible = shouldBeVisible || isInProgress;
 
         boolean searchedNotEmpty = searchedText != null && searchedText.trim().length() > 0;

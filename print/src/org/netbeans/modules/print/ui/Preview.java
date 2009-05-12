@@ -414,10 +414,9 @@ public final class Preview extends Dialog implements Percent.Listener {
             public void mouseClicked(MouseEvent event) {
                 if (event.getClickCount() == 2) {
                     if (SwingUtilities.isRightMouseButton(event)) {
-                        myScale.customValue(CUSTOMS.length - 1);
-                        myCustomIndex = 0;
+                        myScale.decreaseValue();
                     } else {
-                        showCustom(true);
+                        myScale.increaseValue();
                     }
                 }
             }

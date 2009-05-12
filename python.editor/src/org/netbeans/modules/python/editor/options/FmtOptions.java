@@ -627,29 +627,31 @@ public class FmtOptions {
                         final PythonPlatformManager manager = PythonPlatformManager.getInstance();
                         final String platformName = manager.getDefaultPlatform();
                         PythonPlatform activePlatform = manager.getPlatform(platformName);
-                        roots.addAll(activePlatform.getUniqueLibraryRoots());
-                        ClassPath boot = ClassPathSupport.createClassPath(roots.toArray(new FileObject[roots.size()]));
-                        ClassPath source = ClassPathSupport.createClassPath(new FileObject[]{fo.getParent()});
-                        ClassPath compile = source;
+                        if (activePlatform != null) {
+                            roots.addAll(activePlatform.getUniqueLibraryRoots());
+                            ClassPath boot = ClassPathSupport.createClassPath(roots.toArray(new FileObject[roots.size()]));
+                            ClassPath source = ClassPathSupport.createClassPath(new FileObject[]{fo.getParent()});
+                            ClassPath compile = source;
 
-                        ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, source);
-                        Source model = Source.create(cpInfo, fo);
-                        if (model != null) {
-                            final CompilationInfo[] infoHolder = new CompilationInfo[1];
-                            //model.runUserActionTask(new CancellableTask<CompilationInfo>() {
-                            model.runUserActionTask(new CancellableTask<CompilationController>() {
-                                public void cancel() {
-                                }
+                            ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, source);
+                            Source model = Source.create(cpInfo, fo);
+                            if (model != null) {
+                                final CompilationInfo[] infoHolder = new CompilationInfo[1];
+                                //model.runUserActionTask(new CancellableTask<CompilationInfo>() {
+                                model.runUserActionTask(new CancellableTask<CompilationController>() {
+                                    public void cancel() {
+                                    }
 
-                                //public void run(CompilationInfo info) throws Exception {
-                                public void run(CompilationController info) throws Exception {
-                                    info.toPhase(Phase.RESOLVED);
-                                    infoHolder[0] = info;
-                                    // Force open so info.getFileObject will succeed
-                                    GsfUtilities.getDocument(fo, true);
-                                }
-                            }, false);
-                            info = infoHolder[0];
+                                    //public void run(CompilationInfo info) throws Exception {
+                                    public void run(CompilationController info) throws Exception {
+                                        info.toPhase(Phase.RESOLVED);
+                                        infoHolder[0] = info;
+                                        // Force open so info.getFileObject will succeed
+                                        GsfUtilities.getDocument(fo, true);
+                                    }
+                                }, false);
+                                info = infoHolder[0];
+                            }
                         }
                     }
                 } catch (IOException ex) {

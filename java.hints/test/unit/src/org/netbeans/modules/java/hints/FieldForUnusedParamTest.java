@@ -67,7 +67,7 @@ public class FieldForUnusedParamTest extends TreeRuleTestBase {
                        "}\n",
                        "2:21-2:21:hint:Unused Parameter",
                        "FixImpl:false",
-                       "package test; public class Test { private int a; public Test(int a) { this.a = a; } } ");
+                       "package test; public class Test { private final int a; public Test(int a) { this.a = a; } } ");
     }
     
     public void testSimple2() throws Exception {
@@ -115,7 +115,7 @@ public class FieldForUnusedParamTest extends TreeRuleTestBase {
                        "}\n",
                        "4:28-4:28:hint:Unused Parameter",
                        "FixImpl:false",
-                       "package test; public class Test { private int a; private int b; private int c; public Test(int a, int b, int c) { this.a = a; this.b = b; this.c = c; } } ");
+                       "package test; public class Test { private int a; private final int b; private int c; public Test(int a, int b, int c) { this.a = a; this.b = b; this.c = c; } } ");
     }
     
     @Override

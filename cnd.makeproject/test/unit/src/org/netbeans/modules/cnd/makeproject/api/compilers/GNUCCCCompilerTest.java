@@ -50,7 +50,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 
 /**
@@ -78,6 +78,73 @@ public class GNUCCCCompilerTest {
 
     @After
     public void tearDown() {
+    }
+
+
+    @Test
+    public void testParseCompilerOutputMac() {
+        System.setProperty("os.name", "Windows Vista");
+        String s =
+                "jorge@macbook: $ gcc -E -v -x c++ /dev/null\n" +
+                "Using built-in specs.\n" +
+                "Target: i686-apple-darwin9\n" +
+                "Configured with: /var/tmp/gcc/gcc-5465~16/src/configure --disable-checking -enable-werror --prefix=/usr --mandir=/share/man --enable-languages=c,objc,c++,obj-c++ --program-transform-name=/^[cg][^.-]*$/s/$/-4.0/ --with-gxx-include-dir=/include/c++/4.0.0 --with-slibdir=/usr/lib --build=i686-apple-darwin9 --with-arch=apple --with-tune=generic --host=i686-apple-darwin9 --target=i686-apple-darwin9\n" +
+                "Thread model: posix\n" +
+                "gcc version 4.0.1 (Apple Inc. build 5465)\n" +
+                "/usr/libexec/gcc/i686-apple-darwin9/4.0.1/cc1plus -E -quiet -v -D__DYNAMIC__ /dev/null -fPIC -mmacosx-version-min=10.5.6 -mtune=generic -march=apple -D__private_extern__=extern\n" +
+                "ignoring nonexistent directory \"/usr/lib/gcc/i686-apple-darwin9/4.0.1/../../../../i686-apple-darwin9/include\"\n" +
+                "#include \"...\" search starts here:\n" +
+                "#include <...> search starts here:\n" +
+                " /usr/include/c++/4.0.0\n" +
+                " /usr/include/c++/4.0.0/i686-apple-darwin9\n" +
+                " /usr/include/c++/4.0.0/backward\n" +
+                " /usr/local/include\n" +
+                " /usr/lib/gcc/i686-apple-darwin9/4.0.1/include\n" +
+                " /usr/include\n" +
+                " /System/Library/Frameworks (framework directory)\n" +
+                " /Library/Frameworks (framework directory)\n" +
+                "End of search list.\n" +
+                "# 1 \"/dev/null\"\n" +
+                "# 1 \"<built-in>\"\n" +
+                "# 1 \"<command line>\"\n" +
+                "# 1 \"/dev/null\"\n";
+
+        BufferedReader buf = new BufferedReader(new StringReader(s));
+        if (TRACE) {
+            System.out.println("Parse Compiler Output of GNU on Mac");
+        }
+        CompilerFlavor flavor = CompilerFlavor.toFlavor("GNU", Platform.PLATFORM_MACOSX);
+        GNUCCCompiler instance = new GNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCCompiler, "GNU", "GNU", "/usr/sfw/bin") {
+            @Override
+            protected String normalizePath(String path) {
+                return path;
+            }
+        };
+        instance.setSystemIncludeDirectories(new ArrayList<String>());
+        instance.setSystemPreprocessorSymbols(new ArrayList<String>());
+        instance.parseCompilerOutput(buf);
+        List<String> out = instance.getSystemIncludeDirectories();
+        Collections.<String>sort(out);
+        List<String> golden = new ArrayList<String>();
+
+        golden.add("/Library/Frameworks");
+        golden.add("/System/Library/Frameworks");
+        golden.add("/usr/include");
+        golden.add("/usr/include/c++/4.0.0");
+        golden.add("/usr/include/c++/4.0.0/backward");
+        golden.add("/usr/include/c++/4.0.0/i686-apple-darwin9");
+        golden.add("/usr/lib/gcc/i686-apple-darwin9/4.0.1/include");
+        golden.add("/usr/local/include");
+
+        StringBuilder result = new StringBuilder();
+        for (String i : out) {
+            result.append(i);
+            result.append("\n");
+        }
+        if (TRACE) {
+            System.out.println(result);
+        }
+        assert (golden.equals(out));
     }
 
     @Test
@@ -117,7 +184,7 @@ public class GNUCCCCompilerTest {
             System.out.println("Parse Compiler Output of MinGW on Windows");
         }
         CompilerFlavor flavor = CompilerFlavor.toFlavor("MinGW", Platform.PLATFORM_WINDOWS);
-        GNUCCCompiler instance = new GNUCCCompiler(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), flavor, Tool.CCCompiler, "MinGW", "MinGW", "C:\\MinGW\\bin") {
+        GNUCCCompiler instance = new GNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCCompiler, "MinGW", "MinGW", "C:\\MinGW\\bin") {
 
             @Override
             protected String normalizePath(String path) {
@@ -195,7 +262,7 @@ public class GNUCCCCompilerTest {
             System.out.println("Parse Compiler Output of TDM MinGW on Windows");
         }
         CompilerFlavor flavor = CompilerFlavor.toFlavor("MinGW_TDM", Platform.PLATFORM_WINDOWS);
-        GNUCCCompiler instance = new GNUCCCompiler(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), flavor, Tool.CCCompiler, "MinGW_TDM", "MinGW_TDM", "D:\\tec\\mingw\\bin") {
+        GNUCCCompiler instance = new GNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCCompiler, "MinGW_TDM", "MinGW_TDM", "D:\\tec\\mingw\\bin") {
 
             @Override
             protected String normalizePath(String path) {
@@ -265,7 +332,7 @@ public class GNUCCCCompilerTest {
             System.out.println("Parse Compiler Output of Cygwin on Windows");
         }
         CompilerFlavor flavor = CompilerFlavor.toFlavor("Cygwin", Platform.PLATFORM_WINDOWS);
-        GNUCCCompiler instance = new GNUCCCompiler(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), flavor, Tool.CCCompiler, "Cygwin", "Cygwin", "C:\\cygwin\\bin") {
+        GNUCCCompiler instance = new GNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCCompiler, "Cygwin", "Cygwin", "C:\\cygwin\\bin") {
 
             @Override
             protected String normalizePath(String path) {
@@ -330,7 +397,7 @@ public class GNUCCCCompilerTest {
             System.out.println("Parse Compiler Output of GCC on Solaris");
         }
         CompilerFlavor flavor = CompilerFlavor.toFlavor("GNU", Platform.PLATFORM_SOLARIS_INTEL);
-        GNUCCCompiler instance = new GNUCCCompiler(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), flavor, Tool.CCCompiler, "GNU", "GNU", "/usr/sfw/bin") {
+        GNUCCCompiler instance = new GNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCCompiler, "GNU", "GNU", "/usr/sfw/bin") {
 
             @Override
             protected String normalizePath(String path) {

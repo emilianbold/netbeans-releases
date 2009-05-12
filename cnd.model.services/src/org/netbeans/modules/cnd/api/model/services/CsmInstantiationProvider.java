@@ -98,7 +98,7 @@ public abstract class CsmInstantiationProvider {
      * @param params - template parameters
      * @return - instantiation
      */
-    public abstract CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmFile contextFile);
+    public abstract CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmFile contextFile, int contextOffset);
 
     /**
      * Returns instantiation of template
@@ -108,7 +108,7 @@ public abstract class CsmInstantiationProvider {
      * @param mapping - template mapping
      * @return - instantiation
      */
-    public abstract CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, CsmFile contextFile);
+    public abstract CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, CsmFile contextFile, int contextOffset);
 
     /**
      * Returns instantiation of template
@@ -118,7 +118,7 @@ public abstract class CsmInstantiationProvider {
      * @param type - template type
      * @return - instantiation
      */
-    public abstract CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmType type, CsmFile contextFile);
+    public abstract CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmType type, CsmFile contextFile, int contextOffset);
 
     /**
      * Creates specialization parameter based on type.
@@ -143,6 +143,11 @@ public abstract class CsmInstantiationProvider {
      */
     public abstract CharSequence getInstantiatedText(CsmType type);
 
+    /**
+     * returns signature of template parameters
+     */
+    public abstract CharSequence getTemplateSignature(CsmTemplate template);
+    
     //
     // Implementation of the default provider
     //
@@ -152,17 +157,17 @@ public abstract class CsmInstantiationProvider {
         }
 
         @Override
-        public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmFile contextFile) {
+        public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmFile contextFile, int contextOffset) {
             return template;
         }
 
         @Override
-        public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, CsmFile contextFile) {
+        public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, CsmFile contextFile, int contextOffset) {
             return template;
         }
 
         @Override
-        public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmType type, CsmFile contextFile) {
+        public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmType type, CsmFile contextFile, int contextOffset) {
             return template;
         }
 
@@ -181,5 +186,11 @@ public abstract class CsmInstantiationProvider {
         public CharSequence getInstantiatedText(CsmType type) {
             return type.getText();
         }
+
+        @Override
+        public CharSequence getTemplateSignature(CsmTemplate template) {
+            return ""; // NOI18N
+        }
+
     }
 }

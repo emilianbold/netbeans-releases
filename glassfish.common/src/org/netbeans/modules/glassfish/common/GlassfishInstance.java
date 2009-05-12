@@ -114,7 +114,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
     private transient InstanceContent ic;
     private transient Lookup lookup;
     private transient Lookup.Result<GlassfishModuleFactory> lookupResult;
-    private transient Collection<GlassfishModuleFactory> currentFactories;
+    private transient Collection<? extends GlassfishModuleFactory> currentFactories;
     
     // api instance
     private ServerInstance commonInstance;
@@ -136,16 +136,16 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
         // !PW FIXME should read asenv.bat on windows.
         Properties asenvProps = new Properties();
         String homeFolder = commonSupport.getGlassfishRoot();
-        File asenvConf = new File(homeFolder, "config/asenv.conf");
+        File asenvConf = new File(homeFolder, "config/asenv.conf"); // NOI18N
         if(asenvConf.exists()) {
             InputStream is = null;
             try {
                 is = new BufferedInputStream(new FileInputStream(asenvConf));
                 asenvProps.load(is);
             } catch(FileNotFoundException ex) {
-                Logger.getLogger("glassfish").log(Level.WARNING, null, ex);
+                Logger.getLogger("glassfish").log(Level.WARNING, null, ex); // NOI18N
             } catch(IOException ex) {
-                Logger.getLogger("glassfish").log(Level.WARNING, null, ex);
+                Logger.getLogger("glassfish").log(Level.WARNING, null, ex); // NOI18N
                 asenvProps.clear();
             } finally {
                 if(is != null) {
@@ -153,18 +153,18 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
                 }
             }
         } else {
-            Logger.getLogger("glassfish").log(Level.WARNING, asenvConf.getAbsolutePath() + " does not exist");
+            Logger.getLogger("glassfish").log(Level.WARNING, asenvConf.getAbsolutePath() + " does not exist"); // NOI18N
         }
         Set<GlassfishModuleFactory> added = new HashSet<GlassfishModuleFactory>();
         //Set<GlassfishModuleFactory> removed = new HashSet<GlassfishModuleFactory>();
         added.addAll(lookupResult.allInstances());
         added.removeAll(currentFactories);
-        currentFactories = (Collection<GlassfishModuleFactory>) lookupResult.allInstances();
+        currentFactories = lookupResult.allInstances();
         for (GlassfishModuleFactory moduleFactory : added) {
             if(moduleFactory.isModuleSupported(homeFolder, asenvProps)) {
                 Object t = moduleFactory.createModule(lookup);
                 if (null == t) {
-                    Logger.getLogger("glassfish").log(Level.WARNING, moduleFactory+" created a null module");
+                    Logger.getLogger("glassfish").log(Level.WARNING, moduleFactory+" created a null module"); // NOI18N
                 } else {
                     ic.add(t);
                 }
@@ -175,8 +175,8 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
     private void updateModuleSupport() {
         // Find all modules that have NetBeans support, add them to lookup if server
         // supports them.
-        currentFactories = Collections.EMPTY_LIST;
-        lookupResult = Lookups.forPath("Servers/GlassFish").lookupResult(GlassfishModuleFactory.class);
+        currentFactories = Collections.emptyList();
+        lookupResult = Lookups.forPath(Util.GF_LOOKUP_PATH).lookupResult(GlassfishModuleFactory.class);
         updateFactories();
         lookupResult.addLookupListener(this);
     }
@@ -265,13 +265,13 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
                     if(timeout > 0) {
                         OperationState opState = stopServerTask.get(timeout, TimeUnit.MILLISECONDS);
                         if(opState != OperationState.COMPLETED) {
-                            Logger.getLogger("glassfish").info("Stop server failed...");
+                            Logger.getLogger("glassfish").info("Stop server failed..."); // NOI18N
                         }
                     }
                 } catch(TimeoutException ex) {
-                    Logger.getLogger("glassfish").fine("Server " + getDeployerUri() + " timed out sending stop-domain command.");
+                    Logger.getLogger("glassfish").fine("Server " + getDeployerUri() + " timed out sending stop-domain command."); // NOI18N
                 } catch(Exception ex) {
-                    Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                    Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
                 }
             }
         }
@@ -286,8 +286,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
 
     // TODO -- this should be done differently
     public String getServerDisplayName() {
-        File f = new File(commonSupport.getGlassfishRoot(), "lib"+File.separator+
-                "schemas"+File.separator+"web-app_3_0.xsd");
+        File f = new File(commonSupport.getGlassfishRoot(), "lib"+File.separator+"schemas"+File.separator+"web-app_3_0.xsd"); // NOI18N
         if (f.exists()) {
             return GLASSFISH_SERVER_NAME;
         } else {
@@ -296,12 +295,12 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
     }
 
     public Node getFullNode() {
-        Logger.getLogger("glassfish").finer("Creating GF Instance node [FULL]");
+        Logger.getLogger("glassfish").finer("Creating GF Instance node [FULL]"); // NOI18N
         return new Hk2InstanceNode(this, true);
     }
 
     public Node getBasicNode() {
-        Logger.getLogger("glassfish").finer("Creating GF Instance node [BASIC]");
+        Logger.getLogger("glassfish").finer("Creating GF Instance node [BASIC]"); // NOI18N
         return new Hk2InstanceNode(this, false);
     }
     

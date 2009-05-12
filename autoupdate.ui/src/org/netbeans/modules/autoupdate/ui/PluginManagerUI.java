@@ -95,13 +95,20 @@ public class PluginManagerUI extends javax.swing.JPanel  {
 
     public static final String[] TAB_NAMES = { "update", "available", "local", "installed" }; //NOI18N
     private int initialTabToSelect;
+    private boolean detailView;
+    public static final String DETAIL_VIEW_SELECTED_PROP = "plugin.manager.detail.view.selected";//NOI18N
     
     public PluginManagerUI (JButton closeButton ) {
-        this( closeButton, null );
+        this(closeButton, null, true);
+    }
+
+    public PluginManagerUI (JButton closeButton, Object initialTab) {
+        this(closeButton, initialTab, Boolean.getBoolean(DETAIL_VIEW_SELECTED_PROP));
     }
     
     /** Creates new form PluginManagerUI */
-    public PluginManagerUI (JButton closeButton, Object initialTab) {
+    public PluginManagerUI (JButton closeButton, Object initialTab, boolean detailView) {
+        this.detailView = detailView;
         this.closeButton = closeButton;
         int selIndex = -1;
         for( int i=0; i<TAB_NAMES.length; i++ ) {
@@ -123,7 +130,15 @@ public class PluginManagerUI extends javax.swing.JPanel  {
             }
         });
     }
-    
+
+    boolean isDetailView() {
+        return detailView;
+    }
+
+    void setDetailView(boolean detailView) {
+        this.detailView = detailView;
+    }
+
     private Window findWindowParent () {
         Component c = this;
         while(c != null) {
@@ -565,13 +580,18 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
             //which is synchronized and may wait until cache is created
             //even more AutoUpdateCatalog.getUpdateItems () can at first start call refresh and thus writeToCache again
             units = UpdateManager.getDefault().getUpdateUnits(Utilities.getUnitTypes());
-            UnitCategoryTableModel installTableModel = ((UnitCategoryTableModel)installedTable.getModel());
+            InstalledTableModel installTableModel = (InstalledTableModel)installedTable.getModel();
             UnitCategoryTableModel updateTableModel = ((UnitCategoryTableModel)updateTable.getModel());
             UnitCategoryTableModel availableTableModel = ((UnitCategoryTableModel)availableTable.getModel());
             LocallyDownloadedTableModel localTableModel = ((LocallyDownloadedTableModel)localTable.getModel());
             
             updateTableModel.setUnits(units);
-            installTableModel.setUnits(units);
+            List<UpdateUnit> features = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.FEATURE);
+            if (isDetailView() && !features.isEmpty()) {
+                installTableModel.setUnits(units);
+            } else {
+                installTableModel.setUnits(units, features);
+            }
             availableTableModel.setUnits(units);
             localTableModel.setUnits(units);
             selectFirstRow(installedTable);

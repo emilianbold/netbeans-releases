@@ -82,7 +82,7 @@ public class ExportDiffPanel extends ExportDiffSupport.AbstractExportDiffPanel i
 
         buttonGroup1.add(asFileRadioButton);
         asFileRadioButton.setSelected(true);
-        asFileRadioButton.setText(org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ExportDiffPanel.asFileRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(asFileRadioButton, org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ExportDiffPanel.asFileRadioButton.text")); // NOI18N
         asFileRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 asFileRadioButtonActionPerformed(evt);
@@ -90,7 +90,7 @@ public class ExportDiffPanel extends ExportDiffSupport.AbstractExportDiffPanel i
         });
 
         buttonGroup1.add(attachRadioButton);
-        attachRadioButton.setText(org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ExportDiffPanel.attachRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(attachRadioButton, org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ExportDiffPanel.attachRadioButton.text")); // NOI18N
 
         attachPanel.setLayout(new java.awt.BorderLayout());
 
@@ -101,7 +101,7 @@ public class ExportDiffPanel extends ExportDiffSupport.AbstractExportDiffPanel i
             }
         });
 
-        browseButton.setText(org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ExportDiffPanel.browseButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ExportDiffPanel.browseButton.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -116,13 +116,13 @@ public class ExportDiffPanel extends ExportDiffSupport.AbstractExportDiffPanel i
                     .add(layout.createSequentialGroup()
                         .add(asFileRadioButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(fileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE)
+                        .add(fileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browseButton)
                         .add(20, 20, 20))
                     .add(layout.createSequentialGroup()
                         .add(attachRadioButton)
-                        .addContainerGap(372, Short.MAX_VALUE))))
+                        .addContainerGap(390, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -138,6 +138,14 @@ public class ExportDiffPanel extends ExportDiffSupport.AbstractExportDiffPanel i
                 .add(attachPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE)
                 .addContainerGap())
         );
+
+        asFileRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ExportDiffPanel.asFileRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
+        attachRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ExportDiffPanel.attachRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
+        fileTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ExportDiffPanel.fileTextField.AccessibleContext.accessibleName")); // NOI18N
+        fileTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ExportDiffPanel.fileTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ExportDiffPanel.browseButton.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ExportDiffPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void asFileRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_asFileRadioButtonActionPerformed

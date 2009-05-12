@@ -45,13 +45,14 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
 
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
 
@@ -115,11 +116,14 @@ public class ShellDataLoader extends CndAbstractDataLoaderExt {
 
             FileObject fo = f.createData(name, ext);
             java.text.Format frm = createFormat(f, name, ext);
-            BufferedReader r = new BufferedReader(new InputStreamReader(getFile().getInputStream()));
+            BufferedReader r = new BufferedReader(new InputStreamReader(
+                    getFile().getInputStream(), FileEncodingQuery.getEncoding(getFile())));
             try {
                 FileLock lock = fo.lock();
                 try {
-                    BufferedWriter w = new BufferedWriter(new OutputStreamWriter(fo.getOutputStream(lock)));
+                    Charset encoding = FileEncodingQuery.getEncoding(fo);
+                    BufferedWriter w = new BufferedWriter(new OutputStreamWriter(
+                            fo.getOutputStream(lock), encoding));
                     try {
                         String current;
                         while ((current = r.readLine()) != null) {
@@ -136,16 +140,9 @@ public class ShellDataLoader extends CndAbstractDataLoaderExt {
                 r.close();
             }
             FileUtil.copyAttributes(getFile(), fo);
-            setTemplate(fo);
+            setTemplate(fo, false);
             return fo;
         }
 
-        // do what package-local DataObject.setTemplate (fo, false) does
-        private void setTemplate(FileObject fo) throws IOException {
-            Object o = fo.getAttribute(DataObject.PROP_TEMPLATE);
-            if ((o instanceof Boolean) && ((Boolean) o).booleanValue()) {
-                fo.setAttribute(DataObject.PROP_TEMPLATE, null);
-            }
-        }
     }
 }

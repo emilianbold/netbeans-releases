@@ -61,6 +61,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInitializationException;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
@@ -151,6 +152,12 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
         return retVal;
     }
     
+    @Override
+     public MessageDestinationDeployment getMessageDestinationDeployment(DeploymentManager dm) {
+        return dm instanceof Hk2DeploymentManager ?
+                new Hk2MessageDestinationManager((Hk2DeploymentManager) dm) : null;
+    }
+
     @Override
     public AntDeploymentProvider getAntDeploymentProvider(DeploymentManager dm) {
         // if assertions are on... blame the caller
@@ -260,7 +267,6 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
     public void finishServerInitialization() throws ServerInitializationException {
         try {
             // remove any invalid server definitions...
-            commonUtilities.finishServerInitialization();
             String[] urls = InstanceProperties.getInstanceList();
             if (null != urls) {
                 List<String> needToRemove = new ArrayList<String>();

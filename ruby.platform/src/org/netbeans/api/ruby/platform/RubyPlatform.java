@@ -81,8 +81,11 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     public static final String DEFAULT_RUBY_RELEASE = "1.8"; // NOI18N
 
     /** Version number of the rubystubs */
-    private static final String RUBYSTUBS_VERSION = "1.8.7-p72"; // NOI18N
-
+    public static final String RUBYSTUBS_VERSION = "1.8.7-p72"; // NOI18N
+    /**
+     * The name of the rubystubs folder.
+     */
+    public static final String RUBYSTUBS = "rubystubs"; //NOI18N
     /** Name of the Ruby Debug IDE gem. */
     static final String RUBY_DEBUG_IDE_NAME = "ruby-debug-ide"; // NOI18N
 
@@ -1007,7 +1010,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
 
     private void possiblyNotifyUser(boolean warn, boolean valid, String cmd) {
         if (warn && !valid) {
-            String msg = NbBundle.getMessage(GemManager.class, "GemManager.NotInstalledCmd", cmd, getLabel());
+            String msg = NbBundle.getMessage(RubyPlatform.class, "RubyPlatform.NotInstalledCmd", cmd, getLabel());
             NotifyDescriptor nd =
                     new NotifyDescriptor.Message(msg, NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);

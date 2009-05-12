@@ -47,10 +47,12 @@ import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 
 import java.awt.*;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  * @author David Kaspar
  */
+@RandomlyFails // timeout in NB-Core-Build #2574
 public class FlowLayout105400Test extends VisualTestCase {
 
     public FlowLayout105400Test (String testName) {

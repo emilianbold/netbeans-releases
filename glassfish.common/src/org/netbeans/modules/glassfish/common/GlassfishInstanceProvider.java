@@ -72,58 +72,98 @@ import org.openide.util.NbPreferences;
 public final class GlassfishInstanceProvider implements ServerInstanceProvider {
 
     static final String INSTANCE_FO_ATTR = "InstanceFOPath"; // NOI18N
-    private volatile static GlassfishInstanceProvider singleton;
-    private volatile static GlassfishInstanceProvider singletonEe6;
+    private volatile static GlassfishInstanceProvider preludeProvider;
+    private volatile static GlassfishInstanceProvider ee6Provider;
 
-    public static GlassfishInstanceProvider getEe6() {
-        String v3Root = System.getProperty("org.glassfish.v3ee6.installRoot");
-        if ("true".equals(System.getProperty("org.glassfish.v3.enableExperimentalFeatures")) ||
-               (null != v3Root && v3Root.trim().length() > 0) ) {
-            if (singletonEe6 == null) {
-                singletonEe6 = new GlassfishInstanceProvider(new String[] {"deployer:gfv3ee6"},
-                        new String[] {"/GlassFishEE6/Instances"},
-                        "GlassFish v3", "org.glassfish.v3ee6.installRoot",
-                        "GlassFish v3 Domain",
-                        "Personal GlassFish v3 Domain",
-                        "GlassFish_v3", "http://java.net/download/glassfish/v3/promoted/latest-glassfish.zip",
-                        "http://serverplugins.netbeans.org/glassfishv3/ee6zipfilename.txt",
-                        "last-v3ee6-install-root",
-                        new String[] { "lib"+File.separator+"schemas"+File.separator+"web-app_3_0.xsd" },
-                        new String[0], true);
-            }
+    static private String EE6_PROP_ROOT = "org.glassfish.v3ee6."; // NOI18N
+    static private String INSTALL_ROOT_SUFFIX = "installRoot"; // NOI18N
+    static private String EE6_INSTALL_ROOT_PROP = EE6_PROP_ROOT + INSTALL_ROOT_SUFFIX;
+    static private String PRELUDE_PROP_ROOT = "org.glassfish.v3."; // NOI18N
+    static private String PRELUDE_INSTALL_ROOT_PROP = PRELUDE_PROP_ROOT + INSTALL_ROOT_SUFFIX;
+    static private String ENABLE_EXPERIMENTAL_SUFFIX = "enableExperimentalFeatures"; // NOI18N
+    static private String DISABLE_PRELUDE_SUFFIX = "disablePreludeSupport"; // NOI18N
+    static private String EE6_DEPLOYER_FRAGMENT = "deployer:gfv3ee6"; // NOI18N
+    static private String PRELUDE_DEPLOYER_FRAGMENT = "deployer:gfv3"; // NOI18N
+    static private String EE6_INSTANCES_PATH = "/GlassFishEE6/Instances"; // NOI18N
+    static private String PRELUDE_INSTANCES_PATH = "/GlassFish/Instances"; // NOI18N
+
+    public static List<GlassfishInstanceProvider> getProviders(boolean initialize) {
+        List<GlassfishInstanceProvider> providerList = new ArrayList<GlassfishInstanceProvider>();
+        if(initialize) {
+            getPrelude();
+            getEe6();
         }
-        return singletonEe6;
+        if(preludeProvider != null) {
+            providerList.add(preludeProvider);
+        }
+        if(ee6Provider != null) {
+            providerList.add(ee6Provider);
+        }
+        return providerList;
     }
 
-    public static GlassfishInstanceProvider getPrelude() {
-        if ("true".equals(System.getProperty("org.glassfish.v3.disablePreludeSupport"))) {
-            return singleton;
+    public static synchronized GlassfishInstanceProvider getEe6() {
+        FileObject fo = FileUtil.getConfigFile("GlassFish v3/Enable Experimental Features"); // NOI18N
+        String v3Root = System.getProperty(EE6_INSTALL_ROOT_PROP);
+        if ("true".equals(System.getProperty(PRELUDE_PROP_ROOT + ENABLE_EXPERIMENTAL_SUFFIX)) || // NOI18N
+               (null != v3Root && v3Root.trim().length() > 0) || null != fo) {
+            if (ee6Provider == null) {
+                ee6Provider = new GlassfishInstanceProvider(new String[] {EE6_DEPLOYER_FRAGMENT},
+                        new String[] {EE6_INSTANCES_PATH},
+                        org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V3_SERVER_NAME", new Object[] {}),
+                        EE6_INSTALL_ROOT_PROP,
+                        org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V3_AUTO_REGISTERED_NAME", new Object[] {}),
+                        org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V3_AUTO_CREATED_NAME", new Object[] {}),
+                        "GlassFish_v3", // NOI18N
+                        "http://java.net/download/glassfish/v3-preview/promoted/latest-glassfish.zip", // NOI18N
+                        "http://serverplugins.netbeans.org/glassfishv3/ee6zipfilename.txt",  // NOI18N
+                        "last-v3ee6-install-root",  // NOI18N
+                        new String[] { "lib"+File.separator+"schemas"+File.separator+"web-app_3_0.xsd" }, // NOI18N
+                        new String[0],
+                        true);
+            }
+        }
+        return ee6Provider;
+    }
+
+    public static synchronized GlassfishInstanceProvider getPrelude() {
+        if ("true".equals(System.getProperty(PRELUDE_PROP_ROOT + DISABLE_PRELUDE_SUFFIX))) { // NOI18N
+            return preludeProvider;
         }
         String[] uriFragments;
         String[] instanceDirs;
-        String v3Root = System.getProperty("org.glassfish.v3ee6.installRoot");
-        if (!("true".equals(System.getProperty("org.glassfish.v3.enableExperimentalFeatures"))) &&
+        FileObject fo = FileUtil.getConfigFile("GlassFish v3/Enable Experimental Features"); // NOI18N
+        String v3Root = System.getProperty(EE6_INSTALL_ROOT_PROP);
+        if (!("true".equals(System.getProperty(PRELUDE_PROP_ROOT + ENABLE_EXPERIMENTAL_SUFFIX))) &&  // NOI18N
+                null == fo  &&
                (null == v3Root || v3Root.trim().length() < 1) ) {
-            uriFragments = new String[] { "deployer:gfv3", "deployer:gfv3ee6" };
-            instanceDirs = new String[] { "/GlassFish/Instances", "/GlassFishEE6/Instances" };
+            // make sure v3 Servers do not cause problems if the user forgets to
+            // define the enableExperimentalFeatures property after they have registered
+            // a v3 domain.
+            uriFragments = new String[] { PRELUDE_DEPLOYER_FRAGMENT, EE6_DEPLOYER_FRAGMENT };
+            instanceDirs = new String[] { PRELUDE_INSTANCES_PATH, EE6_INSTANCES_PATH };
         } else {
-            uriFragments = new String[] { "deployer:gfv3" };
-            instanceDirs = new String[] { "/GlassFish/Instances" };
+            uriFragments = new String[] { PRELUDE_DEPLOYER_FRAGMENT };
+            instanceDirs = new String[] { PRELUDE_INSTANCES_PATH };
         }
-        if(singleton == null) {
-            singleton = new GlassfishInstanceProvider(uriFragments, instanceDirs,
-                    "GlassFish v3 Prelude", "org.glassfish.v3.installRoot",
-                        "GlassFish v3 Prelude Domain",
-                        "Personal GlassFish v3 Prelude Domain",
-                        "GlassFish_v3_Prelude", "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip",
-                        "http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.txt",
-                        "last-install-root", new String[0],
-                        new String[] { "lib"+File.separator+"schemas"+File.separator+"web-app_3_0.xsd" }, false);
+        if(preludeProvider == null) {
+            preludeProvider = new GlassfishInstanceProvider(uriFragments, instanceDirs,
+                    org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_PRELUDE_SERVER_NAME", new Object[] {}),
+                    PRELUDE_PROP_ROOT + INSTALL_ROOT_SUFFIX,
+                    org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_PRELUDE_AUTO_REGISTERED_NAME", new Object[] {}),
+                    org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_PRELUDE_AUTO_CREATED_NAME", new Object[] {}),
+                    "GlassFish_v3_Prelude", // NOI18N
+                    "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip",  // NOI18N
+                    "http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.txt",  // NOI18N
+                    "last-install-root", // NOI18N
+                    new String[0],
+                    new String[] { "lib"+File.separator+"schemas"+File.separator+"web-app_3_0.xsd" }, // NOI18N
+                    false);
         }
-        return singleton;
+        return preludeProvider;
     }
     
-    private final Map<String, GlassfishInstance> instanceMap = 
+    private final Map<String, GlassfishInstance> instanceMap =
             Collections.synchronizedMap(new HashMap<String, GlassfishInstance>());
     private final ChangeSupport support = new ChangeSupport(this);
 
@@ -158,14 +198,15 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         this.requiredFiles = requiredFiles;
         this.excludedFiles = excludedFiles;
         this.needsJdk6 = needsJdk6;
+        //init();
     }
 
     public static synchronized boolean initialized() {
-        return singleton != null || singletonEe6 != null;
+        return preludeProvider != null || ee6Provider != null;
     }
 
     public static Logger getLogger() {
-        return Logger.getLogger("glassfish");
+        return Logger.getLogger("glassfish"); // NOI18N
     }
 
     private static RegisteredDDCatalog getDDCatalog() {
@@ -230,11 +271,11 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     }
 
     public String[] getRequiredFiles() {
-        return requiredFiles;
+        return requiredFiles.clone();
     }
 
     public String[] getExcludedFiles() {
-        return excludedFiles;
+        return excludedFiles.clone();
     }
     
     public String getNameOfBits() {
@@ -281,11 +322,13 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     }
     
     public ServerInstanceImplementation getInternalInstance(String uri) {
+        init();
         return instanceMap.get(uri);
     }
 
     public <T> T getInstanceByCapability(String uri, Class <T> serverFacadeClass) {
         T result = null;
+        init();
         GlassfishInstance instance = instanceMap.get(uri);
         if(instance != null) {
             result = instance.getLookup().lookup(serverFacadeClass);
@@ -295,6 +338,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     
     public <T> List<T> getInstancesByCapability(Class<T> serverFacadeClass) {
         List<T> result = new ArrayList<T>();
+        init();
         synchronized (instanceMap) {
             for (GlassfishInstance instance : instanceMap.values()) {
                 T serverFacade = instance.getLookup().lookup(serverFacadeClass);
@@ -312,10 +356,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     public List<ServerInstance> getInstances() {
 //        return new ArrayList<ServerInstance>(instanceMap.values());
         List<ServerInstance> result = new  ArrayList<ServerInstance>();
+        init();
         synchronized (instanceMap) {
-            if (instanceMap.isEmpty()) {
-                init();
-            }
             for (GlassfishInstance instance : instanceMap.values()) {
                 result.add(instance.getCommonInstance());
             }
@@ -338,12 +380,13 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     
     public ServerInstance getInstance(String uri) {
 //        return instanceMap.get(uri);
+        init();
         GlassfishInstance instance = instanceMap.get(uri);
         return instance == null ? null : instance.getCommonInstance();
     }
 
     public String formatUri(String glassfishRoot, String hostName, int httpPort) {
-        return "[" + glassfishRoot + "]"+uriFragments[0]+":" + hostName + ":" + httpPort;
+        return "[" + glassfishRoot + "]"+uriFragments[0]+":" + hostName + ":" + httpPort; // NOI18N
     }
 
     String getInstancesDirName() {
@@ -355,6 +398,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     // shutdown any instances we started during this IDE session.
     // ------------------------------------------------------------------------
     Collection<GlassfishInstance> getInternalInstances() {
+        init();
         return instanceMap.values();
     }
 
@@ -363,21 +407,26 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     }
 
     private void init() {
-        try {
-            registerDefaultInstance();
-            loadServerInstances();
-        } catch(RuntimeException ex) {
-            getLogger().log(Level.INFO, null, ex);
-        }
-        RegisteredDDCatalog catalog = getDDCatalog();
-        if (null != catalog) {
-            if (this.equals(singleton)) {
-                catalog.registerPreludeRunTimeDDCatalog(this);
-            } else {
-                catalog.registerEE6RunTimeDDCatalog(this);
+        synchronized (instanceMap) {
+            if (instanceMap.isEmpty()) {
+                try {
+                    registerDefaultInstance();
+                    loadServerInstances();
+                } catch (RuntimeException ex) {
+                    getLogger().log(Level.INFO, null, ex);
+                }
+                RegisteredDDCatalog catalog = getDDCatalog();
+                if (null != catalog) {
+                    if (this.equals(preludeProvider)) {
+                        catalog.registerPreludeRunTimeDDCatalog(this);
+                    } else {
+                        catalog.registerEE6RunTimeDDCatalog(this);
+                    }
+                    refreshCatalogFromFirstInstance(this, catalog);
+                }
             }
-            refreshCatalogFromFirstInstance(this, catalog);
         }
+
     }
     
     // ------------------------------------------------------------------------
@@ -395,7 +444,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                             if(si != null) {
                                 instanceMap.put(si.getDeployerUri(), si);
                             } else {
-                                getLogger().finer("Unable to create glassfish instance for " + instanceFOs[i].getPath());
+                                getLogger().finer("Unable to create glassfish instance for " + instanceFOs[i].getPath()); // NOI18N
                             }
                         } catch(IOException ex) {
                             getLogger().log(Level.INFO, null, ex);
@@ -430,7 +479,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             ip.put(INSTANCE_FO_ATTR, instanceFO.getName());
             instance = GlassfishInstance.create(ip,this);
         } else {
-            getLogger().finer("GlassFish folder " + instanceFO.getPath() + " is not a valid install.");
+            getLogger().finer("GlassFish folder " + instanceFO.getPath() + " is not a valid install."); // NOI18N
             instanceFO.delete();
         }
 
@@ -440,7 +489,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     private void writeInstanceToFile(GlassfishInstance instance) throws IOException {
         String glassfishRoot = instance.getGlassfishRoot();
         if(glassfishRoot == null) {
-            getLogger().log(Level.SEVERE, NbBundle.getMessage(GlassfishInstanceProvider.class, "MSG_NullServerFolder"));
+            getLogger().log(Level.SEVERE, NbBundle.getMessage(GlassfishInstanceProvider.class, "MSG_NullServerFolder")); // NOI18N
             return;
         }
 
@@ -459,7 +508,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             }
 
             if(instanceFO == null) {
-                String name = FileUtil.findFreeFileName(dir, "instance", null);
+                String name = FileUtil.findFreeFileName(dir, "instance", null); // NOI18N
                 instanceFO = dir.createData(name);
             }
 
@@ -581,7 +630,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                         ip.put(GlassfishModule.INSTALL_FOLDER_ATTR,
                                 f.getCanonicalPath());
                         ip.put(GlassfishModule.GLASSFISH_FOLDER_ATTR,
-                                f.getCanonicalPath() + File.separator + "glassfish");
+                                f.getCanonicalPath() + File.separator + "glassfish"); // NOI18N
                         if (Utils.canWrite(f)) { // f.canWrite()) {
                             ip.put(GlassfishModule.DISPLAY_NAME_ATTR, defaultDomainName);
                             ip.put(GlassfishModule.HTTPPORT_ATTR,
@@ -598,7 +647,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                             ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsFolderValue);
                             ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainNameValue);
                             
-                            CreateDomain cd = new CreateDomain("anonymous", "", new File(f,"glassfish"), ip, this);
+                            CreateDomain cd = new CreateDomain("anonymous", "", new File(f,"glassfish"), ip, this); // NOI18N
                             cd.start();
                         }
                     }

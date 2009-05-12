@@ -1886,6 +1886,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         }
 
         if (!locked) {
+            Toolkit.getDefaultToolkit().beep();
             return false;
         }
 
@@ -1962,7 +1963,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
         try {
             if (ur.canUndo()) {
-                Toolkit.getDefaultToolkit().beep();
                 ur.undo();
             }
         } catch (CannotUndoException cne) {
@@ -2845,6 +2845,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 CloneableEditorSupport.this.firePropertyChange(
                     EditorCookie.Observable.PROP_MODIFIED, ev.getOldValue(), ev.getNewValue()
                 );
+            }
+
+            // #129178 - update title if read-only state is externally changed
+            if ("DataEditorSupport.read-only.changing".equals(ev.getPropertyName())) {  //NOI18N
+                updateTitles();
             }
         }
 

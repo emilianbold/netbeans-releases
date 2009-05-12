@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.dlight.util;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -46,7 +48,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -89,45 +90,35 @@ public class DLightExecutorService {
 
     public static Future scheduleAtFixedRate(final Runnable task, final long period, final TimeUnit unit, final String descr) {
         synchronized (lock) {
-            final FutureHolder futureHolder = new FutureHolder();
+            final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor(
+                    new TaskThreadFactory(descr));
 
-            Runnable runnable = new Runnable() {
+            final Future future = service.scheduleAtFixedRate(task, 0, period, unit);
+
+            submit(new Runnable() {
 
                 public void run() {
-                    final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor(
-                            new TaskThreadFactory(descr));
-
-                    service.scheduleAtFixedRate(task, 0, period, unit);
-
-                    try {
-                        while (true) {
-                            if (futureHolder.future.isDone()) {
-                                break;
-                            }
-
-                            try {
-                                Thread.sleep(500);
-                            } catch (InterruptedException ex) {
-                                break;
-                            }
+                    while (!future.isDone()) {
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException ex) {
                         }
-                    } finally {
-                        service.shutdownNow();
                     }
+
+                    // When try to shutdown service without
+                    // AccessController.doPrivileged get security exception...
+                    
+                    AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+                        public Object run() {
+                            return service.shutdownNow();
+                        }
+                    });
                 }
-            };
+            }, descr + " reaper"); // NOI18N
 
-            final FutureTask<Boolean> ftask = new FutureTask<Boolean>(runnable, Boolean.TRUE);
-            futureHolder.future = ftask;
-            RequestProcessor.getDefault().post(ftask);
-
-            return ftask;
+            return future;
         }
-    }
-
-    private static class FutureHolder {
-
-        private volatile FutureTask future;
     }
 
     static class TaskThreadFactory implements ThreadFactory {

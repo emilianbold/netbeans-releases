@@ -472,6 +472,9 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                         if (isEnumComma(t)) {
                             indent = getTokenIndent(t);
                             break;
+                        } else if (isFieldComma(t)) {
+                            indent = getTokenIndent(t);
+                            break;
                         }
                         indent = computeStatementIndent(t);
                         break;

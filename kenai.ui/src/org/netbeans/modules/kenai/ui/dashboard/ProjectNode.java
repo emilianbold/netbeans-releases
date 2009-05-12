@@ -60,6 +60,7 @@ import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
 import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
+import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
 import org.openide.util.NbBundle;
 
 /**
@@ -87,6 +88,8 @@ public class ProjectNode extends TreeListNode {
 
     public ProjectNode( final ProjectHandle project ) {
         super( true, null );
+        if (project==null)
+            throw new IllegalArgumentException("project cannot be null"); // NOI18N
         this.projectListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if( ProjectHandle.PROP_CONTENT.equals( evt.getPropertyName()) ) {
@@ -99,7 +102,7 @@ public class ProjectNode extends TreeListNode {
         this.project = project;
         this.project.addPropertyChangeListener( projectListener );
         this.accessor = ProjectAccessor.getDefault();
-        regFont = new JLabel().getFont();
+        regFont = new TreeLabel().getFont();
         boldFont = regFont.deriveFont(Font.BOLD);
     }
 
@@ -130,7 +133,7 @@ public class ProjectNode extends TreeListNode {
             if( null == component ) {
                 component = new JPanel( new GridBagLayout() );
                 component.setOpaque(false);
-                lbl = new JLabel(project.getDisplayName());
+                lbl = new TreeLabel(project.getDisplayName());
                 component.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,3), 0,0) );
 
                 component.add( new JLabel(), new GridBagConstraints(2,0,1,1,1.0,0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0,0) );

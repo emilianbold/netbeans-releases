@@ -51,11 +51,11 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.Properties;
 import java.util.logging.Level;
+import org.ini4j.Config;
 import org.ini4j.Ini;
 import org.ini4j.InvalidIniFormatException;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.Mercurial;
-import org.netbeans.modules.mercurial.util.HgUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
@@ -99,6 +99,7 @@ public class HgConfigFiles {
     private HgConfigFiles() {
         bIsProjectConfig = false;
         // get the system hgrc file
+        Config.getGlobal().setEscape(false); // escaping characters disabled
         if(Utilities.isWindows()) {
             hgrc = loadSystemAndGlobalFile(WINDOWS_HG_RC_FILE);
         }else{
@@ -119,6 +120,7 @@ public class HgConfigFiles {
     }
 
     public HgConfigFiles(File file) {
+        Config.getGlobal().setEscape(false); // escaping characters disabled
         bIsProjectConfig = true;
         dir = file;        
         // <repository>/.hg/hgrc on all platforms
@@ -283,6 +285,7 @@ public class HgConfigFiles {
     
     private void storeIni(Ini ini, String iniFile) {
         assert initException == null;
+        BufferedOutputStream bos = null;
         try {
             String filePath;
             if (dir != null) {
@@ -292,9 +295,17 @@ public class HgConfigFiles {
             }
             File file = FileUtil.normalizeFile(new File(filePath));
             file.getParentFile().mkdirs();
-            ini.store(new BufferedOutputStream(new FileOutputStream(file)));
+            ini.store(bos = new BufferedOutputStream(new FileOutputStream(file)));
         } catch (IOException ex) {
             Mercurial.LOG.log(Level.INFO, null, ex);
+        } finally {
+            if (bos != null) {
+                try {
+                    bos.close();
+                } catch (IOException ex) {
+                    Mercurial.LOG.log(Level.INFO, null, ex);
+                }
+            }
         }
     }
 
@@ -327,6 +338,9 @@ public class HgConfigFiles {
             initException = ex;
         } catch (IOException ex) {
             Mercurial.LOG.log(Level.INFO, null, ex);
+        } catch (Exception ex) {
+            Mercurial.LOG.log(Level.INFO, "Cannot parse configuration file", ex); // NOI18N
+            initException = new InvalidIniFormatException(ex);
         } finally {
             Thread.currentThread().setContextClassLoader(cl);
         }
@@ -339,15 +353,9 @@ public class HgConfigFiles {
     private Ini loadRepoHgrcFile(File dir) {
         String filePath = dir.getAbsolutePath() + File.separator + HG_REPO_DIR + File.separator + HG_RC_FILE; // NOI18N 
         File file = FileUtil.normalizeFile(new File(filePath));
-        File tmpFile = HgUtils.fixPathsInIniFileOnWindows(file);
         Ini system = null;
-        if (Utilities.isWindows() && tmpFile != null && tmpFile.isFile() && tmpFile.canWrite() && file != null) {
-            tmpFile.deleteOnExit();
-            system = createIni(tmpFile);
-        } else {
-            system = createIni(file);
-        }
-
+        system = createIni(file);
+        
         if(system == null) {
             system = createIni();
             Mercurial.LOG.log(Level.FINE, "Could not load the file " + filePath + ". Falling back on hg defaults."); // NOI18N
@@ -369,15 +377,9 @@ public class HgConfigFiles {
         // config files from userdir
         String filePath = getUserConfigPath() + fileName;
         File file = FileUtil.normalizeFile(new File(filePath));
-        File tmpFile = HgUtils.fixPathsInIniFileOnWindows(file);
         Ini system = null;
-        if (Utilities.isWindows() && tmpFile != null && tmpFile.isFile() && tmpFile.canWrite() && file != null) {
-            tmpFile.deleteOnExit();
-            system = createIni(tmpFile);
-        } else {
-            system = createIni(file);
-        }
-
+        system = createIni(file);
+        
         if(system == null) {
             system = createIni();
             Mercurial.LOG.log(Level.INFO, "Could not load the file " + filePath + ". Falling back on hg defaults."); // NOI18N
@@ -385,13 +387,7 @@ public class HgConfigFiles {
         
         Ini global = null;
         File gFile = FileUtil.normalizeFile(new File(getGlobalConfigPath() + File.separator + fileName));
-        File tmp2File = HgUtils.fixPathsInIniFileOnWindows(gFile);
-        if (Utilities.isWindows() && tmp2File != null) {
-            tmp2File.deleteOnExit();
-            global = createIni(tmp2File);   // NOI18N
-        } else {
-            global = createIni(gFile);   // NOI18N
-        }
+        global = createIni(gFile);   // NOI18N
 
         if(global != null) {
             merge(global, system);

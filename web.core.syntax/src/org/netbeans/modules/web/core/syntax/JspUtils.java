@@ -81,15 +81,17 @@ public class JspUtils {
         FileObject fo = jspSnapshot.getSource().getFileObject();
         if (fo != null) {
             //try to obtain jsp coloring info for file based snapshots
-        JspColoringData data = getJSPColoringData(fo);
+            JspColoringData data = getJSPColoringData(fo);
 
             if (data == null) {
-                //error
-                throw new IllegalStateException("Cannot obtain JSPColoringData instance for file " + fo.getPath()); //NOI18N
+                if (fo.isValid()) {
+                    //error if valid file
+                    throw new IllegalStateException("Cannot obtain JSPColoringData instance for file " + fo.getPath()); //NOI18N
+                }
+            } else {
+                JspParseData jspParseData = new JspParseData((Map<String, String>) data.getPrefixMapper(), data.isELIgnored(), data.isXMLSyntax(), data.isInitialized());
+                inputAttributes.setValue(JspTokenId.language(), JspParseData.class, jspParseData, false);
             }
-
-            JspParseData jspParseData = new JspParseData((Map<String, String>) data.getPrefixMapper(), data.isELIgnored(), data.isXMLSyntax(), data.isInitialized());
-            inputAttributes.setValue(JspTokenId.language(), JspParseData.class, jspParseData, false);
 
         }
 

@@ -50,6 +50,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.jaxrpc.JaxRpc;
+import org.netbeans.modules.websvc.wsstack.jaxrpc.JaxRpcStackProvider;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
 
@@ -68,7 +70,7 @@ public class ProjectInfo {
     public static final int CAR_PROJECT_TYPE = 3;
     
     private boolean jsr109Supported = false;
-//    private boolean jsr109oldSupported = false;
+    private boolean jsr109oldSupported = false;
     private boolean wsgenSupported = false;
     private boolean wsimportSupported = false;
     private ServerType serverType;
@@ -86,11 +88,13 @@ public class ProjectInfo {
                     WSStack<JaxWs> wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);
                     if (wsStack != null) {
                         jsr109Supported = wsStack.isFeatureSupported(JaxWs.Feature.JSR109);
-                        //jsr109oldSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE);
-                        //wsgenSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSGEN);
-                        wsgenSupported = true;
-                        wsimportSupported = true;
                         serverType = WSStackUtils.getServerType(project);
+                        wsgenSupported = true;
+                        wsimportSupported = true;                      
+                    }
+                    WSStack<JaxRpc> jaxRpcStack = JaxRpcStackProvider.getJaxWsStack(j2eePlatform);
+                    if (jaxRpcStack != null) {
+                        jsr109oldSupported = jaxRpcStack.isFeatureSupported(JaxRpc.Feature.JSR109);
                     }
                 } catch (InstanceRemovedException ex) {
                     Logger.getLogger(getClass().getName()).log(Level.FINE, "Failed to find J2eePlatform", ex);
@@ -127,9 +131,9 @@ public class ProjectInfo {
         return jsr109Supported;
     }
     
-//    public boolean isJsr109oldSupported() {
-//        return jsr109oldSupported;
-//    }
+    public boolean isJsr109oldSupported() {
+        return jsr109oldSupported;
+    }
     
     public boolean isWsgenSupported() {
         return wsgenSupported;

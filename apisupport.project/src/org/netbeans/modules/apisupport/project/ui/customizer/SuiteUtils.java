@@ -203,30 +203,40 @@ public final class SuiteUtils {
      * <p>Acquires write access.</p>
      */
     public static void removeModuleFromSuiteWithDependencies(final NbModuleProject suiteComponent) throws IOException {
-        try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                public Void run() throws Exception {
-                    try {
-                        NbModuleProject[] modules = SuiteUtils.getDependentModules(suiteComponent);
-                        // remove all dependencies on the being removed suite component
-                        String cnb = suiteComponent.getCodeNameBase();
-                        for (int j = 0; j < modules.length; j++) {
-                            ProjectXMLManager pxm = new ProjectXMLManager(modules[j]);
-                            pxm.removeDependency(cnb);
-                            ProjectManager.getDefault().saveProject(modules[j]);
+        // #164220: ISE "Should not acquire Children.MUTEX..." when removing project from suite and its suite.properties file node is expanded;
+        // FS.runAtomicAction should probably never be run within ProjectManager.mutex().writeAccess
+        suiteComponent.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                suiteComponent.setRunInAtomicAction(true);
+                try {
+                    ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+
+                        public Void run() throws Exception {
+                            try {
+                                NbModuleProject[] modules = SuiteUtils.getDependentModules(suiteComponent);
+                                // remove all dependencies on the being removed suite component
+                                String cnb = suiteComponent.getCodeNameBase();
+                                for (int j = 0; j < modules.length; j++) {
+                                    ProjectXMLManager pxm = new ProjectXMLManager(modules[j]);
+                                    pxm.removeDependency(cnb);
+                                    ProjectManager.getDefault().saveProject(modules[j]);
+                                }
+                            } catch (IOException x) {
+                                Logger.getLogger(SuiteUtils.class.getName()).log(Level.INFO, null, x);
+                                // #137021: suite may have broken platform dependency, so just continue
+                            }
+                            // finally remove suite component itself
+                            SuiteUtils.removeModuleFromSuite(suiteComponent);
+                            return null;
                         }
-                    } catch (IOException x) {
-                        Logger.getLogger(SuiteUtils.class.getName()).log(Level.INFO, null, x);
-                        // #137021: suite may have broken platform dependency, so just continue
-                    }
-                    // finally remove suite component itself
-                    SuiteUtils.removeModuleFromSuite(suiteComponent);
-                    return null;
+                    });
+                } catch (MutexException e) {
+                    throw (IOException) e.getException();
+                } finally {
+                    suiteComponent.setRunInAtomicAction(false);
                 }
-            });
-        } catch (MutexException e) {
-            throw (IOException) e.getException();
-        }
+            }
+        });
     }
     
     /**
@@ -259,6 +269,8 @@ public final class SuiteUtils {
     }
     
     private void addModule(final NbModuleProject project) throws IOException, IllegalArgumentException {
+        // TODO - in case of removing from s1 and adding to s2, custom code switching module owner
+        // directly is more appropriate. Between the calls, project metadata are in inconsistent state.
         SuiteUtils.removeModuleFromSuite(project);
         // attach it to the new suite
         attachSubModuleToSuite(project);
@@ -280,54 +292,64 @@ public final class SuiteUtils {
         NbModuleProvider.NbModuleType type = Util.getModuleType(subModule);
         assert type == NbModuleProvider.SUITE_COMPONENT : "Not a suite component: " + subModule;
         try {
-            subModule.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+            final FileSystem.AtomicAction r = new FileSystem.AtomicAction() {
                 public void run() throws IOException {
-                    subModule.setRunInAtomicAction(true);
-                    try {
-                        // remove both suite properties files
-                        FileObject subModuleDir = subModule.getProjectDirectory();
-                        FileObject fo = subModuleDir.getFileObject(
-                                "nbproject/suite.properties"); // NOI18N
-                        if (fo != null) {
-                            // XXX this is a bit dangerous. Surely would be better to delete just the relevant
-                            // property from it, then delete it iff it is empty. (Would require that
-                            // NbModuleProjectGenerator.createSuiteProperties accept an existing file.)
-                            fo.delete();
-                        }
-                        fo = subModuleDir.getFileObject(
-                                "nbproject/private/suite-private.properties"); // NOI18N
-                        if (fo != null) {
-                            fo.delete();
-                        }
-                        
-                        if (suiteProps != null) {
-                            // copy suite's platform.properties to the module (needed by standalone module)
-                            FileObject plafPropsFO = suiteProps.getProject().getProjectDirectory().
-                                    getFileObject("nbproject/platform.properties"); // NOI18N
-                            FileObject subModuleNbProject = subModuleDir.getFileObject("nbproject"); // NOI18N
-                            if (subModuleNbProject.getFileObject("platform.properties") == null) { // NOI18N
-                                FileUtil.copyFile(plafPropsFO, subModuleNbProject, "platform"); // NOI18N
-                            }
-                        }
-                        EditableProperties props = subModule.getHelper().getProperties(PRIVATE_PLATFORM_PROPERTIES);
-                        if (props.getProperty("user.properties.file") == null) { // NOI18N
-                            String nbuser = System.getProperty("netbeans.user"); // NOI18N
-                            if (nbuser != null) {
-                                props.setProperty("user.properties.file", new File(nbuser, "build.properties").getAbsolutePath()); // NOI18N
-                                subModule.getHelper().putProperties(PRIVATE_PLATFORM_PROPERTIES, props);
-                            } else {
-                                Util.err.log("netbeans.user system property is not defined. Skipping " + PRIVATE_PLATFORM_PROPERTIES + " creation."); // NOI18N
-                            }
-                        }
-                        
-                        SuiteUtils.setNbModuleType(subModule, NbModuleProvider.STANDALONE);
-                        // save subModule
-                        ProjectManager.getDefault().saveProject(subModule);
-                    } finally {
-                        subModule.setRunInAtomicAction(false);
+                    // remove both suite properties files
+                    FileObject subModuleDir = subModule.getProjectDirectory();
+                    FileObject fo = subModuleDir.getFileObject(
+                            "nbproject/suite.properties"); // NOI18N
+                    if (fo != null) {
+                        // XXX this is a bit dangerous. Surely would be better to delete just the relevant
+                        // property from it, then delete it iff it is empty. (Would require that
+                        // NbModuleProjectGenerator.createSuiteProperties accept an existing file.)
+                        fo.delete();
                     }
+                    fo = subModuleDir.getFileObject(
+                            "nbproject/private/suite-private.properties"); // NOI18N
+                    if (fo != null) {
+                        fo.delete();
+                    }
+
+                    if (suiteProps != null) {
+                        // copy suite's platform.properties to the module (needed by standalone module)
+                        FileObject plafPropsFO = suiteProps.getProject().getProjectDirectory().
+                                getFileObject("nbproject/platform.properties"); // NOI18N
+                        FileObject subModuleNbProject = subModuleDir.getFileObject("nbproject"); // NOI18N
+                        if (subModuleNbProject.getFileObject("platform.properties") == null) { // NOI18N
+                            FileUtil.copyFile(plafPropsFO, subModuleNbProject, "platform"); // NOI18N
+                        }
+                    }
+                    EditableProperties props = subModule.getHelper().getProperties(PRIVATE_PLATFORM_PROPERTIES);
+                    if (props.getProperty("user.properties.file") == null) { // NOI18N
+                        String nbuser = System.getProperty("netbeans.user"); // NOI18N
+                        if (nbuser != null) {
+                            props.setProperty("user.properties.file", new File(nbuser, "build.properties").getAbsolutePath()); // NOI18N
+                            subModule.getHelper().putProperties(PRIVATE_PLATFORM_PROPERTIES, props);
+                        } else {
+                            Util.err.log("netbeans.user system property is not defined. Skipping " + PRIVATE_PLATFORM_PROPERTIES + " creation."); // NOI18N
+                        }
+                    }
+
+                    SuiteUtils.setNbModuleType(subModule, NbModuleProvider.STANDALONE);
+                    // save subModule
+                    ProjectManager.getDefault().saveProject(subModule);
                 }
-            });
+            };
+
+            if (subModule.isRunInAtomicAction()) {
+                r.run();
+            } else {
+                subModule.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                    public void run() throws IOException {
+                        subModule.setRunInAtomicAction(true);
+                        try {
+                            r.run();
+                        } finally {
+                            subModule.setRunInAtomicAction(false);
+                        }
+                    }
+                });
+            }
             
             // now clean up the suite
             if (suiteProps != null) {
@@ -381,7 +403,7 @@ public final class SuiteUtils {
         return removed;
     }
     
-    private void attachSubModuleToSuite(Project subModule) throws IOException {
+    private void attachSubModuleToSuite(NbModuleProject subModule) throws IOException {
         // adjust suite project's properties
         File projectDirF = FileUtil.toFile(subModule.getProjectDirectory());
         File suiteDirF = suiteProps.getProjectDirectoryFile();
@@ -421,9 +443,10 @@ public final class SuiteUtils {
         return key;
     }
     
-    private static void setNbModuleType(Project module, NbModuleProvider.NbModuleType type) throws IOException {
-        ProjectXMLManager pxm = new ProjectXMLManager(((NbModuleProject) module));
+    private static void setNbModuleType(NbModuleProject module, NbModuleProvider.NbModuleType type) throws IOException {
+        ProjectXMLManager pxm = new ProjectXMLManager((module));
         pxm.setModuleType(type);
+        module.refreshLookup(); // #160604: add SuiteProvider to lookup
     }
     
     public static String[] getAntProperty(final Collection<String> pieces) {

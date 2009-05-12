@@ -52,13 +52,13 @@ public final class NodeNotFoundException extends IOException {
     static final long serialVersionUID = 1493446763320691906L;
 
     /** closest node */
-    private Node node;
+    private final Node node;
 
     /** name of child not found */
-    private String name;
+    private final String name;
 
     /** depth of not founded node. */
-    private int depth;
+    private final int depth;
 
     /** Constructor.
     * @param node closest found node to the one being looked for
@@ -68,6 +68,7 @@ public final class NodeNotFoundException extends IOException {
     NodeNotFoundException(Node node, String name, int depth) {
         this.node = node;
         this.name = name;
+        this.depth = depth;
     }
 
     /** Get the closest node to the target that was able to be found.
@@ -90,4 +91,9 @@ public final class NodeNotFoundException extends IOException {
     public int getClosestNodeDepth() {
         return depth;
     }
+
+    public @Override String getMessage() {
+        return "Could not find child '" + name + "' of " + node + " at depth " + depth; // NOI18N
+    }
+
 }

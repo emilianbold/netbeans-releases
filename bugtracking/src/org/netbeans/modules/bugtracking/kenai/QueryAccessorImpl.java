@@ -48,8 +48,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Query;
@@ -78,6 +80,8 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
     final private Map<String, ProjectHandleListener> projectListeners = new HashMap<String, ProjectHandleListener>();
     final private Map<String, KenaiRepositoryListener> kenaiRepoListeners = new HashMap<String, KenaiRepositoryListener>();
 
+    final private Map<String, Map<String, QueryHandle>> queryHandles = new HashMap<String, Map<String, QueryHandle>>();
+
     public QueryAccessorImpl() {
         Kenai.getDefault().addPropertyChangeListener(this);
     }
@@ -99,7 +103,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
             } 
         }
         
-        List<QueryHandle> queries = getQueryHandles(repo);
+        List<QueryHandle> queries = getQueryHandles(repo, true);
 
         ProjectHandleListener pl;
         synchronized(projectListeners) {
@@ -117,15 +121,34 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         return Collections.unmodifiableList(queries);
     }
 
-    List<QueryHandle> getQueryHandles(Repository repo) {
+    private List<QueryHandle> getQueryHandles(Repository repo, boolean newQueriesNeedRefresh) {
         Query[] queries = repo.getQueries();
         if(queries == null || queries.length == 0) {
             // XXX is this possible - at least preset queries
             return Collections.emptyList();
         }
+        
+        Map<String, QueryHandle> m = queryHandles.get(repo.getUrl());
+        if(m == null) {
+            m = new HashMap<String, QueryHandle>();
+            queryHandles.put(repo.getUrl(), m);
+        } else {
+            // remove all which aren't in the returned query list
+            List<String> l = new ArrayList<String>();
+            for (Query q : queries) {
+                l.add(q.getDisplayName());
+            }
+            m.keySet().retainAll(l);
+        }
+
         List<QueryHandle> ret = new ArrayList<QueryHandle>();
         for (Query q : queries) {
-            QueryHandle qh = new QueryHandleImpl(q);
+
+            QueryHandle qh = m.get(q.getDisplayName());
+            if(qh == null) {
+                qh = new QueryHandleImpl(q, newQueriesNeedRefresh);
+                m.put(q.getDisplayName(), qh);
+            }
             ret.add(qh);
         }
         return ret;
@@ -135,7 +158,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
     public List<QueryResultHandle> getQueryResults(QueryHandle query) {
         if(query instanceof QueryHandleImpl) {
             QueryHandleImpl qh = (QueryHandleImpl) query;
-            qh.refreshIfFirstTime();
+            qh.refreshIfNeeded();
             return Collections.unmodifiableList(qh.getQueryResults());
         } else {
             return Collections.emptyList();
@@ -268,7 +291,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
                     if (!KenaiService.Names.JIRA.equals(f.getService())) { 
                         return null;
                     }
-                    url = f.getLocation().toString();
+                    url = f.getLocation();
                     break;
                 }
             } catch (KenaiException kenaiException) {
@@ -333,7 +356,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
 
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
-                fireQueriesChanged(ph, getQueryHandles(repo));
+                fireQueriesChanged(ph, getQueryHandles(repo, false));
             }
         }
     }

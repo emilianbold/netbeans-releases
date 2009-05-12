@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
@@ -75,8 +76,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     private static final String OPERATOR = "operator"; // NOI18N;
     
-    private static final CharSequence NULL = CharSequenceKey.create("<null>"); // NOI18N
-    private CharSequence name;
+    private final CharSequence name;
     private final CsmType returnType;
 //    private final Collection<CsmUID<CsmParameter>>  parameters;
     private final FunctionParameterListImpl parameterList;
@@ -112,8 +112,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         assert !CHECK_SCOPE || (scope != null);
         
         name = QualifiedNameCache.getManager().getString(initName(ast));
+        if (name.length()==0) {
+            throw new AstRendererException((FileImpl)file, this.getStartOffset(), "Empty function name."); // NOI18N
+        }
         rawName = AstUtil.getRawNameInChildren(ast);
-
         AST child = ast.getFirstChild();
         if (child != null) {
             setStatic(child.getType() == CPPTokenTypes.LITERAL_static);
@@ -161,16 +163,12 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             returnType = initReturnType(ast);
         }
 
-                
         // set parameters, do it in constructor to have final fields
         this.parameterList = createParameterList(ast, !global);
         if (this.parameterList == null || this.parameterList.isEmpty()) {
             setFlags(FLAGS_VOID_PARMLIST, isVoidParameter(ast));
         } else {
             setFlags(FLAGS_VOID_PARMLIST, false);
-        }
-        if( name == null ) {
-            name = NULL; // just to avoid NPE
         }
         if (name.toString().startsWith(OPERATOR) && 
                 (name.length() > OPERATOR.length()) &&
@@ -341,10 +339,6 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
      */
     public CharSequence getName() {
         return name;
-    }
-    
-    protected final void setName(CharSequence name) {
-        this.name = QualifiedNameCache.getManager().getString(name);
     }
     
     public CharSequence getQualifiedName() {
@@ -622,37 +616,13 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         // kind of canonical representation here
         StringBuilder sb = new StringBuilder(getName());
         appendTemplateSignature(sb);
-        appendParametersSignature(getParameters(), sb);
+        InstantiationProviderImpl.appendParametersSignature(getParameters(), sb);
         if( isConst() ) {
             sb.append(" const"); // NOI18N
         }
         return sb;
     }
 
-    private static final int PARAMETERS_LIMIT = 1000; // do not produce too long signature
-
-    /*package*/static void appendParametersSignature(Collection<CsmParameter> params, StringBuilder sb) {
-        sb.append('(');
-        int limit = 0;
-        for (Iterator<CsmParameter> iter = params.iterator(); iter.hasNext();) {
-            if (limit >= PARAMETERS_LIMIT) {
-                break;
-            }
-            limit++;
-            CsmParameter param = iter.next();
-            CsmType type = param.getType();
-            if (type != null) {
-                sb.append(type.getCanonicalText());
-                if (iter.hasNext()) {
-                    sb.append(',');
-                }
-            } else if (param.isVarArgs()) {
-                sb.append("..."); // NOI18N
-            }
-        }
-        sb.append(')');
-    }
-    
     private void appendTemplateSignature(StringBuilder sb) {
         List<CsmTemplateParameter> allTemplateParams = getTemplateParameters();
         List<CsmTemplateParameter> params = new ArrayList<CsmTemplateParameter>();
@@ -668,42 +638,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                 }
             }
         }
-        appendTemplateParamsSignature(params, sb);
-    }
-    
-    private void appendTemplateParamsSignature(List<CsmTemplateParameter> params, StringBuilder sb) {
-        if(params != null && params.size() > 0) {
-            sb.append('<');
-            int limit = 0;
-            for (Iterator<CsmTemplateParameter> iter = params.iterator(); iter.hasNext();) {
-                if (limit >= PARAMETERS_LIMIT) {
-                    break;
-                }
-                limit++;
-                CsmTemplateParameter param = iter.next();
-                if (CsmKindUtilities.isVariableDeclaration(param)) {
-                    CsmVariable var = (CsmVariable) param;
-                    CsmType type = var.getType();
-                    if (type != null) {
-                        sb.append(type.getCanonicalText());
-                        if (iter.hasNext()) {
-                            sb.append(',');
-                        }
-                    }
-                }
-                if (CsmKindUtilities.isClassifier(param)) {
-                    CsmClassifier classifier = (CsmClassifier) param;
-                    sb.append("class"); // NOI18N // Name of parameter does not matter
-                    if (CsmKindUtilities.isTemplate(param)) {
-                        appendTemplateParamsSignature(((CsmTemplate)classifier).getTemplateParameters(), sb);
-                    }                    
-                    if (iter.hasNext()) {
-                        sb.append(',');
-                    }
-                }
-            }
-            sb.append('>');
-        }
+        InstantiationProviderImpl.appendTemplateParamsSignature(params, sb);
     }
     
     @Override

@@ -246,7 +246,7 @@ public abstract class StringUtils {
     
     public static String escapeRegExp(
             final String string) {
-        return string.replace(BACK_SLASH, BACK_SLASH + BACK_SLASH);
+        return string.replace(BACK_SLASH, BACK_SLASH + BACK_SLASH).replace("$", "\\$");
     }
     public static String [] splitByLines(CharSequence cs) {
         return splitByLines(cs.toString());

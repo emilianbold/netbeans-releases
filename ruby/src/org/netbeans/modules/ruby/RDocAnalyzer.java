@@ -44,8 +44,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jruby.nb.ast.MethodDefNode;
-import org.jruby.nb.ast.Node;
+import org.jrubyparser.ast.MethodDefNode;
+import org.jrubyparser.ast.Node;
 import org.netbeans.modules.parsing.api.Source;
 
 /**
@@ -141,8 +141,8 @@ final class RDocAnalyzer {
                     success = addRealTypeForCommentType(commentType);
                 }
             }
-            if (!success && LOGGER.isLoggable(Level.FINER)) {
-                LOGGER.finer("Could not resolve type for " + line);
+            if (!success) {
+                LOGGER.log(Level.FINE, "Could not resolve type for {0}", line);
             }
         }
     }
@@ -154,6 +154,7 @@ final class RDocAnalyzer {
             if (realType != null) {
                 type.add(realType);
                 result = true;
+                break;
             }
         }
         return result;
@@ -247,6 +248,57 @@ final class RDocAnalyzer {
         }
     }
     
+    // package private for unit tests
+    static List<String> getStandardNameVariants(String baseName) {
+        List<String> result = new ArrayList<String>(9);
+        result.add(baseName);
+        // ideally should analyze baseName and add just the appropriate article...
+        result.add("a_" + baseName);
+        result.add("an_" + baseName);
+        String underlined = RubyUtils.camelToUnderlinedName(baseName);
+        result.add(underlined);
+        result.add("a_" + underlined);
+        result.add("an_" + underlined);
+        String camelCase = RubyUtils.underlinedNameToCamel(baseName);
+        result.add(camelCase);
+        result.add("a" + camelCase);
+        result.add("an" + camelCase);
+        return result;
+    }
+
+    private static String validName(String type) {
+        if (RubyUtils.isValidConstantName(type)) {
+            return type;
+        }
+        return null;
+    }
+
+    static String resolveType(String typeInComment) {
+        if ("".equals(typeInComment.trim()) || !Character.isLetter(typeInComment.charAt(0))) {
+            return null;
+        }
+        if (typeInComment.startsWith("an_")) {
+            return validName(RubyUtils.underlinedNameToCamel(typeInComment.substring(3)));
+        }
+        if (typeInComment.startsWith("a_")) {
+            return validName(RubyUtils.underlinedNameToCamel(typeInComment.substring(2)));
+        }
+        if (typeInComment.startsWith("an") 
+                && typeInComment.length() > 2 
+                && Character.isUpperCase(typeInComment.charAt(2))) {
+            return validName(typeInComment.substring(2));
+        }
+        if (typeInComment.startsWith("a") 
+                && typeInComment.length() > 1 
+                && Character.isUpperCase(typeInComment.charAt(1))) {
+            return validName(typeInComment.substring(1));
+        }
+        if (Character.isUpperCase(typeInComment.charAt(0))) {
+            return validName(typeInComment);
+        }
+        return validName(RubyUtils.underlinedNameToCamel(typeInComment));
+    }
+
     private static abstract class TypeCommentAnalyzer {
         
         final String getType(String comment) {
@@ -267,73 +319,92 @@ final class RDocAnalyzer {
 
         static {
             COMMENT_TYPE_TO_REAL_TYPE.put("!obj", "FalseClass"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("a_class", "Class"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("aDir", "Dir"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("aFixnum", "Fixnum"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("a_hash", "Hash"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("aHash", "Hash"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("a_klass", "Class"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("an_array", "Array"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("anArray", "Array"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("anEnumerat", "Enumeration"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("anEnumerator", "Enumeration"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("anIO", "IO"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("a_proc", "Proc"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("array", "Array"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("aStructTms", "Struct::Tms"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("a_str", "String"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("big", "Bignum"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("bignum", "Bignum"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("binding", "Binding"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("class", "Class"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("dir", "Dir"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("exception", "Exception"); // NOI18N
+            putType("abs_file_name", "String"); // NOI18N
+            putType("class", "Class"); // NOI18N
+            putType("super_class", "Class"); // NOI18N
+            putType("klass", "Class"); // NOI18N
+            putType("dir", "Dir"); // NOI18N
+            putType("dir_name", "String"); // NOI18N
+            putType("fixnum", "Fixnum"); // NOI18N
+            putType("hash", "Hash"); // NOI18N
+            putType("hsh", "Hash"); // NOI18N
+            putType("array", "Array"); // NOI18N
+            putType("sub_array", "Array"); // NOI18N
+            putType("ary", "Array"); // NOI18N
+            putType("object", "Object"); // NOI18N
+            putType("enum", "Enumeration"); // NOI18N
+            putType("enumerat", "Enumeration"); // NOI18N
+            putType("enumerator", "Enumeration"); // NOI18N
+            putType("enumeration", "Enumeration"); // NOI18N
+            putType("io", "IO"); // NOI18N
+            putType("ios", "IO"); // NOI18N
+            putType("proc", "Proc"); // NOI18N
+            putType("str", "String"); // NOI18N
+            putType("base_name", "String"); // NOI18N
+            putType("big", "Bignum"); // NOI18N
+            putType("bignum", "Bignum"); // NOI18N
+            putType("boolean", "TrueClass"); // NOI18N
+            putType("bool", "TrueClass"); // NOI18N
+            putType("buffer", "String"); // NOI18N
+            putType("binding", "Binding"); // NOI18N
+            putType("exception", "Exception");
+            putType("no_method_error", "NoMethodError");
             COMMENT_TYPE_TO_REAL_TYPE.put("false", "FalseClass"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("file", "File"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("fixnum", "Fixnum"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("float", "Float"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("flt", "Float"); // NOI18N
+            putType("file", "File");
+            putType("fixnum", "Fixnum");
+            putType("float", "Float");
+            putType("flt", "Float");
             COMMENT_TYPE_TO_REAL_TYPE.put(":foo", "Symbol"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("hash", "Hash"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("hsh", "Hash"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("integer", "Integer"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("int", "Integer"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("io", "IO"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("ios", "IO"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("matchdata", "MatchData"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("method", "Method"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("mod", "Module"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("name_error", "NameError"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("new_method", "UnboundMethod"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("new_regexp", "Regexp"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("new_str", "String"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("new_time", "Time"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("nil", "NilClass"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("number", "Numeric"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("numeric", "Numeric"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("numeric_result", "Numeric"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("num", "Numeric"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("obj", "Object"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("object", "Object"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("other_big", "Bignum"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("prc", "Proc"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("proc", "Proc"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("range", "Range"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("regexp", "Regexp"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("rng", "Range"); // NOI18N
+            putType("integer", "Integer");
+            putType("int", "Integer");
+            putType("matchdata", "MatchData");
+            putType("method", "Method");
+            putType("mod", "Module");
+            putType("name_error", "NameError"); // NOI18N
+            putType("new_method", "UnboundMethod"); // NOI18N
+            putType("new_regexp", "Regexp"); // NOI18N
+            putType("new_str", "String"); // NOI18N
+            putType("new_time", "Time"); // NOI18N
+            putType("nil", "NilClass"); // NOI18N
+            putType("number", "Numeric"); // NOI18N
+            putType("numeric", "Numeric"); // NOI18N
+            putType("numeric_result", "Numeric"); // NOI18N
+            putType("num", "Numeric"); // NOI18N
+            putType("obj", "Object"); // NOI18N
+            putType("other_big", "Bignum"); // NOI18N
+            putType("outbuf", "String"); // NOI18N
+            putType("prc", "Proc"); // NOI18N
+            putType("range", "Range"); // NOI18N
+            putType("regexp", "Regexp"); // NOI18N
+            putType("rng", "Range"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("stat", "File::Stat"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("string", "String"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("str", "String"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("struct", "Struct"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("struct_tms", "Struct::Tms"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("symbol", "Symbol"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("sym", "Symbol"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("thgrp", "ThreadGroup"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("thread", "Thread"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("thr", "Thread"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("time", "Time"); // NOI18N
+            putType("string", "String"); // NOI18N
+            putType("str", "String"); // NOI18N
+            putType("system_exit", "SystemExit"); // NOI18N
+            putType("struct", "Struct"); // NOI18N
+            putType("struct_tms", "Struct::Tms"); // NOI18N
+            putType("symbol", "Symbol"); // NOI18N
+            putType("sym", "Symbol"); // NOI18N
+            putType("thgrp", "ThreadGroup"); // NOI18N
+            putType("thread", "Thread"); // NOI18N
+            putType("thr", "Thread"); // NOI18N
+            putType("time", "Time"); // NOI18N
+            // TODO: should return both Class and Module
+            COMMENT_TYPE_TO_REAL_TYPE.put("class_or_module", "Class"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("e", "Enumeration"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("old_seed", "Numeric"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("old_seed", "Numeric"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("true", "TrueClass"); // NOI18N
-            COMMENT_TYPE_TO_REAL_TYPE.put("unbound_method", "UnboundMethod"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("false", "FalseClass"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("path", "String"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("$_", "String"); // NOI18N
+            putType("unbound_method", "UnboundMethod"); // NOI18N
+        }
+
+        private static void putType(String baseName, String type) {
+            for (String each : getStandardNameVariants(baseName)) {
+                COMMENT_TYPE_TO_REAL_TYPE.put(each, type);
+            }
         }
 
         @Override
@@ -345,10 +416,21 @@ final class RDocAnalyzer {
     
     private static final class CustomClassNameAnalyzer extends TypeCommentAnalyzer {
 
+        /**
+         * Exceptions for which we don't want to create a type.
+         */
+        // TODO: create an own type for self that the method TI infrastructure could 
+        // use and return the receiver in these cases.
+        private static final String[] EXCEPTIONS = {"Self", "Key", "Value", "Detail", "Result"};
+
         protected String doGetType(String typeInComment) {
-            return typeInComment.length() > 0 && Character.isUpperCase(typeInComment.charAt(0))
-                    ? typeInComment
-                    : null;
+            String result = resolveType(typeInComment);
+            for (String each : EXCEPTIONS) {
+                if (each.equals(result)) {
+                    return null;
+                }
+            }
+            return result;
         }
     }
 

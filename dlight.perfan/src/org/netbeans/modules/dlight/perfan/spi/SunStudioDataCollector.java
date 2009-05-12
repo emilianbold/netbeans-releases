@@ -38,9 +38,9 @@
  */
 package org.netbeans.modules.dlight.perfan.spi;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -48,11 +48,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
@@ -61,7 +60,7 @@ import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
-import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
+import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.storage.DataRow;
@@ -77,11 +76,12 @@ import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
-import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Lookup;
@@ -109,7 +109,6 @@ public class SunStudioDataCollector
     private static final DataTableMetadata memSummaryInfoTable;
 
     // ***
-    private String experimentDir;
     private final Object lock = new String(SunStudioDataCollector.class.getName());
     // ***
     private final Collection<DataTableMetadata> dataTablesMetadata;
@@ -117,14 +116,14 @@ public class SunStudioDataCollector
     private final Collection<CollectedInfo> collectedInfo;
     // ***
     private ValidationStatus validationStatus = ValidationStatus.initialStatus();
+    private CollectorConfiguration config = null;
+    private DLightTarget validatedTarget;
     private Future<Integer> collectTaskResult = null;
-    private Future<Boolean> warmUpTaskResult = null;
     private MonitorsUpdateService monitorsUpdater = null;
-    private PerfanDataStorage storage = null;
     private String cmd;
     private String sproHome;
-    private DLightTarget target;
     private boolean isAttachable;
+    private HostInfo hostInfo = null;
 
 
     static {
@@ -137,14 +136,13 @@ public class SunStudioDataCollector
                 SunStudioDCConfiguration.c_iUser,
                 SunStudioDCConfiguration.c_eUser));
 
-
         syncInfoTable = new DataTableMetadata(
                 "SunStudioSyncDetailedData", // NOI18N
                 Arrays.asList(SunStudioDCConfiguration.c_name,
-                SunStudioDCConfiguration.c_iSync,
-                SunStudioDCConfiguration.c_iSyncn));
+                SunStudioDCConfiguration.c_eSync,
+                SunStudioDCConfiguration.c_eSyncn));
 
-        memInfoTable = new DataTableMetadata("SunStudioMemDetailedData",
+        memInfoTable = new DataTableMetadata("SunStudioMemDetailedData", // NOI18N
                 Arrays.asList(SunStudioDCConfiguration.c_name,
                 SunStudioDCConfiguration.c_leakCount,
                 SunStudioDCConfiguration.c_leakSize));
@@ -204,28 +202,29 @@ public class SunStudioDataCollector
         }
     }
 
-    public void targetStateChanged(DLightTarget source, State oldState, State newState) {
-        switch (newState) {
+    public void targetStateChanged(DLightTargetChangeEvent event) {
+        switch (event.state) {
             case STARTING:
-                if (warmUpTaskResult == null) {
-                    // This means that re-starting occured
-                    startWarmUp();
-                }
+                // TODO !!!
+                // In case of re-starting the target we just need to re-init
+                // this collector.
+                // But currently there is no way to "restart" the target -
+                // every time we do just new start with the new target/collector...
                 return;
             case RUNNING:
-                targetStarted(source);
+                targetStarted(event.target);
                 return;
             case FAILED:
-                targetFinished(source);
+                targetFinished(event.target);
                 return;
             case TERMINATED:
-                targetFinished(source);
+                targetFinished(event.target);
                 return;
             case DONE:
-                targetFinished(source);
+                targetFinished(event.target);
                 return;
             case STOPPED:
-                targetFinished(source);
+                targetFinished(event.target);
                 return;
         }
     }
@@ -236,20 +235,22 @@ public class SunStudioDataCollector
                 return validationStatus;
             }
 
-            this.target = target;
-
             ExecutionEnvironment execEnv = target.getExecEnv();
 
             String command = null;
             String sprohome = null;
 
             try {
-                String os = HostInfoUtils.getOS(execEnv);
+                hostInfo = HostInfoUtils.getHostInfo(execEnv);
 
-                if (os == null || !("SunOS".equals(os) || os.indexOf("Linux") >= 0)) { // NOI18N
-                    validationStatus = ValidationStatus.invalidStatus(
-                            "SunStudioDataCollector works on SunOS or Linux only."); // NOI18N
-                    return validationStatus;
+                switch (hostInfo.getOSFamily()) {
+                    case LINUX:
+                    case SUNOS:
+                        break;
+                    default:
+                        validationStatus = ValidationStatus.invalidStatus(
+                                loc("ValidationStatus.UnsupportedPlatform")); // NOI18N
+                        return validationStatus;
                 }
 
                 Collection<? extends SunStudioLocatorFactory> factories =
@@ -276,7 +277,8 @@ public class SunStudioDataCollector
                 }
 
                 if (notFound) {
-                    validationStatus = ValidationStatus.invalidStatus("No SunStudio Found"); //NOI18N
+                    validationStatus = ValidationStatus.invalidStatus(
+                            loc("ValidationStatus.NoSunStudioFound.html")); //NOI18N
                     return validationStatus;
                 }
 
@@ -300,6 +302,8 @@ public class SunStudioDataCollector
             validationStatus = ValidationStatus.validStatus();
             cmd = command;
             sproHome = sprohome;
+            validatedTarget = target;
+
             return validationStatus;
         }
     }
@@ -307,6 +311,8 @@ public class SunStudioDataCollector
     public void invalidate() {
         synchronized (lock) {
             validationStatus = ValidationStatus.initialStatus();
+            validatedTarget = null;
+            config = null;
         }
     }
 
@@ -335,37 +341,54 @@ public class SunStudioDataCollector
         }
     }
 
-    public void init(DataStorage dataStorage, DLightTarget target) {
+    public void init(final DataStorage dataStorage, final DLightTarget target) {
         synchronized (lock) {
             if (!(dataStorage instanceof PerfanDataStorage)) {
                 throw new IllegalArgumentException("Storage " + // NOI18N
                         dataStorage + " cannot be used for PerfanDataCollector!"); // NOI18N
             }
 
-            DLightLogger.assertTrue(this.target == target,
+            DLightLogger.assertTrue(validatedTarget == target,
                     "Validation was performed against another target"); // NOI18N
 
-            String tmpDirBase = null;
+            String experimentDir = hostInfo.getTempDir() + "/experiment_" + uid.incrementAndGet() + ".er"; // NOI18N
 
+            config = new CollectorConfiguration(
+                    (PerfanDataStorage) dataStorage,
+                    target, target.getExecEnv(),
+                    experimentDir, sproHome, collectedInfo);
+
+            reinit();
+        }
+    }
+
+    private void reinit() {
+        boolean result = true;
+
+        synchronized (lock) {
             try {
-                tmpDirBase = HostInfoUtils.getTempDir(target.getExecEnv());
-            } catch (ConnectException ex) {
-                // TODO: throw exception here
-                tmpDirBase = "/var/tmp"; // NOI18N
+                result = prepareExperimentDirectory(
+                        config.execEnv,
+                        config.experimentDirectory);
+
+                // Init storage (i.e. er_print, actually)
+                if (result) {
+                    config.dataStorage.init(
+                            config.execEnv,
+                            config.sproHome,
+                            config.experimentDirectory);
+
+                    // In case when summary data was requested do init
+                    // periodic SummaryDataFetchingTask ...
+                    monitorsUpdater = new MonitorsUpdateService(SunStudioDataCollector.this,
+                            config.execEnv,
+                            config.sproHome,
+                            config.experimentDirectory,
+                            config.collectedInfo);
+                }
+            } catch (Throwable ex) {
+                result = false;
             }
-
-            this.experimentDir = tmpDirBase + "/experiment_" + uid.incrementAndGet() + ".er"; // NOI18N
-            this.storage = (PerfanDataStorage) dataStorage;
-
-            startWarmUp();
-
-            // Init storage (i.e. er_print, actually)
-            storage.init(target.getExecEnv(), sproHome, experimentDir);
-
-            // In case when summary data was requested do init
-            // periodic SummaryDataFetchingTask ...
-            monitorsUpdater = new MonitorsUpdateService(this,
-                    target.getExecEnv(), sproHome, experimentDir, collectedInfo);
         }
     }
 
@@ -390,22 +413,16 @@ public class SunStudioDataCollector
 
             List<String> args = new ArrayList<String>();
 
-            // From collect(1):
-            // ...
-            // -l signal
-            //    Record a sample point  whenever  the  given  signal  is
-            //    delivered to the process.
-            // ..
-            // Add this arguments to allow indicator provider based on
-            // mmonitor to coexist with collect
-
-            args.add("-l"); // NOI18N
-            args.add("USR1"); // NOI18N
+            // Disregard collect's output...
+            if (!log.isLoggable(Level.FINEST)) {
+                args.add("-O"); // NOI18N
+                args.add("/dev/null"); // NOI18N
+            }
 
             if (collectedInfo.contains(CollectedInfo.SYNCHRONIZATION) ||
                     collectedInfo.contains(CollectedInfo.SYNCSUMMARY)) {
                 args.add("-s"); // NOI18N
-                args.add("30"); // NOI18N
+                args.add("1000"); // NOI18N
             }
 
             if (collectedInfo.contains(CollectedInfo.MEMORY) ||
@@ -415,7 +432,7 @@ public class SunStudioDataCollector
             }
 
             args.add("-o"); // NOI18N
-            args.add(experimentDir);
+            args.add(config.experimentDirectory);
 
             return args.toArray(new String[0]);
         }
@@ -425,25 +442,8 @@ public class SunStudioDataCollector
         return COLLECTOR_NAME;
     }
 
-    private void startWarmUp() {
-        synchronized (lock) {
-            if (warmUpTaskResult != null && !warmUpTaskResult.isDone()) {
-                warmUpTaskResult.cancel(true);
-            }
-
-            warmUpTaskResult = DLightExecutorService.submit(
-                    new SSDCWarmUpTask(target.getExecEnv(), experimentDir),
-                    "Warming SunStudioDataCollector up"); // NOI18N
-        }
-    }
-
     private void targetFinished(DLightTarget source) {
         synchronized (lock) {
-            if (warmUpTaskResult != null && !warmUpTaskResult.isDone()) {
-                warmUpTaskResult.cancel(true);
-                warmUpTaskResult = null;
-            }
-
             log.fine("Stopping PerfanDataCollector: " + cmd); // NOI18N
 
             if (isAttachable()) {
@@ -457,7 +457,10 @@ public class SunStudioDataCollector
             }
 
             collectTaskResult = null;
-            monitorsUpdater.stop();
+
+            if (monitorsUpdater != null) {
+                monitorsUpdater.stop();
+            }
         }
     }
 
@@ -467,43 +470,15 @@ public class SunStudioDataCollector
 
     private void targetStarted(DLightTarget source) {
         synchronized (lock) {
-            if (source != target) {
-                return;
-            }
-
-            // Wait for warm-up task completion ...
-            boolean warmUpStatus = false;
-
-            try {
-                // warmUpTaskResult may be null if invoke init against wrong target
-                // (not one that was validated)
-                warmUpStatus = warmUpTaskResult == null
-                        ? false
-                        : warmUpTaskResult.get().booleanValue();
-            } catch (CancellationException ex) {
-                log.fine("Will not start SunStudioDataCollector because of " // NOI18N
-                        + ex.getMessage());
-            } catch (InterruptedException ex) {
-                log.fine("Will not start SunStudioDataCollector because of " // NOI18N
-                        + ex.getMessage());
-            } catch (ExecutionException ex) {
-                log.fine("Will not start SunStudioDataCollector because of " // NOI18N
-                        + ex.getMessage());
-            }
-
-            // Make it null, to start it again on restart ...
-            warmUpTaskResult = null;
-
-            if (!warmUpStatus) {
-                log.fine("Will not start SunStudioDataCollector because warm-up task failed"); // NOI18N
+            if (source != config.target) {
                 return;
             }
 
             if (isAttachable()) {
                 // i.e. should start separate process
-                AttachableTarget at = (AttachableTarget) target;
-                NativeProcessBuilder npb = new NativeProcessBuilder(target.getExecEnv(), cmd);
-                npb = npb.setArguments("-P", "" + at.getPID(), "-o", experimentDir); // NOI18N
+                AttachableTarget at = (AttachableTarget) config.target;
+                NativeProcessBuilder npb = new NativeProcessBuilder(config.execEnv, cmd);
+                npb = npb.setArguments("-P", "" + at.getPID(), "-o", config.experimentDirectory); // NOI18N
 
                 ExecutionDescriptor descr = new ExecutionDescriptor();
                 descr = descr.errProcessorFactory(new StdErrRedirectorFactory());
@@ -514,7 +489,9 @@ public class SunStudioDataCollector
                 collectTaskResult = service.run();
             }
 
-            monitorsUpdater.start();
+            if (monitorsUpdater != null) {
+                monitorsUpdater.start();
+            }
         }
     }
 
@@ -544,6 +521,72 @@ public class SunStudioDataCollector
                     super.write(sb.toString().toCharArray());
                 }
             });
+        }
+    }
+
+    private boolean prepareExperimentDirectory(ExecutionEnvironment execEnv, String experimentDirectory) {
+        log.fine("Prepare PerfanDataCollector. Clean directory " + experimentDirectory); // NOI18N
+        boolean result = true;
+
+        try {
+            Future<Integer> rmFuture;
+            Integer rmResult = null;
+
+            rmFuture = CommonTasksSupport.rmDir(execEnv, experimentDirectory, true, null);
+            rmResult = rmFuture.get();
+
+            if (rmResult == null || rmResult.intValue() != 0) {
+                log.info("SunStudioDataCollector: unable to delete directory " // NOI18N
+                        + execEnv.toString() + ":" + experimentDirectory); // NOI18N
+                result = false;
+            }
+
+            if (result) {
+                // Try to remove _collector_directory_lock as well...
+                // To make things simple - just do not look at the result of
+                // this operation (it will fail if lock file doesn't exist)
+                File lockFile = new File(new File(experimentDirectory).getParentFile(), "_collector_directory_lock"); // NOI18N
+                rmFuture = CommonTasksSupport.rmFile(execEnv, lockFile.getPath(), null);
+                rmResult = rmFuture.get();
+            }
+        } catch (Throwable th) {
+            result = false;
+        }
+
+        if (!result) {
+            log.severe("Unable to prepare an experiment directory!"); // NOI18N
+        }
+
+        return result;
+    }
+
+    // Immutable configuration.
+    // It is created once in init()
+    // After that calls to other methods doesn't affect this configuration
+    // that is used to start collector.
+    private static class CollectorConfiguration {
+
+        final PerfanDataStorage dataStorage;
+        final DLightTarget target;
+        final ExecutionEnvironment execEnv;
+        final String experimentDirectory;
+        final String sproHome;
+        final Collection<CollectedInfo> collectedInfo;
+
+        public CollectorConfiguration(
+                final PerfanDataStorage dataStorage,
+                final DLightTarget target,
+                final ExecutionEnvironment execEnv,
+                final String experimentDirectory,
+                final String sproHome,
+                final Collection<CollectedInfo> collectedInfo) {
+
+            this.target = target;
+            this.dataStorage = dataStorage;
+            this.execEnv = execEnv;
+            this.experimentDirectory = experimentDirectory;
+            this.sproHome = sproHome;
+            this.collectedInfo = Collections.unmodifiableCollection(new ArrayList<CollectedInfo>(collectedInfo));
         }
     }
 }

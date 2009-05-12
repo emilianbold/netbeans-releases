@@ -113,12 +113,14 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
     }
     
     public void run() {
-        if (current != null) {
+        //#164852 somehow a folder dataobject slipped in, test mimetype to avoid that.
+        // the root cause of the problem is unknown though
+        if (current != null && "text/x-maven-pom+xml".equals(current.getPrimaryFile().getMIMEType())) { //NOI18N
             File file = FileUtil.toFile(current.getPrimaryFile());
             // can be null for stuff in jars?
             if (file != null) {
                 try {
-                    ModelLineage lin = EmbedderFactory.createModelLineage(file, EmbedderFactory.createOnlineEmbedder(), false);
+                    ModelLineage lin = EmbedderFactory.createModelLineage(file, EmbedderFactory.getOnlineEmbedder(), false);
                     final Children ch = new PomChildren(lin);
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {

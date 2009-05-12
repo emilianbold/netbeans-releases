@@ -44,13 +44,18 @@ import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
-public class CreateHostWizardPanel1 implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
+/*package*/ final class CreateHostWizardPanel1 implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
 
     private CreateHostVisualPanel1 component;
+    private final CreateHostData data;
+
+    public CreateHostWizardPanel1(CreateHostData data) {
+        this.data = data;
+    }
 
     public CreateHostVisualPanel1 getComponent() {
         if (component == null) {
-            component = new CreateHostVisualPanel1(this);
+            component = new CreateHostVisualPanel1(data, this);
         }
         return component;
     }
@@ -85,18 +90,12 @@ public class CreateHostWizardPanel1 implements WizardDescriptor.Panel<WizardDesc
     ////////////////////////////////////////////////////////////////////////////
     // settings
     public void readSettings(WizardDescriptor settings) {
-        Object port = settings.getProperty(PROP_PORT);
-        if (port instanceof Integer) {
-            getComponent().init((Integer) port);
-        }
+        getComponent().init();
     }
 
     public void storeSettings(WizardDescriptor settings) {
-        settings.putProperty(PROP_HOSTNAME, getComponent().getHostname());
-        settings.putProperty(PROP_PORT, getComponent().getPort());
+        data.setHostName(getComponent().getHostname());
+        data.setPort(getComponent().getPort());
     }
-    
-    static final String PROP_HOSTNAME = "hostname"; // NOI18N
-    static final String PROP_PORT = "port"; //NOI18N
 }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -105,15 +105,15 @@ public class ExportDiffAction extends ContextAction {
         ExportDiffSupport exportDiffSupport = new ExportDiff(root, files) {
             public void writeDiffFile (final File toFile) {
                 final String revStr = getSelectionRevision();
-                HgModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", toFile.getParent()); // NOI18N
-                RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
+                saveFolderToPrefs(toFile);
+                RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
                 HgProgressSupport support = new HgProgressSupport() {
                     public void perform() {
                         OutputLogger logger = getLogger();
                         performExport(root, revStr, toFile.getAbsolutePath(), logger);
                     }
                 };
-                support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(ExportDiffAction.class, "LBL_ExportDiff_Progress")).waitFinished(); // NOI18N
+                support.start(rp, root, org.openide.util.NbBundle.getMessage(ExportDiffAction.class, "LBL_ExportDiff_Progress")).waitFinished(); // NOI18N
             }
         };
         exportDiffSupport.export();
@@ -123,43 +123,44 @@ public class ExportDiffAction extends ContextAction {
         if(drev == null) return;
         final File fileToDiff = drev.getFile();
         RepositoryRevision repoRev = drev.getLogInfoHeader();
-        if(repoRev.getRepositoryRootUrl() == null || repoRev.getRepositoryRootUrl().equals(""))
+        final File root = repoRev.getRepositoryRoot();
+        if ((root == null) || root.getPath().equals(""))                //NOI18N
             return;
-        final File root = new File(repoRev.getRepositoryRootUrl());
         final String revStr = repoRev.getLog().getRevision();
         ExportDiff exportDiffSupport = new ExportDiff(root, repoRev, null, fileToDiff) {
             public void writeDiffFile (final File toFile) {
-                HgModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", toFile.getParent()); // NOI18N
-                RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
+                saveFolderToPrefs(toFile);
+                RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
                 HgProgressSupport support = new HgProgressSupport() {
                     public void perform() {
                         OutputLogger logger = getLogger();
                         performExportFile(root, revStr, fileToDiff, toFile.getAbsolutePath(), logger);
                     }
                 };
-                support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(ExportDiffAction.class, "LBL_ExportDiff_Progress")).waitFinished(); // NOI18N
+                support.start(rp, root, org.openide.util.NbBundle.getMessage(ExportDiffAction.class, "LBL_ExportDiff_Progress")).waitFinished(); // NOI18N
             }
         };
         exportDiffSupport.export();
     }
 
     public static void exportDiffRevision(final RepositoryRevision repoRev, final File[] roots) {
-        if(repoRev == null || repoRev.getRepositoryRootUrl() == null || repoRev.getRepositoryRootUrl().equals(""))
+        if (repoRev == null)
             return;
-        final File root = new File(repoRev.getRepositoryRootUrl());
-        
+        final File root = repoRev.getRepositoryRoot();
+        if ((root == null) || root.getPath().equals(""))                //NOI18N
+            return;
         ExportDiff exportDiffSupport = new ExportDiff(root, repoRev, roots) {
             public void writeDiffFile (final File toFile) {
                 final String revStr = getSelectionRevision();
-                HgModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", toFile.getParent()); // NOI18N
-                RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
+                saveFolderToPrefs(toFile);
+                RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
                 HgProgressSupport support = new HgProgressSupport() {
                     public void perform() {
                         OutputLogger logger = getLogger();
                         performExport(root, revStr, toFile.getAbsolutePath(), logger);
                     }
                 };
-                support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(ExportDiffAction.class, "LBL_ExportDiff_Progress")).waitFinished(); // NOI18N
+                support.start(rp, root, org.openide.util.NbBundle.getMessage(ExportDiffAction.class, "LBL_ExportDiff_Progress")).waitFinished(); // NOI18N
             }
         };
         exportDiffSupport.export();
@@ -231,6 +232,12 @@ public class ExportDiffAction extends ContextAction {
         } finally {
             logger.outputInRed(NbBundle.getMessage(ExportDiffAction.class, "MSG_EXPORT_FILE_DONE")); // NOI18N
             logger.output(""); // NOI18N
+        }
+    }
+
+    static void saveFolderToPrefs (final File file) {
+        if (file.getParent() != null) {
+            HgModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", file.getParent()); // NOI18N
         }
     }
 }

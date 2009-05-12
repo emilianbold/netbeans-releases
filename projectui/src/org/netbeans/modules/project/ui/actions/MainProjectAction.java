@@ -98,18 +98,28 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
 
         String presenterName = "";
         if (name != null) {
-            presenterName = MessageFormat.format(name, new Object[] { 0 });
+            presenterName = MessageFormat.format(name, new Object[] { -1 });
         }
         setDisplayName(presenterName);
         if ( icon != null ) {
             setSmallIcon( icon );
         }
 
-        refreshView(null);
         // Start listening on open projects list to correctly enable the action
         OpenProjectList.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, OpenProjectList.getDefault() ) );
         // XXX #47160: listen to changes in supported commands on current project, when that becomes possible
     }
+
+    @Override
+    protected boolean init() {
+        boolean needsInit = super.init();
+        if (needsInit) {
+            refreshView(null);
+        }
+        return needsInit;
+    }
+
+
 
     public void actionPerformed(Lookup context) {
 

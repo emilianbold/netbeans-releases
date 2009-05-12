@@ -190,7 +190,7 @@ public final class OperationContainerImpl<Support> {
         }
         clearCache ();
         // handle eager modules
-        affectedEagers = new HashSet<OperationInfo<Support>> ();
+        
         if (type == OperationType.INSTALL || type == OperationType.UPDATE) {
             Collection<UpdateElement> all = new HashSet<UpdateElement> (operations.size ());
             Collection<ModuleInfo> allModuleInfos = new HashSet<ModuleInfo> (operations.size ());
@@ -298,6 +298,7 @@ public final class OperationContainerImpl<Support> {
         synchronized(this) {
             changeState (true);
             operations.clear ();
+            affectedEagers.clear ();
         }
     }
     

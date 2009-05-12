@@ -103,7 +103,7 @@ class PluginsPanel extends JPanel implements Constants {
                 ClassLoader cl = Lookup.getDefault ().lookup (ClassLoader.class);
                 Class<CallableSystemAction> clz = (Class<CallableSystemAction>)cl.loadClass("org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction");
                 CallableSystemAction a = CallableSystemAction.findObject(clz, true);
-                a.putValue("InitialTab", initialTab);
+                a.putValue("InitialTab", initialTab); // NOI18N
                 a.performAction ();
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);

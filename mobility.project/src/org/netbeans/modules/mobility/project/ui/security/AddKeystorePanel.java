@@ -62,6 +62,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 
 /**
  *
@@ -287,6 +288,13 @@ public class AddKeystorePanel extends javax.swing.JPanel implements ActionListen
             file = new File(file, text);
             if (file.exists())
                 return "ERR_KSFileExists"; // NOI18N
+            // Fix for #162574 - Keystore Name should be checked for correctness
+            try {
+                file.getCanonicalPath();
+            }
+            catch (IOException e ){
+               return "ERR_KSInvalidFile"; // NOI18N
+            }
             if (KeyStoreRepository.getDefault().getKeyStore(file.getAbsolutePath(), false) != null)
                 return "ERR_KSFileAlreadyAdded"; // NOI18N
             if (tPassword.getPassword().length < 6)

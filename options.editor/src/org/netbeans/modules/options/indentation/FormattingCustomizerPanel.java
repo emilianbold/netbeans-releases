@@ -190,14 +190,14 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
         customizerPanel = new javax.swing.JPanel();
 
         group.add(globalButton);
-        globalButton.setText(org.openide.util.NbBundle.getMessage(FormattingCustomizerPanel.class, "LBL_FormattingCustomizer_Global")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(globalButton, org.openide.util.NbBundle.getMessage(FormattingCustomizerPanel.class, "LBL_FormattingCustomizer_Global")); // NOI18N
         globalButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 globalButtonActionPerformed(evt);
             }
         });
 
-        editGlobalButton.setText(org.openide.util.NbBundle.getMessage(FormattingCustomizerPanel.class, "LBL_FormattingCustomizer_EditGlobal")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(editGlobalButton, org.openide.util.NbBundle.getMessage(FormattingCustomizerPanel.class, "LBL_FormattingCustomizer_EditGlobal")); // NOI18N
         editGlobalButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editGlobalButtonActionPerformed(evt);
@@ -205,14 +205,14 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
         });
 
         group.add(projectButton);
-        projectButton.setText(org.openide.util.NbBundle.getMessage(FormattingCustomizerPanel.class, "LBL_FormattingCustomizer_Project")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(projectButton, org.openide.util.NbBundle.getMessage(FormattingCustomizerPanel.class, "LBL_FormattingCustomizer_Project")); // NOI18N
         projectButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 projectButtonActionPerformed(evt);
             }
         });
 
-        loadButton.setText(org.openide.util.NbBundle.getMessage(FormattingCustomizerPanel.class, "LBL_ForamttingCustomizer_Load")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(loadButton, org.openide.util.NbBundle.getMessage(FormattingCustomizerPanel.class, "LBL_ForamttingCustomizer_Load")); // NOI18N
         loadButton.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         loadButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -228,8 +228,8 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(projectButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
-                    .add(globalButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE))
+                    .add(projectButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
+                    .add(globalButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE))
                 .add(14, 14, 14)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                     .add(editGlobalButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -251,6 +251,11 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(customizerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE))
         );
+
+        globalButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormattingCustomizerPanel.class, "FormattingCustomizerPanel.globalButton.AccessibleContext.accessibleDescription")); // NOI18N
+        editGlobalButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormattingCustomizerPanel.class, "FormattingCustomizerPanel.editGlobalButton.AccessibleContext.accessibleDescription")); // NOI18N
+        projectButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormattingCustomizerPanel.class, "FormattingCustomizerPanel.projectButton.AccessibleContext.accessibleDescription")); // NOI18N
+        loadButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormattingCustomizerPanel.class, "FormattingCustomizerPanel.loadButton.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void globalButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_globalButtonActionPerformed

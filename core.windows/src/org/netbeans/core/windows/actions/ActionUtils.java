@@ -55,7 +55,9 @@ import org.openide.actions.SaveAction;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.*;
 import org.openide.util.actions.Presenter;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 
 /**
@@ -385,7 +387,24 @@ public abstract class ActionUtils {
     static void cloneWindow(TopComponent tc) {
         if(tc instanceof TopComponent.Cloneable) {
             TopComponent clone = ((TopComponent.Cloneable)tc).cloneComponent();
-            clone.open();
+            int openIndex = -1;
+            Mode m = WindowManager.getDefault().findMode(tc);
+            if( null != m ) {
+                TopComponent[] tcs = m.getTopComponents();
+                for( int i=0; i<tcs.length; i++ ) {
+                    if( tcs[i] == tc ) {
+                        openIndex = i + 1;
+                        break;
+                    }
+                }
+                if( openIndex >= tcs.length )
+                    openIndex = -1;
+            }
+            if( openIndex >= 0 ) {
+                clone.openAtTabPosition(openIndex);
+            } else {
+                clone.open();
+            }
             clone.requestActive();
         }
     }

@@ -5,9 +5,9 @@ package antlr;
  * Software rights: http://www.antlr.org/license.html
  */
 
-import java.util.Hashtable;
 
 import antlr.collections.impl.BitSet;
+import java.util.Map;
 
 public abstract class CharScanner extends MatchExceptionState implements TokenStream {
     static final char NO_CHAR = 0;
@@ -18,7 +18,7 @@ public abstract class CharScanner extends MatchExceptionState implements TokenSt
     protected Class tokenObjectClass; // what kind of tokens to create?
     protected boolean caseSensitive = true;
     protected boolean caseSensitiveLiterals = true;
-    protected Hashtable literals; // set by subclass
+    protected Map<ANTLRHashString, Integer> literals; // set by subclass
 
     /** Tab chars are handled by tab() according to this value; override
      *  method to do anything weird with tabs.

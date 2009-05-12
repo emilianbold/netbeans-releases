@@ -14,6 +14,8 @@
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" newvalue="org.netbeans.modules.ruby.help.InfoAction"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.ruby.help.Bundle#CTL_InfoAction"/>
+                <attr name="serverNodeHidden" boolvalue="true"/>
+                <attr name="wizardMessage" bundlevalue="org.netbeans.modules.ruby.help.Bundle#CTL_InfoWizard"/>
             </file>
         </folder>
     </folder>
@@ -22,7 +24,6 @@
             <file name="org-netbeans-modules-ruby-help-InfoAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Help/org-netbeans-modules-ruby-help-InfoAction.instance"/>
                 <attr name="position" intvalue="650"/>
-                <attr name="wizardMessage" bundlevalue="org.netbeans.modules.ruby.help.Bundle#CTL_InfoWizard"/>
             </file>
         </folder>
     </folder>

@@ -53,7 +53,6 @@ import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
-import org.netbeans.modules.php.project.ui.testrunner.UnitTestRunner;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -62,8 +61,6 @@ import org.openide.windows.InputOutput;
  * @author Tomas Mysik
  */
 public final class PhpUnit extends PhpProgram {
-    // minimum supported version
-    public static final int[] MINIMAL_VERSION = new int[] {3, 3, 0};
     // test files suffix
     public static final String TEST_CLASS_SUFFIX = "Test"; // NOI18N
     public static final String TEST_FILE_SUFFIX = TEST_CLASS_SUFFIX + ".php"; // NOI18N
@@ -78,10 +75,19 @@ public final class PhpUnit extends PhpProgram {
     public static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-phpunit-log.xml"); // NOI18N
     public static final File COVERAGE_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-phpunit-coverage.xml"); // NOI18N
 
-    static final String AT_I18N = NbBundle.getMessage(UnitTestRunner.class, "LBL_At").replace("{0}", ""); // NOI18N
-    public static final Pattern LINE_PATTERN = Pattern.compile("(?:" + AT_I18N + ")?(.+):(\\d+)"); // NOI18N
+    public static final Pattern LINE_PATTERN = Pattern.compile("(?:.+\\(\\) )?(.+):(\\d+)"); // NOI18N
 
-    static int[] version = null;
+    // unknown version
+    static final int[] UNKNOWN_VERSION = new int[0];
+    // minimum supported version
+    static final int[] MINIMAL_VERSION = new int[] {3, 3, 0};
+
+    /**
+     * volatile is enough because:
+     *  - never mind if the version is detected 2x
+     *  - we don't change array values but only the array itself (local variable created and then assigned to 'version')
+     */
+    static volatile int[] version = null;
 
     /**
      * {@inheritDoc}
@@ -102,22 +108,28 @@ public final class PhpUnit extends PhpProgram {
         }
         getVersion();
         return version != null
+                && version != UNKNOWN_VERSION
                 && version[0] >= MINIMAL_VERSION[0]
                 && version[1] >= MINIMAL_VERSION[1];
+    }
+
+    public static void resetVersion() {
+        version = null;
     }
 
     /**
      * Get the version of PHPUnit in the form of [major][minor][revision].
      * @return
      */
-    public int[] getVersion() {
+    private int[] getVersion() {
         if (!isValid()) {
-            return null;
+            return UNKNOWN_VERSION;
         }
         if (version != null) {
             return version;
         }
 
+        version = UNKNOWN_VERSION;
         ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(getProgram())
                 .addArgument(PARAM_VERSION);
         ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
@@ -136,22 +148,18 @@ public final class PhpUnit extends PhpProgram {
         return version;
     }
 
-    public static void resetVersion() {
-        version = null;
-    }
-
     /**
      * Get an array with actual and minimal PHPUnit versions.
      * <p>
-     * Return three times "?" if the actual version is not known.
+     * Return three times "?" if the actual version is not known or <code>null</code>.
      */
-    public static String[] getVersions(int[] actualVersion) {
+    public static String[] getVersions(PhpUnit phpUnit) {
         List<String> params = new ArrayList<String>(6);
-        if (actualVersion == null) {
+        if (phpUnit == null || phpUnit.getVersion() == UNKNOWN_VERSION) {
             String questionMark = NbBundle.getMessage(PhpUnit.class, "LBL_QuestionMark");
             params.add(questionMark); params.add(questionMark); params.add(questionMark);
         } else {
-            for (Integer i : actualVersion) {
+            for (Integer i : phpUnit.getVersion()) {
                 params.add(String.valueOf(i));
             }
         }
@@ -182,15 +190,14 @@ public final class PhpUnit extends PhpProgram {
 
         static int[] match(String text) {
             assert text != null;
-            if (text.trim().length() == 0) {
-                return null;
-            }
-            Matcher matcher = PHPUNIT_VERSION.matcher(text);
-            if (matcher.find()) {
-                int major = Integer.parseInt(matcher.group(1));
-                int minor = Integer.parseInt(matcher.group(2));
-                int release = Integer.parseInt(matcher.group(3));
-                return new int[] {major, minor, release};
+            if (PhpProjectUtils.hasText(text)) {
+                Matcher matcher = PHPUNIT_VERSION.matcher(text);
+                if (matcher.find()) {
+                    int major = Integer.parseInt(matcher.group(1));
+                    int minor = Integer.parseInt(matcher.group(2));
+                    int release = Integer.parseInt(matcher.group(3));
+                    return new int[] {major, minor, release};
+                }
             }
             return null;
         }

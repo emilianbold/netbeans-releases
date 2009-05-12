@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -63,6 +64,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 
 import org.netbeans.api.java.classpath.ClassPath;
@@ -146,7 +149,24 @@ public class DetectPanel extends javax.swing.JPanel {
             public void changedUpdate(DocumentEvent e) {
                 handleNameChange ();
             }
-        });       
+        });
+
+        // Fix for IZ#163462 - Too many problems in the "Add Java Platform"/"Java ME CDC..." wizard
+        sourcesList.getSelectionModel().addListSelectionListener( 
+                new ListSelectionListener()
+        {
+            public void valueChanged(ListSelectionEvent e) {
+                removeSourceButton.setEnabled(sourcesList.getSelectedValue()!= null);
+            }
+        });
+
+        javadocList.getSelectionModel().addListSelectionListener(
+                new ListSelectionListener()
+        {
+            public void valueChanged(ListSelectionEvent e) {
+                removeJavadocButton.setEnabled(javadocList.getSelectedValue()!= null);
+            }
+        });
     }
 
     protected void handleNameChange () {
@@ -310,7 +330,7 @@ public class DetectPanel extends javax.swing.JPanel {
         if (size != 0){
             javadocList.setSelectedIndex(0);
         }
-        removeJavadocButton.setEnabled(size != 0);
+        //removeJavadocButton.setEnabled(size != 0);
     }//GEN-LAST:event_removeJavadocButtonActionPerformed
 
     private void addJavadocButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addJavadocButtonActionPerformed
@@ -328,7 +348,7 @@ public class DetectPanel extends javax.swing.JPanel {
         if (size != 0){
             sourcesList.setSelectedIndex(0);
         }
-        removeSourceButton.setEnabled(size != 0);
+        //removeSourceButton.setEnabled(size != 0);
 
     }//GEN-LAST:event_removeSourceButtonActionPerformed
 
@@ -370,7 +390,7 @@ public class DetectPanel extends javax.swing.JPanel {
         while(st.hasMoreTokens()){
             ((DefaultListModel)sourcesList.getModel()).addElement(st.nextToken());
         }
-        removeSourceButton.setEnabled(sourcesList.getModel().getSize() != 0);
+        //removeSourceButton.setEnabled(sourcesList.getModel().getSize() != 0);
     }
 
     void setSources (ClassPath sources) {
@@ -408,7 +428,7 @@ public class DetectPanel extends javax.swing.JPanel {
         while(st.hasMoreTokens()){
             ((DefaultListModel)javadocList.getModel()).addElement(st.nextToken());
         }
-        removeJavadocButton.setEnabled(javadocList.getModel().getSize() != 0);
+        //removeJavadocButton.setEnabled(javadocList.getModel().getSize() != 0);
     }
 
     void setJavadoc (List jdocFolders) {
@@ -420,7 +440,7 @@ public class DetectPanel extends javax.swing.JPanel {
         while(it.hasNext()){
             ((DefaultListModel)javadocList.getModel()).addElement(FileUtil.toFile((FileObject)it.next()).getAbsolutePath());
         }
-        removeJavadocButton.setEnabled(javadocList.getModel().getSize() != 0);
+        //removeJavadocButton.setEnabled(javadocList.getModel().getSize() != 0);
     }
 
     protected final void fireChange () {
@@ -606,7 +626,7 @@ public class DetectPanel extends javax.swing.JPanel {
             return valid;
         }
 
-        public void readSettings(Object settings) {           
+        public void readSettings(Object settings) {
             this.wiz = (WizardDescriptor) settings;
             JavaPlatform platform = this.iterator.getPlatform();
             String srcPath = null;
@@ -632,7 +652,7 @@ public class DetectPanel extends javax.swing.JPanel {
                 this.component.setJavadoc (jdocPath);
             }
             this.component.jdkName.setEditable(false);
-            if (task != null){
+            if (platform == null && task != null){
                 task.schedule(0);
             } else {
                 checkValid();
@@ -840,7 +860,7 @@ public class DetectPanel extends javax.swing.JPanel {
             }
             public void run() {
                 try {
-                    WizardPanel.this.platform = detector.detectPlatform(installedFolder);                
+                    WizardPanel.this.platform = detector.detectPlatform(installedFolder);
                     valid = WizardPanel.this.platform == null ? false : true;
                 } catch (IOException ex) {
                     valid = false;

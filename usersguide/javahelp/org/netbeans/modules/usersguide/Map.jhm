@@ -479,29 +479,38 @@
 
 <!-- Collaborative Development - Kenai topics-->
 <mapID target="kenai_projects" url="collab/about_kenai_projects.html" />
-<mapID target="kenai_create" url="collab/create_kenai_project.html" />
+<mapID target="kenai_create" url="collab/kenai_create.html" />
+<mapID target="kenai_share" url="collab/kenai_share.html" />
 <mapID target="kenai_workingwith" url="collab/kenai_dashboard.html" />
 <mapID target="kenai_quickref" url="collab/kenai_quickref.html" />
+<mapID target="kenai_members" url="collab/kenai_members.html" />
+<mapID target="kenai_opening" url="collab/kenai_opening.html" />
 
 
 
 <!-- Collaboration csh topics-->
 <mapID target="org.netbeans.modules.kenai.ui.NameAndLicenseWizardPanel" url="collab/csh/new_kenai_project1.html" />
 <mapID target="org.netbeans.modules.kenai.ui.SourceAndIssuesWizardPanel" url="collab/csh/new_kenai_project2.html" />
+<mapID target="org.netbeans.modules.kenai.ui.ShareOnKenai" url="collab/csh/share_kenai_project.html" />
+
+<!-- Issue tracking topics -->
+<mapID target="issues_trackers" url="collab/issues_about.html" />
+<mapID target="issues_workingwith" url="collab/issues_working.html" />
+<mapID target="issues_external" url="collab/issues_external.html" />
+<mapID target="issues_quickref" url="collab/issues_quickref.html" />
 
 <!-- Issue tracking csh topics-->
 <mapID target="org.netbeans.modules.bugzilla.repository.RepositoryController" url="collab/csh/issues_create_tracker.html" />
 <mapID target="org.netbeans.modules.bugzilla.util.KeywordsPanel" url="collab/csh/issues_select_keyword.html" />
 <mapID target="org.netbeans.modules.bugzilla.commands.HtmlPanel" url="collab/csh/issues_html_response.html" />
 <mapID target="org.netbeans.modules.bugzilla.query.savePanel" url="collab/csh/issues_save_query.html" />
+<mapID target="org.netbeans.modules.bugtracking.patchContextChooser" url="collab/csh/issues_patchcontextchooser.html" />
 
 <!-- Issue tracking csh topic for parameter dialog in vcs commit dialog -->
 <mapID target="org.netbeans.modules.bugtracking.vcs.FormatPanel" url="collab/csh/issues_vcs_parameterformat.html" />
 
 <!-- Issue tracking csh topic for Options window -->
 <mapID target="org.netbeans.modules.bugzilla.options.BugzillaOptionsController" url="collab/csh/issues_options.html" />
-
-
 
 
 </map>

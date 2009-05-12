@@ -23,8 +23,8 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="lblHint1" alignment="0" pref="564" max="32767" attributes="0"/>
-                  <Component id="lblHint2" alignment="0" pref="564" max="32767" attributes="0"/>
+                  <Component id="lblHint1" alignment="0" pref="566" max="32767" attributes="0"/>
+                  <Component id="lblHint2" alignment="0" pref="566" max="32767" attributes="0"/>
                   <Component id="cbDebug" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="cbDeprecate" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
@@ -34,14 +34,14 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="comJavaPlatform" pref="252" max="32767" attributes="2"/>
-                          <Component id="comCompileOnSave" alignment="0" pref="252" max="32767" attributes="2"/>
+                          <Component id="comJavaPlatform" pref="302" max="32767" attributes="2"/>
+                          <Component id="comCompileOnSave" alignment="0" pref="302" max="32767" attributes="2"/>
                       </Group>
                       <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
                       <Component id="btnMngPlatform" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="lblWarnPlatform" pref="355" max="32767" attributes="0"/>
+                      <Component id="lblWarnPlatform" pref="389" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="btnSetupHome" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -71,7 +71,7 @@
               <Component id="cbDebug" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="cbDeprecate" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="64" max="32767" attributes="0"/>
+              <EmptySpace pref="109" max="32767" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="btnSetupHome" min="-2" max="-2" attributes="0"/>
                   <Component id="lblWarnPlatform" min="-2" max="-2" attributes="0"/>
@@ -142,6 +142,11 @@
           <ResourceString bundle="org/netbeans/modules/maven/customizer/Bundle.properties" key="CompilePanel.btnMngPlatform.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/maven/customizer/Bundle.properties" key="CompilePanel.btnMngPlatform.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnMngPlatformActionPerformed"/>
       </Events>
@@ -159,6 +164,11 @@
           <ResourceString bundle="org/netbeans/modules/maven/customizer/Bundle.properties" key="CompilePanel.btnSetupHome.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/maven/customizer/Bundle.properties" key="CompilePanel.btnSetupHome.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnSetupHomeActionPerformed"/>
       </Events>

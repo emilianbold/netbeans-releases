@@ -91,6 +91,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
@@ -102,7 +103,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
+import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 import org.openide.filesystems.FileObject;
@@ -531,7 +532,7 @@ public class SourceUtils {
                 }
                 if (fo != null) {
                     URL url = fo.getURL();
-                    sourceRoot = null;//XXX: Index.getSourceRootForClassFolder(url);
+                    sourceRoot = JavaIndex.getSourceRootForClassFolder(url);
                     if (sourceRoot == null) {
                         binaries.add(url);
                     } else {
@@ -707,7 +708,7 @@ out:                    for (URL e : roots) {
      * @since 0.10
      */
     public static Set<URL> getDependentRoots (final URL root) {
-        final Map<URL, List<URL>> deps = RepositoryUpdater.getDefault().getDependencies ();
+        final Map<URL, List<URL>> deps = IndexingController.getDefault().getRootDependencies();
         return getDependentRootsImpl (root, deps);
     }
     

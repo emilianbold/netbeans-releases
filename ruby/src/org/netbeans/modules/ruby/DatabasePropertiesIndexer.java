@@ -253,6 +253,10 @@ final class DatabasePropertiesIndexer {
             Map<String, FileObject> fileUrls,
             Set<String> currentCols) {
 
+        if (kind == QuerySupport.Kind.EXACT) {
+            return;
+        }
+
         List<FinderMethod> finders = new ArrayList<FinderMethod>(FindersHelper.getFinderSignatures(prefix, currentCols));
 
         for (FindersHelper.FinderMethod finder : finders) {

@@ -58,6 +58,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -162,6 +164,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
         }
     }
 
+    private static Logger log = Logger.getLogger(DelegateMethodGenerator.class.getName());
     public static ElementNode.Description getAvailableMethods(final JTextComponent component, final ElementHandle<? extends Element> elementHandle) {
         if (elementHandle.getKind().isField()) {
             JavaSource js = JavaSource.forDocument(component.getDocument());
@@ -172,6 +175,14 @@ public class DelegateMethodGenerator implements CodeGenerator {
                     js.runUserActionTask(new Task<CompilationController>() {
 
                         public void run(CompilationController controller) throws IOException {
+                            if (controller.getPhase().compareTo(JavaSource.Phase.PARSED) < 0) {
+                                JavaSource.Phase phase = controller.toPhase(JavaSource.Phase.PARSED);
+                                if (phase.compareTo(JavaSource.Phase.PARSED) < 0) {
+                                    if (log.isLoggable(Level.SEVERE))
+                                        log.log(Level.SEVERE, "Cannot reach required phase. Leaving without action.");
+                                    return;
+                                }
+                            }
                             description[0] = getAvailableMethods(controller, caretOffset, elementHandle);
                         }
                     }, true);

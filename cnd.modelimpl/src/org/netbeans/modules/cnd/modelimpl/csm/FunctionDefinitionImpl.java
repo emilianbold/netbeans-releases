@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
@@ -67,16 +66,9 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     public FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
         super(ast, file, scope, false, global);
         body = AstRenderer.findCompoundStatement(ast, getContainingFile(), this);
-        boolean assertionCondition = body != null;
-        if (!assertionCondition) {
-            if (register) {
-                RepositoryUtils.hang(this);
-            } else {
-                Utils.setSelfUID(this);
-            }
+        if (body == null) {
             throw new AstRendererException((FileImpl) file, getStartOffset(),
                     "Null body in function definition."); // NOI18N
-        //assert body != null : "null body in function definition, line " + getStartPosition().getLine() + ":" + file.getAbsolutePath();
         }
         if (register) {
             registerInProject();
@@ -103,7 +95,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 
     public CsmFunction getDeclaration(Resolver parent) {
         CsmFunction declaration = _getDeclaration();
-        if (declaration == null) {
+        if (declaration == null || isFakeFunction(declaration)) {
             int newCount = FileImpl.getParseCount();
             if (newCount == parseCount) {
                 return null;
@@ -158,8 +150,9 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 
     private CsmFunction findDeclaration(Resolver parent) {
         String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
-        CsmDeclaration def = getContainingFile().getProject().findDeclaration(uname);
-        if (def == null) {
+        Collection<? extends CsmDeclaration> defs = getContainingFile().getProject().findDeclarations(uname);
+        CsmDeclaration def = null;
+        if (defs.isEmpty()) {
             CsmObject owner = findOwner(parent);
             if (owner instanceof CsmClass) {
                 Iterator<CsmMember> it = CsmSelect.getClassMembers((CsmClass) owner,
@@ -173,21 +166,27 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
                         CsmSelect.getFilterBuilder().createNameFilter(getName(), true, true, false));
                 def = findByName(it, getName());
             }
+        } else {
+            def = findByName(defs.iterator(), getName());
         }
         return (CsmFunction) def;
     }
 
     private static CsmFunction findByName(Iterator declarations, CharSequence name) {
+        CsmFunction out = null;
         for (Iterator it = declarations; it.hasNext();) {
             Object o = it.next();
             if (CsmKindUtilities.isCsmObject(o) && CsmKindUtilities.isFunction((CsmObject) o)) {
                 CsmFunction decl = (CsmFunction) o;
                 if (decl.getName().equals(name)) {
-                    return decl;
+                    out = decl;
+                    if (!isFakeFunction(decl)) {
+                        break;
+                    }
                 }
             }
         }
-        return null;
+        return out;
     }
 
     @Override
@@ -238,5 +237,9 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 
         // read cached declaration
         this.declarationUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+    }
+
+    private static boolean isFakeFunction(CsmFunction declaration) {
+        return declaration instanceof FunctionImplEx;
     }
 }

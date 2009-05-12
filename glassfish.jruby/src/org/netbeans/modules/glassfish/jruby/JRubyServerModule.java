@@ -64,6 +64,7 @@ import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.glassfish.jruby.ui.JRubyServerCustomizer;
 import org.netbeans.modules.glassfish.spi.Recognizer;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.glassfish.spi.CustomizerCookie;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
@@ -171,6 +172,9 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie, Recogn
                         "Running project with current V3 Rails platform " + currentPlatformDir + 
                         " rather than requested platform " + requestedPlatformDir);
             }
+            RubyPlatform.Info info = platform.getInfo();
+            commonModule.setEnvironmentProperty(GlassfishModule.GEM_HOME, info.getGemHome(), false);
+            commonModule.setEnvironmentProperty(GlassfishModule.GEM_PATH, info.getGemPath(), false);
 
             GlassfishModule.ServerState state = commonModule.getServerState();
             if(state == GlassfishModule.ServerState.STOPPED || 

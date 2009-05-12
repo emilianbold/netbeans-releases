@@ -90,7 +90,6 @@ import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.options.DontShowAgainSettings;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -388,6 +387,7 @@ public class ActionMappings extends javax.swing.JPanel {
             }
         });
         jScrollPane1.setViewportView(lstMappings);
+        lstMappings.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.lstMappings.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(btnAdd, org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.btnAdd.text")); // NOI18N
         btnAdd.addActionListener(new java.awt.event.ActionListener() {
@@ -403,8 +403,10 @@ public class ActionMappings extends javax.swing.JPanel {
             }
         });
 
+        lblGoals.setLabelFor(txtGoals);
         org.openide.awt.Mnemonics.setLocalizedText(lblGoals, org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.lblGoals.text")); // NOI18N
 
+        lblProfiles.setLabelFor(txtProfiles);
         org.openide.awt.Mnemonics.setLocalizedText(lblProfiles, org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.lblProfiles.text")); // NOI18N
 
         lblProperties.setLabelFor(taProperties);
@@ -413,6 +415,7 @@ public class ActionMappings extends javax.swing.JPanel {
         taProperties.setColumns(20);
         taProperties.setRows(5);
         jScrollPane3.setViewportView(taProperties);
+        taProperties.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.taProperties.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(cbRecursively, org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.cbRecursively.text")); // NOI18N
         cbRecursively.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -436,6 +439,7 @@ public class ActionMappings extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cbBuildWithDeps, org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.cbBuildWithDeps.text")); // NOI18N
 
+        lblDirectory.setLabelFor(txtDirectory);
         org.openide.awt.Mnemonics.setLocalizedText(lblDirectory, org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.lblDirectory.text")); // NOI18N
 
         txtDirectory.setEditable(false);
@@ -455,7 +459,7 @@ public class ActionMappings extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(cbCommandLine)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 116, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 183, Short.MAX_VALUE)
                         .add(btnSetup, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 229, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 621, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
@@ -469,10 +473,10 @@ public class ActionMappings extends javax.swing.JPanel {
                             .add(lblDirectory))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(txtProfiles, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
-                            .add(txtGoals, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
+                            .add(txtProfiles, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE)
+                            .add(txtGoals, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)
+                                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(btnRemove)
@@ -481,12 +485,12 @@ public class ActionMappings extends javax.swing.JPanel {
                                 .add(cbRecursively)
                                 .add(18, 18, 18)
                                 .add(cbBuildWithDeps))
-                            .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
+                            .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(comConfiguration, 0, 358, Short.MAX_VALUE)
+                                .add(comConfiguration, 0, 389, Short.MAX_VALUE)
                                 .add(143, 143, 143))
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(txtDirectory, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 272, Short.MAX_VALUE)
+                                .add(txtDirectory, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 351, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(btnDirectory)))))
                 .addContainerGap())
@@ -539,10 +543,22 @@ public class ActionMappings extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 105, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
+
+        btnSetup.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.btnSetup.AccessibleContext.accessibleDescription")); // NOI18N
+        comConfiguration.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.comConfiguration.AccessibleContext.accessibleDescription")); // NOI18N
+        btnAdd.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.btnAdd.AccessibleContext.accessibleDescription")); // NOI18N
+        btnRemove.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.btnRemove.AccessibleContext.accessibleDescription")); // NOI18N
+        txtGoals.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.txtGoals.AccessibleContext.accessibleDescription")); // NOI18N
+        txtProfiles.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.txtProfiles.AccessibleContext.accessibleDescription")); // NOI18N
+        btnAddProps.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.btnAddProps.AccessibleContext.accessibleDescription")); // NOI18N
+        cbBuildWithDeps.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.cbBuildWithDeps.AccessibleContext.accessibleDescription")); // NOI18N
+        txtDirectory.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.txtDirectory.AccessibleContext.accessibleDescription")); // NOI18N
+        btnDirectory.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.btnDirectory.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
-private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
-    NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine(org.openide.util.NbBundle.getMessage(ActionMappings.class, "TIT_Add_action"), org.openide.util.NbBundle.getMessage(ActionMappings.class, "LBL_AddAction"));//GEN-HEADEREND:event_btnAddActionPerformed
+//GEN-FIRST:event_btnAddActionPerformed
+private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADEREND:event_btnAddActionPerformed
+    NotifyDescriptor.InputLine nd = new NonEmptyInputLine(org.openide.util.NbBundle.getMessage(ActionMappings.class, "TIT_Add_action"), org.openide.util.NbBundle.getMessage(ActionMappings.class, "LBL_AddAction"));
     Object ret = DialogDisplayer.getDefault().notify(nd);
     if (ret == NotifyDescriptor.OK_OPTION) {
         NetbeansActionMapping nam = new NetbeansActionMapping();
@@ -1257,4 +1273,31 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         }
 
     }
+
+    private static class NonEmptyInputLine extends NotifyDescriptor.InputLine implements DocumentListener {
+
+        public NonEmptyInputLine(String text, String title) {
+            super(text, title);
+            textField.getDocument().addDocumentListener(this);
+            checkValid();
+        }
+
+        public void insertUpdate(DocumentEvent arg0) {
+            checkValid();
+        }
+
+        public void removeUpdate(DocumentEvent arg0) {
+            checkValid();
+        }
+
+        public void changedUpdate(DocumentEvent arg0) {
+            checkValid();
+        }
+
+        private void checkValid () {
+            setValid(textField.getText() != null && textField.getText().trim().length() > 0);
+        }
+
+    }
+
 }

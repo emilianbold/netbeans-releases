@@ -137,10 +137,6 @@ public final class FeatureInfo {
         return info;
     }
 
-    public String getProfilerAttachName() {
-        return properties.getProperty("profilerAttachName");
-    }
-
     public Object getProjectImporter() {
         return properties.getProperty("projectImporter");
     }
@@ -148,9 +144,19 @@ public final class FeatureInfo {
     String getPreferredCodeNameBase() {
         return properties.getProperty("mainModule");
     }
+    String getFeatureCodeNameBase() {
+        String f = properties.getProperty("featureModule");
+        if (f != null) {
+            return f.length() == 0 ? null : f;
+        }
+        return getPreferredCodeNameBase();
+    }
 
-    boolean isEnabled() {
+    public final boolean isEnabled() {
         for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+            if (!FeatureManager.showInAU(mi)) {
+                continue;
+            }
             if (cnbs.contains(mi.getCodeNameBase())) {
                 return mi.isEnabled();
             }
@@ -164,14 +170,16 @@ public final class FeatureInfo {
 
     public synchronized FileSystem getXMLFileSystem() {
         if (fs == null) {
-            URL url = delegateLayer;
-            if (url != null) {
-                try {
-                    fs = new XMLFileSystem(url);
-                    return fs;
-                } catch (SAXException ex) {
-                    FoDFileSystem.LOG.log(Level.SEVERE, "Cannot parse: " + url, ex);
-                    Exceptions.printStackTrace(ex);
+            if (doParseXML()) {
+                URL url = delegateLayer;
+                if (url != null) {
+                    try {
+                        fs = new XMLFileSystem(url);
+                        return fs;
+                    } catch (SAXException ex) {
+                        FoDFileSystem.LOG.log(Level.SEVERE, "Cannot parse: " + url, ex);
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
             fs = FileUtil.createMemoryFileSystem();
@@ -184,7 +192,7 @@ public final class FeatureInfo {
      *          2 = I am interested to be turned on when this project is opened
      */
     int isProject(FeatureProjectFactory.Data data) {
-        FoDFileSystem.LOG.log(Level.FINE, "Checking project {0}", data);
+        FeatureProjectFactory.LOG.log(Level.FINE, "Checking project {0}", data);
         int toRet;
         if (isNbProject(data)) {
             toRet = 1;
@@ -195,15 +203,15 @@ public final class FeatureInfo {
                 toRet = 0;
                 for (Object[] required : files.keySet()) {
                     String s = (String)required[0];
-                    FoDFileSystem.LOG.log(Level.FINER, "    checking file {0}", s);
+                    FeatureProjectFactory.LOG.log(Level.FINER, "    checking file {0}", s);
                     if (data.hasFile(s)) {
-                        FoDFileSystem.LOG.log(Level.FINER, "    found", s);
+                        FeatureProjectFactory.LOG.log(Level.FINER, "    found", s);
                         if (data.isDeepCheck() && required[1] != null) {
                             XPathExpression e = (XPathExpression)required[1];
                             Document content = data.dom(s);
                             try {
                                 String res = e.evaluate(content);
-                                FoDFileSystem.LOG.log(
+                                FeatureProjectFactory.LOG.log(
                                     Level.FINER,
                                     "Parsed result {0} of type {1}",
                                     new Object[] {
@@ -214,7 +222,7 @@ public final class FeatureInfo {
                                     toRet = 2;
                                 }
                             } catch (XPathExpressionException ex) {
-                                Exceptions.printStackTrace(ex);
+                                FeatureProjectFactory.LOG.log(Level.INFO, "Cannot parse " + data, ex);
                             }
                         } else {
                             toRet = 1;
@@ -224,7 +232,7 @@ public final class FeatureInfo {
                 }
             }
         }
-        FoDFileSystem.LOG.log(Level.FINE, "  isProject: {0}", toRet);
+        FeatureProjectFactory.LOG.log(Level.FINE, "  isProject: {0}", toRet);
         return toRet;
     }
 
@@ -250,11 +258,11 @@ public final class FeatureInfo {
             return false;
         } else {
             if (!data.hasFile("nbproject/project.xml")) { // NOI18N
-                FoDFileSystem.LOG.log(Level.FINEST, "    nbproject/project.xml not found"); // NOI18N
+                FeatureProjectFactory.LOG.log(Level.FINEST, "    nbproject/project.xml not found"); // NOI18N
                 return false;
             }
             if (!data.isDeepCheck()) {
-                FoDFileSystem.LOG.log(Level.FINEST, "    no deep check, OK"); // NOI18N
+                FeatureProjectFactory.LOG.log(Level.FINEST, "    no deep check, OK"); // NOI18N
                 return true;
             }
             String text = data.is("nbproject/project.xml"); // NOI18N
@@ -264,13 +272,13 @@ public final class FeatureInfo {
             for (String t : nbproject.keySet()) {
                 final String pattern = "<type>" + t + "</type>"; // NOI18N
                 if (text.indexOf(pattern) >= 0) { // NOI18N
-                    FoDFileSystem.LOG.log(Level.FINEST, "    '" + pattern + "' found, OK"); // NOI18N
+                    FeatureProjectFactory.LOG.log(Level.FINEST, "    '" + pattern + "' found, OK"); // NOI18N
                     return true;
                 } else {
-                    FoDFileSystem.LOG.log(Level.FINEST, "    '" + pattern + "' not found"); // NOI18N
+                    FeatureProjectFactory.LOG.log(Level.FINEST, "    '" + pattern + "' not found"); // NOI18N
                 }
             }
-            FoDFileSystem.LOG.log(Level.FINEST, "    not accepting"); // NOI18N
+            FeatureProjectFactory.LOG.log(Level.FINEST, "    not accepting"); // NOI18N
             return false;
         }
     }
@@ -306,5 +314,9 @@ public final class FeatureInfo {
             }
         }
         return map;
+    }
+
+    static boolean doParseXML() {
+        return !Boolean.getBoolean("org.netbeans.modules.ide.ergonomics.noparse"); // NOI18N
     }
 }

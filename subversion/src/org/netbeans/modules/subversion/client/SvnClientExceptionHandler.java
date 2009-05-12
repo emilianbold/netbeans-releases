@@ -80,7 +80,6 @@ import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.ProxySettings;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -175,7 +174,7 @@ public class SvnClientExceptionHandler {
     }
        
     public boolean handleKenaiAuthorisation(SvnKenaiSupport support, String url) {
-        PasswordAuthentication pa = support.getPasswordAuthentication(url, true);
+        PasswordAuthentication pa = support.getPasswordAuthentication(true);
         if(pa == null) {
             return false;
         }
@@ -195,7 +194,7 @@ public class SvnClientExceptionHandler {
 
         SvnKenaiSupport support = SvnKenaiSupport.getInstance();
         if(support.isKenai(url.toString())) {
-            return handleKenaiAuthorisation(support, url.toString());
+            return support.showLogin() && handleKenaiAuthorisation(support, url.toString());
         } else {
             Repository repository = new Repository(Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
             repository.selectUrl(url, true);
@@ -587,7 +586,7 @@ public class SvnClientExceptionHandler {
         return message.indexOf("operation canceled") > -1;
     }
 
-    private static boolean isAuthentication(String msg) {   
+    public static boolean isAuthentication(String msg) {
         msg = msg.toLowerCase();       
         return msg.indexOf("authentication error from server: username not found") > - 1 || // NOI18N
                msg.indexOf("authorization failed") > - 1 ||                                 // NOI18N
@@ -597,7 +596,7 @@ public class SvnClientExceptionHandler {
                msg.indexOf("can't get username or password") > - 1;                         // NOI18N
     }
 
-    private static boolean isNoCertificate(String msg) {
+    public static boolean isNoCertificate(String msg) {
         msg = msg.toLowerCase();       
         return msg.indexOf("server certificate verification failed") > -1;                  // NOI18N
     }

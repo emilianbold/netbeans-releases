@@ -72,6 +72,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -86,6 +87,7 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.Models;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -142,20 +144,9 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 0, 3);
         rightPanel.add(dropDownButton, gridBagConstraints);
-
-        final Document[] documentPtr = new Document[] { null };
-        ActionListener contextUpdated = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (codePane.getDocument() != documentPtr[0]) {
-                    codePane.getDocument().addDocumentListener(CodeEvaluator.this);
-                }
-            }
-        };
-        WatchPanel.setupContext(codePane, contextUpdated);
+        setupContext();
         editorScrollPane.setViewportView(codePane);
-        codePane.getDocument().addDocumentListener(this);
         codePane.addKeyListener(this);
-        documentPtr[0] = codePane.getDocument();
         dbgManagerListener = new DbgManagerListener (this);
         DebuggerManager.getDebuggerManager().addDebuggerListener(
                 DebuggerManager.PROP_CURRENT_SESSION,
@@ -216,6 +207,27 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         action.putValue(Action.SHORT_DESCRIPTION, tooltipText);
         button.setAction(action);
         return button;
+    }
+
+    private void setupContext() {
+        final String text = codePane.getText();
+        final Document[] documentPtr = new Document[] { null };
+        ActionListener contextUpdated = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (codePane.getDocument() != documentPtr[0]) {
+                    codePane.getDocument().addDocumentListener(CodeEvaluator.this);
+                    if (text != null) {
+                        codePane.setText(text);
+                    }
+                }
+            }
+        };
+        WatchPanel.setupContext(codePane, contextUpdated);
+        codePane.getDocument().addDocumentListener(this);
+        if (text != null) {
+            codePane.setText(text);
+        }
+        documentPtr[0] = codePane.getDocument();
     }
 
     private SwitcherTableItem[] createSwitcherItems() {
@@ -290,17 +302,15 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                 }
                 JPDADebugger lastDebugger = debuggerRef.get();
                 if (lastDebugger != null && debugger != lastDebugger) {
-                    lastDebugger.removePropertyChangeListener(
-                            JPDADebugger.PROP_CURRENT_THREAD,
-                            CodeEvaluator.this);
+                    lastDebugger.removePropertyChangeListener(JPDADebugger.PROP_CURRENT_THREAD, CodeEvaluator.this);
+                    lastDebugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, CodeEvaluator.this);
                     debuggerRef = new WeakReference(null);
                     displayResult(null);
                 }
                 if (debugger != null) {
                     debuggerRef = new WeakReference(debugger);
-                    debugger.addPropertyChangeListener(
-                            JPDADebugger.PROP_CURRENT_THREAD,
-                            CodeEvaluator.this);
+                    debugger.addPropertyChangeListener(JPDADebugger.PROP_CURRENT_THREAD, CodeEvaluator.this);
+                    debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, CodeEvaluator.this);
                 } else {
                     historyPanel.clearHistory();
                 }
@@ -312,7 +322,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     private void computeEvaluationButtonState() {
         JPDADebugger debugger = debuggerRef.get();
         boolean isEnabled = debugger != null && debugger.getCurrentThread() != null &&
-                codePane.getDocument().getLength() > 0 &&
+                debugger.getState() == JPDADebugger.STATE_STOPPED && codePane.getDocument().getLength() > 0 &&
                 editorScrollPane.getViewport().getView() == codePane;
         evaluateButton.setEnabled(isEnabled);
     }
@@ -529,10 +539,11 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
             if (debuggerRef.get() != null) {
                 evaluate();
             }
-        } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-            e.consume();
-            close();
         }
+//        } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+//            e.consume();
+//            close();
+//        }
     }
 
     public void keyReleased(KeyEvent e) {
@@ -565,17 +576,42 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
     // PropertyChangeListener on current thread .................................
 
-    public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                synchronized (this) {
-                    JPDADebugger debugger = debuggerRef.get();
-                    if (debugger != null) {
-                        computeEvaluationButtonState();
+    public void propertyChange(PropertyChangeEvent event) {
+        if (JPDADebugger.PROP_CURRENT_THREAD.equals(event.getPropertyName())) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    synchronized (this) {
+                        JPDADebugger debugger = debuggerRef.get();
+                        if (debugger != null) {
+                            computeEvaluationButtonState();
+                            setupContext();
+                        }
                     }
                 }
-            }
-        });
+            });
+        } else if (JPDADebugger.PROP_STATE.equals(event.getPropertyName())) {
+            synchronized (this) {
+                JPDADebugger debugger = debuggerRef.get();
+                if (debugger != null && debugger.getState() != JPDADebugger.STATE_STOPPED) {
+                    if (result != null) {
+                        historyPanel.addItem(lastEvaluationRecord.expr, lastEvaluationRecord.type,
+                            lastEvaluationRecord.value, lastEvaluationRecord.toString);
+                        lastEvaluationRecord = null;
+                        result = null;
+                        fireResultChange();
+                    } // if
+                } // if
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        JPDADebugger debugger = debuggerRef.get();
+                        if (debugger != null && debugger.getState() == JPDADebugger.STATE_STOPPED) {
+                            setupContext();
+                        }
+                        computeEvaluationButtonState();
+                    }
+                });
+            } // synchronized
+        }
     }
 
     // ..........................................................................

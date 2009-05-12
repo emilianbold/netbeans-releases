@@ -78,6 +78,7 @@ import org.netbeans.installer.utils.helper.ExecutionMode;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
+import org.netbeans.installer.utils.helper.swing.NbiFrame;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiScrollPane;
@@ -90,6 +91,7 @@ import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMe
 import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelUi;
 import org.netbeans.installer.wizard.components.panels.JdkLocationPanel;
 import org.netbeans.installer.wizard.containers.SwingContainer;
+import org.netbeans.installer.wizard.containers.SwingFrameContainer;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
 
@@ -180,6 +182,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 DEFAULT_ERROR_NO_CHANGES);
         setProperty(ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY,
                 DEFAULT_ERROR_NO_CHANGES_INSTALL_ONLY);
+        setProperty(ERROR_NO_RUNTIMES_INSTALL_ONLY_PROPERTY,
+                DEFAULT_ERROR_NO_RUNTIMES_INSTALL_ONLY);
         setProperty(ERROR_NO_CHANGES_UNINSTALL_ONLY_PROPERTY,
                 DEFAULT_ERROR_NO_CHANGES_UNINSTALL_ONLY);
         setProperty(ERROR_REQUIREMENT_INSTALL_PROPERTY,
@@ -466,6 +470,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         private List<RegistryNode> registryNodes;
         
         private boolean everythingIsInstalled;
+        private boolean netBeansIsInstalled;
         
         ValidatingThread validatingThread;
         
@@ -552,7 +557,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             for (RegistryNode node: registryNodes) {
                 if (node instanceof Product) {
                     final Product product = (Product) node;
-                    
+                    final String productUid = product.getUid();
+
                     if (product.getStatus() == Status.INSTALLED) {
                         if(type.equals(BundleType.CUSTOMIZE) || type.equals(BundleType.CUSTOMIZE_JDK) || type.equals(BundleType.JAVA)) {
                             welcomeText.append(StringUtils.format(
@@ -565,8 +571,14 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                                     panel.getProperty(WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE_PROPERTY),
                                     node.getDisplayName()));
                         }
+                        if(productUid.startsWith("nb-")) {
+                            netBeansIsInstalled = false;
+                        }
                         everythingIsInstalled = false;
                     } else if ((product.getStatus() == Status.NOT_INSTALLED)) {
+                        if(productUid.startsWith("nb-")) {
+                            netBeansIsInstalled = false;
+                        }
                         everythingIsInstalled = false;
                     } else {
                         continue;
@@ -638,9 +650,13 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             
             final List<Product> products =
                     Registry.getInstance().getProductsToInstall();
-            
+
             if (products.size() == 0) {
-                return panel.getProperty(ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY);
+                    // if  (!everythingIsInstalled) && (netBeansIsInstalled)
+                    // => there are runtimes to install => show ERROR_NO_RUNTIMES_INSTALL_ONLY_PROPERTY
+                return netBeansIsInstalled?
+                     panel.getProperty(ERROR_NO_RUNTIMES_INSTALL_ONLY_PROPERTY):
+                     panel.getProperty(ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY);
             }
             
             String template = panel.getProperty(
@@ -926,8 +942,12 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                         initialize();
                     }
                 };
-                
+                NbiFrame owner = null;
+                if(container instanceof SwingFrameContainer) {
+                    owner = (SwingFrameContainer) container;
+                }
                 customizeDialog = new NbCustomizeSelectionDialog(
+                        owner,
                         panel,
                         callback,
                         registryNodes);
@@ -1208,6 +1228,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             "error.no.changes.both"; // NOI18N
     public static final String ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY =
             "error.no.changes.install"; // NOI18N
+    public static final String ERROR_NO_RUNTIMES_INSTALL_ONLY_PROPERTY =
+            "error.no.runtimes.install"; // NOI18N
     public static final String ERROR_NO_CHANGES_UNINSTALL_ONLY_PROPERTY =
             "error.no.changes.uninstall"; // NOI18N
     public static final String ERROR_REQUIREMENT_INSTALL_PROPERTY =
@@ -1235,6 +1257,9 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     public static final String DEFAULT_ERROR_NO_CHANGES_INSTALL_ONLY =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.error.no.changes.install"); // NOI18N
+    public static final String DEFAULT_ERROR_NO_RUNTIMES_INSTALL_ONLY =
+            ResourceUtils.getString(NbWelcomePanel.class,
+            "NWP.error.no.runtimes.install"); // NOI18N
     public static final String DEFAULT_ERROR_NO_CHANGES_UNINSTALL_ONLY =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.error.no.changes.uninstall"); // NOI18N

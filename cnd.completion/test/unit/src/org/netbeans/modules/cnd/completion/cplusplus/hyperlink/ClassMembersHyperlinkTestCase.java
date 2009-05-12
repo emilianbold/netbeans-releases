@@ -50,6 +50,13 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ151584() throws Exception {
+        // IZ#151584:
+        performTest("iz151584.cpp", 2, 10, "iz151584.cpp", 2, 5);
+        performTest("iz151584.cpp", 4, 15, "iz151584.cpp", 4, 9);
+        performTest("iz151584.cpp", 6, 20, "iz151584.cpp", 6, 13);
+    }
+
     public void testIZ162280() throws Exception {
         // IZ#162280: Inaccuracy tests: regression in Boost and Vlc
         performTest("iz162280.cpp", 33, 20, "iz162280.cpp", 30, 9);
@@ -829,10 +836,34 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz160677.cc", 6, 14, "iz160677.cc", 2, 5);
     }
 
+    public void testIZ104943() throws Exception {
+        // IZ#104943 : Hyperlink works wrong on overloaded methods with pointer
+        performTest("iz104943.cc", 3, 12, "iz104943.cc", 8, 1);
+        performTest("iz104943.cc", 4, 12, "iz104943.cc", 12, 1);
+        performTest("iz104943.cc", 5, 12, "iz104943.cc", 16, 1);
+        performTest("iz104943.cc", 8, 20, "iz104943.cc", 3, 5);
+        performTest("iz104943.cc", 12, 20, "iz104943.cc", 4, 5);
+        performTest("iz104943.cc", 16, 20, "iz104943.cc", 5, 5);
+    }
+
+    public void testIZ104945() throws Exception {
+        // IZ#104945 : Hyperlink works wrong on overloaded methods with const
+        performTest("iz104945.cc", 3, 12, "iz104945.cc", 10, 1);
+        performTest("iz104945.cc", 4, 12, "iz104945.cc", 14, 1);
+        performTest("iz104945.cc", 5, 12, "iz104945.cc", 18, 1);
+        performTest("iz104945.cc", 6, 12, "iz104945.cc", 22, 1);
+        performTest("iz104945.cc", 7, 12, "iz104945.cc", 26, 1);
+        performTest("iz104945.cc", 10, 20, "iz104945.cc", 3, 5);
+        performTest("iz104945.cc", 14, 20, "iz104945.cc", 4, 5);
+        performTest("iz104945.cc", 18, 20, "iz104945.cc", 5, 5);
+        performTest("iz104945.cc", 22, 20, "iz104945.cc", 6, 5);
+        performTest("iz104945.cc", 26, 20, "iz104945.cc", 7, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
-        protected Class getTestCaseDataClass() {
+        protected Class<?> getTestCaseDataClass() {
             return ClassMembersHyperlinkTestCase.class;
         }
 

@@ -51,21 +51,25 @@ import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Jan Lahoda, Dusan Balek
  */
-public class JavaIndex {
+public final class JavaIndex {
 
     public static final String NAME = "java"; //NOI18N
-    public static final int VERSION = 12;
+    public static final int VERSION = 13;
     static final Logger LOG = Logger.getLogger(JavaIndex.class.getName());
     private static final String CLASSES = "classes"; //NOI18N
     private static final String ATTR_FILE_NAME = "attributes.properties"; //NOI18N
@@ -204,5 +208,34 @@ public class JavaIndex {
         }
         result.mkdirs();
         return result;
+    }
+
+    public static boolean isLibrary (final ClassPath cp) {
+        assert cp != null;
+        for (FileObject fo : cp.getRoots()) {
+            if (isLibrary (fo)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isLibrary (final FileObject root) {
+        assert root != null;
+        try {
+            return isLibrary(root.getURL());
+        } catch (FileStateInvalidException e) {
+            Exceptions.printStackTrace(e);
+            return true;    //Safer
+        }
+    }
+
+    public static boolean isLibrary (final URL root) {
+        assert root != null;
+        return ClassIndexManager.getDefault().getUsagesQuery(root) == null;
+    }
+
+    private JavaIndex() {
+        
     }
 }

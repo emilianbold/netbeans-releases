@@ -47,6 +47,8 @@ import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.netbeans.modules.php.project.ui.actions.tests.GoToTest;
 import org.netbeans.spi.gototest.TestLocator.LocationResult;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -65,13 +67,18 @@ public class RunTestCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(Lookup context) {
-        assert findTest(context) != null : "File object for Test action must be found if action is enabled";
-        getProject().getLookup().lookup(ActionProvider.class).invokeAction(RunFileCommand.ID, Lookups.fixed(findTest(context)));
+        FileObject testClass = findTest(context);
+        if (testClass == null) {
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(NbBundle.getMessage(RunTestCommand.class, "MSG_TestNotFound")));
+            return;
+        }
+        getProject().getLookup().lookup(ActionProvider.class).invokeAction(RunFileCommand.ID, Lookups.fixed(testClass));
     }
 
     @Override
     public boolean isActionEnabled(Lookup context) {
-        return findTest(context) != null;
+        return true;
     }
 
     @Override

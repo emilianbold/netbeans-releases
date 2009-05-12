@@ -56,30 +56,29 @@ import javax.swing.ImageIcon;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.jruby.nb.ast.CallNode;
-import org.jruby.nb.ast.ClassNode;
-import org.jruby.nb.ast.Colon2Node;
-import org.jruby.nb.ast.CommentNode;
-import org.jruby.nb.ast.ConstDeclNode;
-import org.jruby.nb.ast.ConstNode;
-import org.jruby.nb.ast.DefnNode;
-import org.jruby.nb.ast.DefsNode;
-import org.jruby.nb.ast.FCallNode;
-import org.jruby.nb.ast.GlobalAsgnNode;
-import org.jruby.nb.ast.InstAsgnNode;
-import org.jruby.nb.ast.ListNode;
-import org.jruby.nb.ast.LocalAsgnNode;
-import org.jruby.nb.ast.MethodDefNode;
-import org.jruby.nb.ast.ModuleNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.SClassNode;
-import org.jruby.nb.ast.StrNode;
-import org.jruby.nb.ast.SymbolNode;
-import org.jruby.nb.ast.types.INameNode;
-import org.jruby.nb.lexer.yacc.ISourcePosition;
-import org.jruby.nb.parser.RubyParserResult;
+import org.jrubyparser.ast.CallNode;
+import org.jrubyparser.ast.ClassNode;
+import org.jrubyparser.ast.Colon2Node;
+import org.jrubyparser.ast.CommentNode;
+import org.jrubyparser.ast.ConstDeclNode;
+import org.jrubyparser.ast.ConstNode;
+import org.jrubyparser.ast.DefnNode;
+import org.jrubyparser.ast.DefsNode;
+import org.jrubyparser.ast.FCallNode;
+import org.jrubyparser.ast.GlobalAsgnNode;
+import org.jrubyparser.ast.InstAsgnNode;
+import org.jrubyparser.ast.ListNode;
+import org.jrubyparser.ast.LocalAsgnNode;
+import org.jrubyparser.ast.MethodDefNode;
+import org.jrubyparser.ast.ModuleNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.SClassNode;
+import org.jrubyparser.ast.StrNode;
+import org.jrubyparser.ast.SymbolNode;
+import org.jrubyparser.ast.INameNode;
 import org.jruby.util.ByteList;
+import org.jrubyparser.SourcePosition;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -147,6 +146,9 @@ public class RubyStructureAnalyzer implements StructureScanner {
         }
 
         this.result = AstUtilities.getParseResult(result);
+        if (this.result == null) {
+            return Collections.<StructureItem>emptyList();
+        }
 
         AnalysisResult ar = this.result.getStructure();
         List<?extends AstElement> elements = ar.getElements();
@@ -258,7 +260,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
         AstPath path = new AstPath();
         path.descend(root);
         ContextKnowledge knowledge = new ContextKnowledge(index, root);
-        this.typeInferencer = new RubyTypeInferencer(knowledge);
+        this.typeInferencer = RubyTypeInferencer.normal(knowledge);
         // TODO: I should pass in a "default" context here to stash methods etc. outside of modules and classes
         scan(root, path, null, null, null);
         path.ascend();
@@ -487,7 +489,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             Set<String> includes,
             AstElement parent) {
         // Recursively search for methods or method calls that match the name and arity
-        switch (node.nodeId) {
+        switch (node.getNodeType()) {
         case CLASSNODE: {
             AstClassElement co = new AstClassElement(result, node);
             co.setIn(in);
@@ -586,12 +588,13 @@ public class RubyStructureAnalyzer implements StructureScanner {
             }
 
             if (node instanceof DefnNode) {
+                String name = AstUtilities.getName(node);
                 DefnNode defNode = (DefnNode) node;
                 Set<Node> exits = new LinkedHashSet<Node>();
                 AstUtilities.findExitPoints(defNode, exits);
                 RubyType type = new RubyType();
                 for (Node exitPoint : exits) {
-                    if (exitPoint.nodeId != NodeType.FCALLNODE) {
+                    if (exitPoint.getNodeType() != NodeType.FCALLNODE) {
                         type.append(typeInferencer.inferType(exitPoint));
                     }
                 }
@@ -718,7 +721,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                         // For dynamically computed strings, we have n instanceof DStrNode
                         // but I can't handle these anyway
                         if (n instanceof StrNode) {
-                            ByteList require = ((StrNode)n).getValue();
+                            String require = ((StrNode)n).getValue();
 
                             if ((require != null) && (require.length() > 0)) {
                                 requires.add(require.toString());
@@ -852,12 +855,12 @@ public class RubyStructureAnalyzer implements StructureScanner {
                                 // For dynamically computed strings, we have n instanceof DStrNode
                                 // but I can't handle these anyway
                                 if (n instanceof StrNode) {
-                                    ByteList descBl = ((StrNode)n).getValue();
+                                    String descBl = ((StrNode)n).getValue();
 
                                     if ((descBl != null) && (descBl.length() > 0)) {
                                         // No truncation? See 138259
                                         //desc = RubyUtils.truncate(descBl.toString(), MAX_RUBY_LABEL_LENGTH);
-                                        desc = descBl.toString();
+                                        desc = descBl;
                                         // Prepend the function type (unless it's test - see 138260
                                         if (!name.equals("test")) { // NOI18N
                                             desc = name+": " + desc; // NOI18N
@@ -1017,13 +1020,13 @@ public class RubyStructureAnalyzer implements StructureScanner {
             return;
         }
 
-        RubyParserResult r = result.getJRubyResult();
+        org.jrubyparser.parser.ParserResult r = result.getJRubyResult();
 
         // REALLY slow implementation
         List<CommentNode> comments = r.getCommentNodes();
 
         for (CommentNode comment : comments) {
-            ISourcePosition pos = comment.getPosition();
+            SourcePosition pos = comment.getPosition();
             int start = pos.getStartOffset();
             int end = pos.getEndOffset();
             Node node = findClosest(root, start, end);
@@ -1036,7 +1039,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
     private Node findClosest(final Node node, final int start, final int end) {
         List<Node> list = node.childNodes();
 
-        ISourcePosition pos = node.getPosition();
+        SourcePosition pos = node.getPosition();
 
         if (end < pos.getStartOffset()) {
             return node;

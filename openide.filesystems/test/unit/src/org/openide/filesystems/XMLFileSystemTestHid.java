@@ -43,11 +43,16 @@ package org.openide.filesystems;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 
@@ -320,6 +325,125 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         assertEquals("One instance of Count created", 1, Count.cnt);
         assertNotNull("Returned", instance);
         assertEquals("Right class", Count.class, instance.getClass());
+    }
+
+    public void testGetAttributeDoesNotAccessAllAttributes() throws Exception {
+        File f = writeFile("layer.xml",
+                "<filesystem>\n" +
+                "<folder name='TestModule'>\n" +
+                "<file name='sample.txt' >" +
+                "  <attr name='instanceCreate' methodvalue='org.openide.filesystems.Count.createFromAttribs'/>" +
+                "</file>\n" +
+                "</folder>\n" +
+                "</filesystem>\n"
+                );
+        Count.cnt = 0;
+
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURL());
+        /** the following is a fake implementation of filesystem that
+         * allows us to prevent calls to fileObject.getAttributes()
+         */
+        class AFS extends AbstractFileSystem
+        implements AbstractFileSystem.List, AbstractFileSystem.Attr, AbstractFileSystem.Info {
+            AFS() {
+                this.attr = this;
+                this.list = this;
+                this.info = this;
+            }
+
+            @Override
+            public String getDisplayName() {
+                return "AFS";
+            }
+
+            @Override
+            public boolean isReadOnly() {
+                return true;
+            }
+
+            public String[] children(String f) {
+                if (f.equals("")) {
+                    return new String[] { "TestModule" };
+                }
+                if (f.equals("TestModule")) {
+                    return new String[] { "sample.txt" };
+                }
+                return null;
+            }
+
+            public Object readAttribute(String name, String attrName) {
+                if (name.equals("TestModule/sample.txt") && attrName.equals("add")) {
+                    // this is the addition:
+                    return 10;
+                }
+                return null;
+            }
+
+            public void writeAttribute(String name, String attrName, Object value) throws IOException {
+                throw new UnsupportedOperationException();
+            }
+
+            public Enumeration<String> attributes(String name) {
+                fail("This method shall not be called: " + name);
+                return null;
+            }
+
+            public void renameAttributes(String oldName, String newName) {
+                throw new UnsupportedOperationException();
+            }
+
+            public void deleteAttributes(String name) {
+                throw new UnsupportedOperationException();
+            }
+
+            public Date lastModified(String name) {
+                return new Date(1000L);
+            }
+
+            public boolean folder(String name) {
+                return name.equals("TestModule");
+            }
+
+            public boolean readOnly(String name) {
+                return true;
+            }
+
+            public String mimeType(String name) {
+                return "content/unknown";
+            }
+
+            public long size(String name) {
+                return 0;
+            }
+
+            public InputStream inputStream(String name) throws FileNotFoundException {
+                throw new FileNotFoundException();
+            }
+
+            public OutputStream outputStream(String name) throws IOException {
+                throw new IOException();
+            }
+
+            public void lock(String name) throws IOException {
+                throw new IOException();
+            }
+
+            public void unlock(String name) {
+            }
+
+            public void markUnimportant(String name) {
+            }
+        }
+
+        AFS afs = new AFS();
+        MultiFileSystem mfs = new MultiFileSystem(new FileSystem[] { afs, xfs });
+
+        FileObject fo = mfs.findResource ("TestModule/sample.txt");
+        assertNotNull(fo);
+
+        Count c = (Count)fo.getAttribute("instanceCreate");
+        assertNotNull("Count found", c);
+        assertEquals("Count is really 10", 10, Count.cnt);
     }
 
     public void testNoInstanceCreatedWithMethodValue1() throws Exception {

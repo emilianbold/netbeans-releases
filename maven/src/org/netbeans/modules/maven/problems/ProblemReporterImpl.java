@@ -39,12 +39,13 @@
 
 package org.netbeans.modules.maven.problems;
 
+import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -55,18 +56,14 @@ import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.project.InvalidProjectModelException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.validation.ModelValidationResult;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
-import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.NbArtifact;
 import org.netbeans.modules.maven.nodes.DependenciesNode;
-import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -81,9 +78,25 @@ import org.openide.util.NbBundle;
  * @author mkleint
  */
 public final class ProblemReporterImpl implements ProblemReporter, Comparator<ProblemReport> {
+    private static final String MISSINGJ2EE = "MISSINGJ2EE"; //NOI18N
     private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private final Set<ProblemReport> reports;
     private NbMavenProjectImpl nbproject;
+    private ModuleInfo j2eeInfo;
+    private PropertyChangeListener listener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (ModuleInfo.PROP_ENABLED.equals(evt.getPropertyName())) {
+                ProblemReport rep = getReportWithId(MISSINGJ2EE);
+                if (rep != null) {
+                    boolean hasj2ee = j2eeInfo != null && j2eeInfo.isEnabled();
+                    if (hasj2ee) {
+                        removeReport(rep);
+                        j2eeInfo.removePropertyChangeListener(this);
+                    }
+                }
+            }
+        }
+    };
     
     /** Creates a new instance of ProblemReporter */
     public ProblemReporterImpl(NbMavenProjectImpl proj) {
@@ -100,6 +113,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     }
     
     public void addReport(ProblemReport report) {
+        assert report != null;
         synchronized (reports) {
             reports.add(report);
         }
@@ -107,8 +121,10 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     }
     
     public void addReports(ProblemReport[] report) {
+        assert report != null;
         synchronized (reports) {
             for (int i = 0; i < report.length; i++) {
+                assert report[i] != null;
                 reports.add(report[i]);
             }
         }
@@ -117,7 +133,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     
     public void removeReport(ProblemReport report) {
         synchronized (reports) {
-            reports.add(report);
+            reports.remove(report);
         }
         fireChange();
     }
@@ -133,6 +149,22 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             return new ArrayList<ProblemReport>(reports);
         }
     }
+
+    public boolean hasReportWithId(String id) {
+        return getReportWithId(id) != null;
+    }
+
+    public ProblemReport getReportWithId(String id) {
+        assert id != null;
+        synchronized (reports) {
+            for (ProblemReport rep : reports) {
+                if (id.equals(rep.getId())) {
+                    return rep;
+                }
+            }
+        }
+        return null;
+    }
     
     public void clearReports() {
         synchronized (reports) {
@@ -147,7 +179,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         if (ret != 0) {
             return ret;
         }
-        return 1;
+        return o1.hashCode() > o2.hashCode() ? 1 : (o1.hashCode() < o2.hashCode() ? -1 : 0);
         
     }
     
@@ -163,27 +195,42 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             addReport(report);
         }
     }
+
+    private ModuleInfo findJ2eeModule() {
+        Collection<? extends ModuleInfo> infos = Lookup.getDefault().lookupAll(ModuleInfo.class);
+        for (ModuleInfo info : infos) {
+            if ("org.netbeans.modules.maven.j2ee".equals(info.getCodeNameBase())) {
+                return info;
+            }
+        }
+        return null;
+    }
     
     public void doBaseProblemChecks(MavenProject project) {
         String packaging = nbproject.getProjectWatcher().getPackagingType();
         if (NbMavenProject.TYPE_WAR.equals(packaging) ||
             NbMavenProject.TYPE_EAR.equals(packaging) ||
             NbMavenProject.TYPE_EJB.equals(packaging)) {
-            Collection<? extends ModuleInfo> infos = Lookup.getDefault().lookupAll(ModuleInfo.class);
-            boolean foundJ2ee = false;
-            for (ModuleInfo info : infos) {
-                if ("org.netbeans.modules.maven.j2ee".equals(info.getCodeNameBase()) && //NOI18N
-                        info.isEnabled()) {
-                    foundJ2ee = true;
-                    break;
-                }
+            if (j2eeInfo == null) {
+                j2eeInfo = findJ2eeModule();
             }
+            boolean foundJ2ee = j2eeInfo != null && j2eeInfo.isEnabled();
             if (!foundJ2ee) {
-                ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
-                    NbBundle.getMessage(ProblemReporterImpl.class, "ERR_MissingJ2eeModule"),
-                    NbBundle.getMessage(ProblemReporterImpl.class, "MSG_MissingJ2eeModule"), 
-                    null);
-                addReport(report);
+                if (!hasReportWithId(MISSINGJ2EE)) {
+                    ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
+                        NbBundle.getMessage(ProblemReporterImpl.class, "ERR_MissingJ2eeModule"),
+                        NbBundle.getMessage(ProblemReporterImpl.class, "MSG_MissingJ2eeModule"),
+                        null);
+                    report.setId(MISSINGJ2EE);
+                    addReport(report);
+                    if (j2eeInfo != null) {
+                        j2eeInfo.addPropertyChangeListener(listener);
+                    }
+                }
+            } else {
+                if (j2eeInfo != null) {
+                    j2eeInfo.removePropertyChangeListener(listener);
+                }
             }
         } else if (NbMavenProject.TYPE_NBM.equals(packaging)) {
             Collection<? extends ModuleInfo> infos = Lookup.getDefault().lookupAll(ModuleInfo.class);
@@ -225,11 +272,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                                 new OpenPomAction(nbproject));
                         addReport(report);
                     } else if (art.getFile() == null || !art.getFile().exists()) {
-                        File f = art.getFile();
-                        if (f == null || MavenFileOwnerQueryImpl.getInstance().getOwner(f.toURI()) == null) {
-                            //#160440 don't consider missing jar files that have a project associated as missing
-                            missingJars.add(art);
-                        }
+                        missingJars.add(art);
                     }
                 }
                 if (missingJars.size() > 0) {
@@ -255,6 +298,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     }
     
     private void checkParent(final MavenProject project) {
+        //mkleint: this code is never properly reached..
         Artifact art = project.getParentArtifact();
         if (art != null && art instanceof NbArtifact) {
             
@@ -263,16 +307,8 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                 return;
             }
             NbArtifact nbart = (NbArtifact)art;
-            try {
-                // shouldnot be necessary after update to maven embedder sources 20/9/2006 and later.
-                EmbedderFactory.getProjectEmbedder().resolve(nbart, Collections.EMPTY_LIST, EmbedderFactory.getProjectEmbedder().getLocalRepository());
-                //getFile to create the fake file etc..
-                nbart.getFile();
-            } catch (ArtifactResolutionException ex) {
-                ex.printStackTrace();
-            } catch (ArtifactNotFoundException ex) {
-                ex.printStackTrace();
-            }
+            //getFile to create the fake file etc..
+            nbart.getFile();
             if (nbart.getNonFakedFile() != null && !nbart.getNonFakedFile().exists()) {
                 //TODO create a correction action for this.
                 ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,

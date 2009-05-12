@@ -57,26 +57,28 @@ import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo
 import org.netbeans.modules.dlight.perfan.storage.impl.ErprintSession;
 import org.netbeans.modules.dlight.perfan.storage.impl.ExperimentStatistics;
 import org.netbeans.modules.dlight.perfan.storage.impl.Metrics;
+import org.netbeans.modules.dlight.perfan.storage.impl.ThreadsStatistic;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.Exceptions;
 
 public class MonitorsUpdateService {
 
     private static Pattern lineStartsWithIntegerPattern = Pattern.compile("^ *([0-9]+).*$"); // NOI18N
     private static final Logger log = DLightLogger.getLogger(MonitorsUpdateService.class);
     private static final List<String> syncColNames = Collections.unmodifiableList(
-            Arrays.asList(SunStudioDCConfiguration.c_ulockSummary.getColumnName()));
+            Arrays.asList(SunStudioDCConfiguration.c_ulockSummary.getColumnName(), SunStudioDCConfiguration.c_threadsCount.getColumnName()));//NOI18N
     private static final List<String> leaksColNames = Collections.unmodifiableList(
             Arrays.asList(SunStudioDCConfiguration.c_leakSize.getColumnName()));
-    private final ErprintSession erprintSession;
     private final SunStudioDataCollector ssdc;
+    private final ExecutionEnvironment execEnv;
+    private final String sproHome;
+    private final String experimentDir;
     private final boolean isSyncMonitor;
     private final boolean isMemoryMonitor;
     private final Metrics metrics;
-    private Future task;
-    private volatile boolean serviceStarted;
+    private final Object updaterLock = new String(MonitorsUpdateService.class.getName() + " UpdaterLock"); // NOI18N
+    private Updater updater = null;
     private BlockingQueue<Object> requestsQueue = new LinkedBlockingQueue<Object>(1);
 
     MonitorsUpdateService(SunStudioDataCollector ssdc,
@@ -84,58 +86,40 @@ public class MonitorsUpdateService {
             String sproHome, String experimentDir,
             Collection<CollectedInfo> collectedInfo) {
         this.ssdc = ssdc;
-        this.erprintSession = new ErprintSession(execEnv, sproHome, experimentDir);
+        this.sproHome = sproHome;
+        this.execEnv = execEnv;
+        this.experimentDir = experimentDir;
         isSyncMonitor = collectedInfo.contains(SunStudioDCConfiguration.CollectedInfo.SYNCSUMMARY);
         isMemoryMonitor = collectedInfo.contains(SunStudioDCConfiguration.CollectedInfo.MEMSUMMARY);
         metrics = isMemoryMonitor ? Metrics.constructFrom(
                 Arrays.asList(SunStudioDCConfiguration.c_leakSize),
                 Arrays.asList(SunStudioDCConfiguration.c_leakSize))
                 : null;
-
-        serviceStarted = false;
     }
 
     public void start() {
-        synchronized (this) {
-            if (isBlank()) {
+        if (isBlank()) {
+            return;
+        }
+
+        synchronized (updaterLock) {
+            if (updater != null) {
                 return;
             }
 
-            if (serviceStarted) {
-                // Already started
-                return;
-            }
-
-            task = DLightExecutorService.scheduleAtFixedRate(new Runnable() {
-
-                public void run() {
-                    if (requestsQueue.remainingCapacity() == 0) {
-                        return;
-                    }
-
-                    try {
-                        requestsQueue.put(new Object());
-                    } catch (InterruptedException ex) {
-//                    Exceptions.printStackTrace(ex);
-                    }
-                }
-            }, 1, TimeUnit.SECONDS, "SunStudio monitors update task"); // NOI18N
-
-            serviceStarted = true;
-
-            DLightExecutorService.submit(new Updater(), MonitorsUpdateService.class.getName());
+            updater = new Updater();
+            DLightExecutorService.submit(updater, MonitorsUpdateService.class.getName());
         }
     }
 
     public void stop() {
-        synchronized (this) {
-            serviceStarted = false;
-
-            if (task != null) {
-                task.cancel(true);
+        synchronized (updaterLock) {
+            if (updater == null) {
+                return;
             }
 
-            erprintSession.close();
+            updater.stop();
+            updater = null;
         }
     }
 
@@ -145,44 +129,78 @@ public class MonitorsUpdateService {
 
     private class Updater implements Runnable {
 
+        private volatile boolean isStopped = false;
+        private volatile ErprintSession erprintSession;
+
+        public Updater() {
+        }
+
+        public void stop() {
+            isStopped = true;
+        }
+
         public void run() {
-            while (serviceStarted) {
-                try {
-                    requestsQueue.take();
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+            if (erprintSession != null) {
+                throw new IllegalStateException("Updater can be started only once!"); // NOI18N
+            }
+            
+            erprintSession = new ErprintSession(execEnv, sproHome, experimentDir);
 
-                boolean restarted = false;
+            final Future notifyer = DLightExecutorService.scheduleAtFixedRate(new Runnable() {
 
-                List<DataRow> newData = new ArrayList<DataRow>();
-
-                try {
-                    if (isSyncMonitor) {
-                        try {
-                            ExperimentStatistics stat = erprintSession.getExperimentStatistics(5, !restarted);
-                            restarted = true;
-                            if (stat != null) {
-                                newData.add(new DataRow(syncColNames, Arrays.asList(stat.getULock_p())));
-                            }
-                        } catch (Throwable ex) {
-                            log.log(Level.FINEST, "Exception while getExperimentStatistics in MonitorUpdateService", ex);
-                        }
+                public void run() {
+                    if (requestsQueue.remainingCapacity() == 0) {
+                        return;
                     }
 
-                    if (isMemoryMonitor) {
-                        try {
+                    try {
+                        requestsQueue.put(new Object());
+                    } catch (InterruptedException ex) {
+                    }
+                }
+            }, 1, TimeUnit.SECONDS, "SunStudio monitors update task"); // NOI18N
+
+            try {
+                while (!isStopped) {
+                    try {
+                        requestsQueue.take();
+                    } catch (InterruptedException ex) {
+                        break;
+                    }
+
+                    boolean restarted = false;
+                    List<DataRow> newData = new ArrayList<DataRow>();
+                    double prevTime = 0;
+                    double prevLocks = 0;
+
+                    try {
+                        if (isSyncMonitor) {
+                            ExperimentStatistics stat = erprintSession.getExperimentStatistics(5, !restarted);
+                            ThreadsStatistic threadsStatistic = erprintSession.getThreadsStatistic(5, false);
+                            restarted = true;
+                            if (stat != null) {
+                                double currTime = stat.getTotalThreadTime();
+                                double currLocks = stat.getULock();
+                                newData.add(new DataRow(syncColNames, Arrays.asList(
+                                        100 * (currLocks - prevLocks) / (currTime - prevTime),
+                                        threadsStatistic.getThreadsCount())));
+                                prevTime = currTime;
+                                prevLocks = currLocks;
+                            }
+                        }
+
+                        if (isMemoryMonitor) {
                             String[] result = erprintSession.getHotFunctions(metrics, 1, 5, !restarted);
                             restarted = true;
 
                             if (result == null || result.length == 0) {
-                                return;
+                                continue;
                             }
 
                             Matcher m = lineStartsWithIntegerPattern.matcher(result[0]);
 
                             if (!m.matches()) {
-                                return;
+                                continue;
                             }
 
                             String value = m.group(1);
@@ -197,17 +215,21 @@ public class MonitorsUpdateService {
 
                                 newData.add(new DataRow(leaksColNames, Arrays.asList(lvalue)));
                             }
-                        } catch (Throwable ex) {
-                            log.log(Level.FINEST, "Exception while getHotFunctions in MonitorUpdateService", ex);
                         }
+                    } catch (Throwable ex) {
+                        log.log(Level.FINEST, "Exception while updateIndicators in MonitorUpdateService: " + ex.toString());
+                    } finally {
+                        ssdc.updateIndicators(newData);
                     }
-
-                    ssdc.updateIndicators(newData);
-                    
-                } catch (Throwable ex) {
-                    log.log(Level.FINEST, "Exception while updateIndicators in MonitorUpdateService", ex);
                 }
-
+            } finally {
+                if (notifyer != null) {
+                    notifyer.cancel(false);
+                }
+                
+                if (erprintSession != null) {
+                    erprintSession.close();
+                }
             }
         }
     }

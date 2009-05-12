@@ -44,8 +44,12 @@ package org.netbeans.modules.apisupport.project.universe;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.ConcurrentModificationException;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -59,6 +63,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.util.Mutex;
+import org.openide.util.NbCollections;
 
 /**
  * Test functionality of ModuleList.
@@ -78,7 +83,68 @@ public class ModuleListTest extends TestBase {
         suite2 = resolveEEPFile("suite2");
         standaloneSuite3 = resolveEEPFile("suite3");
     }
-    
+
+    // #150856: CME on system props does happen...
+    @RandomlyFails  // not guarantied that ConcurrentModificationException will always happen
+    public void testConcurrentModificationOfSystemProperties1() {
+        try {
+            Thread t = new Thread(new Runnable() {
+
+                public void run() {
+                    for (int i = 0; i < 20000; i++) {
+                        System.setProperty("whatever", "anything" + i);
+                    }
+                }
+            });
+            t.start();
+            for (int i = 0; i < 2000; i++) {
+                Map<String, String> props = NbCollections.checkedMapByCopy(System.getProperties(), String.class, String.class, false);
+            }
+            t.join();
+        } catch (ConcurrentModificationException e) {
+            return;
+        } catch (Exception e2) {
+        }
+        fail("Expected to throw ConcurrentModificationException, but caught none");
+    }
+
+    // #150856: ... but not when cloned first ...
+    public void testConcurrentModificationOfSystemProperties2() throws InterruptedException {
+        Thread t = new Thread(new Runnable() {
+
+            public void run() {
+                for (int i = 0; i < 20000; i++) {
+                    System.setProperty("whatever", "anything" + i);
+                }
+            }
+        });
+        t.start();
+        for (int i = 0; i < 2000; i++) {
+            Map<String, String> props = NbCollections.checkedMapByCopy((Map) System.getProperties().clone(), String.class, String.class, false);
+        }
+        t.join();
+    }
+
+    // #150856: ... or just synchronized
+    public void testConcurrentModificationOfSystemProperties3() throws InterruptedException {
+        Thread t = new Thread(new Runnable() {
+
+            public void run() {
+                for (int i = 0; i < 20000; i++) {
+                    System.setProperty("whatever", "anything" + i);
+                }
+            }
+        });
+        t.start();
+        Properties p = System.getProperties();
+        for (int i = 0; i < 2000; i++) {
+            synchronized (p) {
+                Map<String, String> props = NbCollections.checkedMapByCopy(p, String.class, String.class, false);
+            }
+        }
+        t.join();
+    }
+
     public void testParseProperties() throws Exception {
         File basedir = file("ant.browsetask");
         PropertyEvaluator eval = ModuleList.parseProperties(basedir, nbRootFile(), false, false, "org.netbeans.modules.ant.browsetask");
@@ -288,7 +354,7 @@ public class ModuleListTest extends TestBase {
                 NbPlatform.getDefaultPlatform().getDestDir());
         assertNotNull("module1a is in the suite1's module list", ml.getEntry("org.example.module1a"));
         assertEquals("no public packages in the ModuleEntry", 0, ml.getEntry("org.example.module1a").getPublicPackages().length);
-        
+    
         // added package must be reflected in the refreshed list (63561)
         Boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
             public Boolean run() throws IOException {
@@ -300,13 +366,8 @@ public class ModuleListTest extends TestBase {
         });
         assertTrue("replace public packages", result);
         ProjectManager.getDefault().saveProject(p);
-        
-        ModuleList.refreshSuiteModuleList(suite.getProjectDirectoryFile());
-        ml = ModuleList.getModuleList(p.getProjectDirectoryFile(),
-                NbPlatform.getDefaultPlatform().getDestDir());
-        assertEquals("one public packages in the refreshed ModuleEntry", 1, ml.getEntry("org.example.module1a").getPublicPackages().length);
     }
-    
+
     public void testSpecVersionBaseSourceEntries() throws Exception { // #72463
         SuiteProject suite = generateSuite("suite");
         NbModuleProject p = TestBase.generateSuiteComponent(suite, "module");
@@ -327,5 +388,4 @@ public class ModuleListTest extends TestBase {
         ProjectManager.getDefault().saveProject(p);
         assertEquals("right modified spec.version.base", "1.2", e.getSpecificationVersion());
     }
-    
 }

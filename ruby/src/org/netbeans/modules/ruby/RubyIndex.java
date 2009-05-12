@@ -51,6 +51,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -90,10 +92,8 @@ import static org.netbeans.modules.ruby.RubyIndexer.*;
  */
 public final class RubyIndex {
 
-    private static final Logger LOG = Logger.getLogger(RubyIndex.class.getName());
+    private static final Logger LOGGGER = Logger.getLogger(RubyIndex.class.getName());
 
-    //private static final Logger LOGGER = Logger.getLogger(RubyIndex.class.getName());
-    
     public static final String UNKNOWN_CLASS = "<Unknown>"; // NOI18N
     public static final String OBJECT        = "Object"; // NOI18N
     private static final String CLASS        = "Class"; // NOI18N
@@ -108,6 +108,13 @@ public final class RubyIndex {
     private FileObject context;
 
     private final QuerySupport querySupport;
+
+    private static final SortedSet<InvocationCounter> mostTimeConsumingInvocations = new TreeSet<InvocationCounter>();
+    /**
+     * The base class for AR model classes, needs special handling in various
+     * places.
+     */
+    static final String ACTIVE_RECORD_BASE = "ActiveRecord::Base"; //NOI18N
     
     private RubyIndex(QuerySupport querySupport) {
         this.querySupport = querySupport;
@@ -120,7 +127,7 @@ public final class RubyIndex {
                     RubyIndexer.Factory.VERSION,
                     roots.toArray(new FileObject[roots.size()])));
         } catch (IOException ioe) {
-            LOG.log(Level.WARNING, null, ioe);
+            LOGGGER.log(Level.WARNING, null, ioe);
             return EMPTY;
         }
     }
@@ -140,7 +147,7 @@ public final class RubyIndex {
             try {
                 return querySupport.query(fieldName, fieldValue, kind, fieldsToLoad);
             } catch (IOException ioe) {
-                LOG.log(Level.WARNING, null, ioe);
+                LOGGGER.log(Level.WARNING, null, ioe);
             }
         }
 
@@ -918,10 +925,39 @@ public final class RubyIndex {
             prefix = "";
         }
 
+        InvocationCounter counter = new InvocationCounter(classFqn, prefix);
         addMethodsFromClass(prefix, kind, classFqn, methods, seenSignatures, scannedClasses,
-            haveRedirected, false);
+            haveRedirected, false, counter);
+        counter.stop();
+
+        addToMostTimeConsuming(counter);
+        
+        if (LOGGGER.isLoggable(Level.FINEST)) {
+            LOGGGER.log(Level.FINEST, counter.display());
+        }
 
         return methods;
+    }
+
+    void logMostTimeConsuming() {
+        if (!LOGGGER.isLoggable(Level.FINE)) {
+            return;
+        }
+        LOGGGER.fine("The most time consuming invocations ( " + mostTimeConsumingInvocations.size() + "):");
+        LOGGGER.fine("===================================");
+        for (InvocationCounter each : mostTimeConsumingInvocations) {
+            LOGGGER.log(Level.FINE, each.display());
+        }
+        LOGGGER.fine("===================================");
+    }
+
+    private void addToMostTimeConsuming(InvocationCounter counter) {
+        if (mostTimeConsumingInvocations.size() < 20) {
+            mostTimeConsumingInvocations.add(counter);
+        } else if (mostTimeConsumingInvocations.last().compareTo(counter) < 0) {
+            mostTimeConsumingInvocations.remove(mostTimeConsumingInvocations.last());
+            mostTimeConsumingInvocations.add(counter);
+        }
     }
 
     /** Return whether the specific class referenced (classFqn) was found or not. This is
@@ -930,7 +966,10 @@ public final class RubyIndex {
      */
     private boolean addMethodsFromClass(String prefix, QuerySupport.Kind kind, String classFqn,
         Set<IndexedMethod> methods, Set<String> seenSignatures, Set<String> scannedClasses,
-        boolean haveRedirected, boolean inheriting) {
+        boolean haveRedirected, boolean inheriting, InvocationCounter counter) {
+        
+        counter.increment();
+
         // Prevent problems with circular includes or redundant includes
         if (scannedClasses.contains(classFqn)) {
             return false;
@@ -938,11 +977,10 @@ public final class RubyIndex {
 
         scannedClasses.add(classFqn);
 
-        String searchField = FIELD_FQN_NAME;
 
         Set<IndexResult> result = new HashSet<IndexResult>();
 
-        search(searchField, classFqn, QuerySupport.Kind.EXACT, result);
+        search(FIELD_FQN_NAME, classFqn, QuerySupport.Kind.EXACT, result);
 
         boolean foundIt = result.size() > 0;
 
@@ -980,12 +1018,12 @@ public final class RubyIndex {
 
                     if (classIn != null) {
                         isQualified = addMethodsFromClass(prefix, kind, classIn + "::" + include,
-                                methods, seenSignatures, scannedClasses, haveRedirected, true);
+                                methods, seenSignatures, scannedClasses, haveRedirected, true, counter);
                     }
 
                     if (!isQualified) {
                         addMethodsFromClass(prefix, kind, include, methods, seenSignatures,
-                            scannedClasses, haveRedirected, true);
+                            scannedClasses, haveRedirected, true, counter);
                     }
                 }
             }
@@ -998,12 +1036,12 @@ public final class RubyIndex {
 
                 if (classIn != null) {
                     isQualified = addMethodsFromClass(prefix, kind, classIn + "::" + extendWith,
-                            methods, seenSignatures, scannedClasses, haveRedirected, true);
+                            methods, seenSignatures, scannedClasses, haveRedirected, true, counter);
                 }
 
                 if (!isQualified) {
                     addMethodsFromClass(prefix, kind, extendWith, methods, seenSignatures,
-                        scannedClasses, haveRedirected, true);
+                        scannedClasses, haveRedirected, true, counter);
                 }
             }
             
@@ -1087,28 +1125,28 @@ public final class RubyIndex {
         if (extendsClass == null) {
             if (haveRedirected) {
                 addMethodsFromClass(prefix, kind, OBJECT, methods, seenSignatures, scannedClasses,
-                    true, true);
+                    true, true, counter);
             } else {
                 // Rather than inheriting directly from object,
                 // let's go via Class (and Module) up to Object
                 addMethodsFromClass(prefix, kind, CLASS, methods, seenSignatures, scannedClasses,
-                    true, true);
+                    true, true, counter);
             }
         } else {
-            if ("ActiveRecord::Base".equals(extendsClass)) { // NOI18N
+            if (ACTIVE_RECORD_BASE.equals(extendsClass)) { // NOI18N
                 // Add in database fields as well
                 addDatabaseProperties(prefix, kind, classFqn, methods);
             }
 
             // We're not sure we have a fully qualified path, so try some different candidates
             if (!addMethodsFromClass(prefix, kind, extendsClass, methods, seenSignatures,
-                        scannedClasses, haveRedirected, true)) {
+                        scannedClasses, haveRedirected, true, counter)) {
                 // Search by classIn 
                 String fqn = classIn;
 
                 while (fqn != null) {
                     if (addMethodsFromClass(prefix, kind, fqn + "::" + extendsClass, methods,
-                                seenSignatures, scannedClasses, haveRedirected, true)) {
+                                seenSignatures, scannedClasses, haveRedirected, true, counter)) {
                         break;
                     }
 
@@ -1377,8 +1415,9 @@ public final class RubyIndex {
                         // See if we need instancevars or classvars
                         boolean isInstance = true;
                         int signatureIndex = field.indexOf(';');
-                        if (signatureIndex != -1 && field.indexOf('s', signatureIndex+1) != -1) {
-                            isInstance = false;
+                        if (signatureIndex != -1) {
+                            int flags = IndexedElement.stringToFlag(field, signatureIndex + 1);
+                            isInstance = (flags & IndexedElement.STATIC) == 0;
                         }
                         if (isInstance != instanceVars) {
                             continue;
@@ -1632,54 +1671,55 @@ public final class RubyIndex {
         return getPreindexUrl(url, null);
     }
     static String getPreindexUrl(String url, FileObject context) {
-        if (RubyIndexer.isPreindexing()) {
-            Iterator<RubyPlatform> it = null;
-            if (context != null && context.isValid()) {
-                Project project = FileOwnerQuery.getOwner(context);
-                if (project != null) {
-                    RubyPlatform platform = RubyPlatform.platformFor(project);
-                    if (platform != null) {
-                        it = Collections.singleton(platform).iterator();
-                    }
-                }
-            }
-            if (it == null) {
-                it = RubyPlatformManager.platformIterator();
-            }
-            while (it.hasNext()) {
-                RubyPlatform platform = it.next();
-                String s = getGemHomeURL(platform);
-                
-                if (s != null && url.startsWith(s)) {
-                    return GEM_URL + url.substring(s.length());
-                }
-
-                s = platform.getHomeUrl();
-
-                if (url.startsWith(s)) {
-                    url = RUBYHOME_URL + url.substring(s.length());
-
-                    return url;
-                }
-            }
-        } else {
+        // no preindexing in parsing api
+//        if (RubyIndexer.isPreindexing()) {
+//            Iterator<RubyPlatform> it = null;
+//            if (context != null && context.isValid()) {
+//                Project project = FileOwnerQuery.getOwner(context);
+//                if (project != null) {
+//                    RubyPlatform platform = RubyPlatform.platformFor(project);
+//                    if (platform != null) {
+//                        it = Collections.singleton(platform).iterator();
+//                    }
+//                }
+//            }
+//            if (it == null) {
+//                it = RubyPlatformManager.platformIterator();
+//            }
+//            while (it.hasNext()) {
+//                RubyPlatform platform = it.next();
+//                String s = getGemHomeURL(platform);
+//
+//                if (s != null && url.startsWith(s)) {
+//                    return GEM_URL + url.substring(s.length());
+//                }
+//
+//                s = platform.getHomeUrl();
+//
+//                if (url.startsWith(s)) {
+//                    url = RUBYHOME_URL + url.substring(s.length());
+//
+//                    return url;
+//                }
+//            }
+//        } else {
             // FIXME: use right platform
-            RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
-            if (platform != null) {
-                String s = getGemHomeURL(platform);
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        if (platform != null) {
+            String s = getGemHomeURL(platform);
 
-                if (s != null && url.startsWith(s)) {
-                    return GEM_URL + url.substring(s.length());
-                }
+            if (s != null && url.startsWith(s)) {
+                return GEM_URL + url.substring(s.length());
+            }
 
-                s = platform.getHomeUrl();
+            s = platform.getHomeUrl();
 
-                if (url.startsWith(s)) {
-                    url = RUBYHOME_URL + url.substring(s.length());
-                    return url;
-                }
+            if (url.startsWith(s)) {
+                url = RUBYHOME_URL + url.substring(s.length());
+                return url;
             }
         }
+//        }
 
         String s = getClusterUrl();
 
@@ -1765,5 +1805,77 @@ public final class RubyIndex {
 
     private static String getGemHomeURL(RubyPlatform platform) {
         return platform.hasRubyGemsInstalled() ? platform.getGemManager().getGemHomeUrl() : null;
+    }
+
+    /**
+     * Helper for measuring how long searching the index takes.
+     */
+    private static final class InvocationCounter implements Comparable<InvocationCounter> {
+
+        private int count = 0;
+        private final long start;
+        private long stop;
+        private final String classFqn;
+        private final String prefix;
+
+        public InvocationCounter(String classFqn, String prefix) {
+            this.classFqn = classFqn;
+            this.prefix = prefix;
+            this.start =  System.currentTimeMillis();
+        }
+
+        void increment() {
+            count++;
+        }
+
+        int result() {
+            return count;
+        }
+
+        void stop() {
+            stop = System.currentTimeMillis();
+        }
+
+        long time() {
+            return stop - start;
+        }
+
+        String display() {
+            return "Class: " + classFqn + ", prefix: " + prefix + ", time: " + time() +"ms, count: " + count; //NOI18N
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final InvocationCounter other = (InvocationCounter) obj;
+            if ((this.classFqn == null) ? (other.classFqn != null) : !this.classFqn.equals(other.classFqn)) {
+                return false;
+            }
+            if (this.time() != other.time() || this.count != other.count) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 29 * hash + (this.prefix != null ? this.prefix.hashCode() : 0);
+            return hash;
+        }
+
+        public int compareTo(InvocationCounter o) {
+            if (this.time() > o.time()) {
+                return -1;
+            } else if (this.time() < o.time()) {
+                return 1;
+            }
+            return 0;
+        }
     }
 }

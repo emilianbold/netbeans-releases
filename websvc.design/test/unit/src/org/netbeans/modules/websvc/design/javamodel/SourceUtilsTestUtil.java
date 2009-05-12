@@ -44,12 +44,11 @@ import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import junit.framework.Assert;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -128,9 +127,9 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
             FileObject file = queue.remove(0);
             
             if (file.isData()) {
-                CountDownLatch l = RepositoryUpdater.getDefault().scheduleCompilationAndWait(file, sourceRoot);
-                
-                l.await(60, TimeUnit.SECONDS);
+//                CountDownLatch l = RepositoryUpdater.getDefault().scheduleCompilationAndWait(file, sourceRoot);
+//                l.await(60, TimeUnit.SECONDS);
+                IndexingManager.getDefault().refreshIndexAndWait(sourceRoot.getURL(), Collections.singleton(file.getURL()));
             } else {
                 queue.addAll(Arrays.asList(file.getChildren()));
             }

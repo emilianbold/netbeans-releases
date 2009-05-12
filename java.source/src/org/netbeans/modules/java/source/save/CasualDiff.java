@@ -131,9 +131,23 @@ public class CasualDiff {
         }
 
         int[] bounds = td.getBounds(oldTree);
-        if(!(oldTree instanceof CompilationUnitTree)) // set up offset for non top level classes
-            td.printer.setInitialOffset(bounds[0]);
         boolean isCUT = oldTree.getKind() == Kind.COMPILATION_UNIT;
+        if (!isCUT) {  // set up tagging offset for non top level classes
+            int start = bounds[0];
+            if (oldTree.getKind() == Kind.NEW_CLASS) { //find the proper offset for annonymous class
+                td.tokenSequence.move(bounds[0]);
+                if (td.tokenSequence.movePrevious() && td.tokenSequence.token().id() == JavaTokenId.WHITESPACE) {
+                    String text = td.tokenSequence.token().text().toString();
+                    int index = text.lastIndexOf('\n');
+                    start = td.tokenSequence.offset();
+                    if (index > -1) {
+                        start += index + 1;
+                    }
+                }
+            }
+            td.printer.setInitialOffset(start);
+        }
+
         int start = isCUT ? 0 : bounds[0];
         int end   = isCUT ? td.workingCopy.getText().length() : bounds[1];
 
@@ -891,7 +905,7 @@ public class CasualDiff {
         localPointer = diffTree(oldT.selector, newT.selector, selectorBounds);
 
         tokenSequence.move(selectorBounds[1]);
-        while (tokenSequence.moveNext() && JavaTokenId.LBRACE != tokenSequence.token().id()) ;
+        do { } while (tokenSequence.moveNext() && JavaTokenId.LBRACE != tokenSequence.token().id());
         tokenSequence.moveNext();
         copyTo(localPointer, localPointer = tokenSequence.offset());
         PositionEstimator est = EstimatorFactory.cases(oldT.getCases(), newT.getCases(), workingCopy);
@@ -908,7 +922,8 @@ public class CasualDiff {
             copyTo(localPointer, patBounds[0]);
             localPointer = diffTree(oldT.pat, newT.pat, patBounds);
             tokenSequence.move(patBounds[1]);
-            while (tokenSequence.moveNext() && JavaTokenId.COLON != tokenSequence.token().id()) ;
+            do { } while (tokenSequence.moveNext() && JavaTokenId.COLON != tokenSequence.token().id());
+            tokenSequence.moveNext();
             copyTo(localPointer, localPointer = tokenSequence.offset());
         }
         // todo (#pf): hot-fix of #113313, think about correct matching later

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,7 +41,8 @@
 package org.netbeans.modules.mercurial.ui.repository;
 
 import java.net.MalformedURLException;
-//import org.netbeans.modules.subversion.config.Scrambler;
+import org.netbeans.modules.mercurial.config.Scrambler;
+import java.net.URISyntaxException;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
@@ -54,57 +55,52 @@ public class RepositoryConnection {
     
     private static final String RC_DELIMITER = "~=~"; // NOI18N
     
-    private String url;   
-    private String username;
-    private String password;
+    private HgURL url;
     private String externalCommand;
     private boolean savePassword;
     
-    private HgURL hgUrl;
-    
     public RepositoryConnection(RepositoryConnection rc) {
-        this(rc.url, rc.username, rc.password, rc.externalCommand, rc.savePassword);
+        this(rc.url, rc.externalCommand, rc.savePassword);
     }
     
-    public RepositoryConnection(String url) {
-        this(url, null, null, null, false);
+    public RepositoryConnection(String url) throws URISyntaxException {
+        this(new HgURL(url), null, false);
     }
             
-    public RepositoryConnection(String url, String username, String password, String externalCommand, boolean savePassword) {
-        this.setUrl(url);
-        this.setUsername(username);
-        this.setPassword(password);
-        this.setExternalCommand(externalCommand);
+    public RepositoryConnection(String url,
+                                String username,
+                                String password,
+                                String externalCommand,
+                                boolean savePassword) throws URISyntaxException {
+        this(new HgURL(url, username, password), externalCommand, savePassword);
+    }
+
+    public RepositoryConnection(HgURL url, String externalCommand, boolean savePassword) {
+        this.url = url;
+        this.externalCommand = externalCommand;
         this.savePassword = savePassword;
     }
 
-    public String getUrl() {
+    public HgURL getUrl() {
         return url;
     }
 
-    public String getUsername() {
-        return username == null ? "" : username; // NOI18N
+    String getUsername() {
+        return url.getUsername();
     }
 
-    public String getPassword() {
-        return password == null ? "" : password ; // NOI18N
+    String getPassword() {
+        return url.getPassword();
     }
 
     public String getExternalCommand() {
-        return externalCommand == null ? "" : externalCommand; // NOI18N
+        return externalCommand;
     }
 
-    public boolean getSavePassword() {
+    public boolean isSavePassword() {
         return savePassword;
     }
 
-    public HgURL getHgUrl() throws MalformedURLException {
-        if(hgUrl == null) {
-            parseUrlString(url);
-        }
-        return hgUrl;
-    }
-    
     public boolean equals(Object o) {
         if (o == null) {
             return false;   
@@ -127,29 +123,9 @@ public class RepositoryConnection {
         return hash;
     }
 
-    void setUrl(String url) {
-        this.url = url;
-        hgUrl = null; 
-    }
-
-    void setUsername(String username) {
-        this.username = username;
-    }
-
-    void setPassword(String password) {
-        this.password = password;
-    }
-
-    void setExternalCommand(String externalCommand) {
-        this.externalCommand = externalCommand;
-    }
-
-    void setSavePassword(boolean savePassword) {
-        this.savePassword = savePassword;
-    }
-
+    @Override
     public String toString() {
-        return url;
+        return url.toString();
     }
 
     private void parseUrlString(String urlString) throws MalformedURLException {
@@ -172,7 +148,7 @@ public class RepositoryConnection {
     //        urlString = urlString.substring(0, idx);
     //    }    
         //urlO = removeEmptyPathSegments(new URL(urlString));
-        hgUrl = new HgURL(urlString);
+        //hgUrl = new HgURL(urlString);
     }
     
     //private URL removeEmptyPathSegments(URL url) throws MalformedURLException {
@@ -205,29 +181,42 @@ public class RepositoryConnection {
     //}
     
     public static String getString(RepositoryConnection rc) {
-        String url = rc.getUrl();
+        String url = rc.url.toUrlStringWithoutUserInfo();
+        String username = rc.getUsername();
+        String password = rc.getPassword();
+        String extCommand = rc.getExternalCommand();
+
         StringBuffer sb = new StringBuffer();        
         sb.append(url);
         sb.append(RC_DELIMITER);
-        sb.append(rc.getUsername());
+        if (username != null) {
+            sb.append(username);
+        }
         sb.append(RC_DELIMITER);
-        //sb.append(Scrambler.getInstance().scramble(rc.getPassword()));
-        //sb.append(RC_DELIMITER);
-        sb.append(rc.getExternalCommand());
+        if (password != null) {
+            sb.append(Scrambler.getInstance().scramble(password));
+        }
+        sb.append(RC_DELIMITER);
+        if (extCommand != null) {
+            sb.append(extCommand);
+        }
         sb.append(RC_DELIMITER);        
         sb.append(RC_DELIMITER);
         return sb.toString();
     }
     
-    public static RepositoryConnection parse(String str) {        
+    public static RepositoryConnection parse(String str) throws URISyntaxException {
         String[] fields = str.split(RC_DELIMITER);
         int l = fields.length;
         String url          =           fields[0];
         String username     = l > 1 && !fields[1].equals("") ? fields[1] : null; // NOI18N
-        //String password     = l > 2 && !fields[2].equals("") ? Scrambler.getInstance().descramble(fields[2]) : null; // NOI18N
-        String password     = null;
+        String password     = l > 2 && !fields[2].equals("") ? Scrambler.getInstance().descramble(fields[2]) : null; // NOI18N
         String extCmd       = l > 3 && !fields[3].equals("") ? fields[3] : null; // NOI18N
         boolean save        = l > 4 && !fields[4].equals("") ? Boolean.parseBoolean(fields[4]) : true;
-        return new RepositoryConnection(url, username, password, extCmd, save);        
+        return new RepositoryConnection(url,
+                                        username,
+                                        (username != null) ? password : null,
+                                        extCmd,
+                                        save);
     }
 }

@@ -95,13 +95,20 @@ class DTDParser extends Object {
      * are defined by first declaration and can not be overriden.
      */
     private Map entityMap = new HashMap();
-    
+
+    public boolean xmlDTD = false; //if true we parse XML DTD, not SGML!
     
     public DTD createDTD( ReaderProvider provider, String identifier, String fileName ) throws WrongDTDException {
+
+        if(Utils.isXHTMLPublicId(identifier)) {
+            xmlDTD = true;
+        }
+
         this.provider = provider;
         
         Reader reader = getReader( identifier, fileName );
         if( reader == null ) throw new WrongDTDException( "Can't open Reader for public identifier " + identifier ); // NOI18N
+
         try {
             parseDTD( new PushbackReader( reader, 1024*128 ) );
         } catch( IOException e ) {
@@ -118,7 +125,8 @@ class DTDParser extends Object {
                 Object oldElem;
                 Object subElem = oldElem = incIter.next();
                 if( subElem instanceof String ) {
-                    subElem = elementMap.get( ((String)subElem).toUpperCase() );
+                    String key = (String)subElem;
+                    subElem = elementMap.get( xmlDTD ? key : key.toUpperCase() );
                 }
                 if( subElem == null ) {
                     throw new WrongDTDException( "'" + oldElem + "' element referenced from " + elem.getName() + " not found throughout the DTD." ); // NOI18N
@@ -132,7 +140,8 @@ class DTDParser extends Object {
                 Object oldElem;
                 Object subElem = oldElem = excIter.next();
                 if( subElem instanceof String ) {
-                    subElem = elementMap.get( ((String)subElem).toUpperCase() );
+                    String key = (String)subElem;
+                    subElem = elementMap.get( xmlDTD ? key : key.toUpperCase() );
                 }
                 if( subElem == null ) {
                     throw new WrongDTDException( "'" + oldElem + "' element referenced from " + elem.getName() + " not found throughout the DTD." ); // NOI18N
@@ -150,7 +159,7 @@ class DTDParser extends Object {
             leaf.elem = (DTD.Element)elementMap.get( leaf.elemName );
         }
         
-        return new DTDImpl( identifier, elementMap, charRefs );
+        return new DTDImpl( identifier, elementMap, charRefs, xmlDTD );
     }
 
 
@@ -210,25 +219,26 @@ class DTDParser extends Object {
         return (DTD.Content)contents.put( new MultiContentNodeImpl( type, subContent ) );
     }
 
-    DTD.Element createElement( String name, DTD.ContentModel cm, boolean optStart, boolean optEnd) {
-        DTD.Element retVal = new ElementImpl( name, cm, optStart, optEnd, new TreeMap() );
+    DTD.Element createElement( String name, DTD.ContentModel cm, boolean optStart, boolean optEnd, boolean xmlDTD) {
+        DTD.Element retVal = new ElementImpl( name, cm, optStart, optEnd, new TreeMap(), xmlDTD );
         return retVal;
     }
     
     /** Creates new or lookups old attribute with given properites */
-    DTD.Attribute createAttribute( String name, int type, String baseType, String typeHelper, String defaultMode, SortedMap values ) {
+    DTD.Attribute createAttribute( String name, int type, String baseType, String typeHelper, String defaultMode, SortedMap values, boolean xmlDTD ) {
         DTD.Attribute attr = new AttributeImpl( name, type,
             (String)stringCache.put( baseType ),
             (String)stringCache.put( typeHelper ),
             (String)stringCache.put( defaultMode ),
-            values
+            values, xmlDTD
         );
         return (DTD.Attribute)attributes.put( attr );
     }
     
     /** Adds given instance of DTD.Attribute to Element named elemName */
     void addAttrToElement( String elemName, DTD.Attribute attr) throws WrongDTDException {
-        ElementImpl elem = (ElementImpl)elementMap.get( elemName.toUpperCase() );
+        String key = xmlDTD ? elemName : elemName.toUpperCase();
+        ElementImpl elem = (ElementImpl)elementMap.get( key );
         if( elem == null ) throw new WrongDTDException( "Attribute definition for unknown Element \"" + elemName +"\"." ); // NOI18N
         elem.addAttribute( attr );
     }
@@ -499,15 +509,22 @@ class DTDParser extends Object {
                 case PED_ACHAR:
                     if( Character.isWhitespace( (char)i ) ) break;
                     else {
-                        type.append( (char)i );
-                        state = PED_CH_TYPE;
+                        //name read
+                        if(xmlDTD) {
+                             in.unread(i); //backup the char
+                             type.append("CDATA");
+                             state = PED_CH_ATYPE;
+                             break; //reread i
+                        } else {
+                            type.append( (char)i );
+                            state = PED_CH_TYPE;
+                        }
                     }
                     break;
                     
                 case PED_CH_TYPE:
                     if( Character.isWhitespace( (char)i ) ) {
                         if( type.toString().equals( "CDATA" ) ) { // NOI18N
-                            state = PED_ATYPE;
                             state = PED_CH_ATYPE;
                         } else {
                             throw new WrongDTDException( "Unexpected entity type \"" + type + "\"." ); // NOI18N
@@ -528,6 +545,12 @@ class DTDParser extends Object {
                     
                 case PED_CH_QUOT:
                     if( i == '"' ) {
+                        if(xmlDTD) {
+                            //resolve '&' char reference
+                            String replaced = value.toString().replace("&#38;", "&");
+                            value.replace(0, value.length(), replaced);
+                        }
+
                         value.delete( 0, 2 );
                         value.deleteCharAt( value.length() - 1 );
                         int code = Integer.parseInt( value.toString() );
@@ -615,6 +638,7 @@ class DTDParser extends Object {
     private static final int EL_ACONTENT = 4;
     private static final int EL_PLUS = 5;
     private static final int EL_MINUS = 6;
+    private static final int EL_ANAME_XML = 7;
     
     /** parse the whole element(s) definition including content model.
      * Create corresponding instances of DTD.Element filled with proper
@@ -653,15 +677,23 @@ class DTDParser extends Object {
                     
                 case EL_NAME:
                     if( Character.isWhitespace( (char)i ) ) {
-                        state = EL_ANAME;
+                        state = xmlDTD ? EL_ANAME_XML : EL_ANAME;
                         list = new ArrayList();
                         list.add( name.toString() );
                     } else {
                             name.append( (char)i );                        
                     }
                     break;
-                    
-                   
+
+                case EL_ANAME_XML:
+                    if( Character.isWhitespace( (char)i ) ) break;
+
+                    in.unread(i); //backup
+                    content = parseContent( in );
+                    //optStart = false; optEnd = false; //default
+                    state = EL_ACONTENT;
+                    break;
+
                 case EL_ANAME:
                     if( Character.isWhitespace( (char)i ) ) break;
                     switch( i ) {
@@ -701,8 +733,9 @@ class DTDParser extends Object {
                         case '>':
                             DTD.ContentModel cm = createContentModel( content, inSet, exSet );
                             for( Iterator iter = list.iterator(); iter.hasNext(); ) {
-                                String key = ((String)iter.next()).toUpperCase();
-                                elementMap.put( key, createElement( key, cm, optStart, optEnd) );
+                                String key = (String)iter.next();
+                                key = xmlDTD ? key : key.toUpperCase();
+                                elementMap.put( key, createElement( key, cm, optStart, optEnd, xmlDTD) );
                             }
                             return;
                         default:
@@ -894,6 +927,11 @@ class DTDParser extends Object {
     private static final int ATT_TYPE = 6;
     private static final int ATT_ATYPE = 7;
     private static final int ATT_MODE = 8;
+    private static final int ATT_FIXED_VALUE = 9;
+    private static final int ATT_FIXED_VALUE_SQ = 10;
+    private static final int ATT_FIXED_VALUE_DQ = 11;
+
+
     private void parseAttlist( PushbackReader in ) throws IOException, WrongDTDException {
         int state = ATT_INIT;
         StringBuffer name = new StringBuffer();
@@ -1008,27 +1046,28 @@ class DTDParser extends Object {
                     break;
                     
                 case ATT_MODE:
-                    if( Character.isWhitespace( (char)i ) ) {
+                    if( Character.isWhitespace( (char)i ) || i == '>') {
                         // Create attr and add it to all tags
                         DTD.Attribute a = null;
                         
                         if( values == null ) { // HOTSPOT for internation of strings!!!
                             a = createAttribute( attr.toString(),
                                 DTD.Attribute.TYPE_BASE, type.toString(),
-                                typeHelper, mode.toString(), null );
+                                typeHelper, mode.toString(), null, xmlDTD );
                         } else if( values.size() == 1 ) {
                             a = createAttribute( attr.toString(),
                                 DTD.Attribute.TYPE_BOOLEAN, null, typeHelper,
-                                mode.toString(), null );
+                                mode.toString(), null, xmlDTD );
                         } else {
                             SortedMap vals = new TreeMap();
                             for( Iterator iter = values.iterator(); iter.hasNext(); ) {
-                                String valName = ((String)iter.next()).toLowerCase();
+                                String key = (String)iter.next();
+                                String valName = xmlDTD ? key : key.toLowerCase();
                                 vals.put( valName, createValue( valName ) );
                             }
                             a = createAttribute( attr.toString(),
                                 DTD.Attribute.TYPE_SET, null, typeHelper,
-                                mode.toString(), vals );
+                                mode.toString(), vals, xmlDTD );
                         }
                         for( Iterator iter = list.iterator(); iter.hasNext(); ) {
                             addAttrToElement( (String)iter.next(), a );
@@ -1039,11 +1078,43 @@ class DTDParser extends Object {
                         type.setLength(0);
                         mode.setLength(0);
                         values = null;
-                        
-                        state = ATT_ANAME;
+
+                        if(xmlDTD && a.getDefaultMode().equals(DTD.Attribute.MODE_FIXED)) {
+                            //skip the fixed value
+                            state = ATT_FIXED_VALUE;
+                        } else {
+                            state = ATT_ANAME;
+                        }
+
+                        if(i == '>') {
+                            return ;
+                        }
                         break;
                     }
                     mode.append( (char)i );
+                    break;
+
+                case ATT_FIXED_VALUE:
+                    if( Character.isWhitespace( (char)i ) ) break;
+                    if(i == '\'') {
+                        state = ATT_FIXED_VALUE_SQ;
+                    } else if(i == '"') {
+                        state = ATT_FIXED_VALUE_DQ;
+                    }
+                    break;
+
+                case ATT_FIXED_VALUE_SQ:
+                    if(i == '\'') {
+                        state = ATT_ANAME;
+                        break;
+                    }
+                    break;
+
+                case ATT_FIXED_VALUE_DQ:
+                    if(i == '"') {
+                        state = ATT_ANAME;
+                        break;
+                    }
                     break;
             }
         }           
@@ -1181,11 +1252,13 @@ class DTDParser extends Object {
         private String id;
         private SortedMap elements;
         private SortedMap charRefs;
+        private boolean xmlDTD;
         
-        DTDImpl( String identifier, SortedMap elements, SortedMap charRefs ) {
+        DTDImpl( String identifier, SortedMap elements, SortedMap charRefs, boolean xmlDTD ) {
             this.id = identifier;            
             this.elements = elements;
             this.charRefs = charRefs;
+            this.xmlDTD = xmlDTD;
         }
         
         /** Identify this instance of DTD */
@@ -1196,7 +1269,7 @@ class DTDParser extends Object {
         /** Get List of all Elements whose names starts with given prefix  */
         public List getElementList( String prefix ) {
             List l = new ArrayList();
-            prefix = prefix == null ? "" : prefix.toUpperCase();
+            prefix = prefix == null ? "" : xmlDTD ? prefix : prefix.toUpperCase();
             Iterator i = elements.tailMap( prefix ).entrySet().iterator();
             
             while( i.hasNext() ) {
@@ -1251,15 +1324,16 @@ class DTDParser extends Object {
         private boolean optStart;
         private boolean optEnd;
         private SortedMap attributes;  //these are sorted just by name
-        private DTD dtd;
+        private boolean xmlDTD;
         
         
-        ElementImpl( String name, DTD.ContentModel model, boolean optStart, boolean optEnd, SortedMap attributes ) {
+        ElementImpl( String name, DTD.ContentModel model, boolean optStart, boolean optEnd, SortedMap attributes, boolean xmlDTD ) {
             this.name = name;
             this.model = model;
             this.optStart = optStart;
             this.optEnd = optEnd;
             this.attributes = attributes;
+            this.xmlDTD = xmlDTD;
         }
 
         /** Get the name of this Element */
@@ -1267,11 +1341,12 @@ class DTDParser extends Object {
             return name;
         }
         
-        /** Shorthand to resolving if content model of this Element is EMPTY */
+        /** Shorthand to resolving if content model of this Element is EMPTY.
+         * This also means the end tag is forbidden.
+         */
         public boolean isEmpty() {
-            if( optEnd && model.getContent() instanceof DTD.ContentLeaf ) return true;
-            //&& ((DTD.ContentLeaf)model.getContent()).getName().equals( "EMPTY" ) ) return true; 
-            return false;
+            return ( optEnd && model.getContent() instanceof DTD.ContentLeaf )
+            && ((DTD.ContentLeaf)model.getContent()).getElementName().equals( "EMPTY" );
         }
         
         /** Tells if this Element has optional Start Tag. */
@@ -1298,7 +1373,7 @@ class DTDParser extends Object {
                     return ((DTD.Attribute)o).getDefaultMode().equals( DTD.Attribute.MODE_REQUIRED );
                 }
             });
-            prefix = prefix.toLowerCase();
+            prefix = xmlDTD ? prefix : prefix.toLowerCase();
             Iterator i = attributes.tailMap(prefix).entrySet().iterator();
             
             while( i.hasNext() ) {
@@ -1341,8 +1416,9 @@ class DTDParser extends Object {
         private String defaultMode;
         private SortedMap values;
         private int hashcode;
+        private boolean xmlDTD;
         
-        public AttributeImpl( String name, int type, String baseType, String typeHelper, String defaultMode, SortedMap values ) {
+        public AttributeImpl( String name, int type, String baseType, String typeHelper, String defaultMode, SortedMap values, boolean xmlDTD ) {
             this.name = name;
             this.type = type;
             this.baseType = baseType;
@@ -1354,6 +1430,8 @@ class DTDParser extends Object {
                 (typeHelper == null ? 1 : typeHelper.hashCode()) +
                 defaultMode.hashCode() +
                 (values == null ? 1 : values.hashCode() );
+
+            this.xmlDTD = xmlDTD;
         }
         
         /** @return name of this attribute */
@@ -1395,7 +1473,7 @@ class DTDParser extends Object {
         public List getValueList( String prefix ) {
             if( type != TYPE_SET ) return null;
 
-            if( prefix == null ) prefix = ""; else prefix = prefix.toLowerCase();
+            if( prefix == null ) prefix = ""; else prefix = xmlDTD ? prefix : prefix.toLowerCase();
 
             List retVal = new ArrayList();
             Iterator i = values.tailMap(prefix).entrySet().iterator();
@@ -1587,7 +1665,7 @@ class DTDParser extends Object {
         
         
         /** get the name of leaf Element */
-        public String getName() {
+        public String getElementName() {
             return elemName;
         }
         
@@ -1610,7 +1688,11 @@ class DTDParser extends Object {
         
         /** ContentLeaf can't be discarded as it hac no operation associated */
         public boolean isDiscardable() {
-            return false;
+            //#PCDATA can be discarded
+            //XXX this is mostly a workaround for SyntaxTree class which
+            //doesn't process text nodes
+            return getElementName().equals("#PCDATA");
+            //return false;
         }
         
         /** ContentLeaf is either reduced to EMPTY_CONTENT or doesn't
@@ -1622,7 +1704,9 @@ class DTDParser extends Object {
 
         public Set getPossibleElements() {
             Set s = new HashSet();
-            s.add( elem );
+            if(elem != null) {
+                s.add( elem );
+            }
             return s;
         }
     }

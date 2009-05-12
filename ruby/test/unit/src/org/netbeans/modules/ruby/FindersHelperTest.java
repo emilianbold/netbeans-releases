@@ -132,9 +132,11 @@ public class FindersHelperTest extends TestCase {
         assertTrue(FindersHelper.isFinderMethod("find_last_by_name_and_title"));
         assertTrue(FindersHelper.isFinderMethod("scoped_by_title"));
         assertTrue(FindersHelper.isFinderMethod("find"));
+        assertTrue(FindersHelper.isFinderMethod("all"));
 
         assertFalse(FindersHelper.isFinderMethod("not_a_finder"));
         assertFalse(FindersHelper.isFinderMethod("findery"));
+        assertFalse(FindersHelper.isFinderMethod("ally"));
     }
 
     public void testNextAttributeLocation() {

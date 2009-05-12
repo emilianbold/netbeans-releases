@@ -439,7 +439,7 @@ public class GdbUtils {
             if (pos2 != -1) {
                 name = frag.substring(7, pos2 - 1);
                 value = frag.substring(pos2 + 8, frag.length() - 2); // strip double quotes
-                list.add(new GdbVariable(name, null, value));
+                list.add(new GdbVariable(name, value));
             }
             idx = info.indexOf('{', pos);
         }
@@ -471,7 +471,7 @@ public class GdbUtils {
                 if (pos > 0) {
                     name = frag.substring(7, pos);
                     value = frag.substring(pos + 9, frag.length() - 2);
-                    list.add(new GdbVariable(name, null, value));
+                    list.add(new GdbVariable(name, value));
                 }
             }
         }
@@ -539,7 +539,7 @@ public class GdbUtils {
     }
     
     /** Find the end of a string by looking for a non-escaped double quote */
-    private static int findEndOfString(String s, int idx) {
+    public static int findEndOfString(String s, int idx) {
         int len = s.length();
 
         for (;idx < len;idx++) {
