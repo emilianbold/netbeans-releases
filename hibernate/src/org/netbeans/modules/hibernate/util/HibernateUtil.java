@@ -278,15 +278,33 @@ public class HibernateUtil {
         return buildFO;
     }
 
+    /**
+     * @return {@link JavaProjectConstants#SOURCES_TYPE_RESOURCES} if exists, {@link JavaProjectConstants#SOURCES_TYPE_JAVA} otherwise.
+     */
     public static SourceGroup[] getSourceGroups(Project project) {
         Sources projectSources = ProjectUtils.getSources(project);
-        SourceGroup[] javaSourceGroup = projectSources.getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_RESOURCES);
-        if (javaSourceGroup == null || javaSourceGroup.length == 0) {
-            javaSourceGroup = projectSources.getSourceGroups(
-                    JavaProjectConstants.SOURCES_TYPE_JAVA);
+        // first, try to get resources
+        SourceGroup[] resources = projectSources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+        if (resources.length > 0) {
+            return resources;
         }
-        return javaSourceGroup;
+        // try to create it
+        SourceGroup resourcesSourceGroup = SourceGroupModifier.createSourceGroup(
+            project, JavaProjectConstants.SOURCES_TYPE_RESOURCES, JavaProjectConstants.SOURCES_HINT_MAIN);
+        if (resourcesSourceGroup != null) {
+            return new SourceGroup[] {resourcesSourceGroup};
+        }
+        // fallback to java sources
+        return projectSources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+    }
+
+    /**
+     * Get the 1st source group.
+     * @see #getSourceGroups(Project)
+     */
+    public static SourceGroup getFirstSourceGroup(Project project) {
+        // well, we should always get some sources
+        return getSourceGroups(project)[0];
     }
 
     /**
