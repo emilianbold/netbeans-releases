@@ -46,6 +46,7 @@ import java.net.URLEncoder;
 import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.codeviation.pojson.*;
@@ -373,7 +374,7 @@ public class KenaiREST extends KenaiImpl {
         }
 
         if (resp.getResponseCode() != 200) {
-            throw new KenaiException("Authentication failed", resp.getDataAsString());
+            throw new KenaiException(ResourceBundle.getBundle("org.netbeans.modules.kenai.Bundle").getString("LBL_AuthenticationFailed"), resp.getDataAsString());
         }
     }
 //        DateFormat df = new SimpleDateFormat("y-M-d'T'H:m:s'Z'");

@@ -1,0 +1,35 @@
+[h|, h1, h1, 17]
+h1
+h2
+h3
+h4
+h5
+h6
+head
+hr
+html
+End cursor position = 20
+[t|, table, table, 43]
+table
+tbody
+td
+textarea
+tfoot
+th
+thead
+title
+tr
+tt
+End cursor position = 49
+[h1, button > ba|, base, h1, button > base, 94]
+base
+basefont
+End cursor position = 112
+[h1, button > ba|, base, h1, button > base, 145]
+base
+basefont
+End cursor position = 163
+[E[foo~="warning"] + th|, thead, E[foo~="warning"] + thead, 212]
+th
+thead
+End cursor position = 238
