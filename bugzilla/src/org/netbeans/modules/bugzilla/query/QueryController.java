@@ -893,7 +893,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     boolean isUrlDefined() {
-        return panel.urlTextField.isVisible();
+        return panel.urlPanel.isVisible();
     }
 
     private abstract class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
