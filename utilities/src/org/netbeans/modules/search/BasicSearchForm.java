@@ -90,6 +90,7 @@ import static java.awt.event.HierarchyEvent.DISPLAYABILITY_CHANGED;
 import static org.jdesktop.layout.GroupLayout.BASELINE;
 import static org.jdesktop.layout.GroupLayout.DEFAULT_SIZE;
 import static org.jdesktop.layout.GroupLayout.LEADING;
+import static org.jdesktop.layout.GroupLayout.TRAILING;
 import static org.jdesktop.layout.GroupLayout.PREFERRED_SIZE;
 import static org.jdesktop.layout.LayoutStyle.RELATED;
 import static org.jdesktop.layout.LayoutStyle.UNRELATED;
@@ -321,7 +322,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
      *      .add(component<i>n</i>)</code></pre></blockquote>
      * except that {@code null} components are skipped and {@code JComboBox}
      * components are automatically added with size constraints
-     * {@code (0, DEFAULT_SIZE, Short.MAX_VALUE)}.
+     * {@code (0, 300, Short.MAX_VALUE)}.
      */
     private static ParallelGroup createParallelGroup(GroupLayout groupLayout,
                                                      int alignment,
@@ -333,7 +334,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             }
 
             if (c.getClass() == JComboBox.class) {
-                group.add(c, 0, DEFAULT_SIZE, Short.MAX_VALUE);
+                group.add(c, 0, 300, Short.MAX_VALUE);
             } else {
                 group.add(c);
             }
