@@ -58,6 +58,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
@@ -85,6 +86,8 @@ implements WritableLibraryProvider<LibraryImplementation>, TaskListener {
     private static final String LIBRARIES_REPOSITORY = "org-netbeans-api-project-libraries/Libraries";  //NOI18N
     private static final String TIME_STAMPS_FILE = "libraries-timestamps.properties"; //NOI18B
     private static final String XML_EXT = "xml";    //NOI18N
+
+    static final Logger LOG = Logger.getLogger(LibrariesStorage.class.getName());
     
     //Lock to prevent FileAlreadyLocked exception.
     private static final Object TIMESTAMPS_LOCK = new Object ();
@@ -209,6 +212,8 @@ implements WritableLibraryProvider<LibraryImplementation>, TaskListener {
             this.storage.addFileChangeListener (this);
             LibraryTypeRegistry.getDefault().addTaskListener(this);
             initialized = true;
+        } else {
+            LibraryTypeRegistry.getDefault().waitFinished();
         }
     }
 

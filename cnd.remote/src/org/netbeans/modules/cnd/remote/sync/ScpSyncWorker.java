@@ -91,28 +91,39 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         return false;
     }
 
-    public void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
+    /*package-local*/ void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
         CommonTasksSupport.mkDir(executionEnvironment, remoteDir, err);
         for (File file : localDir.listFiles()) {
             synchronizeImpl(file, remoteDir);
         }
     }
 
-    private void synchronizeImpl(File file, String remoteDir) throws InterruptedException, ExecutionException, IOException {
+    private void synchronizeImpl(File file, String remoteDir) throws InterruptedException, ExecutionException, IOException {        
         if (file.isDirectory()) {
             remoteDir += "/"  + file.getName(); // NOI18N
-            CommonTasksSupport.mkDir(executionEnvironment, remoteDir, err);
+            // NOI18N
+            Future<Integer> mkDir = CommonTasksSupport.mkDir(executionEnvironment, remoteDir, err);
+            int rc = mkDir.get();
+            if (rc != 0) {
+                throw new IOException("creating directory " + remoteDir + " on " + executionEnvironment + // NOI18N
+                        " finished with error code " + rc); // NOI18N
+            }
             for (File child : file.listFiles()) {
                 synchronizeImpl(child, remoteDir);
             }
         } else {
-            String path = file.getAbsolutePath();
-            Future<Integer> upload = CommonTasksSupport.uploadFile(path, executionEnvironment, remoteDir, 0777, err);
+            if (file.length() == 0) {
+                // FIXUP for #164786 CommonTasksSupport.uploadFile fail to copy empty files
+                return;
+            }
+            String localFile = file.getAbsolutePath();
+            String remoteFile = remoteDir + '/' + file.getName(); //NOI18N
+            Future<Integer> upload = CommonTasksSupport.uploadFile(localFile, executionEnvironment, remoteFile, 0777, err);
             int rc = upload.get();
-            logger.finest("scp: uploading " + path + " to " + remoteDir + " rc=" + rc); //NOI18N
+            logger.finest("SCP: uploading " + localFile + " to " + remoteFile + " rc=" + rc); //NOI18N
             if (rc != 0) {
-                throw new IOException("uploading " + path + " to " + remoteDir + // NOI18N
-                        "finished with error code " + rc); // NOI18N
+                throw new IOException("uploading " + localFile + " to " + remoteFile + // NOI18N
+                        " finished with error code " + rc); // NOI18N
             }
         }
     }
