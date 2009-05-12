@@ -49,6 +49,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.kenai.ui.treelist.LeafNode;
+import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -68,7 +69,7 @@ public class ErrorNode extends LeafNode {
         super( null );
         this.defaultAction = refreshAction;
         btnRefresh = new LinkButton(NbBundle.getMessage(ErrorNode.class, "LBL_Retry"), refreshAction); //NOI18N
-        lblMessage = new JLabel(text);
+        lblMessage = new TreeLabel(text);
         lblMessage.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/ui/resources/error.png"))); //NOI18N
     }
 
