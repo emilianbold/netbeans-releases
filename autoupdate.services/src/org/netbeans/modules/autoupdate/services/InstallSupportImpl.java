@@ -844,7 +844,8 @@ public class InstallSupportImpl {
             err.log(Level.INFO, "Content length was reported as " + contentLength + " byte(s) but read " + increment + " byte(s)");
             if(bdest!=null && dest.exists()) {
                 err.log(Level.INFO, "Deleting not fully downloaded file " + dest);
-                dest.delete();                
+                dest.delete();
+                getDownloadedFiles ().remove(FileUtil.normalizeFile (dest));
             }
             throw new IOException("Server closed connection unexpectedly");
         }
