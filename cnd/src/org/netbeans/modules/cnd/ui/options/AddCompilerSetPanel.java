@@ -86,7 +86,7 @@ import org.openide.util.NbBundle;
         tfName.setText(""); // NOI18N
         validateData();
         
-        setPreferredSize(new Dimension(700, 300));
+        setPreferredSize(new Dimension(800, 300));
         
         tfBaseDirectory.getDocument().addDocumentListener(this);
         tfName.getDocument().addDocumentListener(this);
