@@ -204,6 +204,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     void setQueryRunning(boolean running) {
         modifyButton.setEnabled(!running);
         refreshButton.setEnabled(!running);
+        removeButton.setEnabled(!running);
         seenButton.setEnabled(!running);
         filterLabel.setEnabled(!running);
         filterComboBox.setEnabled(!running);
