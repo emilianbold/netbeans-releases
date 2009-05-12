@@ -40,7 +40,6 @@
  */
 package org.openide.nodes;
 
-import java.lang.ref.Reference;
 import java.util.Collection;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -113,7 +112,7 @@ final class ChildrenArray extends NodeAdapter {
      * all references stored in the map, that are finalized
      * will be cleared.
      */
-    public void finalizeNodes() {
+    public synchronized void finalizeNodes() {
         Map m = map;
         if (m != null) {
             // processes the queue of garbage
