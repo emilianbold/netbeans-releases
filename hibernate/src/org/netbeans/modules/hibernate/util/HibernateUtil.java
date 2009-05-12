@@ -45,8 +45,13 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -59,6 +64,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.BinaryForSourceQuery.Result;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -81,6 +87,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -649,5 +656,68 @@ public class HibernateUtil {
             return null;
         }
         return getDBConnection(hibernateConfiguration).getJDBCConnection();
+    }
+
+    public static List<SourceGroup> getJavaSourceGroups(Project project) {
+        assert project != null;
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA);
+        Set<SourceGroup> testGroups = getTestSourceGroups(sourceGroups);
+        List<SourceGroup> result = new ArrayList<SourceGroup>();
+        for(SourceGroup sourceGroup : sourceGroups){
+            if (!testGroups.contains(sourceGroup)) {
+                result.add(sourceGroup);
+            }
+        }
+        return result;
+    }
+
+    private static Set<SourceGroup> getTestSourceGroups(SourceGroup[] sourceGroups) {
+        Map<FileObject, SourceGroup> foldersToSourceGroupsMap = createFoldersToSourceGroupsMap(sourceGroups);
+        Set<SourceGroup> testGroups = new HashSet<SourceGroup>();
+        for (SourceGroup sourceGroup : sourceGroups) {
+            testGroups.addAll(getTestTargets(sourceGroup, foldersToSourceGroupsMap));
+        }
+        return testGroups;
+    }
+
+    private static Map<FileObject, SourceGroup> createFoldersToSourceGroupsMap(final SourceGroup[] sourceGroups) {
+        if (sourceGroups.length == 0) {
+            return Collections.emptyMap();
+        }
+        Map<FileObject, SourceGroup> result = new HashMap<FileObject, SourceGroup>(2 * sourceGroups.length);
+        for (SourceGroup sourceGroup : sourceGroups) {
+            result.put(sourceGroup.getRootFolder(), sourceGroup);
+        }
+        return result;
+    }
+
+    private static List<SourceGroup> getTestTargets(SourceGroup sourceGroup, Map<FileObject, SourceGroup> foldersToSourceGroupsMap) {
+        final URL[] rootURLs = UnitTestForSourceQuery.findUnitTests(sourceGroup.getRootFolder());
+        if (rootURLs.length == 0) {
+            return Collections.emptyList();
+        }
+        List<FileObject> sourceRoots = getFileObjects(rootURLs);
+        List<SourceGroup> result = new ArrayList<SourceGroup>(sourceRoots.size());
+        for (FileObject sourceRoot : sourceRoots) {
+            SourceGroup srcGroup = foldersToSourceGroupsMap.get(sourceRoot);
+            if (srcGroup != null) {
+                result.add(srcGroup);
+            }
+        }
+        return result;
+    }
+
+    private static List<FileObject> getFileObjects(URL[] urls) {
+        List<FileObject> result = new ArrayList<FileObject>(urls.length);
+        for (URL url : urls) {
+            FileObject sourceRoot = URLMapper.findFileObject(url);
+            if (sourceRoot != null) {
+                result.add(sourceRoot);
+            } else {
+                Exceptions.printStackTrace(new IllegalStateException("No FileObject found for the following URL: " + url));
+            }
+        }
+        return result;
     }
 }
