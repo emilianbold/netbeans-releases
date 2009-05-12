@@ -150,6 +150,13 @@ public class CssGSFParser extends Parser {
             int documentStartOffset = snapshot.getOriginalOffset(from);
             int documentEndOffset = snapshot.getOriginalOffset(from + errorToken.image.length());
 
+            if(documentStartOffset == -1 || documentEndOffset == -1) {
+                //error in virtual content, we cannot map back to the document :-(
+                return null;
+            }
+
+            assert documentStartOffset <= documentEndOffset;
+
             return new DefaultError(PARSE_ERROR_KEY, errorMessage, errorMessage, fo,
                     documentStartOffset, documentEndOffset, Severity.ERROR);
         }
