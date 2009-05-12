@@ -678,8 +678,7 @@ public class HibernateUtil {
 
     public static List<SourceGroup> getJavaSourceGroups(Project project) {
         assert project != null;
-        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_JAVA);
+        SourceGroup[] sourceGroups = getSourceGroups(project);
         Set<SourceGroup> testGroups = getTestSourceGroups(sourceGroups);
         List<SourceGroup> result = new ArrayList<SourceGroup>();
         for(SourceGroup sourceGroup : sourceGroups){
