@@ -56,6 +56,7 @@ import org.netbeans.modules.kenai.ui.spi.MessagingAccessor;
 import org.netbeans.modules.kenai.ui.spi.MessagingHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
 import org.openide.util.NbBundle;
 
 /**
@@ -108,11 +109,11 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
             LinkButton btn = null;
             int onlineCount = messaging.getOnlineCount();
             if( onlineCount >= 0 ) {
-                lbl = new JLabel(NbBundle.getMessage(MessagingNode.class, "LBL_OnlineCount", messaging.getOnlineCount())); //NOI18N
+                lbl = new TreeLabel(NbBundle.getMessage(MessagingNode.class, "LBL_OnlineCount", messaging.getOnlineCount())); //NOI18N
                 labels.add(lbl);
                 panel.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
 
-                lbl = new JLabel("("); //NOI18N
+                lbl = new TreeLabel("("); //NOI18N
                 labels.add(lbl);
                 panel.add( lbl, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
 
@@ -120,11 +121,11 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
                 buttons.add( btn );
                 panel.add( btn, new GridBagConstraints(2,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
 
-                lbl = new JLabel(")"); //NOI18N
+                lbl = new TreeLabel(")"); //NOI18N
                 labels.add(lbl);
                 panel.add( lbl, new GridBagConstraints(3,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
 
-                lbl = new JLabel("|"); //NOI18N
+                lbl = new TreeLabel("|"); //NOI18N
                 labels.add(lbl);
                 panel.add( lbl, new GridBagConstraints(4,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
             } else if (onlineCount == -2) {
@@ -132,7 +133,7 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
                 buttons.add( btn );
                 panel.add( btn, new GridBagConstraints(2,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
 
-                lbl = new JLabel("|"); //NOI18N
+                lbl = new TreeLabel("|"); //NOI18N
                 labels.add(lbl);
                 panel.add( lbl, new GridBagConstraints(4,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
             }
@@ -141,7 +142,7 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
             buttons.add( btn );
             panel.add( btn, new GridBagConstraints(5,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
 
-            lbl = new JLabel("|"); //NOI18N
+            lbl = new TreeLabel("|"); //NOI18N
             labels.add(lbl);
             panel.add( lbl, new GridBagConstraints(6,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
 
