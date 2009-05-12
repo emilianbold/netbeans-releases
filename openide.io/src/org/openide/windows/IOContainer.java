@@ -343,7 +343,40 @@ public final class IOContainer {
 
     private synchronized void log(String msg, Object... items) {
         LOGGER.log(Level.FINER, "{0}: {1} {2}", new Object[] {provider.getClass(), msg, Arrays.asList(items)});
-        assert SwingUtilities.isEventDispatchThread() : "Should be called from AWT thread.";
+        checkIsEDT();
+    }
+
+    // #164324
+    private static void checkIsEDT() {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            Level level = Level.FINE;
+            // warning level if asserts are enabled
+            assert (level = Level.WARNING) != null;
+
+            // tries to catch known JDK problem, SwingUtilities.isEventDispatchThread()
+            // returns false even if it *is* in ED thread.
+            // if we find "java.awt.EventDispatchThread" stack line, it's probable
+            // that we hit this JDK problem (see links below)
+            boolean isJDKProblem = false;
+            StackTraceElement[] elems = Thread.currentThread().getStackTrace();
+            for (StackTraceElement elem : elems) {
+                if ("java.awt.EventDispatchThread".equals(elem.getClassName())) {
+                    isJDKProblem = true;
+                    break;
+                }
+            }
+
+            if (!isJDKProblem) {
+                // problem somewhere in NetBeans modules' code
+                LOGGER.log(level, null, new java.lang.IllegalStateException("Should be called from AWT thread."));
+            } else {
+                // probably known problem in JDK
+                LOGGER.log(level, null, new java.lang.IllegalStateException(
+                        "Known problem in JDK occurred. If you are interested, vote and report at:\n" +
+                        "http://bugs.sun.com/view_bug.do?bug_id=6424157, http://bugs.sun.com/view_bug.do?bug_id=6553239 \n" +
+                        "Also see related discussion at http://www.netbeans.org/issues/show_bug.cgi?id=90590"));
+            }
+        }
     }
 
     private static class Trivial extends JTabbedPane implements Provider {
