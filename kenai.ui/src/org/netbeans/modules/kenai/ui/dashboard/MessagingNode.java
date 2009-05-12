@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -56,6 +57,7 @@ import org.netbeans.modules.kenai.ui.spi.MessagingAccessor;
 import org.netbeans.modules.kenai.ui.spi.MessagingHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -131,6 +133,27 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
                 btn = new LinkButton(NbBundle.getMessage(MessagingNode.class, "LBL_CreateChat", messaging.getMessageCount()), accessor.getCreateChatAction(project)); //NOI18N
                 buttons.add( btn );
                 panel.add( btn, new GridBagConstraints(2,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+
+                lbl = new JLabel("|"); //NOI18N
+                labels.add(lbl);
+                panel.add( lbl, new GridBagConstraints(4,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
+            } else if (onlineCount == -3) {
+                lbl = new JLabel(NbBundle.getMessage(MessagingNode.class, "LBL_ConnectionFailed")); //NOI18N
+                lbl.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/ui/resources/error.png"))); //NOI18N
+                labels.add(lbl);
+                panel.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+
+                lbl = new JLabel("("); //NOI18N
+                labels.add(lbl);
+                panel.add( lbl, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
+
+                btn = new LinkButton(NbBundle.getMessage(MessagingNode.class, "LBL_Retry"), accessor.getReconnectAction(project)); //NOI18N
+                buttons.add( btn );
+                panel.add( btn, new GridBagConstraints(2,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+
+                lbl = new JLabel(")"); //NOI18N
+                labels.add(lbl);
+                panel.add( lbl, new GridBagConstraints(3,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
 
                 lbl = new JLabel("|"); //NOI18N
                 labels.add(lbl);
