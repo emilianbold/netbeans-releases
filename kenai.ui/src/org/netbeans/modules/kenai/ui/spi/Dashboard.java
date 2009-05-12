@@ -22,6 +22,11 @@ public abstract class Dashboard {
      */
     public static final String PROP_OPENED_PROJECTS = "openedProjects"; // NOI18N
 
+    /**
+     * fired when user clicks refresh
+     */
+    public static final String PROP_REFRESH_REQUEST = "refreshRequest";// NOI18N
+
     public static Dashboard getDefault() {
         return DashboardImpl.getInstance();
     }
