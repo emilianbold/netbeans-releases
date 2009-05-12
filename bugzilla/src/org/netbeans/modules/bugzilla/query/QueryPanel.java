@@ -1301,6 +1301,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         saveButton.setEnabled(enable);
         webButton.setEnabled(enable);
         urlToggleButton.setEnabled(enable);
+        refreshConfigurationButton.setEnabled(enable);
 
         changedLabel.setEnabled(enable);
 //        changedFromTextField.setEnabled(enable);

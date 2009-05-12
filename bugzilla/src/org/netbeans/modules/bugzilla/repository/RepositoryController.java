@@ -234,6 +234,7 @@ public class RepositoryController extends BugtrackingController implements Docum
                     panel.urlField.setText(repository.getTaskRepository().getUrl());
                     panel.nameField.setText(repository.getDisplayName());
                     populating = false;
+                    fireDataChanged();
                 }
             });
         }

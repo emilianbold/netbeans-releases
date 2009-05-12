@@ -367,6 +367,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
                         format = issueObsoleteFormat;
                         if(isSelected) {
                             background = obsoleteHighlightColor;
+                            foreground = Color.WHITE;
                         } else {
                             background = row % 2 != 0 ? unevenLineColor : Color.WHITE;
                         }
@@ -377,10 +378,12 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
                                 case Issue.ISSUE_STATUS_NEW :
                                     format = issueNewFormat;
                                     background = newHighlightColor;
+                                    foreground = Color.WHITE;
                                     break;
                                 case Issue.ISSUE_STATUS_MODIFIED :
                                     format = issueModifiedFormat;
                                     background = modifiedHighlightColor;
+                                    foreground = Color.WHITE;
                                     break;
                             }
                         }
@@ -398,10 +401,10 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
             }
 
             if(isSelected) {
-                format = null;
-                if(issue != null && issue.wasSeen()) {
-                    foreground = Color.WHITE;
-                }
+                format = null; // XXX first it was set and now it's removed. simplify logic!
+//                if(issue != null && issue.wasSeen()) {
+//                    foreground = Color.WHITE;
+//                }
             } else {
                 background = row % 2 != 0 ? unevenLineColor : Color.WHITE;
                 foreground = defaultForegroundColor;
