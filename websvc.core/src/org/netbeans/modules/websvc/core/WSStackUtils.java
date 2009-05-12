@@ -195,11 +195,11 @@ public class WSStackUtils {
                         NbBundle.getMessage(WSStackUtils.class, "MSG_NoMetroInstalled"), false);
             }
         } else {
-            if (ServerType.GLASSFISH_V3 == serverType && !isWsitSupported()) {
+            if (ServerType.GLASSFISH_V3 == serverType) {
                 return new ErrorMessage(ErrorType.ERROR,
-                        NbBundle.getMessage(WSStackUtils.class, "MSG_NoMetroForJaxRpcInstalled"));
+                        NbBundle.getMessage(WSStackUtils.class, "MSG_JaxRpcNotSupported"));
             }
-            boolean noJsr109InWeb = isWebModule() && !isJsr109Supported() && !isJsr109OldSupported();
+            boolean noJsr109InWeb = isWebModule() && !isJsr109Supported() && !isJsr109OldSupported(); // e.g. Tomcat
             boolean jBoss = (ServerType.JBOSS == getServerType());
             if ((noJsr109InWeb || jBoss) && Util.isSourceLevel14orLower(project)) {
                 return new ErrorMessage(ErrorType.ERROR,
