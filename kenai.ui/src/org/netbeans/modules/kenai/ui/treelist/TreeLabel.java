@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,44 +34,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ruby.rhtml;
+package org.netbeans.modules.kenai.ui.treelist;
 
-import org.netbeans.modules.csl.api.DeclarationFinder;
-import org.netbeans.modules.ruby.RubyDeclarationFinder;
-
+import javax.swing.JLabel;
+import javax.swing.UIManager;
 
 /**
+ * Use Tree font for rendering of Dashboard items
  *
- * @author Tor Norbye
+ * @author S. Aubrecht
  */
-public class RhtmlDeclarationFinderTest extends RhtmlTestBase {
+public class TreeLabel extends JLabel {
 
-    @Override
-    protected DeclarationFinder getFinder() {
-        return new RubyDeclarationFinder();
+
+    public TreeLabel() {
+        setFont(UIManager.getFont("Tree.font")); //NOI18N
     }
 
-    public RhtmlDeclarationFinderTest(String testName) {
-        super(testName);
+    public TreeLabel( String text ) {
+        super( text );
+        setFont(UIManager.getFont("Tree.font")); //NOI18N
     }
-
-    public void testDeclaration1() throws Exception {
-        checkDeclaration("testfiles/app/views/users/show.erb", "%= link_to 'Overview',  :cont^roller =>", "overview_controller.rb", 0);
-    }
-
-    public void testDeclaration2() throws Exception {
-        checkDeclaration("testfiles/app/views/users/show.erb", "<li><%= link_to 'Account', :controller => 'users', :ac^tion => 'show',", "users_controller.rb", 0);
-    }
-
-    public void testDeclaration3() throws Exception {
-        checkDeclaration("testfiles/app/views/users/show.erb", "<%=render :par^tial => \"list\" -%>", "_list.erb", 0);
-    }
-
-    public void testDeclaration4() throws Exception {
-        checkDeclaration("testfiles/app/views/users/show.erb", "<%=render :par^tial=>\"list\" -%>", "_list.erb", 0);
-    }
-
 }

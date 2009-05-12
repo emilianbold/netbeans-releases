@@ -56,6 +56,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -63,6 +64,15 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.core.startup.TopLogging;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.ParserFactory;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
@@ -92,6 +102,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
 
     private FileObject workDir = null;
     private RepositoryUpdaterTest.TestHandler ruSync;
+    private final Map<String, Set<ClassPath>> registeredClasspaths = new HashMap<String, Set<ClassPath>>();
 
     @Override
     protected void setUp() throws Exception {
@@ -113,6 +124,26 @@ public class RepositoryUpdater2Test extends NbTestCase {
         logger.addHandler(ruSync);
 
         RepositoryUpdaterTest.waitForRepositoryUpdaterInit();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        for(String id : registeredClasspaths.keySet()) {
+            Set<ClassPath> classpaths = registeredClasspaths.get(id);
+            GlobalPathRegistry.getDefault().unregister(id, classpaths.toArray(new ClassPath[classpaths.size()]));
+        }
+
+        super.tearDown();
+    }
+
+    protected final void globalPathRegistry_register(String id, ClassPath [] classpaths) {
+        Set<ClassPath> set = registeredClasspaths.get(id);
+        if (set == null) {
+            set = new HashSet<ClassPath>();
+            registeredClasspaths.put(id, set);
+        }
+        set.addAll(Arrays.asList(classpaths));
+        GlobalPathRegistry.getDefault().register(id, classpaths);
     }
 
     public void testAddIndexingJob() throws Exception {
@@ -286,7 +317,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
 
         MockLookup.setInstances(new testRootsWorkCancelling_PathRecognizer());
         final RepositoryUpdaterTest.MutableClassPathImplementation mcpi = new RepositoryUpdaterTest.MutableClassPathImplementation();
-        GlobalPathRegistry.getDefault().register(testRootsWorkCancelling_PathRecognizer.SOURCEPATH, new ClassPath[] { ClassPathFactory.createClassPath(mcpi) });
+        globalPathRegistry_register(testRootsWorkCancelling_PathRecognizer.SOURCEPATH, new ClassPath[] { ClassPathFactory.createClassPath(mcpi) });
 
         final testRootsWorkCancelling_CustomIndexer indexer = new testRootsWorkCancelling_CustomIndexer();
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer));
@@ -324,6 +355,66 @@ public class RepositoryUpdater2Test extends NbTestCase {
         assertEquals("Wrong scanned unknowns", 0, RepositoryUpdater.getDefault().getScannedBinaries().size());
     }
 
+    public void testRootsWorkInterruptible() throws Exception {
+        FileUtil.setMIMEType("txt", "text/plain");
+        final Map<URL, FileObject> url2file = new HashMap<URL, FileObject>();
+        final FileObject srcRoot1 = workDir.createFolder("src1");
+        final FileObject file1 = srcRoot1.createData("file1.txt");
+        url2file.put(srcRoot1.getURL(), srcRoot1);
+
+        final FileObject srcRoot2 = workDir.createFolder("src2");
+        final FileObject file2 = srcRoot2.createData("file2.txt");
+        url2file.put(srcRoot2.getURL(), srcRoot2);
+
+        final FileObject srcRoot3 = workDir.createFolder("src3");
+        final FileObject file3 = srcRoot3.createData("file3.txt");
+        url2file.put(srcRoot3.getURL(), srcRoot3);
+
+        MockLookup.setInstances(new testRootsWorkCancelling_PathRecognizer());
+        final RepositoryUpdaterTest.MutableClassPathImplementation mcpi = new RepositoryUpdaterTest.MutableClassPathImplementation();
+        globalPathRegistry_register(testRootsWorkCancelling_PathRecognizer.SOURCEPATH, new ClassPath[] { ClassPathFactory.createClassPath(mcpi) });
+
+        final TimeoutCustomIndexer indexer = new TimeoutCustomIndexer(2000);
+        MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer), new FixedParserFactory(new EmptyParser()));
+        Util.allMimeTypes = Collections.singleton("text/plain");
+
+        assertEquals("No roots should be indexed yet", 0, indexer.indexedRoots.size());
+        mcpi.addResource(srcRoot1, srcRoot2, srcRoot3);
+
+        for(int cnt = 1; cnt <= 3; cnt++) {
+            long tm = System.currentTimeMillis();
+            for( ;System.currentTimeMillis() - tm < 5000; ) {
+                if (indexer.indexedRoots.size() == cnt) {
+                    break;
+                } else {
+                    try {
+                        Thread.sleep(345);
+                    } catch (InterruptedException ex) {
+                        break;
+                    }
+                }
+            }
+            assertEquals("Wrong number of roots indexed", cnt, indexer.indexedRoots.size());
+
+            final int fcnt = cnt;
+            final boolean [] taskCalled = new boolean [] { false };
+            ParserManager.parse("text/plain", new UserTask() {
+                public @Override void run(ResultIterator resultIterator) throws Exception {
+                    assertEquals("No more roots should be indexed", fcnt, indexer.indexedRoots.size());
+                    taskCalled[0] = true;
+                }
+            });
+            assertTrue("UserTask not called", taskCalled[0]);
+        }
+        
+        RepositoryUpdater.getDefault().waitUntilFinished(-1);
+
+        assertEquals("All roots should be indexed: " + indexer.indexedRoots, 3, indexer.indexedRoots.size());
+        assertEquals("Wrong scanned sources", new HashSet<URL>(indexer.indexedRoots), RepositoryUpdater.getDefault().getScannedSources());
+        assertEquals("Wrong scanned binaries", 0, RepositoryUpdater.getDefault().getScannedBinaries().size());
+        assertEquals("Wrong scanned unknowns", 0, RepositoryUpdater.getDefault().getScannedBinaries().size());
+    }
+
     public static final class testRootsWorkCancelling_PathRecognizer extends PathRecognizer {
         public static final String SOURCEPATH = "testRootsWorkCancelling/SOURCES";
 
@@ -343,7 +434,6 @@ public class RepositoryUpdater2Test extends NbTestCase {
             return Collections.singleton("text/plain");
         }
     } // End of testAddIndexingJob_PathRecognizer class
-
 
     private static final class testRootsWorkCancelling_CustomIndexer extends CustomIndexer {
 
@@ -365,10 +455,29 @@ public class RepositoryUpdater2Test extends NbTestCase {
 
     } // End of testRootsWorkCancelling_CustomIndexer class
 
+    private static final class TimeoutCustomIndexer extends CustomIndexer {
+
+        private final long timeout;
+        public final List<URL> indexedRoots = Collections.synchronizedList(new ArrayList<URL>());
+
+        public TimeoutCustomIndexer(long timeout) {
+            this.timeout = timeout;
+        }
+        
+        protected @Override void index(Iterable<? extends Indexable> files, Context context) {
+            indexedRoots.add(context.getRootURI());
+            try {
+                Thread.sleep(timeout);
+            } catch (InterruptedException ex) {
+            }
+        }
+
+    } // End of testRootsWorkCancelling_CustomIndexer class
+
     private static final class FixedCustomIndexerFactory<T extends CustomIndexer> extends CustomIndexerFactory {
 
         private final Class<T> customIndexerClass;
-        private final CustomIndexer customIndexerInstance;
+        private final T customIndexerInstance;
         private final String indexerName;
         private final int indexerVersion;
 
@@ -379,7 +488,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
             this.indexerVersion = 1;
         }
 
-        public FixedCustomIndexerFactory(CustomIndexer customIndexerInstance) {
+        public FixedCustomIndexerFactory(T customIndexerInstance) {
             this.customIndexerClass = null;
             this.customIndexerInstance = customIndexerInstance;
             this.indexerName = customIndexerInstance.toString();
@@ -387,7 +496,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
         }
 
         @Override
-        public CustomIndexer createIndexer() {
+        public T createIndexer() {
             if (customIndexerInstance != null) {
                 return customIndexerInstance;
             } else {
@@ -422,6 +531,58 @@ public class RepositoryUpdater2Test extends NbTestCase {
             return indexerVersion;
         }
     } // End of FixedCustomIndexerFactory class
+
+    private static final class FixedParserFactory<T extends Parser> extends ParserFactory {
+
+        private final Class<T> parserClass;
+        private final T parserInstance;
+
+        public FixedParserFactory(Class<T> customIndexerClass) {
+            this.parserClass = customIndexerClass;
+            this.parserInstance = null;
+        }
+
+        public FixedParserFactory(T parserInstance) {
+            this.parserClass = null;
+            this.parserInstance = parserInstance;
+        }
+
+        public @Override T createParser(Collection<Snapshot> snapshots) {
+            if (parserInstance != null) {
+                return parserInstance;
+            } else {
+                try {
+                    return parserClass.newInstance();
+                } catch (Exception ex) {
+                    throw new IllegalStateException(ex);
+                }
+            }
+        }
+    } // End of FixedParserFactory class
+
+    private static final class EmptyParser extends Parser {
+
+        private Snapshot snapshot;
+
+        public @Override void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
+        }
+
+        public @Override Result getResult(Task task) throws ParseException {
+            return new Result(snapshot) {
+                protected @Override void invalidate() {
+                }
+            };
+        }
+
+        public @Override void cancel() {
+        }
+
+        public @Override void addChangeListener(ChangeListener changeListener) {
+        }
+
+        public @Override void removeChangeListener(ChangeListener changeListener) {
+        }
+    } // End of EmptyParser class
 
     @RandomlyFails
     public void testClasspathDeps1() throws IOException, InterruptedException {
@@ -471,9 +632,9 @@ public class RepositoryUpdater2Test extends NbTestCase {
 
         assertEquals("No roots should be indexed yet", 0, indexer.indexedRoots.size());
 
-        GlobalPathRegistry.getDefault().register(testClasspathDeps1_PathRecognizer.CP1, new ClassPath[] { cp1 });
-        GlobalPathRegistry.getDefault().register(testClasspathDeps1_PathRecognizer.CP2, new ClassPath[] { cp2 });
-        GlobalPathRegistry.getDefault().register(testClasspathDeps1_PathRecognizer.CP3, new ClassPath[] { cp3 });
+        globalPathRegistry_register(testClasspathDeps1_PathRecognizer.CP1, new ClassPath[] { cp1 });
+        globalPathRegistry_register(testClasspathDeps1_PathRecognizer.CP2, new ClassPath[] { cp2 });
+        globalPathRegistry_register(testClasspathDeps1_PathRecognizer.CP3, new ClassPath[] { cp3 });
 
         Collection<? extends PathRecognizer> pathRecognizers = Lookup.getDefault().lookupAll(PathRecognizer.class);
         Logger.getLogger(RepositoryUpdater.class.getName()).fine("PathRecognizers: " + pathRecognizers);
@@ -599,7 +760,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
             super(false, false, false);
         }
 
-        protected @Override void getDone() {
+        protected @Override boolean getDone() {
             getDoneCalled = true;
             while(!isCancelled()) {
                 try {
@@ -609,6 +770,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
                 }
             }
             workCancelled = isCancelled();
+            return true;
         }
     } // End of testShuttdown_TimedWork class
 
