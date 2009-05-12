@@ -57,7 +57,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
     }
     
     public boolean synchronize() {
-        return checkRemotePath();
+        PathMap mapper = HostInfoProvider.getMapper(executionEnvironment);
+        return mapper.checkRemotePath(localDir.getAbsolutePath(), true);
     }
 
     @Override

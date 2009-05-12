@@ -414,7 +414,6 @@ public class ChatTopComponent extends TopComponent {
         chats = TabbedPaneFactory.createCloseButtonTabbedPane();
         newPanel = new javax.swing.JPanel();
         loginScreen = new javax.swing.JPanel();
-        lblNotLoggedIn = new javax.swing.JLabel();
         loginLink = new javax.swing.JLabel();
         errorScreen = new javax.swing.JPanel();
         lblXmppError = new javax.swing.JLabel();
@@ -447,8 +446,9 @@ public class ChatTopComponent extends TopComponent {
 
         chats.addTab(org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.newPanel.TabConstraints.tabTitle"), newPanel); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(lblNotLoggedIn, org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.lblNotLoggedIn.text")); // NOI18N
+        loginScreen.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
 
+        loginLink.setForeground(java.awt.Color.blue);
         org.openide.awt.Mnemonics.setLocalizedText(loginLink, org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.loginLink.text")); // NOI18N
         loginLink.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -467,21 +467,19 @@ public class ChatTopComponent extends TopComponent {
         loginScreenLayout.setHorizontalGroup(
             loginScreenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(loginScreenLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(lblNotLoggedIn)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(4, 4, 4)
                 .add(loginLink)
-                .addContainerGap(70, Short.MAX_VALUE))
+                .addContainerGap(194, Short.MAX_VALUE))
         );
         loginScreenLayout.setVerticalGroup(
             loginScreenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(loginScreenLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(loginScreenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblNotLoggedIn)
-                    .add(loginLink))
-                .addContainerGap(406, Short.MAX_VALUE))
+                .add(4, 4, 4)
+                .add(loginLink)
+                .addContainerGap(414, Short.MAX_VALUE))
         );
+
+        errorScreen.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
 
         org.openide.awt.Mnemonics.setLocalizedText(lblXmppError, org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.lblXmppError.text")); // NOI18N
 
@@ -503,23 +501,25 @@ public class ChatTopComponent extends TopComponent {
         errorScreenLayout.setHorizontalGroup(
             errorScreenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(errorScreenLayout.createSequentialGroup()
-                .addContainerGap()
+                .add(5, 5, 5)
                 .add(lblXmppError)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(retryLink)
-                .addContainerGap(23, Short.MAX_VALUE))
+                .addContainerGap(31, Short.MAX_VALUE))
         );
         errorScreenLayout.setVerticalGroup(
             errorScreenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(errorScreenLayout.createSequentialGroup()
-                .addContainerGap()
+                .add(5, 5, 5)
                 .add(errorScreenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblXmppError)
                     .add(retryLink))
-                .addContainerGap(406, Short.MAX_VALUE))
+                .addContainerGap(413, Short.MAX_VALUE))
         );
 
         setLayout(new java.awt.BorderLayout());
+
+        initPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
 
         org.openide.awt.Mnemonics.setLocalizedText(initLabel, org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.initLabel.text")); // NOI18N
 
@@ -528,16 +528,16 @@ public class ChatTopComponent extends TopComponent {
         initPanelLayout.setHorizontalGroup(
             initPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(initPanelLayout.createSequentialGroup()
-                .addContainerGap()
+                .add(5, 5, 5)
                 .add(initLabel)
-                .addContainerGap(285, Short.MAX_VALUE))
+                .addContainerGap(292, Short.MAX_VALUE))
         );
         initPanelLayout.setVerticalGroup(
             initPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(initPanelLayout.createSequentialGroup()
-                .addContainerGap()
+                .add(5, 5, 5)
                 .add(initLabel)
-                .addContainerGap(272, Short.MAX_VALUE))
+                .addContainerGap(279, Short.MAX_VALUE))
         );
 
         add(initPanel, java.awt.BorderLayout.CENTER);
@@ -596,7 +596,6 @@ public class ChatTopComponent extends TopComponent {
     private javax.swing.JPanel errorScreen;
     private javax.swing.JLabel initLabel;
     private javax.swing.JPanel initPanel;
-    private javax.swing.JLabel lblNotLoggedIn;
     private javax.swing.JLabel lblXmppError;
     private javax.swing.JLabel loginLink;
     private javax.swing.JPanel loginScreen;
