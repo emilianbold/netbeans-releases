@@ -263,10 +263,6 @@ public class BugzillaIssue extends Issue {
             String value;
             for (IssueField field : IssueField.values()) {
                 switch(field) {
-                    case REPORTER_NAME:
-                    case QA_CONTACT_NAME:
-                    case ASSIGNED_TO_NAME:
-                        continue;
                     default:
                         value = getFieldValue(field);
                 }
@@ -296,6 +292,13 @@ public class BugzillaIssue extends Issue {
             Map<String, String> seenAtributes = getSeenAttributes();
             assert seenAtributes != null;
             for (IssueField f : IssueField.values()) {
+                switch(f) {
+                    case MODIFICATION :
+                    case REPORTER_NAME :
+                    case QA_CONTACT_NAME :
+                    case ASSIGNED_TO_NAME :
+                        continue;
+                }
                 String value = getFieldValue(f);
                 String seenValue = seenAtributes.get(f.key);
                 if(seenValue == null) {
@@ -306,7 +309,6 @@ public class BugzillaIssue extends Issue {
                 }
             }
             int changedCount = changedFields.size();
-            assert changedCount > 0 : "status MODIFIED yet zero changes found"; // NOI18N
             if(changedCount == 1) {
                 String ret = null;
                 for (IssueField changedField : changedFields) {
