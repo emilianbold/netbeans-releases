@@ -247,7 +247,7 @@ public class Commit extends GeneralPHP
 
   protected int GetWarningNumber( EditorOperator eo, Object[] oo )
   {
-    return GetNumber( eo, oo, "org-netbeans-spi-editor-hints-parser_annotation_warn" );
+    return GetNumber( eo, oo, "org-netbeans-spi-editor-hints-parser_annotation_verifier" );
   }
 
   protected void TestPHPFile(
