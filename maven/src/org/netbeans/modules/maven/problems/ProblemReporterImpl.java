@@ -128,6 +128,18 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             return new ArrayList<ProblemReport>(reports);
         }
     }
+
+    public boolean hasReportWithId(String id) {
+        assert id != null;
+        synchronized (reports) {
+            for (ProblemReport rep : reports) {
+                if (id.equals(rep.getId())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
     
     public void clearReports() {
         synchronized (reports) {
