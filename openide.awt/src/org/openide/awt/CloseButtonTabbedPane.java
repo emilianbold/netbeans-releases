@@ -213,6 +213,9 @@ final class CloseButtonTabbedPane extends JTabbedPane {
                 b.y -= 2;
             } else if( isWindowsXPLaF() || isWindowsLaF() || isAquaLaF() ) {
                 b.x -= 2;
+            } else if( isGTKLaF() && i == getSelectedIndex() ) {
+                b.x -= 1;
+                b.y -= 2;
             }
             if( i == getTabCount()-1 ) {
                 if( isMetalLaF() )
@@ -252,6 +255,10 @@ final class CloseButtonTabbedPane extends JTabbedPane {
     private boolean isMetalLaF () {
         String lfID = UIManager.getLookAndFeel().getID();
         return "Metal".equals( lfID ); //NOI18N
+    }
+
+    private boolean isGTKLaF () {
+        return "GTK".equals( UIManager.getLookAndFeel().getID() ); //NOI18N
     }
     
     @Override
