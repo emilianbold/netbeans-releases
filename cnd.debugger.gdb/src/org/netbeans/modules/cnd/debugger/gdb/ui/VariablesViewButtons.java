@@ -88,7 +88,7 @@ public class VariablesViewButtons {
 
     public static boolean isShowAutos() {
         Preferences preferences = NbPreferences.forModule(VariablesViewButtons.class).node(PREFERENCES_NAME);
-        return preferences.getBoolean(SHOW_AUTOS, false);
+        return preferences.getBoolean(SHOW_AUTOS, true);
     }
 
     private static boolean isButtonSelected(String name) {
