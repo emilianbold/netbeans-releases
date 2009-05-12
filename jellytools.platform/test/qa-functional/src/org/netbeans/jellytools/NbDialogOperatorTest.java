@@ -47,6 +47,7 @@ import javax.swing.JLabel;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.WindowOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -106,7 +107,8 @@ public class NbDialogOperatorTest extends JellyTestCase {
         NbDialogOperator dialog = new NbDialogOperator(TEST_DIALOG_TITLE);
         dialog.btHelp().push();
         JemmyProperties.setCurrentTimeout("WindowWaiter.WaitWindowTimeout", 60000);
-        new HelpOperator().close();
+        //new HelpOperator().close();
+        new WindowOperator().close();
         dialog.close();
     }
     /** Test Help button. */
@@ -114,7 +116,8 @@ public class NbDialogOperatorTest extends JellyTestCase {
         NbDialogOperator dialog = new NbDialogOperator(TEST_DIALOG_TITLE);
         dialog.help();
         JemmyProperties.setCurrentTimeout("WindowWaiter.WaitWindowTimeout", 60000);
-        new HelpOperator().close();
+        //new HelpOperator().close();
+        new WindowOperator().close();
         dialog.close();
     }
     /** Test OK button getter. */
