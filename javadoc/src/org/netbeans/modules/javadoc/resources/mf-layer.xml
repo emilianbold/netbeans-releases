@@ -104,6 +104,7 @@ made subject to such option by the copyright holder.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-javadoc">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.resources.Bundle"/>
                 <folder name="BracesMatchers">
                     <file name="org-netbeans-modules-javadoc-JavadocBracesMatcher.instance">
                         <attr name="position" intvalue="0"/>
