@@ -475,17 +475,7 @@ public class HibernateUtil {
 
     public static List<FileObject> getAllHibernateReverseEnggFileObjects(Project project) {
         List<FileObject> reverseEnggFiles = new ArrayList<FileObject>();
-        Sources projectSources = ProjectUtils.getSources(project);
-        // src/main/resources does not need to exist
-        SourceGroup resourcesSourceGroup = SourceGroupModifier.createSourceGroup(project, JavaProjectConstants.SOURCES_TYPE_RESOURCES, JavaProjectConstants.SOURCES_HINT_MAIN);
-        if (resourcesSourceGroup != null) {
-            addFileObjects(reverseEnggFiles, new SourceGroup[] {resourcesSourceGroup}, HibernateRevengDataLoader.REQUIRED_MIME);
-        }
-        if (reverseEnggFiles.isEmpty()) {
-            // possible fallback
-            addFileObjects(reverseEnggFiles, projectSources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA), HibernateRevengDataLoader.REQUIRED_MIME);
-        }
-
+        addFileObjects(reverseEnggFiles, getSourceGroups(project), HibernateRevengDataLoader.REQUIRED_MIME);
         return reverseEnggFiles;
     }
 
