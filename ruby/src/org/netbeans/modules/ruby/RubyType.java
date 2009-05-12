@@ -162,7 +162,7 @@ public final class RubyType {
     }
 
     private static void checkType(String realType) {
-        if (Character.isLowerCase(realType.charAt(0))) {
+        if (realType.length() == 0 || Character.isLowerCase(realType.charAt(0))) {
             LOGGER.log(Level.FINE, "Likely not a valid type {0}", realType);
         }
     }
