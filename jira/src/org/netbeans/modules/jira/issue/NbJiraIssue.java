@@ -322,17 +322,39 @@ public class NbJiraIssue extends Issue {
 
     /**
      * Reloads the task data and refreshes the issue cache
-     * @param id id of the issue, NOT IT'S KEY
+     * @param key key of the issue
      * @return true if successfully refreshed
      */
-    public boolean refresh(String id, boolean cacheThisIssue) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
+    public boolean refresh(String key, boolean cacheThisIssue) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+        try {
+            TaskData td = JiraUtils.getTaskDataByKey(repository, key);
+            if(td == null) {
+                return false;
+            }
+            getRepository().getIssueCache().setIssueData(key, td, this); // XXX
+            if (controller != null) {
+                controller.refreshViewData();
+            }
+        } catch (IOException ex) {
+            Jira.LOG.log(Level.SEVERE, null, ex);
+        }
+        return true;
+    }
+
+    /**
+     * Reloads the task data and refreshes the issue cache
+     * @param id id of the issue
+     * @return true if successfully refreshed
+     */
+    public boolean refreshById(String id) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         try {
             TaskData td = JiraUtils.getTaskDataById(repository, id);
             if(td == null) {
                 return false;
             }
-            String key = getID(td); // XXX cache is currently build on KEYS, not on IDs, MUST BE CHANGED LATER
+            String key = getID(td);
             getRepository().getIssueCache().setIssueData(key, td, this); // XXX
             if (controller != null) {
                 controller.refreshViewData();
@@ -864,7 +886,7 @@ public class NbJiraIssue extends Issue {
                 if (!wasNew) {
                     refresh();
                 } else {
-                    refresh(rr[0].getTaskId(), true);
+                    refreshById(rr[0].getTaskId());
                 }
             }
         };
