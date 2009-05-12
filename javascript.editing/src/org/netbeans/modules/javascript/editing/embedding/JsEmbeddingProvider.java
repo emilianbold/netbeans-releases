@@ -250,12 +250,15 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                 if (state.in_inlined_javascript || state.in_javascript) {
                     //find end of the php code
                     boolean wasInPhp = false;
-                    while (tokenSequence.moveNext() && !tokenSequence.token().id().name().equals(T_INLINE_HTML)) {
+                    boolean hasNext;
+                    while ((hasNext = tokenSequence.moveNext()) && !tokenSequence.token().id().name().equals(T_INLINE_HTML)) {
                         wasInPhp = true;
                     }
 
-                    //we are out of php code, lets move back to the previous token
-                    tokenSequence.movePrevious();
+                    if(hasNext) { //do not move back if we are at the end of the sequence = cycle!
+                        //we are out of php code, lets move back to the previous token
+                        tokenSequence.movePrevious();
+                    }
 
                     if (wasInPhp) {
                         embeddings.add(snapshot.create(GENERATED_IDENTIFIER, JsTokenId.JAVASCRIPT_MIME_TYPE));
