@@ -40,6 +40,8 @@
 package org.netbeans.modules.bugzilla.issue;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
@@ -59,6 +61,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -105,7 +108,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private Map<BugzillaIssue.IssueField,String> initialValues = new HashMap<BugzillaIssue.IssueField,String>();
     private List<String> keywords = new LinkedList<String>();
     private boolean reloading;
-    private boolean submitting;
+    private boolean skipReload;
     private boolean usingTargetMilestones;
 
     public IssuePanel() {
@@ -143,9 +146,6 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     void reloadFormInAWT(final boolean force) {
-        if (submitting) {
-            return;
-        }
         if (EventQueue.isDispatchThread()) {
             reloadForm(force);
         } else {
@@ -218,6 +218,9 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private int oldCommentCount;
     private void reloadForm(boolean force) {
+        if (skipReload) {
+            return;
+        }
         int noWarnings = fieldWarnings.size();
         int noErrors = fieldErrors.size();
         if (force) {
@@ -678,6 +681,35 @@ public class IssuePanel extends javax.swing.JPanel {
         super.removeNotify();
         if(issue != null) {
             issue.closed();
+        }
+    }
+
+    private Map<Component, Boolean> enableMap = new HashMap<Component, Boolean>();
+    private void enableComponents(boolean enable) {
+        enableComponents(this, enable);
+        if (enable) {
+            enableMap.clear();
+        }
+    }
+
+    private void enableComponents(Component comp, boolean enable) {
+        if (comp instanceof Container) {
+            for (Component subComp : ((Container)comp).getComponents()) {
+                enableComponents(subComp, enable);
+            }
+        }
+        if ((comp instanceof JComboBox)
+                || ((comp instanceof JTextComponent) && ((JTextComponent)comp).isEditable())
+                || (comp instanceof AbstractButton)) {
+            if (enable) {
+                Boolean b = enableMap.get(comp);
+                if (b != null) {
+                    comp.setEnabled(b);
+                }
+            } else {
+                enableMap.put(comp, comp.isEnabled());
+                comp.setEnabled(false);
+            }
         }
     }
 
@@ -1452,11 +1484,12 @@ public class IssuePanel extends javax.swing.JPanel {
         final ProgressHandle handle = ProgressHandleFactory.createHandle(submitMessage);
         handle.start();
         handle.switchToIndeterminate();
+        skipReload = true;
+        enableComponents(false);
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 boolean ret = false;
                 try {
-                    submitting = true;
                     ret = issue.submitAndRefresh();
                     for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
                         if (attachment.file.exists()) {
@@ -1469,7 +1502,12 @@ public class IssuePanel extends javax.swing.JPanel {
                         }
                     }
                 } finally {
-                    submitting = false;
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            enableComponents(true);
+                            skipReload = false;
+                        }
+                    });
                     handle.finish();
                     if(ret) {
                         reloadFormInAWT(true);
@@ -1529,11 +1567,22 @@ public class IssuePanel extends javax.swing.JPanel {
         final ProgressHandle handle = ProgressHandleFactory.createHandle(refreshMessage);
         handle.start();
         handle.switchToIndeterminate();
+        skipReload = true;
+        enableComponents(false);
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                issue.refresh();
-                handle.finish();
-                reloadFormInAWT(true);
+                try {
+                    issue.refresh();
+                } finally {
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            enableComponents(true);
+                            skipReload = false;
+                        }
+                    });
+                    handle.finish();
+                    reloadFormInAWT(true);
+                }
             }
         });
     }//GEN-LAST:event_refreshButtonActionPerformed
@@ -1611,6 +1660,8 @@ public class IssuePanel extends javax.swing.JPanel {
         final ProgressHandle handle = ProgressHandleFactory.createHandle(reloadMessage);
         handle.start();
         handle.switchToIndeterminate();
+        skipReload = true;
+        enableComponents(false);
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 issue.getRepository().refreshConfiguration();
@@ -1634,6 +1685,8 @@ public class IssuePanel extends javax.swing.JPanel {
                             selectInCombo(resolutionCombo, resolution, false);
                         } finally {
                             reloading = false;
+                            enableComponents(true);
+                            skipReload = false;
                         }
                     }
                 });
