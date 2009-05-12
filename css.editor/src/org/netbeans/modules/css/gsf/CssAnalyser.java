@@ -90,8 +90,8 @@ public class CssAnalyser {
                                     msg,
                                     msg,
                                     snapshot.getSource().getFileObject(),
-                                    propertyNode.startOffset(),
-                                    propertyNode.endOffset(),
+                                    snapshot.getOriginalOffset(propertyNode.startOffset()),
+                                    snapshot.getOriginalOffset(propertyNode.endOffset()),
                                     false /* not line error */,
                                     Severity.WARNING);
                             errors.add(error);
@@ -123,8 +123,8 @@ public class CssAnalyser {
                                             errorMsg,
                                             errorMsg,
                                             snapshot.getSource().getFileObject(),
-                                            valueNode.startOffset(),
-                                            valueNode.endOffset(),
+                                            snapshot.getOriginalOffset(valueNode.startOffset()),
+                                            snapshot.getOriginalOffset(valueNode.endOffset()),
                                             false /* not line error */,
                                             Severity.WARNING);
                                     errors.add(error);
@@ -140,8 +140,8 @@ public class CssAnalyser {
                             INVALID_CONTENT_MSG,
                             INVALID_CONTENT_MSG,
                             snapshot.getSource().getFileObject(),
-                            node.startOffset(), 
-                            node.endOffset(),
+                            snapshot.getOriginalOffset(node.startOffset()),
+                            snapshot.getOriginalOffset(node.endOffset()),
                             Severity.ERROR);
                     errors.add(error);
                 }
