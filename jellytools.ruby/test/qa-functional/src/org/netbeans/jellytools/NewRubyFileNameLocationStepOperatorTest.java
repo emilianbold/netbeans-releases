@@ -98,8 +98,7 @@ public class NewRubyFileNameLocationStepOperatorTest extends JellyTestCase {
     
     public void testComponents() {        
         op.txtObjectName().setText("NewObject"); // NOI18N
-        assertEquals("Project name not propagated from previous step", "SampleRubyProject", op.txtProject().getText()); // NOI18N
-        op.selectTestFilesLocation();
+        assertEquals("Project name not propagated from previous step", "SampleRubyProject", op.txtProject().getText()); // NOI18N        
         op.selectSourceFilesLocation();
         
         String filePath = op.txtCreatedFile().getText();
