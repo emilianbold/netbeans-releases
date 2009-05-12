@@ -56,6 +56,7 @@ import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
 import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
 import org.netbeans.modules.kenai.ui.spi.QueryHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
+import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
 
 /**
  * Node query results.
@@ -116,11 +117,11 @@ public class QueryNode extends AsynchronousLeafNode<List<QueryResultHandle>> imp
             labels.clear();
             buttons.clear();
             int col = 0;
-            JLabel lbl = new JLabel(query.getDisplayName());
+            JLabel lbl = new TreeLabel(query.getDisplayName());
             labels.add(lbl);
             panel.add( lbl, new GridBagConstraints(col++,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
 
-            lbl = new JLabel("("); //NOI18N
+            lbl = new TreeLabel("("); //NOI18N
             labels.add(lbl);
             panel.add( lbl, new GridBagConstraints(col++,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
 
@@ -130,13 +131,13 @@ public class QueryNode extends AsynchronousLeafNode<List<QueryResultHandle>> imp
                 buttons.add( btn );
                 panel.add( btn, new GridBagConstraints(col++,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
                 if( i < data.size()-1 ) {
-                    lbl = new JLabel("|"); //NOI18N
+                    lbl = new TreeLabel("|"); //NOI18N
                     labels.add(lbl);
                     panel.add( lbl, new GridBagConstraints(col++,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 2, 0, 2), 0,0));
                 }
             }
 
-            lbl = new JLabel(")"); //NOI18N
+            lbl = new TreeLabel(")"); //NOI18N
             labels.add(lbl);
             panel.add( lbl, new GridBagConstraints(col++,0,1,1,1.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
         }
