@@ -137,7 +137,6 @@ public class NbJiraIssueTest extends NbTestCase {
         }
         if (config == null) {
             config = getRepository().getConfiguration();
-            config.refreshDetails(new NullProgressMonitor());
         }
         JiraTestUtil.cleanProject(getRepositoryConnector(), getRepository().getTaskRepository(), getClient(), config.getProjectByKey(TEST_PROJECT));
     }
