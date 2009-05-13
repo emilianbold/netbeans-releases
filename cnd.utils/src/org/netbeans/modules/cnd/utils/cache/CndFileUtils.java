@@ -80,6 +80,12 @@ public final class CndFileUtils {
         mapFoldersRef.clear();
     }
 
+    public static File normalizeFile(File file) {
+        String absPath = file.getAbsolutePath();
+        String normPath = normalizePath(absPath);
+        return absPath.equals(normPath) ? file : new File(normPath);
+    }
+
     public static String normalizePath(String path) {
         //calls++;
         Map<String, String> normalizedPaths = getNormalizedFilesMap();
