@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,34 +34,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.spi.dataprovider;
+package org.netbeans.modules.dlight.perfan.spi.datafilter;
 
-import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
-import org.netbeans.modules.dlight.spi.storage.DataStorage;
-import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 
+public class CollectedObjectsFilter implements DataFilter {
+    private final List<String> selectedObjectsList;
+    private final List<String> hiddenObjectsList;
+    private final Pattern selectedPattern = Pattern.compile(".*\\+\\[([^\\[\\]]*)\\].*"); // NOI18N
+    private final Pattern hiddenPattern = Pattern.compile(".*-\\[([^\\[\\]]*)\\].*"); // NOI18N
 
-/**
- * Provides the data to the {@link org.netbeans.modules.dlight.spi.visualizer.Visualizer}.
- * Along with DataProvider SPI impplementator should implement
- * {@link org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory} which
- * will be used to create the data provider instance
- *
- */
+    protected CollectedObjectsFilter(String filterSpec) {
+        selectedObjectsList = extractList(selectedPattern, filterSpec);
+        hiddenObjectsList = extractList(hiddenPattern, filterSpec);
+    }
 
-public interface DataProvider extends VisualizerDataProvider, DataFilterListener {
+    public Collection<String> hiddenObjects() {
+        return new ArrayList<String>(hiddenObjectsList);
+    }
 
-  /**
-   * Attaches DataProvider to the>storage.
-   * All data requested by {@link org.netbeans.modules.dlight.spi.visualizer.Visualizer} will
-   * be extracted from this storage. This method is invoked  automatically by infrastracture
-   * when  Visualizer need to be displayed.
-   * It will be invoked automatically when needed.</i></b>
-   * @param storage {@link org.netbeans.modules.dlight.spi.storage.DataStorage}.
-   */
-  void attachTo(DataStorage storage);
+    public Collection<String> selectedObjects() {
+        return new ArrayList<String>(selectedObjectsList);
+    }
+
+    private List<String> extractList(Pattern pattern, String filterSpec) {
+        Matcher m = pattern.matcher(filterSpec);
+        if (m.matches()) {
+            String list = m.group(1);
+            return Arrays.asList(list.split(",")); // NOI18N
+        }
+
+        return Collections.emptyList();
+    }
 
 }
