@@ -45,41 +45,40 @@ made subject to such option by the copyright holder.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">
-              <folder name="Actions">
-            <file name="org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createVariable"/>
-            </file>
-            <file name="org-netbeans-modules-java-hints-introduce-IntroduceConstantAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createConstant"/>
-            </file>
-            <file name="org-netbeans-modules-java-hints-introduce-IntroduceFieldAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createField"/>
-            </file>
-            <file name="org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMethod"/>
-            </file>
-              </folder>
+                <folder name="Actions">
+                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createVariable"/>
+                    </file>
+                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceConstantAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createConstant"/>
+                    </file>
+                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceFieldAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createField"/>
+                    </file>
+                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMethod"/>
+                    </file>
+                </folder>
 
                 <folder name="RefactoringActions">
-                    <file name="org-netbeans-modules-java-hints-ConvertAnonymousToInnerAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-ConvertAnonymousToInnerAction.instance"/>
-                        <attr name="position" intvalue="1050"/>
-                    </file>
                     <file name="org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.instance"/>
+                        <attr name="originalFile" stringvalue="Editors/text/x-java/Actions/org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.instance"/>
                         <attr name="position" intvalue="1400"/>
                     </file>
                     <file name="org-netbeans-modules-java-hints-introduce-IntroduceConstantAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-introduce-IntroduceConstantAction.instance"/>
+                        <attr name="originalFile" stringvalue="Editors/text/x-java/Actions/org-netbeans-modules-java-hints-introduce-IntroduceConstantAction.instance"/>
                         <attr name="position" intvalue="1500"/>
                     </file>
                     <file name="org-netbeans-modules-java-hints-introduce-IntroduceFieldAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-introduce-IntroduceFieldAction.instance"/>
+                        <attr name="originalFile" stringvalue="Editors/text/x-java/Actions/org-netbeans-modules-java-hints-introduce-IntroduceFieldAction.instance"/>
                         <attr name="position" intvalue="1600"/>
                     </file>
                     <file name="org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.instance"/>
+                        <attr name="originalFile" stringvalue="Editors/text/x-java/Actions/org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.instance"/>
                         <attr name="position" intvalue="1700"/>
+                    </file>
+                    <file name="org-netbeans-modules-java-hints-ConvertAnonymousToInnerAction.instance">
+                        <attr name="position" intvalue="1050"/>
                     </file>
                 </folder>
 
@@ -312,29 +311,5 @@ made subject to such option by the copyright holder.
           </folder>
       </folder>
   </folder>
-  
-    <folder name="Menu">
-        <folder name="Refactoring">
-            <file name="org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMenuVariable"/>
-                <attr name="position" intvalue="410"/>
-            </file>
-            <file name="org-netbeans-modules-java-hints-introduce-IntroduceConstantAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMenuConstant"/>
-                <attr name="position" intvalue="420"/>
-            </file>
-            <file name="org-netbeans-modules-java-hints-introduce-IntroduceFieldAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMenuField"/>
-                <attr name="position" intvalue="430"/>
-            </file>
-            <file name="org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMenuMethod"/>
-                <attr name="position" intvalue="440"/>
-            </file>
-            <file name="org-netbeans-modules-java-hints-ConvertAnonymousToInnerAction.instance">
-                <attr name="position" intvalue="400"/>
-            </file>
-        </folder>
-    </folder>
     
 </filesystem>
