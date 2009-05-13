@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 
 import java.util.*;
 import javax.swing.SwingUtilities;
@@ -71,6 +70,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.KeyManager;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.Cancellable;
 import org.openide.util.RequestProcessor;
 
@@ -650,7 +650,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         APTDriver.getInstance().close();
         UIDManager.instance().dispose();
         KeyManager.instance().dispose();
-        APTIncludeUtils.clearFileExistenceCache();
+        CndFileUtils.clearFileExistenceCache();
         APTSystemStorage.getDefault().dispose();
     }
     private final Object lock = new Object();

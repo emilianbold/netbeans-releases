@@ -51,8 +51,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
-import org.netbeans.modules.cnd.utils.CndUtils;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 /**
  *
@@ -88,12 +87,7 @@ public class APTIncludeUtils {
             }
         }   
         return null;
-    }
-    
-    public static void clearFileExistenceCache() {
-        mapRef.clear();
-        mapFoldersRef.clear();
-    }
+    }    
     
     public static ResolvedPath resolveFilePath(Iterator<CharSequence> searchPaths, String includedFile, int dirOffset) {
         while( searchPaths.hasNext() ) {
@@ -127,129 +121,14 @@ public class APTIncludeUtils {
     }
 
     public static String normalize(String path) {
-        if( APTTraceFlags.OPTIMIZE_INCLUDE_SEARCH ) {
-            Map<String, String> normalizedPaths = getNormalizedFilesMap();
-            String normalized = normalizedPaths.get(path);
-            if (normalized == null) {
-                // small optimization for true case sensitive OSs
-                boolean caseSensitive = CndUtils.isSystemCaseSensitive();
-                if (!caseSensitive || (path.contains("..") || path.contains("./") || path.contains(".\\"))) { // NOI18N
-                    normalized = FileUtil.normalizeFile(new File(path)).getAbsolutePath();
-                } else {
-                    normalized = path;
-                }
-                normalizedPaths.put(path, normalized);
-            }
-            return normalized;
-        } else {
-            return FileUtil.normalizeFile(new File(path)).getAbsolutePath();
-        }
+        return CndFileUtils.normalizePath(path);
     }
 
     private static boolean exists(File file) {
-        if( APTTraceFlags.OPTIMIZE_INCLUDE_SEARCH ) {
-            //calls++;
-            String path = file.getAbsolutePath();
-            Boolean exists;
-//            synchronized (mapRef) {
-                Map<String, Boolean> files = getFilesMap();
-                exists = files.get(path);
-                if( exists == null ) {
-                    exists = Boolean.valueOf(file.exists());
-                    files.put(path, exists);
-                } else {
-                    //hits ++;
-                }
-//            }
-            return exists.booleanValue();
-        } else {
-            return file.exists();
-        }
+        return CndFileUtils.exists(file);
     }
     
     private static boolean isDirectory(File file) {
-        if( APTTraceFlags.OPTIMIZE_INCLUDE_SEARCH ) {
-            //calls++;
-            String path = file.getAbsolutePath();
-            Boolean exists;
-//            synchronized (mapFoldersRef) {
-                Map<String, Boolean> dirs = getFoldersMap();                
-                exists = dirs.get(path);
-                if( exists == null ) {
-                    exists = Boolean.valueOf(file.isDirectory());
-                    dirs.put(path, exists);
-                } else {
-                    //hits ++;
-                }
-//            }
-            return exists.booleanValue();
-        } else {
-            return file.isDirectory();
-        }
-    }
-    
-//    public static String getHitRate() {
-//	return "" + hits + "/" + calls; // NOI18N
-//    }   
-//    private static int calls = 0;
-//    private static int hits = 0;
-
-    private static Map<String, Boolean> getFilesMap() {
-        Map<String, Boolean> map = mapRef.get();
-        if( map == null ) {
-            try {
-                maRefLock.lock();
-                map = mapRef.get();
-                if (map == null) {
-                    map = new ConcurrentHashMap<String, Boolean>();
-                    mapRef = new SoftReference<Map<String, Boolean>>(map);
-                }
-            } finally {
-                maRefLock.unlock();
-            }
-        }
-        return map;
-    }
-
-    private static Map<String, String> getNormalizedFilesMap() {
-        Map<String, String> map = normalizedRef.get();
-        if (map == null) {
-            try {
-                mapNormalizedRefLock.lock();
-                map = normalizedRef.get();
-                if (map == null) {
-                    map = new ConcurrentHashMap<String, String>();
-                    normalizedRef = new SoftReference<Map<String, String>>(map);
-                }
-            } finally {
-                mapNormalizedRefLock.unlock();
-            }
-        }
-        return map;
-    }
-
-    private static Map<String, Boolean> getFoldersMap() {
-        Map<String, Boolean> map = mapFoldersRef.get();
-        if( map == null ) {
-            try {
-                mapFoldersRefLock.lock();
-                map = mapFoldersRef.get();
-                if (map == null) {
-                    map = new ConcurrentHashMap<String, Boolean>();
-                    mapFoldersRef = new SoftReference<Map<String, Boolean>>(map);
-                }
-            } finally {
-                mapFoldersRefLock.unlock();
-            }
-        }
-        return map;
-    }  
-    private static final Lock maRefLock = new ReentrantLock();
-    private static final Lock mapNormalizedRefLock = new ReentrantLock();
-    private static final Lock mapFoldersRefLock = new ReentrantLock();
-    
-    private static Reference<Map<String,Boolean>> mapRef = new SoftReference<Map<String,Boolean>>(new ConcurrentHashMap<String, Boolean>());
-    private static Reference<Map<String,String>> normalizedRef = new SoftReference<Map<String,String>>(new ConcurrentHashMap<String, String>());
-    private static Reference<Map<String,Boolean>> mapFoldersRef = new SoftReference<Map<String,Boolean>>(new ConcurrentHashMap<String, Boolean>());
-    
+        return CndFileUtils.isDirectory(file);
+    }    
 }
