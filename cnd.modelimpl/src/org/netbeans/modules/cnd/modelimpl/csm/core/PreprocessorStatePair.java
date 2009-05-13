@@ -60,6 +60,6 @@ public final class PreprocessorStatePair {
 
     @Override
     public String toString() {
-        return "(" + pcState + "\n" + state + ')';
+        return "(" + pcState + "\n" + state + ')'; // NOI18N
     }
 }

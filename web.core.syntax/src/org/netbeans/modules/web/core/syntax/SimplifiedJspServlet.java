@@ -67,6 +67,7 @@ import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -125,10 +126,11 @@ public class SimplifiedJspServlet {
     private Embedding header;
     private List<Embedding> scriptlets = new LinkedList<Embedding>();
     private List<Embedding> declarations = new LinkedList<Embedding>();
+    private List<Embedding> localImports = new LinkedList<Embedding>();
     // keep bean declarations separate to avoid duplicating the declaration, see #130745
     private Embedding beanDeclarations;
     private boolean processCalled = false;
-    private Embedding importStatements;
+    private Embedding implicitImports;
     private int expressionIndex = 1;
     private static final Logger logger = Logger.getLogger(SimplifiedJspServlet.class.getName());
     private boolean processingSuccessful = true;
@@ -169,7 +171,7 @@ public class SimplifiedJspServlet {
             processingSuccessful = false;
             return;
         }
-        
+
         if (!isServletAPIOnClasspath()){
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -231,13 +233,14 @@ public class SimplifiedJspServlet {
             }
         } while (tokenSequence.moveNext());
 
+        List<String> localImports = processImportDirectives();
 
         if (ex[0] != null) {
             throw ex[0];
         }
 
         header = snapshot.create(getClassHeader(), "text/x-java");
-        importStatements = snapshot.create(createImportStatements(), "text/x-java");
+        implicitImports = snapshot.create(createImportStatements(localImports), "text/x-java");
         beanDeclarations = snapshot.create("\n" + createBeanVarDeclarations(), "text/x-java");
     }
 
@@ -276,6 +279,60 @@ public class SimplifiedJspServlet {
         } catch (JspException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    private List<String> processImportDirectives(){
+        List<String> imports = new ArrayList<String>();
+        try{
+        TokenHierarchy tokenHierarchy = TokenHierarchy.create(charSequence, JspTokenId.language());//TokenHierarchy.get(doc);
+        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+        tokenSequence.moveStart();
+
+        while (tokenSequence.moveNext()){
+            if (tokenSequence.token().id() == JspTokenId.TAG
+                    && TokenUtilities.equals("page", tokenSequence.token().text())){ //NOI18N
+
+                tokenSequence.moveNext();
+
+
+            if (tokenSequence.token().id() == JspTokenId.WHITESPACE){
+
+                    tokenSequence.moveNext();
+
+                    if (tokenSequence.token().id() == JspTokenId.ATTRIBUTE
+                            && TokenUtilities.equals("import", tokenSequence.token().text())){ //NOI18N
+
+                        tokenSequence.moveNext() ;
+
+                        if (tokenSequence.token().id() == JspTokenId.SYMBOL
+                            && TokenUtilities.equals("=", tokenSequence.token().text())){
+
+                            tokenSequence.moveNext();
+
+                            if (tokenSequence.token().id() == JspTokenId.ATTR_VALUE){
+                                String val = tokenSequence.token().text().toString();
+
+                                if (val.length() > 2 && val.charAt(0) == '"' && val.charAt(val.length() - 1) == '"'){
+                                    int startOffset = tokenSequence.offset() + 1;
+                                    int len = val.length() - 2;
+                                    String imprt = val.substring(1, len);
+                                    localImports.add(snapshot.create("import ", "text/x-java")); //NOI18N
+                                    localImports.add(snapshot.create(startOffset, len, "text/x-java")); //NOI18N
+                                    localImports.add(snapshot.create(";\n", "text/x-java")); //NOI18N
+                                    imports.add(imprt);
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+
+        } catch (Throwable e){
+            e.printStackTrace();
+        }
+        return imports;
     }
 
     private void processIncludedFile(String filePath, Collection<String> processedFiles) {
@@ -397,7 +454,7 @@ public class SimplifiedJspServlet {
         return beanDeclarationsBuff.toString();
     }
 
-    private String[] getImports() {
+    private String[] getImportsFromJspParser() {
         PageInfo pi = getPageInfo();
         if (pi == null) {
             //we need at least some basic imports
@@ -441,9 +498,9 @@ public class SimplifiedJspServlet {
         return null;
     }
 
-    private String createImportStatements() {
+    private String createImportStatements(List<String> localImports) {
         StringBuilder importsBuff = new StringBuilder();
-        String[] imports = getImports();
+        String[] imports = getImportsFromJspParser();
 
         if (imports == null || imports.length == 0){
             processingSuccessful = false;
@@ -451,7 +508,9 @@ public class SimplifiedJspServlet {
             // TODO: better support for situation when imports is null
             // (JSP doesn't belong to a project)
             for (String pckg : imports) {
-                importsBuff.append("import " + pckg + ";\n"); //NOI18N
+                if (!localImports.contains(pckg)){
+                    importsBuff.append("import " + pckg + ";\n"); //NOI18N
+                }
             }
         }
 
@@ -488,13 +547,14 @@ public class SimplifiedJspServlet {
             return null;
         }
 
-        if (declarations.isEmpty() && scriptlets.isEmpty()) {
+        if (localImports.isEmpty() && declarations.isEmpty() && scriptlets.isEmpty()) {
             return null;
         }
 
         List<Embedding> content = new LinkedList<Embedding>();
 
-        content.add(importStatements);
+        content.add(implicitImports);
+        content.addAll(localImports);
         content.add(header);
         content.addAll(declarations);
         content.add(beanDeclarations);

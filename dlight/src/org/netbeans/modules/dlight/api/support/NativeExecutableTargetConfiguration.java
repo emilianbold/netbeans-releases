@@ -41,7 +41,6 @@ package org.netbeans.modules.dlight.api.support;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
@@ -125,7 +124,7 @@ public final class NativeExecutableTargetConfiguration {
      * <p>
      * @param terminal terminal specification
      */
-    public void useExternalTerminal(@NullAllowed ExternalTerminal terminal) {
+    public void useExternalTerminal(/*@NullAllowed*/ ExternalTerminal terminal) {
         this.externalTerminal = terminal;
     }
 
