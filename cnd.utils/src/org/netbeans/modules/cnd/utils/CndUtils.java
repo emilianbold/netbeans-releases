@@ -74,7 +74,7 @@ public class CndUtils {
             String absPath = tmpFile.getAbsolutePath();
             absPath = absPath.toUpperCase();
             caseSenstive = !new File(absPath).exists();
-            tmpFile.deleteOnExit();
+            tmpFile.delete();
         } catch (IOException ex) {
             caseSenstive = Utilities.isUnix() && !Utilities.isMac();
         }
