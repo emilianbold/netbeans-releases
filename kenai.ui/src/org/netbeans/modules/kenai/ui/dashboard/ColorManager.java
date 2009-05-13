@@ -52,8 +52,8 @@ public class ColorManager {
 
     private static final boolean isAqua = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
 
-    private Color defaultBackground = Color.white;
-    private Color defaultForeground = Color.black;
+    private Color defaultBackground = UIManager.getColor("white"); //NOI18N
+    private Color defaultForeground = UIManager.getColor("black"); //NOI18N
     private Color disabledColor = Color.gray;
     private Color linkColor = Color.blue;
     private Color errorColor = new Color(153,0,0);
