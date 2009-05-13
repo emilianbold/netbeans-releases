@@ -895,18 +895,18 @@
                       <Component id="byLastChangeLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="byTextContainer" alignment="0" max="32767" attributes="2"/>
-                  <Component id="byLastChangeContainer" alignment="0" max="32767" attributes="1"/>
+                  <Component id="byTextContainer" alignment="0" pref="992" max="32767" attributes="2"/>
+                  <Component id="byLastChangeContainer" alignment="0" pref="992" max="32767" attributes="1"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="byDetailsLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="byDetailsContainer" alignment="0" max="32767" attributes="1"/>
+                  <Component id="byDetailsContainer" alignment="0" pref="992" max="32767" attributes="1"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="byPeopleLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="byPeopleContainer" alignment="0" max="32767" attributes="1"/>
+                  <Component id="byPeopleContainer" alignment="0" pref="992" max="32767" attributes="1"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">

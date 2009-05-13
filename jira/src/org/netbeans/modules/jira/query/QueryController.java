@@ -60,8 +60,10 @@ import java.util.MissingResourceException;
 import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JList;
+import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -74,12 +76,17 @@ import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ContentFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.CurrentUserFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.eclipse.mylyn.internal.jira.core.model.filter.IssueTypeFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.NobodyFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.PriorityFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ResolutionFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.SpecificUserFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.StatusFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.UserFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.UserInGroupFilter;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -332,6 +339,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     populateList(panel.statusList, jc.getStatuses());
                     populateList(panel.resolutionList, jc.getResolutions());
                     populateList(panel.priorityList, jc.getPriorities());
+                    setupUserSearchCombo(panel.reporterComboBox, panel.reporterTextField, "No Reporter");
+                    setupUserSearchCombo(panel.assigneeComboBox, panel.assigneeTextField, "Unassigned");
 
                     if(filterDefinition != null && filterDefinition instanceof FilterDefinition) {
                         setFilterDefinition(filterDefinition);
@@ -376,6 +385,16 @@ public class QueryController extends BugtrackingController implements DocumentLi
 //                        final boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
 //                        panel.refreshCheckBox.setSelected(autoRefresh);
 //                    }
+                }
+
+                private void setupUserSearchCombo(JComboBox combo, JTextField txt, String nobodyText) {
+                    DefaultComboBoxModel model = new DefaultComboBoxModel();
+                    model.addElement(new AnyUserSearch(txt, combo));
+                    model.addElement(new NobodySearch(nobodyText, txt, combo));
+                    model.addElement(new CurrentUserSearch(txt, combo));
+                    model.addElement(new SpecificUserSearch(txt, combo));
+                    model.addElement(new SpecificGroupSearch(txt, combo));
+                    combo.setModel(model);
                 }
             };
             repository.getExecutor().execute(cmd);
@@ -867,5 +886,108 @@ public class QueryController extends BugtrackingController implements DocumentLi
         public void finished() { }
 
     }
+
+    abstract class UserSearch implements ItemListener {
+        private final String displayName;
+        private final JTextField txt;
+        private String savedText = "";
+        public UserSearch(String displayName, JTextField txt, JComboBox combo) {
+            this.displayName = displayName;
+            this.txt = txt;
+            combo.addItemListener(this);
+        }
+        public abstract UserFilter getFilter();
+        public abstract void selected();
+        public String getDisplayName() {
+            return displayName;
+        }
+        public JTextField getTextField() {
+            return txt;
+        }
+        public void itemStateChanged(ItemEvent e) {
+            if(e.getStateChange() == ItemEvent.SELECTED) {
+                selected();
+            }
+        }
+        protected void disable() {
+            savedText = txt.getText();
+            txt.setText("");
+            txt.setEnabled(false);
+        }
+        protected void enable() {
+            getTextField().setText(savedText);
+            getTextField().setEnabled(true);
+        }
+    }
+
+    private class AnyUserSearch extends UserSearch {
+        public AnyUserSearch(JTextField txt, JComboBox combo) {
+            super("Any User", txt, combo);
+        }
+        @Override
+        public UserFilter getFilter() {
+            return null;
+        }
+        @Override
+        public void selected() {            
+            disable();
+        }
+    }
+
+    private class NobodySearch extends UserSearch {
+        private UserFilter filter = new NobodyFilter();
+        public NobodySearch(String displayName, JTextField txt, JComboBox combo) {
+            super(displayName, txt, combo);
+        }
+        @Override
+        public UserFilter getFilter() {
+            return filter;
+        }
+        @Override
+        public void selected() {
+            disable();
+        }
+    }
+    private class CurrentUserSearch extends UserSearch {
+        private UserFilter filter = new CurrentUserFilter();
+        public CurrentUserSearch(JTextField txt, JComboBox combo) {
+            super("Current User", txt, combo);
+        }        
+        @Override
+        public UserFilter getFilter() {
+            return filter;
+        }
+        @Override
+        public void selected() {
+            disable();
+        }
+    }
+    private class SpecificUserSearch extends UserSearch {
+        public SpecificUserSearch(JTextField txt, JComboBox combo) {
+            super("Specify User", txt, combo);
+        }
+        @Override
+        public UserFilter getFilter() {
+            return new SpecificUserFilter(getTextField().getText());
+        }
+        @Override
+        public void selected() {          
+            enable();
+        }
+    }
+    private class SpecificGroupSearch extends UserSearch {
+        public SpecificGroupSearch(JTextField txt, JComboBox combo) {
+            super("Specify Group", txt, combo);
+        }
+        @Override
+        public UserFilter getFilter() {
+            return new UserInGroupFilter(getTextField().getText());
+        }
+        @Override
+        public void selected() {
+            enable();
+        }
+    }
+
 
 }

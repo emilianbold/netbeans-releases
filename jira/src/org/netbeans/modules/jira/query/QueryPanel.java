@@ -133,6 +133,10 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         resolutionList.setCellRenderer(new ResolutionRenderer());
         priorityList.setCellRenderer(new PriorityRenderer());
 
+        UserSearchRenderer userSearchRenderer = new UserSearchRenderer();
+        reporterComboBox.setRenderer(userSearchRenderer);
+        assigneeComboBox.setRenderer(userSearchRenderer);
+        
         saveErrorLabel.setForeground(ERROR_COLOR);
         Image img = ImageUtilities.loadImage("org/netbeans/modules/jira/resources/error.gif"); //NOI18N
         saveErrorLabel.setIcon( new ImageIcon(img) );
@@ -1178,6 +1182,16 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if(value instanceof Priority) {
                 value = ((Priority) value).getName();
+            }
+            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        }
+    }
+
+    private static class UserSearchRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            if(value instanceof QueryController.UserSearch) {
+                value = ((QueryController.UserSearch) value).getDisplayName();
             }
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }
