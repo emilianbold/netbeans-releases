@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -236,7 +237,7 @@ public class KenaiConnection implements PropertyChangeListener {
         }
     }
 
-    public Collection<MultiUserChat> getChats() {
+    public List<MultiUserChat> getChats() {
         synchronized (chats) {
             ArrayList<MultiUserChat> copy = new ArrayList<MultiUserChat>(chats.values());
             return copy;
