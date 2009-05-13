@@ -553,10 +553,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
         repository.saveQuery(query);
         query.setSaved(true); // XXX
         setAsSaved();
-        if (firstTime) {
-            onSearch();
-        } else {
-            onRefresh();
+        if(!query.wasRun()) {
+            if (firstTime) {
+                onSearch();
+            } else {
+                onRefresh();
+            }
         }
     }
 
