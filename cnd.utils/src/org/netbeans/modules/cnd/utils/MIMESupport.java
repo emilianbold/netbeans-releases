@@ -39,6 +39,7 @@
 package org.netbeans.modules.cnd.utils;
 
 import java.io.File;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
@@ -79,7 +80,7 @@ public final class MIMESupport {
      * @return one of mime types or "content/unknown"
      */
     public static String getFileMIMEType(File file) {
-        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        FileObject fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(file));
         String mime;
         if (fo != null) {
             // try fast check

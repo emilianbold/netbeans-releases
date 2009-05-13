@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -102,7 +103,7 @@ public class EditorContextBridge {
         if (fullname != null) {
             File file = new File(fullname);
 	    if (file.exists()) {
-                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+                FileObject fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(file));
                 if (fo != null) {
                     try {
                         return getContext().showSource(DataObject.find(fo), csf.getLineNumber(), null);
@@ -201,7 +202,7 @@ public class EditorContextBridge {
         if (fullname != null) {
             File file = new File(fullname);
 	    if (file.exists()) {
-                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+                FileObject fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(file));
                 if (fo != null) {
                     try {
                         return getContext().annotate(DataObject.find(fo), csf.getLineNumber(), annotationType, null);
