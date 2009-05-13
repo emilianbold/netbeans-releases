@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
@@ -182,6 +183,13 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         final List<ProjectScope> currentProjects;
         final ProjectScope allProjects;
         CsmObject refObject = getReferencedObject();
+        CsmProject refObjectPrj = null;
+        if (CsmKindUtilities.isOffsetable(refObject)) {
+            CsmFile refObjFile = ((CsmOffsetable)refObject).getContainingFile();
+            if (refObjFile != null) {
+                refObjectPrj = refObjFile.getProject();
+            }
+        }
         if ((refObject != null) && !CsmKindUtilities.isLocalVariable(refObject)) {
             Collection<Project> ps = CsmRefactoringUtils.getContextProjects(this.origObject);
             if (!ps.isEmpty()) {
@@ -201,9 +209,9 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 currentProjects = null;
                 allProjects = null;
             }
-        } else if (refObject != null) {
+        } else if (CsmKindUtilities.isLocalVariable(refObject) && refObjectPrj != null) {
             defaultScope = Scope.CURRENT;
-            ProjectScope prjScope = new ProjectScope(null, ((CsmVariable)refObject).getContainingFile().getProject());
+            ProjectScope prjScope = new ProjectScope(null, refObjectPrj);
             currentProjects = new ArrayList<ProjectScope>();
             currentProjects.add(prjScope);
             allProjects = null;

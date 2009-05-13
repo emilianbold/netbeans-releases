@@ -36,42 +36,19 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package test.pkg.not.in.junit;
 
-package org.netbeans.modules.ruby.rhtml;
-
-import org.netbeans.modules.csl.api.DeclarationFinder;
-import org.netbeans.modules.ruby.RubyDeclarationFinder;
-
+import junit.framework.TestCase;
 
 /**
- *
- * @author Tor Norbye
  */
-public class RhtmlDeclarationFinderTest extends RhtmlTestBase {
+public class NbModuleSuiteClusterPath extends TestCase{
 
-    @Override
-    protected DeclarationFinder getFinder() {
-        return new RubyDeclarationFinder();
+    public NbModuleSuiteClusterPath(String t) {
+        super(t);
     }
 
-    public RhtmlDeclarationFinderTest(String testName) {
-        super(testName);
+    public void testWhatAreOurClusters() {
+        System.setProperty("my.clusters", System.getProperty("netbeans.dirs"));
     }
-
-    public void testDeclaration1() throws Exception {
-        checkDeclaration("testfiles/app/views/users/show.erb", "%= link_to 'Overview',  :cont^roller =>", "overview_controller.rb", 0);
-    }
-
-    public void testDeclaration2() throws Exception {
-        checkDeclaration("testfiles/app/views/users/show.erb", "<li><%= link_to 'Account', :controller => 'users', :ac^tion => 'show',", "users_controller.rb", 0);
-    }
-
-    public void testDeclaration3() throws Exception {
-        checkDeclaration("testfiles/app/views/users/show.erb", "<%=render :par^tial => \"list\" -%>", "_list.erb", 0);
-    }
-
-    public void testDeclaration4() throws Exception {
-        checkDeclaration("testfiles/app/views/users/show.erb", "<%=render :par^tial=>\"list\" -%>", "_list.erb", 0);
-    }
-
 }

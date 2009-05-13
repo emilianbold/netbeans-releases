@@ -270,7 +270,7 @@ public class SimplifiedJspServlet {
         try {
             JspParserAPI.ParseResult parseResult = jspSyntax.getParseResult();
 
-            if (parseResult != null){
+            if (parseResult != null && parseResult.getNodes() != null){
                 parseResult.getNodes().visit(visitor);
             }
         } catch (JspException ex) {

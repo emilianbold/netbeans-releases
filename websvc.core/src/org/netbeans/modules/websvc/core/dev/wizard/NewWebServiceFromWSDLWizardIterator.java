@@ -51,7 +51,9 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.api.support.ServiceCreator;
 import org.netbeans.modules.websvc.core.CreatorProvider;
 
@@ -108,9 +110,11 @@ public class NewWebServiceFromWSDLWizardIterator implements TemplateWizard.Itera
         SourceGroup[] sourceGroups = SourceGroups.getJavaSourceGroups(project);
         bottomPanel = new WebServiceFromWSDL(wiz, project);
         WizardDescriptor.Panel<WizardDescriptor> firstPanel; //special case: use Java Chooser
-        if (sourceGroups.length == 0)
-            firstPanel = new FinishableProxyWizardPanel(Templates.createSimpleTargetChooser(project, sourceGroups, bottomPanel));
-        else
+        if (sourceGroups.length == 0) {
+            SourceGroup[] genericSourceGroups = ProjectUtils.getSources(project).getSourceGroups(Sources.TYPE_GENERIC);
+            firstPanel = new FinishableProxyWizardPanel(Templates.createSimpleTargetChooser(project, genericSourceGroups, bottomPanel), sourceGroups, true);
+
+        } else
             firstPanel = new FinishableProxyWizardPanel(JavaTemplates.createPackageChooser(project, sourceGroups, bottomPanel, true));
 
         JComponent comp = (JComponent) firstPanel.getComponent();

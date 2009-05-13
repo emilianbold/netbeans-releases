@@ -9,7 +9,6 @@ package ${package};
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
@@ -22,7 +21,7 @@ import org.apache.struts.action.ActionForward;
 public class ${name} extends ${superclass} {
     
     /* forward name="success" path="" */
-    private final static String SUCCESS = "success";
+    private static final String SUCCESS = "success";
     
     /**
      * This is the action called from the Struts framework.
@@ -33,6 +32,9 @@ public class ${name} extends ${superclass} {
      * @throws java.lang.Exception
      * @return
      */
+<#if java15style??>
+    @Override
+</#if>
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
