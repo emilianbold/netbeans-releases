@@ -151,8 +151,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.statusList.addKeyListener(this);
         panel.resolutionList.addKeyListener(this);
         panel.priorityList.addKeyListener(this);
-
         panel.queryTextField.addActionListener(this);
+        panel.assigneeTextField.addActionListener(this);
+        panel.reporterTextField.addActionListener(this);
 
         if(query.isSaved()) {
             setAsSaved();
@@ -418,10 +419,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
-    public void valueChanged(ListSelectionEvent e) {
-        if(e.getSource() == panel.projectList) {
-            onProductChanged(e);
-        }
+    public void valueChanged(ListSelectionEvent e) {        
         fireDataChanged();            // XXX do we need this ???
     }
 
@@ -443,8 +441,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
             onSearch();
         } else if (e.getSource() == panel.gotoIssueButton) {
             onGotoIssue();
-//        } else if (e.getSource() == panel.keywordsButton) {
-//            onKeywords();
         } else if (e.getSource() == panel.searchButton) {
             onSearch();
         } else if (e.getSource() == panel.saveChangesButton) {
@@ -472,13 +468,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 onGotoIssue();
             }
         } else if (e.getSource() == panel.idTextField ||
-                   e.getSource() == panel.queryTextField /*||
-                   e.getSource() == panel.commentTextField ||
-                   e.getSource() == panel.keywordsTextField ||
-                   e.getSource() == panel.peopleTextField ||
-                   e.getSource() == panel.changedFromTextField ||
-                   e.getSource() == panel.newValueTextField ||
-                   e.getSource() == panel.changedToTextField*/)
+                   e.getSource() == panel.queryTextField ||
+                   e.getSource() == panel.reporterTextField ||
+                   e.getSource() == panel.assigneeTextField )
         {
             onSearch();
         }
@@ -497,12 +489,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
             return;
         }
         if(e.getSource() == panel.projectList ||
-           e.getSource() == panel.typeList /*||
-           e.getSource() == panel.versionList ||
+           e.getSource() == panel.typeList ||
            e.getSource() == panel.statusList ||
            e.getSource() == panel.resolutionList ||
-           e.getSource() == panel.priorityList ||
-           e.getSource() == panel.changedList*/)
+           e.getSource() == panel.priorityList)
         {
             onSearch();
         }
@@ -655,34 +645,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
         });
     }
 
-    private void onProductChanged(ListSelectionEvent e) {
-//        Object[] values =  panel.projectList.getSelectedValues();
-//        String[] products = null;
-//        if(values != null) {
-//            products = new String[values.length];
-//            for (int i = 0; i < values.length; i++) {
-//                products[i] = ((ParameterValue) values[i]).getValue();
-//            }
-//        }
-//        populateProductDetails(products);
-    }
-
-    private void onKeywords() {
-//        String keywords = JiraUtil.getKeywords(NbBundle.getMessage(QueryController.class, "LBL_SelectKeywords"), panel.keywordsTextField.getText(), repository); // NOI18N
-//        if(keywords != null) {
-//            panel.keywordsTextField.setText(keywords);
-//        }
-    }
-
     private void onSearch() {
         if(searchTask == null) {
             searchTask = new QueryTask() {
                 public void executeQuery() {
                     try {
-//                        String lastChageFrom = panel.changedFromTextField.getText().trim();
-//                        if(lastChageFrom != null && !lastChageFrom.equals("")) {    // NOI18N
-//                            JiraConfig.getInstance().setLastChangeFrom(lastChageFrom);
-//                        }
                         refreshIntern(false);
                     } finally {
                         
@@ -719,14 +686,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void refreshIntern(boolean autoRefresh) {
-//        if (panel.urlPanel.isVisible()) {
-//        XXX get rid of this
-//            // XXX check url format etc...
-//            // XXX what if there is a different host in queries repository as in the url?
-//            query.refresh(panel.urlTextField.getText(), autoRefresh);
-//        } else {
-            query.refresh(getFilterDefinition(), autoRefresh);
-//        }
+        query.refresh(getFilterDefinition(), autoRefresh);
     }
 
     private void post(Runnable r) {
@@ -822,35 +782,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         }
         // XXX finish me
-        
-//        String[] params = urlParameters.split("&"); // NOI18N
-//        if(params == null || params.length == 0) return;
-//        Map<String, List<ParameterValue>> normalizedParams = new HashMap<String, List<ParameterValue>>();
-//        for (String p : params) {
-//            int idx = p.indexOf("="); // NOI18N
-//            if(idx > -1) {
-//                String parameter = p.substring(0, idx);
-//                String value = p.substring(idx + 1, p.length());
-//
-//                ParameterValue pv = new ParameterValue(value, value);
-//                List<ParameterValue> values = normalizedParams.get(parameter);
-//                if(values == null) {
-//                    values = new ArrayList<ParameterValue>();
-//                    normalizedParams.put(parameter, values);
-//                }
-//                values.add(pv);
-//            } else {
-//                // XXX warning!!
-//            }
-//        }
-//
-//        for (Map.Entry<String, List<ParameterValue>> e : normalizedParams.entrySet()) {
-//            QueryParameter pv = parameters.get(e.getKey());
-//            if(pv != null) {
-//                List<ParameterValue> pvs = e.getValue();
-//                pv.setValues(pvs.toArray(new ParameterValue[pvs.size()]));
-//            }
-//        }
+       
     }
 
     private abstract class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
