@@ -55,6 +55,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -64,16 +66,25 @@ import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
+import javax.swing.JList;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
+import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
+import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
+import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ContentFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
+import org.eclipse.mylyn.internal.jira.core.model.filter.IssueTypeFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.PriorityFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.ResolutionFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.StatusFilter;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -147,7 +158,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.filterComboBox.addItemListener(this);
         panel.searchButton.addActionListener(this);
         panel.refreshCheckBox.addActionListener(this);
-//        panel.keywordsButton.addActionListener(this);
         panel.saveChangesButton.addActionListener(this);
         panel.cancelChangesButton.addActionListener(this);
         panel.gotoIssueButton.addActionListener(this);
@@ -157,25 +167,17 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.modifyButton.addActionListener(this);
         panel.seenButton.addActionListener(this);
         panel.removeButton.addActionListener(this);
-//        panel.changedFromTextField.addFocusListener(this);
+        panel.reporterTextField.addFocusListener(this);
+        panel.assigneeTextField.addFocusListener(this);
 
         panel.idTextField.addActionListener(this);
         panel.projectList.addKeyListener(this);
-        panel.componentList.addKeyListener(this);
-//        panel.versionList.addKeyListener(this);
-//        panel.statusList.addKeyListener(this);
-//        panel.resolutionList.addKeyListener(this);
-//        panel.severityList.addKeyListener(this);
-//        panel.priorityList.addKeyListener(this);
-//        panel.changedList.addKeyListener(this);
+        panel.typeList.addKeyListener(this);
+        panel.statusList.addKeyListener(this);
+        panel.resolutionList.addKeyListener(this);
+        panel.priorityList.addKeyListener(this);
 
         panel.queryTextField.addActionListener(this);
-//        panel.commentTextField.addActionListener(this);
-//        panel.keywordsTextField.addActionListener(this);
-//        panel.peopleTextField.addActionListener(this);
-//        panel.changedFromTextField.addActionListener(this);
-//        panel.changedToTextField.addActionListener(this);
-//        panel.changedToTextField.addActionListener(this);
 
         // setup parameters
         parameters = new LinkedHashMap<String, QueryParameter>();
@@ -304,26 +306,40 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     panel.environmentCheckBox.isSelected()));
         }
 
-        // project
-        Project[] projects = getProjects();
-        if(projects.length > 0) {
-            fd.setProjectFilter(new ProjectFilter(getProjects()));
+        List<Project> projects = getValues(panel.projectList);
+        if(projects.size() > 0) {
+            fd.setProjectFilter(new ProjectFilter(projects.toArray(new Project[projects.size()])));
         }
-
+        List<IssueType> types = getValues(panel.typeList);
+        if(types.size() > 0) {
+            fd.setIssueTypeFilter(new IssueTypeFilter(types.toArray(new IssueType[types.size()])));
+        }
+        List<JiraStatus> statuses = getValues(panel.statusList);
+        if(statuses.size() > 0) {
+            fd.setStatusFilter(new StatusFilter(statuses.toArray(new JiraStatus[statuses.size()])));
+        }
+        List<Resolution> resolutions = getValues(panel.resolutionList);
+        if(resolutions.size() > 0) {
+            fd.setResolutionFilter(new ResolutionFilter(resolutions.toArray(new Resolution[resolutions.size()])));
+        }
+        List<Priority> priorities = getValues(panel.priorityList);
+        if(priorities.size() > 0) {
+            fd.setPriorityFilter(new PriorityFilter(priorities.toArray(new Priority[priorities.size()])));
+        }
 
         return fd;
     }
 
-    private Project[] getProjects() {
-        Object[] values = panel.projectList.getSelectedValues();
+    private <T> List<T> getValues(JList list) {
+        Object[] values = list.getSelectedValues();
         if(values == null || values.length == 0) {
-            return new Project[0];
+            return Collections.emptyList();
         }
-        Project[] projects = new Project[values.length];
-        for (int i = 0; i < projects.length; i++) {
-            projects[i] = (Project) values[i];
+        List<T> l = new ArrayList<T>(values.length);
+        for (Object o : values) {
+            l.add((T) o);
         }
-        return projects;
+        return l;
     }
 
     private void postPopulate(final FilterDefinition filterDefinition) {
@@ -369,31 +385,13 @@ public class QueryController extends BugtrackingController implements DocumentLi
                         // XXX nice errro msg?
                         return;
                     }
+                    
+                    populateList(panel.projectList, jc.getProjects());
+                    populateList(panel.typeList, jc.getIssueTypes());
+                    populateList(panel.statusList, jc.getStatuses());
+                    populateList(panel.resolutionList, jc.getResolutions());
+                    populateList(panel.priorityList, jc.getPriorities());
 
-                    Project[] projects = jc.getProjects();
-
-                    DefaultListModel model = new DefaultListModel();
-                    for (Project project : projects) {
-                        model.addElement(project);
-                    }
-                    panel.projectList.setModel(model);
-
-//                    productParameter.setParameterValues(toParameterValues(bc.getProducts()));
-//                    if (panel.productList.getModel().getSize() > 0) {
-//                        panel.productList.setSelectedIndex(0);
-//                        populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
-//                    }
-//                    severityParameter.setParameterValues(toParameterValues(bc.getSeverities()));
-//                    statusParameter.setParameterValues(toParameterValues(bc.getStatusValues()));
-//                    resolutionParameter.setParameterValues(toParameterValues(bc.getResolutions()));
-//                    priorityParameter.setParameterValues(toParameterValues(bc.getPriorities()));
-//                    changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
-//                    summaryParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
-//                    commentsParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
-//                    keywordsParameter.setParameterValues(QueryParameter.PV_KEYWORDS_VALUES);
-//                    peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
-//                    panel.changedToTextField.setText(CHANGED_NOW);
-//
                     if(filterDefinition != null && filterDefinition instanceof FilterDefinition) {
                         setFilterDefinition(filterDefinition);
                     }
@@ -445,6 +443,14 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 Jira.LOG.fine("Finnished populate query controller" + (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
             }
         }
+    }
+
+    private void populateList(JList list, Object[] values) {
+        DefaultListModel model = new DefaultListModel();
+        for (Object v : values) {
+            model.addElement(v);
+        }
+        list.setModel(model);
     }
 
     protected void enableFields(boolean bl) {
@@ -559,7 +565,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             return;
         }
         if(e.getSource() == panel.projectList ||
-           e.getSource() == panel.componentList /*||
+           e.getSource() == panel.typeList /*||
            e.getSource() == panel.versionList ||
            e.getSource() == panel.statusList ||
            e.getSource() == panel.resolutionList ||
