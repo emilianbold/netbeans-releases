@@ -98,7 +98,11 @@ public final class JiraConfigurationCacheManager {
             out.writeInt(cacheData.size());
             for (Entry<String, ConfigurationData> entry : cacheData.entrySet()) {
                 out.writeObject(entry.getKey());
-                out.writeObject(entry.getValue());
+                final ConfigurationData data = entry.getValue();
+                // lock the data so it's refresh (in JiraConfiguration) does not corrupt it
+                synchronized(data) {
+                    out.writeObject(data);
+                }
             }
         } catch (IOException ex) {
             Jira.LOG.log(Level.SEVERE, null, ex);
