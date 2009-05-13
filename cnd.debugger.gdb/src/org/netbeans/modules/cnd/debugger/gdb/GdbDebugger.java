@@ -257,7 +257,7 @@ public class GdbDebugger implements PropertyChangeListener {
             if (iotab != null) {
                 iotab.setErrSeparated(false);
             }
-            runDirectory = pathMap.getRemotePath(pae.getProfile().getRunDirectory().replace("\\", "/") + "/");  // NOI18N
+            runDirectory = pathMap.getRemotePath(pae.getProfile().getRunDirectory().replace("\\", "/") + "/",true);  // NOI18N
             baseDir = pae.getConfiguration().getBaseDir().replace("\\", "/");  // NOI18N
             profile = (GdbProfile) pae.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
             conType = execEnv.isLocal() ? pae.getProfile().getConsoleType().getValue() : RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
@@ -677,10 +677,6 @@ public class GdbDebugger implements PropertyChangeListener {
         return threadsList;
     }
 
-    public int getThreadCount() {
-        return 1;
-    }
-
     private void resetThreadInfo() {
         threadsList = emptyThreadsList;
     }
@@ -699,7 +695,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
             }
         }
-        return pathMap.getRemotePath(programName.toString());
+        return pathMap.getRemotePath(programName.toString(),true);
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -2511,7 +2507,7 @@ public class GdbDebugger implements PropertyChangeListener {
      *  @return The possibly modified path
      */
     public String getBestPath(String path) {
-        path = pathMap.getRemotePath(path);
+        path = pathMap.getRemotePath(path,true);
         if (path.startsWith(baseDir + '/')) {
             return path.substring(baseDir.length() + 1);
         } else {

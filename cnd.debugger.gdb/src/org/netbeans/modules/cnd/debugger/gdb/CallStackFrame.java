@@ -41,10 +41,38 @@
 
 package org.netbeans.modules.cnd.debugger.gdb;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.StyledDocument;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.deep.CsmForStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmIfStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmSwitchStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
+import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.completion.csm.CsmContext;
+import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
 import org.netbeans.modules.cnd.debugger.gdb.models.AbstractVariable;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 
 /**
  * Represents one stack frame.
@@ -57,6 +85,8 @@ import org.netbeans.modules.cnd.debugger.gdb.models.AbstractVariable;
  * @author Gordon Prieur (copied from Jan Jancura's JPDA implementation)
  */
 public class CallStackFrame {
+    protected static boolean enableMacros = Boolean.getBoolean("gdb.autos.macros");
+
     private final GdbDebugger debugger;
     private final int lineNumber;
     private final String func;
@@ -67,7 +97,12 @@ public class CallStackFrame {
     private final String from;
     
     private LocalVariable[] cachedLocalVariables = null;
+    private LocalVariable[] cachedAutos = null;
+
     private Collection<GdbVariable> arguments = null;
+    private StyledDocument document = null;
+    private int offset = -1;
+
     //private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     public CallStackFrame(GdbDebugger debugger, String func, String file, String fullname, String lnum, String address, int frameNumber, String from) {
@@ -142,7 +177,7 @@ public class CallStackFrame {
      */
     public String getFullname() {
         // PathMap.getLocalPath throws NPE when argument is null
-        return fullname == null? null : debugger.getPathMap().getLocalPath(debugger.checkCygwinLibs(fullname));
+        return fullname == null? null : debugger.getPathMap().getLocalPath(debugger.checkCygwinLibs(fullname),true);
     }
 
     public String getOriginalFullName() {
@@ -189,6 +224,26 @@ public class CallStackFrame {
     public void setArguments(Collection<GdbVariable> arguments) {
         this.arguments = arguments;
     }
+
+    public StyledDocument getDocument() {
+        if (document == null) {
+            if (fullname != null && fullname.length() > 0) {
+                File docFile = new File(fullname);
+                if (docFile.exists()) {
+                    FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(docFile));
+                    document = (StyledDocument) CsmUtilities.getDocument(fo);
+                }
+            }
+        }
+        return document;
+    }
+
+    public int getOffset() {
+        if (offset < 0 && lineNumber >= 0 && getDocument() != null) {
+            offset = NbDocument.findLineOffset(document, lineNumber-1);
+        }
+        return offset;
+    }
     
     /**
      * Returns local variables.
@@ -218,10 +273,96 @@ public class CallStackFrame {
         }
     }
 
+    public LocalVariable[] getAutos() {
+        if (cachedAutos == null) {
+            if (getDocument() == null) {
+                return null;
+            }
+            CsmFile csmFile = CsmUtilities.getCsmFile(getDocument(), false);
+            if (csmFile == null || !csmFile.isParsed()) {
+                return null;
+            }
+            CsmContext context = CsmOffsetResolver.findContext(csmFile, getOffset(), null);
+            CsmScope scope = context.getLastScope();
+            if (scope != null) {
+                CsmOffsetable previous = null;
+                final List<int[]> spans = new ArrayList<int[]>();
+                for (CsmScopeElement csmScopeElement : scope.getScopeElements()) {
+                    if (CsmKindUtilities.isOffsetable(csmScopeElement)) {
+                        CsmOffsetable offs = (CsmOffsetable) csmScopeElement;
+                        if (offs.getEndOffset() >= getOffset()) {
+                            if (previous != null) {
+                                spans.add(getInterestedStatementOffsets(previous));
+                            }
+                            spans.add(getInterestedStatementOffsets(offs));
+                            break;
+                        } else {
+                            previous = offs;
+                        }
+                    }
+                }
+                final Set<String> autos = new HashSet<String>();
+                if (!spans.isEmpty()) {
+                    CsmFileReferences.getDefault().accept(scope, new CsmFileReferences.Visitor() {
+                        public void visit(CsmReferenceContext context) {
+                            CsmReference reference = context.getReference();
+                            for (int[] span : spans) {
+                                if (span[0] <= reference.getStartOffset() && reference.getEndOffset() <= span[1]) {
+                                    CsmObject referencedObject = reference.getReferencedObject();
+                                    if (CsmKindUtilities.isVariable(referencedObject)) {
+                                        autos.add(reference.getText().toString());
+                                    } else if (enableMacros && CsmKindUtilities.isMacro(referencedObject)) {
+                                        String txt = reference.getText().toString();
+                                        int[] macroExpansionSpan = CsmMacroExpansion.getMacroExpansionSpan(document, reference.getStartOffset(), false);
+                                        if (macroExpansionSpan != null && macroExpansionSpan[0] != macroExpansionSpan[1]) {
+                                            try {
+                                                txt = document.getText(macroExpansionSpan[0], macroExpansionSpan[1] - macroExpansionSpan[0]);
+                                            } catch (BadLocationException ex) {
+                                                Exceptions.printStackTrace(ex);
+                                            }
+                                        }
+                                        autos.add(txt);
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+                cachedAutos = new LocalVariable[autos.size()];
+                int i = 0;
+                for (String name : autos) {
+                    cachedAutos[i++] = new AbstractVariable(name);
+                }
+            }
+        }
+        return cachedAutos;
+    }
+
     @Override
     public int hashCode() {
         // currently default hash code and equals are the optimal ones,
         // because CallStackFrames can not be equal if they are not the same object
         return super.hashCode();
+    }
+
+    private static int[] getInterestedStatementOffsets(CsmOffsetable offs) {
+        if (CsmKindUtilities.isStatement(offs)) {
+            switch (((CsmStatement)offs).getKind()) {
+                case IF:
+                    offs = ((CsmIfStatement)offs).getCondition();
+                    break;
+                case SWITCH:
+                    offs = ((CsmSwitchStatement)offs).getCondition();
+                    break;
+                case WHILE:
+                case DO_WHILE:
+                    offs = ((CsmLoopStatement)offs).getCondition();
+                    break;
+                case FOR:
+                    offs = ((CsmForStatement)offs).getCondition();
+                    break;
+            }
+        }
+        return new int[]{offs.getStartOffset(), offs.getEndOffset()};
     }
 }

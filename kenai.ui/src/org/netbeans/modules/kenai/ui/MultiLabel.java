@@ -38,7 +38,7 @@ public class MultiLabel extends JLabel {
 
     private static final int TEXT_GAP = 15;
 
-    private static final Font FONT = UIManager.getDefaults().getFont("Label.font");
+    private static final Font FONT = UIManager.getDefaults().getFont("Label.font"); // NOI18N
     private static final FontMetrics FM = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB).getGraphics().getFontMetrics(FONT);
 
     public MultiLabel() {
@@ -75,7 +75,7 @@ public class MultiLabel extends JLabel {
             StringBuffer sb = new StringBuffer();
             for (String s : w) {
                 sb.append(s);
-                sb.append(" ");
+                sb.append(" "); // NOI18N
             }
             g2d.drawString(sb.toString(), 0, lineNum * FM.getHeight());
         }
@@ -87,8 +87,8 @@ public class MultiLabel extends JLabel {
         List<String[]> lines = new ArrayList<String[]>();
         List<String> line = new ArrayList<String>();
         int currWidth = 0;
-        for (String word : text.split("\\s")) {
-            int wordWidth = SwingUtilities.computeStringWidth(FM, word + " ");
+        for (String word : text.split("\\s")) { // NOI18N
+            int wordWidth = SwingUtilities.computeStringWidth(FM, word + " "); // NOI18N
             if (currWidth + wordWidth < width - TEXT_GAP) {
                 line.add(word);
                 currWidth += wordWidth;
@@ -187,7 +187,7 @@ public class MultiLabel extends JLabel {
 
         }
 
-        return text.substring(0, mIndex) + "...";
+        return text.substring(0, mIndex) + "..."; // NOI18N
 
     }
 

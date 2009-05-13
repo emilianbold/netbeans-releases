@@ -108,7 +108,7 @@ public class ImportManager extends java.awt.Panel {
             }
         });
         checkedToInstall = new ArrayList<Boolean> (importer.getPluginsAvailableToInstall ().size ());
-        checkedToInstall = new ArrayList<Boolean> (Collections.nCopies (importer.getPluginsAvailableToInstall ().size (), Boolean.TRUE));
+        checkedToInstall.addAll(Collections.nCopies (importer.getPluginsAvailableToInstall ().size (), Boolean.TRUE));
 
         toImport = new ArrayList<UpdateElement> (importer.getPluginsToImport ());
         Collections.sort (toImport, new Comparator<UpdateElement> () {
@@ -117,7 +117,7 @@ public class ImportManager extends java.awt.Panel {
             }
         });
         checkedToImport = new ArrayList<Boolean> (importer.getPluginsToImport ().size ());
-        checkedToImport = new ArrayList<Boolean> (Collections.nCopies (importer.getPluginsToImport ().size (), Boolean.FALSE));
+        checkedToInstall.addAll(Collections.nCopies (importer.getPluginsToImport ().size (), Boolean.FALSE));
 
         initComponents();
 

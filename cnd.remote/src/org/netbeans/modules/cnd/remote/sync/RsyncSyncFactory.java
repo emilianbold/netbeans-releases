@@ -55,7 +55,7 @@ public class RsyncSyncFactory extends RemoteSyncFactory {
 
     @Override
     public RemoteSyncWorker createNew(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
-        return new SharedSyncWorker(localDir, executionEnvironment, out, err);
+        return new RsyncSyncWorker(localDir, executionEnvironment, out, err);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class RsyncSyncFactory extends RemoteSyncFactory {
 
     @Override
     public String getID() {
-        return "scp"; //NOI18N
+        return "rsync"; //NOI18N
     }
 
     @Override

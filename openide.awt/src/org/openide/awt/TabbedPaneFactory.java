@@ -56,6 +56,16 @@ public class TabbedPaneFactory {
      * when the user clicks close button on a tab.
      */
     public static final String PROP_CLOSE = CloseButtonTabbedPane.PROP_CLOSE;
+
+    /**
+     * To hide close button feature on specific tab, put value Boolean.TRUE
+     * as a client property of your tab:<br>
+     * <pre>
+     * component.putClientProperty(TabbedPaneFactory.NO_CLOSE_BUTTON, Boolean.TRUE)
+     * </pre>
+     * @since 7.8
+     */
+    public static final String NO_CLOSE_BUTTON = "noCloseButton";
     
     /** Creates a new instance of TabbedPaneFactory */
     private TabbedPaneFactory() {
@@ -68,6 +78,7 @@ public class TabbedPaneFactory {
      * value is the inner component inside the clicked tab.
      * 
      * @return Special TabbedPane with closeable tabs.
+     * @see TabbedPaneFactory#NO_CLOSE_BUTTON
      */
     public static JTabbedPane createCloseButtonTabbedPane() {
         return new CloseButtonTabbedPane();

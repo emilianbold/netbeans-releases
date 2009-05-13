@@ -113,7 +113,7 @@ public abstract class CCCCompiler extends BasicCompiler {
         String command = path;
         path = IpeUtils.getDirName(path);
         if (getExecutionEnvironment().isLocal() && Utilities.isWindows()) {
-            command = LinkSupport.resolveWindowsLinkik(command);
+            command = LinkSupport.resolveWindowsLink(command);
         }
 
         Process process;

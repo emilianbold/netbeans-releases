@@ -40,35 +40,21 @@ package org.netbeans.modules.cnd.api.compilers;
 
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.cnd.compilers.impl.ToolchainManagerImpl;
 
 /**
  *
  * @author Alexander Simon
  */
-public abstract class ToolchainManager {
+public final class ToolchainManager {
+    private static final ToolchainManagerImpl manager = new ToolchainManagerImpl();
 
-    private static final ToolchainManagerImpl instance = new ToolchainManagerImpl();
-
-    static final ToolchainManager getInstance() {
-        return instance;
+    /*package-local*/ static final ToolchainManagerImpl getImpl() {
+        return manager;
     }
 
-    /*package-local*/ ToolchainManager() {
+    private ToolchainManager() {
     }
-
-    abstract ToolchainDescriptor getToolchain(String name, int platform);
-
-    abstract List<ToolchainDescriptor> getAllToolchains();
-
-    abstract List<ToolchainDescriptor> getToolchains(int platform);
-
-    abstract boolean isPlatforSupported(int platform, ToolchainDescriptor d);
-
-    abstract boolean isMyFolder(String path, ToolchainDescriptor d, int platform, boolean known);
-
-    abstract String getBaseFolder(ToolchainDescriptor d, int platform);
-
-    abstract String getCommandFolder(ToolchainDescriptor d, int platform);
 
     public interface ToolchainDescriptor {
 
@@ -84,21 +70,9 @@ public abstract class ToolchainManager {
 
         String getDriveLetterPrefix();
 
-        String getBaseFolderKey();
+        List<BaseFolder> getBaseFolders();
 
-        String getBaseFolderPattern();
-
-        String getBaseFolderSuffix();
-
-        String getBaseFolderPathPattern();
-
-        String getCommandFolderKey();
-
-        String getCommandFolderPattern();
-
-        String getCommandFolderSuffix();
-
-        String getCommandFolderPathPattern();
+        List<BaseFolder> getCommandFolders();
 
         String getQmakeSpec();
 
@@ -121,6 +95,17 @@ public abstract class ToolchainManager {
         DebuggerDescriptor getDebugger();
 
         String getMakefileWriter();
+    }
+
+    public interface BaseFolder {
+        
+        String getFolderKey();
+
+        String getFolderPattern();
+
+        String getFolderSuffix();
+
+        String getFolderPathPattern();
     }
 
     public interface ToolDescriptor {

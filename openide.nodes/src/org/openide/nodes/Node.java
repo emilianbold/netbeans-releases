@@ -71,6 +71,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
@@ -468,6 +469,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
      * @since 3.1
      */
     protected final void setChildren(final Children ch) {
+        Parameters.notNull("ch", ch);
         Children.MUTEX.postWriteRequest(new Runnable() { public void run() {
 
             List<Node> prevSnapshot = null;

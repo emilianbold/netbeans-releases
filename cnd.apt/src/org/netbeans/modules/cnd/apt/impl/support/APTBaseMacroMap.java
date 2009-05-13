@@ -141,7 +141,8 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     }
     
     private void defineImpl(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
-        active.getMacros().put(name.getTextID(), createMacro(file, name, params, value, macroType));
+        CharSequence filePath = (file == null ? CharSequenceKey.empty() : file.getPath());
+        active.getMacros().put(name.getTextID(), createMacro(filePath, name, params, value, macroType));
     }
 
     public void undef(APTFile file, APTToken name) {
@@ -149,7 +150,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     }
     
     /** method to implement in children */
-    protected abstract APTMacro createMacro(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType);
+    protected abstract APTMacro createMacro(CharSequence file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType);
     
     ////////////////////////////////////////////////////////////////////////////
     // manage macro access

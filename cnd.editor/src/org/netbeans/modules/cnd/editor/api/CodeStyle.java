@@ -56,13 +56,16 @@ public final class CodeStyle {
     }
 
     private static CodeStyle INSTANCE_C;
+    private static CodeStyle INSTANCE_H;
     private static CodeStyle INSTANCE_CPP;
     private Language language;
     private Preferences preferences;
+    private final boolean useOverrideOptions;
 
-    private CodeStyle(Language language, Preferences preferences) {
+    private CodeStyle(Language language, Preferences preferences, boolean useOverrideOptions) {
         this.language = language;
         this.preferences = preferences;
+        this.useOverrideOptions = useOverrideOptions;
     }
 
     public synchronized static CodeStyle getDefault(Language language) {
@@ -73,6 +76,12 @@ public final class CodeStyle {
                     setSimplePreferences(language, INSTANCE_C);
                 }
                 return INSTANCE_C;
+            case HEADER:
+                if (INSTANCE_H == null) {
+                    INSTANCE_H = create(language);
+                    setSimplePreferences(language, INSTANCE_H);
+                }
+                return INSTANCE_H;
             case CPP:
             default:
                 if (INSTANCE_CPP == null) {
@@ -99,30 +108,48 @@ public final class CodeStyle {
         } else {
             if (mimeType.equals(MIMENames.C_MIME_TYPE)) {
                 return getDefault(Language.C);
+            } else if (mimeType.equals(MIMENames.HEADER_MIME_TYPE)) {
+                return getDefault(Language.HEADER);
             }
         }
         return getDefault(Language.CPP);
     }
 
     private static CodeStyle create(Language language) {
-        return new CodeStyle(language, EditorOptions.getPreferences(language, EditorOptions.getCurrentProfileId(language)));
+        return new CodeStyle(language, EditorOptions.getPreferences(language, EditorOptions.getCurrentProfileId(language)), true);
     }
 
     // General indents ------------------------------------------------
     
+    private boolean isOverideTabIndents(){
+        if (useOverrideOptions) {
+            return EditorOptions.getOverideTabIndents(language);
+        }
+        return true;
+    }
+
     public int indentSize() {
-        return getOption(EditorOptions.indentSize,
-                         EditorOptions.indentSizeDefault);
+        if (isOverideTabIndents()){
+            return getOption(EditorOptions.indentSize,
+                             EditorOptions.indentSizeDefault);
+        }
+        return EditorOptions.getGlobalIndentSize();
     }
 
     public boolean expandTabToSpaces() {
-        return getOption(EditorOptions.expandTabToSpaces,
-                         EditorOptions.expandTabToSpacesDefault);
+        if (isOverideTabIndents()){
+            return getOption(EditorOptions.expandTabToSpaces,
+                             EditorOptions.expandTabToSpacesDefault);
+        }
+        return EditorOptions.getGlobalExpandTabs();
     }
 
     public int getTabSize() {
-        return getOption(EditorOptions.tabSize,
-                         EditorOptions.tabSizeDefault);
+        if (isOverideTabIndents()){
+            return getOption(EditorOptions.tabSize,
+                             EditorOptions.tabSizeDefault);
+        }
+        return EditorOptions.getGlobalTabSize();
     }
 
     public int getFormatStatementContinuationIndent() {
@@ -486,10 +513,16 @@ public final class CodeStyle {
         this.preferences = preferences;
     }
 
+    @Override
+    public String toString() {
+        return "Code style for language "+language+". Preferences "+preferences; // NOI18N
+    }
+
     // Nested classes ----------------------------------------------------------
     public enum Language {
         C,
-        CPP;
+        CPP,
+        HEADER;
         
         @Override
         public String toString() {
@@ -521,8 +554,8 @@ public final class CodeStyle {
 
     // Communication with non public packages ----------------------------------
     private static class FactoryImpl implements EditorOptions.CodeStyleFactory {
-        public CodeStyle create(Language language, Preferences preferences) {
-            return new CodeStyle(language, preferences);
+        public CodeStyle create(Language language, Preferences preferences, boolean useOverrideOptions) {
+            return new CodeStyle(language, preferences, useOverrideOptions);
         }
         public Preferences getPreferences(CodeStyle codeStyle) {
             return codeStyle.getPreferences();

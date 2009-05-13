@@ -223,6 +223,7 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel imp
     }
 
     private void commandFocusGained(java.awt.event.FocusEvent evt) {
+        caller = new WeakReference<TopComponent>(TopComponent.getRegistry().getActivated());
         setShowHint(false);
         if (CommandEvaluator.isCatTemporary()) {
             CommandEvaluator.setCatTemporary(false);
@@ -325,7 +326,6 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel imp
 
     @Override
     public void requestFocus() {
-        caller = new WeakReference<TopComponent>(TopComponent.getRegistry().getActivated());
         super.requestFocus();
         command.requestFocus();
     }

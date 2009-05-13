@@ -40,17 +40,12 @@
  */
 package org.netbeans.api.print;
 
-import java.awt.Container;
-import java.awt.Dimension;
 import javax.swing.Action;
 import javax.swing.JComponent;
-import javax.swing.text.StyledDocument;
-
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
-import org.netbeans.spi.print.PrintPage;
 import org.netbeans.spi.print.PrintProvider;
 
 /**
@@ -125,18 +120,18 @@ import org.netbeans.spi.print.PrintProvider;
  * If a print provider is found, it is used by the print manager for print preview.<p>
  *
  * Otherwise, it tries to obtain {@linkplain #PRINT_PRINTABLE printable} components
- * among the {@linkplain Container#getComponents descendants} of the active top component.
- * All found printable components are passed into the Print Preview dialog.
- * Note that {@linkplain JComponent#print print} method is invoked by
+ * among the {@linkplain java.awt.Container#getComponents descendants} of the active
+ * top component. All found printable components are passed into the Print Preview
+ * dialog. Note that {@linkplain JComponent#print print} method is invoked by
  * the manager for preview and printing the component.<p>
  *
  * If there are no printable components, printable data are retrieved from the 
  * {@linkplain TopComponent#getActivatedNodes selected nodes} of the active top
  * component. The Print manager gets {@link EditorCookie} from the {@link DataObject}
- * of the {@link Node}s. The {@link StyledDocument}s returned by the editor cookies,
- * contain printing information (text, font, color). This information is shown in the
- * print preview. So, any textual documents (Java/C++/Php/etc. sources, html, xml,
- * plain text etc.) are printable by default.
+ * of the {@link Node}s. The {@link javax.swing.text.StyledDocument}s, returned by the
+ * editor cookies, contain printing information (text, font, color). This information
+ * is shown in the print preview. So, any textual documents (Java/C++/Php/... sources,
+ * html, xml, plain text, etc.) are printable by default.
  *
  * @see org.netbeans.spi.print.PrintProvider
  *
@@ -152,19 +147,19 @@ public final class PrintManager {
     public static final String PRINT_NAME = "print.name"; // NOI18N
     /**
      * This key indicates the order of the component being printed.
-     * The value of the key must be {@link Integer}. All visible and printable
-     * components are ordered and shown in the Print Preview
+     * The value of the key must be {@link Integer}. All visible and
+     * printable components are ordered and shown in the Print Preview
      * dialog from the left to right.
      */
     public static final String PRINT_ORDER = "print.order"; // NOI18N
     /**
      * This key indicates the size of the component being printed.
-     * The value of the key must be {@link Dimension}.
+     * The value of the key must be {@link java.awt.Dimension}.
      */
     public static final String PRINT_SIZE = "print.size"; // NOI18N
     /**
-     * This key indicates whether the component is printable. To be printable
-     * the value {@link Boolean#TRUE} must be set as a client property of the component.
+     * This key indicates whether the component is printable. To be printable the
+     * value {@link Boolean#TRUE} must be set as a client property of the component.
      */
     public static final String PRINT_PRINTABLE = "print.printable"; // NOI18N
 
@@ -176,8 +171,8 @@ public final class PrintManager {
 
     /**
      * Returns the Print action for a component.
-     * All {@linkplain #PRINT_PRINTABLE printable} components are obtained among
-     * the {@linkplain Container#getComponents descendants} of the given component.
+     * All {@linkplain #PRINT_PRINTABLE printable} components are obtained among the
+     * {@linkplain java.awt.Container#getComponents descendants} of the given component.
      * All found printable components are passed into the Print Preview dialog.
      *
      * @param component is the component being printed
@@ -190,8 +185,8 @@ public final class PrintManager {
 
     /**
      * Returns the Print action for given {@linkplain PrintProvider print providers}.
-     * All {@link PrintPage}s returned by the providers are shown in
-     * the Print Preview dialog.
+     * All {@link org.netbeans.spi.print.PrintPage}s returned by the providers are
+     * shown in the Print Preview dialog.
      *
      * @param providers is the array of print providers
      * @return the Print action

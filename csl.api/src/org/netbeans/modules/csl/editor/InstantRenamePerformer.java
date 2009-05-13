@@ -153,11 +153,19 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         target.select(mainRegion.getStartOffset(), mainRegion.getEndOffset());
     }
 
-    public static boolean isInstantRenameInProgress(JTextComponent target) {
-        return target.getClientProperty(InstantRenamePerformer.class) != null;
+
+    private static InstantRenamePerformer getPerformerFromComponent(JTextComponent target) {
+        return (InstantRenamePerformer)target.getClientProperty(InstantRenamePerformer.class);
     }
 
     public static void performInstantRename(JTextComponent target, Set<OffsetRange> highlights, int caretOffset) throws BadLocationException {
+        //check if there is already an instant rename action in progress
+        InstantRenamePerformer performer = getPerformerFromComponent(target);
+        if(performer != null) {
+            //cancel the old one
+            performer.release();
+        }
+
 	new InstantRenamePerformer(target, highlights, caretOffset);
     }
 
@@ -216,7 +224,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     public void keyReleased(KeyEvent e) {
     }
 
-    private void release() {
+    void release() {
 	target.putClientProperty(InstantRenamePerformer.class, null);
         if (doc instanceof BaseDocument) {
             ((BaseDocument) doc).removePostModificationDocumentListener(this);

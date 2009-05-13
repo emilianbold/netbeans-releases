@@ -41,41 +41,40 @@ package org.netbeans.modules.kenai.ui;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.openide.util.NbPreferences;
 
 
 
 /**
  * @author Jan Becicka
  */
-public final class LoginAction extends AbstractAction implements Runnable {
+public final class LoginAction extends AbstractAction {
 
     private static LoginAction instance;
     private boolean logout;
 
     private LoginAction() {
         setLogout(Kenai.getDefault().getPasswordAuthentication()!=null);
-        RequestProcessor.getDefault().post(this);
     }
 
-    public void run() {
-        UIUtils.tryLogin();
-    }
-    
     public static synchronized LoginAction getDefault() {
         if (instance==null) {
             instance=new LoginAction();
             Kenai.getDefault().addPropertyChangeListener(Kenai.PROP_LOGIN, new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent pce) {
-                        if (pce.getNewValue()==null) {
-                            instance.setLogout(false);
-                        } else {
-                            instance.setLogout(true);
-                        }
+                    if (pce.getNewValue()==null) {
+                        instance.setLogout(false);
+                    } else {
+                       instance.setLogout(true);
+                    }
+                    final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
+                    preferences.put(UIUtils.ONLINE_STATUS_PREF, Boolean.toString(pce.getNewValue()!=null));
+
                     }
                 });
         }

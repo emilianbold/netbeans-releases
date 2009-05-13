@@ -101,7 +101,7 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="queriesPanel" max="32767" attributes="0"/>
+                                  <Component id="queriesPanel" pref="562" max="32767" attributes="0"/>
                               </Group>
                               <Component id="findIssuesLabel" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -133,6 +133,11 @@
               </Layout>
               <SubComponents>
                 <Component class="javax.swing.JComboBox" name="repositoryComboBox">
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="org/netbeans/modules/bugtracking/ui/query/Bundle.properties" key="QueryTopComponent.repositoryComboBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                    </Property>
+                  </AccessibilityProperties>
                 </Component>
                 <Container class="javax.swing.JPanel" name="queriesPanel">
                   <Properties>
@@ -205,6 +210,11 @@
                       <ResourceString bundle="org/netbeans/modules/bugtracking/ui/query/Bundle.properties" key="QueryTopComponent.newButton.text_1" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="org/netbeans/modules/bugtracking/ui/query/Bundle.properties" key="QueryTopComponent.newButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                    </Property>
+                  </AccessibilityProperties>
                 </Component>
               </SubComponents>
             </Container>

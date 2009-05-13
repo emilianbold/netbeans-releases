@@ -59,7 +59,7 @@ public class HostMappingsAnalyzer {
         this(remoteExecEnv, ExecutionEnvironmentFactory.getLocal());
     }
 
-    public HostMappingsAnalyzer(ExecutionEnvironment secondEnv, ExecutionEnvironment firstEnv) {
+    private HostMappingsAnalyzer(ExecutionEnvironment secondEnv, ExecutionEnvironment firstEnv) {
         secondPI = PlatformInfo.getDefault(secondEnv);
         firstPI = PlatformInfo.getDefault(firstEnv);
     }

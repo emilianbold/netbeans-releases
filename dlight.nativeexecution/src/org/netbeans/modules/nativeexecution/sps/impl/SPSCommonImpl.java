@@ -57,7 +57,7 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
     private final static TasksCachedProcessor<ExecutionEnvironment, List<String>> cachedPrivilegesFetcher =
             new TasksCachedProcessor<ExecutionEnvironment, List<String>>(new FetchPrivilegesTask(), false);
     private final static TasksCachedProcessor<RequestPrivilegesTaskParams, Boolean> cachedPrivilegesRequestor =
-            new TasksCachedProcessor<RequestPrivilegesTaskParams, Boolean>(new RequestPrivilegesTask(), false);
+            new TasksCachedProcessor<RequestPrivilegesTaskParams, Boolean>(new RequestPrivilegesTask(), true);
     private final ExecutionEnvironment execEnv;
     private volatile boolean cancelled = false;
 
@@ -100,7 +100,7 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
                 throw new NotOwnerException();
             }
         } catch (CancellationException ex) {
-            cancelled = true;
+            //cancelled = true;
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -115,9 +115,12 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
     public boolean hasPrivileges(
             final List<String> privs) {
 
-        boolean status = true;
         List<String> real_privs = getExecutionPrivileges();
+        if (real_privs == null) {
+            return false;
+        }
 
+        boolean status = true;
         for (String priv : privs) {
             if (!status) {
                 break;
@@ -134,10 +137,6 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
         try {
             result = cachedPrivilegesFetcher.compute(execEnv);
         } catch (InterruptedException ex) {
-        }
-
-        if (result == null) {
-            return null;
         }
 
         return result;

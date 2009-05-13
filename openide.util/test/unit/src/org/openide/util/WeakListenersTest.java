@@ -41,12 +41,15 @@
 
 package org.openide.util;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -405,6 +408,56 @@ public class WeakListenersTest extends NbTestCase {
         assertGC("could collect listener", r);
         assertEquals("called remove method", 0, Singleton.listeners.size());
     }
+
+    public void testIssue156703() throws InterruptedException {
+        class Obj {
+
+            Set<PropertyChangeListener> listeners = new LinkedHashSet<PropertyChangeListener>();
+            private Thread removedBy;
+            int cnt;
+
+            synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+                listeners.add(listener);
+            }
+
+            synchronized void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+                listeners.remove(listener);
+                removedBy = Thread.currentThread();
+                cnt++;
+                notifyAll();
+            }
+
+            synchronized void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+                PropertyChangeEvent evt = new PropertyChangeEvent(this, propertyName, oldValue, newValue);
+                for (PropertyChangeListener l : listeners) {
+                    l.propertyChange(evt);
+                }
+            }
+        }
+        Listener l = new Listener();
+        Obj obj = new Obj();
+        java.beans.PropertyChangeListener weakL = WeakListeners.propertyChange(l, obj);
+        obj.addPropertyChangeListener(weakL);
+        obj.firePropertyChange("aa", null, null);
+        assertEquals("Listener called once", 1, l.cnt);
+
+        Reference<?> ref = new WeakReference<Object>(l);
+        l = null;
+
+        synchronized (obj) {
+            assertGC("Can disappear", ref);
+            obj.wait();
+        }
+
+        assertTrue("Weak listener has been removed", obj.listeners.isEmpty());
+        assertEquals("Unregister called just once", 1, obj.cnt);
+        assertEquals("Button released from a thread", "Active Reference Queue Daemon", obj.removedBy.getName());
+
+        Reference<?> weakRef = new WeakReference<Object>(weakL);
+        weakL = null;
+        assertGC("Weak listener can go away as well", weakRef);
+    }
+
     public static class Singleton {
         public static List<ChangeListener> listeners = new ArrayList<ChangeListener>();
         public static void addChangeListener(ChangeListener l) {

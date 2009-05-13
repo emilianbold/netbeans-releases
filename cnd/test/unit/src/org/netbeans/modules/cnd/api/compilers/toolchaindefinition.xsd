@@ -13,8 +13,8 @@
                 <xs:element ref="tns:makefile_writer" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:default_locations" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:drive_letter_prefix" minOccurs="0" maxOccurs="1"/>
-                <xs:element ref="tns:base_folder" minOccurs="0" maxOccurs="1"/>
-                <xs:element ref="tns:command_folder" minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="tns:base_folders" minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="tns:command_folders" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:c" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:cpp" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:fortran" minOccurs="0" maxOccurs="1"/>
@@ -71,6 +71,14 @@
         <xs:complexType>
             <xs:attribute name="flags" type="xs:string" use="optional" />
             <xs:attribute name="default" type="xs:string" use="optional" />
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="base_folders">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="tns:base_folder" minOccurs="1" maxOccurs="unbounded" />
+            </xs:sequence>
         </xs:complexType>
     </xs:element>
 
@@ -135,6 +143,14 @@
     <xs:element name="classic">
         <xs:complexType>
             <xs:attribute name="flags" type="xs:string" use="optional" />
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="command_folders">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="tns:command_folder" minOccurs="1" maxOccurs="unbounded" />
+            </xs:sequence>
         </xs:complexType>
     </xs:element>
 

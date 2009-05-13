@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.cnd.completion.csm;
 
-import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
@@ -50,7 +49,6 @@ import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
@@ -66,6 +64,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
@@ -82,6 +81,7 @@ import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmFriendResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
@@ -105,7 +105,6 @@ public final class CsmProjectContentResolver {
     private boolean caseSensitive = false;
     private boolean naturalSort = false;
     private boolean sort = false;
-    private CsmFile file;
     private CsmProject project;
     private Collection<CsmProject> libs;
 
@@ -131,12 +130,12 @@ public final class CsmProjectContentResolver {
      * Creates a new instance of CsmProjectContentResolver
      * could be used for getting info only from project
      */
-    public CsmProjectContentResolver(CsmProject project, boolean caseSensitive, boolean needSort, boolean naturalSort) {
+    public CsmProjectContentResolver(CsmProject project, boolean caseSensitive, boolean needSort, boolean naturalSort, Collection<CsmProject> libs) {
         this.caseSensitive = caseSensitive;
         this.naturalSort = naturalSort;
-        this.file = null;
         this.sort = needSort;
         this.project = project;
+        this.libs = libs;
     }
 
     private List<CsmEnumerator> getEnumeratorsFromEnumsEnumeratorsAndTypedefs(List enumsEnumeratorsAndTypedefs, boolean match, String strPrefix, boolean sort) {
@@ -310,22 +309,21 @@ public final class CsmProjectContentResolver {
         return getLibElements(NS_NAMESPACES_FILTER, strPrefix, match, this.isSortNeeded(), false);
     }
 
-    @SuppressWarnings("unchecked")
     private Collection getLibElements(NsContentResultsFilter filter, String strPrefix, boolean match, boolean sort, boolean searchNested) {
         if (project == null) {
             return Collections.EMPTY_LIST;
         }
-        Set handledLibs = new HashSet();
+        Set<CsmProject> handledLibs = new HashSet<CsmProject>();
+        handledLibs.add(project);
         Map<String, CsmObject> res = new HashMap<String, CsmObject>();
-        Collection<CsmObject> libElements = new LinkedHashSet();
+        Collection<CsmObject> libElements = new LinkedHashSet<CsmObject>();
         // add libararies elements
-        for (Iterator it = project.getLibraries().iterator(); it.hasNext();) {
-            CsmProject lib = (CsmProject) it.next();
+        for (CsmProject lib : libs) {
             if (!handledLibs.contains(lib)) {
                 handledLibs.add(lib);
-                CsmProjectContentResolver libResolver = new CsmProjectContentResolver(lib, isCaseSensitive(), isSortNeeded(), isNaturalSort());
+                CsmProjectContentResolver libResolver = new CsmProjectContentResolver(lib, isCaseSensitive(), isSortNeeded(), isNaturalSort(), Collections.<CsmProject>emptyList());
                 // TODO: now only direct lib is handled and not libraries of libraries of ...
-                Collection results = filter.getResults(libResolver, lib.getGlobalNamespace(), strPrefix, match, searchNested);
+                Collection<? extends CsmObject> results = filter.getResults(libResolver, lib.getGlobalNamespace(), strPrefix, match, searchNested);
                 if (match) {
                     libElements.addAll(results);
                 } else {
@@ -361,35 +359,35 @@ public final class CsmProjectContentResolver {
          * @searchNested flag indicating that results must be searched in nested namespaces as well
          * @returns specific results of analyzed namespace
          */
-        public Collection getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match, boolean searchNested);
+        public Collection<? extends CsmObject> getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match, boolean searchNested);
     }
     private static final NsContentResultsFilter NS_VARIABLE_FILTER = new NsContentResultsFilter() {
 
-        public Collection getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
+        public Collection<? extends CsmObject> getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
             return resolver.getNamespaceVariables(ns, strPrefix, match, searchNested);
         }
     };
     private static final NsContentResultsFilter NS_FUNCTION_FILTER = new NsContentResultsFilter() {
 
-        public Collection getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
+        public Collection<? extends CsmObject> getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
             return resolver.getNamespaceFunctions(ns, strPrefix, match, searchNested);
         }
     };
     private static final NsContentResultsFilter NS_CLASS_ENUM_FILTER = new NsContentResultsFilter() {
 
-        public Collection getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
+        public Collection<? extends CsmObject> getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
             return resolver.getNamespaceClassesEnums(ns, strPrefix, match, searchNested);
         }
     };
     private static final NsContentResultsFilter NS_ENUMERATOR_FILTER = new NsContentResultsFilter() {
 
-        public Collection getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
+        public Collection<? extends CsmObject> getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
             return resolver.getNamespaceEnumerators(ns, strPrefix, match, searchNested);
         }
     };
     private static final NsContentResultsFilter NS_NAMESPACES_FILTER = new NsContentResultsFilter() {
 
-        public Collection getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
+        public Collection<? extends CsmObject> getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
             return resolver.getGlobalNamespaces(strPrefix, match);
         }
     };
@@ -892,7 +890,7 @@ public final class CsmProjectContentResolver {
     }
 
     @SuppressWarnings("unchecked")
-    public List<CsmClassifier> getNestedClassifiers(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean match, boolean inspectParentClasses) {
+    public List<CsmClassifier> getNestedClassifiers(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean match, boolean inspectParentClasses, boolean inspectOuterClasses) {
         CsmDeclaration.Kind memberKinds[] = {
             CsmDeclaration.Kind.TYPEDEF,
             CsmDeclaration.Kind.UNION,
@@ -901,7 +899,7 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION,
             CsmDeclaration.Kind.ENUM
         };
-        List res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, false, match, inspectParentClasses, true, false);
+        List res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, false, match, inspectParentClasses, inspectOuterClasses, true, false);
         if (res != null && this.isSortNeeded()) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
@@ -909,12 +907,12 @@ public final class CsmProjectContentResolver {
     }
 
     @SuppressWarnings("unchecked")
-    public List<CsmMethod> getMethods(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses, boolean scopeAccessedClassifier) {
+    public List<CsmMethod> getMethods(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses, boolean inspectOuterClasses, boolean scopeAccessedClassifier) {
         CsmDeclaration.Kind memberKinds[] = {
             CsmDeclaration.Kind.FUNCTION,
             CsmDeclaration.Kind.FUNCTION_DEFINITION
         };
-        List res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, staticOnly, match, inspectParentClasses, scopeAccessedClassifier, false);
+        List res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, staticOnly, match, inspectParentClasses, inspectOuterClasses, scopeAccessedClassifier, false);
         if (res != null && this.isSortNeeded()) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
@@ -943,19 +941,19 @@ public final class CsmProjectContentResolver {
     }
 
     public List<CsmField> getFields(CsmClass clazz, boolean staticOnly) {
-        return getFields(clazz, clazz, "", staticOnly, false, true, false);
+        return getFields(clazz, clazz, "", staticOnly, false, true, true, false);
     }
 
     @SuppressWarnings("unchecked")
-    public List<CsmField> getFields(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses, boolean scopeAccessedClassifier) {
-        List<CsmField> res = getClassMembers(clazz, contextDeclaration, CsmDeclaration.Kind.VARIABLE, strPrefix, staticOnly, match, inspectParentClasses, scopeAccessedClassifier);
+    public List<CsmField> getFields(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses, boolean inspectOuterClasses, boolean scopeAccessedClassifier) {
+        List<CsmField> res = getClassMembers(clazz, contextDeclaration, CsmDeclaration.Kind.VARIABLE, strPrefix, staticOnly, match, inspectParentClasses, scopeAccessedClassifier, inspectOuterClasses);
         if (isSortNeeded() && res != null) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
         return res;
     }
 
-    public List<CsmEnumerator> getEnumerators(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean match, boolean inspectParentClasses, boolean scopeAccessedClassifier) {
+    public List<CsmEnumerator> getEnumerators(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean match, boolean inspectParentClasses, boolean inspectOuterClasses, boolean scopeAccessedClassifier) {
         // get all enums and check theirs enumerators
         // also get all typedefs and check whether they define
         // unnamed enum
@@ -963,26 +961,26 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.ENUM,
             CsmDeclaration.Kind.TYPEDEF
         };
-        List enumsAndTypedefs = getClassMembers(clazz, contextDeclaration, classKinds, "", false, false, inspectParentClasses, scopeAccessedClassifier, true);
+        List enumsAndTypedefs = getClassMembers(clazz, contextDeclaration, classKinds, "", false, false, inspectParentClasses, inspectOuterClasses, scopeAccessedClassifier, true);
         List<CsmEnumerator> res = getEnumeratorsFromEnumsEnumeratorsAndTypedefs(enumsAndTypedefs, match, strPrefix, sort);
         return res;
     }
 
-    public List<CsmMember> getFieldsAndMethods(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses, boolean scopeAccessedClassifier) {
+    public List<CsmMember> getFieldsAndMethods(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses, boolean inspectOuterClasses, boolean scopeAccessedClassifier) {
         CsmDeclaration.Kind memberKinds[] = {
             CsmDeclaration.Kind.VARIABLE,
             CsmDeclaration.Kind.FUNCTION,
             CsmDeclaration.Kind.FUNCTION_DEFINITION
         };
-        List<CsmMember> res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, staticOnly, match, inspectParentClasses, scopeAccessedClassifier, false);
+        List<CsmMember> res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, staticOnly, match, inspectParentClasses, inspectOuterClasses, scopeAccessedClassifier, false);
         if (isSortNeeded() && res != null) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
         return res;
     }
 
-    private List/*<CsmMember>*/ getClassMembers(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, CsmDeclaration.Kind kind, String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses, boolean scopeAccessedClassifier) {
-        return getClassMembers(clazz, contextDeclaration, new CsmDeclaration.Kind[]{kind}, strPrefix, staticOnly, match, inspectParentClasses, scopeAccessedClassifier, false);
+    private List/*<CsmMember>*/ getClassMembers(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, CsmDeclaration.Kind kind, String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses, boolean scopeAccessedClassifier, boolean inspectOuterClasses) {
+        return getClassMembers(clazz, contextDeclaration, new CsmDeclaration.Kind[]{kind}, strPrefix, staticOnly, match, inspectParentClasses, inspectOuterClasses, scopeAccessedClassifier, false);
     }
     // =============== help methods to get/check content of containers =========
     private static final int MAX_INHERITANCE_DEPTH = 15;
@@ -994,7 +992,7 @@ public final class CsmProjectContentResolver {
 
     private List<CsmMember> getClassMembers(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration,
             CsmDeclaration.Kind kinds[], String strPrefix, boolean staticOnly, boolean match,
-            boolean inspectParentClasses, boolean scopeAccessedClassifier, boolean returnUnnamedMembers) {
+            boolean inspectParentClasses, boolean inspectOuterClasses, boolean scopeAccessedClassifier, boolean returnUnnamedMembers) {
         assert (clazz != null);
         CsmVisibility minVisibility;
         if (contextDeclaration == null) {
@@ -1011,7 +1009,7 @@ public final class CsmProjectContentResolver {
         }
 
         Map<CharSequence, CsmMember> set = getClassMembers(clazz, contextDeclaration, kinds, strPrefix, staticOnly, match,
-                new AntiLoop(), minVisibility, INIT_INHERITANCE_LEVEL, inspectParentClasses, returnUnnamedMembers);
+                new AntiLoop(), minVisibility, INIT_INHERITANCE_LEVEL, inspectParentClasses, inspectOuterClasses, returnUnnamedMembers);
         List<CsmMember> res;
         if (set != null && set.size() > 0) {
             res = new ArrayList<CsmMember>(set.values());
@@ -1024,7 +1022,7 @@ public final class CsmProjectContentResolver {
     @SuppressWarnings("unchecked")
     private Map<CharSequence, CsmMember> getClassMembers(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, CsmDeclaration.Kind kinds[],
             String strPrefix, boolean staticOnly, boolean match,
-            AntiLoop handledClasses, CsmVisibility minVisibility, int inheritanceLevel, boolean inspectParentClasses,
+            AntiLoop handledClasses, CsmVisibility minVisibility, int inheritanceLevel, boolean inspectParentClasses, boolean inspectOuterClasses,
             boolean returnUnnamedMembers) {
         assert (clazz != null);
 
@@ -1045,12 +1043,14 @@ public final class CsmProjectContentResolver {
                 strPrefix, match, caseSensitive, returnUnnamedMembers);
         Collection<CsmClass> classesAskedForMembers = new ArrayList(1);
         classesAskedForMembers.add(clazz);
-        CsmScope outerScope = clazz.getScope();
-        while (CsmKindUtilities.isClass(outerScope)) {
-            if (!handledClasses.contains((CsmClass) outerScope)) {
-                classesAskedForMembers.add((CsmClass) outerScope);
+        if (inspectOuterClasses) {
+            CsmScope outerScope = clazz.getScope();
+            while (CsmKindUtilities.isClass(outerScope)) {
+                if (!handledClasses.contains((CsmClass) outerScope)) {
+                    classesAskedForMembers.add((CsmClass) outerScope);
+                }
+                outerScope = ((CsmClass) outerScope).getScope();
             }
-            outerScope = ((CsmClass) outerScope).getScope();
         }
         for (CsmClass csmClass : classesAskedForMembers) {
             handledClasses.add(csmClass);
@@ -1096,7 +1096,7 @@ public final class CsmProjectContentResolver {
                     CharSequence memberName = member.getName();
                     if (memberName.length() == 0) {
                         Map<CharSequence, CsmMember> set = getClassMembers((CsmClass) member, contextDeclaration, kinds, strPrefix, staticOnly, match,
-                                handledClasses, CsmVisibility.PUBLIC, INIT_INHERITANCE_LEVEL, inspectParentClasses, returnUnnamedMembers);
+                                handledClasses, CsmVisibility.PUBLIC, INIT_INHERITANCE_LEVEL, inspectParentClasses, inspectOuterClasses, returnUnnamedMembers);
                         // replace by own elements in nested set
                         if (set != null && set.size() > 0) {
                             set.putAll(res);
@@ -1117,7 +1117,7 @@ public final class CsmProjectContentResolver {
                         int nextInheritanceLevel = nextInfo.inheritanceLevel;
 
                         Map<CharSequence, CsmMember> baseRes = getClassMembers(baseClass, contextDeclaration, kinds, strPrefix, staticOnly, match,
-                                handledClasses, nextMinVisibility, nextInheritanceLevel, inspectParentClasses, returnUnnamedMembers);
+                                handledClasses, nextMinVisibility, nextInheritanceLevel, inspectParentClasses, inspectOuterClasses, returnUnnamedMembers);
                         if (baseRes != null && !baseRes.isEmpty()) {
                             // add parent members at the end
                             for (Map.Entry<CharSequence, CsmMember> entry : baseRes.entrySet()) {
@@ -1271,7 +1271,7 @@ public final class CsmProjectContentResolver {
         return CsmInheritanceUtilities.matchVisibility(member, minVisibility);
     }
 
-    private Map<String, CsmObject> mergeByFQN(Map<String, CsmObject> orig, Collection<CsmObject> newList) {
+    private Map<String, CsmObject> mergeByFQN(Map<String, CsmObject> orig, Collection<? extends CsmObject> newList) {
         assert orig != null;
         if (newList != null && newList.size() > 0) {
             for (CsmObject object : newList) {
