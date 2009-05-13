@@ -114,8 +114,8 @@ final class JspSourcePathImplementation implements ClassPathImplementation, Prop
                     this.resources = Collections.<PathResourceImplementation>emptyList();
                 }
             }
+            return this.resources;
         }
-        return this.resources;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
