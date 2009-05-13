@@ -59,10 +59,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.InstantiatingIterator;
-import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -136,7 +136,7 @@ public final class DiscoveryWizardAction extends NodeAction {
                 return output;
             }
             String base = getProjectDirectoryPath(project);
-            output = FileUtil.normalizeFile(new File(base+'/'+output)).getAbsolutePath();
+            output = CndFileUtils.normalizeFile(new File(base+'/'+output)).getAbsolutePath();
             return output;
         }
         return null;
@@ -202,7 +202,7 @@ public final class DiscoveryWizardAction extends NodeAction {
                         newBase.append(segment);
                         if (rootName.equals(segment) && st.hasMoreTokens()) {
                             //try {
-                                return FileUtil.normalizeFile(new File(newBase.toString())).getAbsolutePath();
+                                return CndFileUtils.normalizeFile(new File(newBase.toString())).getAbsolutePath();
                             //} catch (IOException ex) {
                             //    ex.printStackTrace();
                             //}

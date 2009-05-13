@@ -652,6 +652,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     private static final Logger TEST_LOGGER = Logger.getLogger(RepositoryUpdater.class.getName() + ".tests"); //NOI18N
     private static final boolean PERF_TEST = Boolean.getBoolean("perf.refactoring.test"); //NOI18N
     private static final boolean noRootsScan = Boolean.getBoolean("netbeans.indexing.noRootsScan"); //NOI18N
+    private static final boolean notInterruptible = Boolean.getBoolean("netbeans.indexing.notInterruptible"); //NOI18N
     private static final int FILE_LOCKS_DELAY = org.openide.util.Utilities.isWindows() ? 2000 : 1000;
     private static final String PROP_LAST_SEEN_VERSION = RepositoryUpdater.class.getName() + "-last-seen-document-version"; //NOI18N
     
@@ -2030,6 +2031,11 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         @Override
         public void cancel() {
+            if (notInterruptible) {
+                // ignore the request
+                return;
+            }
+
             synchronized (todo) {
                 if (!cancelled) {
                     cancelled = true;

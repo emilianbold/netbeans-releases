@@ -73,8 +73,8 @@ import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.tree.ConfigurationFactory;
 import org.netbeans.modules.cnd.discovery.wizard.tree.ProjectConfigurationImpl;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -622,7 +622,7 @@ public class OpenSolaris extends KnownProject {
                     for (SourceFileProperties s : sources){
                         if (s.getCompilePath().startsWith(root)) {
                             File file = new File(s.getItemPath());
-                            String p = FileUtil.normalizeFile(file).getAbsolutePath();
+                            String p = CndFileUtils.normalizeFile(file).getAbsolutePath();
                             if (!set.contains(p)) {
                                 res.add(s);
                                 set.add(p);
@@ -652,8 +652,8 @@ public class OpenSolaris extends KnownProject {
                         HashSet<String> unique = new HashSet<String>();
                         for (String path : set) {
                             File file = new File(path);
-                            if (file.exists()) {
-                                unique.add(FileUtil.normalizeFile(file).getAbsolutePath());
+                            if (CndFileUtils.exists(file)) {
+                                unique.add(CndFileUtils.normalizeFile(file).getAbsolutePath());
                             }
                         }
                         myIncludedFiles = new ArrayList<String>(unique);

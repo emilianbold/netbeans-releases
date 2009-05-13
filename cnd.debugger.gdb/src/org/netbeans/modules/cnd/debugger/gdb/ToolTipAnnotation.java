@@ -48,7 +48,6 @@ import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
-import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.debugger.gdb.models.GdbWatchVariable;
 import org.netbeans.modules.cnd.debugger.gdb.models.ValuePresenter;
 import org.openide.cookies.EditorCookie;
@@ -133,8 +132,10 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
 
         String type = debugger.requestWhatis(expression);
         String value = debugger.evaluate(expression);
+
+        String res = ValuePresenter.getValue(type, value);
         
-        firePropertyChange(PROP_SHORT_DESCRIPTION, null, value);
+        firePropertyChange(PROP_SHORT_DESCRIPTION, null, res);
     }
 
     public String getAnnotationType () {

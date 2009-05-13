@@ -46,8 +46,8 @@ import java.util.Vector;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.filesystems.FileUtil;
 
 public abstract class BasicCompiler extends Tool {
 
@@ -155,7 +155,7 @@ public abstract class BasicCompiler extends Tool {
 
     protected String normalizePath(String path) {
         if (getExecutionEnvironment().isLocal()) {
-            return FileUtil.normalizeFile(new File(path)).getAbsolutePath();
+            return CndFileUtils.normalizePath(new File(path).getAbsolutePath());
         } else {
             // TODO: remote paths would love to be normalized too
             return path;

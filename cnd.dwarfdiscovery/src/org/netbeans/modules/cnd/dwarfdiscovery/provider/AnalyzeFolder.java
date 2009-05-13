@@ -57,7 +57,7 @@ import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -230,8 +230,8 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                                 break;
                             }
                             File file = new File(path);
-                            if (file.exists()) {
-                                unique.add(FileUtil.normalizeFile(file).getAbsolutePath());
+                            if (CndFileUtils.exists(file)) {
+                                unique.add(CndFileUtils.normalizeFile(file).getAbsolutePath());
                             }
                         }
                         myIncludedFiles = new ArrayList<String>(unique);
