@@ -42,13 +42,7 @@
 package org.netbeans.modules.cnd.apt.utils;
 
 import java.io.File;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -120,7 +114,7 @@ public class APTIncludeUtils {
         return null;
     }
 
-    public static String normalize(String path) {
+    private static String normalize(String path) {
         return CndFileUtils.normalizePath(path);
     }
 
