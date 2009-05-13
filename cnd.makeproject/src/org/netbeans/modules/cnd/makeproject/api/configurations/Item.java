@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -247,7 +248,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     public File getNormalizedFile() {
         String aPath = getAbsPath();
         if (aPath != null) {
-            return FileUtil.normalizeFile(new File(aPath));
+            return CndFileUtils.normalizeFile(new File(aPath));
         }
         return file;
     }

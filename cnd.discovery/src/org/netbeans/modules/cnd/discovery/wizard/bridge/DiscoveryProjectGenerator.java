@@ -65,7 +65,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfigur
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.Utilities;
 
 /**
@@ -333,7 +333,7 @@ public class DiscoveryProjectGenerator {
                 path = path.replace('\\', '/');
             }
             if (path.indexOf("/../")>=0 || path.indexOf("/./")>=0) { // NOI18N
-                path = FileUtil.normalizeFile(new File(path)).getAbsolutePath();
+                path = CndFileUtils.normalizeFile(new File(path)).getAbsolutePath();
             }
             int i = path.lastIndexOf('/');
             if (i >= 0){
@@ -533,7 +533,7 @@ public class DiscoveryProjectGenerator {
                     path = compilePath+File.separator+path;
                 }
                 File f = new File(path);
-                path = FileUtil.normalizeFile(f).getAbsolutePath();
+                path = CndFileUtils.normalizeFile(f).getAbsolutePath();
             }
             set.add(projectBridge.getRelativepath(path));
         }

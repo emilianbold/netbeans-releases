@@ -48,7 +48,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
@@ -60,6 +59,7 @@ import org.netbeans.modules.cnd.loaders.MakefileDataObject;
 import org.netbeans.modules.cnd.loaders.OrphanedElfObject;
 import org.netbeans.modules.cnd.loaders.ShellDataObject;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataNode;
@@ -633,7 +633,7 @@ public class IpeUtils {
     }
 
     public static Node findNode(String filePath) {
-        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(filePath)));
+        FileObject fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(new File(filePath)));
         if (fo == null) {
             return null; // FIXUP
         }

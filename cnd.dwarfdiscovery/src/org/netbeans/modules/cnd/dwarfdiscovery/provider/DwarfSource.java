@@ -64,7 +64,7 @@ import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfStatementList;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.CompilerSettings;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -106,7 +106,7 @@ public class DwarfSource implements SourceFileProperties{
         fullName = cu.getSourceFileAbsolutePath();
         fullName = fixFileName(fullName);
         File file = new File(fullName);
-        fullName = FileUtil.normalizeFile(file).getAbsolutePath();
+        fullName = CndFileUtils.normalizePath(file.getAbsolutePath());
         fullName = linkSupport(fullName);
         if (fullName != null && Utilities.isWindows()) {
             fullName = fullName.replace('/', '\\');

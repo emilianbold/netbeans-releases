@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.completion.csm.CsmContext;
 import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
 import org.netbeans.modules.cnd.debugger.gdb.models.AbstractVariable;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.NbDocument;
@@ -177,7 +178,7 @@ public class CallStackFrame {
      */
     public String getFullname() {
         // PathMap.getLocalPath throws NPE when argument is null
-        return fullname == null? null : debugger.getPathMap().getLocalPath(debugger.checkCygwinLibs(fullname));
+        return fullname == null? null : debugger.getPathMap().getLocalPath(debugger.checkCygwinLibs(fullname),true);
     }
 
     public String getOriginalFullName() {
@@ -230,7 +231,7 @@ public class CallStackFrame {
             if (fullname != null && fullname.length() > 0) {
                 File docFile = new File(fullname);
                 if (docFile.exists()) {
-                    FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(docFile));
+                    FileObject fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(docFile));
                     document = (StyledDocument) CsmUtilities.getDocument(fo);
                 }
             }
