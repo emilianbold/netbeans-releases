@@ -45,6 +45,8 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -70,6 +72,7 @@ import org.eclipse.mylyn.internal.jira.core.model.Version;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.openide.util.NbBundle;
@@ -106,6 +109,9 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     void setIssue(NbJiraIssue issue) {
+        if (this.issue == null) {
+            attachIssueListener(issue);
+        }
         this.issue = issue;
         initRenderers();
         initProjectCombo();
@@ -410,6 +416,22 @@ public class IssuePanel extends javax.swing.JPanel {
                 }
             });
         }
+    }
+
+    private void attachIssueListener(NbJiraIssue issue) {
+        issue.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName())) {
+                    reloadFormInAWT(false);
+                } else if (Issue.EVENT_ISSUE_SEEN_CHANGED.equals(evt.getPropertyName())) {
+                    updateFieldStatuses();
+                }
+            }
+        });
+    }
+
+    private void updateFieldStatuses() {
+        // PENDING
     }
 
     /** This method is called from within the constructor to
