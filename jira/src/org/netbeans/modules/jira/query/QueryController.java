@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.jira.query;
 
-import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -50,17 +49,13 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
@@ -99,9 +94,6 @@ import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
-import org.netbeans.modules.jira.query.QueryParameter.ListParameter;
-import org.netbeans.modules.jira.query.QueryParameter.ParameterValue;
-import org.netbeans.modules.jira.query.QueryParameter.TextFieldParameter;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
@@ -121,23 +113,6 @@ import org.openide.util.RequestProcessor.Task;
 public class QueryController extends BugtrackingController implements DocumentListener, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
     protected QueryPanel panel;
 
-    private static final String CHANGED_NOW = "Now";                            // NOI18N
-
-//    private final ComboParameter summaryParameter;
-//    private final ComboParameter commentsParameter;
-//    private final ComboParameter keywordsParameter;
-//    private final ComboParameter peopleParameter;
-    private final ListParameter productParameter;
-//    private final ListParameter componentParameter;
-//    private final ListParameter versionParameter;
-//    private final ListParameter statusParameter;
-//    private final ListParameter resolutionParameter;
-//    private final ListParameter priorityParameter;
-//    private final ListParameter changedFieldsParameter;
-//    private final ListParameter severityParameter;
-
-    private final Map<String, QueryParameter> parameters;
-    
     private RequestProcessor rp = new RequestProcessor("Jira query", 1, true);  // NOI18N
     private Task task;
 
@@ -178,33 +153,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.priorityList.addKeyListener(this);
 
         panel.queryTextField.addActionListener(this);
-
-        // setup parameters
-        parameters = new LinkedHashMap<String, QueryParameter>();
-//        summaryParameter = createQueryParameter(ComboParameter.class, panel.summaryComboBox, "short_desc_type");    // NOI18N
-//        commentsParameter = createQueryParameter(ComboParameter.class, panel.commentComboBox, "long_desc_type");    // NOI18N
-//        keywordsParameter = createQueryParameter(ComboParameter.class, panel.keywordsComboBox, "keywords_type");    // NOI18N
-//        peopleParameter = createQueryParameter(ComboParameter.class, panel.peopleComboBox, "emailtype1");           // NOI18N
-        productParameter = createQueryParameter(ListParameter.class, panel.projectList, "product");                 // NOI18N
-//        componentParameter = createQueryParameter(ListParameter.class, panel.componentList, "component");           // NOI18N
-//        versionParameter = createQueryParameter(ListParameter.class, panel.versionList, "version");                 // NOI18N
-//        statusParameter = createQueryParameter(ListParameter.class, panel.statusList, "bug_status");                // NOI18N
-//        resolutionParameter = createQueryParameter(ListParameter.class, panel.resolutionList, "resolution");        // NOI18N
-//        priorityParameter = createQueryParameter(ListParameter.class, panel.priorityList, "priority");              // NOI18N
-//        changedFieldsParameter = createQueryParameter(ListParameter.class, panel.changedList, "chfield");           // NOI18N
-//        severityParameter = createQueryParameter(ListParameter.class, panel.severityList, "bug_severity");          // NOI18N
-        
-        createQueryParameter(TextFieldParameter.class, panel.queryTextField, "short_desc");                       // NOI18N
-//        createQueryParameter(TextFieldParameter.class, panel.commentTextField, "long_desc");                        // NOI18N
-//        createQueryParameter(TextFieldParameter.class, panel.keywordsTextField, "keywords");                        // NOI18N
-//        createQueryParameter(TextFieldParameter.class, panel.peopleTextField, "email1");                            // NOI18N
-//        createQueryParameter(CheckBoxParameter.class, panel.bugAssigneeCheckBox, "emailassigned_to1");              // NOI18N
-//        createQueryParameter(CheckBoxParameter.class, panel.reporterCheckBox, "emailreporter1");                    // NOI18N
-//        createQueryParameter(CheckBoxParameter.class, panel.ccCheckBox, "emailcc1");                                // NOI18N
-//        createQueryParameter(CheckBoxParameter.class, panel.commenterCheckBox, "emaillongdesc1");                   // NOI18N
-//        createQueryParameter(TextFieldParameter.class, panel.changedFromTextField, "chfieldfrom");                  // NOI18N
-//        createQueryParameter(TextFieldParameter.class, panel.changedToTextField, "chfieldto");                      // NOI18N
-//        createQueryParameter(TextFieldParameter.class, panel.newValueTextField, "chfieldvalue");                    // NOI18N
 
         if(query.isSaved()) {
             setAsSaved();
@@ -258,18 +206,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(query.isSaved()) {
             repository.scheduleForRefresh(query);
         }
-    }
-
-    private <T extends QueryParameter> T createQueryParameter(Class<T> clazz, Component c, String parameter) {
-        try {
-            Constructor<T> constructor = clazz.getConstructor(c.getClass(), String.class);
-            T t = constructor.newInstance(c, parameter);
-            parameters.put(parameter, t);
-            return t;
-        } catch (Exception ex) {
-            Jira.LOG.log(Level.SEVERE, parameter, ex);
-        }
-        return null;
     }
 
     @Override
@@ -455,16 +391,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     protected void enableFields(boolean bl) {
         // set all non parameter fields
-        panel.enableFields(bl);
-        // set the parameter fields
-        for (Map.Entry<String, QueryParameter> e : parameters.entrySet()) {
-            QueryParameter pv = parameters.get(e.getKey());
-            pv.setEnabled(bl);
-        }
+        panel.enableFields(bl);        
     }
 
     protected void disableProduct(String product) { // XXX whatever field
-        productParameter.setAlwaysDisabled(true);
+        
     }
 
     public void insertUpdate(DocumentEvent e) {
@@ -864,54 +795,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
             task.cancel();
         }
         query.remove();
-    }
-
-    private void populateProductDetails(String... products) {
-//        JiraConfiguration bc = repository.getConfiguration();
-//        if(bc == null) {
-//            // XXX nice errro msg?
-//            return;
-//        }
-//        if(products == null || products.length == 0) {
-//            products = new String[] {null};
-//        }
-//
-//        List<String> newComponents = new ArrayList<String>();
-//        List<String> newVersions = new ArrayList<String>();
-//        for (String p : products) {
-//            List<String> productComponents = bc.getComponents(p);
-//            for (String c : productComponents) {
-//                if(!newComponents.contains(c)) {
-//                    newComponents.add(c);
-//                }
-//            }
-//            List<String> productVersions = bc.getVersions(p);
-//            for (String c : productVersions) {
-//                if(!newVersions.contains(c)) {
-//                    newVersions.add(c);
-//                }
-//            }
-//        }
-//
-//        componentParameter.setParameterValues(toParameterValues(newComponents));
-//        versionParameter.setParameterValues(toParameterValues(newVersions));
-    }
-
-    private List<ParameterValue> toParameterValues(Project[] projects) {
-        // XXX hack!!!
-        List<ParameterValue> ret = new ArrayList<ParameterValue>(projects.length);
-        for (Project p : projects) {
-            ret.add(new ParameterValue(p.getName(), p.getId()));
-        }
-        return ret;
-    }
-
-    private List<ParameterValue> toParameterValues(List<String> values) {
-        List<ParameterValue> ret = new ArrayList<ParameterValue>(values.size());
-        for (String v : values) {
-            ret.add(new ParameterValue(v, v));
-        }
-        return ret;
     }
 
     private void setFilterDefinition(FilterDefinition fd) {
