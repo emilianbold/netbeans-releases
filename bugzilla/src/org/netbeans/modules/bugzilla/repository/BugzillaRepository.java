@@ -389,7 +389,7 @@ public class BugzillaRepository extends Repository {
         return BugtrackingUtil.editRepository(this, errroMsg);
     }
 
-    private class Cache extends IssueCache {
+    private class Cache extends IssueCache<TaskData> {
         Cache() {
             super(BugzillaRepository.this.getUrl());
         }

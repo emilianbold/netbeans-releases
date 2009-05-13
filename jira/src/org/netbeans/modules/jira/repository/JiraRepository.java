@@ -515,7 +515,7 @@ public class JiraRepository extends Repository {
         return refreshProcessor;
     }
 
-    private class Cache extends IssueCache {
+    private class Cache extends IssueCache<TaskData> {
         Cache() {
             super(JiraRepository.this.getUrl());
         }
