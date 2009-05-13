@@ -197,7 +197,7 @@ public class SSStackDataProviderTest {
 
         final SSStackDataProvider provider = new SSStackDataProvider();
         PerfanDataStorage storage = new PerfanDataStorage();
-        storage.init(ExecutionEnvironmentFactory.getLocal(), "/shared/dp/sstrunk/intel-S2", "/var/tmp/dlightExperiment.er");
+        storage.init(ExecutionEnvironmentFactory.getLocal(), "/shared/dp/sstrunk/intel-S2", "/var/tmp/dlightExperiment.er", null);
         provider.attachTo(storage);
 
         int threadLimit = 20;

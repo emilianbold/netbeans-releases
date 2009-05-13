@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
@@ -112,5 +113,8 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
 
     public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
         this.serviceInfoStorage = serviceInfoDataStorage;
+    }
+
+    public void dataFiltersChanged(List<DataFilter> newSet) {
     }
 }

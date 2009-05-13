@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,34 +34,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.perfan.spi.datafilter;
 
-package org.netbeans.modules.dlight.spi.dataprovider;
+import java.util.Arrays;
+import java.util.Collection;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.spi.datafilter.DataFilterFactory;
+import org.openide.util.lookup.ServiceProvider;
 
-import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
-import org.netbeans.modules.dlight.spi.storage.DataStorage;
-import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
+@ServiceProvider(service = org.netbeans.modules.dlight.spi.datafilter.DataFilterFactory.class)
+public class SunStudioFiltersFactory implements DataFilterFactory {
 
+    public static String CollectedObjectsFilterID = "sunstudio.datafilter.collectedobjects"; // NOI18N
+    public static String HotSpotFunctionsFilterID = "sunstudio.hotspotfunctionsfilter"; // NOI18N
 
-/**
- * Provides the data to the {@link org.netbeans.modules.dlight.spi.visualizer.Visualizer}.
- * Along with DataProvider SPI impplementator should implement
- * {@link org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory} which
- * will be used to create the data provider instance
- *
- */
+    public DataFilter createFilter(String filterID, String filterSpec) {
+        if (CollectedObjectsFilterID.equals(filterID)) {
+            return new CollectedObjectsFilter(filterSpec);
+        }
 
-public interface DataProvider extends VisualizerDataProvider, DataFilterListener {
+        if (HotSpotFunctionsFilterID.equals(filterID)) {
+            return new HotSpotFunctionsFilter(filterSpec);
+        }
 
-  /**
-   * Attaches DataProvider to the>storage.
-   * All data requested by {@link org.netbeans.modules.dlight.spi.visualizer.Visualizer} will
-   * be extracted from this storage. This method is invoked  automatically by infrastracture
-   * when  Visualizer need to be displayed.
-   * It will be invoked automatically when needed.</i></b>
-   * @param storage {@link org.netbeans.modules.dlight.spi.storage.DataStorage}.
-   */
-  void attachTo(DataStorage storage);
+        return null;
+    }
 
+    public Collection<String> getSupportedFilterIDs() {
+        return Arrays.asList(
+                CollectedObjectsFilterID,
+                HotSpotFunctionsFilterID);
+    }
 }

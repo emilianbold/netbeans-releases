@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,34 +34,11 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.spi.dataprovider;
+package org.netbeans.modules.dlight.api.datafilter;
 
-import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
-import org.netbeans.modules.dlight.spi.storage.DataStorage;
-import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
-
-
-/**
- * Provides the data to the {@link org.netbeans.modules.dlight.spi.visualizer.Visualizer}.
- * Along with DataProvider SPI impplementator should implement
- * {@link org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory} which
- * will be used to create the data provider instance
- *
- */
-
-public interface DataProvider extends VisualizerDataProvider, DataFilterListener {
-
-  /**
-   * Attaches DataProvider to the>storage.
-   * All data requested by {@link org.netbeans.modules.dlight.spi.visualizer.Visualizer} will
-   * be extracted from this storage. This method is invoked  automatically by infrastracture
-   * when  Visualizer need to be displayed.
-   * It will be invoked automatically when needed.</i></b>
-   * @param storage {@link org.netbeans.modules.dlight.spi.storage.DataStorage}.
-   */
-  void attachTo(DataStorage storage);
+public interface DataFilter {
 
 }

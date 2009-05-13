@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,34 +34,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.management.api.impl;
 
-package org.netbeans.modules.dlight.spi.dataprovider;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.logging.Logger;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.spi.datafilter.DataFilterFactory;
+import org.netbeans.modules.dlight.util.DLightLogger;
+import org.openide.util.Lookup;
 
-import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
-import org.netbeans.modules.dlight.spi.storage.DataStorage;
-import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
+public class DataFiltersManager {
 
+    private static final Logger log = DLightLogger.getLogger(DataFiltersManager.class);
+    private static DataFiltersManager instance = new DataFiltersManager();
+    private final Collection<DataFilterFactory> allDataFilterFactories;
 
-/**
- * Provides the data to the {@link org.netbeans.modules.dlight.spi.visualizer.Visualizer}.
- * Along with DataProvider SPI impplementator should implement
- * {@link org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory} which
- * will be used to create the data provider instance
- *
- */
+    private DataFiltersManager() {
+        allDataFilterFactories = new HashSet<DataFilterFactory>();
+    }
 
-public interface DataProvider extends VisualizerDataProvider, DataFilterListener {
+    public static DataFiltersManager getInstance() {
+        return instance;
+    }
 
-  /**
-   * Attaches DataProvider to the>storage.
-   * All data requested by {@link org.netbeans.modules.dlight.spi.visualizer.Visualizer} will
-   * be extracted from this storage. This method is invoked  automatically by infrastracture
-   * when  Visualizer need to be displayed.
-   * It will be invoked automatically when needed.</i></b>
-   * @param storage {@link org.netbeans.modules.dlight.spi.storage.DataStorage}.
-   */
-  void attachTo(DataStorage storage);
+    public DataFilter createFilter(String filterID, String filterSpec) {
+        Collection<? extends DataFilterFactory> factories = Lookup.getDefault().lookupAll(DataFilterFactory.class);
 
+        for (DataFilterFactory dff : factories) {
+            if (allDataFilterFactories.add(dff)) {
+                for (String id : dff.getSupportedFilterIDs()) {
+                    log.fine("DataFilterFactory for " + id + " registered..."); // NOI18N
+                }
+            }
+        }
+
+        for (DataFilterFactory dff : allDataFilterFactories) {
+            DataFilter filter = dff.createFilter(filterID, filterSpec);
+            if (filter != null) {
+                return filter;
+            }
+        }
+
+        return null;
+    }
 }
