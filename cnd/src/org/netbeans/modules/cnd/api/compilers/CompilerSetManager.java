@@ -694,7 +694,6 @@ public class CompilerSetManager {
                     @SuppressWarnings("unchecked")
                     public void run() {
                         try {
-                            CompilerSetReporter.report("CSM_ConfHost");//NOI18N
                             platform = provider.getPlatform();
                             CompilerSetReporter.report("CSM_ValPlatf", true, PlatformTypes.toString(platform)); //NOI18N
                             CompilerSetReporter.report("CSM_LFTC"); //NOI18N
