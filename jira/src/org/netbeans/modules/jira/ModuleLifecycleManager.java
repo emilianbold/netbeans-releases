@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,67 +37,24 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.query.kenai;
+package org.netbeans.modules.jira;
 
-import org.eclipse.mylyn.internal.jira.core.model.Project;
-import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
-import org.eclipse.mylyn.internal.jira.core.service.JiraClientData;
-import org.netbeans.modules.jira.repository.JiraConfiguration;
-import org.netbeans.modules.jira.repository.JiraRepository;
+import org.openide.modules.ModuleInstall;
+
 
 /**
+ * Handles module events distributed by NetBeans module
+ * framework.
  *
- * @author Tomas Stupka
+ * <p>It's registered and instantiated from module manifest.
+ *
+ * @author Tomas Stupka, Ondra Vrabec
  */
-public class KenaiConfiguration extends JiraConfiguration {
-
-    private Project[] projects;
-    private String projectName;
-
-    /**
-     * One instance for all kenai projects
-     */
-    private static ConfigurationData kenaiData;
-
-    protected KenaiConfiguration(JiraClient jiraClient, JiraRepository repository) {
-        super(jiraClient, repository);
-    }
-
-    void addProject(String projectName) {
-        this.projectName = projectName;
-    }
-
+public final class ModuleLifecycleManager extends ModuleInstall{
     @Override
-    public Project[] getProjects() {
-        if(projects == null) {
-            Project[] allProjects = super.getProjects();
-            for (Project p : allProjects) {
-                if(projectName.equals(p.getKey())) {
-                    projects = new Project[] {p};
-                }
-            }
-        }
-        return projects;
-    }
-
-    @Override
-    public JiraClientData getData() {
-        if(kenaiData == null) {
-            kenaiData = initializeCached();
-            if (kenaiData == null) {
-                kenaiData = new KenaiConfigurationData();
-            }
-        }
-        return kenaiData;
-    }
-
-    static class KenaiConfigurationData extends ConfigurationData {
-        
+    public void close() {
+        Jira.getInstance().shutdown();
     }
 }
