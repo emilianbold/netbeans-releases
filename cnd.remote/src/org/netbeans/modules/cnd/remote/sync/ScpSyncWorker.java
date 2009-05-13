@@ -47,8 +47,8 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 
@@ -64,20 +64,38 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         super(localDir, executionEnvironment, out, err);
     }
 
+    protected String getRemoteSyncRoot() {
+        String root;
+        root = System.getProperty("cnd.remote.sync.root." + executionEnvironment.getHost()); //NOI18N
+        if (root != null) {
+            return root;
+        }
+        root = System.getProperty("cnd.remote.sync.root"); //NOI18N
+        if (root != null) {
+            return root;
+        }
+        return "/home/" + executionEnvironment.getUser() + "/.netbeans/remote";
+    }
+
     public boolean synchronize() {
 
         // determine the remote directory
-        PathMap mapper = HostInfoProvider.getMapper(executionEnvironment);
-        String localParent = this.localDir.getParentFile().getAbsolutePath();
-        String remoteParent = mapper.getRemotePath(localParent,true);
-        if (!HostInfoProvider.fileExists(executionEnvironment, remoteParent)) {
-            if (mapper.checkRemotePath(localParent, true)) {
-                remoteParent = mapper.getRemotePath(localParent,true);
-            } else {
-                return false;
+        RemotePathMap mapper = RemotePathMap.getRemotePathMapInstance(executionEnvironment);
+
+        String remoteDir = mapper.getRemotePath(this.localDir.getAbsolutePath(), false);
+        if (remoteDir == null) {
+            String localParent = this.localDir.getParentFile().getAbsolutePath();
+            String remoteParent = mapper.getRemotePath(localParent, false);
+            boolean addMapping = false;
+            if (remoteParent == null) {
+                addMapping = true;
+                remoteParent = getRemoteSyncRoot();
+            }
+            remoteDir = remoteParent + '/' + localDir.getName(); //NOI18N
+            if (addMapping) {
+                mapper.addMapping(localParent, remoteParent);
             }
         }
-        String remoteDir = remoteParent + '/' + localDir.getName(); //NOI18N
         try {
             synchronizeImpl(remoteDir);
             return true;
