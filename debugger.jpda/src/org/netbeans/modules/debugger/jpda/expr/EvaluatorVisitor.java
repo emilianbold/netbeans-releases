@@ -63,6 +63,7 @@ import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.IntegerType;
 import com.sun.jdi.IntegerValue;
 import com.sun.jdi.InterfaceType;
+import com.sun.jdi.InternalException;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.InvocationException;
 import com.sun.jdi.LocalVariable;
@@ -2964,6 +2965,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             InvalidExpressionException ieex = new InvalidExpressionException (uoex);
             ieex.initCause(uoex);
             throw new IllegalStateException(ieex);
+        } catch (InternalException inex) {
+            if (inex.errorCode() == 502) {
+                inex = (com.sun.jdi.InternalException) org.openide.util.Exceptions.attachLocalizedMessage(inex, org.openide.util.NbBundle.getMessage(org.netbeans.modules.debugger.jpda.JPDADebuggerImpl.class, "JDWPError502"));
+            }
+            throw inex;
         } finally {
             if (loggerMethod.isLoggable(Level.FINE)) {
                 loggerMethod.fine("FINISHED: "+objectReference+"."+method+" ("+argVals+") in thread "+evaluationThread);

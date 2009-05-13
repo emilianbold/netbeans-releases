@@ -184,8 +184,12 @@ public class TreeEvaluator {
             }
             throw isex;
         } catch (InternalException e) {
-            JDIExceptionReporter.report(e);
-            throw new InvalidExpressionException (e.getLocalizedMessage());
+            if (Exceptions.findLocalizedMessage(e) != null) {
+                throw new InvalidExpressionException (Exceptions.findLocalizedMessage(e));
+            } else {
+                JDIExceptionReporter.report(e);
+                throw new InvalidExpressionException (e.getLocalizedMessage());
+            }
         } catch (VMDisconnectedException e) {
             throw new InvalidExpressionException(NbBundle.getMessage(
                 Evaluator.class, "CTL_EvalError_disconnected"));

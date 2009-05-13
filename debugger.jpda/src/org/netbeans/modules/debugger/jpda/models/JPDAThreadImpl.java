@@ -923,6 +923,21 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         }
     }
     
+    public void waitUntilMethodInvokeDone(long timeout) throws InterruptedException {
+        if (!accessLock.readLock().tryLock(timeout, TimeUnit.MILLISECONDS)) {
+            return ;
+        }
+        try {
+            while (methodInvoking) {
+                synchronized (this) {
+                    this.wait(timeout);
+                }
+            }
+        } finally {
+            accessLock.readLock().unlock();
+        }
+    }
+
     public void disableMethodInvokeUntilResumed() {
         accessLock.writeLock().lock();
         methodInvokingDisabledUntilResumed = true;

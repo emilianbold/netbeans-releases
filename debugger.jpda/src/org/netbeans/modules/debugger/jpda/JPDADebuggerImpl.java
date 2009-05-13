@@ -1476,6 +1476,15 @@ public class JPDADebuggerImpl extends JPDADebugger {
             if (vm != null) {
                 try {
                     if (di instanceof AttachingDICookie) {
+                        JPDAThreadImpl t;
+                        synchronized (currentThreadAndFrameLock) {
+                            t = currentThread;
+                        }
+                        if (t != null && t.isMethodInvoking()) {
+                            try {
+                                t.waitUntilMethodInvokeDone(5000); // Wait 5 seconds at most
+                            } catch (InterruptedException ex) {}
+                        }
                         logger.fine(" StartActionProvider.finish() VM dispose");
                         VirtualMachineWrapper.dispose (vm);
                     } else {
