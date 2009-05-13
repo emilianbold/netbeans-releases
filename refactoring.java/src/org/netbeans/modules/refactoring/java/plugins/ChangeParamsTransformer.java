@@ -70,10 +70,18 @@ import org.openide.util.Exceptions;
 public class ChangeParamsTransformer extends RefactoringVisitor {
 
     private Set<ElementHandle<ExecutableElement>> allMethods;
+    /** refactored element is a synthetic default constructor */
+    private boolean synthConstructor;
 
     public ChangeParamsTransformer(ChangeParametersRefactoring refactoring, Set<ElementHandle<ExecutableElement>> am) {
         this.refactoring = refactoring;
         this.allMethods = am;
+    }
+
+    @Override
+    public Tree visitCompilationUnit(CompilationUnitTree node, Element p) {
+        synthConstructor = this.workingCopy.getElementUtilities().isSynthetic(p);
+        return super.visitCompilationUnit(node, p);
     }
     
     @Override
@@ -123,7 +131,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
 
     @Override
     public Tree visitMethodInvocation(MethodInvocationTree tree, Element p) {
-        if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+        if (p.getKind() == ElementKind.CONSTRUCTOR || !workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
             Element el = workingCopy.getTrees().getElement(getCurrentPath());
             if (el!=null) {
                 if (isMethodMatch(el)) {
@@ -133,13 +141,49 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                             (List<ExpressionTree>)tree.getTypeArguments(),
                             tree.getMethodSelect(),
                             arguments);
-                    rewrite(tree, nju);
+                    
+                    if (p.getKind() == ElementKind.CONSTRUCTOR && workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+                        rewriteSyntheticConstructor(nju);
+                    } else {
+                        // rewrite existing super(); statement
+                        rewrite(tree, nju);
+                    }
                 }
             }
         }
         return super.visitMethodInvocation(tree, p);
     }
-    
+
+    /** workaround to rewrite synthetic super(); statement */
+    private void rewriteSyntheticConstructor(MethodInvocationTree nju) {
+        TreePath constructorPath = getCurrentPath();
+        while (constructorPath != null && constructorPath.getLeaf().getKind() != Tree.Kind.METHOD) {
+            constructorPath = constructorPath.getParentPath();
+        }
+        if (constructorPath != null) {
+            MethodTree constrTree = (MethodTree) constructorPath.getLeaf();
+            BlockTree body = constrTree.getBody();
+            body = make.removeBlockStatement(body, 0);
+            body = make.insertBlockStatement(body, 0, make.ExpressionStatement(nju));
+            if (workingCopy.getTreeUtilities().isSynthetic(constructorPath)) {
+                // in case of synthetic default constructor declaration the whole constructor has to be rewritten
+                MethodTree njuConstructor = make.Method(
+                        make.Modifiers(constrTree.getModifiers().getFlags(),
+                        constrTree.getModifiers().getAnnotations()),
+                        constrTree.getName(),
+                        constrTree.getReturnType(),
+                        constrTree.getTypeParameters(),
+                        constrTree.getParameters(),
+                        constrTree.getThrows(),
+                        body,
+                        (ExpressionTree) constrTree.getDefaultValue());
+                rewrite(constrTree, njuConstructor);
+            } else {
+                // declared default constructor => body rewrite is sufficient
+                rewrite(constrTree.getBody(), body);
+            }
+        }
+    }
     
     @Override
     public Tree visitMethod(MethodTree tree, Element p) {
@@ -149,7 +193,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
 
     ChangeParametersRefactoring refactoring;
     private void renameDeclIfMatch(TreePath path, Tree tree, Element elementToFind) {
-        if (workingCopy.getTreeUtilities().isSynthetic(path))
+        if (!synthConstructor && workingCopy.getTreeUtilities().isSynthetic(path))
             return;
         MethodTree current = (MethodTree) tree;
         Element el = workingCopy.getTrees().getElement(path);
