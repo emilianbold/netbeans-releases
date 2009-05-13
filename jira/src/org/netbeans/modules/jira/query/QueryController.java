@@ -142,6 +142,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.modifyButton.addActionListener(this);
         panel.seenButton.addActionListener(this);
         panel.removeButton.addActionListener(this);
+        panel.reloadAttributesButton.addActionListener(this);
         panel.reporterTextField.addFocusListener(this);
         panel.assigneeTextField.addFocusListener(this);
 
@@ -158,7 +159,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(query.isSaved()) {
             setAsSaved();
         }
-        postPopulate((FilterDefinition) jiraFilter);
+        postPopulate((FilterDefinition) jiraFilter, false);
     }
 
     @Override
@@ -279,7 +280,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         return l;
     }
 
-    private void postPopulate(final FilterDefinition filterDefinition) {
+    private void postPopulate(final FilterDefinition filterDefinition, final boolean forceRefresh) {
         enableFields(false);
 
         final Task[] t = new Task[1];
@@ -299,6 +300,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
             public void run() {
                 handle.start();
                 try {
+                    if(forceRefresh) {
+                        repository.refreshConfiguration();
+                    }
                     populate(filterDefinition);
                 } finally {
                     enableFields(true);
@@ -463,6 +467,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
             onRemove();
         } else if (e.getSource() == panel.refreshCheckBox) {
             onAutoRefresh();
+        } else if (e.getSource() == panel.reloadAttributesButton) {
+            onReloadAttributes();
         } else if (e.getSource() == panel.idTextField) {
             if(!panel.idTextField.getText().trim().equals("")) {                // NOI18N
                 onGotoIssue();
@@ -785,6 +791,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
         // XXX finish me
        
+    }
+
+    private void onReloadAttributes() {
+        postPopulate(getFilterDefinition(), true);
     }
 
     private abstract class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
