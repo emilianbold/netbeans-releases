@@ -41,15 +41,15 @@ package org.netbeans.modules.kenai.collab.chat;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.spi.MessagingAccessor;
 import org.netbeans.modules.kenai.ui.spi.MessagingHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -74,12 +74,18 @@ public class MessagingAccessorImpl extends MessagingAccessor {
                     }
                 }
             }
-        } catch (KenaiException ex) {
-            Exceptions.printStackTrace(ex);
+        } catch (Exception ex) {
+            Logger.getLogger(MessagingAccessorImpl.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+            MessagingHandleImpl m = new MessagingHandleImpl(project.getId());
+            m.setMessageCount(-1);
+            m.setOnlineCount(-3);
+            return m;
         }
 
         return ChatNotifications.getDefault().getMessagingHandle(project.getId());
     }
+
+
 
     @Override
     public ActionListener getOpenMessagesAction(final ProjectHandle project) {
@@ -96,5 +102,15 @@ public class MessagingAccessorImpl extends MessagingAccessor {
     @Override
     public ActionListener getCreateChatAction(final ProjectHandle project) {
         return new CreateChatAction(project.getId());
+    }
+
+    @Override
+    public ActionListener getReconnectAction(final ProjectHandle project) {
+        return new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                project.firePropertyChange(ProjectHandle.PROP_CONTENT, null, null);
+            }
+        };
     }
 }

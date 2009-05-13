@@ -363,6 +363,8 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         boolean loginSuccess = UIUtils.showLogin();
         if (loginSuccess) {
             refreshUsername();
+            KenaiTopComponent.findInstance().open();
+            KenaiTopComponent.findInstance().requestActive();
         } else {
             // login failed, do nothing
         }

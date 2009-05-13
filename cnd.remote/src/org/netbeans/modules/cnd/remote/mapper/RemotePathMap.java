@@ -45,6 +45,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.PathMap;
@@ -59,7 +60,7 @@ import org.openide.util.NbPreferences;
  * 
  * @author gordonp
  */
-public class RemotePathMap implements PathMap {
+public class RemotePathMap extends PathMap {
 
     private final static Map<ExecutionEnvironment, RemotePathMap> pmtable =
             new HashMap<ExecutionEnvironment, RemotePathMap>();
@@ -142,7 +143,7 @@ public class RemotePathMap implements PathMap {
     }
 
     // PathMap
-    public String getRemotePath(String lpath) {
+    public String getRemotePath(String lpath, boolean useDefault) {
         String ulpath = unifySeparators(lpath);
         for (Map.Entry<String, String> entry : map.entrySet()) {
             String key = unifySeparators(entry.getKey());
@@ -151,10 +152,10 @@ public class RemotePathMap implements PathMap {
                 return mpoint + lpath.substring(key.length()).replace('\\', '/');
             }
         }
-        return lpath;
+        return useDefault ? lpath : null;
     }
 
-    public String getLocalPath(String rpath) {
+    public String getLocalPath(String rpath, boolean useDefault) {
         String urpath = unifySeparators(rpath);
         for (Map.Entry<String, String> entry : map.entrySet()) {
             String value = unifySeparators(entry.getValue());
@@ -163,7 +164,7 @@ public class RemotePathMap implements PathMap {
                 return mpoint + rpath.substring(value.length());
             }
         }
-        return rpath;
+        return useDefault ? rpath : null;
     }
 
     /**
@@ -208,6 +209,15 @@ public class RemotePathMap implements PathMap {
         }
 
     }
+
+    public void addMapping(String localParent, String remoteParent) {
+        synchronized( map ) {
+            Map<String, String> clone = new LinkedHashMap<String, String>(map);
+            clone.put(localParent,remoteParent);
+            updatePathMap(clone);
+        }
+    }
+
 
     // Utility
     public void updatePathMap(Map<String, String> newPathMap) {
@@ -312,17 +322,17 @@ public class RemotePathMap implements PathMap {
 
     private static PathMap rsyncMapper = new RsyncPathMap();
 
-    private static class RsyncPathMap implements PathMap {
+    private static class RsyncPathMap extends PathMap {
 
         public boolean checkRemotePath(String path, boolean fixMissingPath) {
             return true;
         }
 
-        public String getLocalPath(String rpath) {
+        public String getLocalPath(String rpath,boolean useDefault) {
             return rpath;
         }
 
-        public String getRemotePath(String lpath) {
+        public String getRemotePath(String lpath,boolean useDefault) {
             String name = lpath.substring(lpath.lastIndexOf("\\")+1); //NOI18N
             return REMOTE_BASE_PATH + "/" + name; //NOI18N
         }
