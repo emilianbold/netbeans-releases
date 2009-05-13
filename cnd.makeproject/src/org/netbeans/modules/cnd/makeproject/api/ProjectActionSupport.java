@@ -484,7 +484,7 @@ public class ProjectActionSupport {
                 if (conf instanceof MakeConfiguration && !((MakeConfiguration) conf).getDevelopmentHost().isLocalhost()) {
                     final ExecutionEnvironment execEnv = ((MakeConfiguration) conf).getDevelopmentHost().getExecutionEnvironment();
                     PathMap mapper = HostInfoProvider.getMapper(execEnv);
-                    executable = mapper.getRemotePath(executable);
+                    executable = mapper.getRemotePath(executable,true);
                     CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
                     if (cmd != null) {
                         ok = cmd.run(execEnv, "test -x " + executable + " -a -f " + executable, null) == 0; // NOI18N

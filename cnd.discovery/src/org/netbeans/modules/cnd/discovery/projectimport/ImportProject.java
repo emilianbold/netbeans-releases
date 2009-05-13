@@ -649,12 +649,13 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private void fixMacros(List<ProjectConfiguration> confs) {
-        NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
+        //NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
         for (ProjectConfiguration conf : confs) {
             List<FileConfiguration> files = conf.getFiles();
             for (FileConfiguration fileConf : files) {
                 if (fileConf.getUserMacros().size() > 0) {
-                    NativeFileItem item = np.findFileItem(new File(fileConf.getFilePath()));
+                    //NativeFileItem item = np.findFileItem(new File(fileConf.getFilePath()));
+                    NativeFileItem item = findByNormalizedName(new File(fileConf.getFilePath()));
                     if (item instanceof Item) {
                         if (TRACE) {
                             logger.log(Level.FINE, "#fix macros for file " + fileConf.getFilePath());
@@ -756,7 +757,8 @@ public class ImportProject implements PropertyChangeListener {
                         FileImpl impl = (FileImpl) file;
                         NativeFileItem item = impl.getNativeFileItem();
                         if (item == null) {
-                            item = np.findFileItem(impl.getFile());
+                            //item = np.findFileItem(impl.getFile());
+                            item = findByNormalizedName(impl.getFile());
                         }
                         if (item != null && np.equals(item.getNativeProject()) && item.isExcluded()) {
                             if (item instanceof Item) {
@@ -781,6 +783,24 @@ public class ImportProject implements PropertyChangeListener {
                 importResult.put(Step.FixExcluded, State.Successful);
             }
         }
+    }
+
+    private Map<String,Item> normalizedItems;
+    private Item findByNormalizedName(File file){
+        if (normalizedItems == null) {
+            normalizedItems = new HashMap<String,Item>();
+            ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            if (pdp != null) {
+                MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor) pdp.getConfigurationDescriptor();
+                if (makeConfigurationDescriptor != null) {
+                    for(Item item : makeConfigurationDescriptor.getProjectItems()){
+                        normalizedItems.put(item.getNormalizedFile().getAbsolutePath(),item);
+                    }
+                }
+            }
+        }
+        String path = FileUtil.normalizeFile(file).getAbsolutePath();
+        return normalizedItems.get(path);
     }
 
     private void modelDiscovery() {

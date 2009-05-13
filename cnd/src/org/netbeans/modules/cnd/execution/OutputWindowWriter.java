@@ -244,7 +244,7 @@ public class OutputWindowWriter extends Writer {
                     fileName = fileName.replace('/', '\\');
                 }
             }
-            fileName = HostInfoProvider.getMapper(execEnv).getLocalPath(fileName);
+            fileName = HostInfoProvider.getMapper(execEnv).getLocalPath(fileName,true);
             File file = FileUtil.normalizeFile(new File(fileName));
             return FileUtil.toFileObject(file);
         }
