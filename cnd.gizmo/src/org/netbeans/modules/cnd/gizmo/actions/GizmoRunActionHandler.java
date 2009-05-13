@@ -98,20 +98,22 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
     }
 
     public void execute(InputOutput io) {
-        NativeExecutableTargetConfiguration targetConf = new NativeExecutableTargetConfiguration(
-                pae.getExecutable(),
-                pae.getProfile().getArgsArray(),
-                createMap(pae.getProfile().getEnvironment().getenvAsPairs()));
-
         MakeConfiguration conf = pae.getConfiguration();
         ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
         String runDirectory = pae.getProfile().getRunDirectory();
+
         if (execEnv.isRemote()) {
             PathMap mapper = HostInfoProvider.getMapper(execEnv);
-            runDirectory = mapper.getRemotePath(runDirectory,true);
+            runDirectory = mapper.getRemotePath(runDirectory, true);
         }
 
         File executable = new File(runDirectory, pae.getExecutable());
+
+        NativeExecutableTargetConfiguration targetConf = new NativeExecutableTargetConfiguration(
+                executable.getAbsolutePath(),
+                pae.getProfile().getArgsArray(),
+                createMap(pae.getProfile().getEnvironment().getenvAsPairs()));
+
 
         targetConf.putInfo(ServiceInfoDataStorage.EXECUTION_ENV_KEY, ExecutionEnvironmentFactory.toUniqueID(execEnv));
         targetConf.putInfo(GizmoServiceInfo.PLATFORM, pae.getConfiguration().getPlatform().getName());
