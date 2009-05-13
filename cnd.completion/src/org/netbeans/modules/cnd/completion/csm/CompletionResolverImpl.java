@@ -67,6 +67,8 @@ import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmCompilationUnit;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -167,7 +169,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         if (file == null) {
             return false;
         }
-        this.contResolver = createContentResolver(file.getProject());
+        this.contResolver = createContentResolver();
         return true;
     }
 
@@ -764,8 +766,24 @@ public class CompletionResolverImpl implements CompletionResolver {
         return dest;
     }
 
-    protected CsmProjectContentResolver createContentResolver(CsmProject prj) {
-        CsmProjectContentResolver resolver = new CsmProjectContentResolver(prj, isCaseSensitive(), isSortNeeded(), isNaturalSort());
+    protected CsmProjectContentResolver createContentResolver() {
+        CsmFile contextFile = this.file;
+        CsmProject filePrj = contextFile.getProject();
+        CsmProject startProject = filePrj;
+        Collection<CsmProject> libs = new ArrayList<CsmProject>();
+        if (startProject.isArtificial()) {
+            for (CsmCompilationUnit cu : CsmFileInfoQuery.getDefault().getCompilationUnits(file, contextOffset)) {
+                CsmFile startFile = cu.getStartFile();
+                CsmProject prj = startFile == null ? null : startFile.getProject();
+                if (prj != null) {
+                    startProject = prj;
+                    break;
+                }
+            }
+        }
+        // add libararies elements
+        libs.addAll(startProject.getLibraries());
+        CsmProjectContentResolver resolver = new CsmProjectContentResolver(filePrj, isCaseSensitive(), isSortNeeded(), isNaturalSort(), libs);
         return resolver;
     }
 

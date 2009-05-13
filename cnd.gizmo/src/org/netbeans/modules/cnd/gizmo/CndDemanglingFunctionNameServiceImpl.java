@@ -146,13 +146,15 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
                 try {
                     res.get();
                     String demangled_name = result.toString();
+                    if (demangled_name != null && demangled_name.endsWith("\n")){//NOI18N
+                         demangled_name = demangled_name.substring(0, demangled_name.length() -1);
+                    }
                     if (cppCompiler == CPPCompiler.SS){
                         if (demangled_name != null && demangled_name.indexOf(EQUALS_EQUALS) != -1){
                             demangled_name = demangled_name.substring(demangled_name.indexOf(EQUALS_EQUALS) + 2);
                             demangled_name = demangled_name.trim();
                         }
-                    }
-                    
+                    }                    
                     demangled_functions.put(nameToDemangleSeq,
                             demangled_name.subSequence(0, demangled_name.length()));
                     return demangled_name;
