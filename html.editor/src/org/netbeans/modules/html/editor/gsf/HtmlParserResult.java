@@ -165,14 +165,14 @@ public class HtmlParserResult extends ParserResult {
                                     }
                                 }
                             }
-
+                            String msg = NbBundle.getMessage(this.getClass(), "MSG_Unmatched_Tag"); //NOI18N
                             Error error =
                                     DefaultError.createDefaultError("unmatched_tag",//NOI18N
-                                    NbBundle.getMessage(this.getClass(), "MSG_Unmatched_Tag"),//NOI18N
-                                    null,
+                                    msg,
+                                    msg,
                                     getSnapshot().getSource().getFileObject(),
-                                    node.startOffset(),
-                                    node.endOffset(),
+                                    getSnapshot().getOriginalOffset(node.startOffset()),
+                                    getSnapshot().getOriginalOffset(node.endOffset()),
                                     false /* not line error */,
                                     Severity.WARNING); //NOI18N
                             _errors.add(error);
@@ -189,10 +189,10 @@ public class HtmlParserResult extends ParserResult {
                                 Error error =
                                         DefaultError.createDefaultError("tag_error", //NOI18N
                                         desc.getText(),
-                                        null,
+                                        desc.getText(),
                                         getSnapshot().getSource().getFileObject(),
-                                        desc.getFrom(),
-                                        desc.getTo(),
+                                        getSnapshot().getOriginalOffset(desc.getFrom()),
+                                        getSnapshot().getOriginalOffset(desc.getTo()),
                                         false /* not line error */,
                                         desc.getType() == Description.WARNING ? Severity.WARNING : Severity.ERROR); //NOI18N
                                 _errors.add(error);

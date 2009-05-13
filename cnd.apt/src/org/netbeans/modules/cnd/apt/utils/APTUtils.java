@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTBaseToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTCommentToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
+import org.netbeans.modules.cnd.apt.impl.support.APTMacroParamExpansion;
 import org.netbeans.modules.cnd.apt.impl.support.APTTestToken;
 import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
 import org.netbeans.modules.cnd.apt.impl.support.lang.APTBaseLanguageFilter;
@@ -442,6 +443,28 @@ public class APTUtils {
             return isMacroExpandedToken(((APTBaseLanguageFilter.FilterToken)token).getOriginalToken());
         }
         return false;
+    }
+
+    public static boolean isMacroParamExpandedToken(Token token) {
+        if (token instanceof APTMacroParamExpansion) {
+            return true;
+        } else if (token instanceof MacroExpandedToken) {
+            return isMacroParamExpandedToken(((MacroExpandedToken) token).getTo());
+        } else if (token instanceof APTBaseLanguageFilter.FilterToken) {
+            return isMacroParamExpandedToken(((APTBaseLanguageFilter.FilterToken) token).getOriginalToken());
+        }
+        return false;
+    }
+
+    public static APTToken getExpandedToken(APTToken token) {
+        if (token instanceof APTMacroParamExpansion) {
+            return getExpandedToken(((APTMacroParamExpansion) token).getOriginal());
+        } else if (token instanceof MacroExpandedToken) {
+            return getExpandedToken(((MacroExpandedToken) token).getTo());
+        } else if (token instanceof APTBaseLanguageFilter.FilterToken) {
+            return getExpandedToken(((APTBaseLanguageFilter.FilterToken) token).getOriginalToken());
+        }
+        return token;
     }
 
     public static boolean areAdjacent(APTToken left, APTToken right) {

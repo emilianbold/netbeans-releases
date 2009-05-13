@@ -72,13 +72,12 @@ class ErrWriter extends OutputWriter {
         println(s, l, false);
     }
 
+    @Override
     public void println(String s, OutputListener l, boolean important) throws java.io.IOException {
         closed = false;
         synchronized (wrapped) {
-            wrapped.println (s, l, important);
-            if (!wrapped.checkError()) {
-                ((AbstractLines) wrapped.getLines()).markErr();
-            }
+            wrapped.println(s, l, important);
+            ((AbstractLines) wrapped.getLines()).markErr();
         }
     }
     

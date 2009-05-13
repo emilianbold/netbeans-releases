@@ -595,9 +595,8 @@ public final class IOWindow implements IOContainer.Provider {
         }
 
         private void closeAllTabs() {
-            for (int i = 0; i < pane.getTabCount(); i++) {
-                JComponent comp = (JComponent) pane.getComponentAt(0);
-                removeTab(comp);
+            for (JComponent tab : getTabs()) {
+                removeTab(tab);
             }
         }
 

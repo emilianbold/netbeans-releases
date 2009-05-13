@@ -285,6 +285,7 @@ public class HgConfigFiles {
     
     private void storeIni(Ini ini, String iniFile) {
         assert initException == null;
+        BufferedOutputStream bos = null;
         try {
             String filePath;
             if (dir != null) {
@@ -294,9 +295,17 @@ public class HgConfigFiles {
             }
             File file = FileUtil.normalizeFile(new File(filePath));
             file.getParentFile().mkdirs();
-            ini.store(new BufferedOutputStream(new FileOutputStream(file)));
+            ini.store(bos = new BufferedOutputStream(new FileOutputStream(file)));
         } catch (IOException ex) {
             Mercurial.LOG.log(Level.INFO, null, ex);
+        } finally {
+            if (bos != null) {
+                try {
+                    bos.close();
+                } catch (IOException ex) {
+                    Mercurial.LOG.log(Level.INFO, null, ex);
+                }
+            }
         }
     }
 

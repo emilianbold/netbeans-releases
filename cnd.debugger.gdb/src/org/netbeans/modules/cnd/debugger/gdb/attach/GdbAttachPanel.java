@@ -59,6 +59,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.debugger.gdb.DebuggerStartException;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.actions.AttachTableColumn;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -115,11 +116,14 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
     public static void fillProjectsCombo(JComboBox comboBox) {
         Project main = OpenProjects.getDefault().getMainProject();
         for (Project proj : OpenProjects.getDefault().getOpenProjects()) {
-            ProjectInformation pinfo = ProjectUtils.getInformation(proj);
-            ProjectCBItem pi = new ProjectCBItem(pinfo);
-            comboBox.addItem(pi);
-            if (main != null && proj == main) {
-                comboBox.setSelectedItem(pi);
+            // include only cnd projects (see IZ 164690)
+            if (proj.getLookup().lookup(ConfigurationDescriptorProvider.class) != null) {
+                ProjectInformation pinfo = ProjectUtils.getInformation(proj);
+                ProjectCBItem pi = new ProjectCBItem(pinfo);
+                comboBox.addItem(pi);
+                if (main != null && proj == main) {
+                    comboBox.setSelectedItem(pi);
+                }
             }
         }
     }

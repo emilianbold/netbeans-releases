@@ -17,7 +17,6 @@ Not Searchable Keys:
 Document 1
 Searchable Keys:
   dbtable : line_items
-  require : 006_create_line_items
 
 Not Searchable Keys:
   dbcolumn : order_id;integer

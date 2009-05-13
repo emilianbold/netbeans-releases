@@ -343,7 +343,7 @@ public abstract class TreeListNode {
         }
     }
 
-    private class ProgressLabel extends JLabel {
+    private class ProgressLabel extends TreeLabel {
         private int frame = 0;
         private Timer t;
         final BusyPainter painter;

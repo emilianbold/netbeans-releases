@@ -51,6 +51,7 @@ import org.netbeans.modules.kenai.ui.treelist.LeafNode;
 import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
 import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
 import org.netbeans.modules.kenai.ui.spi.SourceHandle;
+import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
 import org.openide.util.NbBundle;
 
 /**
@@ -78,13 +79,13 @@ public class SourceNode extends LeafNode {
         if( null == panel ) {
             panel = new JPanel( new GridBagLayout() );
             panel.setOpaque(false);
-            lbl = new JLabel( source.getDisplayName() );
+            lbl = new TreeLabel( source.getDisplayName() );
             panel.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
 
             if( source.isSupported() ) {
                 btn = new LinkButton(NbBundle.getMessage(SourceNode.class, "LBL_GetSources"), SourceAccessor.getDefault().getOpenSourcesAction(source)); //NOI18N
-                lbl1 = new JLabel("("); //NOI18N
-                lbl2 = new JLabel(")"); //NOI18N
+                lbl1 = new TreeLabel("("); //NOI18N
+                lbl2 = new TreeLabel(")"); //NOI18N
                 panel.add( lbl1, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
                 panel.add( btn, new GridBagConstraints(2,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
                 panel.add( lbl2, new GridBagConstraints(3,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));

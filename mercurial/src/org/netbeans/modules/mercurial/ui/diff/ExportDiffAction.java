@@ -105,7 +105,7 @@ public class ExportDiffAction extends ContextAction {
         ExportDiffSupport exportDiffSupport = new ExportDiff(root, files) {
             public void writeDiffFile (final File toFile) {
                 final String revStr = getSelectionRevision();
-                HgModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", toFile.getParent()); // NOI18N
+                saveFolderToPrefs(toFile);
                 RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
                 HgProgressSupport support = new HgProgressSupport() {
                     public void perform() {
@@ -129,7 +129,7 @@ public class ExportDiffAction extends ContextAction {
         final String revStr = repoRev.getLog().getRevision();
         ExportDiff exportDiffSupport = new ExportDiff(root, repoRev, null, fileToDiff) {
             public void writeDiffFile (final File toFile) {
-                HgModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", toFile.getParent()); // NOI18N
+                saveFolderToPrefs(toFile);
                 RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
                 HgProgressSupport support = new HgProgressSupport() {
                     public void perform() {
@@ -152,7 +152,7 @@ public class ExportDiffAction extends ContextAction {
         ExportDiff exportDiffSupport = new ExportDiff(root, repoRev, roots) {
             public void writeDiffFile (final File toFile) {
                 final String revStr = getSelectionRevision();
-                HgModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", toFile.getParent()); // NOI18N
+                saveFolderToPrefs(toFile);
                 RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
                 HgProgressSupport support = new HgProgressSupport() {
                     public void perform() {
@@ -232,6 +232,12 @@ public class ExportDiffAction extends ContextAction {
         } finally {
             logger.outputInRed(NbBundle.getMessage(ExportDiffAction.class, "MSG_EXPORT_FILE_DONE")); // NOI18N
             logger.output(""); // NOI18N
+        }
+    }
+
+    static void saveFolderToPrefs (final File file) {
+        if (file.getParent() != null) {
+            HgModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", file.getParent()); // NOI18N
         }
     }
 }

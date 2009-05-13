@@ -66,7 +66,7 @@ public final class SvnPropertiesAction extends ContextAction {
 
     @Override
     protected boolean enable(Node[] nodes) {
-        return nodes.length == 1;
+        return super.enable(nodes) && nodes.length == 1;
     }
     
     @Override

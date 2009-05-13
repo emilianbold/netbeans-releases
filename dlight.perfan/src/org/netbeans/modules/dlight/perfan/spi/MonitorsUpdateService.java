@@ -170,6 +170,8 @@ public class MonitorsUpdateService {
 
                     boolean restarted = false;
                     List<DataRow> newData = new ArrayList<DataRow>();
+                    double prevTime = 0;
+                    double prevLocks = 0;
 
                     try {
                         if (isSyncMonitor) {
@@ -177,7 +179,13 @@ public class MonitorsUpdateService {
                             ThreadsStatistic threadsStatistic = erprintSession.getThreadsStatistic(5, false);
                             restarted = true;
                             if (stat != null) {
-                                newData.add(new DataRow(syncColNames, Arrays.asList(stat.getULock_p(), threadsStatistic.getThreadsCount())));
+                                double currTime = stat.getTotalThreadTime();
+                                double currLocks = stat.getULock();
+                                newData.add(new DataRow(syncColNames, Arrays.asList(
+                                        100 * (currLocks - prevLocks) / (currTime - prevTime),
+                                        threadsStatistic.getThreadsCount())));
+                                prevTime = currTime;
+                                prevLocks = currLocks;
                             }
                         }
 
@@ -209,7 +217,7 @@ public class MonitorsUpdateService {
                             }
                         }
                     } catch (Throwable ex) {
-                        log.log(Level.FINEST, "Exception while updateIndicators in MonitorUpdateService", ex);
+                        log.log(Level.FINEST, "Exception while updateIndicators in MonitorUpdateService: " + ex.toString());
                     } finally {
                         ssdc.updateIndicators(newData);
                     }

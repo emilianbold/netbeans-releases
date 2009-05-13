@@ -212,6 +212,9 @@ public class KenaiConnection implements PropertyChangeListener {
                 public void run() {
                     if (listener == null || !ChatTopComponent.isInitedAndVisible(name)) {
                         chatNotifications.addGroupMessage(msg);
+                    } else {
+                        chatNotifications.getMessagingHandle(name).notifyMessageReceived(msg);
+                        chatNotifications.getMessagingHandle(name).notifyMessagesRead();
                     }
                 }
             });
@@ -269,34 +272,38 @@ public class KenaiConnection implements PropertyChangeListener {
 
     public void propertyChange(final PropertyChangeEvent e) {
         if (Kenai.PROP_LOGIN.equals(e.getPropertyName())) {
-            post(new Runnable() {
-                public void run() {
-                    final PasswordAuthentication pa = (PasswordAuthentication) e.getNewValue();
-                    if (pa != null) {
+            if (e.getNewValue() != null) {
+                post(new Runnable() {
+                    public void run() {
+                        final PasswordAuthentication pa = (PasswordAuthentication) e.getNewValue();
                         USER = pa.getUserName();
-                        PASSWORD = System.getProperty("kenai.xmpp.password",new String(pa.getPassword()));
+                        PASSWORD = System.getProperty("kenai.xmpp.password", new String(pa.getPassword()));
                         tryConnect();
-                    } else {
-                        for (MultiUserChat muc : getChats()) {
-                            try {
-                                muc.leave();
-                            } catch (IllegalStateException e) {
-                                //we can ignore exceptions on logout
-                                XMPPLOG.log(Level.FINE, null, e);
-                            }
-                        }
-                        chats.clear();
-                        connection.disconnect();
-                        messageQueue.clear();
-                        listeners.clear();
-                        PresenceIndicator.getDefault().setStatus(Status.OFFLINE);
-                        ChatNotifications.getDefault().clearAll();
                     }
+                });
+            } else {
+                try {
+                    for (MultiUserChat muc : getChats()) {
+                        try {
+                            muc.leave();
+                        } catch (IllegalStateException ise) {
+                            //we can ignore exceptions on logout
+                            XMPPLOG.log(Level.FINE, null, ise);
+                        }
+                    }
+                    chats.clear();
+                    connection.disconnect();
+                    messageQueue.clear();
+                    listeners.clear();
+                    PresenceIndicator.getDefault().setStatus(Status.OFFLINE);
+                    ChatNotifications.getDefault().clearAll();
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            });
+            }
         }
     }
-    
+
 //------------------------------------------
 
     private String USER;
@@ -304,7 +311,7 @@ public class KenaiConnection implements PropertyChangeListener {
     
     //TODO this should be removed when xmpp server starts working on kenai.com
     private static final String XMPP_SERVER = System.getProperty("kenai.com.url","https://kenai.com").substring(System.getProperty("kenai.com.url","https://kenai.com").lastIndexOf("/")+1);
-    private static final String CHAT_ROOM = "@muc." + XMPP_SERVER;
+    private static final String CHAT_ROOM = "@muc." + XMPP_SERVER; // NOI18N
 
     /**
      * TODO: should return kenai account name

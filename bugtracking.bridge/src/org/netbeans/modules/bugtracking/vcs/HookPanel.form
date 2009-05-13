@@ -28,7 +28,7 @@
                           <Component id="resolveCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="addCommentCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="240" max="32767" attributes="0"/>
+                      <EmptySpace pref="250" max="32767" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="commitRadioButton" min="-2" max="-2" attributes="0"/>
                           <Component id="pushRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -38,14 +38,14 @@
                       <Component id="addRevisionCheckBox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="changeRevisionFormatButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="213" max="-2" attributes="0"/>
+                      <EmptySpace pref="222" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace min="-2" pref="125" max="-2" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="addIssueCheckBox1" min="-2" max="-2" attributes="0"/>
+              <Component id="addIssueCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="changeIssueFormatButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace pref="316" max="32767" attributes="0"/>
@@ -58,7 +58,7 @@
               <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
                   <Component id="jPanel1" alignment="0" max="32767" attributes="0"/>
-                  <Component id="repositoryComboBox" alignment="0" pref="502" max="32767" attributes="2"/>
+                  <Component id="repositoryComboBox" alignment="0" pref="561" max="32767" attributes="2"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="jButton2" min="-2" max="-2" attributes="1"/>
@@ -99,7 +99,7 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="addIssueCheckBox1" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="addIssueCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="changeIssueFormatButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
@@ -285,8 +285,8 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="issuePanel" alignment="0" pref="502" max="32767" attributes="2"/>
-              <Component id="jLabel2" alignment="0" pref="502" max="32767" attributes="0"/>
+              <Component id="issuePanel" alignment="0" pref="561" max="32767" attributes="2"/>
+              <Component id="jLabel2" alignment="0" pref="561" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -317,10 +317,10 @@
         </Container>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JCheckBox" name="addIssueCheckBox1">
+    <Component class="javax.swing.JCheckBox" name="addIssueCheckBox">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugtracking/vcs/Bundle.properties" key="HookPanel.addIssueCheckBox1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/bugtracking/vcs/Bundle.properties" key="HookPanel.addIssueCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="nextFocusableComponent" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="commitRadioButton"/>
@@ -332,7 +332,7 @@
         </Property>
       </AccessibilityProperties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addIssueCheckBox1ActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addIssueCheckBoxActionPerformed"/>
       </Events>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>

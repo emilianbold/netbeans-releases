@@ -43,6 +43,7 @@ import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.jrubyparser.ast.Node;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.csl.api.DeclarationFinder.AlternativeLocation;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.ElementHandle;
@@ -138,7 +139,7 @@ abstract class RubyDeclarationFinderHelper {
                     if (url.indexOf("/stub_") == -1) {
                         // Not a stub file, such as ftools.rb
                         // TODO - don't hardcode for version 0.2
-                        String stub = "rubystubs/1.8.6-p110/";
+                        String stub = RubyPlatform.RUBYSTUBS + "/" + RubyPlatform.RUBYSTUBS_VERSION;
                         int stubStart = url.indexOf(stub);
                         if (stubStart != -1) {
                             filename = filename + ": " + url.substring(stubStart);

@@ -71,7 +71,7 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
     private final List<IndicatorDataProvider<?>> toReValidate;
     private final List<ChangeListener> changeListeners = new ArrayList<ChangeListener>();
     private final Object listenersLock = new String("IndicatorRepairActionProvider.Listeners"); // NOI18N
-
+    private Future<Boolean> repairTask;
 
     static {
         IndicatorRepairActionProviderAccessor.setDefault(new IndicatorRepairActionProviderAccessorImpl());
@@ -149,42 +149,45 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
     }
 
     public Future<Boolean> asyncRepair() {
-        Future<Boolean> task = DLightExecutorService.submit(new Callable<Boolean>() {
+        synchronized (this) {
+            if (repairTask == null || repairTask.isDone()) {
+                repairTask = DLightExecutorService.submit(new Callable<Boolean>() {
 
-            public Boolean call() throws Exception {
-                for (IndicatorDataProvider<?> idp : toReValidate) {
-                    final ValidateableSupport<DLightTarget> support = new ValidateableSupport<DLightTarget>(idp);
-                    final Future<ValidationStatus> taskStatus = support.asyncValidate(targetToRepairFor, true);
-                    Future<Boolean> result = DLightExecutorService.submit(new Callable<Boolean>() {
+                    public Boolean call() throws Exception {
+                        for (IndicatorDataProvider<?> idp : toReValidate) {
+                            final ValidateableSupport<DLightTarget> support = new ValidateableSupport<DLightTarget>(idp);
+                            final Future<ValidationStatus> taskStatus = support.asyncValidate(targetToRepairFor, true);
+                            Future<Boolean> result = DLightExecutorService.submit(new Callable<Boolean>() {
 
-                        public Boolean call() throws Exception {
-                            final ValidationStatus status = taskStatus.get();
-                            UIThread.invoke(new Runnable() {
+                                public Boolean call() throws Exception {
+                                    final ValidationStatus status = taskStatus.get();
+                                    UIThread.invoke(new Runnable() {
 
-                                public void run() {
-                                    currentStatus = status;
-                                //   updateUI(c);
+                                        public void run() {
+                                            currentStatus = status;
+                                        //   updateUI(c);
+                                        }
+                                    });
+                                    return status.isKnown();
                                 }
-                            });
-                            return status.isKnown();
+                            }, "IndicatorRepairActionProvider task for " + idp.getName());//NOI18N
+                            try {
+                                //NOI18N
+                                if (result.get().booleanValue()) {
+                                    return true;
+                                }
+                            } catch (InterruptedException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } catch (ExecutionException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
                         }
-                    }, "IndicatorRepairActionProvider task for " + idp.getName());//NOI18N
-                    try {
-                        //NOI18N
-                        if (result.get().booleanValue()) {
-                            return true;
-                        }
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (ExecutionException ex) {
-                        Exceptions.printStackTrace(ex);
+                        return true;
                     }
-                }
-                return true;
+                }, "IndicatorRepairActionProvider asyncRepair"); //NOI18N
             }
-        }, "IndicatorRepairActionProvider asyncRepair"); //NOI18N
-        return task;
-
+        }
+        return repairTask;
     }
 
     public void validationStateChanged(Validateable source, ValidationStatus oldStatus, ValidationStatus newStatus) {

@@ -43,7 +43,9 @@ package org.netbeans.modules.cnd.test;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -263,6 +265,26 @@ public abstract class BaseTestCase extends NbTestCase {
     @Override
     public void compareReferenceFiles() {
         compareReferenceFiles(this.getName()+".ref",this.getName()+".ref"); // NOI18N
+    }
+    
+    protected static void writeFile(File file, CharSequence content) throws IOException {
+        Writer writer = new FileWriter(file);
+        writer.write(content.toString());
+        writer.close();
+    }
+
+    protected static File createTempFile(String prefix, String suffix, boolean directory) throws IOException {
+        File tmpFile = File.createTempFile(prefix, suffix);
+        if (directory) {
+            if(!(tmpFile.delete())) {
+                throw new IOException("Could not delete temp file: " + tmpFile.getAbsolutePath());
+            }
+            if (!(tmpFile.mkdir())) {
+                throw new IOException("Could not create temp directory: " + tmpFile.getAbsolutePath());
+            }
+        }
+        tmpFile.deleteOnExit();
+        return tmpFile;
     }
 
     ////////////////////////////////////////////////////////////////////////////

@@ -174,7 +174,7 @@ public class RemotePathMap implements PathMap {
      * @param lpath The local path to check
      * @return true if path is remote, false otherwise
      */
-    public boolean isRemote(String lpath, boolean fixMissingPaths) {
+    public boolean checkRemotePath(String lpath, boolean fixMissingPaths) {
         String ulpath = unifySeparators(lpath);
         for (Map.Entry<String, String> entry : map.entrySet()) {
             String mpoint = unifySeparators(entry.getValue());
@@ -202,7 +202,7 @@ public class RemotePathMap implements PathMap {
         }
 
         if (fixMissingPaths) {
-            return EditPathMapDialog.showMe(execEnv, lpath) && isRemote(lpath, false);
+            return EditPathMapDialog.showMe(execEnv, lpath) && checkRemotePath(lpath, false);
         } else {
             return false;
         }
@@ -314,7 +314,7 @@ public class RemotePathMap implements PathMap {
 
     private static class RsyncPathMap implements PathMap {
 
-        public boolean isRemote(String path, boolean fixMissingPath) {
+        public boolean checkRemotePath(String path, boolean fixMissingPath) {
             return true;
         }
 

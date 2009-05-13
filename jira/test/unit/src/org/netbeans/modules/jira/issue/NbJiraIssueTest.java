@@ -38,6 +38,12 @@
  */
 package org.netbeans.modules.jira.issue;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.modules.jira.*;
 import java.util.logging.Level;
@@ -53,8 +59,11 @@ import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.jira.issue.NbJiraIssue.CustomField;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -67,8 +76,14 @@ public class NbJiraIssueTest extends NbTestCase {
     protected static final String REPO_PASSWD = "unittest";
     protected static final String REPO_URL = "http://kenai-test.czech.sun.com:8090";
     protected static final String REPO_USER = "unittest";
+//    protected static final String TEST_PROJECT = "OVRABEC_JIRA";
+//    protected static final String REPO_PASSWD = "*****";
+//    protected static final String REPO_URL = "http://testkenai.com/jira/";
+//    protected static final String REPO_USER = "ovrabec";
     private JiraConfiguration config;
     private TaskRepository taskRepository;
+    private static final String ATTACHMENTS_FOLDER = "attachments";     //NOI18N
+    private static final String TAG_FIELD = "Tags:";                    //NOI18N
 
     public enum JiraIssueResolutionStatus {
 
@@ -113,10 +128,10 @@ public class NbJiraIssueTest extends NbTestCase {
         } catch (Exception ex) {
             throw ex;
         }
-        // need this to initialize cache -> server defined status values & co
-        //getClient().getCache().refreshDetails(JiraTestUtil.nullProgressMonitor);
-        config = getRepository().getConfiguration();
-        config.refreshDetails(new NullProgressMonitor());
+        if (config == null) {
+            config = getRepository().getConfiguration();
+            config.refreshDetails(new NullProgressMonitor());
+        }
         JiraTestUtil.cleanProject(getRepositoryConnector(), getRepository().getTaskRepository(), getClient(), config.getProjectByKey(TEST_PROJECT));
     }
 
@@ -148,7 +163,7 @@ public class NbJiraIssueTest extends NbTestCase {
         reopenIssue(issue);
         resolveIssue(issue, JiraIssueResolutionStatus.WONTFIX);
     }
-    
+
     public void testAddComments() throws CoreException {
         int commentCount = 0;
 
@@ -172,6 +187,76 @@ public class NbJiraIssueTest extends NbTestCase {
         comments = issue.getComments();
         assertNotNull(comments);
         assertEquals(commentCount++, comments.length);
+    }
+
+    public void testAddAttachments () throws IOException, CoreException {
+        NbJiraIssue issue = createIssue();
+        issue.submitAndRefresh();
+
+        File attachmentsDir = new File(getDataDir(), ATTACHMENTS_FOLDER);
+        File[] attachmentFiles = attachmentsDir.listFiles();
+        int attachNumber = 1;
+        for (File attachmentFile : attachmentFiles) {
+            addAttachment(issue, attachmentFile, attachNumber++);
+        }
+    }
+
+    public void testTagsFields () throws CoreException {
+        NbJiraIssue issue = createIssue();
+        NbJiraIssue.CustomField[] customFields = issue.getCustomFields();
+        assertNotNull(customFields);
+        assertTrue(customFields.length > 0);
+        NbJiraIssue.CustomField customField = getTagField(customFields);
+        assertNotNull(customField);
+        assertFalse(customField.isReadOnly());
+        List<String> values = customField.getValues();
+        assertEquals(1, values.size());
+        assertEquals("", values.get(0));
+
+        String newValue = "sometag1 sometag2";                         //NOI18N
+        values = new LinkedList<String>();
+        values.add(newValue);
+        customField.setValues(values);
+        issue.setCustomField(customField);
+        issue.submitAndRefresh();
+
+        issue = (NbJiraIssue) getRepository().getIssue(issue.getKey());
+        customFields = issue.getCustomFields();
+        assertNotNull(customFields);
+        assertTrue(customFields.length > 0);
+        customField = getTagField(customFields);
+        assertNotNull(customField);
+        values = customField.getValues();
+        assertEquals(1, values.size());
+        assertEquals(newValue, values.get(0));
+
+        newValue += " sometag3";                                        //NOI18N
+        values = new LinkedList<String>();
+        values.add(newValue);
+        customField.setValues(values);
+        issue.setCustomField(customField);
+        issue.submitAndRefresh();
+
+        issue = (NbJiraIssue) getRepository().getIssue(issue.getKey());
+        customFields = issue.getCustomFields();
+        assertNotNull(customFields);
+        assertTrue(customFields.length > 0);
+        customField = getTagField(customFields);
+        assertNotNull(customField);
+        values = customField.getValues();
+        assertEquals(1, values.size());
+        assertEquals(newValue, values.get(0));
+    }
+
+    private CustomField getTagField(CustomField[] customFields) {
+        CustomField customField = null;
+        for (NbJiraIssue.CustomField cf : customFields) {
+            if (cf.getLabel().equals(TAG_FIELD)) {                           //NOI18N
+                customField = cf;
+                break;
+            }
+        }
+        return customField;
     }
 
     private NbJiraIssue createIssue() throws CoreException {
@@ -204,6 +289,56 @@ public class NbJiraIssueTest extends NbTestCase {
         assertEquals(JiraIssueStatus.OPEN.statusName, issue.getStatus().getName());
 
         return issue;
+    }
+
+    private void addAttachment (NbJiraIssue issue, File attachmentFile, int attachmentCount) throws IOException {
+        String key = issue.getID();
+        String comment = "Comment for the attachment: " + attachmentFile.getName();
+        String author = getRepository().getUsername();
+        FileObject fo = FileUtil.toFileObject(attachmentFile);
+        long size = fo.getSize();
+        issue.addAttachment(attachmentFile, comment, null);
+
+        issue = (NbJiraIssue) repository.getIssue(key);
+        assertNotNull(issue);
+        NbJiraIssue.Attachment[] attachments = issue.getAttachments();
+        assertNotNull(attachments);
+        assertEquals(attachmentCount, attachments.length);
+
+        NbJiraIssue.Attachment attachment = attachments[0];
+        for (NbJiraIssue.Attachment att : attachments) {
+            if (Long.parseLong(att.getId()) > Long.parseLong(attachment.getId())) {
+                attachment = att;
+            }
+        }
+        assertEquals(config.getUser(author).getFullName(), attachment.getAuthor());
+        assertEquals(size, Integer.parseInt(attachment.getSize()));
+        assertNotNull(attachment.getDate());
+        assertEquals(fo.getNameExt(), attachment.getFilename());
+        assertNotNull(attachment.getUrl());
+        assertTrue(attachment.getUrl().startsWith(repository.getUrl()));
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream((int)size);
+        attachment.getAttachementData(bos);
+        assertEquals((int)size, bos.size());
+        compare(attachmentFile, bos);
+    }
+
+    private static void compare (File file, ByteArrayOutputStream baos) throws IOException {
+        FileInputStream fis = new FileInputStream(file);
+        ByteArrayOutputStream originalBaos = new ByteArrayOutputStream(baos.size());
+        int len;
+        byte[] buff = new byte[1024];
+        while ((len = fis.read(buff)) != -1) {
+            originalBaos.write(buff, 0, len);
+        }
+        int size = originalBaos.size();
+        assertEquals(size, baos.size());
+        byte[] originalCont = originalBaos.toByteArray();
+        byte[] cont = baos.toByteArray();
+        for (int i = 0; i < originalCont.length; ++i) {
+            assertEquals(originalCont[i], cont[i]);
+        }
     }
 
     private void resolveIssue(NbJiraIssue issue, JiraIssueResolutionStatus resolution) throws JiraException {

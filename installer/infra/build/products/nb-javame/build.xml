@@ -142,26 +142,54 @@
       Overrides the '-pre-package' target in product.xml.
     -->
     <target name="-pre-package">        
+
+        <set property="wtk.directory"       value="WTK2.5.2"/>
+        <set property="javamesdk.directory" value="Java_ME_platform_SDK_3.0"/>
+        <set property="mobility.cluster"    value="mobility8"/>
+
+
         <if property="i" value="2">
-            <mkdir dir="${data.directory}/mobility8/WTK2.5.2"/>            
-            <move todir="${data.directory}/mobility8/WTK2.5.2">
+            <mkdir dir="${data.directory}/${mobility.cluster}/"/>            
+            <move todir="${data.directory}/${mobility.cluster}/${wtk.directory}">
                 <fileset dir="${data.directory}">
-		    <exclude name="mobility8"/>
-		    <exclude name="mobility8/WTK2.5.2"/>
+		    <exclude name="${mobility.cluster}"/>
+		    <exclude name="${mobility.cluster}/${wtk.directory}"/>
                 </fileset>
             </move>
         </if>
 
-	<if property="i" value="3">
-            <mkdir dir="${data.directory}/mobility8/config/emulator-descriptor-inst"/>            
-            <move todir="${data.directory}/mobility8/config/emulator-descriptor-inst">
+        <condition property="is.descriptor" value="true" else="false">
+            <or>
+                <equals arg1="${i}" arg2="3"/>
+                <equals arg1="${i}" arg2="4"/>
+                <equals arg1="${i}" arg2="5"/>
+            </or>
+        </condition>
+ 
+	<if property="is.descriptor" value="true">
+            <mkdir dir="${data.directory}/${mobility.cluster}/config/emulator-descriptor-inst"/>            
+            <move todir="${data.directory}/${mobility.cluster}/config/emulator-descriptor-inst">
                 <fileset dir="${data.directory}">
-                    <exclude name="mobility8/config/emulator-descriptor-inst"/>
-		    <exclude name="mobility8/config"/>
-		    <exclude name="mobility8"/>
+                    <exclude name="${mobility.cluster}/config/emulator-descriptor-inst"/>
+		    <exclude name="${mobility.cluster}/config"/>
+		    <exclude name="${mobility.cluster}"/>
                 </fileset>
             </move>
         </if>
+
+        <if property="i" value="6">
+            <mkdir dir="${data.directory}/${mobility.cluster}/"/>            
+            <delete dir="${data.directory}/toolbar" includeemptydirs="true"/>
+
+            <move todir="${data.directory}/${mobility.cluster}/${javamesdk.directory}">
+                <fileset dir="${data.directory}">
+		    <exclude name="${mobility.cluster}"/>
+		    <exclude name="${mobility.cluster}/${javamesdk.directory}"/>
+                </fileset>
+            </move>
+        </if>
+
+
     </target>
     
     <!-- ============================================================================

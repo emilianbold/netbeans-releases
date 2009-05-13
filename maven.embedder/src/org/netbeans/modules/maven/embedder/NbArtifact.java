@@ -118,7 +118,7 @@ public class NbArtifact implements Artifact {
     }
     
     public File getFile() {
-        /** #163919
+        /** #163919 **/
         if ("pom".equals(getType()) && isResolved()) {
             if (original.getFile() != null && !original.getFile().exists()) {
                 File orig = NbArtifact.getCachedPom(getId());
@@ -152,7 +152,6 @@ public class NbArtifact implements Artifact {
                 fakePom = true;
             }
         }
-         */
         if (Artifact.SCOPE_SYSTEM.equals(getScope())) {
             File systemFile = original.getFile();
             if (systemFile == null || !systemFile.exists()) {

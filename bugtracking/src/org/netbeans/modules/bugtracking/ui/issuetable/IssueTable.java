@@ -83,6 +83,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Query.Filter;
 import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.awt.MouseUtils;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
@@ -159,6 +160,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
         initColumns();
         table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction"); // NOI18N
+        BugtrackingUtil.fixFocusTraversalKeys(table);
     }
 
     public void setFilter(Filter filter) {

@@ -50,12 +50,15 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.Timer;
 
 /**
  * <strong>This is a copy of <code>CoverageBar</code> from the gsf.codecoverage</code>
@@ -70,7 +73,7 @@ import javax.swing.JLabel;
  *
  * @author Tor Norbye
  */
-public final class ResultBar extends JComponent {
+public final class ResultBar extends JComponent implements ActionListener{
     private static final Color NOT_COVERED_LIGHT = new Color(255, 160, 160);
     private static final Color NOT_COVERED_DARK = new Color(180, 50, 50);
     private static final Color COVERED_LIGHT = new Color(160, 255, 160);
@@ -80,8 +83,21 @@ public final class ResultBar extends JComponent {
     /** Passed tests percentage:  0.0f <= x <= 100f */
     private float passedPercentage;
 
+    private Timer timer = new Timer(100, this);
+    private int phase = 1;
+
     public ResultBar() {
         updateUI();
+        timer.start();
+    }
+
+    public void stop(){
+        timer.stop();
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        phase = (phase < getHeight()-1) ? phase + 1 : 1;
+        repaint();
     }
 
     public float getPassedPercentage() {
@@ -186,22 +202,31 @@ public final class ResultBar extends JComponent {
             notCoveredDark = notCoveredDark.darker();
         }
 
+        g2.setPaint(new GradientPaint(0, phase, notCoveredLight, 0, phase + height/2, notCoveredDark, true));
+        g2.fillRect(amountFull, 1, width - 1, height);
+/*
         g2.setPaint(new GradientPaint(0, 0, notCoveredLight,
                 0, height / 2, notCoveredDark));
         g2.fillRect(amountFull, 1, width - 1, height / 2);
+
         g2.setPaint(new GradientPaint(0, height / 2, notCoveredDark,
                 0, 2 * height, notCoveredLight));
         g2.fillRect(amountFull, height / 2, width - 1, height / 2);
-
+*/
         g2.setColor(getForeground());
 
+        g2.setPaint(new GradientPaint(0, phase, coveredLight, 0, phase + height/2, coveredDark, true));
+        g2.fillRect(1, 1, amountFull, height);
+
+/*
         g2.setPaint(new GradientPaint(0, 0, coveredLight,
                 0, height / 2, coveredDark));
         g2.fillRect(1, 1, amountFull, height / 2);
+
         g2.setPaint(new GradientPaint(0, height / 2, coveredDark,
                 0, 2 * height, coveredLight));
         g2.fillRect(1, height / 2, amountFull, height / 2);
-
+*/
         Rectangle oldClip = g2.getClipBounds();
         if (passedPercentage > 0.0f) {
             g2.setColor(coveredDark);

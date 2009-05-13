@@ -101,7 +101,14 @@ final class ExternalUtil extends Object {
         while (ex.getCause() != null) {
             ex = ex.getCause();
         }
-        ex.initCause(stack);
+        try {
+            ex.initCause(stack);
+        } catch (IllegalStateException ise) {
+            // #164760 - fallback when initCause fails (e.g. for ClassNotFoundException)
+            Exception e = new Exception(ex.getMessage(), stack);
+            e.setStackTrace(ex.getStackTrace());
+            return e;
+        }
         return orig;
     }
 

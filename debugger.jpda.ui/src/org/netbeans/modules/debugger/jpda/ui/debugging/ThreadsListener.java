@@ -278,7 +278,8 @@ public class ThreadsListener extends DebuggerManagerAdapter {
                         currentThreadsHistory.remove(currentThread);
                         currentThreadsHistory.addFirst(currentThread);
                     }
-                } else if (JPDADebugger.PROP_STATE.equals(propName) && debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
+                } else if (JPDADebugger.PROP_STATE.equals(propName) &&
+                        debugger != null && debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
                     unregister();
                 }
             } else if (source instanceof JPDAThread) {

@@ -42,6 +42,8 @@ package org.netbeans.modules.jira.issue;
 import java.awt.Font;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,16 +61,21 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.internal.jira.core.IJiraConstants;
 import org.eclipse.mylyn.internal.jira.core.JiraAttribute;
-import org.eclipse.mylyn.internal.jira.core.model.Attachment;
 import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
 import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
+import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
+import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
+import org.eclipse.mylyn.tasks.core.IRepositoryPerson;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.data.TaskAttachmentMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.eclipse.mylyn.tasks.core.data.TaskCommentMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugtracking.spi.IssueNode;
@@ -80,7 +87,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
-import org.openide.util.Exceptions;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -264,7 +271,44 @@ public class NbJiraIssue extends Issue {
     }
 
     Attachment[] getAttachments() {
-        return null; // XXX
+        List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, TaskAttribute.TYPE_ATTACHMENT);
+        if (attrs == null) {
+            return new Attachment[0];
+        }
+        List<Attachment> attachments = new ArrayList<Attachment>(attrs.size());
+        for (TaskAttribute taskAttribute : attrs) {
+            attachments.add(new Attachment(taskAttribute));
+        }
+        return attachments.toArray(new Attachment[attachments.size()]);
+    }
+
+    CustomField[] getCustomFields () {
+        Map<String, TaskAttribute> attrs = taskData.getRoot().getAttributes();
+        if (attrs == null) {
+            return new CustomField[0];
+        }
+        List<CustomField> fields = new ArrayList<CustomField>(10);
+        
+        for (TaskAttribute attribute : attrs.values()) {
+            if (attribute.getId().startsWith(IJiraConstants.ATTRIBUTE_CUSTOM_PREFIX)) {
+                CustomField field = new CustomField(attribute);
+                fields.add(field);
+            }
+        }
+        return fields.toArray(new CustomField[fields.size()]);
+    }
+
+    void setCustomField(CustomField customField) {
+        Map<String, TaskAttribute> attrs = taskData.getRoot().getAttributes();
+        if (attrs == null) {
+            return;
+        }
+        for (TaskAttribute attribute : attrs.values()) {
+            if (attribute.getId().startsWith(IJiraConstants.ATTRIBUTE_CUSTOM_PREFIX)
+                    && customField.getId().equals(attribute.getId().substring(IJiraConstants.ATTRIBUTE_CUSTOM_PREFIX.length()))) {
+                attribute.setValues(customField.getValues());
+            }
+        }
     }
 
     /**
@@ -483,9 +527,46 @@ public class NbJiraIssue extends Issue {
         }
     }
 
+    void addAttachment(File file, final String comment, String contentType) {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+        final FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(file);
+        if (contentType == null) {
+            file = FileUtil.normalizeFile(file);
+            String ct = FileUtil.getMIMEType(FileUtil.toFileObject(file));
+            if ((ct != null) && (!"content/unknown".equals(ct))) { // NOI18N
+                contentType = ct;
+            } else {
+                contentType = FileTaskAttachmentSource.getContentTypeFromFilename(file.getName());
+            }
+        }
+        attachmentSource.setContentType(contentType);
+
+        TaskAttachmentMapper mapper = new TaskAttachmentMapper();
+        mapper.setContentType(contentType);
+        final TaskAttribute attAttribute = new TaskAttribute(taskData.getRoot(),  TaskAttribute.TYPE_ATTACHMENT);
+        mapper.applyTo(attAttribute);
+        JiraCommand cmd = new JiraCommand() {
+            public void execute() throws CoreException, IOException {
+                refresh();
+                if (Jira.LOG.isLoggable(Level.FINER)) {
+                    Jira.LOG.finer("adding an attachment: issue: " + getKey());
+                }
+                IssueTask task = new IssueTask(repository.getUrl(), NbJiraIssue.this.getTaskData().getTaskId(), "Attachment upload task", getKey());
+                if (!Jira.getInstance().getRepositoryConnector().getTaskAttachmentHandler().canPostContent(repository.getTaskRepository(), task)) {
+                    Jira.LOG.warning("adding an attachment: cannot post content: issue: " + getKey());
+                    return;
+                }
+                Jira.getInstance().getRepositoryConnector().getTaskAttachmentHandler().postContent(repository.getTaskRepository(),
+                        task, attachmentSource, comment, attAttribute, new NullProgressMonitor());
+                refresh(); // XXX to much refresh - is there no other way?
+            }
+        };
+        repository.getExecutor().execute(cmd);
+    }
+
     @Override
-    public void attachPatch(File file, String description) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void attachPatch(File file, String comment) {
+        addAttachment(file, comment, null);
     }
 
     @Override
@@ -814,21 +895,16 @@ public class NbJiraIssue extends Issue {
         private final String who;
         private final Long number;
         private final String text;
+        private final String url;
 
         public Comment(TaskAttribute a) {
-            when = a.getTaskData().getAttributeMapper().getDateValue(a.getMappedAttribute(TaskAttribute.COMMENT_DATE));
-            TaskAttribute authorAttr = a.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR);
-            String author = null;
-            if(authorAttr != null) {
-                TaskAttribute nameAttr = authorAttr.getMappedAttribute(TaskAttribute.PERSON_NAME);
-                author = nameAttr != null ? nameAttr.getValue() : null;
-            }
-            if ( ((author == null) || author.trim().equals("")) && authorAttr != null )  { //NOI18N
-                author = authorAttr.getValue();
-            }
-            who = author;
+            TaskCommentMapper comment = TaskCommentMapper.createFrom(a);
+            when = comment.getCreationDate();
+            IRepositoryPerson person = comment.getAuthor();
+            who = person == null ? null : person.getName();
             number = a.getTaskData().getAttributeMapper().getLongValue(a.getMappedAttribute(TaskAttribute.COMMENT_NUMBER));
-            text = JiraUtils.getMappedValue(a, TaskAttribute.COMMENT_TEXT);
+            url = comment.getUrl();
+            text = comment.getText();
         }
 
         public Long getNumber() {
@@ -845,6 +921,151 @@ public class NbJiraIssue extends Issue {
 
         public String getWho() {
             return who;
+        }
+
+        public String getUrl () {
+            return url;
+        }
+    }
+
+    public final class Attachment {
+        private final String filename;
+        private final String author;
+        private final Date date;
+        private final String id;
+        private String size;
+        private String url;
+        private final TaskAttribute attachmentAttribute;
+
+
+        public Attachment(TaskAttribute ta) {
+            attachmentAttribute = ta;
+            TaskAttachmentMapper taskAttachment = TaskAttachmentMapper.createFrom(ta);
+            id = taskAttachment.getAttachmentId();
+            date = taskAttachment.getCreationDate();
+            filename = taskAttachment.getFileName();
+            IRepositoryPerson person = taskAttachment.getAuthor();
+            author = person == null ? null : person.getName();
+            size = JiraUtils.getMappedValue(ta, TaskAttribute.ATTACHMENT_SIZE);
+            url = taskAttachment.getUrl();
+        }
+
+        public String getAuthor() {
+            return author;
+        }
+
+        public Date getDate() {
+            return date;
+        }
+
+        public String getFilename() {
+            return filename;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getSize() {
+            return size;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        /**
+         *
+         * @param os is always closed before return
+         */
+        public void getAttachementData(final OutputStream os) {
+            assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+            JiraCommand cmd = new JiraCommand() {
+                public void execute() throws CoreException, IOException {
+                    if (Jira.LOG.isLoggable(Level.FINER)) {
+                        Jira.LOG.finer("getAttachmentData: id: " + Attachment.this.getId() + ", issue: " + getKey());
+                    }
+                    try {
+                        IssueTask task = new IssueTask(repository.getUrl(), NbJiraIssue.this.getTaskData().getTaskId(), "Attachment download task", getKey());
+                        if (!Jira.getInstance().getRepositoryConnector().getTaskAttachmentHandler().canGetContent(repository.getTaskRepository(), task)) {
+                            Jira.LOG.warning("getAttachmentData: cannot get content: id: " + Attachment.this.getId() + ", issue: " + getKey());
+                            return;
+                        }
+                        InputStream is = Jira.getInstance().getRepositoryConnector().getTaskAttachmentHandler().getContent(repository.getTaskRepository(),
+                                task, attachmentAttribute, new NullProgressMonitor());
+                        if (is != null) {
+                            JiraUtils.copyStreamsCloseAll(os, is);
+                        }
+                    } finally {
+                        os.close();
+                    }
+                }
+            };
+            repository.getExecutor().execute(cmd);
+        }
+    }
+
+    private class IssueTask extends AbstractTask {
+        private final String key;
+
+        public IssueTask(String repositoryUrl, String taskId, String summary, String key) {
+            super(repositoryUrl, taskId, summary);
+            this.key = key;
+        }
+
+        @Override
+        public boolean isLocal() {
+            return true;
+        }
+
+        @Override
+        public String getConnectorKind() {
+            return super.getRepositoryUrl();
+        }
+
+        @Override
+        public String getTaskKey() {
+            return key;
+        }
+    }
+
+    public static final class CustomField {
+        private final String id;
+        private final String label;
+        private final String type;
+        private List<String> values;
+        private final boolean readOnly;
+
+        private CustomField(TaskAttribute attribute) {
+            id = attribute.getId().substring(IJiraConstants.ATTRIBUTE_CUSTOM_PREFIX.length());
+            label = attribute.getMetaData().getValue(TaskAttribute.META_LABEL);
+            type = attribute.getMetaData().getValue(IJiraConstants.META_TYPE);
+            values = attribute.getValues();
+            readOnly = attribute.getMetaData().isReadOnly();
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public boolean isReadOnly () {
+            return readOnly;
+        }
+
+        public List<String> getValues() {
+            return values;
+        }
+
+        public void setValues (List<String> values) {
+            this.values = values;
         }
     }
 }

@@ -50,6 +50,13 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ151584() throws Exception {
+        // IZ#151584:
+        performTest("iz151584.cpp", 2, 10, "iz151584.cpp", 2, 5);
+        performTest("iz151584.cpp", 4, 15, "iz151584.cpp", 4, 9);
+        performTest("iz151584.cpp", 6, 20, "iz151584.cpp", 6, 13);
+    }
+
     public void testIZ162280() throws Exception {
         // IZ#162280: Inaccuracy tests: regression in Boost and Vlc
         performTest("iz162280.cpp", 33, 20, "iz162280.cpp", 30, 9);

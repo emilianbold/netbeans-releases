@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.TokenBasedTokenStream;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  *
@@ -133,8 +134,8 @@ public class APTPredefinedMacroMap implements APTMacroMap {
             this.macro =  macro;           
         }
 
-        public APTFile getFile() {
-            return null;
+        public CharSequence getFile() {
+            return CharSequenceKey.empty();
         }
 
         public Kind getKind() {
