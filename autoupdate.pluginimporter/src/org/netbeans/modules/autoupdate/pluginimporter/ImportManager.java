@@ -107,8 +107,7 @@ public class ImportManager extends java.awt.Panel {
                 return o1.getDisplayName ().compareTo (o2.getDisplayName ());
             }
         });
-        checkedToInstall = new ArrayList<Boolean> (importer.getPluginsAvailableToInstall ().size ());
-        checkedToInstall.addAll(Collections.nCopies (importer.getPluginsAvailableToInstall ().size (), Boolean.TRUE));
+        checkedToInstall = new ArrayList<Boolean> (Collections.nCopies (importer.getPluginsAvailableToInstall ().size (), Boolean.TRUE));
 
         toImport = new ArrayList<UpdateElement> (importer.getPluginsToImport ());
         Collections.sort (toImport, new Comparator<UpdateElement> () {
@@ -116,8 +115,7 @@ public class ImportManager extends java.awt.Panel {
                 return o1.getDisplayName ().compareTo (o2.getDisplayName ());
             }
         });
-        checkedToImport = new ArrayList<Boolean> (importer.getPluginsToImport ().size ());
-        checkedToInstall.addAll(Collections.nCopies (importer.getPluginsToImport ().size (), Boolean.FALSE));
+        checkedToImport = new ArrayList<Boolean> (Collections.nCopies (importer.getPluginsToImport ().size (), Boolean.FALSE));
 
         initComponents();
 
@@ -456,7 +454,7 @@ public class ImportManager extends java.awt.Panel {
         lToImport.setEnabled (importer.getPluginsToImport ().size () > 0);
         tToImport.setEnabled (importer.getPluginsToImport ().size () > 0);
 
-        lToImport.setEnabled (importer.getPluginsAvailableToInstall ().size () > 0);
+        lToInstall.setEnabled (importer.getPluginsAvailableToInstall ().size () > 0);
         tToInstall.setEnabled (importer.getPluginsAvailableToInstall ().size () > 0);
 
         TableColumn activeColumn = tToImport.getColumnModel ().getColumn (0);
