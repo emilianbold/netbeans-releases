@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,47 +37,29 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ruby.rhtml;
+package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import org.netbeans.modules.csl.api.DeclarationFinder;
-import org.netbeans.modules.ruby.RubyDeclarationFinder;
-
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 
 /**
- *
- * @author Tor Norbye
+ * pair to represent preprocessor states information
+ * @author Vladimir Voskresensky
  */
-public class RhtmlDeclarationFinderTest extends RhtmlTestBase {
+public final class PreprocessorStatePair {
+
+    public final APTPreprocHandler.State state;
+    public final FilePreprocessorConditionState pcState;
+
+    public PreprocessorStatePair(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState) {
+        super();
+        this.state = ppState;
+        this.pcState = pcState;
+    }
 
     @Override
-    protected DeclarationFinder getFinder() {
-        return new RubyDeclarationFinder();
+    public String toString() {
+        return "(" + pcState + "\n" + state + ')';
     }
-
-    public RhtmlDeclarationFinderTest(String testName) {
-        super(testName);
-    }
-
-    public void testDeclaration1() throws Exception {
-        checkDeclaration("testfiles/app/views/users/show.erb", "%= link_to 'Overview',  :cont^roller =>", "overview_controller.rb", 0);
-    }
-
-    public void testDeclaration2() throws Exception {
-        checkDeclaration("testfiles/app/views/users/show.erb", "<li><%= link_to 'Account', :controller => 'users', :ac^tion => 'show',", "users_controller.rb", 0);
-    }
-
-    public void testDeclaration3() throws Exception {
-        checkDeclaration("testfiles/app/views/users/show.erb", "<%=render :par^tial => \"list\" -%>", "_list.erb", 0);
-    }
-
-    public void testDeclaration4() throws Exception {
-        checkDeclaration("testfiles/app/views/users/show.erb", "<%=render :par^tial=>\"list\" -%>", "_list.erb", 0);
-    }
-
 }
