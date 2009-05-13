@@ -251,6 +251,7 @@ public final class SourceCache {
                             List<Embedding> oldEmbeddings = embeddingProviderToEmbedings.get (embeddingProvider);
                             updateEmbeddings (_embeddings, oldEmbeddings, false, null);
                             embeddingProviderToEmbedings.put (embeddingProvider, _embeddings);
+                            upToDateEmbeddingProviders.add (embeddingProvider);
                             this.embeddings.addAll (_embeddings);
                         }
                     }

@@ -43,12 +43,14 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.perfan.spi.datafilter.CollectedObjectsFilter;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
@@ -61,7 +63,7 @@ final class Erprint {
     private static final Pattern sortPattern = Pattern.compile(".* \\( (.*) \\)"); // NOI18N
     private static final Pattern choicePattern = Pattern.compile("^[ \t]+([0-9]+)\\) .* \\((.*)\\)"); // NOI18N
     private static final String choiceMarker = "Available name list:"; // NOI18N
-    private final Logger log = DLightLogger.getLogger(ErprintSession.class);
+    private final Logger log = DLightLogger.getLogger(Erprint.class);
     private final AtomicInteger locks = new AtomicInteger();
     private final NativeProcess process;
     private final InputStream out;
@@ -207,8 +209,45 @@ final class Erprint {
 
     ThreadsStatistic getThreadsStatistics() throws IOException {
         exec("threads"); // NOI18N
-        String[] toParse = exec("thread_list");//NOI18N
+        String[] toParse = exec("thread_list"); // NOI18N
         return new ThreadsStatistic(toParse);
+    }
+
+    void selectObjects(CollectedObjectsFilter collectedObjectsFilter) throws IOException {
+        if (collectedObjectsFilter == null) {
+            return;
+        }
+
+        Pattern objs_pattern = Pattern.compile(".* <(.*)>.*"); // NOI18N
+        StringBuilder object_select = new StringBuilder();
+
+        synchronized (this) {
+            String[] objects = exec("object_list"); // NOI18N
+
+            Collection<String> selectedObjects = collectedObjectsFilter.selectedObjects();
+            Collection<String> hiddenObjects = collectedObjectsFilter.hiddenObjects();
+
+            hiddenObjects.add("libcollector.so"); // NOI18N
+            hiddenObjects.add("er_heap.so"); // NOI18N
+            hiddenObjects.add("er_sync.so"); // NOI18N
+            hiddenObjects.add("Unknown"); // NOI18N
+
+            for (String o : objects) {
+                Matcher m = objs_pattern.matcher(o);
+                if (m.matches()) {
+                    String object = m.group(1);
+                    if (selectedObjects.contains(object) ||
+                            !hiddenObjects.contains(object)) {
+                        object_select.append(object).append(","); // NOI18N
+                    }
+                }
+            }
+
+
+            if (object_select.length() != 0) {
+                exec("object_select " + object_select.toString()); // NOI18N
+            }
+        }
     }
 
     LeaksStatistics getExperimentLeaks() throws IOException {

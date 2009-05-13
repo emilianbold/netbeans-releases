@@ -107,7 +107,6 @@ public class ImportManager extends java.awt.Panel {
                 return o1.getDisplayName ().compareTo (o2.getDisplayName ());
             }
         });
-        checkedToInstall = new ArrayList<Boolean> (importer.getPluginsAvailableToInstall ().size ());
         checkedToInstall = new ArrayList<Boolean> (Collections.nCopies (importer.getPluginsAvailableToInstall ().size (), Boolean.TRUE));
 
         toImport = new ArrayList<UpdateElement> (importer.getPluginsToImport ());
@@ -116,13 +115,12 @@ public class ImportManager extends java.awt.Panel {
                 return o1.getDisplayName ().compareTo (o2.getDisplayName ());
             }
         });
-        checkedToImport = new ArrayList<Boolean> (importer.getPluginsToImport ().size ());
         checkedToImport = new ArrayList<Boolean> (Collections.nCopies (importer.getPluginsToImport ().size (), Boolean.FALSE));
 
         initComponents();
 
-        tpBroken.setEnabled (false);
-        lBroken.setEnabled (importer.getBrokenPlugins ().isEmpty ());
+        tpBroken.setEnabled (!importer.getBrokenPlugins ().isEmpty ());
+        lBroken.setEnabled (!importer.getBrokenPlugins ().isEmpty ());
         if (! importer.getBrokenPlugins ().isEmpty ()) {
             tpBroken.setText (importer.getBrokenPlugins ().toString ());
         }
@@ -371,6 +369,8 @@ public class ImportManager extends java.awt.Panel {
         jScrollPane4 = new javax.swing.JScrollPane();
         tpBroken = new javax.swing.JTextPane();
         lDesc = new javax.swing.JLabel();
+        jSeparator1 = new javax.swing.JSeparator();
+        jSeparator2 = new javax.swing.JSeparator();
 
         jScrollPane3.setViewportView(jTextPane1);
 
@@ -407,14 +407,24 @@ public class ImportManager extends java.awt.Panel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 671, Short.MAX_VALUE)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 671, Short.MAX_VALUE)
-                    .add(lToInstall)
-                    .add(lDesc)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 671, Short.MAX_VALUE)
-                    .add(lToImport, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(lBroken, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 565, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                    .add(layout.createSequentialGroup()
+                        .add(jScrollPane4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .add(layout.createSequentialGroup()
+                        .add(lToImport, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, lToInstall)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, lDesc)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE))
+                        .addContainerGap())
+                    .add(layout.createSequentialGroup()
+                        .add(lBroken, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 565, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(19, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -423,15 +433,19 @@ public class ImportManager extends java.awt.Panel {
                 .add(7, 7, 7)
                 .add(lToInstall)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(lToImport)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 117, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 182, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(lBroken)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 43, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jScrollPane4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 58, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -442,6 +456,8 @@ public class ImportManager extends java.awt.Panel {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JTextPane jTextPane1;
     private javax.swing.JLabel lBroken;
     private javax.swing.JLabel lDesc;
@@ -456,7 +472,7 @@ public class ImportManager extends java.awt.Panel {
         lToImport.setEnabled (importer.getPluginsToImport ().size () > 0);
         tToImport.setEnabled (importer.getPluginsToImport ().size () > 0);
 
-        lToImport.setEnabled (importer.getPluginsAvailableToInstall ().size () > 0);
+        lToInstall.setEnabled (importer.getPluginsAvailableToInstall ().size () > 0);
         tToInstall.setEnabled (importer.getPluginsAvailableToInstall ().size () > 0);
 
         TableColumn activeColumn = tToImport.getColumnModel ().getColumn (0);
