@@ -49,6 +49,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -290,6 +291,14 @@ public class AttachmentsPanel extends JPanel {
         File file = File.createTempFile(prefix, suffix);
         attachment.getAttachementData(new FileOutputStream(file));
         return file;
+    }
+
+    public List<File> getNewAttachments() {
+        List<File> files = new ArrayList<File>(newAttachments.size());
+        for (JTextField field : newAttachments) {
+            files.add(new File(field.getText()));
+        }
+        return files;
     }
 
     class CreateNewAction extends AbstractAction {
