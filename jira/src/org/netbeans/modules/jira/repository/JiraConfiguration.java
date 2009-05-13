@@ -381,6 +381,7 @@ public class JiraConfiguration extends JiraClientCache {
                     loadedProjects.add(p.getId());
                 }
             }
+            cached.serverInfo = null; // download this from the repo at the first access
             cached.initialized = true;
         }
         return cached;
