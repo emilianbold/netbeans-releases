@@ -177,7 +177,7 @@ public class CallStackFrame {
      */
     public String getFullname() {
         // PathMap.getLocalPath throws NPE when argument is null
-        return fullname == null? null : debugger.getPathMap().getLocalPath(debugger.checkCygwinLibs(fullname));
+        return fullname == null? null : debugger.getPathMap().getLocalPath(debugger.checkCygwinLibs(fullname),true);
     }
 
     public String getOriginalFullName() {

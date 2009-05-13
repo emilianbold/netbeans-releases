@@ -69,10 +69,10 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         // determine the remote directory
         PathMap mapper = HostInfoProvider.getMapper(executionEnvironment);
         String localParent = this.localDir.getParentFile().getAbsolutePath();
-        String remoteParent = mapper.getRemotePath(localParent);
+        String remoteParent = mapper.getRemotePath(localParent,true);
         if (!HostInfoProvider.fileExists(executionEnvironment, remoteParent)) {
             if (mapper.checkRemotePath(localParent, true)) {
-                remoteParent = mapper.getRemotePath(localParent);
+                remoteParent = mapper.getRemotePath(localParent,true);
             } else {
                 return false;
             }
