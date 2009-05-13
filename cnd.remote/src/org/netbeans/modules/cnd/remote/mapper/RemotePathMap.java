@@ -45,6 +45,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.PathMap;
@@ -142,7 +143,7 @@ public class RemotePathMap extends PathMap {
     }
 
     // PathMap
-    public String getRemotePath(String lpath,boolean useDefault) {
+    public String getRemotePath(String lpath, boolean useDefault) {
         String ulpath = unifySeparators(lpath);
         for (Map.Entry<String, String> entry : map.entrySet()) {
             String key = unifySeparators(entry.getKey());
@@ -151,10 +152,10 @@ public class RemotePathMap extends PathMap {
                 return mpoint + lpath.substring(key.length()).replace('\\', '/');
             }
         }
-        return lpath;
+        return useDefault ? lpath : null;
     }
 
-    public String getLocalPath(String rpath,boolean useDefault) {
+    public String getLocalPath(String rpath, boolean useDefault) {
         String urpath = unifySeparators(rpath);
         for (Map.Entry<String, String> entry : map.entrySet()) {
             String value = unifySeparators(entry.getValue());
@@ -163,7 +164,7 @@ public class RemotePathMap extends PathMap {
                 return mpoint + rpath.substring(value.length());
             }
         }
-        return rpath;
+        return useDefault ? rpath : null;
     }
 
     /**
@@ -208,6 +209,15 @@ public class RemotePathMap extends PathMap {
         }
 
     }
+
+    public void addMapping(String localParent, String remoteParent) {
+        synchronized( map ) {
+            Map<String, String> clone = new LinkedHashMap<String, String>(map);
+            clone.put(localParent,remoteParent);
+            updatePathMap(clone);
+        }
+    }
+
 
     // Utility
     public void updatePathMap(Map<String, String> newPathMap) {
