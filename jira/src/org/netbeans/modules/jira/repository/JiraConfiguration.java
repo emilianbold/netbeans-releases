@@ -82,6 +82,8 @@ public class JiraConfiguration extends JiraClientCache {
 
     private static final Object USER_LOCK = new Object();
     private static final Object PROJECT_LOCK = new Object();
+    private static final Object SERVER_INFO_LOCK = new Object();
+
     private boolean hacked;
 
     public JiraConfiguration(JiraClient jiraClient, JiraRepository repository) {
@@ -213,13 +215,19 @@ public class JiraConfiguration extends JiraClientCache {
 
     @Override
     public ServerInfo getServerInfo() {
-        return data.serverInfo;
+        synchronized(SERVER_INFO_LOCK) {
+            return data.serverInfo;
+        }
     }
 
     @Override
     public ServerInfo getServerInfo(IProgressMonitor monitor) throws JiraException {
-        refreshServerInfo(monitor);
-        return data.serverInfo;
+        synchronized(SERVER_INFO_LOCK) {
+            if(data.serverInfo == null) {
+                refreshServerInfo(monitor);
+            }
+            return data.serverInfo;
+        }
     }
 
     @Override
@@ -368,6 +376,11 @@ public class JiraConfiguration extends JiraClientCache {
         String repoUrl = repository.getUrl();
         ConfigurationData cached = Jira.getInstance().getConfigurationCacheManager().getCachedData(repoUrl);
         if (cached != null) {
+            for(Project p :cached.projects) {
+                if(p.getComponents() != null) {
+                    loadedProjects.add(p.getId());
+                }
+            }
             cached.initialized = true;
         }
         return cached;
