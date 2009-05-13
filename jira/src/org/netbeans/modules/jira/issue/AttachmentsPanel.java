@@ -53,14 +53,17 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
@@ -68,12 +71,16 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
+import org.netbeans.modules.jira.Jira;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.cookies.OpenCookie;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -351,12 +358,25 @@ public class AttachmentsPanel extends JPanel {
                     try {
                         File file = saveToTempFile(attachment);
                         FileObject fob = FileUtil.toFileObject(file);
-                        DataObject dob = DataObject.find(fob);
-                        OpenCookie open = dob.getCookie(OpenCookie.class);
-                        if (open != null) {
-                            open.open();
+                        boolean isPatch = false;
+                        try {
+                            isPatch = BugtrackingUtil.isPatch(fob);
+                        } catch (IOException ioex) {
+                            Jira.LOG.log(Level.INFO, null, ioex);
+                        }
+                        if (isPatch && shouldApplyPatch(attachment.getFilename())) {
+                            File context = BugtrackingUtil.selectPatchContext();
+                            if (context != null) {
+                                BugtrackingUtil.applyPatch(file, context);
+                            }
                         } else {
-                            // PENDING
+                            DataObject dob = DataObject.find(fob);
+                            OpenCookie open = dob.getCookie(OpenCookie.class);
+                            if (open != null) {
+                                open.open();
+                            } else {
+                                // PENDING
+                            }
                         }
                     } catch (DataObjectNotFoundException dnfex) {
                         dnfex.printStackTrace();
@@ -367,6 +387,32 @@ public class AttachmentsPanel extends JPanel {
                     }
                 }
             });
+        }
+
+        private boolean shouldApplyPatch(String patchName) {
+            ResourceBundle bundle = NbBundle.getBundle(AttachmentsPanel.class);
+            JButton apply = new JButton(bundle.getString("AttachmentsPanel.DefaultAttachmentAction.apply")); // NOI18N
+            apply.getAccessibleContext().setAccessibleDescription(apply.getText());
+            JButton open = new JButton(bundle.getString("AttachmentsPanel.DefaultAttachmentAction.name")); // NOI18N
+            open.getAccessibleContext().setAccessibleDescription(open.getText());
+            String pattern = bundle.getString("AttachmentsPanel.DefaultAttachmentAction.patchRecognized"); // NOI18N
+            String message = MessageFormat.format(pattern, patchName);
+            JLabel label = new JLabel(message); // NOI18N
+            LayoutStyle lStyle = LayoutStyle.getSharedInstance();
+            label.setBorder(BorderFactory.createEmptyBorder(
+                lStyle.getContainerGap(label, SwingConstants.NORTH, null),
+                lStyle.getContainerGap(label, SwingConstants.WEST, null), 0,
+                lStyle.getContainerGap(label, SwingConstants.EAST, null)));
+            DialogDescriptor dd = new DialogDescriptor(
+                label,
+                bundle.getString("AttachmentsPanel.DefaultAttachmentAction.applyPatch"), // NOI18N
+                true,
+                new Object[]{apply, open},
+                apply,
+                DialogDescriptor.DEFAULT_ALIGN,
+                HelpCtx.DEFAULT_HELP,
+                null);
+            return DialogDisplayer.getDefault().notify(dd) == apply;
         }
     }
 
