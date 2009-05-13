@@ -148,7 +148,8 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             // registry
             if (location.exists()) {
                 version = JavaUtils.getVersion(location);
-            } else {
+            }            
+            if (version == null) {
                 for (Product jdk: registry.getProducts(JDK_PRODUCT_UID)) {
                     if ((jdk.getStatus() == Status.TO_BE_INSTALLED) &&
                             jdk.getInstallationLocation().equals(location)) {
