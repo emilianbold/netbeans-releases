@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.spi;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,7 +47,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 
 /**

@@ -37,12 +37,12 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.spi;
 
+import org.netbeans.modules.bugtracking.util.*;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.lang.String;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -55,9 +55,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.BugtrackingConfig;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.openide.util.Exceptions;
 
 /**

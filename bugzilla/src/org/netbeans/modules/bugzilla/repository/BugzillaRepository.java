@@ -68,7 +68,7 @@ import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.IssueCache;
+import org.netbeans.modules.bugtracking.spi.IssueCache;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
