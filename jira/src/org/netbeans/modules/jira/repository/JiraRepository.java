@@ -116,7 +116,8 @@ public class JiraRepository extends Repository {
         if(password == null) {
             password = "";                                                      // NOI18N
         }
-        setTaskRepository(name, url, user, password, httpUser, httpPassword);
+        taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
+        Jira.getInstance().addRepository(this);
     }
 
     public Query createQuery() {
@@ -308,8 +309,8 @@ public class JiraRepository extends Repository {
 
     protected void setTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
-        Jira.getInstance().addRepository(this);
         resetRepository(); // only on url, user or passwd change        
+        Jira.getInstance().addRepository(this);
     }
 
     static TaskRepository createTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
