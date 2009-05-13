@@ -66,6 +66,7 @@ import org.netbeans.modules.dlight.collector.stdout.CLIOParser;
 import org.netbeans.modules.dlight.collector.stdout.impl.CLIODCConfigurationAccessor;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
@@ -347,6 +348,9 @@ public final class CLIODataCollector
 
     public Map<String, String> getExecutionEnv(DLightTarget target) {
         return envs;
+    }
+
+    public void dataFiltersChanged(List<DataFilter> newSet) {
     }
 
     private class CLIOInputProcessorFactory implements InputProcessorFactory {

@@ -74,7 +74,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         if (root != null) {
             return root;
         }
-        return "/home/" + executionEnvironment.getUser() + "/.netbeans/remote";
+        return "/home/" + executionEnvironment.getUser() + "/.netbeans/remote"; // NOI18N
     }
 
     public boolean synchronize() {

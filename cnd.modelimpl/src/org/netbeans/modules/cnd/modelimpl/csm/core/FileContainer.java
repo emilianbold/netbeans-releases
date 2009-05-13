@@ -76,7 +76,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 /**
  * Storage for files and states. Class was extracted from ProjectBase.
@@ -300,7 +300,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 
     public static CharSequence getFileKey(File file, boolean sharedText) {
         if (CndUtils.isDebugMode()) {
-            File normFile = FileUtil.normalizeFile(file);
+            File normFile = CndFileUtils.normalizeFile(file);
             CndUtils.assertTrueInConsole(file.equals(normFile), "Parameter file was not " + // NOI18N
                         "normalized. Was " + file + " instead of " + normFile); // NOI18N
         }

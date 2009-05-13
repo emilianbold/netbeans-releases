@@ -95,6 +95,7 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -223,7 +224,7 @@ public class ImportProject implements PropertyChangeListener {
 
     public Set<FileObject> create() throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
-        projectFolder = FileUtil.normalizeFile(projectFolder);
+        projectFolder = CndFileUtils.normalizeFile(projectFolder);
         MakeConfiguration extConf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE); // NOI18N
         String workingDirRel;
         if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
@@ -276,7 +277,7 @@ public class ImportProject implements PropertyChangeListener {
         // Add makefile and configure script to important files
         ArrayList<String> importantItems = new ArrayList<String>();
         if (makefilePath != null && makefilePath.length() > 0) {
-            makefileFile = FileUtil.normalizeFile(new File(makefilePath));
+            makefileFile = CndFileUtils.normalizeFile(new File(makefilePath));
             if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
                 makefilePath = IpeUtils.toAbsoluteOrRelativePath(projectFolder.getPath(), FilePathAdaptor.naturalize(makefilePath));
             } else if (PathPanel.getMode() == PathPanel.REL) {
@@ -288,7 +289,7 @@ public class ImportProject implements PropertyChangeListener {
             importantItems.add(makefilePath);
         }
         if (configurePath != null && configurePath.length() > 0) {
-            configureFile = FileUtil.normalizeFile(new File(configurePath));
+            configureFile = CndFileUtils.normalizeFile(new File(configurePath));
             if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
                 configurePath = IpeUtils.toAbsoluteOrRelativePath(projectFolder.getPath(), FilePathAdaptor.naturalize(configurePath));
             } else if (PathPanel.getMode() == PathPanel.REL) {
@@ -799,7 +800,7 @@ public class ImportProject implements PropertyChangeListener {
                 }
             }
         }
-        String path = FileUtil.normalizeFile(file).getAbsolutePath();
+        String path = CndFileUtils.normalizeFile(file).getAbsolutePath();
         return normalizedItems.get(path);
     }
 

@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -245,7 +246,7 @@ public class OutputWindowWriter extends Writer {
                 }
             }
             fileName = HostInfoProvider.getMapper(execEnv).getLocalPath(fileName,true);
-            File file = FileUtil.normalizeFile(new File(fileName));
+            File file = CndFileUtils.normalizeFile(new File(fileName));
             return FileUtil.toFileObject(file);
         }
 
@@ -273,11 +274,11 @@ public class OutputWindowWriter extends Writer {
                         if (cCompiler != null) {
                             String includePrefix = cCompiler.getIncludeFilePathPrefix();
                             File file = new File(includePrefix + absPath1);
-                            if (!file.exists() && absPath2 != null) {
+                            if (!CndFileUtils.exists(file) && absPath2 != null) {
                                 file = new File(includePrefix + absPath2);
                             }
-                            if (file.exists()) {
-                                FileObject fo = FileUtil.toFileObject( FileUtil.normalizeFile(file));
+                            if (CndFileUtils.exists(file)) {
+                                FileObject fo = FileUtil.toFileObject( CndFileUtils.normalizeFile(file));
                                 return fo;
                             }
                         }
@@ -339,7 +340,7 @@ public class OutputWindowWriter extends Writer {
                 try {                
                     String file = m.group( 1 );
                     Integer lineNumber = Integer.valueOf( m.group( 2 ));
-                    FileObject fo = FileUtil.toFileObject( FileUtil.normalizeFile( new File( FileUtil.toFile( relativeTo ), file )));
+                    FileObject fo = FileUtil.toFileObject( CndFileUtils.normalizeFile( new File( FileUtil.toFile( relativeTo ), file )));
                     
                     if( fo == null ) {
                         return false;

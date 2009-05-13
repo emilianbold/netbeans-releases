@@ -47,27 +47,24 @@
     <folder name="Windows2">
         <folder name="Components">
             <file name="DLightIndicatorsTopComponent.settings" url="DLightIndicatorsTopComponentSettings.xml"/>
-            <file name="DLightSessionsTopComponent.settings" url="DLightSessionsTopComponentSettings.xml"/>
-            <file name="DLightToolsTopComponent.settings" url="DLightToolsTopComponentSettings.xml"/>
+<!--            <file name="DLightSessionsTopComponent.settings" url="DLightSessionsTopComponentSettings.xml"/>
+            <file name="DLightToolsTopComponent.settings" url="DLightToolsTopComponentSettings.xml"/>-->
         </folder>
         <folder name="Modes">
-            <folder name="explorer">
+<!--            <folder name="explorer">
                 <file name="DLightToolsTopComponent.wstcref" url="DLightToolsTopComponentWstcref.xml">
                     <attr name="position" intvalue="3100"/>
                 </file>
-            </folder>
+            </folder>-->
             <folder name="navigator">
                 <file name="DLightIndicatorsTopComponent.wstcref" url="DLightIndicatorsTopComponentWstcref.xml">
                     <attr name="position" intvalue="300"/>
                 </file>
             </folder>
-            <folder name="rightSlidingSide">
+            <!--<folder name="rightSlidingSide">
                 <file name="DLightSessionsTopComponent.wstcref" url="DLightSessionsTopComponentWstcref.xml">
                     <attr name="position" intvalue="1500"/>
                 </file>
-            </folder>
-<!--            <folder name="explorer">
-
             </folder>-->
         </folder>
     </folder>

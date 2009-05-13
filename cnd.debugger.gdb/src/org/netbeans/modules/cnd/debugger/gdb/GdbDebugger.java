@@ -100,6 +100,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.settings.CppSettings;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -2157,7 +2158,7 @@ public class GdbDebugger implements PropertyChangeListener {
             }
             File file = new File(path);
             if (file.exists()) {
-                String mime_type = FileUtil.getMIMEType(FileUtil.toFileObject(FileUtil.normalizeFile(file)));
+                String mime_type = FileUtil.getMIMEType(FileUtil.toFileObject(CndFileUtils.normalizeFile(file)));
                 if (mime_type != null && mime_type.startsWith("application/x-exe")) { // NOI18N
                     return true;
                 }
