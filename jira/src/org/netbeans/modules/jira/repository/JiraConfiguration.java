@@ -368,6 +368,7 @@ public class JiraConfiguration extends JiraClientCache {
         String repoUrl = repository.getUrl();
         ConfigurationData cached = Jira.getInstance().getConfigurationCacheManager().getCachedData(repoUrl);
         if (cached != null) {
+            cached.serverInfo = null; // download this from the repo at the first access
             cached.initialized = true;
         }
         return cached;
