@@ -46,8 +46,10 @@ import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -81,7 +83,7 @@ public class KenaiConnection implements PropertyChangeListener {
     private HashMap<String, PacketListener> listeners = new HashMap<String, PacketListener>();
     private XMPPConnection connection;
     //Map <kenai project name, multi user chat>
-    private HashMap<String, MultiUserChat> chats = new HashMap<String, MultiUserChat>();
+    final private Map<String, MultiUserChat> chats = Collections.synchronizedMap(new HashMap<String, MultiUserChat>());
 
     //singleton instance
     private static KenaiConnection instance;
@@ -235,7 +237,10 @@ public class KenaiConnection implements PropertyChangeListener {
     }
 
     public Collection<MultiUserChat> getChats() {
-        return chats.values();
+        synchronized (chats) {
+            ArrayList<MultiUserChat> copy = new ArrayList<MultiUserChat>(chats.values());
+            return copy;
+        }
     }
 
     /**
