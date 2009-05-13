@@ -232,9 +232,12 @@ public class JiraConfiguration extends JiraClientCache {
         return user;
     }
 
+    /**
+     * This method should not EVER be called
+     */
     @Override
     public synchronized void refreshDetails(IProgressMonitor monitor) throws JiraException {
-        // ignore
+        assert false;
     }
 
     @Override

@@ -447,7 +447,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
         }
 
         private void fire() {
-            fireDisplayNameChange(getDisplayName() + "_", getDisplayName());
+            fireDisplayNameChange(getDisplayName() + "_", getDisplayName()); // NOI18N
         }
 
         @Override
