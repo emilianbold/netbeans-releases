@@ -47,6 +47,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -89,7 +90,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private NbJiraIssue issue;
     private CommentsPanel commentsPanel;
     private AttachmentsPanel attachmentsPanel;
-    private boolean submitting;
+    private boolean skipReload;
 
     public IssuePanel() {
         initComponents();
@@ -242,6 +243,9 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     private void reloadForm(boolean force) {
+        if (skipReload) {
+            return;
+        }
         ResourceBundle bundle = NbBundle.getBundle(IssuePanel.class);
         JiraConfiguration config = issue.getRepository().getConfiguration();
         String projectId = issue.getFieldValue(NbJiraIssue.IssueField.PROJECT);
@@ -292,6 +296,9 @@ public class IssuePanel extends javax.swing.JPanel {
         // Comments
         commentsPanel.setIssue(issue);
         BugtrackingUtil.keepFocusedComponentVisible(commentsPanel);
+        if (force) {
+            addCommentArea.setText(""); // NOI18N
+        }
 
         // Attachments
         attachmentsPanel.setIssue(issue);
@@ -404,9 +411,6 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     void reloadFormInAWT(final boolean force) {
-        if (submitting) {
-            return;
-        }
         if (EventQueue.isDispatchThread()) {
             reloadForm(force);
         } else {
@@ -600,6 +604,11 @@ public class IssuePanel extends javax.swing.JPanel {
         addCommentScrollPane.setViewportView(addCommentArea);
 
         submitButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitButton.text")); // NOI18N
+        submitButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                submitButtonActionPerformed(evt);
+            }
+        });
 
         cancelButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.cancelButton.text")); // NOI18N
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
@@ -930,6 +939,49 @@ public class IssuePanel extends javax.swing.JPanel {
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         reloadForm(true);
     }//GEN-LAST:event_cancelButtonActionPerformed
+
+    private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
+        String submitMessage;
+        boolean isNew = issue.getTaskData().isNew();
+        if (isNew) {
+            submitMessage = NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitNewMessage"); // NOI18N
+        } else {
+            String submitMessageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitMessage"); // NOI18N
+            submitMessage = MessageFormat.format(submitMessageFormat, issue.getKey());
+        }
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(submitMessage);
+        handle.start();
+        handle.switchToIndeterminate();
+        skipReload = true;
+        if (!isNew && !"".equals(addCommentArea.getText().trim())) { // NOI18N
+            issue.addComment(addCommentArea.getText());
+        }
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                boolean ret = false;
+                try {
+                    ret = issue.submitAndRefresh();
+                    for (File attachment : attachmentsPanel.getNewAttachments()) {
+                        if (attachment.exists()) {
+                            issue.addAttachment(attachment, null, null);
+                        } else {
+                            // PENDING notify user
+                        }
+                    }
+                } finally {
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            skipReload = false;
+                        }
+                    });
+                    handle.finish();
+                    if(ret) {
+                        reloadFormInAWT(true);
+                    }
+                }
+            }
+        });
+    }//GEN-LAST:event_submitButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private org.netbeans.modules.bugtracking.util.LinkButton acceptIssueButton;
