@@ -94,17 +94,20 @@ public class JiraConfiguration extends JiraClientCache {
 
     protected void initialize() throws JiraException {
         data = (ConfigurationData) getData();
-        if(data.initialized) {
-            if (!hacked) {
-                hackJiraCache();
+        synchronized (data) {
+            if (data.initialized) {
+                if (!hacked) {
+                    hackJiraCache();
+                }
+                return;
             }
-            return;
+            refreshData();
+            putToCache();
+            hackJiraCache();
         }
-        refreshData();
-        hackJiraCache();
     }
 
-    private synchronized void refreshData () throws JiraException {
+    private void refreshData () throws JiraException {
         NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
         
         data.projects = client.getProjects(nullProgressMonitor);
@@ -141,8 +144,6 @@ public class JiraConfiguration extends JiraClientCache {
         data.initialized = true;
         // XXX what else do we need?
         // XXX issue types by project
-
-        putToCache();
     }
 
     private void putToCache () {
