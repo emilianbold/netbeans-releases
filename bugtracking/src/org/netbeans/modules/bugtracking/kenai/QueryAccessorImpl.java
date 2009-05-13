@@ -105,7 +105,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
             } 
         }
         
-        List<QueryHandle> queries = getQueryHandles(repo, true);
+        List<QueryHandle> queries = getQueryHandles(repo, project, true);
 
         ProjectHandleListener pl;
         synchronized(projectListeners) {
@@ -123,7 +123,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         return Collections.unmodifiableList(queries);
     }
 
-    private List<QueryHandle> getQueryHandles(Repository repo, boolean newQueriesNeedRefresh) {
+    private List<QueryHandle> getQueryHandles(Repository repo, ProjectHandle project, boolean newQueriesNeedRefresh) {
         Query[] queries = repo.getQueries();
         if(queries == null || queries.length == 0) {
             // XXX is this possible - at least preset queries
@@ -132,10 +132,10 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
 
         Map<String, QueryHandle> m;
         synchronized(queryHandles) {
-            m = queryHandles.get(repo.getUrl());
+            m = queryHandles.get(project.getId());
             if(m == null) {
                 m = new HashMap<String, QueryHandle>();
-                queryHandles.put(repo.getUrl(), m);
+                queryHandles.put(project.getId(), m);
             } else {
                 // remove all which aren't in the returned query list
                 List<String> l = new ArrayList<String>();
@@ -371,7 +371,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
 
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
-                fireQueriesChanged(ph, getQueryHandles(repo, false));
+                fireQueriesChanged(ph, getQueryHandles(repo, ph, false));
             }
         }
     }
