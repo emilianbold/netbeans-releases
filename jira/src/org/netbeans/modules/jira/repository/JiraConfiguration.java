@@ -73,6 +73,7 @@ import org.netbeans.modules.jira.commands.JiraCommand;
  * @author Tomas Stupka, Jan Stola
  */
 // XXX rename - it actually the cache, not the configuration
+// XXX Project MUST be somehow refreshed when a list of components changes on a server
 public class JiraConfiguration extends JiraClientCache {
 
     private JiraClient client;
