@@ -255,6 +255,9 @@ public class CompilerSetManager {
                 for (String dir : Path.getPath()) {
                     dir = dir.toLowerCase().replace("\\", "/"); // NOI18N
                     if (dir.contains("cygwin")) { // NOI18N
+                        if (dir.endsWith("/")) { // NOI18N
+                            dir = dir.substring(0, dir.length() - 1);
+                        }
                         if (dir.toLowerCase().endsWith("/usr/bin")) { // NOI18N
                             cygwinBase = dir.substring(0, dir.length() - 8);
                             break;
