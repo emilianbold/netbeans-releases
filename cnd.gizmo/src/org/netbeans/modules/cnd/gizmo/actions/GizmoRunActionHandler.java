@@ -111,10 +111,16 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
             runDirectory = mapper.getRemotePath(runDirectory);
         }
 
+        File executable = new File(runDirectory, pae.getExecutable());
+
         targetConf.putInfo(ServiceInfoDataStorage.EXECUTION_ENV_KEY, ExecutionEnvironmentFactory.toUniqueID(execEnv));
         targetConf.putInfo(GizmoServiceInfo.PLATFORM, pae.getConfiguration().getPlatform().getName());
         targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_FOLDER, FileUtil.toFile(pae.getProject().getProjectDirectory()).getAbsolutePath());//NOI18N
-        targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, runDirectory + File.separator + pae.getExecutable());
+        targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executable.getAbsolutePath());
+
+        targetConf.putInfo("sunstudio.datafilter.collectedobjects", System.getProperty("sunstudio.datafilter.collectedobjects", "")); // NOI18N
+        targetConf.putInfo("sunstudio.hotspotfunctionsfilter", System.getProperty("sunstudio.hotspotfunctionsfilter", "")); //, "with-source-code-only")); // NOI18N
+
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         String binDir = compilerSet.getDirectory();
         String demangle_utility = SS_FAMILIY;
@@ -244,7 +250,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         int exitCode = -1;
 
         io.getOut().println();
-        
+
         if (status == null) {
             StatusDisplayer.getDefault().setStatusText(getMessage("Status.RunTerminated")); // NOI18N
             io.getErr().println(getMessage("Output.RunTerminated")); // NOI18N

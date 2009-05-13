@@ -58,7 +58,11 @@ import org.netbeans.modules.dlight.api.impl.DLightSessionContextAccessor;
 import org.netbeans.modules.dlight.api.impl.DLightTargetAccessor;
 import org.netbeans.modules.dlight.api.impl.DLightSessionInternalReference;
 import org.netbeans.modules.dlight.api.impl.DLightToolAccessor;
+import org.netbeans.modules.dlight.management.api.impl.DataFiltersManager;
+import org.netbeans.modules.dlight.management.api.impl.SessionDataFiltersSupport;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
 import org.netbeans.modules.dlight.spi.impl.IndicatorRepairActionProviderAccessor;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
@@ -91,6 +95,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private final DLightSessionContext sessionContext;
     private final String name;
     private boolean closeOnExit = false;
+    private final SessionDataFiltersSupport dataFiltersSupport;
 
     public static enum SessionState {
 
@@ -132,6 +137,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         this.name = name;
         sessionID = sessionCount++;
         sessionContext = DLightSessionContextAccessor.getDefault().newContext();
+        dataFiltersSupport = new SessionDataFiltersSupport();
     }
 
     public DLightSessionContext getSessionContext() {
@@ -340,6 +346,10 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         DLightExecutorService.submit(sessionRunnable, "DLight session"); // NOI18N
     }
 
+    void addDataFilterListener(DataFilterListener listener) {
+        dataFiltersSupport.addDataFilterListener(listener);
+    }
+
     private boolean prepareContext(ExecutionContext context) {
         final DLightTarget target = context.getTarget();
 
@@ -379,7 +389,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             collectors.clear();
         }
 
-        Collection<IndicatorDataProvider> idproviders = new ArrayList();
+        Collection<IndicatorDataProvider> idproviders = new ArrayList<IndicatorDataProvider>();
         StringBuilder idpsNames = new StringBuilder();
         StringBuilder collectorNames = new StringBuilder();
 
@@ -440,23 +450,27 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             for (DataCollector toolCollector : collectors) {
                 collectorNames.append(toolCollector.getName() + ServiceInfoDataStorage.DELIMITER);
                 DataStorage storage = DataStorageManager.getInstance().getDataStorageFor(this, toolCollector);
+
                 if (toolCollector instanceof DLightTarget.ExecutionEnvVariablesProvider) {
                     context.addDLightTargetExecutionEnviromentProvider((DLightTarget.ExecutionEnvVariablesProvider) toolCollector);
                 }
+
                 if (storage != null) {
                     if (notAttachableDataCollector == null && !toolCollector.isAttachable()) {
                         notAttachableDataCollector = toolCollector;
                     }
 
-                    //init storage with the target values
+                    // init storage with the target values
                     DLightTarget.Info targetInfo = DLightTargetAccessor.getDefault().getDLightTargetInfo(target);
 
                     Map<String, String> info = targetInfo.getInfo();
+
                     for (String key : info.keySet()) {
                         storage.put(key, info.get(key));
                     }
 
                     toolCollector.init(storage, target);
+                    addDataFilterListener(toolCollector);
 
                     if (toolCollector instanceof IndicatorDataProvider) {
                         IndicatorDataProvider idp = (IndicatorDataProvider) toolCollector;
@@ -517,6 +531,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         if (storage != null) {
             for (IndicatorDataProvider idp : idproviders) {
                 idp.init(storage);
+                addDataFilterListener(idp);
             }
         }
 
@@ -525,6 +540,19 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         //or SystemTarget
         if (notAttachableDataCollector != null && target instanceof SubstitutableTarget) {
             ((SubstitutableTarget) target).substitute(notAttachableDataCollector.getCmd(), notAttachableDataCollector.getArgs());
+        }
+
+        // at the end, initialize data filters (_temporarily_ here, as info
+        // about filters is stored in target's info...
+
+        DLightTarget.Info targetInfo = DLightTargetAccessor.getDefault().getDLightTargetInfo(target);
+        Map<String, String> info = targetInfo.getInfo();
+
+        for (String key : info.keySet()) {
+            DataFilter filter = DataFiltersManager.getInstance().createFilter(key, info.get(key));
+            if (filter != null) {
+                dataFiltersSupport.addFilter(filter);
+            }
         }
 
         return true;
@@ -565,6 +593,8 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             sessionStateListeners.clear();
             sessionStateListeners = null;
         }
+
+        dataFiltersSupport.removeAllListeners();
 
         if (!EventQueue.isDispatchThread()) {
             DataStorageManager.getInstance().closeSession(this);
