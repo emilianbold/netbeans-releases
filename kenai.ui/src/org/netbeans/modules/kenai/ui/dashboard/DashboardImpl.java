@@ -71,6 +71,7 @@ import javax.swing.UIManager;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.LoginAction;
 import org.netbeans.modules.kenai.ui.LoginHandleImpl;
+import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
 import org.netbeans.modules.kenai.ui.treelist.TreeList;
 import org.netbeans.modules.kenai.ui.treelist.TreeListModel;
 import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
@@ -440,7 +441,7 @@ public final class DashboardImpl extends Dashboard {
         JPanel res = new JPanel( new GridBagLayout() );
         res.setOpaque(false);
 
-        JLabel lbl = new JLabel(NbBundle.getMessage(DashboardImpl.class, "LBL_No_Kenai_Project_Open")); //NOI18N
+        JLabel lbl = new TreeLabel(NbBundle.getMessage(DashboardImpl.class, "LBL_No_Kenai_Project_Open")); //NOI18N
         lbl.setForeground(ColorManager.getDefault().getDisabledColor());
         lbl.setHorizontalAlignment(JLabel.CENTER);
         LinkButton btnWhatIs = new LinkButton(NbBundle.getMessage(DashboardImpl.class, "LBL_WhatIsKenai"), createWhatIsKenaiAction() ); //NOI18N

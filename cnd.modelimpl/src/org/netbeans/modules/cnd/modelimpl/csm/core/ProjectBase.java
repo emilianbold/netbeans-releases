@@ -78,7 +78,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.*;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileContainer.FileEntry;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileContainer.StatePair;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
@@ -1045,7 +1044,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return createPreprocHandler(file, getFileContainer().getPreprocState(file));
     }
 
-    /*package*/ final APTPreprocHandler getPreprocHandler(File file, FileContainer.StatePair statePair) {
+    /*package*/ final APTPreprocHandler getPreprocHandler(File file, PreprocessorStatePair statePair) {
         return createPreprocHandler(file, statePair == null ? getFileContainer().getPreprocState(file) : statePair.state);
     }
 
@@ -1068,7 +1067,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return preprocHandler;
     }
 
-    /*package-local*/ final Collection<FileContainer.StatePair> getPreprocStatePairs(File file) {
+    /*package-local*/ final Collection<PreprocessorStatePair> getPreprocessorStatePairs(File file) {
         return getFileContainer().getStatePairs(file);
     }
     
@@ -1216,7 +1215,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     return csmFile;
                 }
                 synchronized (entry.getLock()) {
-                    Collection<FileContainer.StatePair> statesToKeep = new ArrayList<FileContainer.StatePair>();
+                    Collection<PreprocessorStatePair> statesToKeep = new ArrayList<PreprocessorStatePair>();
                     AtomicBoolean newStateFound = new AtomicBoolean();
                     // Phase 1: check preproc states of entry comparing to current state
                     ComparisonResult comparisonResult = fillStatesToKeepBasedOnPPState(newState, entry.getStatePairs(), statesToKeep, newStateFound);
@@ -1256,7 +1255,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     } else {  // comparisonResult == SAME
                         clean = false;
                         // Phase 2: check preproc conditional states of entry comparing to current conditional state
-                        comparisonResult = fillStatesToKeepBasedOnPCState(pcState, new ArrayList<FileContainer.StatePair>(statesToKeep), statesToKeep);
+                        comparisonResult = fillStatesToKeepBasedOnPCState(pcState, new ArrayList<PreprocessorStatePair>(statesToKeep), statesToKeep);
                         if (TRACE_FILE && FileImpl.traceFile(file)) {
                             traceIncludeStates("pc state comparison " + comparisonResult, csmFile, newState, pcState, clean, statesToParse, statesToKeep); // NOI18N
                         }
@@ -1278,7 +1277,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     // but now deny parsing, because base, but not this project, is disposing?!
                     if (!isDisposing() && !base.isDisposing()) {
                         if (clean) {
-                            for (FileContainer.StatePair pair : statesToKeep) {
+                            for (PreprocessorStatePair pair : statesToKeep) {
                                 // if pair has parsing in pair.pcState => it was not valid source file
                                 // skip it
                                 if (pair.pcState != FilePreprocessorConditionState.PARSING) {
@@ -1286,7 +1285,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                                 }
                             }
                         }
-                        entry.setStates(statesToKeep, new FileContainer.StatePair(newState, pcState));
+                        entry.setStates(statesToKeep, new PreprocessorStatePair(newState, pcState));
                         ParserQueue.instance().add(csmFile, statesToParse, ParserQueue.Position.HEAD, clean,
                                 clean ? ParserQueue.FileAction.MARK_REPARSE : ParserQueue.FileAction.MARK_MORE_PARSE);
                         if (TraceFlags.TRACE_PC_STATE || TraceFlags.TRACE_PC_STATE_COMPARISION) {
@@ -1330,10 +1329,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     private static void traceIncludeStates(CharSequence title,
             FileImpl file, APTPreprocHandler.State newState, FilePreprocessorConditionState pcState,
-            boolean clean, Collection<APTPreprocHandler.State> statesToParse, Collection<FileContainer.StatePair> statesToKeep) {
+            boolean clean, Collection<APTPreprocHandler.State> statesToParse, Collection<PreprocessorStatePair> statesToKeep) {
 
         StringBuilder sb = new StringBuilder();
-        for (FileContainer.StatePair pair : statesToKeep) {
+        for (PreprocessorStatePair pair : statesToKeep) {
             if (sb.length() > 0) {
                 sb.append(", "); //NOI18N
             }
@@ -1355,7 +1354,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             for (APTPreprocHandler.State state : statesToParse) {
                 if (!newState.equals(state)) {
                     FilePreprocessorConditionState currPcState = null;
-                    for (FileContainer.StatePair pair : statesToKeep) {
+                    for (PreprocessorStatePair pair : statesToKeep) {
                         if (newState.equals(pair.state)) {
                             currPcState = pair.pcState;
                             break;
@@ -1414,8 +1413,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      */
     private ComparisonResult fillStatesToKeepBasedOnPPState(
             APTPreprocHandler.State newState,
-            Collection<FileContainer.StatePair> oldStates,
-            Collection<FileContainer.StatePair> statesToKeep,
+            Collection<PreprocessorStatePair> oldStates,
+            Collection<PreprocessorStatePair> statesToKeep,
             AtomicBoolean newStateFound) {
 
         if (newState == null || !newState.isValid()) {
@@ -1426,7 +1425,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         newStateFound.set(false);
         ComparisonResult result = ComparisonResult.SAME;
 
-        for (FileContainer.StatePair pair : oldStates) {
+        for (PreprocessorStatePair pair : oldStates) {
             // newState might already be contained in oldStates
             // it should NOT be added to result
             if (newState.equals(pair.state)) {
@@ -1446,7 +1445,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
                 if (keep) {
                     if (!pair.state.isCleaned()) {
-                        pair = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(pair.state), pair.pcState);
+                        pair = new PreprocessorStatePair(APTHandlersSupport.createCleanPreprocState(pair.state), pair.pcState);
                     }
                     statesToKeep.add(pair);
                 } else {
@@ -1471,8 +1470,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      */
     private ComparisonResult fillStatesToKeepBasedOnPCState(
             FilePreprocessorConditionState pcState,
-            Collection<FileContainer.StatePair> oldStates,
-            Collection<FileContainer.StatePair> statesToKeep) {
+            Collection<PreprocessorStatePair> oldStates,
+            Collection<PreprocessorStatePair> statesToKeep) {
 
         boolean isSuperset = true; // true if this state is a superset of each old state
 
@@ -1484,12 +1483,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         statesToKeep.clear();
 
-        for (FileContainer.StatePair old : oldStates) {
+        for (PreprocessorStatePair old : oldStates) {
             if (old.pcState == FilePreprocessorConditionState.PARSING) {
                 isSuperset = false;
                 // not yet filled - file parsing is filling it right now => we don't know what it will be => keep it
                 if (!old.state.isCleaned()) {
-                    old = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(old.state), old.pcState);
+                    old = new PreprocessorStatePair(APTHandlersSupport.createCleanPreprocState(old.state), old.pcState);
                 }
                 statesToKeep.add(old);
             } else {
@@ -1501,7 +1500,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     // states are not comparable => not superset
                     isSuperset = false;
                     if (!old.state.isCleaned()) {
-                        old = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(old.state), old.pcState);
+                        old = new PreprocessorStatePair(APTHandlersSupport.createCleanPreprocState(old.state), old.pcState);
                     }
                     statesToKeep.add(old);
                 }
@@ -2012,7 +2011,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (false) {
             System.err.println("Checking states for project "+prj.getName());
             for(Map.Entry<CharSequence, FileEntry> entry : prj.getFileContainer().getFileStorage().entrySet()){
-                for(StatePair pair : entry.getValue().getStatePairs()){
+                for(PreprocessorStatePair pair : entry.getValue().getStatePairs()){
                     if (!pair.state.isValid()){
                         System.err.println("Invalid state for file "+entry.getKey());
                     }

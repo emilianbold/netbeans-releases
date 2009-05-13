@@ -798,6 +798,38 @@ public class Resolver3 implements Resolver {
                     }
                 }
             }
+
+            if (result == null && needNamespaces()) {
+                CsmObject obj = new Resolver3(this.file, this.origOffset, this).resolve(nameTokens[0], NAMESPACE);
+                if (obj instanceof CsmNamespace) {
+                    CsmNamespace ns = (CsmNamespace) obj;
+                    for (int i = 1; i < nameTokens.length; i++) {
+                        CsmNamespace newNs = null;
+                        CharSequence name = nameTokens[i];
+                        Collection<CsmNamespaceAlias> aliases = CsmUsingResolver.getDefault().findNamespaceAliases(ns);
+                        for (CsmNamespaceAlias alias : aliases) {
+                            if (alias.getAlias().toString().equals(name.toString())) {
+                                newNs = alias.getReferencedNamespace();
+                                break;
+                            }
+                        }
+                        if (newNs == null) {
+                            Collection<CsmNamespace> namespaces = CsmUsingResolver.getDefault().findVisibleNamespaces(ns, project);
+                            for (CsmNamespace namespace : namespaces) {
+                                if (namespace.getName().toString().equals(name.toString())) {
+                                    newNs = namespace;
+                                    break;
+                                }
+                            }
+                        }
+                        ns = newNs;
+                        if (ns == null) {
+                            break;
+                        }
+                    }
+                    result = ns;
+                }
+            }
         }
         return result;
     }
