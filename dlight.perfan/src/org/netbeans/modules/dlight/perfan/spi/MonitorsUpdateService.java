@@ -64,7 +64,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 public class MonitorsUpdateService {
 
-    private static Pattern lineStartsWithIntegerPattern = Pattern.compile("^ *([0-9]+).*$"); // NOI18N
+    private static Pattern leakInfoPattern = Pattern.compile("^ *([0-9]+) [^<]*$"); // NOI18N
     private static final Logger log = DLightLogger.getLogger(MonitorsUpdateService.class);
     private static final List<String> syncColNames = Collections.unmodifiableList(
             Arrays.asList(SunStudioDCConfiguration.c_ulockSummary.getColumnName(), SunStudioDCConfiguration.c_threadsCount.getColumnName()));//NOI18N
@@ -143,8 +143,8 @@ public class MonitorsUpdateService {
             if (erprintSession != null) {
                 throw new IllegalStateException("Updater can be started only once!"); // NOI18N
             }
-            
-            erprintSession = new ErprintSession(execEnv, sproHome, experimentDir);
+
+            erprintSession = new ErprintSession(execEnv, sproHome, experimentDir, ssdc);
 
             final Future notifyer = DLightExecutorService.scheduleAtFixedRate(new Runnable() {
 
@@ -190,33 +190,40 @@ public class MonitorsUpdateService {
                         }
 
                         if (isMemoryMonitor) {
-                            String[] result = erprintSession.getHotFunctions(metrics, 1, 5, !restarted);
+                            String[] result = erprintSession.getHotFunctions(metrics, Integer.MAX_VALUE, 5, !restarted);
                             restarted = true;
 
                             if (result == null || result.length == 0) {
                                 continue;
                             }
 
-                            Matcher m = lineStartsWithIntegerPattern.matcher(result[0]);
+                            Long leak_sum = new Long(0);
 
-                            if (!m.matches()) {
-                                continue;
-                            }
+                            for (String line : result) {
+                                Matcher m = leakInfoPattern.matcher(line);
 
-                            String value = m.group(1);
-
-                            if (value != null) {
-                                Long lvalue = Long.valueOf(0);
-
-                                try {
-                                    lvalue = Long.valueOf(value);
-                                } catch (NumberFormatException ex) {
+                                if (!m.matches()) {
+                                    continue;
                                 }
 
-                                newData.add(new DataRow(leaksColNames, Arrays.asList(lvalue)));
+                                String value = m.group(1);
+
+                                if (value != null) {
+                                    Long lvalue = Long.valueOf(0);
+
+                                    try {
+                                        lvalue = Long.valueOf(value);
+                                    } catch (NumberFormatException ex) {
+                                    }
+
+                                    leak_sum += lvalue.longValue();
+                                }
                             }
+
+                            newData.add(new DataRow(leaksColNames, Arrays.asList(leak_sum)));
                         }
                     } catch (Throwable ex) {
+                        ex.printStackTrace();
                         log.log(Level.FINEST, "Exception while updateIndicators in MonitorUpdateService: " + ex.toString());
                     } finally {
                         ssdc.updateIndicators(newData);
@@ -226,7 +233,7 @@ public class MonitorsUpdateService {
                 if (notifyer != null) {
                     notifyer.cancel(false);
                 }
-                
+
                 if (erprintSession != null) {
                     erprintSession.close();
                 }
