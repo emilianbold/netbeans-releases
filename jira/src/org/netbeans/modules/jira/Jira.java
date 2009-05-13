@@ -52,6 +52,7 @@ import org.eclipse.mylyn.internal.tasks.core.TaskTask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.libs.bugtracking.BugtrackingRuntime;
+import org.netbeans.modules.jira.query.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfigurationCacheManager;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.util.RequestProcessor;
@@ -115,13 +116,12 @@ public class Jira {
     }
 
     public void addRepository(JiraRepository repository) {
-        // XXX
-//        if(repository instanceof KenaiRepository) {
-//            // we don't store kenai repositories - XXX  shouldn't be even called
-//            return;
-//        }
-        JiraConfig.getInstance().putRepository(repository.getDisplayName(), repository);
         synchronized(REPOSITORIES_LOCK) {
+            if(!(repository instanceof KenaiRepository)) {
+                // we don't store kenai repositories - XXX  shouldn't be even called
+                JiraConfig.getInstance().putRepository(repository.getDisplayName(), repository);
+                getStoredRepositories().add(repository);
+            }
             getStoredRepositories().add(repository);
             BugtrackingRuntime
                     .getInstance()
