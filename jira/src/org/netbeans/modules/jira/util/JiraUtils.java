@@ -151,6 +151,18 @@ public class JiraUtils {
         return "reopen issue".equals(operationLabel.toLowerCase());    //NOI18N
     }
 
+    public static boolean isCloseOperation(String operationLabel) {
+        return "close issue".equals(operationLabel.toLowerCase());    //NOI18N
+    }
+
+    public static boolean isStartProgressOperation(String operationLabel) {
+        return "start progress".equals(operationLabel.toLowerCase());    //NOI18N
+    }
+
+    public static boolean isStopProgressOperation(String operationLabel) {
+        return "stop progress".equals(operationLabel.toLowerCase());    //NOI18N
+    }
+
     public static String getMappedValue(TaskAttribute a, String key) {
         TaskAttribute ma = a.getMappedAttribute(key);
         if (ma != null) {
