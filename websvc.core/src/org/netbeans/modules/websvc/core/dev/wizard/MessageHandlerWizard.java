@@ -183,11 +183,6 @@ public class MessageHandlerWizard implements WizardDescriptor.InstantiatingItera
                 return isValidInJavaProject(project, wiz);
             }
 
-            if (!Util.isJavaEE5orHigher(project) && ((WebServicesSupport.getWebServicesSupport(project.getProjectDirectory()) == null) && (WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory()) == null))) {
-                // check if jaxrpc plugin installed
-                wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(MessageHandlerWizard.class, "ERR_NoJaxrpcPluginFoundHandler")); // NOI18N
-                return false;
-            }
             //if platform is Tomcat, source level must be jdk 1.5 and jaxws library must be in classpath
             WSStackUtils wsStackUtils = new WSStackUtils(project);
             if (!Util.isJavaEE5orHigher(project) && projectType == ProjectInfo.WEB_PROJECT_TYPE && !wsStackUtils.isJsr109Supported() && !wsStackUtils.isJsr109OldSupported()) {
@@ -203,6 +198,12 @@ public class MessageHandlerWizard implements WizardDescriptor.InstantiatingItera
                 } else {
                     return true;
                 }
+            }
+            // else check the JAXRPC support installation
+            if (!Util.isJavaEE5orHigher(project) && ((WebServicesSupport.getWebServicesSupport(project.getProjectDirectory()) == null) && (WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory()) == null))) {
+                // check if jaxrpc plugin installed
+                wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(MessageHandlerWizard.class, "ERR_NoJaxrpcPluginFoundHandler")); // NOI18N
+                return false;
             }
             return true;
         }
