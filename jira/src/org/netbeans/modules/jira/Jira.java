@@ -52,6 +52,7 @@ import org.eclipse.mylyn.internal.tasks.core.TaskTask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.libs.bugtracking.BugtrackingRuntime;
+import org.netbeans.modules.jira.repository.JiraConfigurationCacheManager;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.util.RequestProcessor;
 
@@ -68,6 +69,7 @@ public class Jira {
     private JiraRepositoryConnector jrc;
     private static Jira instance;
     private Set<TaskRepository> refreshedRepos = new HashSet<TaskRepository>(1);
+    private JiraConfigurationCacheManager cacheManager;
 
     public static Logger LOG = Logger.getLogger("org.netbeans.modules.jira.Jira");
     private RequestProcessor rp;
@@ -179,4 +181,14 @@ public class Jira {
         JiraClientFactory.getDefault().repositoryRemoved(taskRepository);
     }
 
+    void shutdown () {
+        getConfigurationCacheManager().shutdown();
+    }
+
+    public JiraConfigurationCacheManager getConfigurationCacheManager () {
+        if (cacheManager == null) {
+            cacheManager = JiraConfigurationCacheManager.getInstance();
+        }
+        return cacheManager;
+    }
 }
