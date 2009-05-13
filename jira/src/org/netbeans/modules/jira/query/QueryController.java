@@ -394,10 +394,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.enableFields(bl);        
     }
 
-    protected void disableProduct(String product) { // XXX whatever field
-        
+    public void disableProject() {
+        panel.projectList.setEnabled(false);
+        panel.projectLabel.setEnabled(false);
     }
-
+    
     public void insertUpdate(DocumentEvent e) {
         fireDataChanged();
     }

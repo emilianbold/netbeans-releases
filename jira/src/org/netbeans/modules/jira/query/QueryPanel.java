@@ -965,6 +965,12 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         webButton.setEnabled(enable);
 
         refreshCheckBox.setEnabled(enable);
+
+        queryTextField.setEnabled(enable);
+        summaryCheckBox.setEnabled(enable);
+        descriptionCheckBox.setEnabled(enable);
+        commentsCheckBox.setEnabled(enable);
+        environmentCheckBox.setEnabled(enable);
     }
 
     void switchQueryFields(boolean showAdvanced) {
