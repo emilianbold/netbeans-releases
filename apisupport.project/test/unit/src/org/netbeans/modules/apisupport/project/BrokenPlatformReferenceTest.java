@@ -54,6 +54,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.SharedClassObject;
+import org.openide.util.test.MockLookup;
 
 /**
  * Check that missing or invalid *.properties files do not badly break projects.
@@ -76,6 +77,7 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
     protected @Override void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
+        MockLookup.setLayersAndInstances(getClass().getClassLoader());
         NbPlatform.reset();
         user = new File(getWorkDir(), "user");
         user.mkdirs();
