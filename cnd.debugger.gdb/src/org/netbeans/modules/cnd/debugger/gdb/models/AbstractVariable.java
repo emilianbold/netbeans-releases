@@ -53,7 +53,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
-import org.netbeans.modules.cnd.debugger.gdb.InvalidExpressionException;
 import org.netbeans.modules.cnd.debugger.gdb.Field;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.GdbErrorException;
@@ -1042,10 +1041,6 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             }
         }
 
-        public boolean isStatic() {
-            return false;
-        }
-
         @Override
         protected String getFullName(boolean showBaseClass) {
             String pname; // parent part of name
@@ -1098,11 +1093,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             return NbBundle.getMessage(AbstractVariable.class, "LBL_Error"); // NOI18N
         }
 
-        public boolean isStatic() {
-            return false;
-        }
-
-        public void setValue(String value) throws InvalidExpressionException {
+        public void setValue(String value) {
             throw new UnsupportedOperationException("Not supported"); // NOI18N
         }
 

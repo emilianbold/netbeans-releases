@@ -97,8 +97,8 @@ public class CallStackFrame {
     private final String address;
     private final String from;
     
-    private LocalVariable[] cachedLocalVariables = null;
-    private LocalVariable[] cachedAutos = null;
+    private Variable[] cachedLocalVariables = null;
+    private Variable[] cachedAutos = null;
 
     private Collection<GdbVariable> arguments = null;
     private StyledDocument document = null;
@@ -255,7 +255,7 @@ public class CallStackFrame {
      *
      * @return local variables
      */
-    public LocalVariable[] getLocalVariables() {
+    public Variable[] getLocalVariables() {
         assert !(Thread.currentThread().getName().equals("GdbReaderRP"));
         assert !(SwingUtilities.isEventDispatchThread()); 
 
@@ -274,7 +274,7 @@ public class CallStackFrame {
         }
     }
 
-    public LocalVariable[] getAutos() {
+    public Variable[] getAutos() {
         if (cachedAutos == null) {
             if (getDocument() == null) {
                 return null;

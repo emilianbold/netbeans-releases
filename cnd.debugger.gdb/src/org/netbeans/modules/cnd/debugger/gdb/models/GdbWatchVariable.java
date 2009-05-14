@@ -200,13 +200,4 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         }
         return expr;
     }
-    
-    @Override
-    public void setValue(String value) {
-        this.value = value;
-    }
-    
-    public void setValueAt(String value) {
-        super.setValue(value);
-    }
 }
