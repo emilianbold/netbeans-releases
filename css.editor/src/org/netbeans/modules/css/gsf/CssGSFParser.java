@@ -70,6 +70,7 @@ public class CssGSFParser extends Parser {
 
     private final CssParser PARSER = new CssParser();
     private CssParserResult lastResult = null;
+    private static final String PARSE_ERROR_KEY = "parse_error";
 
     //string which is substituted instead of any 
     //templating language in case of css embedding
@@ -92,7 +93,7 @@ public class CssGSFParser extends Parser {
         }
 
         List<Error> errors = new ArrayList<Error>();
-        errors.addAll(errors(parseExceptions, snapshot.getSource().getFileObject())); //parser errors
+        errors.addAll(errors(parseExceptions, snapshot)); //parser errors
         errors.addAll(CssAnalyser.checkForErrors(snapshot, root));
         
         this.lastResult = new CssParserResult(this, snapshot, root, errors);
@@ -118,10 +119,10 @@ public class CssGSFParser extends Parser {
         //no-op, no state changes supported
     }
 
-    public List<Error> errors(List<ParseException> parseExceptions, FileObject fo) {
+    public List<Error> errors(List<ParseException> parseExceptions, Snapshot snapshot) {
         List<Error> errors = new ArrayList<Error>(parseExceptions.size());
         for (ParseException pe : parseExceptions) {
-            Error e = createError(pe, fo);
+            Error e = createError(pe, snapshot);
             if (e != null) {
                 errors.add(e);
             }
@@ -133,11 +134,12 @@ public class CssGSFParser extends Parser {
         return CharSequenceUtilities.indexOf(text, GENERATED_CODE) != -1;
     }
 
-    private Error createError(ParseException pe, FileObject fo) {
+    private Error createError(ParseException pe, Snapshot snapshot) {
+        FileObject fo = snapshot.getSource().getFileObject();
         Token lastSuccessToken = pe.currentToken;
         if (lastSuccessToken == null) {
             //The pe was created in response to a TokenManagerError
-            return new DefaultError(pe.getMessage(), pe.getMessage(), null, fo,
+            return new DefaultError(PARSE_ERROR_KEY, pe.getMessage(), pe.getMessage(), fo,
                     0, 0, Severity.ERROR);
         }
         Token errorToken = lastSuccessToken.next;
@@ -145,8 +147,18 @@ public class CssGSFParser extends Parser {
 
         if (!(containsGeneratedCode(lastSuccessToken.image) || containsGeneratedCode(errorToken.image))) {
             String errorMessage = buildErrorMessage(pe);
-            return new DefaultError(errorMessage, errorMessage, null, fo,
-                    from, from, Severity.ERROR);
+            int documentStartOffset = snapshot.getOriginalOffset(from);
+            int documentEndOffset = snapshot.getOriginalOffset(from + errorToken.image.length());
+
+            if(documentStartOffset == -1 || documentEndOffset == -1) {
+                //error in virtual content, we cannot map back to the document :-(
+                return null;
+            }
+
+            assert documentStartOffset <= documentEndOffset;
+
+            return new DefaultError(PARSE_ERROR_KEY, errorMessage, errorMessage, fo,
+                    documentStartOffset, documentEndOffset, Severity.ERROR);
         }
         return null;
     }

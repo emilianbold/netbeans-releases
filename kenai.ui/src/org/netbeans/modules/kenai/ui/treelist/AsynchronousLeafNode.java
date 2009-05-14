@@ -83,10 +83,10 @@ public abstract class AsynchronousLeafNode<T> extends LeafNode {
         super( parent );
         panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
-        lblTitle = new JLabel(title);
+        lblTitle = new TreeLabel(title);
         lblLoading = createProgressLabel(NbBundle.getMessage(AsynchronousLeafNode.class, "LBL_LoadingInProgress")); //NOI18N
         lblLoading.setForeground(ColorManager.getDefault().getDisabledColor());
-        lblError = new JLabel(NbBundle.getMessage(AsynchronousLeafNode.class, "LBL_NotResponding")); //NOI18N
+        lblError = new TreeLabel(NbBundle.getMessage(AsynchronousLeafNode.class, "LBL_NotResponding")); //NOI18N
         lblError.setForeground(ColorManager.getDefault().getErrorColor());
         Image img = ImageUtilities.loadImage("org/netbeans/modules/kenai/ui/resources/error.png"); //NOI18N
         lblError.setIcon( new ImageIcon(img) );

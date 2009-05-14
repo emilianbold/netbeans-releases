@@ -66,6 +66,8 @@ public interface GlassfishModule {
     public static final String HTTPPORT_ATTR = "httpportnumber"; // NOI18N
     public static final String HOSTNAME_ATTR = "host"; // NOI18N
     public static final String JRUBY_HOME = "jruby.home"; // NOI18N
+    public static final String GEM_HOME = "GEM_HOME"; // NOI18N
+    public static final String GEM_PATH = "GEM_PATH"; // NOI18N
     public static final String DOMAINS_FOLDER_ATTR = "domainsfolder"; // NOI18N
     public static final String DOMAIN_NAME_ATTR = "domainname";
     public static final String JAVA_PLATFORM_ATTR = "java.platform";

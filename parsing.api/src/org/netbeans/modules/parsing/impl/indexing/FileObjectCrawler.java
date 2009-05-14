@@ -53,24 +53,21 @@ import org.openide.filesystems.FileObject;
  *
  * @author Tomas Zezula
  */
-public class FileObjectCrawler extends Crawler {
+public final class FileObjectCrawler extends Crawler {
     
     private final FileObject root;
     private final FileObject[] files;
-    private final boolean checkTimeStamps;
 
     public FileObjectCrawler(FileObject root, boolean checkTimeStamps, Set<String> mimeTypesToCheck) throws IOException {
         super (root.getURL(), checkTimeStamps, mimeTypesToCheck);
         this.root = root;
         this.files = null;
-        this.checkTimeStamps = checkTimeStamps;
     }
 
-    public FileObjectCrawler(FileObject root, FileObject[] files, boolean checkTimeStamps, Set<String> mimeTypesToCheck) throws IOException {
-        super (root.getURL(), checkTimeStamps, mimeTypesToCheck);
+    public FileObjectCrawler(FileObject root, FileObject[] files, Set<String> mimeTypesToCheck) throws IOException {
+        super (root.getURL(), false, mimeTypesToCheck);
         this.root = root;
         this.files = files;
-        this.checkTimeStamps = checkTimeStamps;
     }
 
     @Override
@@ -108,7 +105,8 @@ public class FileObjectCrawler extends Crawler {
                         indexable = new HashSet<Indexable>();
                         cache.put(mime, indexable);
                     }
-                    if (!checkTimeStamps || !getTimeStamps().isUpToDate(fo)) {
+
+                    if (!isUpToDate(fo)) {
                         indexable.add(SPIAccessor.getInstance().create(new FileObjectIndexable(root, fo)));
                     }
                 }

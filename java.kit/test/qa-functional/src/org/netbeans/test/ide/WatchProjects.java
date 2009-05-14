@@ -46,7 +46,6 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
@@ -56,9 +55,13 @@ import javax.swing.SwingUtilities;
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 import org.netbeans.api.java.source.ui.ScanDialog;
+import org.netbeans.api.project.Project;
 import org.netbeans.junit.Log;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
+import org.netbeans.api.project.ui.OpenProjects;
 
 /**
  *
@@ -68,33 +71,12 @@ public final class WatchProjects {
     private static Logger LOG = Logger.getLogger(WatchProjects.class.getName());
     
     
-    private static Method getProjects;
-    private static Method closeProjects;
-    private static Object projectManager;
-
     private WatchProjects() {
     }
     
     public static void initialize() throws Exception {
         Log.enableInstances(Logger.getLogger("TIMER"), "Project", Level.FINEST);
         
-        final ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
-        Assert.assertNotNull("Classloader must exists", loader);
-        LOG.fine("Classloader: " + loader);
-        Class pmClass = Class.forName(
-            "org.netbeans.api.project.ui.OpenProjects", false, loader); //NOI18N
-        LOG.fine("class: " + pmClass);
-        Method getDefault = pmClass.getMethod("getDefault");
-        LOG.fine("  getDefault: " + getDefault);
-        projectManager = getDefault.invoke(null);
-             
-        getProjects = pmClass.getMethod("getOpenProjects");
-        LOG.fine("getOpenProjects: " + getProjects);
-        
-        Class projectArray = Class.forName("[Lorg.netbeans.api.project.Project;");
-        
-        closeProjects = pmClass.getMethod("close", projectArray);
-        LOG.fine("getOpenProjects: " + getProjects);
     }
     
     private static void cleanWellKnownStaticFields() throws Exception {
@@ -175,10 +157,21 @@ public final class WatchProjects {
     public static void assertProjects() throws Exception {
         Object o;
 
-        closeProjects.invoke(
-            projectManager,
-            getProjects.invoke(projectManager)
+        OpenProjects.getDefault().close(
+            OpenProjects.getDefault().getOpenProjects()
         );
+        Project p = new Project() {
+            public FileObject getProjectDirectory() {
+                return FileUtil.getConfigRoot();
+            }
+
+            public Lookup getLookup() {
+                return Lookup.EMPTY;
+            }
+
+        };
+        OpenProjects.getDefault().open(new Project[] { p }, false);
+        OpenProjects.getDefault().setMainProject(p);
 
         cleanWellKnownStaticFields();
 
@@ -206,7 +199,7 @@ public final class WatchProjects {
         for (TopComponent c : TopComponent.getRegistry().getOpened()) {
             LOG.fine("Processing TC " + c.getDisplayName() + "class " + c.getClass().getName());
             if (c.getClass().getName().equals("org.netbeans.modules.navigator.NavigatorTC")) {
-                final TopComponent navigator = (TopComponent)c;
+                final TopComponent navigator = c;
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         navigator.close();

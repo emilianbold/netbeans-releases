@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.tools.impl;
 
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
 import java.io.IOException;
 import java.util.Arrays;
@@ -257,6 +258,9 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
             }
             procReaderTask = null;
         }
+    }
+
+    public void dataFiltersChanged(List<DataFilter> newSet) {
     }
 
     /**

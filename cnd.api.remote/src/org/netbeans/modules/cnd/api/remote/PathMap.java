@@ -44,11 +44,21 @@ package org.netbeans.modules.cnd.api.remote;
  * 
  * @author gordonp
  */
-public interface PathMap {
+public abstract class PathMap {
 
-    public boolean isRemote(String path, boolean fixMissingPath);
-    
-    public String getLocalPath(String rpath);
-    
-    public String getRemotePath(String lpath);
+    public abstract boolean checkRemotePath(String path, boolean fixMissingPath);
+
+    public String getLocalPath(String rpath) {
+        return getLocalPath(rpath, false);
+    }
+
+    //TODO: deprecate and remote
+    public abstract String getLocalPath(String rpath, boolean useDefault);
+
+    public String getRemotePath(String lpath) {
+        return getRemotePath(lpath, false);
+    }
+
+    //TODO: deprecate and remote
+    public abstract String getRemotePath(String lpath, boolean useDefault);
 }

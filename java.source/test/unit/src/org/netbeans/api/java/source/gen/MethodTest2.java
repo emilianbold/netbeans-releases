@@ -49,6 +49,7 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import java.io.IOException;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -56,13 +57,11 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtilsTestUtil2;
-import org.netbeans.api.java.source.WorkingCopy;
+
 import org.netbeans.modules.java.source.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
 import junit.textui.TestRunner;
-import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -99,10 +98,16 @@ public class MethodTest2 extends GeneratorTest {
         js.runModificationTask(new Task<WorkingCopy>() {
 
             public void run(WorkingCopy wc) {
-                
-                CreateMethod create = new CreateMethod();
+
+                try {
+                    wc.toPhase(JavaSource.Phase.PARSED);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);                   
+                }
+                CreateMethod create = new CreateMethod();                
                 SourceUtilsTestUtil2.run(wc, create);
                 MethodTree mt = create.makeMethod();
+                create.myRelease();
                 
                 MethodImplGenerator add = new MethodImplGenerator(mt);
                 SourceUtilsTestUtil2.run(wc, add);
@@ -114,14 +119,18 @@ public class MethodTest2 extends GeneratorTest {
                 SourceUtilsTestUtil2.run(wc, setType);
                 
                 SourcePositions pos[] = new SourcePositions[1];
-                BlockTree btree = (BlockTree) wc.getTreeUtilities().parseStatement("{System.out.println();}", pos);
+                BlockTree btree = (BlockTree) wc.getTreeUtilities().parseStatement("{System.out.println();}", pos);                
                 
                 SetBodyGenerator setBody = new SetBodyGenerator(setType.method, btree);
                 SourceUtilsTestUtil2.run(wc, setBody);
             }
         }).commit();
         
-        assertFiles("testMethodAdd.pass");
+        String res = TestUtilities.copyFileToString(testFile);
+        System.out.println("TestFile: " + res);
+        File file = getFile(getGoldenDir(), getGoldenPckg() + "testMethodAdd.pass");
+        assertEquals(TestUtilities.copyFileToString(file), res);
+
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -169,7 +178,7 @@ public class MethodTest2 extends GeneratorTest {
         }
     }    
     
-    private class SetBodyGenerator extends Transformer<Void, Object> {
+    private class SetBodyGenerator extends  Transformer<Void, Object> {
         
         public MethodTree method;
         BlockTree newType;
@@ -198,7 +207,7 @@ public class MethodTest2 extends GeneratorTest {
             return null;
         }
     }        
-    private class RenameImplGenerator extends Transformer<Void, Object> {
+    private class RenameImplGenerator extends  Transformer<Void, Object> {
         
         public MethodTree method;
         String newName;
@@ -226,7 +235,7 @@ public class MethodTest2 extends GeneratorTest {
             return null;
         }
     }    
-    private class MethodImplGenerator extends Transformer<Void, Object> {
+    private class MethodImplGenerator extends  Transformer<Void, Object> {
         
         public MethodTree method;
         public MethodImplGenerator(MethodTree m) {
@@ -251,7 +260,17 @@ public class MethodTest2 extends GeneratorTest {
         }
     }
 
-    private class CreateMethod extends Transformer<Void, Object> {
+    private class CreateMethod extends  Transformer<Void, Object> {
+
+        @Override
+        public void release() {
+//            super.release();
+        }
+        
+        public void myRelease() {
+            super.release();
+        }
+
         public MethodTree makeMethod() {
             Set<Modifier> emptyModifs = Collections.emptySet();
             List<TypeParameterTree> emptyTpt= Collections.emptyList();

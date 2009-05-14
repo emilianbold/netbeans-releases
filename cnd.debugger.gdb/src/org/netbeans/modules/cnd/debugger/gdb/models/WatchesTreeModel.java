@@ -128,7 +128,7 @@ public class WatchesTreeModel implements TreeModel, PropertyChangeListener {
             for (i = 0; i < k; i++) {
                 AbstractVariable gw = watchToVariable.get(fws[i]);
                 if (gw == null) {
-                    gw = new GdbWatchVariable(this, fws[i]);
+                    gw = new GdbWatchVariable(fws[i]);
                     watchToVariable.put(fws[i], gw);
                 }
                 gws[i] = gw;
@@ -139,7 +139,7 @@ public class WatchesTreeModel implements TreeModel, PropertyChangeListener {
             }
             return gws;
         } else if (parent instanceof AbstractVariable) {
-            return ((AbstractVariable) parent).getFields(from, to);
+            return ((AbstractVariable) parent).getFields();
         }
         throw new UnknownTypeException(parent);
     }
@@ -183,9 +183,9 @@ public class WatchesTreeModel implements TreeModel, PropertyChangeListener {
      */
     public int getChildrenCount(Object node) throws UnknownTypeException {
         if (node == ROOT) {
-            return DebuggerManager.getDebuggerManager().getWatches().length;
+            return Integer.MAX_VALUE;
         } else if (node instanceof AbstractVariable) {
-            return ((AbstractVariable) node).getFieldsCount();
+            return Integer.MAX_VALUE;
         }
         throw new UnknownTypeException(node);
     }
@@ -232,8 +232,8 @@ public class WatchesTreeModel implements TreeModel, PropertyChangeListener {
     
     private static class Listener extends DebuggerManagerAdapter implements PropertyChangeListener {
         
-        private WeakReference model;
-        private WeakReference debugger;
+        private final WeakReference<WatchesTreeModel> model;
+        private final WeakReference<GdbDebugger> debugger;
         
         private Listener(WatchesTreeModel tm, GdbDebugger debugger) {
             model = new WeakReference<WatchesTreeModel>(tm);
@@ -248,7 +248,7 @@ public class WatchesTreeModel implements TreeModel, PropertyChangeListener {
         }
         
         private WatchesTreeModel getModel() {
-            WatchesTreeModel m = (WatchesTreeModel) model.get();
+            WatchesTreeModel m = model.get();
             if (m == null) {
                 destroy();
             }
@@ -330,7 +330,7 @@ public class WatchesTreeModel implements TreeModel, PropertyChangeListener {
         
         private void destroy() {
             DebuggerManager.getDebuggerManager().removeDebuggerListener(DebuggerManager.PROP_WATCHES, this);
-            GdbDebugger d = (GdbDebugger) debugger.get();
+            GdbDebugger d = debugger.get();
             if (d != null) {
                 d.removePropertyChangeListener(this);
             }

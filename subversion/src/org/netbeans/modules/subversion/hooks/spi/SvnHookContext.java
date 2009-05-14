@@ -41,6 +41,7 @@ package org.netbeans.modules.subversion.hooks.spi;
 
 import java.io.File;
 import java.util.Date;
+import java.util.List;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
 
 /**
@@ -51,10 +52,10 @@ public class SvnHookContext {
 
     private final File[] files;
     private final String msg;
-    private final LogEntry[] logEntries;
+    private final List<LogEntry> logEntries;
     private String warning;
 
-    public SvnHookContext(File[] files, String msg, LogEntry[] logEntries) {
+    public SvnHookContext(File[] files, String msg, List<LogEntry> logEntries) {
         this.files = files;
         this.msg = msg;
         this.logEntries = logEntries;
@@ -68,12 +69,12 @@ public class SvnHookContext {
         return msg;
     }
 
-    public LogEntry[] getLogEntries() {
+    public List<LogEntry> getLogEntries() {
         return logEntries;
     }
 
     public String getWarning() {
-        return ""; 
+        return warning;                                                              // NOI18N
     }
 
     public void setWarning(String warning) {

@@ -47,13 +47,14 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.WindowManager;
 
 /**
  * CsmFile analogue of JavaSourceTaskFactoryManager
  * 
  * @author Sergey Grinev
  */
-public class CsmFileTaskFactoryManager {
+public class CsmFileTaskFactoryManager implements LookupListener {
     private static CsmFileTaskFactoryManager INSTANCE;
     //public static final boolean USE_MORE_SEMANTIC = Boolean.getBoolean("cnd.semantic.advanced"); // NOI18N
     
@@ -65,24 +66,31 @@ public class CsmFileTaskFactoryManager {
         }
     }
     
-    private Lookup.Result<CsmFileTaskFactory> factories;
-
+    private final Lookup.Result<CsmFileTaskFactory> factories;
+    private final RequestProcessor.Task updateTask;
     private CsmFileTaskFactoryManager() {
-        final RequestProcessor.Task updateTask = new RequestProcessor("CsmFileTaskFactoryManager Worker", 1).create(new Runnable() { //NOI18N
+        updateTask = new RequestProcessor("CsmFileTaskFactoryManager Worker", 1).create(new Runnable() { //NOI18N
             public void run() {
                 update();
             }
         });
         
         factories = Lookup.getDefault().lookupResult(CsmFileTaskFactory.class);
-        Logger.getLogger(CsmFileTaskFactoryManager.class.getName()).log(Level.FINE, "CsmFileTaskFactoryManager: " + factories.allInstances().size() + " factories were found.");
-        factories.addLookupListener(new LookupListener() {
-            public void resultChanged(LookupEvent ev) {
-                updateTask.schedule(0);
+        Logger logger = Logger.getLogger(CsmFileTaskFactoryManager.class.getName());
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("CsmFileTaskFactoryManager: " + factories.allInstances().size() + " factories were found.");
+        }
+        // postpone loading services (IZ164684)
+        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+            public void run() {
+                factories.addLookupListener(CsmFileTaskFactoryManager.this);
+                resultChanged(null);
             }
         });
-        
-        update();
+    }
+
+    public void resultChanged(LookupEvent ev) {
+        updateTask.schedule(0);
     }
     
     private void update() {

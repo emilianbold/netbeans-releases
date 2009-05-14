@@ -6,6 +6,7 @@ Searchable Keys:
   class-ig : content
   extends : ActiveRecord::Base
   fqn : StoreSingleFilter::Content
+  require : 044_store_single_filter
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -18,6 +19,7 @@ Searchable Keys:
   class-ig : contentversion
   extends : ActiveRecord::Base
   fqn : StoreSingleFilter::ContentVersion
+  require : 044_store_single_filter
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -30,6 +32,7 @@ Searchable Keys:
   class-ig : site
   extends : ActiveRecord::Base
   fqn : StoreSingleFilter::Site
+  require : 044_store_single_filter
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -45,6 +48,7 @@ Searchable Keys:
   fqn : StoreSingleFilter
   method : down|STATIC|
   method : up|STATIC|
+  require : 044_store_single_filter
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -56,6 +60,7 @@ Searchable Keys:
   class-ig : user
   extends : ActiveRecord::Base
   fqn : StoreSingleFilter::User
+  require : 044_store_single_filter
 
 Not Searchable Keys:
   attrs : |CLASS|

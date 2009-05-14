@@ -67,7 +67,7 @@ public class HtmlCompletionQuery {
 
     private static final String SCRIPT_TAG_NAME = "SCRIPT"; //NOI18N
     private static final String STYLE_TAG_NAME = "STYLE"; //NOI18N
-    private static final String XHtml_PUBLIC_ID = "-//W3C//DTD XHtml 1.0 Strict//EN";
+    
     private static boolean lowerCase;
     private static boolean isXHtml = false;
     private static HtmlCompletionQuery DEFAULT;
@@ -112,10 +112,8 @@ public class HtmlCompletionQuery {
         if (dtd == null) {
             return null; // We have no knowledge about the structure!
         }
-        if (XHtml_PUBLIC_ID.equalsIgnoreCase(dtd.getIdentifier())) {
-            //we are completing xhtml document
-            isXHtml = true;
-        }
+
+        isXHtml = org.netbeans.editor.ext.html.dtd.Utils.isXHTMLPublicId(dtd.getIdentifier());
 
         doc.readLock();
         try {

@@ -46,6 +46,8 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -54,21 +56,26 @@ import org.openide.filesystems.URLMapper;
  *
  * @author Tomas Zezula
  */
-public class TimeStamps {
+public final class TimeStamps {
 
-    private static String TIME_STAMPS_FILE = "timestamps.properties";           //NOI18N
+    private static final Logger LOG = Logger.getLogger(TimeStamps.class.getName());
+    private static final String TIME_STAMPS_FILE = "timestamps.properties"; //NOI18N
 
-    private Properties props = new Properties();
-    private Set<String> unseen = new HashSet<String>();
     private final URL root;
+
+    private final Properties props = new Properties();
+    private final Set<String> unseen;
+
     private FileObject rootFoCache;
     private boolean changed;
 
-    private TimeStamps (final URL root) throws IOException {
+    private TimeStamps(final URL root, boolean detectDeletedFiles) throws IOException {
         assert root != null;
         this.root = root;
-        load ();
+        this.unseen = detectDeletedFiles ? new HashSet<String>() : null;
+        load();
     }
+
     //where
     private void load () throws IOException {
         FileObject cacheDir = CacheFolder.getDataFolder(root);
@@ -81,12 +88,15 @@ public class TimeStamps {
                 } finally {
                     in.close();
                 }
-                for (Object k : props.keySet()) {
-                    unseen.add((String)k);
+
+                if (unseen != null) {
+                    for (Object k : props.keySet()) {
+                        unseen.add((String)k);
+                    }
                 }
             } catch (IOException e) {
                 //In case of IOException props are empty, everything is scanned
-                e.printStackTrace();
+                LOG.log(Level.FINE, null, e);
             }
         }
     }
@@ -99,37 +109,24 @@ public class TimeStamps {
             try {
                 final OutputStream out = f.getOutputStream();
                 try {
-                    props.keySet().removeAll(unseen);
-                    props.store(out, "");
+                    if (unseen != null) {
+                        props.keySet().removeAll(unseen);
+                    }
+                    
+                    props.store(out, ""); //NOI18N
                 } finally {
                     out.close();
                 }
             } catch (IOException e) {
                 //In case of IOException props are not stored, everything is scanned next time
-                e.printStackTrace();
+                LOG.log(Level.FINE, null, e);
             }
         }
         changed = false;
         return this.unseen;
     }
 
-//    private FileObject getCacheDir () throws IOException {
-//        return CacheFolder.getDataFolder(root);
-//    }
-//
-//    public boolean isUpToDate (final File f) {
-//        String relative = null;
-//        long fts = f.lastModified();
-//        String value = (String) props.setProperty(relative,Long.toString(fts));
-//        if (value == null) {
-//            return false;
-//        }
-//        unseen.remove(relative);
-//        long lts = Long.parseLong(value);
-//        return lts >= fts;
-//    }
-
-    public boolean isUpToDate (final FileObject f) {
+    public boolean checkAndStoreTimestamp(final FileObject f) {
         if (rootFoCache == null) {
             rootFoCache = URLMapper.findFileObject(root);
         }
@@ -139,18 +136,26 @@ public class TimeStamps {
         String value = (String) props.setProperty(fileId, Long.toString(fts));
         if (value == null) {
             changed|=true;
+            LOG.log(Level.FINE, "{0}: lastTimeStamp=null, fileTimeStamp={1} is out of date", new Object [] { f.getPath(), fts }); //NOI18N
             return false;
         }
-        unseen.remove(fileId);
+
+        if (unseen != null) {
+            unseen.remove(fileId);
+        }
+
         long lts = Long.parseLong(value);
-        boolean isUpToDate = lts >= fts;
+        boolean isUpToDate = lts == fts;
+        if (!isUpToDate) {
+            LOG.log(Level.FINE, "{0}: lastTimeStamp={1}, fileTimeStamp={2} is out of date", new Object [] { f.getPath(), lts, fts }); //NOI18N
+        }
+
         changed|=!isUpToDate;
         return isUpToDate;
     }    
 
-    public static TimeStamps forRoot (final URL root) throws IOException {
-        assert root != null;
-        return new TimeStamps(root);
+    public static TimeStamps forRoot(final URL root, boolean detectDeletedFiles) throws IOException {
+        return new TimeStamps(root, detectDeletedFiles);
     }
 
     public static boolean existForRoot (final URL root) throws IOException {

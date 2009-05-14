@@ -177,7 +177,6 @@ abstract class EntrySupport {
 
                 if (LOG_ENABLED) {
                     LOGGER.finer("  length     : " + (nodes == null ? "nodes is null" : nodes.length)); // NOI18N
-                    LOGGER.finer("  entries    : " + entries); // NOI18N
                     LOGGER.finer("  init now   : " + isInitialized()); // NOI18N
                 }
                 // if not initialized that means that after

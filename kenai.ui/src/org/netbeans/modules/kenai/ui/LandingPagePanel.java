@@ -67,12 +67,12 @@ public class LandingPagePanel extends javax.swing.JPanel {
         String repoMessage = "";
         if (repoPath != null || !"".equals(repoPath)) {
             String repoPattern = NbBundle.getMessage(LandingPagePanel.class,
-                    "LandingPagePanel.messageEditorPane.repoMessage");
+                    "LandingPagePanel.messageEditorPane.repoMessage"); // NOI18N
             repoMessage = MessageFormat.format(repoPattern, repoPath);
         }
 
         String messagePattern = NbBundle.getMessage(LandingPagePanel.class,
-                "LandingPagePanel.messageEditorPane.message");
+                "LandingPagePanel.messageEditorPane.message"); // NOI18N
         String message = MessageFormat.format(messagePattern, projectName, repoMessage);
         messageEditorPane.setText(message);
         

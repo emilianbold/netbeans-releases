@@ -46,6 +46,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
@@ -379,7 +380,7 @@ public final class Source {
     private final FileObject fileObject;
     private final Document document;
 
-    private final Set<SourceFlags> flags = EnumSet.noneOf(SourceFlags.class);
+    private final Set<SourceFlags> flags = Collections.synchronizedSet(EnumSet.noneOf(SourceFlags.class));
     
     private int taskCount;
     private volatile Parser cachedParser;
@@ -433,7 +434,7 @@ public final class Source {
         public void setFlags (final Source source, final Set<SourceFlags> flags)  {
             assert source != null;
             assert flags != null;
-            synchronized (TaskProcessor.INTERNAL_LOCK) {
+            synchronized (source.flags) {
                 source.flags.addAll(flags);
                 source.eventId++;
             }
@@ -443,18 +444,14 @@ public final class Source {
         public boolean testFlag (final Source source, final SourceFlags flag) {
             assert source != null;
             assert flag != null;
-            synchronized (TaskProcessor.INTERNAL_LOCK) {
-                return source.flags.contains(flag);
-            }
+            return source.flags.contains(flag);
         }
 
         @Override
         public boolean cleanFlag (final Source source, final SourceFlags flag) {
             assert source != null;
-            assert flag != null;
-            synchronized (TaskProcessor.INTERNAL_LOCK) {
-                return source.flags.remove(flag);
-            }
+            assert flag != null;            
+            return source.flags.remove(flag);            
         }
 
         @Override
@@ -462,7 +459,7 @@ public final class Source {
             assert source != null;
             assert test != null;
             assert clean != null;
-            synchronized (TaskProcessor.INTERNAL_LOCK) {
+            synchronized (source.flags) {
                 boolean res = source.flags.contains(test);
                 source.flags.removeAll(clean);
                 return res;
@@ -473,7 +470,8 @@ public final class Source {
         public void invalidate (final Source source, final boolean force) {
             assert source != null;
             synchronized (TaskProcessor.INTERNAL_LOCK) {
-                if (force || source.flags.remove(SourceFlags.INVALID)) {
+                final boolean invalid = source.flags.remove(SourceFlags.INVALID);
+                if (force || invalid) {
                     final SourceCache cache = getCache(source);
                     assert cache != null;
                     cache.invalidate();
@@ -489,7 +487,12 @@ public final class Source {
                     return !source.flags.contains(SourceFlags.INVALID);
                 }
                 else {
-                    if (id != source.eventId) {
+                    //The eventId and flags are bound
+                    long eventId;
+                    synchronized (source.flags) {
+                        eventId = source.eventId;
+                    }
+                    if (id != eventId) {
                         return false;
                     }
                     else {

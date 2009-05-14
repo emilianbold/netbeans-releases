@@ -55,6 +55,8 @@ import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
@@ -353,17 +355,10 @@ public class ProjectActionSupport {
 //                        final String projectName = info.getDisplayName();
 //                        runDirectory = MakeActionProvider.REMOTE_BASE_PATH + "/" + projectName;
                 } else {
-                    PathMap mapper = HostInfoProvider.getMapper(conf.getDevelopmentHost().getExecutionEnvironment());
-                    if (!mapper.isRemote(basedir, true)) {
-//                        mapper.showUI();
-//                        if (!mapper.isRemote(basedir)) {
-//                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-//                                    NbBundle.getMessage(DefaultProjectActionHandler.class, "Err_CannotRunLocalProjectRemotely")));
-                        return false;
-//                        }
-                    }
+                    ExecutionEnvironment env = conf.getDevelopmentHost().getExecutionEnvironment();
+                    RemoteSyncWorker syncWorker = ServerList.get(env).getSyncFactory().createNew(new File(basedir), env, null, null);
+                    return syncWorker.synchronize();
                 }
-            //CompilerSetManager rcsm = CompilerSetManager.getDefault(key);
             }
             return true;
         }
@@ -489,7 +484,7 @@ public class ProjectActionSupport {
                 if (conf instanceof MakeConfiguration && !((MakeConfiguration) conf).getDevelopmentHost().isLocalhost()) {
                     final ExecutionEnvironment execEnv = ((MakeConfiguration) conf).getDevelopmentHost().getExecutionEnvironment();
                     PathMap mapper = HostInfoProvider.getMapper(execEnv);
-                    executable = mapper.getRemotePath(executable);
+                    executable = mapper.getRemotePath(executable,true);
                     CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
                     if (cmd != null) {
                         ok = cmd.run(execEnv, "test -x " + executable + " -a -f " + executable, null) == 0; // NOI18N

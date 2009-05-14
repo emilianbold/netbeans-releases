@@ -51,6 +51,7 @@ import javax.swing.JPanel;
 import org.netbeans.modules.kenai.ui.treelist.LeafNode;
 import org.netbeans.modules.kenai.ui.spi.LoginHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
+import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
 import org.openide.util.NbBundle;
 
 /**
@@ -88,7 +89,7 @@ public class UserNode extends LeafNode {
 
             btnLogin = new LinkButton(NbBundle.getMessage(UserNode.class, "LBL_LoginToKenai"), //NOI18N
                     dashboard.createLoginAction());
-            lblUser = new JLabel();
+            lblUser = new TreeLabel();
             lblProgress = createProgressLabel(NbBundle.getMessage(UserNode.class, "LBL_OpeningProjects")); //NOI18N
             btnOpenProject = new LinkButton(NbBundle.getMessage(UserNode.class, "LBL_OpenProject"), ProjectAccessor.getDefault().getOpenNonMemberProjectAction()); //NOI18N
             btnRefresh = new LinkButton(NbBundle.getMessage(UserNode.class, "LBL_Refresh"), new ActionListener() { //NOI18N

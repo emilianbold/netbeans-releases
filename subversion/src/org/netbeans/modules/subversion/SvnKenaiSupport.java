@@ -71,4 +71,12 @@ public class SvnKenaiSupport {
         return kenaiSupport.getPasswordAuthentication(forceRelogin);
     }
 
+    /**
+     * Shows a login dialog
+     * @return true if successfully logged in
+     */
+    public boolean showLogin () {
+        return kenaiSupport.showLogin();
+}
+
 }

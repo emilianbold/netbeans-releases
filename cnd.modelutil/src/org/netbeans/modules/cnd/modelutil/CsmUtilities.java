@@ -88,6 +88,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.awt.StatusDisplayer;
@@ -403,8 +404,8 @@ public class CsmUtilities {
                         File file = FileUtil.toFile(fo);
                         // the file can null, for example, when we edit templates
                         if (file != null) {
-                            file = FileUtil.normalizeFile(file);
-                            CsmFile csmFile = CsmModelAccessor.getModel().findFile(file.getAbsolutePath());
+                            String normPath = CndFileUtils.normalizePath(file.getAbsolutePath());
+                            CsmFile csmFile = CsmModelAccessor.getModel().findFile(normPath);
                             if (csmFile != null) {
                                 files.add(csmFile);
                             }
@@ -470,7 +471,7 @@ public class CsmUtilities {
                         fo = FileUtil.toFileObject(file.getCanonicalFile());
                     }
                 } catch (IOException e) {
-                    fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(csmFile.getAbsolutePath().toString())));
+                    fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(new File(csmFile.getAbsolutePath().toString())));
                 }
             } catch (IllegalArgumentException ex) {
                 ex.printStackTrace();

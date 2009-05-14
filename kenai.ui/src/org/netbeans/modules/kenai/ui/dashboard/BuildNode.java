@@ -53,6 +53,7 @@ import org.netbeans.modules.kenai.ui.treelist.LeafNode;
 import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
 import org.netbeans.modules.kenai.ui.spi.BuildAccessor;
 import org.netbeans.modules.kenai.ui.spi.BuildHandle;
+import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
 
 /**
  * Node for build status.
@@ -80,10 +81,10 @@ public class BuildNode extends LeafNode implements PropertyChangeListener {
         if( null == panel ) {
             panel = new JPanel( new GridBagLayout() );
             panel.setOpaque(false);
-            lblName = new JLabel( build.getDisplayName() );
-            lblStatus = new JLabel();
-            lbl1 = new JLabel("("); //NOI18N
-            lbl2 = new JLabel(")"); //NOI18N
+            lblName = new TreeLabel( build.getDisplayName() );
+            lblStatus = new TreeLabel();
+            lbl1 = new TreeLabel("("); //NOI18N
+            lbl2 = new TreeLabel(")"); //NOI18N
 
             panel.add( lblName, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0) );
             panel.add( lbl1, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0, 0) );

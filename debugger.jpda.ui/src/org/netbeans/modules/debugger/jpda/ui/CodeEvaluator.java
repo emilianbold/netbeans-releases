@@ -72,6 +72,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -86,6 +87,7 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.Models;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -142,19 +144,9 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 0, 3);
         rightPanel.add(dropDownButton, gridBagConstraints);
-        final Document[] documentPtr = new Document[] { null };
-        ActionListener contextUpdated = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (codePane.getDocument() != documentPtr[0]) {
-                    codePane.getDocument().addDocumentListener(CodeEvaluator.this);
-                }
-            }
-        };
-        WatchPanel.setupContext(codePane, contextUpdated);
+        setupContext();
         editorScrollPane.setViewportView(codePane);
-        codePane.getDocument().addDocumentListener(this);
         codePane.addKeyListener(this);
-        documentPtr[0] = codePane.getDocument();
         dbgManagerListener = new DbgManagerListener (this);
         DebuggerManager.getDebuggerManager().addDebuggerListener(
                 DebuggerManager.PROP_CURRENT_SESSION,
@@ -215,6 +207,27 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         action.putValue(Action.SHORT_DESCRIPTION, tooltipText);
         button.setAction(action);
         return button;
+    }
+
+    private void setupContext() {
+        final String text = codePane.getText();
+        final Document[] documentPtr = new Document[] { null };
+        ActionListener contextUpdated = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (codePane.getDocument() != documentPtr[0]) {
+                    codePane.getDocument().addDocumentListener(CodeEvaluator.this);
+                    if (text != null) {
+                        codePane.setText(text);
+                    }
+                }
+            }
+        };
+        WatchPanel.setupContext(codePane, contextUpdated);
+        codePane.getDocument().addDocumentListener(this);
+        if (text != null) {
+            codePane.setText(text);
+        }
+        documentPtr[0] = codePane.getDocument();
     }
 
     private SwitcherTableItem[] createSwitcherItems() {
@@ -571,7 +584,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                         JPDADebugger debugger = debuggerRef.get();
                         if (debugger != null) {
                             computeEvaluationButtonState();
-                            WatchPanel.setupContext(codePane, null);
+                            setupContext();
                         }
                     }
                 }
@@ -592,7 +605,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                     public void run() {
                         JPDADebugger debugger = debuggerRef.get();
                         if (debugger != null && debugger.getState() == JPDADebugger.STATE_STOPPED) {
-                            WatchPanel.setupContext(codePane, null);
+                            setupContext();
                         }
                         computeEvaluationButtonState();
                     }

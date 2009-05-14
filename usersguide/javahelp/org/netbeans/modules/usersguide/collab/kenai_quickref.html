@@ -24,153 +24,64 @@
     <td> 
       <ol>
         <li>From the main menu, choose Team &gt; Kenai &gt; Login to Kenai.
-        <p>You need to be registered at kenai.com before you can login.</p></li>
+        <p>You need to be registered at Kenai.com before you can login.</p></li>
       </ol>
     </td>
   </tr>
+  <tr valign="top">
+    <td>Add a local project to Kenai</td>
+    <td>
+      <ol>
+        <li>Do either of the following:
+            <ul>
+                <li>Choose Team &gt; Kenai &gt; Share Local Project on Kenai from the main menu.</li>
+                <li>Right-click the project in the Projects window and choose Share on Kenai.</li>
+            </ul>
+        <li>Specify the details for the new Kenai project in the wizard. Click Finish.</li>
+      </ol>
+    </td>
+  </tr>
+
   <tr valign="top">
     <td>Create a new Kenai project</td>
     <td>
       <ol>
         <li>From the main menu, choose Team &gt; Kenai &gt; New Kenai Project.</li>
         <li>In the New Kenai Project wizard, specify the project name, title and license. Click Next.</li>
-        <li>Specify the source code repository and issue tracking details. Click Next.</li>
+        <li>Specify the source code repository and issue tracking details. Click Finish.</li>
       </ol>
     </td>
   </tr>
+  
   <tr valign="top">
     <td>Open a Kenai project</td>
     <td>
       <ol>
-        <li>From the main menu, choose Window &gt; Kenai.</li>
-        <li>Click Open Project in the Kenai dashboard.</li>
+        <li>From the main menu, choose Team &gt; Kenai &gt; Open Kenai Project.</li>
         <li>Type the search terms. Click Search.</li>
         <li>Select the project in the list. Click OK.</li>
       </ol>
     </td>
   </tr>
   <tr valign="top">
-    <td>View projects in the Kenai dashboard</td>
+    <td>View open projects in the Kenai dashboard</td>
     <td> 
         <ul>
             <li>Choose Window &gt; Kenai from the main menu to open the Kenai dashboard.</li>
-            <li>Click Login to Kenai at the top of the Kenai dashboard (if not already logged in).</li>
         </ul>
     </td>
   </tr>
-  <!--<tr valign="top">
-    <td>Check an XML document.</td>
-    <td> 
-      <ol>
-        <li>Right-click the document's node in the Projects or Files window. 
-        <li>Choose <a href="xml_check.html">Check XML</a>, Check DTD, or Check 
-          CSS, depending on the document you are checking. 
-      </ol>
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td>Validate an XML document.</td>
+  <tr valign="top">
+    <td>Retrieve sources of a project on Kenai</td>
     <td>
-      <ol>
-        <li>Right-click the document's node in the Projects or Files window.</li>
-        <li>Choose <a href="xml_validate.html">Validate XML</a>.</li>
-      </ol>
+        <ul>
+            <li>Open the Kenai project.</li>
+            <li>In the Kenai dashboard, expand the Sources node for the project.</li>
+            <li>Click the "get" link next to the repository.</li>
+            <li>Specify the location for the local repository. Click Get From Kenai.</li>
+        </ul>
     </td>
   </tr>
-  <tr valign="top"> 
-    <td>Create a new CSS. </td>
-    <td> 
-      <ol>
-        <li>In the main window, choose File &gt; New File. </li>
-        <li>Expand the XML node and select <a href="css/css_create.html">Cascading 
-          Style Sheet</a>. Click Next to proceed.</li>
-        <li>Enter a name and location for the CSS and click Finish. </li>
-      </ol>
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td>Generate a CSS.</td>
-    <td> 
-      <ol>
-        <li>Right-click an existing DTD node and choose <a href="css/css_create.html">Generate 
-          CSS</a>. </li>
-        <li>In the dialog box, type a new name for the CSS or click OK to use 
-          the default name.</li>
-      </ol>
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td>Create an empty DTD.</td>
-    <td> 
-      <ol>
-        <li>From the main window, choose File &gt; New File. </li>
-        <li>Expand the XML node and select DTD Entity. Click Next to proceed.</li>
-        <li>Type a name and package for the DTD.</li>
-        <li>Click Finish to create the new file. </li>
-      </ol>
-    </td>
-  <tr valign="top"> 
-    <td>Generate a DTD.</td>
-    <td> 
-      <ol>
-        <li>In the Files window, right-click an XML file's node and choose <a href="dtd/dtd_create.html">Generate 
-          DTD</a>. </li>
-        <li>Type a name for the new DTD and click OK. </li>
-      </ol>
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td>Generate a DOM Tree Scanner. </td>
-    <td> 
-      <ol>
-        <li>In the Files window, right-click a DTD node and choose <a href="dtd/dtd_generatedom.html">Generate 
-          DOM Tree Scanner</a>.</li>
-        <li>In the dialog box, supply a name for the DOM scanner file and click 
-          OK.</li>
-      </ol>
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td>Generate a SAX document handler.</td>
-    <td> 
-      <ol>
-        <li>Right-click a DTD node and choose <a href="sax/sax_generate.html">SAX 
-          Document Handler Wizard</a>. </li>
-        <li>Specify the versions of JAXP and the SAX parser you want to use. Click 
-          Next to proceed. </li>
-        <li>Customize your document handler interface on the Element Mappings 
-          page. Click Next to proceed.</li>
-        <li>Configure your data convertor interface on the Data Convertors page. 
-          Click Next to proceed.</li>
-        <li>Specify the desired names of the generated files and select the Save 
-          Customized Bindings checkbox if you want to save your customizations 
-          to the SAX code generation. </li>
-        <li>Click Finish.</li>
-      </ol>
-    </td>
-  </tr>
-  <tr valign="top"> 
-	  <td>Create an XML schema.</td>
-    <td> 
-      <ol>
-        <li>From the main window, choose File &gt; New File.</li>
-        <li>Expand the XML folder and select <a href="schema/schemas.html">XML 
-          Schema</a>.</li>
-        <li>Specify a name and location for the file and click Finish. </li>
-      </ol>
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td>Configure global XML settings. </td>
-    <td> 
-      <ol>
-        <li>From the main menu, choose Tools &gt; Options. 
-        <li>In the Options window, expand Editing&nbsp; &gt; XML, and select <a href="xml_settings.html">General 
-          Settings</a>. 
-        <li>Edit the desired properties in the Option window's right pane. 
-      </ol>
-    </td>
-  </tr>-->
 </table>
 
 <hr>

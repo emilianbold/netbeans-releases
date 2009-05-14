@@ -61,12 +61,12 @@ public class ScannerTestCase extends NbTestCase {
     }
 
     public void testCygwinLogs() throws Exception {
-        ToolchainDescriptor toolchain = ToolchainManager.getInstance().getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS);
+        ToolchainDescriptor toolchain = ToolchainManager.getImpl().getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS);
         doTest(getLogs(), toolchain.getScanner(), getRef());
     }
 
     public void testDJGPPLogs() throws Exception {
-        ToolchainDescriptor toolchain = ToolchainManager.getInstance().getToolchain("GNU", PlatformTypes.PLATFORM_WINDOWS);
+        ToolchainDescriptor toolchain = ToolchainManager.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_WINDOWS);
         doTest(getLogs(), toolchain.getScanner(), getRef());
     }
 

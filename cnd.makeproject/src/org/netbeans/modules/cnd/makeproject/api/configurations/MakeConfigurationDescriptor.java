@@ -144,7 +144,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     private void closed(Folder folder) {
         if (folder != null) {
             for (Folder f : folder.getAllFolders(false)) {
-                closed(f);
+                f.detachListener();
             }
             folder.detachListener();
         }

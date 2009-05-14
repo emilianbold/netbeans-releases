@@ -100,7 +100,11 @@ class ClickableIcon extends JLabel implements MouseListener {
     }
 
     void initializeState(Container container, int sx, int sy, int width, int height) {
-        Point point = container.getMousePosition(true);
+        Point point = null;
+        try { // workaround for issue #146185, getMousePosition() may throw NPE
+            point = container.getMousePosition(true);
+        } catch (NullPointerException e) {
+        }
         state = point != null && sx <= point.x && point.x < sx + width && sy <= point.y && point.y < sy + height
                 ? STATE_FOCUSED : STATE_NORMAL;
         setFocusedThread();
