@@ -238,7 +238,7 @@ public class SimplifiedJspServlet {
         }
 
         header = snapshot.create(getClassHeader(), "text/x-java");
-        implicitImports = snapshot.create(createImportStatements(localImports), "text/x-java");
+        implicitImports = snapshot.create(createImplicitImportStatements(localImports), "text/x-java");
         beanDeclarations = snapshot.create("\n" + createBeanVarDeclarations(), "text/x-java");
     }
 
@@ -280,38 +280,52 @@ public class SimplifiedJspServlet {
         }
     }
 
-    private List<String> processImportDirectives(){
+    private boolean consumeWS(TokenSequence tokenSequence){
+        if (tokenSequence.token().id() == JspTokenId.WHITESPACE){
+            return tokenSequence.moveNext();
+        }
+        
+        return true;
+    }
+
+    /**
+     * The information about imports obtained from the JSP Parser
+     * does not include data about offsets,
+     * therefore it is necessary to some manual parsing.
+     * 
+     * This method creates embeddings and stores them in the
+     * <code>localImports</code>
+     *
+     * additionaly it returns a list of imports found
+     */
+    private List<String> processImportDirectives() {
         List<String> imports = new ArrayList<String>();
-        try{
         TokenHierarchy tokenHierarchy = TokenHierarchy.create(charSequence, JspTokenId.language());//TokenHierarchy.get(doc);
         TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
         tokenSequence.moveStart();
 
-        while (tokenSequence.moveNext()){
-            if (tokenSequence.token().id() == JspTokenId.TAG
-                    && TokenUtilities.equals("page", tokenSequence.token().text())){ //NOI18N
+        while (tokenSequence.moveNext()) {
+            if (tokenSequence.token().id() == JspTokenId.TAG 
+                    && TokenUtilities.equals("page", tokenSequence.token().text())) { //NOI18N
 
-                tokenSequence.moveNext();
-
-
-            if (tokenSequence.token().id() == JspTokenId.WHITESPACE){
-
-                    tokenSequence.moveNext();
+                if (tokenSequence.moveNext() && consumeWS(tokenSequence)) {
 
                     if (tokenSequence.token().id() == JspTokenId.ATTRIBUTE
-                            && TokenUtilities.equals("import", tokenSequence.token().text())){ //NOI18N
+                            && TokenUtilities.equals("import", tokenSequence.token().text())) { //NOI18N
 
-                        tokenSequence.moveNext() ;
+                        if (tokenSequence.moveNext()
+                                && consumeWS(tokenSequence)
+                                && tokenSequence.token().id() == JspTokenId.SYMBOL
+                                && TokenUtilities.equals("=", tokenSequence.token().text())) {
 
-                        if (tokenSequence.token().id() == JspTokenId.SYMBOL
-                            && TokenUtilities.equals("=", tokenSequence.token().text())){
-
-                            tokenSequence.moveNext();
-
-                            if (tokenSequence.token().id() == JspTokenId.ATTR_VALUE){
+                            if (tokenSequence.moveNext() && consumeWS(tokenSequence)
+                                    && tokenSequence.token().id() == JspTokenId.ATTR_VALUE) {
+                                
                                 String val = tokenSequence.token().text().toString();
 
-                                if (val.length() > 2 && val.charAt(0) == '"' && val.charAt(val.length() - 1) == '"'){
+                                if (val.length() > 2 && val.charAt(0) == '"' 
+                                        && val.charAt(val.length() - 1) == '"') {
+                                    
                                     int startOffset = tokenSequence.offset() + 1;
                                     int len = val.length() - 2;
                                     String imprt = val.substring(1, len);
@@ -326,10 +340,6 @@ public class SimplifiedJspServlet {
                     }
                 }
             }
-        }
-
-        } catch (Throwable e){
-            e.printStackTrace();
         }
         return imports;
     }
@@ -397,6 +407,10 @@ public class SimplifiedJspServlet {
     }
 
     private String createBeanVarDeclarations() {
+        //TODO: the parser data contains no information about offsets and
+        //therefore it is not possible to create proper java embeddings
+        //inside bean declarations. We need a similar solution to what was
+        //done for imports, see issue #161246
         StringBuilder beanDeclarationsBuff = new StringBuilder();
 
         PageInfo pageInfo = getPageInfo();
@@ -497,7 +511,14 @@ public class SimplifiedJspServlet {
         return null;
     }
 
-    private String createImportStatements(List<String> localImports) {
+
+    /**
+     * Add extra imports according to information obtained from the JSP parser
+     *
+     * @param localImports imports already included in the Simplified Servlet
+     * by the processImportDirectives method
+     */
+    private String createImplicitImportStatements(List<String> localImports) {
         StringBuilder importsBuff = new StringBuilder();
         String[] imports = getImportsFromJspParser();
 
@@ -539,7 +560,7 @@ public class SimplifiedJspServlet {
         }
     }
 
-    public Embedding getVirtualClassBody() {
+    public Embedding getSimplifiedServlet() {
         assureProcessCalled();
 
         if (!processingSuccessful){
