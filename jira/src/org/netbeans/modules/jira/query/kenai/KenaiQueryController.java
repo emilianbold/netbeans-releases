@@ -66,7 +66,10 @@ public class KenaiQueryController extends QueryController
 
     @Override
     public FilterDefinition getFilterDefinition() {
-        return this.filter;
+        if(predefinedQuery) {
+            return this.filter;
+        }
+        return super.getFilterDefinition();
     }
 
     @Override
