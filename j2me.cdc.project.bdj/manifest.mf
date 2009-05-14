@@ -1,5 +1,4 @@
 Manifest-Version: 1.0
-AutoUpdate-Show-In-Client: false
 OpenIDE-Module: org.netbeans.modules.j2me.cdc.project.bdj
 OpenIDE-Module-Layer: org/netbeans/modules/j2me/cdc/project/bdj/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2me/cdc/project/bdj/Bundle.properties

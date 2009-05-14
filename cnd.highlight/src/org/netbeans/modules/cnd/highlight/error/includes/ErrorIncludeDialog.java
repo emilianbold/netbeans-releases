@@ -720,7 +720,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
     }
     
     private String getRightName(String fullName){
-        fullName = CndFileUtils.normalizePath(fullName);
+        fullName = CndFileUtils.normalizeAbsolutePath(fullName);
         fullName = fixFileName(fullName);
         return fullName;
     }

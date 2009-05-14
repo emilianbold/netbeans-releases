@@ -56,6 +56,7 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.Roster;
+import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.MessageTypeFilter;
@@ -153,24 +154,18 @@ public class KenaiConnection implements PropertyChangeListener {
         assert put == null;
     }
 
-    private XMPPException xmppEx;
-
     /**
      * 
      */
-    public synchronized void tryConnect() {
+    public synchronized void tryConnect()  {
         try {
             connect();
             initChats();
-            xmppEx = null;
             PresenceIndicator.getDefault().setStatus(Status.ONLINE);
+            isConnectionFailed = false;
         } catch (XMPPException ex) {
-            xmppEx = ex;
+            isConnectionFailed = true;
         }
-    }
-
-    public XMPPException getXMPPException() {
-        return xmppEx;
     }
 
     /**
@@ -276,6 +271,11 @@ public class KenaiConnection implements PropertyChangeListener {
         return xmppProcessor.post(run);
     }
 
+   private boolean isConnectionFailed;
+    public boolean isConnectionFailed() {
+        return isConnectionFailed;
+    }
+
     public void propertyChange(final PropertyChangeEvent e) {
         if (Kenai.PROP_LOGIN.equals(e.getPropertyName())) {
             if (e.getNewValue() != null) {
@@ -315,7 +315,6 @@ public class KenaiConnection implements PropertyChangeListener {
     private String USER;
     private String PASSWORD;
     
-    //TODO this should be removed when xmpp server starts working on kenai.com
     private static final String XMPP_SERVER = System.getProperty("kenai.com.url","https://kenai.com").substring(System.getProperty("kenai.com.url","https://kenai.com").lastIndexOf("/")+1);
     private static final String CHAT_ROOM = "@muc." + XMPP_SERVER; // NOI18N
 

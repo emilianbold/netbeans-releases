@@ -114,6 +114,11 @@ public interface SourceFileInfoProvider {
         return offset;
     }
 
+    @Override
+    public String toString() {
+        return fileName + ':' + lineNumber + ':' + column;
+    }
+
     static SourceFileInfo valueOf(String toParse) {
         if (toParse == null) {
             return null;

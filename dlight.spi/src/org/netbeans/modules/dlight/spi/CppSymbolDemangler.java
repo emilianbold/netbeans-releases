@@ -36,29 +36,31 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.kenai.collab.chat;
+package org.netbeans.modules.dlight.spi;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.openide.util.NbBundle;
+import java.util.List;
 
 /**
- * TODO: delete this class
- * @author Jan Becicka
+ * C++ symbol demangler. Converts internal mangled names into
+ * original human-readable names.
  */
-public final class SendChatMessageDisabled extends AbstractAction {
+public interface CppSymbolDemangler {
 
-    public SendChatMessageDisabled() {
-        super(NbBundle.getMessage(WhoIsOnlineDisabled.class, "CTL_SendChatMessageAction"));
-    }
+    /**
+     * Demangles one symbol name.
+     *
+     * @param symbolName  name to demangle
+     * @return  demangled name if demangling succeeded, or
+     *          unchanged name if demangling failed
+     */
+    String demangle(String symbolName);
 
-    public void actionPerformed(ActionEvent e) {
-        ChatTopComponent.openAction(ChatTopComponent.findInstance(), "", "", false).actionPerformed(e); // NOI18N
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return System.getProperty(("kenai.com.url"), "https://kenai.com").endsWith("testkenai.com");
-    }
+    /**
+     * Demangles many symbols at once. Much faster than demangling symbols
+     * one by one with {@link #demangle(java.lang.String)}.
+     *
+     * @param symbolNames  names to demangle
+     * @return  demangled names in the same order as in original list
+     */
+    List<String> demangle(List<String> symbolNames);
 }
-

@@ -229,6 +229,10 @@ public final class NbMavenProjectImpl implements Project {
         return watcher;
     }
 
+    public ProblemReporterImpl getProblemReporter() {
+        return problemReporter;
+    }
+
     /**
      * load a project with properties and profiles other than the current ones.
      * uses default project embedder

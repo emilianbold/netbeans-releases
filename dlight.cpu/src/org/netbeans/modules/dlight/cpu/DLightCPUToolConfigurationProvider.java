@@ -173,7 +173,7 @@ public final class DLightCPUToolConfigurationProvider
         Column stackId = new Column("leaf_id", Integer.class, loc("CPUMonitorTool.ColumnName.leaf_id"), null); // NOI18N
 
         return new DataTableMetadata("CallStack", // NOI18N
-            Arrays.asList(cpuId, threadId, timestamp, stackId));
+            Arrays.asList(cpuId, threadId, timestamp, stackId), null);
     }
 
     private VisualizerConfiguration createDTraceBasedVisualizerConfiguration(DataTableMetadata profilerTableMetadata){

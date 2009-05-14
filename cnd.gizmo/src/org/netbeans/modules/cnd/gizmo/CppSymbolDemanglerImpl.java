@@ -44,7 +44,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
@@ -57,9 +56,8 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.dlight.spi.DemanglingFunctionNameService;
-import org.netbeans.modules.dlight.spi.DemanglingFunctionNameServiceFactory.CPPCompiler;
-import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.spi.CppSymbolDemangler;
+import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory.CPPCompiler;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -70,7 +68,7 @@ import org.openide.windows.InputOutput;
  * @author mt154047
  * @author Alexey Vladykin
  */
-public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionNameService {
+public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
 
     private static final int MAX_CMDLINE_LENGTH = 2000;
     private final static Map<String, String> demangledCache = new HashMap<String, String>();
@@ -81,7 +79,7 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
     private static final String SS_FAMILIY = "dem"; //NOI18N
     private static final String EQUALS_EQUALS = " == "; //NOI18N
 
-    CndDemanglingFunctionNameServiceImpl() {
+    /*package*/ CppSymbolDemanglerImpl() {
         Project project = org.netbeans.api.project.ui.OpenProjects.getDefault().getMainProject();
         NativeProject nPrj = (project == null) ? null : project.getLookup().lookup(NativeProject.class);
         if (nPrj == null) {
@@ -110,7 +108,7 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
         demanglerTool = binDir + "/" + demangle_utility; //NOI18N BTW: isn't it better to use File.Separator?
     }
 
-    CndDemanglingFunctionNameServiceImpl(CPPCompiler cppCompiler) {
+    /*package*/ CppSymbolDemanglerImpl(CPPCompiler cppCompiler) {
         this.cppCompiler = cppCompiler;
         if (cppCompiler == CPPCompiler.GNU) {
             demanglerTool = GNU_FAMILIY;
@@ -120,19 +118,78 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
         env = ExecutionEnvironmentFactory.getLocal();
     }
 
-    public Future<String> demangle(String functionName) {
-        return DLightExecutorService.submit(
-                new Demangler(functionName),
-                "Demangling function " + functionName); // NOI18N
+    public String demangle(String symbolName) {
+        String mangledName = stripModuleAndOffset(symbolName);
+
+        if (!isMangled(mangledName)) {
+            return mangledName;
+        }
+
+        String demangledName = null;
+
+        synchronized (demangledCache) {
+            demangledName = demangledCache.get(mangledName);
+        }
+
+        if (demangledName == null) {
+            List<String> list = Collections.singletonList(mangledName);
+            demangleImpl(list);
+            demangledName = list.get(0);
+            synchronized (demangledCache) {
+                demangledCache.put(mangledName, demangledName);
+            }
+        }
+
+        return demangledName;
     }
 
-    public Future<List<String>> demangle(List<String> functionNames) {
-        return DLightExecutorService.submit(
-                new BatchDemangler(functionNames),
-                "Batch demangling " + functionNames.size() + " functions"); // NOI18N
+    public List<String> demangle(List<String> symbolNames) {
+        List<String> result = new ArrayList<String>(symbolNames.size());
+        for (String name : symbolNames) {
+            result.add(stripModuleAndOffset(name));
+        }
+
+        List<String> missedNames = new ArrayList<String>();
+        List<Integer> missedIdxs = new ArrayList<Integer>();
+
+        synchronized (demangledCache) {
+            for (int i = 0; i < result.size(); ++i) {
+                String mangledName = result.get(i);
+                if (isMangled(mangledName)) {
+                    String demangledName = demangledCache.get(mangledName);
+                    if (demangledName == null) {
+                        missedNames.add(mangledName);
+                        missedIdxs.add(i);
+                    } else {
+                        result.set(i, demangledName);
+                    }
+                }
+            }
+        }
+
+        if (!missedNames.isEmpty()) {
+            demangleImpl(missedNames);
+            synchronized (demangledCache) {
+                for (int i = 0; i < missedNames.size(); ++i) {
+                    int idx = missedIdxs.get(i);
+                    String mangledName = result.get(idx);
+                    String demangledName = missedNames.get(i);
+                    demangledCache.put(mangledName, demangledName);
+                    result.set(idx, demangledName);
+                }
+            }
+        }
+
+        return result;
     }
 
-    private static String demangleDtrace(String functionName) {
+    private boolean isMangled(String name) {
+        // aggressive optimization, but invoking dozens of processes
+        // on remote machine is not very fast
+        return 0 < name.length() && name.charAt(0) == '_' || 0 <= name.indexOf("__"); // NOI18N
+    }
+
+    private static String stripModuleAndOffset(String functionName) {
         int plusPos = functionName.indexOf('+'); // NOI18N
         if (0 <= plusPos) {
             functionName = functionName.substring(0, plusPos);
@@ -188,95 +245,6 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
                 }
             }
             demangledNames.clear();
-        }
-    }
-
-    private boolean isMangled(String name) {
-        // aggressive optimization, but invoking dozens of processes
-        // on remote machine is not very fast
-        return 0 < name.length() && name.charAt(0) == '_' || 0 <= name.indexOf("__"); // NOI18N
-    }
-
-    private class Demangler implements Callable<String> {
-
-        private final String nameToDemangle;
-
-        public Demangler(String nameToDemangle) {
-            this.nameToDemangle = nameToDemangle;
-        }
-
-        public String call() {
-            String mangledName = demangleDtrace(nameToDemangle);
-
-            if (!isMangled(mangledName)) {
-                return mangledName;
-            }
-
-            String demangledName = null;
-
-            synchronized (demangledCache) {
-                demangledName = demangledCache.get(mangledName);
-            }
-
-            if (demangledName == null) {
-                List<String> list = Collections.singletonList(mangledName);
-                demangleImpl(list);
-                demangledName = list.get(0);
-                synchronized (demangledCache) {
-                    demangledCache.put(mangledName, demangledName);
-                }
-            }
-
-            return demangledName;
-        }
-    }
-
-    private class BatchDemangler implements Callable<List<String>> {
-
-        private final List<String> namesToDemangle;
-
-        public BatchDemangler(List<String> namesToDemangle) {
-            this.namesToDemangle = namesToDemangle;
-        }
-
-        public List<String> call() {
-            List<String> result = new ArrayList<String>(namesToDemangle.size());
-            for (String name : namesToDemangle) {
-                result.add(demangleDtrace(name));
-            }
-
-            List<String> missedNames = new ArrayList<String>();
-            List<Integer> missedIdxs = new ArrayList<Integer>();
-
-            synchronized (demangledCache) {
-                for (int i = 0; i < result.size(); ++i) {
-                    String mangledName = result.get(i);
-                    if (isMangled(mangledName)) {
-                        String demangledName = demangledCache.get(mangledName);
-                        if (demangledName == null) {
-                            missedNames.add(mangledName);
-                            missedIdxs.add(i);
-                        } else {
-                            result.set(i, demangledName);
-                        }
-                    }
-                }
-            }
-
-            if (!missedNames.isEmpty()) {
-                demangleImpl(missedNames);
-                synchronized (demangledCache) {
-                    for (int i = 0; i < missedNames.size(); ++i) {
-                        int idx = missedIdxs.get(i);
-                        String mangledName = result.get(idx);
-                        String demangledName = missedNames.get(i);
-                        demangledCache.put(mangledName, demangledName);
-                        result.set(idx, demangledName);
-                    }
-                }
-            }
-
-            return result;
         }
     }
 

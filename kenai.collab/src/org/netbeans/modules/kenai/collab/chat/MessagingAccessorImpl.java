@@ -63,26 +63,28 @@ public class MessagingAccessorImpl extends MessagingAccessor {
     public MessagingHandle getMessaging(ProjectHandle project) {
         KenaiConnection kc = KenaiConnection.getDefault();
         Kenai k = Kenai.getDefault();
-        try {
-            final KenaiProject prj = k.getProject(project.getId());
-            if (k.getMyProjects().contains(prj)) {
-                if (kc.getChat(project.getId()) == null) {
-                    KenaiFeature[] f;
-                    f = prj.getFeatures(KenaiService.Type.CHAT);
-                    if (f.length == 1) {
-                        kc.getChat(f[0]);
+        synchronized (kc) {
+            try {
+                final KenaiProject prj = k.getProject(project.getId());
+                if (k.getMyProjects().contains(prj)) {
+                    if (kc.getChat(project.getId()) == null) {
+                        KenaiFeature[] f;
+                        f = prj.getFeatures(KenaiService.Type.CHAT);
+                        if (f.length == 1) {
+                            kc.getChat(f[0]);
+                        }
                     }
                 }
+            } catch (Exception ex) {
+                Logger.getLogger(MessagingAccessorImpl.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+                MessagingHandleImpl m = new MessagingHandleImpl(project.getId());
+                m.setMessageCount(-1);
+                m.setOnlineCount(-3);
+                return m;
             }
-        } catch (Exception ex) {
-            Logger.getLogger(MessagingAccessorImpl.class.getName()).log(Level.INFO, ex.getMessage(), ex);
-            MessagingHandleImpl m = new MessagingHandleImpl(project.getId());
-            m.setMessageCount(-1);
-            m.setOnlineCount(-3);
-            return m;
-        }
 
-        return ChatNotifications.getDefault().getMessagingHandle(project.getId());
+            return ChatNotifications.getDefault().getMessagingHandle(project.getId());
+        }
     }
 
 
@@ -109,7 +111,7 @@ public class MessagingAccessorImpl extends MessagingAccessor {
         return new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                project.firePropertyChange(ProjectHandle.PROP_CONTENT, null, null);
+                ChatTopComponent.findInstance().reconnect(project);
             }
         };
     }

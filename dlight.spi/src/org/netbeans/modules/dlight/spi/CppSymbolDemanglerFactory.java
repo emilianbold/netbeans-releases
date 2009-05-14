@@ -36,29 +36,30 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.kenai.collab.chat;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.dlight.spi;
 
 /**
- * TODO: delete this class
- * @author Jan Becicka
+ *
+ * @author mt154047
  */
-public final class WhoIsOnlineDisabled extends AbstractAction {
+public interface CppSymbolDemanglerFactory {
 
-    public WhoIsOnlineDisabled() {
-        super(NbBundle.getMessage(WhoIsOnlineDisabled.class, "CTL_WhoIsOnlineAction"));
-    }
+    /**
+     *
+     * @return
+     */
+    public CppSymbolDemangler getForCurrentSession();
 
-    public void actionPerformed(ActionEvent e) {
-        new WhoIsOnlineAction().actionPerformed(e);
+    /**
+     * 
+     * @param cppCompiler
+     * @return
+     */
+    public CppSymbolDemangler getDemanglerFor(CPPCompiler cppCompiler);
+    
+    public enum CPPCompiler{
+        GNU,
+        SS
     }
-    @Override
-    public boolean isEnabled() {
-        return System.getProperty(("kenai.com.url"), "https://kenai.com").endsWith("testkenai.com");
-    }
-
 }
-
