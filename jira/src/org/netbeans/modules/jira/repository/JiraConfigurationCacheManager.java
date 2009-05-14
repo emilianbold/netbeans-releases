@@ -48,12 +48,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraConfiguration.ConfigurationData;
+import org.netbeans.modules.jira.util.FileUtils;
+import org.netbeans.modules.jira.util.JiraUtils;
 
 /**
  *
@@ -63,9 +66,11 @@ public final class JiraConfigurationCacheManager {
 
     private static JiraConfigurationCacheManager instance;
     private HashMap<String, ConfigurationData> cacheData;
-    private static final String CACHE_FILE_NAME = "jiraconfiguration";  //NOI18N
+    private static final String CACHE_DIR_NAME = "jiraconfiguration";   //NOI18N
+    private static final String CACHE_FILE_NAME = "configurationcache"; //NOI18N
     private static final String VERSION = "0.12";                        //NOI18N
     private final Object DATA_LOCK = new Object();
+    private static final Level LOG_LEVEL = JiraUtils.isAssertEnabled() ? Level.SEVERE : Level.INFO;
     
 
     private JiraConfigurationCacheManager () {
@@ -79,20 +84,25 @@ public final class JiraConfigurationCacheManager {
         return instance;
     }
 
+    /**
+     * Stores cached configuration data to a disk
+     */
     public void shutdown() {
         Jira.LOG.fine("shutdown: saving configuration data");                //NOI18N
         if (cacheData == null) {
             Jira.LOG.fine("shutdown: no data loaded, no data saved");
         }
-        File f = new File(BugtrackingRuntime.getInstance().getCacheStore(), CACHE_FILE_NAME);
+        File f = new File(BugtrackingRuntime.getInstance().getCacheStore(), CACHE_DIR_NAME);
         f.mkdirs();
         if (!f.canWrite()) {
             Jira.LOG.warning("shutdown: Cannot create cache dirs");          //NOI18N
             return;
         }
         ObjectOutputStream out = null;
-        File file = new File(f, "configurationcache");                  //NOI18N
+        File file = new File(f, CACHE_FILE_NAME + ".tmp");
+        boolean success = false;
         try {
+            // saving to a temp file
             out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
             out.writeUTF(VERSION);
             out.writeInt(cacheData.size());
@@ -104,8 +114,9 @@ public final class JiraConfigurationCacheManager {
                     out.writeObject(data);
                 }
             }
+            success = true;
         } catch (IOException ex) {
-            Jira.LOG.log(Level.SEVERE, null, ex);
+            Jira.LOG.log(LOG_LEVEL, null, ex);
         } finally {
             if (out != null) {
                 try {
@@ -114,13 +125,38 @@ public final class JiraConfigurationCacheManager {
                 }
             }
         }
+        if (success) {
+            // rename the temp file to the permanent one
+            File newFile = new File(f, CACHE_FILE_NAME);
+            try {
+                FileUtils.renameFile(file, newFile);
+                success = true;
+            } catch (IOException ex) {
+                Jira.LOG.log(LOG_LEVEL, null, ex);
+            }
+        }
+        if (!success) {
+            file.deleteOnExit();
+        }
     }
 
+    /**
+     * Returns cached data for the given repository URL.
+     * The first access to this cache manager WILL access I/O
+     * @param repoUrl
+     * @return cached data or null if it does not exist
+     */
     ConfigurationData getCachedData(String repoUrl) {
         assert !EventQueue.isDispatchThread();
         return getCachedData().get(repoUrl);
     }
 
+    /**
+     * Sets the cached data for the given repository
+     * The first access to this cache manager WILL access I/O
+     * @param url not null
+     * @param data not null
+     */
     void setCachedData(String url, ConfigurationData data) {
         if (url == null || data == null) {
             return;
@@ -129,6 +165,11 @@ public final class JiraConfigurationCacheManager {
         getCachedData().put(url, data);
     }
 
+    /**
+     * Removes cached data for the given repository url
+     * The first access to this cache manager WILL access I/O
+     * @param url
+     */
     void removeCachedData (String url) {
         if (url == null) {
             return;
@@ -147,44 +188,45 @@ public final class JiraConfigurationCacheManager {
 
     private void loadConfigurationData () {
         Jira.LOG.fine("loadConfigurationData: loading configuration data"); //NOI18N
-        cacheData = new HashMap<String, ConfigurationData>(5);
 
-        File f = new File(BugtrackingRuntime.getInstance().getCacheStore(), CACHE_FILE_NAME);
-        if (!f.isDirectory()) {
-            Jira.LOG.info("loadConfigurationData: no cached data");       //NOI18N
-            return;
-        }
-        ObjectInputStream ois = null;
-        File file = new File(f, "configurationcache");                  //NOI18N
-        if (!file.canRead()) {
-            Jira.LOG.info("loadConfigurationData: no cached data");       //NOI18N
-            return;
-        }
+        File f = new File(BugtrackingRuntime.getInstance().getCacheStore(), CACHE_DIR_NAME);
         try {
-            ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
-            String version = ois.readUTF();
-            if (!VERSION.equals(version)) {
-                Jira.LOG.fine("loadConfigurationData: old data format: " + version); //NOI18N
+            ObjectInputStream ois = null;
+            File file = new File(f, CACHE_FILE_NAME);
+            if (!file.canRead()) {
+                Jira.LOG.info("loadConfigurationData: no cached data");       //NOI18N
                 return;
             }
-            int size = ois.readInt();
-            Jira.LOG.fine("loadConfigurationData: loading " + size + " items"); //NOI18N
-            cacheData = new HashMap<String, ConfigurationData>(size + 5);
-            while (size-- > 0) {
-                String repoUrl = (String)ois.readObject();
-                Jira.LOG.fine("loadConfigurationData: loading data for " + repoUrl); //NOI18N
-                cacheData.put(repoUrl, (ConfigurationData) ois.readObject());
-            }
-        } catch (IOException ex) {
-            Jira.LOG.log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
-            Jira.LOG.log(Level.SEVERE, null, ex);
-        } finally {
-            if (ois != null) {
-                try {
-                    ois.close();
-                } catch (IOException e) {
+            try {
+                ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
+                String version = ois.readUTF();
+                if (!VERSION.equals(version)) {
+                    Jira.LOG.info("loadConfigurationData: old data format: " + version); //NOI18N
+                    return;
                 }
+                int size = ois.readInt();
+                Jira.LOG.fine("loadConfigurationData: loading " + size + " items"); //NOI18N
+                cacheData = new HashMap<String, ConfigurationData>(size + 5);
+                while (size-- > 0) {
+                    String repoUrl = (String) ois.readObject();
+                    Jira.LOG.fine("loadConfigurationData: loading data for " + repoUrl); //NOI18N
+                    cacheData.put(repoUrl, (ConfigurationData) ois.readObject());
+                }
+            } catch (IOException ex) {
+                Jira.LOG.log(LOG_LEVEL, null, ex);
+            } catch (ClassNotFoundException ex) {
+                Jira.LOG.log(LOG_LEVEL, null, ex);
+            } finally {
+                if (ois != null) {
+                    try {
+                        ois.close();
+                    } catch (IOException e) {
+                    }
+                }
+            }
+        } finally {
+            if (cacheData == null) {
+                cacheData = new HashMap<String, ConfigurationData>(5);
             }
         }
     }
