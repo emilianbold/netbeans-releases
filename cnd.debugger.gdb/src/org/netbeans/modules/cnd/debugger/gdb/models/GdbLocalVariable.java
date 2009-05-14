@@ -37,28 +37,52 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.spi;
+package org.netbeans.modules.cnd.debugger.gdb.models;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.GdbVariable;
+import org.netbeans.modules.cnd.debugger.gdb.LocalVariable;
 
 /**
  *
- * @author mt154047
+ * @author Egor Ushakov
  */
-public interface DemanglingFunctionNameServiceFactory {
+public class GdbLocalVariable extends AbstractVariable implements LocalVariable, PropertyChangeListener {
+    private final String name;
+    private final String type;
 
-    /**
-     *
-     * @return
-     */
-    public DemanglingFunctionNameService getForCurrentSession();
-    /**
-     * 
-     * @param cppCompiler
-     * @return
-     */
-    public DemanglingFunctionNameService geDemanglingServiceFor(CPPCompiler cppCompiler);
-    
-    public enum CPPCompiler{
-        GNU,
-        SS
+    public GdbLocalVariable(GdbDebugger debugger, GdbVariable var) {
+        super(debugger, var.getValue());
+        this.name = var.getName();
+        this.type = getDebugger().requestWhatis(name);
+        
+        debugger.addPropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, this);
+    }
+
+    public GdbLocalVariable(GdbDebugger debugger, String name) {
+        super(debugger, null);
+        this.name = name;
+        this.type = getDebugger().requestWhatis(name);
+        String expr = name;
+        if (!GdbWatchVariable.disableMacros) {
+            expr = GdbWatchVariable.expandMacro(getDebugger(), expr);
+        }
+        value = getDebugger().requestValue(expr);
+        
+        debugger.addPropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, this);
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        onValueChange(evt);
+    }
+
+    public String getName() {
+        return name;
     }
 }

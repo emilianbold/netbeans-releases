@@ -139,7 +139,7 @@ public final class LibraryManager {
             }
             return res;
         }
-        String folder = CndFileUtils.normalizePath(resolvedPath.getFolder().toString());
+        String folder = CndFileUtils.normalizeAbsolutePath(resolvedPath.getFolder().toString());
         res = searchInProjectRoots(baseProject, getPathToFolder(folder, absPath));
         if (res != null) {
             if (TraceFlags.TRACE_RESOLVED_LIBRARY) {

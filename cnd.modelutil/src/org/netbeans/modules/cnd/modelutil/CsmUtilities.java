@@ -404,7 +404,7 @@ public class CsmUtilities {
                         File file = FileUtil.toFile(fo);
                         // the file can null, for example, when we edit templates
                         if (file != null) {
-                            String normPath = CndFileUtils.normalizePath(file.getAbsolutePath());
+                            String normPath = CndFileUtils.normalizeAbsolutePath(file.getAbsolutePath());
                             CsmFile csmFile = CsmModelAccessor.getModel().findFile(normPath);
                             if (csmFile != null) {
                                 files.add(csmFile);
