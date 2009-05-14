@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
@@ -132,5 +133,8 @@ final class StackDataProviderImpl implements StackDataProvider {
             }
         }
         return null;
+    }
+
+    public void dataFiltersChanged(List<DataFilter> newSet) {
     }
 }

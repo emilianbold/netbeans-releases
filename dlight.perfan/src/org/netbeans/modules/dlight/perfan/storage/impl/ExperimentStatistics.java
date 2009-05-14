@@ -99,7 +99,7 @@ public final class ExperimentStatistics {
                 } catch (ParseException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-            } else if (id.startsWith("Total Thread Time")) { // NOI18N
+            } else if (id.startsWith("Total Thread Time") || id.startsWith("Total LWP Time")) { // NOI18N
                 try {
                     _totalThreadTime = nf.parse(s.substring(scidx + 1).trim()).doubleValue();
                 } catch (ParseException ex) {

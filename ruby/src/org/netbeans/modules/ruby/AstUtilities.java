@@ -1517,8 +1517,22 @@ public class AstUtilities {
         return rootHolder[0];
     }
 
+    /**
+     * Gets the root node from the given <code>parserResult</code>. May return
+     * <code>null</code> if <code>parserResult</code> was not a <code>RubyParserResult</code> or
+     * did not have a root node.
+     * @param parserResult 
+     * @return the root node or <code>null</code>.
+     */
     public static Node getRoot(Parser.Result parserResult) {
-        assert parserResult instanceof RubyParseResult;
+        if (!(parserResult instanceof RubyParseResult)) {
+            if (LOGGER.isLoggable(Level.WARNING)) {
+                String msg = "Expected RubyParseResult, but got " + parserResult; //NOI18N
+                // log an exception too see the stack trace
+                LOGGER.log(Level.WARNING, msg, new Exception(msg));
+            }
+            return null;
+        }
         RubyParseResult result = (RubyParseResult) parserResult;
         return result.getRootNode();
     }

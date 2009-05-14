@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -216,7 +217,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
         try {
             final ProjectBase project = getProject(newFileIetm, false);
             if( project != null ) {
-                File file = FileUtil.normalizeFile(new File(oldPath));
+                File file = CndFileUtils.normalizeFile(new File(oldPath));
                 project.onFileRemoved(file);
                 project.onFileAdded(newFileIetm);
             }

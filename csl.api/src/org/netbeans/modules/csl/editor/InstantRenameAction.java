@@ -104,7 +104,7 @@ public class InstantRenameAction extends BaseAction {
             }
 
             if (IndexingManager.getDefault().isIndexing()) {
-                Utilities.setStatusBoldText(target, NbBundle.getMessage(IndexingManager.class, "scanning-in-progress"));
+                Utilities.setStatusBoldText(target, NbBundle.getMessage(InstantRenameAction.class, "scanning-in-progress"));
                 return;
             }
 

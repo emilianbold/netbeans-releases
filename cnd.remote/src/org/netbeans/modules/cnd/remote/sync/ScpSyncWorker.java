@@ -40,13 +40,13 @@
 package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -74,7 +74,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         if (root != null) {
             return root;
         }
-        return "/home/" + executionEnvironment.getUser() + "/.netbeans/remote";
+        return "/home/" + executionEnvironment.getUser() + "/.netbeans/remote"; // NOI18N
     }
 
     public boolean synchronize() {
@@ -111,7 +111,14 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 
     /*package-local*/ void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
         CommonTasksSupport.mkDir(executionEnvironment, remoteDir, err);
-        for (File file : localDir.listFiles()) {
+        FileFilter filter = new FileFilter() {
+            // TODO: think over, is it a hack?!
+            public boolean accept(File pathname) {
+                return  ! "build".equals(pathname.getName()) &&  //NOI18N
+                        ! "dist".equals(pathname.getName()); //NOI18N
+            }
+        };
+        for (File file : localDir.listFiles(filter)) {
             synchronizeImpl(file, remoteDir);
         }
     }
