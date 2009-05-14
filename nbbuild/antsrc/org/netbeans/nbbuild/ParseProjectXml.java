@@ -678,7 +678,7 @@ public final class ParseProjectXml extends Task {
         }
 
         private boolean matches(Attributes attr) {
-            String givenCodeName = attr.getValue("OpenIDE-Module");
+            String givenCodeName = JarWithModuleAttributes.extractCodeName(attr);
             int slash = givenCodeName.indexOf('/');
             int givenRelease = -1;
             if (slash != -1) {
