@@ -77,6 +77,7 @@ public class NewJspFileNameStepOperatorTest extends JellyTestCase {
     
     public void setUp() throws IOException, Exception {
         System.out.println("### "+getName()+" ###");
+        Util.addSjsasInstance();
         new NewWebProjectTest("").createSampleWebProject();
     }
     

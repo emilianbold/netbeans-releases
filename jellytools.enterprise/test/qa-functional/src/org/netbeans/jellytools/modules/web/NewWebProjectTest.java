@@ -43,23 +43,18 @@ package org.netbeans.jellytools.modules.web;
 import java.io.File;
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
 import junit.textui.TestRunner;
+import org.netbeans.insane.impl.Utils;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.actions.ViewAction;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
 
 /**
@@ -88,8 +83,9 @@ public class NewWebProjectTest extends J2eeTestCase {
     }
 
     @Override
-    public void setUp() {
+    public void setUp() throws Exception {        
         System.out.println("### "+getName()+" ###");
+        Util.addSjsasInstance();
     }
 
     //TODO: fix this test

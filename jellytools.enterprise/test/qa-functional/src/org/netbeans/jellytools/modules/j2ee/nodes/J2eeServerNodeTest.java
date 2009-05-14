@@ -41,13 +41,12 @@
 package org.netbeans.jellytools.modules.j2ee.nodes;
 
 import junit.framework.Test;
-import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.jellytools.modules.web.Util;
 
 /**
  * Test of org.netbeans.jellytools.nodes.J2eeServerNode
@@ -82,14 +81,14 @@ public class J2eeServerNodeTest extends JellyTestCase {
     
     private static GlassFishV2ServerNode serverNode;
     
-    protected void setUp() {
-        System.out.println("### "+getName()+" ###");
+    protected void setUp() throws Exception {
+        System.out.println("### "+getName()+" ###");        
+
         if(serverNode == null) {
-            /*
+            Util.addSjsasInstance();
             RuntimeTabOperator.invoke();
-            serverNode = new J2eeServerNode("GlassFish");
-             */
-            //serverNode = getGlassFishV2Node();
+            serverNode = new GlassFishV2ServerNode();
+            
         }
     }
     
