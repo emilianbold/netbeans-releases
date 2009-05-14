@@ -100,9 +100,7 @@ public class PresenceIndicator {
     public static synchronized PresenceIndicator getDefault() {
         if (instance == null) {
             instance = new PresenceIndicator();
-            if (System.getProperty(("kenai.com.url"), "https://kenai.com").endsWith("testkenai.com")) {
-                KenaiConnection.getDefault();
-            }
+            KenaiConnection.getDefault();
         }
         return instance;
     }
@@ -111,13 +109,8 @@ public class PresenceIndicator {
     private PresenceIndicator() {
         label = new JLabel(OFFLINE, JLabel.HORIZONTAL);
         label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_Offline"));
-        /*
-        * TODO: delete this
-        */
-        if (System.getProperty(("kenai.com.url"), "https://kenai.com").endsWith("testkenai.com")) {
-            helper = new MouseL();
-            label.addMouseListener(helper);
-        }
+        helper = new MouseL();
+        label.addMouseListener(helper);
     }
 
     void showPopup() {
