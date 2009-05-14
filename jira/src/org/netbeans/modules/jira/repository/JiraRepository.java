@@ -67,7 +67,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.IssueCache;
+import org.netbeans.modules.bugtracking.spi.IssueCache;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.commands.JiraCommand;
@@ -369,16 +369,21 @@ public class JiraRepository extends Repository {
      */
     public synchronized JiraConfiguration getConfiguration() {
         if(configuration == null) {
-            configuration = getConfigurationIntern();
+            configuration = getConfigurationIntern(false);
         }
         return configuration;
+    }
+
+    public synchronized void refreshConfiguration() {
+        JiraConfiguration c = getConfigurationIntern(true);
+        configuration = c;
     }
 
     protected JiraConfiguration createConfiguration(JiraClient client) {
         return new JiraConfiguration(client, JiraRepository.this);
     }
 
-    private JiraConfiguration getConfigurationIntern() {
+    private JiraConfiguration getConfigurationIntern(final boolean forceRefresh) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
 
         // XXX need logging incl. consumed time
@@ -389,7 +394,7 @@ public class JiraRepository extends Repository {
             public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
                 final JiraClient client = Jira.getInstance().getClient(getTaskRepository());
                 configuration = createConfiguration(client);
-                configuration.initialize();
+                configuration.initialize(forceRefresh);
             }
         }
         ConfigurationCommand cmd = new ConfigurationCommand();
@@ -515,7 +520,7 @@ public class JiraRepository extends Repository {
         return refreshProcessor;
     }
 
-    private class Cache extends IssueCache {
+    private class Cache extends IssueCache<TaskData> {
         Cache() {
             super(JiraRepository.this.getUrl());
         }
