@@ -73,6 +73,7 @@ import org.netbeans.modules.jira.commands.JiraCommand;
  * @author Tomas Stupka, Jan Stola
  */
 // XXX rename - it actually the cache, not the configuration
+// XXX Project MUST be somehow refreshed when a list of components changes on a server
 public class JiraConfiguration extends JiraClientCache {
 
     private JiraClient client;
@@ -94,17 +95,20 @@ public class JiraConfiguration extends JiraClientCache {
 
     protected void initialize() throws JiraException {
         data = (ConfigurationData) getData();
-        if(data.initialized) {
-            if (!hacked) {
-                hackJiraCache();
+        synchronized (data) {
+            if (data.initialized) {
+                if (!hacked) {
+                    hackJiraCache();
+                }
+                return;
             }
-            return;
+            refreshData();
+            putToCache();
+            hackJiraCache();
         }
-        refreshData();
-        hackJiraCache();
     }
 
-    private synchronized void refreshData () throws JiraException {
+    private void refreshData () throws JiraException {
         NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
         
         data.projects = client.getProjects(nullProgressMonitor);
@@ -141,8 +145,6 @@ public class JiraConfiguration extends JiraClientCache {
         data.initialized = true;
         // XXX what else do we need?
         // XXX issue types by project
-
-        putToCache();
     }
 
     private void putToCache () {
@@ -381,6 +383,7 @@ public class JiraConfiguration extends JiraClientCache {
                     loadedProjects.add(p.getId());
                 }
             }
+            cached.serverInfo = null; // download this from the repo at the first access
             cached.initialized = true;
         }
         return cached;

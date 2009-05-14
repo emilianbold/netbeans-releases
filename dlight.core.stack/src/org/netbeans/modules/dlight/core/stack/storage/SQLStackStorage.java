@@ -217,6 +217,7 @@ public final class SQLStackStorage {
 
     public List<FunctionCall> getHotSpotFunctions(FunctionMetric metric, int limit) {
         try {
+            List<String> names = new ArrayList<String>();
             List<FunctionCall> result = new ArrayList<FunctionCall>();
             PreparedStatement select = sqlStorage.prepareStatement(
                     "SELECT func_id, func_name, func_full_name,  time_incl, time_excl " + //NOI18N
@@ -224,22 +225,30 @@ public final class SQLStackStorage {
             select.setMaxRows(limit);
             ResultSet rs = select.executeQuery();
             while (rs.next()) {
+                String name = rs.getString(2);
+                names.add(name);
                 Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
                 metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
                 metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
-                String func_name = rs.getString(2);
-                if (demanglingService != null) {
-                    try {
-                        func_name = demanglingService.demangle(func_name).get();
-                    } catch (InterruptedException ex) {
-//                        Exceptions.printStackTrace(ex);
-                    } catch (ExecutionException ex) {
-                        //                      Exceptions.printStackTrace(ex);
-                    }
-                }
-                result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), func_name, rs.getString(3)), metrics));
+                result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), name, rs.getString(3)), metrics));
             }
             rs.close();
+
+            if (demanglingService != null) {
+                try {
+                    names = demanglingService.demangle(names).get();
+                    if (names.size() == result.size()) {
+                        for (int i = 0; i < result.size(); ++i) {
+                            ((FunctionImpl) result.get(i).getFunction()).setName(names.get(i));
+                        }
+                    }
+                } catch (InterruptedException ex) {
+                    // Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
+                    // Exceptions.printStackTrace(ex);
+                }
+            }
+
             return result;
         } catch (SQLException ex) {
         }
@@ -447,25 +456,25 @@ public final class SQLStackStorage {
     protected static class FunctionImpl implements Function {
 
         private final int id;
-        private final String name;
+        private String name;
         private final String quilifiedName;
 
-        public FunctionImpl(int id, String name, String qualified_name) {
+        public FunctionImpl(int id, String name, String qualifiedName) {
             this.id = id;
             this.name = name;
-            this.quilifiedName = qualified_name;
+            this.quilifiedName = qualifiedName;
         }
 
-//        public FunctionImpl(int id, String name) {
-//            this.id = id;
-//            this.name = name;
-//        }
         public int getId() {
             return id;
         }
 
         public String getName() {
             return name;
+        }
+
+        private void setName(String name) {
+            this.name = name;
         }
 
         public String getQuilifiedName() {
