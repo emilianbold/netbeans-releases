@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.openide.util.Lookup;
 
 /**
@@ -285,6 +286,22 @@ public abstract class CsmFileReferences {
                if (ref != null && CsmKindUtilities.isMacro(ref.getReferencedObject())) {
                    return true;
                }
+           }
+       }
+       return false;
+   }
+
+   public static boolean isBuiltInBased(CsmReference ref) {
+       CharSequence txt = null;
+       if (ref != null) {
+           txt = ref.getText();
+       }
+       if (txt != null && txt.length() > 0) {
+           String strTxt = txt.toString();
+           if (strTxt.equals("__func__")) { // NOI18N
+               return true;
+           } else if (strTxt.startsWith("__builtin_")) { // NOI18N
+               return true;
            }
        }
        return false;
