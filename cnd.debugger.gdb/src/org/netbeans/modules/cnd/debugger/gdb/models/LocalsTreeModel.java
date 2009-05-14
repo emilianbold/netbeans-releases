@@ -147,19 +147,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
             return i == 0;
         }
         
-//        /*
-//         *`Temporary fix.
-//         * AbstractVariable cannot be casted to Field, so we use LocalVariableImpl
-//         * to specify children (see getLocalVariables() in CallStackFrame).
-//         * The problem is that LocalVariableImpl does not have fields, so
-//         * this solution works only for 1-level structures.
-//         */
-//        if (o instanceof LocalVariableImpl) {
-//            return true;
-//        } else
-        if (o instanceof LocalVariable) {
-            return true;
-        } else if (o.equals("NoInfo")) { // NOI18N
+        if (o.equals("NoInfo")) { // NOI18N
             return true;
         } else if (o.equals("No current thread")) { // NOI18N
             return true;

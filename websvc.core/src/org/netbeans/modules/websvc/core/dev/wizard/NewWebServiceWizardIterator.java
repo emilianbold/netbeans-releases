@@ -117,8 +117,8 @@ public class NewWebServiceWizardIterator implements TemplateWizard.Iterator /*, 
 //        ((WebServiceTypePanel) bottomPanel.getComponent()).addItemListener(this);
         WizardDescriptor.Panel firstPanel; //special case: use Java Chooser
         if (sourceGroups.length == 0) {
-            sourceGroups = ProjectUtils.getSources(project).getSourceGroups(Sources.TYPE_GENERIC);
-            firstPanel = new FinishableProxyWizardPanel(Templates.createSimpleTargetChooser(project, sourceGroups, bottomPanel));
+            SourceGroup[] genericSourceGroups = ProjectUtils.getSources(project).getSourceGroups(Sources.TYPE_GENERIC);
+            firstPanel = new FinishableProxyWizardPanel(Templates.createSimpleTargetChooser(project, genericSourceGroups, bottomPanel), sourceGroups, false);
         } else
             firstPanel = new FinishableProxyWizardPanel(JavaTemplates.createPackageChooser(project, sourceGroups, bottomPanel, true));
 

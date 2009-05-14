@@ -330,7 +330,7 @@ public class AnalyzeModel implements DiscoveryProvider {
                     String path = item.getAbsPath();
                     File file = new File(path);
                     if (CndFileUtils.exists(file)) {
-                        unique.add(CndFileUtils.normalizePath(file.getAbsolutePath()));
+                        unique.add(CndFileUtils.normalizeAbsolutePath(file.getAbsolutePath()));
                     }
                 }
                 HashSet<String> unUnique = new HashSet<String>();
@@ -345,7 +345,7 @@ public class AnalyzeModel implements DiscoveryProvider {
                 for(String path : unUnique){
                     File file = new File(path);
                     if (CndFileUtils.exists(file)) {
-                        unique.add(CndFileUtils.normalizePath(file.getAbsolutePath()));
+                        unique.add(CndFileUtils.normalizeAbsolutePath(file.getAbsolutePath()));
                     }
                 }
                 myIncludedFiles = new ArrayList<String>(unique);

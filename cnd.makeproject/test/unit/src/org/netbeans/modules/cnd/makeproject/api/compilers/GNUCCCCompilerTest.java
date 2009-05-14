@@ -80,10 +80,70 @@ public class GNUCCCCompilerTest {
     public void tearDown() {
     }
 
+    @Test
+    public void testParseCompilerOutputGcc() {
+        //System.setProperty("os.name", "SunOS");
+        String s =
+                "{2} bash-3.00#g++ -x c++ -E -v tmp.cpp\n" +
+                "Reading specs from /usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/specs\n" +
+                "Configured with: /builds/sfw10-gate/usr/src/cmd/gcc/gcc-3.4.3/configure --prefix=/usr/sfw --with-as=/usr/sfw/bin/gas --with-gnu-as --with-ld=/usr/ccs/bin/ld --without-gnu-ld --enable-languages=c,c++ --enable-shared\n" +
+                "Thread model: posix\n" +
+                "gcc version 3.4.3 (csl-sol210-3_4-branch+sol_rpath)\n" +
+                " /usr/sfw/libexec/gcc/i386-pc-solaris2.10/3.4.3/cc1plus -E -quiet -v tmp.cpp\n" +
+                "ignoring nonexistent directory \"/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/../../../../i386-pc-solaris2.10/include\"\n" +
+                "#include \"...\" search starts here:\n" +
+                "#include <...> search starts here:\n" +
+                " /usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/../../../../include/c++/3.4.3\n" +
+                " /usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/../../../../include/c++/3.4.3/i386-pc-solaris2.10\n" +
+                " /usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/../../../../include/c++/3.4.3/backward\n" +
+                " /usr/local/include\n" +
+                " /usr/sfw/include\n" +
+                " /usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/include\n" +
+                " /usr/include\n" +
+                "End of search list.\n" +
+                "# 1 \"tmp.cpp\"\n" +
+                "# 1 \"<built-in>\"\n" +
+                "# 1 \"<command line>\"\n" +
+                "# 1 \"tmp.cpp\"\n";
+        BufferedReader buf = new BufferedReader(new StringReader(s));
+        if (TRACE) {
+            System.out.println("Parse Compiler Output of GCC on Solaris");
+        }
+        CompilerFlavor flavor = CompilerFlavor.toFlavor("GNU", Platform.PLATFORM_SOLARIS_INTEL);
+        GNUCCCompiler instance = new GNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCCompiler, "GNU", "GNU", "/usr/sfw/bin") {
+
+            @Override
+            protected String normalizePath(String path) {
+                return path;
+            }
+        };
+        instance.setSystemIncludeDirectories(new ArrayList<String>());
+        instance.setSystemPreprocessorSymbols(new ArrayList<String>());
+        instance.parseCompilerOutput(buf);
+        List<String> out = instance.getSystemIncludeDirectories();
+        Collections.<String>sort(out);
+        List<String> golden = new ArrayList<String>();
+        golden.add("/usr/include");
+        golden.add("/usr/local/include");
+        golden.add("/usr/sfw/include");
+        golden.add("/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/../../../../include/c++/3.4.3");
+        golden.add("/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/../../../../include/c++/3.4.3/backward");
+        golden.add("/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/../../../../include/c++/3.4.3/i386-pc-solaris2.10");
+        golden.add("/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/include");
+        StringBuilder result = new StringBuilder();
+        for (String i : out) {
+            result.append(i);
+            result.append("\n");
+        }
+        if (TRACE) {
+            System.out.println(result);
+        }
+        assert (golden.equals(out));
+    }
 
     @Test
     public void testParseCompilerOutputMac() {
-        System.setProperty("os.name", "Windows Vista");
+        //System.setProperty("os.name", "Darwin");
         String s =
                 "jorge@macbook: $ gcc -E -v -x c++ /dev/null\n" +
                 "Using built-in specs.\n" +
@@ -149,7 +209,7 @@ public class GNUCCCCompilerTest {
 
     @Test
     public void testParseCompilerOutputMinGW1() {
-        System.setProperty("os.name", "Windows Vista");
+        //System.setProperty("os.name", "Windows Vista");
         String s =
                 "C:\\MinGW\\bin>g++.exe -x c++ -E -v tmp.cpp\n" +
                 "Reading specs from C:/MinGW/lib/gcc/mingw32/3.4.5/specs\n" +
@@ -221,7 +281,7 @@ public class GNUCCCCompilerTest {
 
     @Test
     public void testParseCompilerOutputMinGW2() {
-        System.setProperty("os.name", "Windows Vista");
+        //System.setProperty("os.name", "Windows Vista");
         String s =
                 "D:\\tec\\MinGW\\bin>g++.exe -x c++ -E -v tmp.cpp\n" +
                 "Using built-in specs.\n" +
@@ -303,7 +363,7 @@ public class GNUCCCCompilerTest {
 
     @Test
     public void testParseCompilerOutputCygwin() {
-        System.setProperty("os.name", "Windows Vista");
+        //System.setProperty("os.name", "Windows Vista");
         String s =
                 "$ g++.exe -x c++ -E -v tmp.cpp\n" +
                 "Reading specs from /usr/lib/gcc/i686-pc-cygwin/3.4.4/specs\n" +
@@ -367,64 +427,4 @@ public class GNUCCCCompilerTest {
         assert (golden.equals(out));
     }
 
-    @Test
-    public void testParseCompilerOutputGcc() {
-        System.setProperty("os.name", "SunOS");
-        String s =
-                "{2} bash-3.00#g++ -x c++ -E -v tmp.cpp\n" +
-                "Reading specs from /usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/specs\n" +
-                "Configured with: /builds/sfw10-gate/usr/src/cmd/gcc/gcc-3.4.3/configure --prefix=/usr/sfw --with-as=/usr/sfw/bin/gas --with-gnu-as --with-ld=/usr/ccs/bin/ld --without-gnu-ld --enable-languages=c,c++ --enable-shared\n" +
-                "Thread model: posix\n" +
-                "gcc version 3.4.3 (csl-sol210-3_4-branch+sol_rpath)\n" +
-                " /usr/sfw/libexec/gcc/i386-pc-solaris2.10/3.4.3/cc1plus -E -quiet -v tmp.cpp\n" +
-                "ignoring nonexistent directory \"/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/../../../../i386-pc-solaris2.10/include\"\n" +
-                "#include \"...\" search starts here:\n" +
-                "#include <...> search starts here:\n" +
-                " /usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/../../../../include/c++/3.4.3\n" +
-                " /usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/../../../../include/c++/3.4.3/i386-pc-solaris2.10\n" +
-                " /usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/../../../../include/c++/3.4.3/backward\n" +
-                " /usr/local/include\n" +
-                " /usr/sfw/include\n" +
-                " /usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/include\n" +
-                " /usr/include\n" +
-                "End of search list.\n" +
-                "# 1 \"tmp.cpp\"\n" +
-                "# 1 \"<built-in>\"\n" +
-                "# 1 \"<command line>\"\n" +
-                "# 1 \"tmp.cpp\"\n";
-        BufferedReader buf = new BufferedReader(new StringReader(s));
-        if (TRACE) {
-            System.out.println("Parse Compiler Output of GCC on Solaris");
-        }
-        CompilerFlavor flavor = CompilerFlavor.toFlavor("GNU", Platform.PLATFORM_SOLARIS_INTEL);
-        GNUCCCompiler instance = new GNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCCompiler, "GNU", "GNU", "/usr/sfw/bin") {
-
-            @Override
-            protected String normalizePath(String path) {
-                return path;
-            }
-        };
-        instance.setSystemIncludeDirectories(new ArrayList<String>());
-        instance.setSystemPreprocessorSymbols(new ArrayList<String>());
-        instance.parseCompilerOutput(buf);
-        List<String> out = instance.getSystemIncludeDirectories();
-        Collections.<String>sort(out);
-        List<String> golden = new ArrayList<String>();
-        golden.add("/usr/include");
-        golden.add("/usr/local/include");
-        golden.add("/usr/sfw/include");
-        golden.add("/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/../../../../include/c++/3.4.3");
-        golden.add("/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/../../../../include/c++/3.4.3/backward");
-        golden.add("/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/../../../../include/c++/3.4.3/i386-pc-solaris2.10");
-        golden.add("/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/include");
-        StringBuilder result = new StringBuilder();
-        for (String i : out) {
-            result.append(i);
-            result.append("\n");
-        }
-        if (TRACE) {
-            System.out.println(result);
-        }
-        assert (golden.equals(out));
-    }
 }

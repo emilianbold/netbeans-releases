@@ -691,6 +691,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         tableFieldsPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
 
+        tablePanel.setBackground(new java.awt.Color(224, 224, 224));
         tablePanel.setMinimumSize(new java.awt.Dimension(100, 350));
         tablePanel.setLayout(new java.awt.BorderLayout());
 
@@ -761,6 +762,8 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         org.openide.awt.Mnemonics.setLocalizedText(searchButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.searchButton.text")); // NOI18N
 
+        criteriaPanel.setBackground(new java.awt.Color(224, 224, 224));
+
         byTextLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
         org.openide.awt.Mnemonics.setLocalizedText(byTextLabel, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.byTextLabel.text_1")); // NOI18N
 
@@ -780,6 +783,8 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         org.openide.awt.Mnemonics.setLocalizedText(byLastChangeLabel, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.byLastChangeLabel.text")); // NOI18N
 
         byLastChangeContainer.setLayout(new java.awt.BorderLayout());
+
+        urlPanel.setBackground(new java.awt.Color(224, 224, 224));
 
         jLabel2.setLabelFor(urlTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel2.text_1")); // NOI18N
@@ -864,6 +869,8 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 saveButtonActionPerformed(evt);
             }
         });
+
+        gotoPanel.setBackground(new java.awt.Color(224, 224, 224));
 
         jLabel1.setLabelFor(idTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel1.text_1")); // NOI18N

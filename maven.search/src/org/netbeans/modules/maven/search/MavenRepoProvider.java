@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import org.apache.lucene.search.BooleanQuery;
 import org.netbeans.modules.maven.indexer.api.NBArtifactInfo;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.QueryField;
@@ -67,7 +68,13 @@ public class MavenRepoProvider implements SearchProvider {
     public void evaluate(final SearchRequest request, final SearchResponse response) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                List<NBVersionInfo> infos = RepositoryQueries.find(getQuery(request));
+                List<NBVersionInfo> infos = null;
+                try {
+                    infos = RepositoryQueries.find(getQuery(request));
+                } catch (BooleanQuery.TooManyClauses e) {
+                    // query too general, just ignore it
+                    return;
+                }
                 Map<String, List<NBVersionInfo>> map = new TreeMap<String, List<NBVersionInfo>>(new Comp(request.getText()));
                 for (NBVersionInfo nbvi : infos) {
                     String key = nbvi.getGroupId() + " : " + nbvi.getArtifactId(); //NOI18N

@@ -55,19 +55,5 @@ package org.netbeans.modules.cnd.debugger.gdb;
  */
 public interface LocalVariable extends Variable {
 
-    /**
-     * Declared name of local.
-     *
-     * @return name of this local.
-     */
-    public abstract String getName();
-
-    /**
-     * Sets value of this local represented as text.
-     *
-     * @param value a new value of this local represented as text
-     * @throws InvalidExpressionException if the expression is not correct
-     */
-    public abstract void setValue(String value);
 }
 

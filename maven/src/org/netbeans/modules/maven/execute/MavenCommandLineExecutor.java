@@ -249,7 +249,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             File bin = new File(mavenHome, "bin" + File.separator + ex);//NOI18N
             if (bin.exists()) {
                     toRet.add(quoteSpaces(bin.getAbsolutePath(), quote));
-                } else {
+            } else {
                 toRet.add(ex);
             }
         } else {
@@ -266,14 +266,14 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             String keyStr = (String)key;
             if (!keyStr.startsWith(ENV_PREFIX)) {
                 //skip envs, these get filled in later.
-                toRet.add("-D" + key + "=" + quoteSpaces(val, escaped));
+                toRet.add("-D" + key + "=" + (Utilities.isWindows() ? val.replace(quote, escaped) : val.replace(quote, "'")));
             }
         }
         toRet.add("-Dnetbeans.execution=true"); //NOI18N
 
         String localRepo = MavenSettings.getDefault().getCustomLocalRepository();
         if (localRepo != null) {
-            toRet.add("-Dmaven.repo.local=" + quoteSpaces(localRepo, escaped));
+            toRet.add("-Dmaven.repo.local=" + localRepo);
         }
         
 

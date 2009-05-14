@@ -36,29 +36,48 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.kenai.collab.chat;
+package org.netbeans.modules.cnd.remote.sync;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.openide.util.NbBundle;
+import java.io.File;
+import java.io.FileFilter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
- * TODO: delete this class
- * @author Jan Becicka
+ * FileFilter implementation that is based on file sharability
+ * @author Vladimir Kvashin
  */
-public final class SendChatMessageDisabled extends AbstractAction {
+public class SharabilityFilter implements FileFilter {
 
-    public SendChatMessageDisabled() {
-        super(NbBundle.getMessage(WhoIsOnlineDisabled.class, "CTL_SendChatMessageAction"));
+    private Logger logger = Logger.getLogger("cnd.remote.logger"); // NOI18N
+
+    public boolean accept(File file) {
+        final int sharability = SharabilityQuery.getSharability(file);
+        if(logger.isLoggable(Level.FINEST)) {
+            logger.finest(file.getAbsolutePath() + " sharability is " + sharabilityToString(sharability));
+        }
+        switch (sharability) {
+            case SharabilityQuery.NOT_SHARABLE:
+                return false;
+            case SharabilityQuery.MIXED:
+            case SharabilityQuery.SHARABLE:
+            case SharabilityQuery.UNKNOWN:
+                return true;
+            default:
+                CndUtils.assertTrueInConsole(false, "Unexpected sharability value: " + sharability); //NOI18N
+                return true;
+        }
     }
 
-    public void actionPerformed(ActionEvent e) {
-        ChatTopComponent.openAction(ChatTopComponent.findInstance(), "", "", false).actionPerformed(e); // NOI18N
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return System.getProperty(("kenai.com.url"), "https://kenai.com").endsWith("testkenai.com");
+    private static String sharabilityToString(int sharability) {
+        switch (sharability) {
+            case SharabilityQuery.NOT_SHARABLE: return "NOT_SHARABLE"; //NOI18N
+            case SharabilityQuery.MIXED:        return "MIXED"; //NOI18N
+            case SharabilityQuery.SHARABLE:     return "SHARABLE"; //NOI18N
+            case SharabilityQuery.UNKNOWN:      return "UNKNOWN"; //NOI18N
+            default:                            return "UNEXPECTED: " + sharability; //NOI18N
+        }
     }
 }
-

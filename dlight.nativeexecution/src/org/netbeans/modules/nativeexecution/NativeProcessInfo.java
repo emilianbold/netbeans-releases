@@ -38,14 +38,19 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.support.CaseInsensitiveMacroMap;
@@ -62,6 +67,7 @@ public final class NativeProcessInfo {
     private final ExecutionEnvironment execEnv;
     private final MacroMap envVariables;
     private final String command;
+    private final boolean isWindows;
     private final List<String> arguments = new ArrayList<String>();
     private String workingDirectory;
     private boolean unbuffer;
@@ -86,8 +92,9 @@ public final class NativeProcessInfo {
         if (info.listeners != null) {
             listeners = new ArrayList<ChangeListener>(info.listeners);
         }
-        
+
         unbuffer = info.unbuffer;
+        isWindows = info.isWindows;
     }
 
     public NativeProcessInfo(ExecutionEnvironment execEnv, String command) {
@@ -102,6 +109,16 @@ public final class NativeProcessInfo {
         } else {
             envVariables = new MacroMap(macroExpander);
         }
+
+        HostInfo hostInfo = null;
+
+        try {
+            hostInfo = HostInfoUtils.getHostInfo(execEnv);
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+
+        isWindows = hostInfo != null && hostInfo.getOSFamily() == OSFamily.WINDOWS;
     }
 
     public void addNativeProcessListener(ChangeListener listener) {
@@ -168,6 +185,15 @@ public final class NativeProcessInfo {
             cmd = macroExpander.expandPredefinedMacros(command);
         } catch (ParseException ex) {
             cmd = command;
+        }
+
+        // deal with spaces in the command...
+
+        if (isWindows) {
+            cmd = "'" + cmd + "'"; // NOI18N
+            cmd = cmd.replaceAll("\\\\", "/"); // NOI18N
+        } else {
+            cmd = cmd.replaceAll("([^\\\\]) ", "$1\\\\ "); // NOI18N
         }
 
         StringBuilder sb = new StringBuilder(cmd);

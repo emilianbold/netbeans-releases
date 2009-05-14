@@ -71,7 +71,7 @@ import javax.swing.text.StyledDocument;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.util.IssueFinder;
+import org.netbeans.modules.bugtracking.util.IssueFinderUtils;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.StackTraceSupport;
 import org.netbeans.modules.bugzilla.Bugzilla;
@@ -104,7 +104,7 @@ public class CommentsPanel extends JPanel {
                         AttributeSet as = elem.getAttributes();
                         IssueAction issueAction = (IssueAction)as.getAttribute(ISSUE_ATTRIBUTE);
                         if (issueAction != null) {
-                            issueAction.openIssue(elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset()));
+                            issueAction.openIssue(pane.getText(), elem.getStartOffset(), elem.getEndOffset());
                         }
                     }
                 } catch(Exception ex) {
@@ -202,7 +202,7 @@ public class CommentsPanel extends JPanel {
         StackTraceSupport.addHyperlinks(textPane);
 
         // Issues/bugs
-        int[] pos = IssueFinder.getIssueSpans(comment);
+        int[] pos = IssueFinderUtils.getIssueSpans(comment);
         if (pos.length > 0) {
             Style defStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
             Style hlStyle = doc.addStyle("bugBlue", defStyle); // NOI18N
@@ -259,8 +259,8 @@ public class CommentsPanel extends JPanel {
     }
 
     private class IssueAction {
-        void openIssue(String text) {
-            final String issueNo = IssueFinder.getIssueNumber(text);
+        void openIssue(String comment, int startOffset, int endOffset) {
+            final String issueNo = IssueFinderUtils.getIssueNumber(comment, startOffset, endOffset);
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     Issue is = issue.getRepository().getIssue(issueNo);

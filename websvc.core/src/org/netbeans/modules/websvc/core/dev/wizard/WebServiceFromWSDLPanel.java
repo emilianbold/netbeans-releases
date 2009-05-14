@@ -110,12 +110,12 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
     private JAXWSSupport wss;
     private boolean jsr109Supported;
     private boolean jsr109oldSupported;
-    private boolean noMetroInstalledOnGlassFishV3;
     private boolean jaxWsInJ2ee14Supported;
     private WebModule wm;
     private RequestProcessor.Task generateWsdlModelTask;
     private URL wsdlURL;
     private WsdlWrapperHandler wsdlHandler;
+    private WSStackUtils wsStackUtils;
 
     /** Creates new form WebServiceFromWSDLPanel */
     public WebServiceFromWSDLPanel(Project project) {
@@ -388,31 +388,12 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
 
     private void initJsr109Info() {
 
-        WSStackUtils wsStackUtils = new WSStackUtils(project);
+        wsStackUtils = new WSStackUtils(project);
         jsr109Supported = wsStackUtils.isJsr109Supported();
         jaxWsInJ2ee14Supported = ServerType.JBOSS == wsStackUtils.getServerType();
-        noMetroInstalledOnGlassFishV3 = !wsStackUtils.isWsitSupported() && ServerType.GLASSFISH_V3 == wsStackUtils.getServerType();
         jsr109oldSupported = wsStackUtils.isJsr109OldSupported();
         wm = WebModule.getWebModule(project.getProjectDirectory());
         wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-    }
-
-    /**
-     * If the project the web service is being created is not on a JSR 109 platform,
-     * its Java source level must be at least 1.5
-     */
-    private boolean checkNonJsr109Valid() {
-        if (wss != null) {
-            if ((!jsr109Supported && !jsr109oldSupported) || jaxWsInJ2ee14Supported ||
-                    (!jsr109Supported && jsr109oldSupported/* && jwsdpSupported*/)) {
-                if (Util.isSourceLevel14orLower(project)) {
-                    wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                            NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_NeedProperSourceLevel")); // NOI18N
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 
     private boolean projectHasEmbeddedSpaces() {
@@ -431,14 +412,13 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
     }
 
     boolean isValid(WizardDescriptor wizardDescriptor) {
-        //first check for JDK compliance (for non-JSR 109)
-        if (!checkNonJsr109Valid()) {
-            return false;
-        }
-        if (supportsJaxrpc() && WebServicesSupport.getWebServicesSupport(project.getProjectDirectory()) == null) {
-            // check if jaxrpc plugin installed
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_NoJaxrpcPluginFound")); // NOI18N
-            return false;
+
+        WSStackUtils.ErrorMessage message = wsStackUtils.getErrorMessage(WSStackUtils.WizardType.WS_FROM_WSDL);
+        if (message != null) {
+            wizardDescriptor.putProperty(message.getWizardMessageProperty(), message.getText());
+            if (message.isSerious()) {
+                return false;
+            }
         }
 
         String wsdlFilePath = jTextFieldWSDLFile.getText().trim();
@@ -491,7 +471,11 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                                 NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_ServiceNameExists", wsdlServiceHandler.getServiceName()));
                         return false; // Service name exists                        
                     } else {
-                        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
+                        if (message != null) {
+                            wizardDescriptor.putProperty(message.getWizardMessageProperty(), message.getText()); //NOI18N
+                        } else {
+                            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");
+                        }
                         return true;
                     }
                 } else {
@@ -507,13 +491,11 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(WebServiceFromWSDLPanel.class, "MSG_SPACE_IN_PROJECT_PATH")); // NOI18N
         } else {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
-        }
-
-        if (noMetroInstalledOnGlassFishV3) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, NbBundle.getMessage(WebServiceFromWSDLPanel.class, "LBL_NoMetroInstalled")); //NOI18N            
-        } else {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
+            if (message != null) {
+                wizardDescriptor.putProperty(message.getWizardMessageProperty(), message.getText()); //NOI18N
+            } else {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");
+            }
         }
 
         return true;

@@ -2225,7 +2225,7 @@ public class GdbDebugger implements PropertyChangeListener {
      *
      * @return list of local variables
      */
-    public List<GdbVariable> getLocalVariables() {
+    List<GdbVariable> getLocalVariables() {
         assert !(Thread.currentThread().getName().equals("GdbReaderRP"));
         synchronized (localVariables) {
             return new ArrayList<GdbVariable>(localVariables);

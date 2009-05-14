@@ -38,12 +38,16 @@
  */
 package org.netbeans.modules.dlight.perfan.spi;
 
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -61,10 +65,23 @@ import org.netbeans.modules.dlight.perfan.storage.impl.ThreadsStatistic;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 public class MonitorsUpdateService {
 
-    private static Pattern leakInfoPattern = Pattern.compile("^ *([0-9]+) [^<]*$"); // NOI18N
+    private static final Pattern METRIC_LINE_PATTERN = Pattern.compile("^ *([0-9]+(?:,[0-9]*)?) [^<]*$"); // NOI18N
+    private static final DecimalFormat METRIC_FORMAT = new DecimalFormat();
+    static {
+        METRIC_FORMAT.getDecimalFormatSymbols().setDecimalSeparator(',');
+    }
+    private static final Metrics LEAK_METRICS = Metrics.constructFrom(
+            Arrays.asList(SunStudioDCConfiguration.c_leakSize),
+            Arrays.asList(SunStudioDCConfiguration.c_leakSize));
+    private static final Metrics SYNC_METRICS = Metrics.constructFrom(
+            Arrays.asList(SunStudioDCConfiguration.c_eSync),
+            Arrays.asList(SunStudioDCConfiguration.c_eSync));
+
     private static final Logger log = DLightLogger.getLogger(MonitorsUpdateService.class);
     private static final List<String> syncColNames = Collections.unmodifiableList(
             Arrays.asList(SunStudioDCConfiguration.c_ulockSummary.getColumnName(), SunStudioDCConfiguration.c_threadsCount.getColumnName()));//NOI18N
@@ -76,7 +93,6 @@ public class MonitorsUpdateService {
     private final String experimentDir;
     private final boolean isSyncMonitor;
     private final boolean isMemoryMonitor;
-    private final Metrics metrics;
     private final Object updaterLock = new String(MonitorsUpdateService.class.getName() + " UpdaterLock"); // NOI18N
     private Updater updater = null;
     private BlockingQueue<Object> requestsQueue = new LinkedBlockingQueue<Object>(1);
@@ -91,10 +107,6 @@ public class MonitorsUpdateService {
         this.experimentDir = experimentDir;
         isSyncMonitor = collectedInfo.contains(SunStudioDCConfiguration.CollectedInfo.SYNCSUMMARY);
         isMemoryMonitor = collectedInfo.contains(SunStudioDCConfiguration.CollectedInfo.MEMSUMMARY);
-        metrics = isMemoryMonitor ? Metrics.constructFrom(
-                Arrays.asList(SunStudioDCConfiguration.c_leakSize),
-                Arrays.asList(SunStudioDCConfiguration.c_leakSize))
-                : null;
     }
 
     public void start() {
@@ -102,12 +114,21 @@ public class MonitorsUpdateService {
             return;
         }
 
+        boolean linuxMode;
+        try {
+            linuxMode = HostInfoUtils.getHostInfo(execEnv).getOSFamily() == HostInfo.OSFamily.LINUX;
+        } catch (CancellationException ex) {
+            linuxMode = false;
+        } catch (IOException ex) {
+            linuxMode = false;
+        }
+
         synchronized (updaterLock) {
             if (updater != null) {
                 return;
             }
 
-            updater = new Updater();
+            updater = new Updater(linuxMode);
             DLightExecutorService.submit(updater, MonitorsUpdateService.class.getName());
         }
     }
@@ -131,8 +152,10 @@ public class MonitorsUpdateService {
 
         private volatile boolean isStopped = false;
         private volatile ErprintSession erprintSession;
+        private boolean linuxMode;
 
-        public Updater() {
+        public Updater(boolean linuxMode) {
+            this.linuxMode = linuxMode;
         }
 
         public void stop() {
@@ -161,6 +184,9 @@ public class MonitorsUpdateService {
             }, 1, TimeUnit.SECONDS, "SunStudio monitors update task"); // NOI18N
 
             try {
+                double prevTime = 0;
+                double prevLocks = 0;
+
                 while (!isStopped) {
                     try {
                         requestsQueue.take();
@@ -170,57 +196,57 @@ public class MonitorsUpdateService {
 
                     boolean restarted = false;
                     List<DataRow> newData = new ArrayList<DataRow>();
-                    double prevTime = 0;
-                    double prevLocks = 0;
 
                     try {
                         if (isSyncMonitor) {
                             ExperimentStatistics stat = erprintSession.getExperimentStatistics(5, !restarted);
                             ThreadsStatistic threadsStatistic = erprintSession.getThreadsStatistic(5, false);
                             restarted = true;
-                            if (stat != null) {
-                                double currTime = stat.getTotalThreadTime();
-                                double currLocks = stat.getULock();
+
+                            int currThreads = threadsStatistic.getThreadsCount();
+                            double currTime = stat.getDuration();
+                            double currLocks;
+
+                            if (linuxMode) {
+                                // on Linux we can't rely on User Lock line of experiment statistics
+                                // see IZ#164758
+                                String[] syncFunctions = erprintSession.getHotFunctions(SYNC_METRICS, Integer.MAX_VALUE, 5, false);
+                                if (syncFunctions == null || syncFunctions.length == 0) {
+                                    currLocks = prevLocks;
+                                } else {
+                                    currLocks = sumMetrics(syncFunctions);
+                                }
+                            } else {
+                                currLocks = stat.getULock();
+                            }
+
+                            if (0.1 < currTime - prevTime) {
                                 newData.add(new DataRow(syncColNames, Arrays.asList(
-                                        100 * (currLocks - prevLocks) / (currTime - prevTime),
-                                        threadsStatistic.getThreadsCount())));
+                                        100 * (currLocks - prevLocks) / (currTime - prevTime) / currThreads,
+                                        currThreads)));
+
+                                //System.out.printf("currTime: %f, currThreads: %d, currLocks: %f\n", currTime, currThreads, currLocks);
+                                //System.out.printf("(100 * (%f - %f) / (%f - %f) / %d = %f\n",
+                                //        currLocks, prevLocks, currTime, prevTime, currThreads,
+                                //        100 * (currLocks - prevLocks) / (currTime - prevTime) / currThreads);
+
                                 prevTime = currTime;
                                 prevLocks = currLocks;
                             }
                         }
 
                         if (isMemoryMonitor) {
-                            String[] result = erprintSession.getHotFunctions(metrics, Integer.MAX_VALUE, 5, !restarted);
+                            String[] leakFunctions = erprintSession.getHotFunctions(LEAK_METRICS, Integer.MAX_VALUE, 5, !restarted);
                             restarted = true;
 
-                            if (result == null || result.length == 0) {
-                                continue;
+                            long leaks;
+                            if (leakFunctions == null || leakFunctions.length == 0) {
+                                leaks = 0;
+                            } else {
+                                leaks = (long) sumMetrics(leakFunctions);
                             }
 
-                            Long leak_sum = new Long(0);
-
-                            for (String line : result) {
-                                Matcher m = leakInfoPattern.matcher(line);
-
-                                if (!m.matches()) {
-                                    continue;
-                                }
-
-                                String value = m.group(1);
-
-                                if (value != null) {
-                                    Long lvalue = Long.valueOf(0);
-
-                                    try {
-                                        lvalue = Long.valueOf(value);
-                                    } catch (NumberFormatException ex) {
-                                    }
-
-                                    leak_sum += lvalue.longValue();
-                                }
-                            }
-
-                            newData.add(new DataRow(leaksColNames, Arrays.asList(leak_sum)));
+                            newData.add(new DataRow(leaksColNames, Arrays.asList(leaks)));
                         }
                     } catch (Throwable ex) {
                         ex.printStackTrace();
@@ -239,5 +265,22 @@ public class MonitorsUpdateService {
                 }
             }
         }
+
+        private double sumMetrics(String[] erprintOutput) {
+            double sum = 0;
+            for (String line : erprintOutput) {
+                Matcher m = METRIC_LINE_PATTERN.matcher(line);
+                if (m.matches()) {
+                    String stringValue = m.group(1);
+                    try {
+                        sum += METRIC_FORMAT.parse(stringValue).doubleValue();
+                    } catch (ParseException ex) {
+                        log.log(Level.WARNING, null, ex);
+                    }
+                }
+            }
+            return sum;
+        }
+
     }
 }

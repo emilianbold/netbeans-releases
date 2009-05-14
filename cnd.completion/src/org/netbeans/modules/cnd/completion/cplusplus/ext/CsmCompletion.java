@@ -570,7 +570,7 @@ abstract public class CsmCompletion {
         }
 
         public boolean isTemplateBased() {
-            return false;
+            return CsmKindUtilities.isTemplateParameter(clazz);
         }
 
         public CharSequence getClassifierText() {

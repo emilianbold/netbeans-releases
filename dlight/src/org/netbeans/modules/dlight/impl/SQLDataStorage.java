@@ -241,6 +241,17 @@ public abstract class SQLDataStorage extends DataStorage {
 
         tables.put(tableName, metadata);
 
+        for (Column col : metadata.getIndexedColumns()) {
+            try {
+                connection.prepareStatement(
+                        "create index " + tableName + "_" // NOI18N
+                        + col.getColumnName() + "_index on " // NOI18N
+                        + tableName + "(" + col.getColumnName() + ")").execute(); // NOI18N
+            } catch (SQLException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+        }
+
         DLightExecutorService.submit(new Runnable() {
 
             public void run() {

@@ -36,29 +36,30 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.kenai.collab.chat;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.dlight.spi;
 
 /**
- * TODO: delete this class
- * @author Jan Becicka
+ *
+ * @author mt154047
  */
-public final class ChatDisabled extends AbstractAction {
+public interface CppSymbolDemanglerFactory {
 
-    public ChatDisabled() {
-        super(NbBundle.getMessage(WhoIsOnlineDisabled.class, "CTL_ChatAction"), new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/chat.png")));
-    }
+    /**
+     *
+     * @return
+     */
+    public CppSymbolDemangler getForCurrentSession();
 
-    public void actionPerformed(ActionEvent e) {
-        ChatTopComponent.openAction(ChatTopComponent.findInstance(), "", "", false).actionPerformed(e); // NOI18N
-    }
-    @Override
-    public boolean isEnabled() {
-        return System.getProperty(("kenai.com.url"), "https://kenai.com").endsWith("testkenai.com"); //NII18N
+    /**
+     * 
+     * @param cppCompiler
+     * @return
+     */
+    public CppSymbolDemangler getDemanglerFor(CPPCompiler cppCompiler);
+    
+    public enum CPPCompiler{
+        GNU,
+        SS
     }
 }
