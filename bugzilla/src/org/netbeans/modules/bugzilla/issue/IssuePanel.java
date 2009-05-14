@@ -1390,6 +1390,7 @@ public class IssuePanel extends javax.swing.JPanel {
         milestoneWarning.setVisible(usingTargetMilestones);
         TaskData data = issue.getTaskData();
         if (data.isNew()) {
+            String summary = summaryField.getText();
             issue.setFieldValue(BugzillaIssue.IssueField.PRODUCT, product);
             BugzillaRepositoryConnector connector = Bugzilla.getInstance().getRepositoryConnector();
             try {
@@ -1398,6 +1399,7 @@ public class IssuePanel extends javax.swing.JPanel {
             } catch (CoreException cex) {
                 cex.printStackTrace();
             }
+            summaryField.setText(summary); // Issue 165107
         }
     }//GEN-LAST:event_productComboActionPerformed
 
