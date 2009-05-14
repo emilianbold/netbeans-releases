@@ -210,6 +210,7 @@ public class RemoteServerList implements ServerListImplementation {
         } else {
             record.setDeleted(false);
             record.setDisplayName(displayName);
+            record.setSyncFactory(syncFactory);
             unlisted.remove(record);
         }
         items.add(record);
