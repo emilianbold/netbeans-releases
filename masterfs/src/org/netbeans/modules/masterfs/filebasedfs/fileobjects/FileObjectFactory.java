@@ -75,6 +75,7 @@ import org.openide.util.Utilities;
  */
 public final class FileObjectFactory {
     public static Map AllFactories = new HashMap();
+    public static boolean WARNINGS = true;
     final Map allIBaseFileObjects = Collections.synchronizedMap(new WeakHashMap());
     private BaseFileObj root;
     public static enum Caller {
@@ -208,7 +209,7 @@ public final class FileObjectFactory {
         if (!expectedExists && (caller.equals(Caller.GetParent) || caller.equals(Caller.ToFileObject))) {
             return true;
         }
-        if (!Utilities.isMac() && caller != null && !caller.equals(Caller.GetChildern)) {
+        if (isWarningEnabled() && caller != null && !caller.equals(Caller.GetChildern)) {
             boolean realExists = file.exists();
             boolean notsame = expectedExists != realExists;
             if (notsame) {
@@ -239,7 +240,7 @@ public final class FileObjectFactory {
         sb.append(file.isDirectory() ? "folder: " : "file: "); //NOI18N
         sb.append(file.getAbsolutePath());
         sb.append(" (Possibly not refreshed FileObjects when external command finished.");//NOI18N
-        sb.append(" For additional information see: http://wiki.netbeans.org/wiki/view/FileSystems)");//NOI18N        
+        sb.append(" For additional information see: http://wiki.netbeans.org/wiki/view/FileSystems)");//NOI18N
         IllegalStateException ise = new IllegalStateException(sb.toString());
         // set to INFO level to be notified about possible problems.
         Logger.getLogger(getClass().getName()).log(Level.FINE, ise.getMessage(), ise);
@@ -614,6 +615,10 @@ public final class FileObjectFactory {
 
     public static synchronized Map<File, FileObjectFactory> factories() {
         return new HashMap<File, FileObjectFactory>(AllFactories);
+    }
+
+    public boolean isWarningEnabled() {
+        return WARNINGS && !Utilities.isMac();
     }
 
     //only for tests purposes
