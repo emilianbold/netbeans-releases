@@ -461,7 +461,7 @@ public class CompilerSetManager {
             return PlatformTypes.PLATFORM_WINDOWS;
         } else if (os.toLowerCase().contains("linux")) { // NOI18N
             return PlatformTypes.PLATFORM_LINUX;
-        } else if (os.toLowerCase().contains("mac")) { // NOI18N
+        } else if (os.toLowerCase().contains("mac") || os.startsWith("Darwin")) { // NOI18N
             return PlatformTypes.PLATFORM_MACOSX;
         } else {
             return PlatformTypes.PLATFORM_GENERIC;
