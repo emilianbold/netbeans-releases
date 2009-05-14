@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,75 +31,30 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.core.syntax;
+package org.netbeans.modules.html.editor.completion;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.io.IOException;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import org.netbeans.modules.parsing.api.Embedding;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.EmbeddingProvider;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
-import org.openide.util.Exceptions;
 
 /**
  *
- * @author Jan Lahoda
+ * @author marekfukala
  */
-public class EmbeddingProviderImpl extends EmbeddingProvider {
+public class HtmlCompletionQueryTest_XHTML extends HtmlCompletionQueryTest {
 
-    @Override
-    public List<Embedding> getEmbeddings(Snapshot snapshot) {
-        //XXX: should not use the document, I guess:
-        Document doc = snapshot.getSource().getDocument(false);
-
-        if (doc == null) {
-            return Collections.emptyList();
-        }
-
-        SimplifiedJspServlet gen = new SimplifiedJspServlet(snapshot, doc);
-        
-        try {
-            gen.process();
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        
-        Embedding e = gen.getSimplifiedServlet();
-        
-        if (e != null) {
-            return Collections.singletonList(e);
-        } else {
-            return Collections.emptyList();
-        }
+    public HtmlCompletionQueryTest_XHTML() throws IOException, BadLocationException {
+        super(HtmlCompletionQueryTest_XHTML.class.getName());
     }
 
     @Override
-    public int getPriority() {
-        return 100;
-    }
-
-    @Override
-    public void cancel() {
-        //well...
+    protected String getPublicID() {
+        return "-//W3C//DTD XHTML 1.0 Strict//EN";
     }
     
-    public static final class Factory extends TaskFactory {
-
-        @Override
-        public Collection<SchedulerTask> create(final Snapshot snapshot) {
-            return Collections.<SchedulerTask>singletonList(new EmbeddingProviderImpl());
-        }
-        
-    }
-
 }
