@@ -56,6 +56,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.DebugProjectAction;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.modules.debugger.actions.DebugJavaFileAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
@@ -115,7 +116,7 @@ public class CloseSessionsTest extends JellyTestCase {
             //place breakpoint
             Utilities.toggleBreakpoint(eo, 104);
             //start debugging
-            new DebugProjectAction().perform(projectNode);
+            new DebugJavaFileAction().perform(beanNode);
             //wait for breakpoint
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
             List<? extends JPDADebugger> list = DebuggerManager
