@@ -428,9 +428,9 @@ public class HibernateUtil {
         List<String> mappingFiles = new ArrayList<String>(files.size());
 
         SourceGroup[] javaSourceGroup = getSourceGroups(project);
-        for (SourceGroup sourceGroup : javaSourceGroup) {
-            FileObject root = sourceGroup.getRootFolder();
-            for (FileObject fo : files) {
+        for (FileObject fo : files) {
+            for (SourceGroup sourceGroup : javaSourceGroup) {
+                FileObject root = sourceGroup.getRootFolder();
                 String relativePath = FileUtil.getRelativePath(root, fo);
                 if (relativePath != null) {
                     assert relativePath.length() > 0;
