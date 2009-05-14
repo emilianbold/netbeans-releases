@@ -109,7 +109,7 @@ public final class ThreadsHistoryAction extends AbstractAction {
                     if (!KeyboardPopupSwitcher.isShown()) {
                         KeyboardPopupSwitcher.selectItem(
                                 createSwitcherItems(threads),
-                                releaseKey, triggerKey, true); // (evt.getModifiers() & KeyEvent.SHIFT_MASK) == 0
+                                releaseKey, triggerKey, true, true); // (evt.getModifiers() & KeyEvent.SHIFT_MASK) == 0
                     }
                     return;
                 }

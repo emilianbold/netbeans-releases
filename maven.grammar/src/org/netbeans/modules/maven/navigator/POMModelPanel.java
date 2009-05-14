@@ -266,8 +266,16 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
     
     public void run() {
         DataObject currentFile = current;
-        if (currentFile != null) {
+        //#164852 somehow a folder dataobject slipped in, test mimetype to avoid that.
+        // the root cause of the problem is unknown though
+        if (currentFile != null && "text/x-maven-pom+xml".equals(currentFile.getPrimaryFile().getMIMEType())) { //NOI18N
             File file = FileUtil.toFile(currentFile.getPrimaryFile());
+            //now attach the listener to the textcomponent
+            final EditorCookie.Observable ec = currentFile.getLookup().lookup(EditorCookie.Observable.class);
+            if (ec == null) {
+                //how come?
+                return;
+            }
             // can be null for stuff in jars?
             if (file != null) {
                 try {
@@ -323,12 +331,6 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                 });
             }
             
-            //now attach the listener to the textcomponent
-            final EditorCookie.Observable ec = currentFile.getLookup().lookup(EditorCookie.Observable.class);
-            if (ec == null) {
-                //how come?
-                return;
-            }
             try {
                 ec.openDocument(); //wait to editor to open
             } catch (IOException ex) {

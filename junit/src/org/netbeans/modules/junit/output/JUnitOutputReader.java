@@ -556,8 +556,9 @@ final class JUnitOutputReader {
             if (resultsDir != null) {
                 File reportFile = findReportFile();
                 if ((reportFile != null) && isValidReportFile(reportFile)) {
-                    TestSuite reportSuite = parseReportFile(reportFile);
+                    JUnitTestSuite reportSuite = parseReportFile(reportFile);
                     if ((reportSuite != null) && (reportSuite.getName().equals(currentSuite.getName()))) {
+                        lastSuiteTime = reportSuite.getElapsedTime();
                         for(Testcase tc: currentSuite.getTestcases()){
                             if (!tc.getOutput().isEmpty()){
                                 List<String> output = new ArrayList();
@@ -785,13 +786,13 @@ final class JUnitOutputReader {
         
     }
 
-    private TestSuite parseReportFile(File reportFile) {
+    private JUnitTestSuite parseReportFile(File reportFile) {
         final long fileSize = reportFile.length();
         if ((fileSize < 0l) || (fileSize > MAX_REPORT_FILE_SIZE)) {
             return null;
         }
 
-        TestSuite suite = null;
+        JUnitTestSuite suite = null;
         try {
             suite = XmlOutputParser.parseXmlOutput(
                     new InputStreamReader(

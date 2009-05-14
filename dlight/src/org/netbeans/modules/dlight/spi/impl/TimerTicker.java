@@ -68,7 +68,7 @@ public final class TimerTicker
 
     static {
         tableMetadata = new DataTableMetadata(TimerIDPConfiguration.TIME_ID,
-            Arrays.asList(TimerIDPConfiguration.TIME_INFO));
+            Arrays.asList(TimerIDPConfiguration.TIME_INFO), null);
     }
 
     TimerTicker(TimerIDPConfiguration configuration) {

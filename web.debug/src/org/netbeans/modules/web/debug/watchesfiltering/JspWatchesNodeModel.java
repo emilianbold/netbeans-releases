@@ -41,10 +41,17 @@
 
 package org.netbeans.modules.web.debug.watchesfiltering;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.viewmodel.ModelEvent;
+import org.openide.util.RequestProcessor;
 
 /**
  * Node model for JSP EL watches.
@@ -54,6 +61,14 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 public class JspWatchesNodeModel implements NodeModel {
 
     private static final String ICON_BASE ="org/netbeans/modules/debugger/resources/watchesView/Watch";
+
+    private final Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
+    private final Map<JspElWatch, String> shortDescriptionMap = new HashMap<JspElWatch, String>();
+    private RequestProcessor evaluationRP;
+
+    public JspWatchesNodeModel(ContextProvider lookupProvider) {
+        evaluationRP = lookupProvider.lookupFirst(null, RequestProcessor.class);
+    }
 
     public String getDisplayName(Object node) throws UnknownTypeException {
         if (!(node instanceof JspElWatch)) throw new UnknownTypeException(node);
@@ -68,8 +83,31 @@ public class JspWatchesNodeModel implements NodeModel {
 
     public String getShortDescription(Object node) throws UnknownTypeException {
         if (!(node instanceof JspElWatch)) throw new UnknownTypeException(node);
-        JspElWatch watch = (JspElWatch) node;
+        final JspElWatch watch = (JspElWatch) node;
         
+        synchronized (shortDescriptionMap) {
+            String shortDescription = shortDescriptionMap.remove(watch);
+            if (shortDescription != null) {
+                return shortDescription;
+            }
+        }
+        // Called from AWT - we need to postpone the work...
+        evaluationRP.post(new Runnable() {
+            public void run() {
+                String shortDescription = getShortDescriptionSynch(watch);
+                if (shortDescription != null && !"".equals(shortDescription)) {
+                    synchronized (shortDescriptionMap) {
+                        shortDescriptionMap.put(watch, shortDescription);
+                    }
+                    fireModelChange(new ModelEvent.NodeChanged(JspWatchesNodeModel.this,
+                        watch, ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK));
+                }
+            }
+        });
+        return "";
+    }
+
+    private static String getShortDescriptionSynch(JspElWatch watch) {
         String t = watch.getType ();
         String e = watch.getExceptionDescription ();
         if (e != null) {
@@ -86,9 +124,26 @@ public class JspWatchesNodeModel implements NodeModel {
         }
     }
 
-    public void addModelListener(ModelListener l) {
+    public void addModelListener (ModelListener l) {
+        synchronized (modelListeners) {
+            modelListeners.add(l);
+        }
     }
 
-    public void removeModelListener(ModelListener l) {
+    public void removeModelListener (ModelListener l) {
+        synchronized (modelListeners) {
+            modelListeners.remove(l);
+        }
     }
+
+    protected void fireModelChange(ModelEvent me) {
+        ModelListener[] listeners;
+        synchronized (modelListeners) {
+            listeners = modelListeners.toArray(new ModelListener[]{});
+        }
+        for (int i = 0; i < listeners.length; i++) {
+            listeners[i].modelChanged(me);
+        }
+    }
+
 }

@@ -51,6 +51,7 @@ import org.openide.filesystems.FileObject;
 public class JUnitTestSuite extends TestSuite{
     private final TestSession session;
     private FileObject suiteFO = null;
+    private long elapsedTime = 0;
 
     public JUnitTestSuite(String name, TestSession session) {
         super(name);
@@ -65,5 +66,13 @@ public class JUnitTestSuite extends TestSuite{
             }
         }
         return suiteFO;
+    }
+
+    public long getElapsedTime() {
+        return elapsedTime;
+    }
+
+    public void setElapsedTime(long elapsedTime) {
+        this.elapsedTime = elapsedTime;
     }
 }

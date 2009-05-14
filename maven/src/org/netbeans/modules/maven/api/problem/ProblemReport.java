@@ -55,7 +55,8 @@ public final class ProblemReport {
     private String shortDesc;
     private String longDesc;
     private Action action;
-    
+    private String id;
+
     public ProblemReport(int severity, String desc, String longDesc, Action correct) {
         level = severity;
         shortDesc = desc;
@@ -79,4 +80,11 @@ public final class ProblemReport {
         return level;
     }
     
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 }
