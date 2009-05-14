@@ -94,7 +94,7 @@ public class ProjectInfo {
                     }
                     WSStack<JaxRpc> jaxRpcStack = JaxRpcStackProvider.getJaxWsStack(j2eePlatform);
                     if (jaxRpcStack != null) {
-                        jsr109oldSupported = jaxRpcStack.isFeatureSupported(JaxRpc.Feature.JSR109_OLD);
+                        jsr109oldSupported = jaxRpcStack.isFeatureSupported(JaxRpc.Feature.JSR109);
                     }
                 } catch (InstanceRemovedException ex) {
                     Logger.getLogger(getClass().getName()).log(Level.FINE, "Failed to find J2eePlatform", ex);

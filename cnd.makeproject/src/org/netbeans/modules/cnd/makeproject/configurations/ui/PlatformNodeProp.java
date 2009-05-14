@@ -41,28 +41,26 @@
 
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
-import java.beans.PropertyEditor;
-import java.beans.PropertyEditorSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PlatformConfiguration;
 import org.openide.nodes.Node;
 
 public class PlatformNodeProp extends Node.Property {
     
     private PlatformConfiguration platformConfiguration;
-    private PlatformEditor editor;
+//    private PlatformEditor editor;
     private boolean canWrite;
     private String name;
     private String description;
 
     @SuppressWarnings("unchecked")
     public PlatformNodeProp(PlatformConfiguration platformConfiguration, boolean canWrite, String name, String description) {
-        super(Integer.class);
+        super(String.class);
         this.platformConfiguration = platformConfiguration;
         this.canWrite = canWrite;
         this.name = name;
         this.description = description;
         platformConfiguration.setPlatformNodeProp(this);
-        editor = null;
+//        editor = null;
     }
 
     @Override
@@ -85,27 +83,28 @@ public class PlatformNodeProp extends Node.Property {
     }
     
     public Object getValue() {
-        return Integer.valueOf(platformConfiguration.getValue());
+//        return Integer.valueOf(platformConfiguration.getValue());
+        return platformConfiguration.getName();
     }
     
     public void setValue(Object v) {
         platformConfiguration.setValue((String)v);
     }
     
-    @Override
-    public void restoreDefaultValue() {
-        platformConfiguration.reset();
-    }
+//    @Override
+//    public void restoreDefaultValue() {
+//        platformConfiguration.reset();
+//    }
+//
+//    @Override
+//    public boolean supportsDefaultValue() {
+//        return true;
+//    }
     
-    @Override
-    public boolean supportsDefaultValue() {
-        return true;
-    }
-    
-    @Override
-    public boolean isDefaultValue() {
-        return !platformConfiguration.getModified();
-    }
+//    @Override
+//    public boolean isDefaultValue() {
+//        return !platformConfiguration.getModified();
+//    }
 
     public boolean canWrite() {
         return canWrite;
@@ -115,41 +114,41 @@ public class PlatformNodeProp extends Node.Property {
         return true;
     }
 
-    @Override
-    public PropertyEditor getPropertyEditor() {
-        if (editor == null) {
-            editor = new PlatformEditor();
-        }
-        return editor;
-    }
+//    @Override
+//    public PropertyEditor getPropertyEditor() {
+//        if (editor == null) {
+//            editor = new PlatformEditor();
+//        }
+//        return editor;
+//    }
     
-    public void repaint() {
-        ((PlatformEditor) getPropertyEditor()).repaint();
-    }
+//    public void repaint() {
+//        ((PlatformEditor) getPropertyEditor()).repaint();
+//    }
 
-    private class PlatformEditor extends PropertyEditorSupport {
-        @Override
-        public String getJavaInitializationString() {
-            return getAsText();
-        }
-        
-        @Override
-        public String getAsText() {
-            return platformConfiguration.getName();
-        }
-        
-        @Override
-        public void setAsText(String text) throws IllegalArgumentException {
-            super.setValue(text);
-        }
-        
-        @Override
-        public String[] getTags() {
-            return platformConfiguration.getNames();
-        }
-        
-        public void repaint() {
-            firePropertyChange();
-        }
-    }
+//    private class PlatformEditor extends PropertyEditorSupport {
+//        @Override
+//        public String getJavaInitializationString() {
+//            return getAsText();
+//        }
+//
+//        @Override
+//        public String getAsText() {
+//            return platformConfiguration.getName();
+//        }
+//
+//        @Override
+//        public void setAsText(String text) throws IllegalArgumentException {
+//            super.setValue(text);
+//        }
+//
+//        @Override
+//        public String[] getTags() {
+//            return platformConfiguration.getNames();
+//        }
+//
+//        public void repaint() {
+//            firePropertyChange();
+//        }
+//    }
 }

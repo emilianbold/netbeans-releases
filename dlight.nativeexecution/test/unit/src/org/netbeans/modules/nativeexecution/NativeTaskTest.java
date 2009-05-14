@@ -73,7 +73,8 @@ import org.openide.windows.InputOutput;
  */
 public class NativeTaskTest extends NativeExecutionTest {
 
-    public NativeTaskTest() {
+    public NativeTaskTest(String name) {
+        super(name);
     }
 
     @BeforeClass
@@ -84,13 +85,16 @@ public class NativeTaskTest extends NativeExecutionTest {
     public static void tearDownClass() throws Exception {
     }
 
-    @Before
-    public void setUp() {
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
     }
 
-    @After
-    public void tearDown() {
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
     }
+
     static int count = 0;
 
     @Test
@@ -221,7 +225,7 @@ public class NativeTaskTest extends NativeExecutionTest {
         System.out.println("run"); // NOI18N
 
         final ExecutionEnvironment ee =
-                ExecutionEnvironmentFactory.createNew("ak119685", "localhost", 22); // NOI18N
+                ExecutionEnvironmentFactory.createNew(System.getProperty("user.name"), "localhost", 22); // NOI18N
 
 //        MacroExpander macroExpander = MacroExpanderFactory.getExpander(ee);
 //        try {

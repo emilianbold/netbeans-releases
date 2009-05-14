@@ -51,7 +51,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.ProjectBridge;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.Utilities;
 
 /**
@@ -220,7 +220,7 @@ public class DiscoveryUtils {
                 path = source.getCompilePath()+File.separator+path;
             }
             File file = new File(path);
-            path = FileUtil.normalizeFile(file).getAbsolutePath();
+            path = CndFileUtils.normalizeFile(file).getAbsolutePath();
         }
         if (Utilities.isWindows()) {
             path = path.replace('\\', '/'); // NOI18N

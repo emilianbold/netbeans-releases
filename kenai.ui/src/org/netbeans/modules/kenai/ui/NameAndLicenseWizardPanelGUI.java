@@ -55,6 +55,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.PasswordAuthentication;
@@ -99,22 +101,20 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- * TODO:
- * - all text from bundles
- * - all possible error states and messages
  *
  * @author Milan Kubec
  */
 public class NameAndLicenseWizardPanelGUI extends JPanel {
-    private RequestProcessor errorChecker = new RequestProcessor("Error Checker");
+    
+    private RequestProcessor errorChecker = new RequestProcessor("Error Checker"); // NOI18N
 
     private WizardDescriptor settings;
 
     private NameAndLicenseWizardPanel panel;
     private Pattern prjNamePattern;
 
-    private static final String PRJ_NAME_REGEXP = "[a-z]{1}[a-z0-9-]+";
-    private static final String PRJ_NAME_PREVIEW_PREFIX = "http://kenai.com/projects/";
+    private static final String PRJ_NAME_REGEXP = "[a-z]{1}[a-z0-9-]+"; // NOI18N
+    private static final String PRJ_NAME_PREVIEW_PREFIX = "http://kenai.com/projects/"; // NOI18N
 
     private static final String EMPTY_ELEMENT = "";
 
@@ -175,6 +175,19 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 
         setupLicensesListModel();
         setPreferredSize(new Dimension(Math.max(700, getPreferredSize().width), 450));
+
+        Kenai.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (Kenai.PROP_LOGIN.equals(evt.getPropertyName())) {
+                    if (Kenai.getDefault().getPasswordAuthentication() != null) {
+                        loginButton.setEnabled(false);
+                    } else {
+                        loginButton.setEnabled(true);
+                    }
+                }
+            }
+        });
+
     }
 
     private void setAutoCommit(boolean autoCommit) {
@@ -210,7 +223,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
                 } else {
                     // XXX this item needs to be selected
                     model.addElement(NbBundle.getMessage(NameAndLicenseWizardPanel.class,
-                            "NameAndLicenseWizardPanelGUI.noLicensesError"));
+                            "NameAndLicenseWizardPanelGUI.noLicensesError")); // NOI18N
                     licensesLoaded = false;
                 }
                 if (!licenseList.isEmpty()) {
@@ -258,8 +271,8 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     public String getName() {
         return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
                 panel==null || panel.isFinishPanel() ?
-                    "NameAndLicenseWizardPanelGUI.shareLocalName":
-                    "NameAndLicenseWizardPanelGUI.panelName");
+                    "NameAndLicenseWizardPanelGUI.shareLocalName": // NOI18N
+                    "NameAndLicenseWizardPanelGUI.panelName"); // NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -355,7 +368,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 
         projectNameTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectNameTextField.AccessibleContext.accessibleName")); // NOI18N
         projectNameTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectNameTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        Mnemonics.setLocalizedText(kenaiURLPreviewLabel, PRJ_NAME_PREVIEW_PREFIX + "...");
+        Mnemonics.setLocalizedText(kenaiURLPreviewLabel, PRJ_NAME_PREVIEW_PREFIX + "..."); 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -580,7 +593,8 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     private void projectNameTextFieldFocusLost(FocusEvent evt) {//GEN-FIRST:event_projectNameTextFieldFocusLost
 
         if (getProjectName().length()<2) {
-            prjNameCheckMessage = "Project Name length must be between 2 and 20 characters.";
+            prjNameCheckMessage = NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
+                    "NameAndLicenseWizardPanelGUI.prjNameLengthErrMsg"); // NOI18N
             panel.fireChangeEvent();
             return;
         }
@@ -696,19 +710,22 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         String prjName = getProjectName();
 
         if (prjName.length()>20) {
-            return "Project Name length must be between 2 and 20 characters.";
+            return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
+                    "NameAndLicenseWizardPanelGUI.prjNameLengthErrMsg"); // NOI18N
         } else if (prjName.length() > 2 && !checkPrjName(prjName)) {
             return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
-                    "NameAndLicenseWizardPanelGUI.invalidPrjName");
+                    "NameAndLicenseWizardPanelGUI.invalidPrjName"); // NOI18N
         } else if (/*getProjectTitle().length() < 2 ||*/ getProjectTitle().length() > 40) {
-            return "Project Title length must be between 2 and 40 characters.";
+            return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
+                    "NameAndLicenseWizardPanelGUI.prjTitleLengthErrMsg"); // NOI18N
         } else if (getProjectDesc().length() > 500) {
-            return "Project Description must to be shorter than 500 characters.";
+            return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
+                    "NameAndLicenseWizardPanelGUI.prjDescLengthErrMsg"); // NOI18N
         } else if (prjNameCheckMessage!=null) {
             return prjNameCheckMessage;
         } else if (!licensesLoaded) {
             return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
-                    "NameAndLicenseWizardPanelGUI.noLicensesErrMsg");
+                    "NameAndLicenseWizardPanelGUI.noLicensesErrMsg"); // NOI18N
         }
         return null;
     }
@@ -722,7 +739,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         if (panel.isFinishPanel()) {
             if (getFolderToShare()==null || "".equals(getFolderToShare().trim())) {
                 return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
-                    "NameAndLicenseWizardPanelGUI.selectFolder");
+                    "NameAndLicenseWizardPanelGUI.selectFolder"); // NOI18N
             }
             Project p = null;
             try {
@@ -732,29 +749,29 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
             }
             if (p==null) {
                 return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
-                    "NameAndLicenseWizardPanelGUI.needLocalProject");
+                    "NameAndLicenseWizardPanelGUI.needLocalProject"); // NOI18N
             }
             if (!ShareAction.isSupported(p.getProjectDirectory())) {
                 return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
-                    "NameAndLicenseWizardPanelGUI.versioningNotSupported");
+                    "NameAndLicenseWizardPanelGUI.versioningNotSupported"); // NOI18N
             }
         }
         if (!Utilities.isUserLoggedIn()) {
             return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
-                    "NameAndLicenseWizardPanelGUI.needLogin");
+                    "NameAndLicenseWizardPanelGUI.needLogin"); // NOI18N
         } else if (getProjectName().trim().equals("")) {
             return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
-                    "NameAndLicenseWizardPanelGUI.prjNameRequired");
+                    "NameAndLicenseWizardPanelGUI.prjNameRequired"); // NOI18N
         } else if (getProjectTitle().trim().equals("")) {
             return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, 
-                    "NameAndLicenseWizardPanelGUI.prjTitleRequired");
+                    "NameAndLicenseWizardPanelGUI.prjTitleRequired"); // NOI18N
         } else if (getProjectDesc().trim().equals("")) {
             return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
-                    "NameAndLicenseWizardPanelGUI.prjDescRequired");
+                    "NameAndLicenseWizardPanelGUI.prjDescRequired"); // NOI18N
         } else if (projectLicenseComboBox.getSelectedItem() == null ||
                    projectLicenseComboBox.getSelectedItem().equals(EMPTY_ELEMENT)) {
             return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
-                    "NameAndLicenseWizardPanelGUI.prjLicenseRequired");
+                    "NameAndLicenseWizardPanelGUI.prjLicenseRequired"); // NOI18N
         } else if (panel.isFinishPanel()) {
             Project p = null;
             try {
@@ -764,11 +781,11 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
             }
             if (p==null) {
                 return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
-                    "NameAndLicenseWizardPanelGUI.needLocalProject");
+                    "NameAndLicenseWizardPanelGUI.needLocalProject"); // NOI18N
             }
             if (!ShareAction.isSupported(p.getProjectDirectory())) {
                 return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
-                    "NameAndLicenseWizardPanelGUI.versioningNotSupported");
+                    "NameAndLicenseWizardPanelGUI.versioningNotSupported"); // NOI18N
             }
         }
         return null;
@@ -783,14 +800,14 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
             String prjName = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_NAME);
             if (prjName == null || "".equals(prjName.trim())) {
                 setProjectName(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
-                        "NameAndLicenseWizardPanelGUI.defaultPrjName"));
+                        "NameAndLicenseWizardPanelGUI.defaultPrjName")); // NOI18N
             } else {
                 setProjectName(prjName);
             }
             String prjTitle = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_TITLE);
             if (prjTitle == null || "".equals(prjTitle.trim())) {
                 setProjectTitle(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
-                        "NameAndLicenseWizardPanelGUI.defaultPrjTitle"));
+                        "NameAndLicenseWizardPanelGUI.defaultPrjTitle")); // NOI18N
             } else {
                 setProjectTitle(prjTitle);
             }
@@ -799,7 +816,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         String prjDesc = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_DESC);
         if (prjDesc == null || "".equals(prjDesc.trim())) {
             setProjectDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
-                    "NameAndLicenseWizardPanelGUI.defaultPrjDesc"));
+                    "NameAndLicenseWizardPanelGUI.defaultPrjDesc")); // NOI18N
         } else {
             setProjectDescription(prjDesc);
         }
@@ -839,8 +856,10 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
         if (passwdAuth != null) {
             setUsername(passwdAuth.getUserName());
+            loginButton.setEnabled(false);
         } else {
             setUsername(null);
+            loginButton.setEnabled(true);
         }
     }
 
@@ -851,7 +870,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
             usernameLabel.setEnabled(true);
         } else {
             usernameLabel.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
-                    "NameAndLicenseWizardPanelGUI.notLoggedIn"));
+                    "NameAndLicenseWizardPanelGUI.notLoggedIn")); // NOI18N
             usernameLabel.setForeground(Color.BLACK);
             usernameLabel.setEnabled(false);
         }
@@ -889,7 +908,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         try {
             p = ProjectManager.getDefault().findProject(fo);
             ProjectInformation pi = ProjectUtils.getInformation(p);
-            setProjectName(pi.getName().toLowerCase().replaceAll("[^a-z0-9_-]", "_"));//NOI18N
+            setProjectName(pi.getName().toLowerCase().replaceAll("[^a-z0-9-]", "-")); // NOI18N
             setProjectTitle(pi.getDisplayName());
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -925,7 +944,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         if (list != null) {
             return getLicenses().get(index).getName();
         }
-        return ""; // XXX or null ???
+        return ""; // NOI18N
     }
 
 }

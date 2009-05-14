@@ -44,8 +44,12 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
@@ -54,7 +58,11 @@ import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 
@@ -70,17 +78,18 @@ public class PresenceIndicator {
 
     private JLabel label;
     private MouseL helper;
+    private Status status = Status.OFFLINE;
 
     public static enum Status {
         ONLINE,
         OFFLINE
     }
-
     public void setStatus(Status status) {
+        this.status=status;
         label.setIcon(status == Status.ONLINE?ONLINE:OFFLINE);
         if (status==Status.OFFLINE) {
             label.setText("");
-            label.setToolTipText("");
+            label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_Offline"));
         }
     }
 
@@ -92,11 +101,7 @@ public class PresenceIndicator {
         if (instance == null) {
             instance = new PresenceIndicator();
             if (System.getProperty(("kenai.com.url"), "https://kenai.com").endsWith("testkenai.com")) {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        KenaiConnection.getDefault();
-                    }
-                });
+                KenaiConnection.getDefault();
             }
         }
         return instance;
@@ -105,6 +110,7 @@ public class PresenceIndicator {
     
     private PresenceIndicator() {
         label = new JLabel(OFFLINE, JLabel.HORIZONTAL);
+        label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_Offline"));
         /*
         * TODO: delete this
         */
@@ -117,7 +123,11 @@ public class PresenceIndicator {
     void showPopup() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                ToolTipManager.sharedInstance().mouseMoved(new MouseEvent(label, 0, 0, 0, 0, 0, 0, false));
+                ToolTipManager tooltipManager = ToolTipManager.sharedInstance();
+                int initialDelay = tooltipManager.getInitialDelay();
+                tooltipManager.setInitialDelay(0);
+                tooltipManager.mouseMoved(new MouseEvent(label, 0, 0, 0, 0, 0, 0, false));
+                tooltipManager.setInitialDelay(initialDelay);
             }
         });
     }
@@ -126,7 +136,10 @@ public class PresenceIndicator {
         @Override
         public void mouseClicked(MouseEvent event) {
             if (event.getClickCount() == 2) {
-                ChatTopComponent.openAction(ChatTopComponent.findInstance(), "", "", false).actionPerformed(new ActionEvent(event,event.getID(),"")); // NOI18N
+                if (status==Status.ONLINE)
+                    ChatTopComponent.openAction(ChatTopComponent.findInstance(), "", "", false).actionPerformed(new ActionEvent(event,event.getID(),"")); // NOI18N
+                else
+                    UIUtils.showLogin();
             }
         }
     }
@@ -139,19 +152,39 @@ public class PresenceIndicator {
         public PresenceListener() {
             task = presenceUpdater.create(new Runnable() {
 
+                private String getDisplayName(MultiUserChat muc) {
+                       String chatName = StringUtils.parseName(muc.getRoom());
+                        try {
+                            String displayName = Kenai.getDefault().getProject(chatName).getDisplayName();
+                            return displayName;
+                        } catch (KenaiException kenaiException) {
+                            return chatName;
+                        }
+                }
+
                 public void run() {
                     HashSet<String> onlineUsers = new HashSet<String>();
                     StringBuffer tipBuffer = new StringBuffer();
                     tipBuffer.append("<html><body>"); // NOI18N
 
-                    for (MultiUserChat muc : KenaiConnection.getDefault().getChats()) {
-                        String displayName = null;
-                        displayName = StringUtils.parseName(muc.getRoom());
-                        tipBuffer.append("<font color=gray>" + displayName + "</font><br>"); // NOI18N
+                    List<MultiUserChat> chats = KenaiConnection.getDefault().getChats();
+                    Collections.sort(chats, new Comparator() {
+                        public int compare(Object o1, Object o2) {
+                            return getDisplayName((MultiUserChat) o1).compareTo(getDisplayName((MultiUserChat)o2));
+                        }
+                    });
+                    for (MultiUserChat muc : chats) {
+                        String chatName = StringUtils.parseName(muc.getRoom());
+                        tipBuffer.append("<font color=gray>" + getDisplayName(muc) + "</font><br>"); // NOI18N
                         Iterator<String> i = muc.getOccupants();
-                        ChatNotifications.getDefault().getMessagingHandle(displayName).setOnlineCount(muc.getOccupantsCount());
+                        ArrayList<String> occupants = new ArrayList<String>();
+                        ChatNotifications.getDefault().getMessagingHandle(chatName).setOnlineCount(muc.getOccupantsCount());
                         while (i.hasNext()) {
                             String uname = StringUtils.parseResource(i.next());
+                            occupants.add(uname);
+                        }
+                        Collections.sort(occupants);
+                        for (String uname:occupants) {
                             onlineUsers.add(uname);
                             tipBuffer.append("&nbsp;&nbsp;" + uname + "<br>"); // NOI18N
                         }

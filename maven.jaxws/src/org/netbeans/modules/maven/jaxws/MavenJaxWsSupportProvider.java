@@ -64,28 +64,33 @@ import org.openide.util.RequestProcessor;
  *
  * @author mkuchtiak
  */
-class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider {
+class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyChangeListener {
 
-    private static final RequestProcessor METADATA_MODEL_RP =
+    private static final RequestProcessor MAVEN_WS_RP =
             new RequestProcessor("MavenJaxWsSupportProvider.WS_REQUEST_PROCESSOR"); //NOI18N
 
+    private RequestProcessor.Task pomChangesTask = MAVEN_WS_RP.create(new Runnable() {
+
+        public void run() {
+            reactOnPomChanges();
+        }
+    });
+
     private JAXWSLightSupport jaxWsSupport;
-    private PropertyChangeListener wsdlFolderListener, pcl;
+    private PropertyChangeListener pcl;
     private NbMavenProject mp;
     private Project prj;
+    private MetadataModel<WebservicesMetadata> wsModel;
 
     MavenJaxWsSupportProvider(final Project prj, final JAXWSLightSupport jaxWsSupport) {
         this.prj = prj;
         this.jaxWsSupport = jaxWsSupport;
 
-        METADATA_MODEL_RP.post(new Runnable() {
+        MAVEN_WS_RP.post(new Runnable() {
 
             public void run() {
-                mp = prj.getLookup().lookup(NbMavenProject.class);
-                if (mp != null) {
-                    registerWsdlListener(prj, mp);
-                }
-                MetadataModel<WebservicesMetadata> wsModel = jaxWsSupport.getWebservicesMetadataModel();
+                registerPCL();
+                wsModel = jaxWsSupport.getWebservicesMetadataModel();
                 if (wsModel != null) {
                     registerAnnotationListener(wsModel);
                 }
@@ -98,34 +103,10 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider {
         return jaxWsSupport;
     }
 
-    void registerWsdlListener(final Project prj, NbMavenProject mp) {
-        if (wsdlFolderListener != null) {
-            this.mp.removePropertyChangeListener(wsdlFolderListener);
-        }
-        this.mp = mp;
-        wsdlFolderListener = new PropertyChangeListener() {
-
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
-                    WSUtils.updateClients(prj, jaxWsSupport);
-                    List<JaxWsService> services = jaxWsSupport.getServices();
-                    if (services.size() > 0) {
-                        MavenModelUtils.reactOnServerChanges(prj);
-                        if (WSUtils.isWeb(prj)) {
-                            for (JaxWsService s : services) {
-                                if (s.isServiceProvider()) {
-                                    // add|remove sun-jaxws.xml and WS entries to web.xml file
-                                    // depending on selected target server
-                                    WSUtils.checkNonJSR109Entries(prj);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        };
-        mp.addPropertyChangeListener(wsdlFolderListener);
+    void registerPCL() {
+        unregisterPCL();
+        mp = prj.getLookup().lookup(NbMavenProject.class);
+        mp.addPropertyChangeListener(this);
     }
 
     void registerAnnotationListener(final MetadataModel<WebservicesMetadata> wsModel) {
@@ -147,13 +128,14 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider {
         }
     }
 
-    void unregisterWsdlListener(NbMavenProject mp) {
-        mp.removePropertyChangeListener(wsdlFolderListener);
+    void unregisterPCL() {
+        if (mp != null) {
+            mp.removePropertyChangeListener(this);
+        }
     }
 
     void unregisterAnnotationListener() {
         if (pcl != null) {
-            final MetadataModel<WebservicesMetadata> wsModel = jaxWsSupport.getWebservicesMetadataModel();
             if (wsModel != null) {
                 try {
                     wsModel.runReadActionWhenReady(new MetadataModelAction<WebservicesMetadata, Void>() {
@@ -171,13 +153,37 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider {
         }
     }
 
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+            pomChangesTask.schedule(1000);
+        }
+    }
+
+    private void reactOnPomChanges() {
+        WSUtils.updateClients(prj, jaxWsSupport);
+        List<JaxWsService> services = jaxWsSupport.getServices();
+        if (services.size() > 0) {
+            MavenModelUtils.reactOnServerChanges(prj);
+            if (WSUtils.isWeb(prj)) {
+                for (JaxWsService s : services) {
+                    if (s.isServiceProvider()) {
+                        // add|remove sun-jaxws.xml and WS entries to web.xml file
+                        // depending on selected target server
+                        WSUtils.checkNonJSR109Entries(prj);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     private class WebservicesChangeListener implements PropertyChangeListener {
 
         private JAXWSLightSupport jaxWsSupport;
 
         private MetadataModel<WebservicesMetadata> wsModel;
 
-        private RequestProcessor.Task updateJaxWsTask = METADATA_MODEL_RP.create(new Runnable() {
+        private RequestProcessor.Task updateJaxWsTask = MAVEN_WS_RP.create(new Runnable() {
 
             public void run() {
                 updateJaxWs();
@@ -207,7 +213,7 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider {
                             for (PortComponent port : ports) {
                                 // key = imlpementation class package name
                                 // value = service name
-                                QName portName = port.getWsdlPort();
+                                QName portName = port.getWsdlPort();                               
                                 result.put(port.getDisplayName(),
                                 new ServiceInfo(
                                         wsDesc.getWebserviceDescriptionName(),

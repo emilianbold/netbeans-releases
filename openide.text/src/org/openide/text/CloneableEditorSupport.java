@@ -1886,6 +1886,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         }
 
         if (!locked) {
+            Toolkit.getDefaultToolkit().beep();
             return false;
         }
 
@@ -1962,7 +1963,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
         try {
             if (ur.canUndo()) {
-                Toolkit.getDefaultToolkit().beep();
                 ur.undo();
             }
         } catch (CannotUndoException cne) {

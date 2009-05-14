@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.spi.collector;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
+import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.api.execution.Validateable;
@@ -56,7 +57,8 @@ import org.netbeans.modules.dlight.spi.storage.DataStorageType;
  *
  * @param <G>
  */
-public interface DataCollector<G extends DataCollectorConfiguration> extends DLightTargetListener, Validateable<DLightTarget> {
+public interface DataCollector<G extends DataCollectorConfiguration>
+        extends DLightTargetListener, Validateable<DLightTarget>, DataFilterListener {
 
     /**
      * The types of storage this collector supports
@@ -100,7 +102,6 @@ public interface DataCollector<G extends DataCollectorConfiguration> extends DLi
      * @return aguments for running this data collector
      */
     String[] getArgs();
-
 
     /**
      * Returns user visible name of DataCollector,

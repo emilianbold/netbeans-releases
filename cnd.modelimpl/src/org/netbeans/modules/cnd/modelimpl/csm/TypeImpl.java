@@ -488,9 +488,13 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
             CsmObject obj;
             if (ip instanceof InstantiationProviderImpl) {
                 Resolver resolver = ResolverFactory.createResolver(getContainingFile(), getStartOffset(), parent);
-                obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile(), resolver);
+                if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
+                    obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile(), resolver, getStartOffset());
+                } else {
+                    return null;
+                }
             } else {
-                obj = ip.instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile());
+                obj = ip.instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile(), getStartOffset());
             }
             if (CsmKindUtilities.isClassifier(obj)) {
                 classifier = (CsmClassifier) obj;

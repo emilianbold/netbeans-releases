@@ -57,7 +57,7 @@ public class LinkSupport {
         return getOriginalFile(linkPath, 10);
     }
 
-    public static String resolveWindowsLinkik(String linkPath) {
+    public static String resolveWindowsLink(String linkPath) {
         if (Utilities.isWindows()){
             File file = new File(linkPath);
             if (file.exists()){

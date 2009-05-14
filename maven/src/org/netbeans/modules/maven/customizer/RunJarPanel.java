@@ -285,14 +285,14 @@ public class RunJarPanel extends javax.swing.JPanel {
             if (oldWorkDir == null) {
                 oldWorkDir = debug.getProperties().getProperty(RUN_WORKDIR);
             }
-            if (oldWorkDir == null) {
+            if (oldWorkDir == null && profile != null) {
                 oldWorkDir = profile.getProperties().getProperty(RUN_WORKDIR);
             }
             String params = run.getProperties().getProperty(RUN_PARAMS);
             if (params == null) {
                 params = debug.getProperties().getProperty(RUN_PARAMS);
             }
-            if (params == null) {
+            if (params == null && profile != null) {
                 params = profile.getProperties().getProperty(RUN_PARAMS);
             }
             if (params != null) {
@@ -670,6 +670,9 @@ public class RunJarPanel extends javax.swing.JPanel {
     }
 
     private boolean checkDeprecatedMapping(NetbeansActionMapping map) {
+        if (map == null || map.getGoals() == null) {
+            return false; //#164323
+        }
         Iterator it = map.getGoals().iterator();
         while (it.hasNext()) {
             String goal = (String) it.next();
@@ -681,6 +684,9 @@ public class RunJarPanel extends javax.swing.JPanel {
     }
     
     private boolean checkNewMapping(NetbeansActionMapping map) {
+        if (map == null || map.getGoals() == null) {
+            return false; //#164323
+        }
         Iterator it = map.getGoals().iterator();
         while (it.hasNext()) {
             String goal = (String) it.next();

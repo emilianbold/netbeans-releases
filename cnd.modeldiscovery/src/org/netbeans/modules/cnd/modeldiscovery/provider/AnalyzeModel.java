@@ -70,7 +70,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -329,8 +329,8 @@ public class AnalyzeModel implements DiscoveryProvider {
                     }
                     String path = item.getAbsPath();
                     File file = new File(path);
-                    if (file.exists()) {
-                        unique.add(FileUtil.normalizeFile(file).getAbsolutePath());
+                    if (CndFileUtils.exists(file)) {
+                        unique.add(CndFileUtils.normalizePath(file.getAbsolutePath()));
                     }
                 }
                 HashSet<String> unUnique = new HashSet<String>();
@@ -344,8 +344,8 @@ public class AnalyzeModel implements DiscoveryProvider {
                 }
                 for(String path : unUnique){
                     File file = new File(path);
-                    if (file.exists()) {
-                        unique.add(FileUtil.normalizeFile(file).getAbsolutePath());
+                    if (CndFileUtils.exists(file)) {
+                        unique.add(CndFileUtils.normalizePath(file.getAbsolutePath()));
                     }
                 }
                 myIncludedFiles = new ArrayList<String>(unique);

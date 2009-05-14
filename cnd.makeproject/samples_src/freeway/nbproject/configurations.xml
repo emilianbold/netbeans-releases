@@ -40,8 +40,7 @@
       <conf name="Default" type="1">
       <compileType>
         <ccTool>
-          <developmentMode>0</developmentMode>
-          <commandLine>-g3 -gdwarf-2 `pkg-config --cflags gtk+-2.0`</commandLine>
+          <commandLine>`pkg-config --cflags gtk+-2.0`</commandLine>
         </ccTool>
         <linkerTool>
           <linkerLibItems>

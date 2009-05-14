@@ -117,7 +117,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     public static final int HARNESS_VERSION_61 = 5;
     /** Harness version found in 6.5. */
     public static final int HARNESS_VERSION_65 = 6;
-    /** Harness version found in 7.0. */
+    /** Harness version found in 6.7. */
     public static final int HARNESS_VERSION_67 = 7;
     
     /**
@@ -930,7 +930,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
             case HARNESS_VERSION_65:
                 return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_6.5");
             case HARNESS_VERSION_67:
-                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_7.0");
+                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_6.7");
             default:
                 assert version == HARNESS_VERSION_UNKNOWN;
                 return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_unknown");

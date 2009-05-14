@@ -45,6 +45,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
 
@@ -120,8 +121,9 @@ public class ShellDataLoader extends CndAbstractDataLoaderExt {
             try {
                 FileLock lock = fo.lock();
                 try {
+                    Charset encoding = FileEncodingQuery.getEncoding(fo);
                     BufferedWriter w = new BufferedWriter(new OutputStreamWriter(
-                            fo.getOutputStream(lock), FileEncodingQuery.getEncoding(fo)));
+                            fo.getOutputStream(lock), encoding));
                     try {
                         String current;
                         while ((current = r.readLine()) != null) {

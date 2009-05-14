@@ -44,11 +44,11 @@ package org.netbeans.modules.cnd.debugger.gdb.models;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Logger;
+import javax.swing.text.Document;
 import org.netbeans.api.debugger.Watch;
-import org.netbeans.modules.cnd.debugger.gdb.Field;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
+import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
-import org.openide.util.RequestProcessor;
 
 /**
  * The variable type used in Gdb watches.
@@ -70,16 +70,22 @@ import org.openide.util.RequestProcessor;
  */
 public class GdbWatchVariable extends AbstractVariable implements PropertyChangeListener {
     
+    protected static boolean disableMacros = Boolean.getBoolean("gdb.macros.disable");
+
     private final Watch watch;
-    private final WatchesTreeModel model;
     private static final Logger log = Logger.getLogger("gdb.logger.watches"); // NOI18N
     
+    private boolean requestType = true;
+    private boolean requestValue = true;
+    private boolean requestResolved = true;
+
+    private String resolvedType;
+    private String expandedWatch = null;
+    
     /** Creates a new instance of GdbWatchVariable */
-    public GdbWatchVariable(WatchesTreeModel model, Watch watch) {
-        this.model = model;
+    public GdbWatchVariable(Watch watch) {
         this.watch = watch;
         name = watch.getExpression();
-        fields = new Field[0];
         type = null;
         value = null;
         tinfo = null;
@@ -108,29 +114,21 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         if (pname.equals(GdbDebugger.PROP_CURRENT_THREAD) ||
                 pname.equals(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME) ||
                 pname.equals(Watch.PROP_EXPRESSION)) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
                     if (pname.equals(Watch.PROP_EXPRESSION)) {
                         resetVariable();
                     }
-                    type = getDebugger().requestWhatis(watch.getExpression());
-                    if (type != null && type.length() > 0) {
-                        value = getDebugger().evaluate(watch.getExpression());
-//                        String rt = getTypeInfo().getResolvedType(GdbWatchVariable.this);
-//                        if (GdbUtils.isPointer(rt)) {
-//                            derefValue = getDebugger().evaluate('*' + watch.getExpression());
-//                        }
-                    } else {
-                        type = "";
-                        value = "";
-                    }
-                    setModifiedValue(value);
-                    model.fireTableValueChanged(ev.getSource(), null);
-                }
-            });
+                    requestType = true;
+                    requestValue = true;
+                    requestResolved = true;
+                    expandedWatch = null;
         } else if (ev.getPropertyName().equals(GdbDebugger.PROP_VALUE_CHANGED)) {
             super.propertyChange(ev);
         }
+    }
+
+    private void resetVariable() {
+        tinfo = null;
+        emptyFields();
     }
     
     /**
@@ -147,20 +145,60 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     
     @Override
     public String getType() {
-        if (type == null || type.length() == 0) {
-            type = getDebugger().requestWhatis(watch.getExpression());
+        if (requestType) {
+            String t = getDebugger().requestWhatis(getExpanded());
+            type = t == null ? "" : t; //NOI18N
+            requestType = false;
         }
         return type;
+    }
+
+    @Override
+    protected String getResolvedType() {
+        if (requestResolved) {
+            if (getType().length() > 0) {
+                resolvedType = super.getResolvedType();
+            } else {
+                resolvedType = ""; //NOI18N
+            }
+            requestResolved = false;
+        }
+        return resolvedType;
     }
     
     @Override
     public String getValue() {
-        synchronized (this) {
-            if (value == null || value.length() == 0) {
-                value = getDebugger().evaluate(watch.getExpression());
-            }
+        if (requestValue) {
+            value = getDebugger().evaluate(getExpanded());
+            setModifiedValue(value);
+            requestValue = false;
         }
         return super.getValue();
+    }
+
+    private String getExpanded() {
+        if (expandedWatch == null) {
+            String expr = watch.getExpression();
+            if (!disableMacros) {
+                expr = expandMacro(getDebugger(), expr);
+            }
+            expandedWatch = expr;
+        }
+        return expandedWatch;
+    }
+
+    public static String expandMacro(GdbDebugger debugger, String expr) {
+        CallStackFrame csf = debugger.getCurrentCallStackFrame();
+        if (csf != null) {
+            Document doc = csf.getDocument();
+            if (doc != null) {
+                int offset = csf.getOffset();
+                if (offset >= 0) {
+                    return CsmMacroExpansion.expand(doc, offset, expr);
+                }
+            }
+        }
+        return expr;
     }
     
     @Override

@@ -1,15 +1,15 @@
 
 
-/**CC TODO Changed because of Issue Nr. 158317, after fixing change "|" to "@|"
-|
+/**CC 
+@|
 @media
 @media
 */
 
 
 
-/**CC TODO Changed because of Issue Nr. 158317, after fixing change "|" to "@|"
-|
+/**CC 
+@|
 @charset
 @charset
 */
@@ -18,21 +18,21 @@
 
     root {
 
-/** #135814
+/**CC
 c|
 color
-color
+color:
 */
 
     
-/** #135814
+/**CC
 background: |
-uri
-background: uri
+url
+background: url
 */
 
-      
-/** #135814
+
+/**CC
 color: |
 green
 color: green

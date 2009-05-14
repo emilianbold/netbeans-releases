@@ -75,7 +75,7 @@ public final class ShareAction extends CookieAction {
     protected void initialize() {
         super.initialize();
         // see org.openide.util.actions.SystemAction.iconResource() Javadoc for more details
-        putValue("noIconInMenu", Boolean.TRUE);
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
     public HelpCtx getHelpCtx() {
@@ -88,7 +88,7 @@ public final class ShareAction extends CookieAction {
     }
 
     static boolean isSupported(FileObject fo) {
-        String remoteLocation = (String) fo.getAttribute("ProvidedExtensions.RemoteLocation");
+        String remoteLocation = (String) fo.getAttribute("ProvidedExtensions.RemoteLocation"); // NOI18N
         return remoteLocation==null;
     }
 
@@ -98,7 +98,7 @@ public final class ShareAction extends CookieAction {
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
         wizardDescriptor.setTitle(NbBundle.getMessage(NewKenaiProjectAction.class,
-                "ShareAction.dialogTitle"));
+                "ShareAction.dialogTitle")); // NOI18N
 
         DialogDisplayer.getDefault().notify(wizardDescriptor);
 

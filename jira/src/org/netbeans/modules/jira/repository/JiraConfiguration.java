@@ -73,6 +73,7 @@ import org.netbeans.modules.jira.commands.JiraCommand;
  * @author Tomas Stupka, Jan Stola
  */
 // XXX rename - it actually the cache, not the configuration
+// XXX Project MUST be somehow refreshed when a list of components changes on a server
 public class JiraConfiguration extends JiraClientCache {
 
     private JiraClient client;
@@ -82,20 +83,34 @@ public class JiraConfiguration extends JiraClientCache {
 
     private static final Object USER_LOCK = new Object();
     private static final Object PROJECT_LOCK = new Object();
+    private static final Object SERVER_INFO_LOCK = new Object();
+
+    private boolean hacked;
 
     public JiraConfiguration(JiraClient jiraClient, JiraRepository repository) {
         super(jiraClient);
         this.client = jiraClient;
-        this.repository = repository;        
+        this.repository = repository;
     }
 
     protected void initialize() throws JiraException {
-        NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
-
         data = (ConfigurationData) getData();
-        if(data.initialized) {
-            return;
+        synchronized (data) {
+            if (data.initialized) {
+                if (!hacked) {
+                    hackJiraCache();
+                }
+                return;
+            }
+            refreshData();
+            putToCache();
+            hackJiraCache();
         }
+    }
+
+    private void refreshData () throws JiraException {
+        NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
+        
         data.projects = client.getProjects(nullProgressMonitor);
         data.projectsById = new HashMap<String, Project>(data.projects.length);
         data.projectsByKey = new HashMap<String, Project>(data.projects.length);
@@ -130,8 +145,11 @@ public class JiraConfiguration extends JiraClientCache {
         data.initialized = true;
         // XXX what else do we need?
         // XXX issue types by project
+    }
 
-        hackJiraCache();
+    private void putToCache () {
+        assert data != null;
+        Jira.getInstance().getConfigurationCacheManager().setCachedData(repository.getUrl(), data);
     }
 
     private void hackJiraCache() {
@@ -148,6 +166,7 @@ public class JiraConfiguration extends JiraClientCache {
         } catch (SecurityException ex) {
             Jira.LOG.log(Level.SEVERE, null, ex);
         }
+        hacked = true;
     }
 
     @Override
@@ -158,7 +177,10 @@ public class JiraConfiguration extends JiraClientCache {
     @Override
     public JiraClientData getData() {
         if(data == null) {
-             data = new ConfigurationData();
+            data = initializeCached();
+            if (data == null) {
+                data = new ConfigurationData();
+            }
         }
         return data;
     }
@@ -195,13 +217,19 @@ public class JiraConfiguration extends JiraClientCache {
 
     @Override
     public ServerInfo getServerInfo() {
-        return data.serverInfo;
+        synchronized(SERVER_INFO_LOCK) {
+            return data.serverInfo;
+        }
     }
 
     @Override
     public ServerInfo getServerInfo(IProgressMonitor monitor) throws JiraException {
-        refreshServerInfo(monitor);
-        return data.serverInfo;
+        synchronized(SERVER_INFO_LOCK) {
+            if(data.serverInfo == null) {
+                refreshServerInfo(monitor);
+            }
+            return data.serverInfo;
+        }
     }
 
     @Override
@@ -232,9 +260,12 @@ public class JiraConfiguration extends JiraClientCache {
         return user;
     }
 
+    /**
+     * This method should not EVER be called
+     */
     @Override
     public synchronized void refreshDetails(IProgressMonitor monitor) throws JiraException {
-        // ignore
+        assert false;
     }
 
     @Override
@@ -343,7 +374,22 @@ public class JiraConfiguration extends JiraClientCache {
         return data.workHoursPerDay;
     }
 
-    protected class ConfigurationData extends JiraClientData {
+    protected ConfigurationData initializeCached () {
+        String repoUrl = repository.getUrl();
+        ConfigurationData cached = Jira.getInstance().getConfigurationCacheManager().getCachedData(repoUrl);
+        if (cached != null) {
+            for(Project p :cached.projects) {
+                if(p.getComponents() != null) {
+                    loadedProjects.add(p.getId());
+                }
+            }
+            cached.serverInfo = null; // download this from the repo at the first access
+            cached.initialized = true;
+        }
+        return cached;
+    }
+
+    protected static class ConfigurationData extends JiraClientData {
 	Group[] groups = new Group[0];
 	IssueType[] issueTypes = new IssueType[0];
 	Map<String, IssueType> issueTypesById = new HashMap<String, IssueType>();

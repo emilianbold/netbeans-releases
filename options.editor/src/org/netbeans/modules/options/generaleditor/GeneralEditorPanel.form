@@ -24,7 +24,7 @@
           <Group type="102" alignment="0" attributes="0">
               <Component id="lCodeFolding" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="jSeparator1" pref="838" max="32767" attributes="0"/>
+              <Component id="jSeparator1" pref="839" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="lCamelCaseBehavior" min="-2" max="-2" attributes="0"/>
@@ -52,7 +52,7 @@
                   <Component id="cbFoldImports" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="cbCamelCaseBehavior" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="205" max="32767" attributes="0"/>
+              <EmptySpace pref="220" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -107,6 +107,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="lUseCodeFolding">
       <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="cbUseCodeFolding"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="Use Code Folding:"/>
       </Properties>
     </Component>

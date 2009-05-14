@@ -118,7 +118,17 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
     public CsmNamespace getReferencedNamespace() {
 //        if (!Boolean.getBoolean("cnd.modelimpl.resolver2"))
         //assert ResolverFactory.resolver != 2;
-        return ((ProjectBase)(getContainingFile().getProject())).findNamespace(namespace, true);
+        CsmNamespace res = ((ProjectBase)(getContainingFile().getProject())).findNamespace(namespace, true);
+        if(res == null) {
+            CsmScope scope = getScope();
+            if(scope instanceof CsmNamespace) {
+                StringBuilder sb = new StringBuilder(((CsmNamespace)scope).getQualifiedName());
+                sb.append("::"); // NOI18N
+                sb.append(namespace);
+                res = ((ProjectBase)(getContainingFile().getProject())).findNamespace(sb, true);
+            }
+        }
+        return res;
     }
 
     public CsmDeclaration.Kind getKind() {

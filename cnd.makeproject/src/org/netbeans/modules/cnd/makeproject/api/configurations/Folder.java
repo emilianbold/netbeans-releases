@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
-import org.netbeans.modules.cnd.api.utils.CndVisibilityQuery;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.openide.filesystems.FileAttributeEvent;

@@ -204,6 +204,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
      */
     public void updateWizardUi(final WizardUi wizardUi) {
         if(wizardUi==null) {
+            currentUi = null;
             return;
         }
         if (!SwingUtilities.isEventDispatchThread()) {         
@@ -255,6 +256,9 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                 CANCEL_ACTION_NAME);
         getRootPane().getActionMap().put(CANCEL_ACTION_NAME, new AbstractAction() {
             public void actionPerformed(ActionEvent event) {
+                if(currentUi == null) {
+                    return;
+                }
                 final NbiButton button = currentUi.getDefaultEscapeButton();
                 if (button != null) {
                     if (button.equals(getHelpButton())) {
@@ -392,25 +396,33 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         
         contentPane.getHelpButton().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                currentUi.evaluateHelpButtonClick();
+                if(currentUi!=null) {
+                    currentUi.evaluateHelpButtonClick();
+                }
             }
         });
         
         contentPane.getBackButton().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                currentUi.evaluateBackButtonClick();
+                if(currentUi!=null) {
+                    currentUi.evaluateBackButtonClick();
+                }
             }
         });
         
         contentPane.getNextButton().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                currentUi.evaluateNextButtonClick();
+                if(currentUi!=null) {
+                    currentUi.evaluateNextButtonClick();
+                }
             }
         });
         
         contentPane.getCancelButton().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                currentUi.evaluateCancelButtonClick();
+                if(currentUi!=null) {
+                    currentUi.evaluateCancelButtonClick();
+                }
             }
         });
     }
