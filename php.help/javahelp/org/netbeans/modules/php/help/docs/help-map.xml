@@ -25,12 +25,15 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <map version="1.0">
-	<mapID target="org.netbeans.modules.php.help.about" url="help-about.html"/>
-	<mapID target="org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel.NEW" url="new-project-configure_no_sources.html"/>
-	<mapID target="org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel.EXISTING" url="new-project-configure_existing_sources.html"/>
-	<mapID target="org.netbeans.modules.php.project.ui.wizards.RunConfigurationPanel" url="new-project-run-configuration.html"/>
-	<mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerSources" url="customize-project-sources.html"/>
-	<mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerRun" url="customize-project-run-configuration.html"/>
-	<mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerPhpIncludePath" url="customize-project-include-path.html"/>
-	<mapID target="org.netbeans.modules.refactoring.php.findusages.WhereUsedQueryUI" url="findUsages-CSH.html"/>
+    <mapID target="org.netbeans.modules.php.help.about" url="help-about.html"/>
+    <mapID target="org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel.NEW" url="new-project-configure_no_sources.html"/>
+    <mapID target="org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel.EXISTING" url="new-project-configure_existing_sources.html"/>
+    <mapID target="org.netbeans.modules.php.project.ui.wizards.RunConfigurationPanel" url="new-project-run-configuration.html"/>
+    <mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerSources" url="customize-project-sources.html"/>
+    <mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerRun" url="customize-project-run-configuration.html"/>
+    <mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerPhpIncludePath" url="customize-project-include-path.html"/>
+    <mapID target="org.netbeans.modules.refactoring.php.findusages.WhereUsedQueryUI" url="findUsages-CSH.html"/>
+
+        <!--CSH for PHP source editor-->
+    <mapID target="text.x-php" url="help-about.html" />
 </map>
