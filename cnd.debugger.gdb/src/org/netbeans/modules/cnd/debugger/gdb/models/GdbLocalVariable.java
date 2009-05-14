@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,23 +31,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-package org.netbeans.modules.cnd.debugger.gdb;
-
-/*
- * LocalVariable.java
  *
- * @author Nik Molchanov (copied from Jan Jancura's JPDA implementation)
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
+package org.netbeans.modules.cnd.debugger.gdb.models;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.GdbVariable;
+import org.netbeans.modules.cnd.debugger.gdb.LocalVariable;
 
 /**
- * Represents one local. This interface is extended by {@link ObjectVariable}
- * interface, if the represented local contains not primitive value (object
- * value).
  *
+ * @author Egor Ushakov
  */
-public interface LocalVariable extends Variable {
+public class GdbLocalVariable extends AbstractVariable implements LocalVariable, PropertyChangeListener {
+    private final String name;
+    private final String type;
 
+    public GdbLocalVariable(GdbDebugger debugger, GdbVariable var) {
+        super(debugger, var.getValue());
+        this.name = var.getName();
+        this.type = getDebugger().requestWhatis(name);
+        
+        debugger.addPropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, this);
+    }
+
+    public GdbLocalVariable(GdbDebugger debugger, String name) {
+        super(debugger, null);
+        this.name = name;
+        this.type = getDebugger().requestWhatis(name);
+        String expr = name;
+        if (!GdbWatchVariable.disableMacros) {
+            expr = GdbWatchVariable.expandMacro(getDebugger(), expr);
+        }
+        value = getDebugger().requestValue(expr);
+        
+        debugger.addPropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, this);
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        onValueChange(evt);
+    }
+
+    public String getName() {
+        return name;
+    }
 }
-
