@@ -37,64 +37,50 @@
  * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira;
-
-import org.netbeans.modules.bugtracking.spi.IssueFinder;
-import org.netbeans.modules.bugtracking.spi.KenaiSupport;
-import org.netbeans.modules.jira.repository.JiraRepository;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.jira.issue.JiraIssueFinder;
-import org.netbeans.modules.jira.query.kenai.KenaiSupportImpl;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.bugtracking.spi;
 
 /**
+ * Recognizes references to bugs/issues in text.
  *
  * @author Tomas Stupka
+ * @author Marian Petras
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class)
-public class JiraConnector extends BugtrackingConnector {
+public abstract class IssueFinder {
 
-    private KenaiSupport kenaiSupport;
-    private JiraIssueFinder issueFinder;
+    /**
+     * Finds boundaries of one or more references to issues in the given text.
+     * The returned array must not be {@code null} and must contain even number
+     * of numbers. An empty array is a valid return value. The first number in
+     * the array is an index of the beginning of a reference string,
+     * the second number is an index of the first character after the reference
+     * string. Next numbers express boundaries of other found references, if
+     * any.
+     * <p>
+     * The reference substrings (given by indexes returned by this method)
+     * may contain any text as long as method {@link #getIssueId} is able to
+     * extract issue identifiers from them. E.g. it is correct that method
+     * {@code getIssueSpans()}, when given text &quot;fixed the first bug&quot;,
+     * returns array {@code [6, 19]} (boundaries of substring
+     * {@code &quot;the first bug&quot;}) if method {@link #getIssueId} can
+     * deduce that substring {@code &quot;the first bug&quot;} refers to bug
+     * #1. In other words, only (boundaries of) substrings that method
+     * {@link #getIssueId} is able to transform the actual issue identifier,
+     * should be returned by this method.
+     *
+     * @param  text  text to be searched for references
+     * @return  non-{@code null} array of boundaries of hyperlink references
+     *          in the given text
+     */
+    public abstract int[] getIssueSpans(String text);
 
-    public String getDisplayName() {
-        return getConnectorName();
-    }
-
-    public String getTooltip() {
-        return "Jira Issue Tracking System";
-    }
-
-    @Override
-    public Repository createRepository() {
-        return new JiraRepository();
-    }
-
-    @Override
-    public Repository[] getRepositories() {
-        return Jira.getInstance().getRepositories();
-    }
-
-    public static String getConnectorName() {
-        return NbBundle.getMessage(JiraConnector.class, "LBL_ConnectorName");           // NOI18N
-    }
-
-    @Override
-    public KenaiSupport getKenaiSupport() {
-        if(kenaiSupport == null) {
-            kenaiSupport = new KenaiSupportImpl();
-        }
-        return kenaiSupport;
-    }
-
-    @Override
-    public IssueFinder getIssueFinder() {
-        if (issueFinder == null) {
-            issueFinder = Lookup.getDefault().lookup(JiraIssueFinder.class);
-        }
-        return issueFinder;
-    }
+    /**
+     * Transforms the given text to an issue identifier.
+     * The format of the returned value is specific for the type of issue
+     * tracker - it may but may not be a number.
+     * 
+     * @param  issueHyperlinkText  text that refers to a bug/issue
+     * @return  unique identifier of the bug/issue
+     */
+    public abstract String getIssueId(String issueHyperlinkText);
 
 }
