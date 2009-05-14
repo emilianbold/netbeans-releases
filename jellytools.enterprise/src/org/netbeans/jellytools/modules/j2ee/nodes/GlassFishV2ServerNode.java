@@ -44,7 +44,6 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
@@ -58,7 +57,8 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 public class GlassFishV2ServerNode extends J2eeServerNode {
 
     public GlassFishV2ServerNode() {
-        super("GlassFish V2");
+        super(Bundle.getString("org.netbeans.modules.j2ee.sun.ide.Bundle",
+                "LBL_GlassFishV2"));
     }
     
     public static GlassFishV2ServerNode invoke() {
