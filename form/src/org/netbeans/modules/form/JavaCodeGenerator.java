@@ -1120,7 +1120,7 @@ class JavaCodeGenerator extends CodeGenerator {
      * 
      * @return the set of generated variables.
      */
-    private Set<String> regenerateVariables() {
+    Set<String> regenerateVariables() {
         if (!initialized || !canGenerate)
             return Collections.emptySet();
         
