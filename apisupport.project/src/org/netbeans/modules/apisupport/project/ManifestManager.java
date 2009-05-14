@@ -89,7 +89,9 @@ public final class ManifestManager {
     private Boolean autoUpdateShowInClient;
     
     public static final String OPENIDE_MODULE = "OpenIDE-Module"; // NOI18N
+    public static final String BUNDLE_SYMBOLIC_NAME = "Bundle-SymbolicName"; // NOI18N
     public static final String OPENIDE_MODULE_SPECIFICATION_VERSION = "OpenIDE-Module-Specification-Version"; // NOI18N
+    public static final String BUNDLE_VERSION = "Bundle-Version"; // NOI18N
     public static final String OPENIDE_MODULE_IMPLEMENTATION_VERSION = "OpenIDE-Module-Implementation-Version"; // NOI18N
     public static final String OPENIDE_MODULE_PROVIDES = "OpenIDE-Module-Provides"; // NOI18N
     public static final String OPENIDE_MODULE_REQUIRES = "OpenIDE-Module-Requires"; // NOI18N
@@ -160,7 +162,7 @@ public final class ManifestManager {
                     Manifest mf = new Manifest(mis);
                     return ManifestManager.getInstance(mf, loadPublicPackages);
                 } finally {
-                    mis.close();;
+                    mis.close();
                 }
             } catch (IOException x) {
                 Exceptions.attachMessage(x, "While opening: " + manifest);
@@ -255,10 +257,15 @@ public final class ManifestManager {
      * <code>manifest</code>.
      */
     static void createManifest(FileObject manifest, String cnb, String specVer,
-            String bundlePath, String layerPath) throws IOException {
+            String bundlePath, String layerPath, boolean osgi) throws IOException {
         EditableManifest em = new EditableManifest();
-        em.setAttribute(OPENIDE_MODULE, cnb, null);
-        em.setAttribute(OPENIDE_MODULE_SPECIFICATION_VERSION, specVer, null);
+        if (osgi) {
+            em.setAttribute(BUNDLE_SYMBOLIC_NAME, cnb, null);
+            em.setAttribute(BUNDLE_VERSION, specVer, null);
+        } else {
+            em.setAttribute(OPENIDE_MODULE, cnb, null);
+            em.setAttribute(OPENIDE_MODULE_SPECIFICATION_VERSION, specVer, null);
+        }
         em.setAttribute(OPENIDE_MODULE_LOCALIZING_BUNDLE, bundlePath, null);
         if (layerPath != null) {
             em.setAttribute(OPENIDE_MODULE_LAYER, layerPath, null);
