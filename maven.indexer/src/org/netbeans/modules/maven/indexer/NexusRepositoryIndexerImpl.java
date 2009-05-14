@@ -176,9 +176,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
 
     public NexusRepositoryIndexerImpl() {
-        //to prevent MaxClauseCount exception (will investigate better way)
-        BooleanQuery.setMaxClauseCount(Integer.MAX_VALUE);
-
         lookup = Lookups.singleton(this);
     }
 
@@ -722,6 +719,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             });
         } catch (MutexException ex) {
+            rethrowTooManyClauses(ex);
             Exceptions.printStackTrace(ex);
         }
         return Collections.<NBVersionInfo>emptyList();
@@ -925,6 +923,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             });
         } catch (MutexException ex) {
+            rethrowTooManyClauses(ex);
             Exceptions.printStackTrace(ex);
         }
         return Collections.<NBVersionInfo>emptyList();
@@ -949,7 +948,12 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         return field;
     }
 
-
+    private void rethrowTooManyClauses (MutexException mutEx) {
+        Exception cause = mutEx.getException();
+        if (cause instanceof BooleanQuery.TooManyClauses) {
+            throw (BooleanQuery.TooManyClauses)cause;
+        }
+    }
 
     private Collection<ArtifactInfo> postProcessClasses(Collection<ArtifactInfo> artifactInfos, String classname) {
         int patter = Pattern.DOTALL + Pattern.MULTILINE;
