@@ -114,12 +114,13 @@ public class PhpProject implements Project {
     private final SourceRoots testRoots;
     private final SourceRoots seleniumRoots;
 
-    // @GuardedBy(this)
-    private FileObject sourcesDirectory;
-    // @GuardedBy(this)
-    private FileObject testsDirectory;
-    // @GuardedBy(this)
-    private FileObject seleniumDirectory;
+    // #165136
+    // @GuardedBy(ProjectManager.mutex())
+    volatile FileObject sourcesDirectory;
+    // @GuardedBy(ProjectManager.mutex())
+    volatile FileObject testsDirectory;
+    // @GuardedBy(ProjectManager.mutex())
+    volatile FileObject seleniumDirectory;
 
     public PhpProject(AntProjectHelper helper) {
         assert helper != null;
@@ -184,9 +185,18 @@ public class PhpProject implements Project {
         return seleniumRoots;
     }
 
-    synchronized FileObject getSourcesDirectory() {
+    FileObject getSourcesDirectory() {
         if (sourcesDirectory == null) {
-            sourcesDirectory = resolveSourcesDirectory();
+            ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
+                public Void run() {
+                    synchronized (PhpProject.this) {
+                        if (sourcesDirectory == null) {
+                            sourcesDirectory = resolveSourcesDirectory();
+                        }
+                    }
+                    return null;
+                }
+            });
         }
         assert sourcesDirectory != null : "Sources directory cannot be null";
         return sourcesDirectory;
@@ -205,14 +215,23 @@ public class PhpProject implements Project {
     /**
      * @return tests directory or <code>null</code>
      */
-    synchronized FileObject getTestsDirectory() {
+    FileObject getTestsDirectory() {
         if (testsDirectory == null) {
-            testsDirectory = resolveTestsDirectory();
+            ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
+                public Void run() {
+                    synchronized (PhpProject.this) {
+                        if (testsDirectory == null) {
+                            testsDirectory = resolveTestsDirectory();
+                        }
+                    }
+                    return null;
+                }
+            });
         }
         return testsDirectory;
     }
 
-    synchronized void setTestsDirectory(FileObject testsDirectory) {
+    void setTestsDirectory(FileObject testsDirectory) {
         assert this.testsDirectory == null : "Project test directory already set to " + this.testsDirectory;
         assert testsDirectory != null && testsDirectory.isValid();
         this.testsDirectory = testsDirectory;
@@ -237,12 +256,21 @@ public class PhpProject implements Project {
      */
     synchronized FileObject getSeleniumDirectory() {
         if (seleniumDirectory == null) {
-            seleniumDirectory = resolveSeleniumDirectory();
+            ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
+                public Void run() {
+                    synchronized (PhpProject.this) {
+                        if (seleniumDirectory == null) {
+                            seleniumDirectory = resolveSeleniumDirectory();
+                        }
+                    }
+                    return null;
+                }
+            });
         }
         return seleniumDirectory;
     }
 
-    synchronized void setSeleniumDirectory(FileObject seleniumDirectory) {
+    void setSeleniumDirectory(FileObject seleniumDirectory) {
         assert this.seleniumDirectory == null : "Project selenium directory already set to " + this.seleniumDirectory;
         assert seleniumDirectory != null && seleniumDirectory.isValid();
         this.seleniumDirectory = seleniumDirectory;
@@ -448,11 +476,9 @@ public class PhpProject implements Project {
             }
 
             // clear reference so the next time the project is opened we can check it again
-            synchronized (PhpProject.this) {
-                sourcesDirectory = null;
-                testsDirectory = null;
-                seleniumDirectory = null;
-            }
+            sourcesDirectory = null;
+            testsDirectory = null;
+            seleniumDirectory = null;
 
             try {
                 ProjectManager.getDefault().saveProject(PhpProject.this);
