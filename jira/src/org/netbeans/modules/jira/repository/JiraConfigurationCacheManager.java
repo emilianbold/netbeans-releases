@@ -91,6 +91,7 @@ public final class JiraConfigurationCacheManager {
         Jira.LOG.fine("shutdown: saving configuration data");                //NOI18N
         if (cacheData == null) {
             Jira.LOG.fine("shutdown: no data loaded, no data saved");
+            return;
         }
         File f = new File(BugtrackingRuntime.getInstance().getCacheStore(), CACHE_DIR_NAME);
         f.mkdirs();
