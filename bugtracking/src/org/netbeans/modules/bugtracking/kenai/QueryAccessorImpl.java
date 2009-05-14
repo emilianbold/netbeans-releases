@@ -282,6 +282,9 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
     }
 
     private static class FakeJiraSupport {
+//        XXX To display My Issues/All Issues you need to install the Jira plugin availabe from the beta UC.
+//        For more info how to add the beta UC to the IDE click here.
+        
         private static final String JIRA_SUBSTRING ="kenai.com/jira/"; // NOI18N
         private String projectUrl;
         private String createIssueUrl;
