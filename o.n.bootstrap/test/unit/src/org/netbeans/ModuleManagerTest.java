@@ -2299,6 +2299,30 @@ public class ModuleManagerTest extends SetupHid {
             assertEquals(both, mgr.getEnabledModules());
             mgr.disable(both);
             assertEquals(Collections.emptySet(), mgr.getEnabledModules());
+            mgr.delete(a);
+            mgr.delete(b);
+            jar = new File(dir, "a.jar");
+            TestFileUtils.writeZipFile(jar, "META-INF/MANIFEST.MF:OpenIDE-Module: a\nOpenIDE-Module-Needs: T1\nOpenIDE-Module-Provides: T2\n" +
+                    "OpenIDE-Module-Module-Dependencies: b\n");
+            a = mgr.create(jar, null, false, false, false);
+            jar = new File(dir, "b.jar");
+            TestFileUtils.writeZipFile(jar, "META-INF/MANIFEST.MF:OpenIDE-Module: b\nOpenIDE-Module-Needs: T2\nOpenIDE-Module-Provides: T1\n\n");
+            b = mgr.create(jar, null, false, false, false);
+            assertEquals(Collections.singleton(a), mgr.getModuleInterdependencies(b, false, false));
+            assertEquals(Collections.singleton(a), mgr.getModuleInterdependencies(b, false, true));
+            assertEquals(Collections.singleton(a), mgr.getModuleInterdependencies(b, true, false));
+            assertEquals(Collections.singleton(a), mgr.getModuleInterdependencies(b, true, true));
+            assertEquals(Collections.singleton(b), mgr.getModuleInterdependencies(a, false, false));
+            assertEquals(Collections.singleton(b), mgr.getModuleInterdependencies(a, false, true));
+            assertEquals(Collections.singleton(b), mgr.getModuleInterdependencies(a, true, false));
+            assertEquals(Collections.singleton(b), mgr.getModuleInterdependencies(a, true, true));
+            both = new HashSet<Module>(Arrays.asList(a, b));
+            assertEquals(both, new HashSet<Module>(mgr.simulateEnable(Collections.singleton(a))));
+            assertEquals(both, new HashSet<Module>(mgr.simulateEnable(Collections.singleton(b))));
+            mgr.enable(both);
+            assertEquals(both, mgr.getEnabledModules());
+            mgr.disable(both);
+            assertEquals(Collections.emptySet(), mgr.getEnabledModules());
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }

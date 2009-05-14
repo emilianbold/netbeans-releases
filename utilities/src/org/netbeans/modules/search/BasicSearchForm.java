@@ -142,6 +142,10 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         } else {
             initValuesFromHistory();
         }
+        updateTextPatternColor();
+        if (searchAndReplace){
+            updateReplacePatternColor();
+        }
     }
 
     /** This method is called from within the constructor to
@@ -321,7 +325,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
      *      .add(component<i>n</i>)</code></pre></blockquote>
      * except that {@code null} components are skipped and {@code JComboBox}
      * components are automatically added with size constraints
-     * {@code (0, DEFAULT_SIZE, Short.MAX_VALUE)}.
+     * {@code (0, 300, Short.MAX_VALUE)}.
      */
     private static ParallelGroup createParallelGroup(GroupLayout groupLayout,
                                                      int alignment,
@@ -333,7 +337,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             }
 
             if (c.getClass() == JComboBox.class) {
-                group.add(c, 0, DEFAULT_SIZE, Short.MAX_VALUE);
+                group.add(c, 0, 300, Short.MAX_VALUE);
             } else {
                 group.add(c);
             }
@@ -403,11 +407,17 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                 if (sourceComboBox == cboxTextToFind) {
                     searchCriteria.setTextPattern(text);
                     updateTextPatternColor();
+                    if (cboxReplacement != null){
+                        updateReplacePatternColor();
+                    }
                 } else if (sourceComboBox == cboxFileNamePattern) {
                     searchCriteria.setFileNamePattern(text);
                 } else {
                     assert sourceComboBox == cboxReplacement;
                     searchCriteria.setReplaceExpr(text);
+                    if (cboxReplacement != null){
+                        updateReplacePatternColor();
+                    }
                 }
             }
         }
@@ -531,6 +541,23 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         }
     }
 
+    /**
+     * Sets proper color of replace pattern.
+     */
+    private void updateReplacePatternColor() {
+        boolean wasInvalid = invalidReplacePattern;
+        invalidReplacePattern = searchCriteria.isReplacePatternInvalid();
+        if (invalidReplacePattern != wasInvalid) {
+            if (defaultTextColor == null) {
+                assert !wasInvalid;
+                defaultTextColor = textToFindEditor.getForeground();
+            }
+            replacementPatternEditor.setForeground(
+                    invalidReplacePattern ? getErrorTextColor()
+                                       : defaultTextColor);
+        }
+    }
+
     private static boolean isBackrefSyntaxUsed(String text) {
         final int len = text.length();
         if (len < 2) {
@@ -584,6 +611,9 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         if (toggle == chkRegexp) {
             searchCriteria.setRegexp(selected);
             updateTextPatternColor();
+            if (cboxReplacement != null){
+                updateReplacePatternColor();
+            }
             chkWholeWords.setEnabled(!selected);
             lblHintTextToFind.setVisible(!selected);
         } else if (toggle == chkCaseSensitive) {
@@ -947,6 +977,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     
     private Color errorTextColor, defaultTextColor;
     private boolean invalidTextPattern = false;
+    private boolean invalidReplacePattern = false;
     
     /**
      * When set to {@link true}, changes of file name pattern are ignored.
