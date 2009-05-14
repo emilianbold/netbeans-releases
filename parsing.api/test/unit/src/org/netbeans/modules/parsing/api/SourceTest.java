@@ -44,15 +44,23 @@ import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
+import java.util.Collections;
+import java.util.concurrent.CountDownLatch;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.parsing.impl.SourceAccessor;
+import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -268,6 +276,46 @@ public class SourceTest extends NbTestCase {
         source = Source.create(doc);
         assertNotNull("No Source for " + doc, source);
         assertEquals("Correct FileObject", dfile.getPrimaryFile(), source.getFileObject());
+    }
+
+    public void testDeadlock164258() throws Exception {
+        final StyledDocument doc = (StyledDocument) createDocument("text/plain", "");
+        final Source source = Source.create(doc);
+        assertNotNull("No Source for " + doc, source);
+        final CountDownLatch startLatch1 = new CountDownLatch(1);
+        final CountDownLatch startLatch2 = new CountDownLatch(1);
+
+        //Prerender
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                
+            }
+        });
+
+        new Thread() {
+            public void run () {
+                NbDocument.runAtomic(doc, new Runnable() {
+                    public void run () {
+                        try {
+                            startLatch1.await();
+                            startLatch2.countDown();
+                            SourceAccessor.getINSTANCE().getEventSupport(source).resetState(true,0, 0);
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+            }
+        }.start();
+        synchronized(TaskProcessor.INTERNAL_LOCK) {
+            startLatch1.countDown();
+            startLatch2.await();
+            NbDocument.runAtomic(doc, new Runnable() {
+                public void run() {
+                }
+            });
+        }
     }
 
     private FileObject createFileObject(String name, String documentContent, String eol) throws IOException {

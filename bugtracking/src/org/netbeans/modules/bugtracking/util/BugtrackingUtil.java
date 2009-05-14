@@ -51,8 +51,11 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -80,6 +83,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
 import org.netbeans.modules.bugtracking.patch.ContextualPatch;
+import org.netbeans.modules.bugtracking.patch.Patch;
 import org.netbeans.modules.bugtracking.patch.PatchException;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
@@ -534,6 +538,17 @@ public class BugtrackingUtil {
         };
         scrollPane.addMouseWheelListener(listener);
         scrollPane.getViewport().getView().addMouseWheelListener(listener);
+    }
+
+    public static boolean isPatch(FileObject fob) throws IOException {
+        boolean isPatch = false;
+        Reader reader = new BufferedReader(new InputStreamReader(fob.getInputStream()));
+        try {
+            isPatch = (Patch.parse(reader).length > 0);
+        } finally {
+            reader.close();
+        }
+        return isPatch;
     }
     
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,75 +37,24 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.dashboard;
+package org.netbeans.modules.jira;
 
-import java.awt.Color;
-import javax.swing.UIManager;
+import org.openide.modules.ModuleInstall;
+
 
 /**
+ * Handles module events distributed by NetBeans module
+ * framework.
  *
- * @author S. Aubrecht
+ * <p>It's registered and instantiated from module manifest.
+ *
+ * @author Tomas Stupka, Ondra Vrabec
  */
-public class ColorManager {
-    
-    private static ColorManager theInstance;
-
-    private static final boolean isAqua = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
-
-    private Color defaultBackground = UIManager.getColor("Tree.background"); //NOI18N
-    private Color defaultForeground = UIManager.getColor("black"); //NOI18N
-    private Color disabledColor = Color.gray;
-    private Color linkColor = Color.blue;
-    private Color errorColor = new Color(153,0,0);
-    private Color stableBuildColor = new Color(0,153,0);
-    private Color unstableBuildColor = Color.yellow.darker().darker();
-
-    private ColorManager() {
-    }
-
-    public static ColorManager getDefault() {
-        if( null == theInstance )
-            theInstance = new ColorManager();
-        return theInstance;
-    }
-
-    public Color getDefaultBackground() {
-        if( isAqua )
-            return UIManager.getColor("NbExplorerView.background"); // NOI18N
-        return defaultBackground;
-    }
-
-    public Color getDefaultForeground() {
-        return defaultForeground;
-    }
-
-    public Color getDisabledColor() {
-        return disabledColor;
-    }
-
-    public Color getErrorColor() {
-        return errorColor;
-    }
-
-    public Color getLinkColor() {
-        return linkColor;
-    }
-
-    public Color getStableBuildColor() {
-        return stableBuildColor;
-    }
-
-    public static ColorManager getTheInstance() {
-        return theInstance;
-    }
-
-    public Color getUnstableBuildColor() {
-        return unstableBuildColor;
+public final class ModuleLifecycleManager extends ModuleInstall{
+    @Override
+    public void close() {
+        Jira.getInstance().shutdown();
     }
 }

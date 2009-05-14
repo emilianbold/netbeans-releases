@@ -387,23 +387,6 @@ public class NbToolTip extends FileChangeAdapter {
                         return;
                     }
 
-                    // Read tooltip from highlighting layers attribute
-                    String tooltipFromHighlightingLayers = null;
-                    {
-                        if (tooltipAttributeValue != null) {
-                            if (tooltipAttributeValue instanceof String) {
-                                tooltipFromHighlightingLayers = (String) tooltipAttributeValue;
-                            } else if (tooltipAttributeValue instanceof HighlightAttributeValue) {
-                                @SuppressWarnings("unchecked") //NOI18N
-                                String value = ((HighlightAttributeValue<String>) tooltipAttributeValue).getValue(
-                                    component, doc, EditorStyleConstants.Tooltip, offset, offset + 1);
-                                tooltipFromHighlightingLayers = value;
-                            } else {
-                                LOG.fine("Invalid '" + EditorStyleConstants.Tooltip + "' attribute value " + tooltipAttributeValue); //NOI18N
-                            }
-                        }
-                    }
-                    
                     // Read tooltip from annotations
                     String tooltipFromAnnotations = null;
                     {
@@ -435,14 +418,38 @@ public class NbToolTip extends FileChangeAdapter {
                         if (tooltipFromAnnotations.length() > 0 && tts != null) {
                             tts.setToolTipText(tooltipFromAnnotations);
                         }
-                    } else if (tooltipFromHighlightingLayers != null && tts != null) {
-                        tts.setToolTipText(tooltipFromHighlightingLayers);
+
+                        return;
                     }
                 } finally {
                     doc.readUnlock();
                 }
             } finally {
                 kit.toolTipAnnotationsUnlock(doc);
+            }
+
+            if (!isRequestValid()) {
+                return;
+            }
+            
+            // Read tooltip from highlighting layers attribute
+            String tooltipFromHighlightingLayers = null;
+            {
+                if (tooltipAttributeValue != null) {
+                    if (tooltipAttributeValue instanceof String) {
+                        tooltipFromHighlightingLayers = (String) tooltipAttributeValue;
+                    } else if (tooltipAttributeValue instanceof HighlightAttributeValue) {
+                        @SuppressWarnings("unchecked") //NOI18N
+                        String value = ((HighlightAttributeValue<String>) tooltipAttributeValue).getValue(
+                            component, doc, EditorStyleConstants.Tooltip, offset, offset + 1);
+                        tooltipFromHighlightingLayers = value;
+                    } else {
+                        LOG.fine("Invalid '" + EditorStyleConstants.Tooltip + "' attribute value " + tooltipAttributeValue); //NOI18N
+                    }
+                }
+            }
+            if (tooltipFromHighlightingLayers != null && tts != null) {
+                tts.setToolTipText(tooltipFromHighlightingLayers);
             }
         }
           
