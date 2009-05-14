@@ -495,7 +495,7 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie, Recogn
             File [] grizzlyJars = modulesDir.listFiles(new FileFilter() {
                 public boolean accept(File pathname) {
                     String name = pathname.getName();
-                    return name.startsWith("grizzly") && name.endsWith(".jar") && !name.contains("jruby-module");
+                    return name.startsWith("grizzly") && name.endsWith(".jar");
                 }
             });
 
