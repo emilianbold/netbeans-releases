@@ -238,7 +238,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             try {
                 String binaryName = FileObjects.getBinaryName(file, classFolder);
                 for (String className : readRSFile(file, classFolder)) {
-                    File f = new File (classFolder, FileObjects.convertPackage2Folder(className) + '.' + FileObjects.CLASS);
+                    File f = new File (classFolder, FileObjects.convertPackage2Folder(className) + '.' + FileObjects.SIG);
                     if (!binaryName.equals(className)) {
                         toDelete.add(Pair.<String,String>of (className, sourceRelative));
                         removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
