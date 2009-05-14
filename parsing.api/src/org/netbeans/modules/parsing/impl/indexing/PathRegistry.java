@@ -74,7 +74,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Tomas Zezula
  */
-public class PathRegistry implements Runnable {
+public final class PathRegistry implements Runnable {
     private static PathRegistry instance;
     private static final RequestProcessor firer = new RequestProcessor ("Path Registry Request Processor"); //NOI18N
     private static final Logger LOGGER = Logger.getLogger(PathRegistry.class.getName());
@@ -329,6 +329,16 @@ public class PathRegistry implements Runnable {
             }
         }
     }
+
+   /**
+    * If all the source path events where fired (task is finished) return true,
+    * otherwise false. (Means there is waiting event to be fired.)
+    *
+    * @return true when there is no waiting event, otherwise false
+    */
+   public boolean isFinished() {
+       return firerTask.isFinished();
+   }
 
     public void run () {
         assert firer.isRequestProcessorThread();
