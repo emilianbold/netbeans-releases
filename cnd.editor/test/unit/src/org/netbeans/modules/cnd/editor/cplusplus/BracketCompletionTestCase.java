@@ -805,13 +805,23 @@ public class BracketCompletionTestCase extends EditorBase  {
     public void testBreakLineInString3() throws Exception {
         setDefaultsOptions();
         setLoadDocumentText(
-                "             char* a = \"\\|");
+                "             char* a = \"\\|\n");
         breakLine();
         assertDocumentTextAndCaret("Incorrect identing of main",
                 "             char* a = \"\\\n" +
-                "|");
+                "|\n");
     }    
-    
+
+    public void testBreakLineInString4() throws Exception {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "             char* a = \"\\|\"");
+        breakLine();
+        assertDocumentTextAndCaret("Incorrect identing of main",
+                "             char* a = \"\\\n" +
+                "|\"");
+    }
+
     public void testBreakLineAfterLCurly() {
         setDefaultsOptions();
         setLoadDocumentText(
