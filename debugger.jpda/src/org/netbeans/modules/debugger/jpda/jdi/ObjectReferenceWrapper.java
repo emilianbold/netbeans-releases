@@ -213,7 +213,17 @@ public final class ObjectReferenceWrapper {
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.Value invokeMethod(com.sun.jdi.ObjectReference a, com.sun.jdi.ThreadReference b, com.sun.jdi.Method c, java.util.List<? extends com.sun.jdi.Value> d, int e) throws com.sun.jdi.InvalidTypeException, com.sun.jdi.ClassNotLoadedException, com.sun.jdi.IncompatibleThreadStateException, com.sun.jdi.InvocationException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper {
         try {
-            return a.invokeMethod(b, c, d, e);
+            try {
+                return a.invokeMethod(b, c, d, e);
+            } catch (com.sun.jdi.InternalException iex) {
+                if (iex.errorCode() == 502) { // ALREADY_INVOKING
+                    iex = (com.sun.jdi.InternalException) org.openide.util.Exceptions.attachLocalizedMessage(iex, org.openide.util.NbBundle.getMessage(org.netbeans.modules.debugger.jpda.JPDADebuggerImpl.class, "JDWPError502"));
+                    org.openide.util.Exceptions.printStackTrace(iex);
+                    return null;
+                } else {
+                    throw iex; // re-throw the original
+                }
+            }
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);

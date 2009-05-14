@@ -541,11 +541,9 @@ abstract class Lookup implements ContextProvider {
                 if (i < 0) i = 0;
                 else i++; // Skip '/'
                 String serviceName = itemId.substring(i);
+                boolean isMethodCall = serviceName.indexOf('.') > 0;
                 serviceName = serviceName.replace('-', '.');
-                try {
-                    org.openide.util.Lookup.getDefault().lookup(ClassLoader.class).loadClass(serviceName);
-                } catch (ClassNotFoundException ex) {
-                    // Not a class, likely a method call
+                if (isMethodCall) {
                     serviceName = serviceName + "()";
                 }
                 return serviceName;

@@ -139,26 +139,31 @@ public class SunStudioDataCollector
                 "SunStudioCPUDetailedData", // NOI18N
                 Arrays.asList(SunStudioDCConfiguration.c_name,
                 SunStudioDCConfiguration.c_iUser,
-                SunStudioDCConfiguration.c_eUser));
+                SunStudioDCConfiguration.c_eUser),
+                null);
 
         syncInfoTable = new DataTableMetadata(
                 "SunStudioSyncDetailedData", // NOI18N
                 Arrays.asList(SunStudioDCConfiguration.c_name,
                 SunStudioDCConfiguration.c_eSync,
-                SunStudioDCConfiguration.c_eSyncn));
+                SunStudioDCConfiguration.c_eSyncn),
+                null);
 
         memInfoTable = new DataTableMetadata("SunStudioMemDetailedData", // NOI18N
                 Arrays.asList(SunStudioDCConfiguration.c_name,
                 SunStudioDCConfiguration.c_leakCount,
-                SunStudioDCConfiguration.c_leakSize));
+                SunStudioDCConfiguration.c_leakSize),
+                null);
 
         summaryInfoTable = new DataTableMetadata(
                 "SunStudioSummaryData", // NOI18N
-                Arrays.asList(SunStudioDCConfiguration.c_ulockSummary));
+                Arrays.asList(SunStudioDCConfiguration.c_ulockSummary),
+                null);
 
         memSummaryInfoTable = new DataTableMetadata(
                 "SunStudioMemorySummaryData", // NOI18N
-                Arrays.asList(SunStudioDCConfiguration.c_leakSize));
+                Arrays.asList(SunStudioDCConfiguration.c_leakSize),
+                null);
 
     }
 

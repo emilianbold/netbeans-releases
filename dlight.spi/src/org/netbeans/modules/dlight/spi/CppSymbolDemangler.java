@@ -39,14 +39,28 @@
 package org.netbeans.modules.dlight.spi;
 
 import java.util.List;
-import java.util.concurrent.Future;
 
 /**
- * This service should be implemented 
+ * C++ symbol demangler. Converts internal mangled names into
+ * original human-readable names.
  */
-public interface DemanglingFunctionNameService {
+public interface CppSymbolDemangler {
 
-    Future<String> demangle(String functionName);
+    /**
+     * Demangles one symbol name.
+     *
+     * @param symbolName  name to demangle
+     * @return  demangled name if demangling succeeded, or
+     *          unchanged name if demangling failed
+     */
+    String demangle(String symbolName);
 
-    Future<List<String>> demangle(List<String> functionNames);
+    /**
+     * Demangles many symbols at once. Much faster than demangling symbols
+     * one by one with {@link #demangle(java.lang.String)}.
+     *
+     * @param symbolNames  names to demangle
+     * @return  demangled names in the same order as in original list
+     */
+    List<String> demangle(List<String> symbolNames);
 }
