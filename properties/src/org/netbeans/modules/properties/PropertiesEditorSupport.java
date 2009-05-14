@@ -1329,7 +1329,8 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         @Override
         public synchronized boolean addEdit(UndoableEdit anEdit) {
             stampFlags.put(anEdit, new StampFlag(System.currentTimeMillis(),
-                ((PropertiesDataObject)PropertiesEditorSupport.this.myEntry.getDataObject()).getOpenSupport().atomicUndoRedoFlag ));
+//                ((PropertiesDataObject)PropertiesEditorSupport.this.myEntry.getDataObject()).getOpenSupport().atomicUndoRedoFlag ));
+                PropertiesEditorSupport.this.myEntry.atomicUndoRedoFlag ));
             return super.addEdit(anEdit);
         }
         
@@ -1337,7 +1338,8 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         @Override
         public boolean replaceEdit(UndoableEdit anEdit) {
             stampFlags.put(anEdit, new StampFlag(System.currentTimeMillis(), 
-                ((PropertiesDataObject)PropertiesEditorSupport.this.myEntry.getDataObject()).getOpenSupport().atomicUndoRedoFlag ));
+//                ((PropertiesDataObject)PropertiesEditorSupport.this.myEntry.getDataObject()).getOpenSupport().atomicUndoRedoFlag ));
+                PropertiesEditorSupport.this.myEntry.atomicUndoRedoFlag ));
             return super.replaceEdit(anEdit);
         }
         

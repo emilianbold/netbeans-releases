@@ -70,12 +70,6 @@ public class KenaiQueryController extends QueryController
     }
 
     @Override
-    public void populate(FilterDefinition filterDefinition) {
-        super.populate(filterDefinition);
-        disableProduct(projectName);
-    }
-
-    @Override
     protected void enableFields(boolean bl) {
         super.enableFields(bl);
 
@@ -84,6 +78,7 @@ public class KenaiQueryController extends QueryController
             panel.modifyButton.setEnabled(false);
             panel.removeButton.setEnabled(false);
         }
+        super.disableProject();
     }
 
     @Override
