@@ -721,6 +721,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
     // ---------- !!!!!! This MUST be the last test in the suite,
     // ---------- !!!!!! because it shuts down RepositoryUpdater
 
+    @RandomlyFails
     public void testShuttdown() throws InterruptedException {
         testShuttdown_TimedWork work1 = new testShuttdown_TimedWork();
         testShuttdown_TimedWork work2 = new testShuttdown_TimedWork();
