@@ -250,7 +250,14 @@ public final class RepositoryQueries {
         return toRet;
     }
     
-    
+    /**
+     * @throws BooleanQuery.TooManyClauses This runtime exception can be thrown if given class name is too
+     * general and such search can't be executed as it would probably end with
+     * OutOfMemoryException. Callers should either assure that no such dangerous
+     * queries are constructed or catch BooleanQuery.TooManyClauses and act
+     * accordingly, for example by telling user that entered text for
+     * search is too general.
+     */
     public static List<NBVersionInfo> findVersionsByClass(final String className, RepositoryInfo... repos) {
         Collection<List<RepositoryInfo>> all = splitReposByType(repos);
         List<NBVersionInfo> toRet = new ArrayList<NBVersionInfo>();
@@ -322,6 +329,14 @@ public final class RepositoryQueries {
         return toRet;
     }
     
+    /**
+     * @throws BooleanQuery.TooManyClauses This runtime exception can be thrown if given query is too
+     * general and such search can't be executed as it would probably end with
+     * OutOfMemoryException. Callers should either assure that no such dangerous
+     * queries are constructed or catch BooleanQuery.TooManyClauses and act
+     * accordingly, for example by telling user that entered text for
+     * search is too general.
+     */
     public static List<NBVersionInfo> find(List<QueryField> fields, RepositoryInfo... repos) {
         Collection<List<RepositoryInfo>> all = splitReposByType(repos);
         List<NBVersionInfo> toRet = new ArrayList<NBVersionInfo>();
