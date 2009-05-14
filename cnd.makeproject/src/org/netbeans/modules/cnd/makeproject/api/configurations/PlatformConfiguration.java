@@ -99,6 +99,15 @@ public class PlatformConfiguration extends IntConfiguration implements PropertyC
         super.assign(conf);
         pnp = conf.pnp;
         dhconf = conf.dhconf;
+
+        // HACK- FIXUP: platform should be folded into DevelopmentHostConfiguration
+        ExecutionEnvironment execEnv = dhconf.getExecutionEnvironment();
+        int platform = CompilerSetManager.getDefault(execEnv).getPlatform();
+        if (platform == -1) {
+            // TODO: CompilerSet is not reliable about platform; it must be.
+            platform = PlatformTypes.PLATFORM_NONE;
+        }
+        setValue(platform);
     }
 
     @Override
