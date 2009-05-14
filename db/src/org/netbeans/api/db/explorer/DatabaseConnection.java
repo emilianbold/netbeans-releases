@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -143,6 +143,16 @@ public final class DatabaseConnection {
      */
     public String getDriverClass() {
         return delegate.getDriver();
+    }
+
+    /**
+     * Returns the JDBC driver instance that this connection uses.
+     *
+     * @since 1.32
+     * @return the JDBC driver or null if no driver registred
+     */
+    public JDBCDriver getJDBCDriver() {
+        return delegate.findJDBCDriver ();
     }
 
     /**
@@ -275,6 +285,7 @@ public final class DatabaseConnection {
     /**
      * Returns a string representation of the database connection.
      */
+    @Override
     public String toString() {
         return "DatabaseConnection[name='" + getName() + "']"; // NOI18N
     }
