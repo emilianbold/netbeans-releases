@@ -412,7 +412,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (descriptorVersion <= 37 && set == 4) {
                 set = Platform.PLATFORM_GENERIC;
             }
-            ((MakeConfiguration) currentConf).getPlatform().setValue(set);
+            ((MakeConfiguration) currentConf).getDevelopmentHost().setBuildPlatform(set);
         } else if (element.equals(DEPENDENCY_CHECKING)) {
             boolean ds = currentText.equals(TRUE_VALUE);
             ((MakeConfiguration) currentConf).getDependencyChecking().setValue(ds);
@@ -756,7 +756,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentLibrariesConfiguration.add(new LibraryItem.LibItem(getString(currentText)));
             }
         } else if (element.equals(LINKER_LIB_STDLIB_ITEM_ELEMENT)) {
-            LibraryItem.StdLibItem stdLibItem = Platforms.getPlatform(((MakeConfiguration) currentConf).getPlatform().getValue()).getStandardLibrarie(currentText);
+            LibraryItem.StdLibItem stdLibItem = Platforms.getPlatform(((MakeConfiguration) currentConf).getDevelopmentHost().getBuildPlatform()).getStandardLibrarie(currentText);
             if (currentLibrariesConfiguration != null && stdLibItem != null) {
                 currentLibrariesConfiguration.add(stdLibItem);
             }
