@@ -232,7 +232,7 @@ public class LLDataCollector
         NativeProcessBuilder npb = null;
         for (Map.Entry<String, File> entry : locateProfMonitors(env).entrySet()) {
             npb = new NativeProcessBuilder(env,
-                    getRemoteDir(env, entry.getValue(), entry.getKey()) + "/" + entry.getValue().getName()); // NOI18N
+                    getRemoteDir(env, entry.getValue(), entry.getKey()) + "/" + entry.getValue().getName(),false); // NOI18N
             break;
         }
         if (npb == null) {
