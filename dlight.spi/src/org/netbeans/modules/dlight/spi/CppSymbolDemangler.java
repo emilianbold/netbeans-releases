@@ -36,26 +36,31 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.spi;
 
-package org.netbeans.modules.cnd.gizmo;
-
-import org.netbeans.modules.dlight.spi.DemanglingFunctionNameService;
-import org.netbeans.modules.dlight.spi.DemanglingFunctionNameServiceFactory;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.List;
 
 /**
- *
- * @author mt154047
+ * C++ symbol demangler. Converts internal mangled names into
+ * original human-readable names.
  */
-@ServiceProvider(service = DemanglingFunctionNameServiceFactory.class)
-public final class  CndDemanglingFunctionNameServiceFactory  implements DemanglingFunctionNameServiceFactory{
+public interface CppSymbolDemangler {
 
-    public DemanglingFunctionNameService getForCurrentSession() {
-        return new CndDemanglingFunctionNameServiceImpl();
-    }
+    /**
+     * Demangles one symbol name.
+     *
+     * @param symbolName  name to demangle
+     * @return  demangled name if demangling succeeded, or
+     *          unchanged name if demangling failed
+     */
+    String demangle(String symbolName);
 
-    public DemanglingFunctionNameService geDemanglingServiceFor(CPPCompiler cppCompiler) {
-        return new CndDemanglingFunctionNameServiceImpl(cppCompiler);
-    }
-
+    /**
+     * Demangles many symbols at once. Much faster than demangling symbols
+     * one by one with {@link #demangle(java.lang.String)}.
+     *
+     * @param symbolNames  names to demangle
+     * @return  demangled names in the same order as in original list
+     */
+    List<String> demangle(List<String> symbolNames);
 }

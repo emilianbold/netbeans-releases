@@ -36,17 +36,30 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.dlight.spi;
 
-import java.util.List;
-import java.util.concurrent.Future;
-
 /**
- * This service should be implemented 
+ *
+ * @author mt154047
  */
-public interface DemanglingFunctionNameService {
+public interface CppSymbolDemanglerFactory {
 
-    Future<String> demangle(String functionName);
+    /**
+     *
+     * @return
+     */
+    public CppSymbolDemangler getForCurrentSession();
 
-    Future<List<String>> demangle(List<String> functionNames);
+    /**
+     * 
+     * @param cppCompiler
+     * @return
+     */
+    public CppSymbolDemangler getDemanglerFor(CPPCompiler cppCompiler);
+    
+    public enum CPPCompiler{
+        GNU,
+        SS
+    }
 }

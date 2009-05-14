@@ -155,7 +155,7 @@ public abstract class BasicCompiler extends Tool {
 
     protected String normalizePath(String path) {
         if (getExecutionEnvironment().isLocal()) {
-            return CndFileUtils.normalizePath(new File(path).getAbsolutePath());
+            return CndFileUtils.normalizeAbsolutePath(new File(path).getAbsolutePath());
         } else {
             // TODO: remote paths would love to be normalized too
             return path;

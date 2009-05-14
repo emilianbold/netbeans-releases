@@ -36,29 +36,48 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.remote.sync;
 
-package org.netbeans.modules.dlight.spi;
+import java.io.File;
+import java.io.FileFilter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
- *
- * @author mt154047
+ * FileFilter implementation that is based on file sharability
+ * @author Vladimir Kvashin
  */
-public interface DemanglingFunctionNameServiceFactory {
+public class SharabilityFilter implements FileFilter {
 
-    /**
-     *
-     * @return
-     */
-    public DemanglingFunctionNameService getForCurrentSession();
-    /**
-     * 
-     * @param cppCompiler
-     * @return
-     */
-    public DemanglingFunctionNameService geDemanglingServiceFor(CPPCompiler cppCompiler);
-    
-    public enum CPPCompiler{
-        GNU,
-        SS
+    private Logger logger = Logger.getLogger("cnd.remote.logger"); // NOI18N
+
+    public boolean accept(File file) {
+        final int sharability = SharabilityQuery.getSharability(file);
+        if(logger.isLoggable(Level.FINEST)) {
+            logger.finest(file.getAbsolutePath() + " sharability is " + sharabilityToString(sharability));
+        }
+        switch (sharability) {
+            case SharabilityQuery.NOT_SHARABLE:
+                return false;
+            case SharabilityQuery.MIXED:
+            case SharabilityQuery.SHARABLE:
+            case SharabilityQuery.UNKNOWN:
+                return true;
+            default:
+                CndUtils.assertTrueInConsole(false, "Unexpected sharability value: " + sharability); //NOI18N
+                return true;
+        }
+    }
+
+    private static String sharabilityToString(int sharability) {
+        switch (sharability) {
+            case SharabilityQuery.NOT_SHARABLE: return "NOT_SHARABLE"; //NOI18N
+            case SharabilityQuery.MIXED:        return "MIXED"; //NOI18N
+            case SharabilityQuery.SHARABLE:     return "SHARABLE"; //NOI18N
+            case SharabilityQuery.UNKNOWN:      return "UNKNOWN"; //NOI18N
+            default:                            return "UNEXPECTED: " + sharability; //NOI18N
+        }
     }
 }
