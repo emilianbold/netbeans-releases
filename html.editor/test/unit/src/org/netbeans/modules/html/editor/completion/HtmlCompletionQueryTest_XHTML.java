@@ -37,27 +37,24 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.editor.ext.html.dtd;
+package org.netbeans.modules.html.editor.completion;
 
-import java.util.Arrays;
-import java.util.List;
+import java.io.IOException;
+import javax.swing.text.BadLocationException;
 
 /**
  *
  * @author marekfukala
  */
-public class Utils {
+public class HtmlCompletionQueryTest_XHTML extends HtmlCompletionQueryTest {
 
-    public static final String XHTML_STRINCT_PUBLIC_ID = "-//W3C//DTD XHTML 1.0 Strict//EN";
-        
-    private static final List<String> XHTML_PUBLIC_IDS = Arrays.asList(new String[]{
-        XHTML_STRINCT_PUBLIC_ID,
-        "-//W3C//DTD XHTML 1.0 Transitional//EN",
-        "-//W3C//DTD XHTML 1.0 Frameset//EN"});
-
-     public static boolean isXHTMLPublicId(String publicId) {
-        return XHTML_PUBLIC_IDS.contains(publicId);
+    public HtmlCompletionQueryTest_XHTML() throws IOException, BadLocationException {
+        super(HtmlCompletionQueryTest_XHTML.class.getName());
     }
 
-
+    @Override
+    protected String getPublicID() {
+        return "-//W3C//DTD XHTML 1.0 Strict//EN";
+    }
+    
 }
