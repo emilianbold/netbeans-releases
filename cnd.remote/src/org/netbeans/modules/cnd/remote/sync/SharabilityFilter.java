@@ -43,6 +43,7 @@ import java.io.FileFilter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * FileFilter implementation that is based on file sharability
@@ -63,18 +64,20 @@ public class SharabilityFilter implements FileFilter {
             case SharabilityQuery.MIXED:
             case SharabilityQuery.SHARABLE:
             case SharabilityQuery.UNKNOWN:
+                return true;
             default:
+                CndUtils.assertTrueInConsole(false, "Unexpected sharability value: " + sharability); //NOI18N
                 return true;
         }
     }
 
     private static String sharabilityToString(int sharability) {
         switch (sharability) {
-            case SharabilityQuery.NOT_SHARABLE: return "NOT_SHARABLE";
-            case SharabilityQuery.MIXED:        return "MIXED";
-            case SharabilityQuery.SHARABLE:     return "SHARABLE";
-            case SharabilityQuery.UNKNOWN:      return "UNKNOWN";
-            default:                            return "???";
+            case SharabilityQuery.NOT_SHARABLE: return "NOT_SHARABLE"; //NOI18N
+            case SharabilityQuery.MIXED:        return "MIXED"; //NOI18N
+            case SharabilityQuery.SHARABLE:     return "SHARABLE"; //NOI18N
+            case SharabilityQuery.UNKNOWN:      return "UNKNOWN"; //NOI18N
+            default:                            return "UNEXPECTED: " + sharability; //NOI18N
         }
     }
 }
