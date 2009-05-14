@@ -95,16 +95,15 @@ public class JiraConfiguration extends JiraClientCache {
 
     protected void initialize(boolean forceRefresh) throws JiraException {
         data = (ConfigurationData) getData();
-        if(!forceRefresh) {
         synchronized (data) {
-            if(data.initialized) {
-                if (!hacked) {
-                    hackJiraCache();
+            if(!forceRefresh) {
+                if(data.initialized) {
+                    if (!hacked) {
+                        hackJiraCache();
+                    }
+                    return;
                 }
-                return;
             }
-        }
-        }
             refreshData();
             putToCache();
             hackJiraCache();
