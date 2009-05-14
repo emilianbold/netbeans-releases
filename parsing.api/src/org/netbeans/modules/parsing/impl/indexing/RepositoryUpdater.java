@@ -1517,8 +1517,12 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     }
                     newRoots.addAll(PathRegistry.getDefault().getUnknownRoots());
 
+                    Set<String> libraryIds = PathRecognizerRegistry.getDefault().getLibraryIds();
+                    Set<String> binaryLibraryIds = PathRecognizerRegistry.getDefault().getBinaryLibraryIds();
+                    LOGGER.log(Level.FINE, "LibraryIds: {0}", libraryIds);
+                    LOGGER.log(Level.FINE, "BinaryLibraryIds: {0}", binaryLibraryIds);
                     for (URL url : newRoots) {
-                        findDependencies(url, depCtx, PathRecognizerRegistry.getDefault().getLibraryIds(), PathRecognizerRegistry.getDefault().getBinaryLibraryIds());
+                        findDependencies(url, depCtx, libraryIds, binaryLibraryIds);
                     }
 
                     try {
