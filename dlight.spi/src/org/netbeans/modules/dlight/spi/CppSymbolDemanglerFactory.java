@@ -37,25 +37,29 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.gizmo;
-
-import org.netbeans.modules.dlight.spi.DemanglingFunctionNameService;
-import org.netbeans.modules.dlight.spi.DemanglingFunctionNameServiceFactory;
-import org.openide.util.lookup.ServiceProvider;
+package org.netbeans.modules.dlight.spi;
 
 /**
  *
  * @author mt154047
  */
-@ServiceProvider(service = DemanglingFunctionNameServiceFactory.class)
-public final class  CndDemanglingFunctionNameServiceFactory  implements DemanglingFunctionNameServiceFactory{
+public interface CppSymbolDemanglerFactory {
 
-    public DemanglingFunctionNameService getForCurrentSession() {
-        return new CndDemanglingFunctionNameServiceImpl();
+    /**
+     *
+     * @return
+     */
+    public CppSymbolDemangler getForCurrentSession();
+
+    /**
+     * 
+     * @param cppCompiler
+     * @return
+     */
+    public CppSymbolDemangler getDemanglerFor(CPPCompiler cppCompiler);
+    
+    public enum CPPCompiler{
+        GNU,
+        SS
     }
-
-    public DemanglingFunctionNameService geDemanglingServiceFor(CPPCompiler cppCompiler) {
-        return new CndDemanglingFunctionNameServiceImpl(cppCompiler);
-    }
-
 }

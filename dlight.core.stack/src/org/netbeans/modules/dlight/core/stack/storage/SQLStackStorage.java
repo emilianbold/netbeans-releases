@@ -66,8 +66,8 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricsFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
-import org.netbeans.modules.dlight.spi.DemanglingFunctionNameService;
-import org.netbeans.modules.dlight.spi.DemanglingFunctionNameServiceFactory;
+import org.netbeans.modules.dlight.spi.CppSymbolDemangler;
+import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory;
 import org.openide.util.Lookup;
 
 /**
@@ -86,7 +86,7 @@ public final class SQLStackStorage {
     private int nodeIdSequence;
     private final ExecutorThread executor;
     private boolean isRunning = true;
-    private final DemanglingFunctionNameService demanglingService;
+    private final CppSymbolDemangler demangler;
 
     public SQLStackStorage(SQLDataStorage sqlStorage) throws SQLException, IOException {
         this.sqlStorage = sqlStorage;
@@ -98,11 +98,11 @@ public final class SQLStackStorage {
         executor = new ExecutorThread();
         executor.setPriority(Thread.MIN_PRIORITY);
         executor.start();
-        DemanglingFunctionNameServiceFactory factory = Lookup.getDefault().lookup(DemanglingFunctionNameServiceFactory.class);
+        CppSymbolDemanglerFactory factory = Lookup.getDefault().lookup(CppSymbolDemanglerFactory.class);
         if (factory != null) {
-            demanglingService = factory.getForCurrentSession();
+            demangler = factory.getForCurrentSession();
         } else {
-            demanglingService = null;
+            demangler = null;
         }
     }
 
@@ -175,8 +175,8 @@ public final class SQLStackStorage {
             metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
             metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
             String funcName = rs.getString(2);
-            if (demanglingService != null) {
-                funcName = demanglingService.demangle(funcName);
+            if (demangler != null) {
+                funcName = demangler.demangle(funcName);
             }
             result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), funcName, rs.getString(3)), metrics));
         }
@@ -193,8 +193,8 @@ public final class SQLStackStorage {
             metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
             metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
             String funcName = rs.getString(2);
-            if (demanglingService != null) {
-                funcName = demanglingService.demangle(funcName);
+            if (demangler != null) {
+                funcName = demangler.demangle(funcName);
             }
             result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), funcName, rs.getString(3)), metrics));
         }
@@ -221,8 +221,8 @@ public final class SQLStackStorage {
             }
             rs.close();
 
-            if (demanglingService != null) {
-                funcNames = demanglingService.demangle(funcNames);
+            if (demangler != null) {
+                funcNames = demangler.demangle(funcNames);
                 if (funcNames.size() == funcList.size()) {
                     for (int i = 0; i < funcList.size(); ++i) {
                         ((FunctionImpl) funcList.get(i).getFunction()).setName(funcNames.get(i));
@@ -270,8 +270,8 @@ public final class SQLStackStorage {
             }
             rs.close();
 
-            if (demanglingService != null) {
-                funcNames = demanglingService.demangle(funcNames);
+            if (demangler != null) {
+                funcNames = demangler.demangle(funcNames);
                 if (funcNames.size() == funcList.size()) {
                     for (int i = 0; i < funcList.size(); ++i) {
                         ((FunctionImpl) funcList.get(i).getFunction()).setName(funcNames.get(i));

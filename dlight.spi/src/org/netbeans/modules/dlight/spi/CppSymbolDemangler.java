@@ -36,29 +36,31 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.spi;
 
+import java.util.List;
+
 /**
- *
- * @author mt154047
+ * C++ symbol demangler. Converts internal mangled names into
+ * original human-readable names.
  */
-public interface DemanglingFunctionNameServiceFactory {
+public interface CppSymbolDemangler {
 
     /**
+     * Demangles one symbol name.
      *
-     * @return
+     * @param symbolName  name to demangle
+     * @return  demangled name if demangling succeeded, or
+     *          unchanged name if demangling failed
      */
-    public DemanglingFunctionNameService getForCurrentSession();
+    String demangle(String symbolName);
+
     /**
-     * 
-     * @param cppCompiler
-     * @return
+     * Demangles many symbols at once. Much faster than demangling symbols
+     * one by one with {@link #demangle(java.lang.String)}.
+     *
+     * @param symbolNames  names to demangle
+     * @return  demangled names in the same order as in original list
      */
-    public DemanglingFunctionNameService geDemanglingServiceFor(CPPCompiler cppCompiler);
-    
-    public enum CPPCompiler{
-        GNU,
-        SS
-    }
+    List<String> demangle(List<String> symbolNames);
 }

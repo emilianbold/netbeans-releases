@@ -36,16 +36,24 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.spi;
+package org.netbeans.modules.cnd.gizmo;
 
-import java.util.List;
+import org.netbeans.modules.dlight.spi.CppSymbolDemangler;
+import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * This service should be implemented 
+ *
+ * @author mt154047
  */
-public interface DemanglingFunctionNameService {
+@ServiceProvider(service = CppSymbolDemanglerFactory.class)
+public final class CppSymbolDemanglerFactoryImpl implements CppSymbolDemanglerFactory {
 
-    String demangle(String functionName);
+    public CppSymbolDemangler getForCurrentSession() {
+        return new CppSymbolDemanglerImpl();
+    }
 
-    List<String> demangle(List<String> functionNames);
+    public CppSymbolDemangler getDemanglerFor(CPPCompiler cppCompiler) {
+        return new CppSymbolDemanglerImpl(cppCompiler);
+    }
 }

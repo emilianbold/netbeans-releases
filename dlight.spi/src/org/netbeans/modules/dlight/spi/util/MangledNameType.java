@@ -42,8 +42,8 @@ import java.beans.PropertyEditorManager;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import org.netbeans.modules.dlight.spi.DemanglingFunctionNameService;
-import org.netbeans.modules.dlight.spi.DemanglingFunctionNameServiceFactory;
+import org.netbeans.modules.dlight.spi.CppSymbolDemangler;
+import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -54,11 +54,11 @@ import org.openide.util.Lookup;
 public final class MangledNameType {//implements Comparable<MangledNameType> {
 
     
-    private static final DemanglingFunctionNameService demanglingService;
+    private static final CppSymbolDemangler demanglingService;
 
 
     static {
-        DemanglingFunctionNameServiceFactory factory = Lookup.getDefault().lookup(DemanglingFunctionNameServiceFactory.class);
+        CppSymbolDemanglerFactory factory = Lookup.getDefault().lookup(CppSymbolDemanglerFactory.class);
         if (factory != null) {
             demanglingService = factory.getForCurrentSession();
         } else {
