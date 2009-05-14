@@ -56,8 +56,8 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.dlight.spi.DemanglingFunctionNameService;
-import org.netbeans.modules.dlight.spi.DemanglingFunctionNameServiceFactory.CPPCompiler;
+import org.netbeans.modules.dlight.spi.CppSymbolDemangler;
+import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory.CPPCompiler;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -68,7 +68,7 @@ import org.openide.windows.InputOutput;
  * @author mt154047
  * @author Alexey Vladykin
  */
-public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionNameService {
+public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
 
     private static final int MAX_CMDLINE_LENGTH = 2000;
     private final static Map<String, String> demangledCache = new HashMap<String, String>();
@@ -79,7 +79,7 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
     private static final String SS_FAMILIY = "dem"; //NOI18N
     private static final String EQUALS_EQUALS = " == "; //NOI18N
 
-    CndDemanglingFunctionNameServiceImpl() {
+    /*package*/ CppSymbolDemanglerImpl() {
         Project project = org.netbeans.api.project.ui.OpenProjects.getDefault().getMainProject();
         NativeProject nPrj = (project == null) ? null : project.getLookup().lookup(NativeProject.class);
         if (nPrj == null) {
@@ -108,7 +108,7 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
         demanglerTool = binDir + "/" + demangle_utility; //NOI18N BTW: isn't it better to use File.Separator?
     }
 
-    CndDemanglingFunctionNameServiceImpl(CPPCompiler cppCompiler) {
+    /*package*/ CppSymbolDemanglerImpl(CPPCompiler cppCompiler) {
         this.cppCompiler = cppCompiler;
         if (cppCompiler == CPPCompiler.GNU) {
             demanglerTool = GNU_FAMILIY;
@@ -118,8 +118,8 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
         env = ExecutionEnvironmentFactory.getLocal();
     }
 
-    public String demangle(String functionName) {
-        String mangledName = stripModuleAndOffset(functionName);
+    public String demangle(String symbolName) {
+        String mangledName = stripModuleAndOffset(symbolName);
 
         if (!isMangled(mangledName)) {
             return mangledName;
@@ -143,9 +143,9 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
         return demangledName;
     }
 
-    public List<String> demangle(List<String> functionNames) {
-        List<String> result = new ArrayList<String>(functionNames.size());
-        for (String name : functionNames) {
+    public List<String> demangle(List<String> symbolNames) {
+        List<String> result = new ArrayList<String>(symbolNames.size());
+        for (String name : symbolNames) {
             result.add(stripModuleAndOffset(name));
         }
 
