@@ -59,9 +59,15 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 /*package-local*/ class ScpSyncWorker extends BaseSyncWorker implements RemoteSyncWorker {
 
     private Logger logger = Logger.getLogger("cnd.remote.logger"); // NOI18N
+    private FileFilter sharabilityFilter;
+
+    private int plainFilesCount;
+    private int dirCount;
+    private long totalSize;
 
     public ScpSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
         super(localDir, executionEnvironment, out, err);
+        sharabilityFilter = new SharabilityFilter();
     }
 
     protected String getRemoteSyncRoot() {
@@ -96,9 +102,13 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
                 mapper.addMapping(localParent, remoteParent);
             }
         }
+        plainFilesCount = dirCount = 0;
+        totalSize = 0;
+        long time = System.currentTimeMillis();
+        boolean success = false;
         try {
             synchronizeImpl(remoteDir);
-            return true;
+            success = true;
         } catch (InterruptedException ex) {
             logger.log(Level.FINE, null, ex);
         } catch (ExecutionException ex) {
@@ -106,19 +116,18 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         } catch (IOException ex) {
             logger.log(Level.FINE, null, ex);
         }
-        return false;
+        time = System.currentTimeMillis() - time;
+        logger.fine("Uploading " + plainFilesCount + " files in " + dirCount + " directories to "  //NOI18N
+                + executionEnvironment + " took " + time + " ms. " + //NOI18N
+                " Total size: " + (totalSize/1024) + "K. Success: " + success); //NOI18N
+        return success;
     }
 
-    /*package-local*/ void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
+    /*package-local (for testing purposes, otherwise would be private) */
+    void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
         CommonTasksSupport.mkDir(executionEnvironment, remoteDir, err);
-        FileFilter filter = new FileFilter() {
-            // TODO: think over, is it a hack?!
-            public boolean accept(File pathname) {
-                return  ! "build".equals(pathname.getName()) &&  //NOI18N
-                        ! "dist".equals(pathname.getName()); //NOI18N
-            }
-        };
-        for (File file : localDir.listFiles(filter)) {
+        dirCount++;
+        for (File file : localDir.listFiles(sharabilityFilter)) {
             synchronizeImpl(file, remoteDir);
         }
     }
@@ -128,12 +137,13 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
             remoteDir += "/"  + file.getName(); // NOI18N
             // NOI18N
             Future<Integer> mkDir = CommonTasksSupport.mkDir(executionEnvironment, remoteDir, err);
+            dirCount++;
             int rc = mkDir.get();
             if (rc != 0) {
                 throw new IOException("creating directory " + remoteDir + " on " + executionEnvironment + // NOI18N
                         " finished with error code " + rc); // NOI18N
             }
-            for (File child : file.listFiles()) {
+            for (File child : file.listFiles(sharabilityFilter)) {
                 synchronizeImpl(child, remoteDir);
             }
         } else {
@@ -145,6 +155,8 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
             String remoteFile = remoteDir + '/' + file.getName(); //NOI18N
             Future<Integer> upload = CommonTasksSupport.uploadFile(localFile, executionEnvironment, remoteFile, 0777, err);
             int rc = upload.get();
+            plainFilesCount++;
+            totalSize += file.length();
             logger.finest("SCP: uploading " + localFile + " to " + remoteFile + " rc=" + rc); //NOI18N
             if (rc != 0) {
                 throw new IOException("uploading " + localFile + " to " + remoteFile + // NOI18N
