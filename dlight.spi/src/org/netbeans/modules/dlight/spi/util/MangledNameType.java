@@ -97,15 +97,7 @@ public final class MangledNameType {//implements Comparable<MangledNameType> {
             demanled_name = mangled_name;
             return;
         }
-        try {
-            demanled_name = demanglingService.demangle(mangled_name).get();
-            return;
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ExecutionException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        demanled_name = mangled_name;
+        demanled_name = demanglingService.demangle(mangled_name);
     }
 
     @Override

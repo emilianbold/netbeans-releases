@@ -39,14 +39,13 @@
 package org.netbeans.modules.dlight.spi;
 
 import java.util.List;
-import java.util.concurrent.Future;
 
 /**
  * This service should be implemented 
  */
 public interface DemanglingFunctionNameService {
 
-    Future<String> demangle(String functionName);
+    String demangle(String functionName);
 
-    Future<List<String>> demangle(List<String> functionNames);
+    List<String> demangle(List<String> functionNames);
 }
