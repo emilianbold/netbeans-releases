@@ -155,6 +155,19 @@ made subject to such option by the copyright holder.
         <subant target="test" buildpath="../cnd.highlight" inheritrefs="false" inheritall="false" failonerror="false"/>
     </target>
 
+    <target name="rebuild-dlight" description="rebuild dlight cluster">
+        <exec executable="bash">
+            <arg value="../cnd.modelimpl/build.sh"/>
+            <arg value="dlight"/>
+        </exec>
+    </target>
+
+    <target name="rebuild-cnd" description="rebuild cnd cluster">
+        <exec executable="bash">
+            <arg value="../cnd.modelimpl/build.sh"/>
+        </exec>
+    </target>
+
     <target name="i18n-check" description="I18n check for CND modules">
         <exec executable="sh">
             <arg value="i18n-check.sh"/>
