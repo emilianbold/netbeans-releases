@@ -43,6 +43,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupProvider;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupWorker;
+import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
@@ -55,12 +56,15 @@ import org.openide.util.HelpCtx;
     private HostSetupProvider lastSelectedProvider;
 
     private HostSetupWorker selectedWorker;
+    private final ToolsCacheManager cacheManager;
 
-    public CreateHostWizardPanel0(ChangeListener changeListener, List<HostSetupProvider> providers) {
+    public CreateHostWizardPanel0(ChangeListener changeListener, 
+            List<HostSetupProvider> providers, ToolsCacheManager cacheManager) {
         this.providers = providers;
         this.changeListener = changeListener;
+        this.cacheManager = cacheManager;
         this.lastSelectedProvider = providers.get(0);
-        this.selectedWorker = lastSelectedProvider.createHostSetupWorker();
+        this.selectedWorker = lastSelectedProvider.createHostSetupWorker(cacheManager);
     }
 
     public HostSetupWorker getSelectedWorker() {
@@ -115,7 +119,7 @@ import org.openide.util.HelpCtx;
 
         if (!provider.equals(lastSelectedProvider)) {
             lastSelectedProvider = provider;
-            selectedWorker = provider.createHostSetupWorker();
+            selectedWorker = provider.createHostSetupWorker(cacheManager);
             changeListener.stateChanged(new ChangeEvent(this));
         }
     }

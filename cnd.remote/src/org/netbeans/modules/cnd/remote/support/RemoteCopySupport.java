@@ -79,7 +79,7 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
             // exec 'scp -f rfile' remotely
             String command = "scp -f " + remoteName; //NOI18N
 
-            NativeProcessBuilder pb = new NativeProcessBuilder(executionEnvironment, command);
+            NativeProcessBuilder pb = new NativeProcessBuilder(executionEnvironment, command,false);
             Process process = pb.call();
 
 //            Channel channel = session.openChannel("exec");

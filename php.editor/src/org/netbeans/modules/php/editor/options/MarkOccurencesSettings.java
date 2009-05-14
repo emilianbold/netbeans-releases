@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,50 +37,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor.options;
 
-package org.netbeans.modules.cnd.spi.remote.setup;
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
 
 /**
- * Allows to plug in a different way of setting up a remote host.
  *
- * It's a factory that creates instances of HostSetupWorker
- * (which carries up the work of setting up a host)
- *
- * @author Vladimir Kvashin
+ * @author Jan Lahoda
  */
-public interface HostSetupProvider {
+public class MarkOccurencesSettings {
+    
+    private static final String MARK_OCCURENCES = "MarkOccurences"; // NOI18N
 
-    /**
-     * Gets a string that identifies this provider;
-     * it can be used for storing, say, last selected provider in properties
-     * @return this provider ID
-     */
-    String getID();
+    public static String ON_OFF = "OnOff"; // NOI18N
+    
+    private MarkOccurencesSettings() {
+    }
 
-    /**
-     * Gets this provider name to be displayed in UI
-     * (most likely, in combo box or radio button group)
-     * @return this provider name to be displayed in UI
-     */
-    String getDisplayName();
-
-    /**
-     * Creates an instance of HostSetupWorker,
-     * which provide UI and performs actual work
-     * @return an instance of HostSetupWorker
-     */
-    HostSetupWorker createHostSetupWorker();
-
-    /**
-     * Determines whether this provider is applicable.
-     * This allows switching providers ON and OFF programmatically
-     * e.g. via -J-D... ;-)
-     * @return true if this provider is applicable, otherwise false
-     */
-    boolean isApplicable();
+    public static Preferences getCurrentNode() {
+        Preferences preferences = NbPreferences.forModule(MarkOccurencesOptionsPanelController.class);
+        return preferences.node(MARK_OCCURENCES).node(getCurrentProfileId());
+    }
+    
+    private static String getCurrentProfileId() {
+        return "default"; // NOI18N
+    }
+    
 }

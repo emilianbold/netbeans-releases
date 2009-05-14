@@ -41,6 +41,7 @@ package org.netbeans.modules.bugtracking.hyperlink;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -56,16 +57,21 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
-import org.netbeans.modules.bugtracking.util.IssueFinder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Cancellable;
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import static org.netbeans.modules.bugtracking.util.IssueFinderUtils.HyperlinkSpanInfo;
 
 /**
  * 
@@ -73,9 +79,32 @@ import org.openide.util.RequestProcessor.Task;
  * 
  * @author Tomas Stupka
  */
-public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
+public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, LookupListener {
 
     private static Logger LOG = Logger.getLogger(EditorHyperlinkProviderImpl.class.getName());
+
+    //--------------------------------------------------------------------------
+
+    private final Result<IssueFinder> lookupResult = Lookup.getDefault().lookupResult(IssueFinder.class);
+    private IssueFinder[] issueFinders;
+
+    {
+        lookupResult.addLookupListener(this);
+        refreshIssueFinders();
+    }
+
+    public void resultChanged(LookupEvent ev) {
+        refreshIssueFinders();
+    }
+
+    private void refreshIssueFinders() {
+        Collection<? extends IssueFinder> allInstances = lookupResult.allInstances();
+        IssueFinder[] newResult = new IssueFinder[allInstances.size()];
+        allInstances.toArray(newResult);
+        issueFinders = newResult;
+    }
+
+    //--------------------------------------------------------------------------
 
     public Set<HyperlinkType> getSupportedHyperlinkTypes() {
         return EnumSet.of(HyperlinkType.GO_TO_DECLARATION); 
@@ -86,7 +115,10 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
     }
 
     public int[] getHyperlinkSpan(Document doc, int offset, HyperlinkType type) {
-        return getIssueSpan(doc, offset, type);
+        HyperlinkSpanInfo spanInfo = getIssueSpan(doc, offset, type);
+        return (spanInfo != null) ? new int[] {spanInfo.startOffset,
+                                               spanInfo.endOffset}
+                                  : null;
     }
 
     public void performClickAction(final Document doc, final int offset, final HyperlinkType type) {
@@ -130,16 +162,22 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
 
     // XXX get/unify from/with hyperlink provider
     private String getIssueId(Document doc, int offset, HyperlinkType type) {
-        int[] idx = getIssueSpan(doc, offset, type);
-        if (idx == null) {
+        HyperlinkSpanInfo spanInfo = getIssueSpan(doc, offset, type);
+
+        if (spanInfo == null) {
             return null;
         }
+
         String issueId = null;
         try {
-            for (int i = 1; i < idx.length; i++) {
-                if(idx[i-1] <= offset && offset <= idx[i]) {
-                    issueId = IssueFinder.getIssueNumber(doc.getText(idx[i-1], idx[i] - idx[i-1]));
-                    break;
+            if ((spanInfo.startOffset <= offset) && (offset <= spanInfo.endOffset)) {
+                /* at first, check that it is a valid reference text: */
+                int length = spanInfo.endOffset - spanInfo.startOffset;
+                String text = doc.getText(spanInfo.startOffset, length);
+                int[] spans = spanInfo.issueFinder.getIssueSpans(text);
+                if (spans.length == 2) {
+                    /* valid - now just retreive the issue id: */
+                    issueId = spanInfo.issueFinder.getIssueId(text);
                 }
             }
         } catch (BadLocationException ex) {
@@ -148,7 +186,7 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
         return issueId;
     }
 
-    private int[] getIssueSpan(Document doc, int offset, HyperlinkType type) {
+    private HyperlinkSpanInfo getIssueSpan(Document doc, int offset, HyperlinkType type) {
         TokenHierarchy th = TokenHierarchy.get(doc);
         List<TokenSequence> list = th.embeddedTokenSequences(offset, false);
 
@@ -168,10 +206,14 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
                 t.id().name().toUpperCase().indexOf("COMMENT") > -1)                    // consider this as a fallback // NOI18N
             {
                 String text = t.text().toString();
-                int[] span = IssueFinder.getIssueSpans(text);
-                for (int i = 1; i < span.length; i += 2) {
-                    if(ts.offset() + span[i-1] <= offset && offset <= ts.offset() + span[i]) {
-                        return new int[] {ts.offset() + span[i-1], ts.offset() + span[i]};
+                for (IssueFinder issueFinder : issueFinders) {
+                    int[] span = issueFinder.getIssueSpans(text);
+                    for (int i = 1; i < span.length; i += 2) {
+                        if(ts.offset() + span[i-1] <= offset && offset <= ts.offset() + span[i]) {
+                            return new HyperlinkSpanInfo(issueFinder,
+                                                         ts.offset() + span[i-1],
+                                                         ts.offset() + span[i]);
+                        }
                     }
                 }
             }

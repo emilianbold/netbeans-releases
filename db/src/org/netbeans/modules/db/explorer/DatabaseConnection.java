@@ -69,6 +69,7 @@ import org.netbeans.lib.ddl.DBConnection;
 import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverListener;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 
 import org.netbeans.modules.db.ExceptionListener;
@@ -169,6 +170,13 @@ public class DatabaseConnection implements DBConnection {
     public static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
     public static final int DERBY_UNICODE_ERROR_CODE = 20000;
     private OpenConnectionInterface openConnection = null;
+    private volatile JDBCDriver jdbcdrv = null;
+    private JDBCDriverListener jdbcL = new JDBCDriverListener () {
+        public void driversChanged () {
+            jdbcdrv = null;
+        }
+    };
+
 
     static private final Lookup.Result<OpenConnectionInterface> openConnectionLookupResult;
     static private Collection openConnectionServices = null;
@@ -187,6 +195,7 @@ public class DatabaseConnection implements DBConnection {
     public DatabaseConnection() {
         dbconn = DatabaseConnectionAccessor.DEFAULT.createDatabaseConnection(this);
         propertySupport = new PropertyChangeSupport(this);
+        JDBCDriverManager.getDefault().addDriverListener (jdbcL);
     }
 
     /** Advanced constructor
@@ -220,19 +229,22 @@ public class DatabaseConnection implements DBConnection {
     }
 
     public JDBCDriver findJDBCDriver() {
-        JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(drv);
-        if (drvs.length <= 0) {
-            return null;
-        }
-
-        JDBCDriver useDriver = drvs[0];
-        for (int i = 0; i < drvs.length; i++) {
-            if (drvs[i].getName().equals(getDriverName())) {
-                useDriver = drvs[i];
-                break;
+        if (jdbcdrv == null) {
+            JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(drv);
+            if (drvs.length <= 0) {
+                return null;
             }
+
+            JDBCDriver useDriver = drvs[0];
+            for (int i = 0; i < drvs.length; i++) {
+                if (drvs[i].getName().equals(getDriverName())) {
+                    useDriver = drvs[i];
+                    break;
+                }
+            }
+            jdbcdrv = useDriver;
         }
-        return useDriver;
+        return jdbcdrv;
     }
 
     public Connection getJDBCConnection(boolean test) {

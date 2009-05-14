@@ -52,7 +52,9 @@ import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -91,6 +93,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private CommentsPanel commentsPanel;
     private AttachmentsPanel attachmentsPanel;
     private boolean skipReload;
+    private Map<NbJiraIssue.IssueField,Object> initialValues = new HashMap<NbJiraIssue.IssueField,Object>();
 
     public IssuePanel() {
         initComponents();
@@ -321,6 +324,58 @@ public class IssuePanel extends javax.swing.JPanel {
                     }
                 }
             }
+        }
+    }
+
+    private void storeFieldValue(NbJiraIssue.IssueField field, JComboBox combo) {
+        Object value = combo.getSelectedItem();
+        if (value != null) {
+            String key;
+            switch (field) {
+                case PROJECT: key = ((Project)value).getId(); break;
+                case TYPE: key = ((IssueType)value).getId(); break;
+                case STATUS: key = ((JiraStatus)value).getId(); break;
+                case RESOLUTION: key = ((Resolution)value).getId(); break;
+                case PRIORITY: key = ((Priority)value).getId(); break;
+                default: throw new UnsupportedOperationException();
+            }
+            storeFieldValue(field, key);
+        }
+    }
+
+    private void storeFieldValue(NbJiraIssue.IssueField field, JList combo) {
+        Object[] values = combo.getSelectedValues();
+        List<String> keys = new ArrayList<String>(values.length);
+        for (int i=0; i<values.length; i++) {
+            switch (field) {
+                case COMPONENT: keys.add(((org.eclipse.mylyn.internal.jira.core.model.Component)values[i]).getId()); break;
+                case AFFECTSVERSIONS: keys.add(((Version)values[i]).getId()); break;
+                case FIXVERSIONS: keys.add(((Version)values[i]).getId()); break;
+                default: throw new UnsupportedOperationException();
+            }
+        }
+        storeFieldValue(field, keys);
+    }
+
+    private void storeFieldValue(NbJiraIssue.IssueField field, JTextComponent textComponent) {
+        storeFieldValue(field, textComponent.getText());
+    }
+
+    private void storeFieldValue(NbJiraIssue.IssueField field, String value) {
+        if (issue.getTaskData().isNew() || !value.equals(initialValues.get(field))) {
+            issue.setFieldValue(field, value);
+        }
+    }
+
+    private void storeFieldValue(NbJiraIssue.IssueField field, List<String> values) {
+        Object initValue = initialValues.get(field);
+        boolean identical = false;
+        if (initValue instanceof List) {
+            List initValues = (List)initValue;
+            identical = values.containsAll(initValues) && initValues.containsAll(values);
+        }
+        if (issue.getTaskData().isNew() || !identical) {
+            issue.setFieldValues(field, values);
         }
     }
 
@@ -941,8 +996,18 @@ public class IssuePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
-        String submitMessage;
         boolean isNew = issue.getTaskData().isNew();
+        storeFieldValue(NbJiraIssue.IssueField.PROJECT, projectCombo);
+        storeFieldValue(NbJiraIssue.IssueField.TYPE, issueTypeCombo);
+        storeFieldValue(NbJiraIssue.IssueField.STATUS, statusCombo);
+        storeFieldValue(NbJiraIssue.IssueField.RESOLUTION, resolutionCombo);
+        storeFieldValue(NbJiraIssue.IssueField.PRIORITY, priorityCombo);
+        storeFieldValue(NbJiraIssue.IssueField.COMPONENT, componentList);
+        storeFieldValue(NbJiraIssue.IssueField.AFFECTSVERSIONS, affectsVersionList);
+        storeFieldValue(NbJiraIssue.IssueField.FIXVERSIONS, fixVersionList);
+        storeFieldValue(NbJiraIssue.IssueField.SUMMARY, summaryField);
+        storeFieldValue(NbJiraIssue.IssueField.ENVIRONMENT, environmentArea);
+        String submitMessage;
         if (isNew) {
             submitMessage = NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitNewMessage"); // NOI18N
         } else {
