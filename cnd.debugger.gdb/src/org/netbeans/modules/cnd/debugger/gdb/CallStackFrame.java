@@ -67,7 +67,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.completion.csm.CsmContext;
 import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
-import org.netbeans.modules.cnd.debugger.gdb.models.AbstractVariable;
+import org.netbeans.modules.cnd.debugger.gdb.models.GdbLocalVariable;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
@@ -263,9 +263,9 @@ public class CallStackFrame {
             List<GdbVariable> list = debugger.getLocalVariables();
             int n = list.size();
 
-            LocalVariable[] locals = new LocalVariable[n];
+            Variable[] locals = new Variable[n];
             for (int i = 0; i < n; i++) {
-                locals[i] = new AbstractVariable(list.get(i));
+                locals[i] = new GdbLocalVariable(debugger, list.get(i));
             }
             cachedLocalVariables = locals;
             return locals;
@@ -329,10 +329,10 @@ public class CallStackFrame {
                         }
                     });
                 }
-                cachedAutos = new LocalVariable[autos.size()];
+                cachedAutos = new Variable[autos.size()];
                 int i = 0;
                 for (String name : autos) {
-                    cachedAutos[i++] = new AbstractVariable(name);
+                    cachedAutos[i++] = new GdbLocalVariable(debugger, name);
                 }
             }
         }

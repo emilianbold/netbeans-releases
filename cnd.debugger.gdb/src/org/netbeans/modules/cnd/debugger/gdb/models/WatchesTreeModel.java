@@ -128,7 +128,7 @@ public class WatchesTreeModel implements TreeModel, PropertyChangeListener {
             for (i = 0; i < k; i++) {
                 AbstractVariable gw = watchToVariable.get(fws[i]);
                 if (gw == null) {
-                    gw = new GdbWatchVariable(fws[i]);
+                    gw = new GdbWatchVariable(debugger, fws[i]);
                     watchToVariable.put(fws[i], gw);
                 }
                 gws[i] = gw;

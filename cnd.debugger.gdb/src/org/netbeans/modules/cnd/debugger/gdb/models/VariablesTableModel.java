@@ -112,7 +112,7 @@ public class VariablesTableModel implements TableModel, Constants {
                     columnID.equals(WATCH_TYPE_COLUMN_ID)) {
                 return true;
             } else if (columnID.equals(LOCALS_VALUE_COLUMN_ID) || columnID.equals(WATCH_VALUE_COLUMN_ID)) {
-                String t = var.waitForType();
+                String t = var.getType();
                 if (t == null) {
                     if (log.isLoggable(Level.FINE) && debugger.isStopped() &&
                             !SwingUtilities.isEventDispatchThread()) {
