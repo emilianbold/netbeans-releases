@@ -1190,8 +1190,8 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     private static class UserSearchRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if(value instanceof QueryController.UserSearch) {
-                value = ((QueryController.UserSearch) value).getDisplayName();
+            if(value instanceof QueryController.UserSearchItem) {
+                value = ((QueryController.UserSearchItem) value).getDisplayName();
             }
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }
