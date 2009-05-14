@@ -59,9 +59,11 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 /*package-local*/ class ScpSyncWorker extends BaseSyncWorker implements RemoteSyncWorker {
 
     private Logger logger = Logger.getLogger("cnd.remote.logger"); // NOI18N
+    private FileFilter sharabilityFilter;
 
     public ScpSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
         super(localDir, executionEnvironment, out, err);
+        sharabilityFilter = new SharabilityFilter();
     }
 
     protected String getRemoteSyncRoot() {
@@ -109,16 +111,10 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         return false;
     }
 
-    /*package-local*/ void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
+    /*package-local (for testing purposes, otherwise would be private) */
+    void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
         CommonTasksSupport.mkDir(executionEnvironment, remoteDir, err);
-        FileFilter filter = new FileFilter() {
-            // TODO: think over, is it a hack?!
-            public boolean accept(File pathname) {
-                return  ! "build".equals(pathname.getName()) &&  //NOI18N
-                        ! "dist".equals(pathname.getName()); //NOI18N
-            }
-        };
-        for (File file : localDir.listFiles(filter)) {
+        for (File file : localDir.listFiles(sharabilityFilter)) {
             synchronizeImpl(file, remoteDir);
         }
     }
@@ -133,7 +129,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
                 throw new IOException("creating directory " + remoteDir + " on " + executionEnvironment + // NOI18N
                         " finished with error code " + rc); // NOI18N
             }
-            for (File child : file.listFiles()) {
+            for (File child : file.listFiles(sharabilityFilter)) {
                 synchronizeImpl(child, remoteDir);
             }
         } else {
