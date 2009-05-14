@@ -42,6 +42,7 @@
 package org.netbeans.modules.autoupdate.updateprovider;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -88,9 +89,34 @@ public class AutoupdateCatalogParser extends DefaultHandler {
     private AutoupdateCatalogParser (Map<String, UpdateItem> items, AutoupdateCatalogProvider provider, URI base) {
         this.items = items;
         this.provider = provider;
-        this.entityResolver = org.netbeans.updater.XMLUtil.createAUResolver ();
+        this.entityResolver = newEntityResolver();
         this.baseUri = base;
     }
+
+    private EntityResolver newEntityResolver () {
+        try {
+            Class.forName("org.netbeans.updater.XMLUtil");
+        } catch (ClassNotFoundException e) {
+            final File netbeansHomeFile = new File(System.getProperty("netbeans.home"));
+            final File userdir = new File(System.getProperty("netbeans.user"));
+
+            final String updaterPath = "modules/ext/updater.jar";
+
+            final File updaterPlatform = new File(netbeansHomeFile, updaterPath);
+            final File updaterUserdir  = new File(userdir, updaterPath);
+
+            String message =
+                    "    org.netbeans.updater.XMLUtil is not accessible\n" +
+                    "    platform dir = " + netbeansHomeFile.getAbsolutePath() + "\n" +
+                    "    userdir  dir = " + userdir.getAbsolutePath() + "\n" +
+                    "    updater in platform exist = " + updaterPlatform.exists() + (updaterPlatform.exists() ? (", length = " + updaterPlatform.length() + " bytes") : "") + "\n" +
+                    "    updater in userdir  exist = " + updaterUserdir.exists() + (updaterUserdir.exists() ? (", length = " + updaterUserdir.length() + " bytes") : "") + "\n";
+
+            ERR.log(Level.WARNING, message);
+        }
+        return org.netbeans.updater.XMLUtil.createAUResolver ();
+    }
+
     
     private static final Logger ERR = Logger.getLogger (AutoupdateCatalogParser.class.getName ());
     
