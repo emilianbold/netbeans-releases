@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,60 +31,31 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
+ * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.api.problem;
+package org.netbeans.modules.websvc.wsstack.jaxws.weblogic;
 
-import javax.swing.Action;
+import java.io.File;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.LookupProvider;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
+import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author mkleint
+ * @author mkuchtiak
  */
-public final class ProblemReport {
-    
-    public static final int SEVERITY_LOW = 10;
-    public static final int SEVERITY_MEDIUM = 5;
-    public static final int SEVERITY_HIGH = 0;
+public class WebLogicLookupProvider implements LookupProvider {
 
-    private int level = SEVERITY_LOW;
-    private String shortDesc;
-    private String longDesc;
-    private Action action;
-    private String id;
-
-    public ProblemReport(int severity, String desc, String longDesc, Action correct) {
-        level = severity;
-        shortDesc = desc;
-        this.longDesc = longDesc;
-        action = correct;
-    }
-    
-    public String getShortDescription() {
-        return shortDesc;
-    }
-    
-    public String getLongDescription() {
-        return longDesc;
-    }
-    
-    public Action getCorrectiveAction() {
-        return action;
-    }
-    
-    public int getSeverityLevel() {
-        return level;
-    }
-    
-    public String getId() {
-        return id;
+    public Lookup createAdditionalLookup(Lookup baseContext) {
+        File serverHome = baseContext.lookup(File.class);
+        return Lookups.fixed(WSStackFactory.createWSStack(JaxWs.class ,new WebLogicJaxWsStack(serverHome), WSStack.Source.SERVER));
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
 }

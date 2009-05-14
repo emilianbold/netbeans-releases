@@ -56,16 +56,21 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.jaxrpc.JaxRpc;
 import org.netbeans.modules.websvc.wsstack.jaxrpc.JaxRpcStackProvider;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -89,7 +94,7 @@ public class WSStackUtils {
                 try {
                     return Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
                 } catch (InstanceRemovedException ex) {
-                    Logger.getLogger(getClass().getName()).log(Level.INFO, "Failed to find J2eePlatform", ex);
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, "Failed to find J2eePlatform");
                 }
             }
         }
@@ -155,6 +160,113 @@ public class WSStackUtils {
         }
         return null;
     }
+    
+    boolean isWebModule() {
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (j2eeModuleProvider != null) {
+            return J2eeModule.WAR.equals(j2eeModuleProvider.getJ2eeModule().getModuleType());
+        }
+        return false;
+    }
+
+    public ErrorMessage getErrorMessage(WizardType wizardType) {
+        switch (wizardType) {
+            case WS:
+                return getWSErrorMessage();
+            case WS_FROM_WSDL:
+                return getWSErrorMessage();
+            case WS_CLIENT:
+                break;
+            default:
+        }
+        return null;
+    }
+
+    private ErrorMessage getWSErrorMessage() {
+        ServerType serverType = getServerType();
+        if (Util.isJavaEE5orHigher(project)) {
+            if (Util.isSourceLevel14orLower(project)) { // src level must be >= 1.5
+                return new ErrorMessage(ErrorType.ERROR,
+                        NbBundle.getMessage(WSStackUtils.class, "MSG_NeedProperSourceLevel"));
+            }
+
+            if (ServerType.GLASSFISH_V3 == serverType && !isWsitSupported()) {
+                return new ErrorMessage(ErrorType.INFO,
+                        NbBundle.getMessage(WSStackUtils.class, "MSG_NoMetroInstalled"), false);
+            }
+        } else {
+            if (ServerType.GLASSFISH_V3 == serverType) {
+                return new ErrorMessage(ErrorType.ERROR,
+                        NbBundle.getMessage(WSStackUtils.class, "MSG_JaxRpcNotSupported"));
+            }
+            boolean noJsr109InWeb = isWebModule() && !isJsr109Supported() && !isJsr109OldSupported(); // e.g. Tomcat
+            boolean jBoss = (ServerType.JBOSS == getServerType());
+            if ((noJsr109InWeb || jBoss) && Util.isSourceLevel14orLower(project)) {
+                return new ErrorMessage(ErrorType.ERROR,
+                        NbBundle.getMessage(WSStackUtils.class, "MSG_NeedProperSourceLevel"));
+            }
+            if (!noJsr109InWeb && !jBoss && WebServicesSupport.getWebServicesSupport(project.getProjectDirectory()) == null) {
+                return new ErrorMessage(ErrorType.ERROR,
+                        NbBundle.getMessage(WSStackUtils.class, "MSG_NoJaxrpcPluginFound"));
+            }
+        }
+        return null;
+    }
+
+    public static enum WizardType {
+        WS,
+        WS_FROM_WSDL,
+        WS_CLIENT;
+    }
+
+    public static enum ErrorType {
+        ERROR,
+        INFO,
+        WARNING;
+    }
+
+    public static class ErrorMessage {
+        private ErrorType type;
+        private String text;
+        private boolean serious;
+
+        public ErrorMessage(ErrorType type, String text) {
+            this(type, text, true);
+        }
+
+        public ErrorMessage(ErrorType type, String text, boolean serious) {
+            this.type = type;
+            this.text = text;
+            this.serious = serious;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public ErrorType getType() {
+            return type;
+        }
+
+        public String getWizardMessageProperty() {
+            switch (type) {
+                case ERROR:
+                    return WizardDescriptor.PROP_ERROR_MESSAGE;
+                case INFO:
+                    return WizardDescriptor.PROP_INFO_MESSAGE;
+                case WARNING:
+                    return WizardDescriptor.PROP_WARNING_MESSAGE;
+                default:
+                    return WizardDescriptor.PROP_ERROR_MESSAGE;
+            }
+        }
+
+        public boolean isSerious() {
+            return serious;
+        }
+
+    }
+
 }
 
 
