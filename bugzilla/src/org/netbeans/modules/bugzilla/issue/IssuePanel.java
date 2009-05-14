@@ -122,6 +122,7 @@ public class IssuePanel extends javax.swing.JPanel {
         headerLabel.setFont(font.deriveFont((float)(font.getSize()*1.7)));
         duplicateLabel.setVisible(false);
         duplicateField.setVisible(false);
+        duplicateButton.setVisible(false);
         attachDocumentListeners();
 
         // A11Y - Issues 163597 and 163598
@@ -726,6 +727,7 @@ public class IssuePanel extends javax.swing.JPanel {
         productLabel = new javax.swing.JLabel();
         componentLabel = new javax.swing.JLabel();
         versionLabel = new javax.swing.JLabel();
+        duplicateButton = new javax.swing.JButton();
         platformLabel = new javax.swing.JLabel();
         productCombo = new javax.swing.JComboBox();
         componentCombo = new javax.swing.JComboBox();
@@ -823,6 +825,11 @@ public class IssuePanel extends javax.swing.JPanel {
 
         versionLabel.setLabelFor(versionCombo);
         org.openide.awt.Mnemonics.setLocalizedText(versionLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.versionLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(duplicateButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateButton.text")); // NOI18N
+        duplicateButton.setFocusPainted(false);
+        duplicateButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        duplicateButton.addActionListener(formListener);
 
         platformLabel.setLabelFor(platformCombo);
         org.openide.awt.Mnemonics.setLocalizedText(platformLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.platformLabel.text")); // NOI18N
@@ -1119,6 +1126,8 @@ public class IssuePanel extends javax.swing.JPanel {
                                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
                                         .add(layout.createSequentialGroup()
                                             .add(duplicateField)
+                                            .add(0, 0, 0)
+                                            .add(duplicateButton)
                                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                             .add(dummyWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))))
@@ -1195,7 +1204,8 @@ public class IssuePanel extends javax.swing.JPanel {
                     .add(duplicateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(duplicateLabel)
                     .add(resolutionWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(dummyWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(dummyWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(duplicateButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(dependsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -1272,6 +1282,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
         layout.linkSize(new java.awt.Component[] {assignedLabel, blocksLabel, ccLabel, componentLabel, dependsLabel, keywordsLabel, osLabel, platformLabel, priorityLabel, productLabel, qaContactLabel, resolutionLabel, severityLabel, statusCombo, statusLabel, targetMilestoneLabel, urlLabel, versionLabel}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
+        duplicateButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateButton.AccessibleContext.accessibleDescription")); // NOI18N
         productCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.productCombo.AccessibleContext.accessibleDescription")); // NOI18N
         componentCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.componentCombo.AccessibleContext.accessibleDescription")); // NOI18N
         versionCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.versionCombo.AccessibleContext.accessibleDescription")); // NOI18N
@@ -1357,6 +1368,9 @@ public class IssuePanel extends javax.swing.JPanel {
             else if (evt.getSource() == reloadButton) {
                 IssuePanel.this.reloadButtonActionPerformed(evt);
             }
+            else if (evt.getSource() == duplicateButton) {
+                IssuePanel.this.duplicateButtonActionPerformed(evt);
+            }
         }
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1420,6 +1434,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 resolutionCombo.setVisible(false);
                 duplicateLabel.setVisible(false);
                 duplicateField.setVisible(false);
+                duplicateButton.setVisible(false);
             }
         }
         if (!resolutionField.getText().trim().equals("")) { // NOI18N
@@ -1433,6 +1448,7 @@ public class IssuePanel extends javax.swing.JPanel {
             }
             duplicateLabel.setVisible(false);
             duplicateField.setVisible(false);
+            duplicateButton.setVisible(false);
         }
         resolutionLabel.setLabelFor(resolutionCombo.isVisible() ? resolutionCombo : resolutionField);
     }//GEN-LAST:event_statusComboActionPerformed
@@ -1597,6 +1613,7 @@ public class IssuePanel extends javax.swing.JPanel {
         boolean shown = "DUPLICATE".equals(resolutionCombo.getSelectedItem()); // NOI18N
         duplicateLabel.setVisible(shown);
         duplicateField.setVisible(shown);
+        duplicateButton.setVisible(shown && duplicateField.isEditable());
     }//GEN-LAST:event_resolutionComboActionPerformed
 
     private void keywordsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keywordsButtonActionPerformed
@@ -1697,6 +1714,13 @@ public class IssuePanel extends javax.swing.JPanel {
         });
     }//GEN-LAST:event_reloadButtonActionPerformed
 
+    private void duplicateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateButtonActionPerformed
+        Issue newIssue = BugtrackingUtil.selectIssue(NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateButton.message"), issue.getRepository(), this); // NOI18N
+        if (newIssue != null) {
+            duplicateField.setText(newIssue.getID());
+        }
+    }//GEN-LAST:event_duplicateButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea addCommentArea;
     private javax.swing.JLabel addCommentLabel;
@@ -1724,6 +1748,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel dummyLabel1;
     private javax.swing.JLabel dummyLabel2;
     private javax.swing.JLabel dummyWarning;
+    private javax.swing.JButton duplicateButton;
     private javax.swing.JTextField duplicateField;
     private javax.swing.JLabel duplicateLabel;
     private javax.swing.JLabel headerLabel;
