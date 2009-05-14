@@ -64,14 +64,13 @@ import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.datatransfer.PasteType;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /** Node representing an Element
  *
@@ -87,7 +86,7 @@ public class ElementNode extends AbstractNode {
            
     /** Creates a new instance of TreeNode */
     public ElementNode( Description description ) {
-        super(description.subs == null ? Children.LEAF: new ElementChilren(description.subs, description.ui.getFilters()), description.treePathHandle==null || description.getFileObject() == null ? null : Lookups.fixed(description.treePathHandle, description.getFileObject()));
+        super(description.subs == null ? Children.LEAF: new ElementChilren(description.subs, description.ui.getFilters()), description.treePathHandle==null ? null : prepareLookup(description));
         this.description = description;
         setDisplayName( description.name ); 
     }
@@ -275,6 +274,28 @@ public class ElementNode extends AbstractNode {
     
     public Description getDescritption() {
         return description;
+    }
+
+    private static Lookup prepareLookup(Description d) {
+        InstanceContent ic = new InstanceContent();
+
+        ic.add(d.treePathHandle);
+        ic.add(d, new InstanceContent.Convertor<Description, FileObject>() {
+            public FileObject convert(Description d) {
+                return d.getFileObject();
+            }
+            public Class<? extends FileObject> type(Description obj) {
+                return FileObject.class;
+            }
+            public String id(Description obj) {
+                return "IL[" + obj.toString();
+            }
+            public String displayName(Description obj) {
+                return id(obj);
+            }
+        });
+
+        return new AbstractLookup(ic);
     }
     
     private static final class ElementChilren extends Children.Keys<Description> {
