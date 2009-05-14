@@ -115,7 +115,7 @@ public class APTIncludeUtils {
     }
 
     private static String normalize(String path) {
-        return CndFileUtils.normalizePath(path);
+        return CndFileUtils.normalizeAbsolutePath(path);
     }
 
     private static boolean exists(File file) {

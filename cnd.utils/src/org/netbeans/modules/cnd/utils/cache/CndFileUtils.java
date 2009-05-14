@@ -87,8 +87,11 @@ public final class CndFileUtils {
      * @return
      */
     public static File normalizeFile(File file) {
+        if (CndUtils.isDebugMode()) {
+            CndUtils.assertTrueInConsole(file.isAbsolute(), "file for normalization must be absolute " + file);
+        }
         String path = file.getPath();
-        String normPath = normalizePath(file.getAbsolutePath());
+        String normPath = normalizeAbsolutePath(file.getAbsolutePath());
         return path.equals(normPath) ? file : new File(normPath);
     }
 
@@ -97,7 +100,7 @@ public final class CndFileUtils {
      * @param path
      * @return
      */
-    public static String normalizePath(String path) {
+    public static String normalizeAbsolutePath(String path) {
         if (CndUtils.isDebugMode()) {
             CndUtils.assertTrueInConsole(new File(path).isAbsolute(), "path for normalization must be absolute " + path);
         }
