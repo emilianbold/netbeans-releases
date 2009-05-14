@@ -25,12 +25,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.j2me.cdc.platform.bdj</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.j2me.cdc.platform.nokias80</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
@@ -70,12 +64,6 @@
                     <code-name-base>org.netbeans.modules.j2me.cdc.project</code-name-base>
                     <run-dependency>
                         <specification-version>1.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.j2me.cdc.project.bdj</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

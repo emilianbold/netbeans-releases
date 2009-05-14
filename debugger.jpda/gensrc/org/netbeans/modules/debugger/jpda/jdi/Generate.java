@@ -1039,6 +1039,22 @@ public class Generate {
                 return catchJDWPException;
             }
         }
+        if (com.sun.jdi.ClassType.class.getName().equals(className) || com.sun.jdi.ObjectReference.class.getName().equals(className)) {
+            if (methodName.equals("invokeMethod")) {
+                String catchJDWPException = "            try {\n"+
+                                            "    "+exec+
+                                            "            } catch ("+com.sun.jdi.InternalException.class.getName()+" iex) {\n"+
+                                            "                if (iex.errorCode() == 502) { // ALREADY_INVOKING\n"+
+                                            "                    iex = ("+com.sun.jdi.InternalException.class.getName()+") org.openide.util.Exceptions.attachLocalizedMessage(iex, org.openide.util.NbBundle.getMessage(org.netbeans.modules.debugger.jpda.JPDADebuggerImpl.class, \"JDWPError502\"));\n"+
+                                            "                    org.openide.util.Exceptions.printStackTrace(iex);\n"+
+                                            "                    return null;\n"+
+                                            "                } else {\n"+
+                                            "                    throw iex; // re-throw the original\n"+
+                                            "                }\n"+
+                                            "            }\n";
+                return catchJDWPException;
+            }
+        }
         return exec;
     }
 

@@ -166,7 +166,7 @@ public final class NativeProjectProvider {
 	
 	private void addFiles(List<File> files) {
 	    for( File file : files ) {
-		addFile(file);
+		addFile(file.getAbsoluteFile());
 	    }
 	}
 	
