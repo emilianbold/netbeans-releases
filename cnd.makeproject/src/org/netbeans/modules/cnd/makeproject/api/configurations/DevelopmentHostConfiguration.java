@@ -45,6 +45,8 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -93,6 +95,13 @@ public class DevelopmentHostConfiguration {
         String out = ServerList.get(getExecutionEnvironment()).getDisplayName();
         if (displayIfNotFound && !isConfigured()) {
             out = NbBundle.getMessage(DevelopmentHostConfiguration.class,  "NOT_CONFIGURED", out); // NOI18N
+        }
+        else {
+            int platformID = CompilerSetManager.getDefault(getExecutionEnvironment()).getPlatform();
+            Platform platform = Platforms.getPlatform(platformID);
+            if (platform != null) {
+                out += " [" + platform.getDisplayName() + "]"; // NOI18N
+            }
         }
         return out;
     }
