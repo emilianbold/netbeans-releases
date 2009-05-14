@@ -93,14 +93,16 @@ public class JiraConfiguration extends JiraClientCache {
         this.repository = repository;
     }
 
-    protected void initialize() throws JiraException {
+    protected void initialize(boolean forceRefresh) throws JiraException {
         data = (ConfigurationData) getData();
         synchronized (data) {
-            if (data.initialized) {
-                if (!hacked) {
-                    hackJiraCache();
+            if(!forceRefresh) {
+                if(data.initialized) {
+                    if (!hacked) {
+                        hackJiraCache();
+                    }
+                    return;
                 }
-                return;
             }
             refreshData();
             putToCache();
@@ -145,6 +147,8 @@ public class JiraConfiguration extends JiraClientCache {
         data.initialized = true;
         // XXX what else do we need?
         // XXX issue types by project
+
+        putToCache();
     }
 
     private void putToCache () {

@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.spi;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,15 +47,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
-import org.eclipse.mylyn.tasks.core.data.TaskData;
-import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 
 /**
  *
  * @author Tomas Stupka
  */
-public abstract class IssueCache {
+public abstract class IssueCache<T> {
 
     private Map<String, IssueEntry> cache;
     private Map<String, Map<String, String>> lastSeenAttributes;
@@ -80,7 +78,7 @@ public abstract class IssueCache {
      * @param taskData
      * @return
      */
-    protected abstract Issue createIssue(TaskData taskData);
+    protected abstract Issue createIssue(T issueData);
 
     /**
      * Sets new task data in the issue. Mind synchrone reentrant calls
@@ -89,13 +87,13 @@ public abstract class IssueCache {
      * @param issue
      * @param taskData
      */
-    protected abstract void setTaskData(Issue issue, TaskData taskData);
+    protected abstract void setTaskData(Issue issue, T issueData);
 
-    public Issue setIssueData(String id, TaskData taskData) throws IOException {
-        return setIssueData(id, taskData, null);
+    public Issue setIssueData(String id, T issueData) throws IOException {
+        return setIssueData(id, issueData, null);
     }
 
-    public Issue setIssueData(String id, TaskData taskData, Issue issue) throws IOException {
+    public Issue setIssueData(String id, T issueData, Issue issue) throws IOException {
         synchronized(CACHE_LOCK) {
             IssueEntry entry = getCache().get(id);
 
@@ -107,15 +105,15 @@ public abstract class IssueCache {
                 if(issue != null) {
                     entry.issue = issue;
                     BugtrackingManager.LOG.log(Level.FINE, "setting task data for issue {0} ", new Object[] {id}); // NOI18N
-                    setTaskData(entry.issue, taskData);
+                    setTaskData(entry.issue, issueData);
                 } else {
-                    entry.issue = createIssue(taskData);
+                    entry.issue = createIssue(issueData);
                     BugtrackingManager.LOG.log(Level.FINE, "created issue {0} ", new Object[] {id}); // NOI18N
                     readIssue(entry);
                 }
             } else {
                 BugtrackingManager.LOG.log(Level.FINE, "setting task data for issue {0} ", new Object[] {id}); // NOI18N
-                setTaskData(entry.issue, taskData);
+                setTaskData(entry.issue, issueData);
             }
             if(entry.seenAttributes != null) {
                 if(entry.wasSeen()) {
