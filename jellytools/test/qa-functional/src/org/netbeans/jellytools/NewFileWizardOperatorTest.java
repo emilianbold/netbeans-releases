@@ -132,12 +132,13 @@ public class NewFileWizardOperatorTest extends JellyTestCase {
         String javaClassesLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes");
         // Java Class
         String javaClassLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes/Class.java");
-        NewFileWizardOperator.create("SampleProject", javaClassesLabel, javaClassLabel, "sample1", "TempClass");  // NOI18N
+        NewJavaFileWizardOperator.create("SampleProject", javaClassesLabel, javaClassLabel, "sample1", "TempClass");  // NOI18N
         Node classNode = new Node(new SourcePackagesNode("SampleProject"), "sample1|TempClass");  // NOI18N
         DeleteAction deleteAction = new DeleteAction();
         deleteAction.perform(classNode);
         // "Safe Delete"
-        String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_SafeDel"); // NOI18N
+        //TODO: is this the correct bundle/key to use here?
+        String safeDeleteTitle = Bundle.getString("org.netbeans.modules.project.ui.actions.Bundle", "LBL_DeleteProjectAction_Name"); // I18N
         new NbDialogOperator(safeDeleteTitle).ok();
     }
 }

@@ -39,6 +39,8 @@
 
 package org.netbeans.jellytools;
 
+import org.netbeans.jellyools.NewJavaFileNameLocationStepOperatorTest;
+import org.netbeans.jellyools.NewJavaProjectNameLocationStepOperatorTest;
 import junit.framework.Test;
 import org.netbeans.jellytools.modules.debugger.BreakpointsWindowOperatorTest;
 import org.netbeans.jellytools.modules.javacvs.CheckoutWizardOperatorTest;
@@ -65,10 +67,10 @@ public class DialogsTests {
         addTest(DocumentsDialogOperatorTest.class, DocumentsDialogOperatorTest.tests).
         addTest(FindInFilesOperatorTest.class).
         addTest(NbDialogOperatorTest.class).
-        addTest(NewFileNameLocationStepOperatorTest.class, NewFileNameLocationStepOperatorTest.tests).
+        addTest(NewJavaFileNameLocationStepOperatorTest.class, NewJavaFileNameLocationStepOperatorTest.tests).
         addTest(NewFileWizardOperatorTest.class, NewFileWizardOperatorTest.tests).
         addTest(NewProjectWizardOperatorTest.class, NewProjectWizardOperatorTest.tests).
-        addTest(NewProjectNameLocationStepOperatorTest.class, NewProjectNameLocationStepOperatorTest.tests).
+        addTest(NewJavaProjectNameLocationStepOperatorTest.class, NewJavaProjectNameLocationStepOperatorTest.tests).
         addTest(PluginsOperatorTest.class, PluginsOperatorTest.tests).
         addTest(QuestionDialogOperatorTest.class, QuestionDialogOperatorTest.tests).
         addTest(SaveAsTemplateOperatorTest.class, SaveAsTemplateOperatorTest.tests).
