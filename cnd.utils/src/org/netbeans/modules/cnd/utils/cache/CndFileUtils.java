@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
@@ -80,13 +81,26 @@ public final class CndFileUtils {
         mapFoldersRef.clear();
     }
 
+    /**
+     * normalize file
+     * @param file
+     * @return
+     */
     public static File normalizeFile(File file) {
-        String absPath = file.getAbsolutePath();
-        String normPath = normalizePath(absPath);
-        return absPath.equals(normPath) ? file : new File(normPath);
+        String path = file.getPath();
+        String normPath = normalizePath(file.getAbsolutePath());
+        return path.equals(normPath) ? file : new File(normPath);
     }
 
+    /**
+     * normalize absolute paths
+     * @param path
+     * @return
+     */
     public static String normalizePath(String path) {
+        if (CndUtils.isDebugMode()) {
+            CndUtils.assertTrueInConsole(new File(path).isAbsolute(), "path for normalization must be absolute " + path);
+        }
         //calls++;
         Map<String, String> normalizedPaths = getNormalizedFilesMap();
         String normalized = normalizedPaths.get(path);
