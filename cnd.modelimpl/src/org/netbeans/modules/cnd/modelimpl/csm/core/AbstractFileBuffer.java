@@ -52,6 +52,7 @@ import java.nio.charset.Charset;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -87,7 +88,8 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     
     public final Reader getReader() throws IOException {
         File file = getFile();
-        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        // file must be normalized
+        FileObject fo = FileUtil.toFileObject(file);
         Charset encoding;
         if (fo != null) {
             encoding = FileEncodingQuery.getEncoding(fo);

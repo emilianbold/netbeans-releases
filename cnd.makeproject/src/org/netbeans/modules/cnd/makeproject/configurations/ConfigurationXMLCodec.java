@@ -232,8 +232,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                     itemConfiguration.setTool(tool);
                 }
             } else {
-                System.err.println("Not found item: "+path);
-                // FIXUP
+                System.err.println("Not found item: " + path);
+            // FIXUP
             }
         } else if (element.equals(FolderXMLCodec.FOLDER_ELEMENT)) {
             String path = getString(atts.getValue(0));
@@ -242,8 +242,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 FolderConfiguration folderConfiguration = folder.getFolderConfiguration(currentConf);
                 currentFolderConfiguration = folderConfiguration;
             } else {
-                System.err.println("Not found folder: "+path);
-                // FIXUP
+                System.err.println("Not found folder: " + path);
+            // FIXUP
             }
         } else if (element.equals(COMPILERTOOL_ELEMENT)) {
         } else if (element.equals(CCOMPILERTOOL_ELEMENT2) || element.equals(CCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <= 23

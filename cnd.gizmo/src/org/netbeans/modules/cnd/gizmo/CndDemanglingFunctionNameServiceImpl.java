@@ -38,9 +38,11 @@
  */
 package org.netbeans.modules.cnd.gizmo;
 
-import java.io.StringWriter;
-import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -49,6 +51,7 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -64,25 +67,26 @@ import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
 
 /**
- *
  * @author mt154047
+ * @author Alexey Vladykin
  */
 public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionNameService {
 
-    private final static Map<CharSequence, CharSequence> demangled_functions = new HashMap<CharSequence, CharSequence>();
+    private static final int MAX_CMDLINE_LENGTH = 2000;
+    private final static Map<String, String> demangledCache = new HashMap<String, String>();
     private final ExecutionEnvironment env;
     private final CPPCompiler cppCompiler;
-    private final String dem_util_path;
+    private final String demanglerTool;
     private static final String GNU_FAMILIY = "gc++filt"; //NOI18N
     private static final String SS_FAMILIY = "dem"; //NOI18N
-    private static final String EQUALS_EQUALS = "=="; //NOI18N
+    private static final String EQUALS_EQUALS = " == "; //NOI18N
 
     CndDemanglingFunctionNameServiceImpl() {
         Project project = org.netbeans.api.project.ui.OpenProjects.getDefault().getMainProject();
         NativeProject nPrj = (project == null) ? null : project.getLookup().lookup(NativeProject.class);
         if (nPrj == null) {
             cppCompiler = CPPCompiler.GNU;
-            dem_util_path = GNU_FAMILIY;
+            demanglerTool = GNU_FAMILIY;
             env = ExecutionEnvironmentFactory.getLocal();
             return;
         }
@@ -103,21 +107,32 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
         } else {
             env = ExecutionEnvironmentFactory.getLocal();
         }
-        dem_util_path = binDir + "/" + demangle_utility; //NOI18N BTW: isn't it better to use File.Separator?
+        demanglerTool = binDir + "/" + demangle_utility; //NOI18N BTW: isn't it better to use File.Separator?
     }
 
     CndDemanglingFunctionNameServiceImpl(CPPCompiler cppCompiler) {
         this.cppCompiler = cppCompiler;
         if (cppCompiler == CPPCompiler.GNU) {
-            dem_util_path = GNU_FAMILIY;
+            demanglerTool = GNU_FAMILIY;
         } else {
-            dem_util_path = SS_FAMILIY;
+            demanglerTool = SS_FAMILIY;
         }
         env = ExecutionEnvironmentFactory.getLocal();
     }
 
     public Future<String> demangle(String functionName) {
-        //get current Project
+        return DLightExecutorService.submit(
+                new Demangler(functionName),
+                "Demangling function " + functionName); // NOI18N
+    }
+
+    public Future<List<String>> demangle(List<String> functionNames) {
+        return DLightExecutorService.submit(
+                new BatchDemangler(functionNames),
+                "Batch demangling " + functionNames.size() + " functions"); // NOI18N
+    }
+
+    private static String demangleDtrace(String functionName) {
         int plusPos = functionName.indexOf('+'); // NOI18N
         if (0 <= plusPos) {
             functionName = functionName.substring(0, plusPos);
@@ -126,57 +141,172 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
         if (0 <= tickPos) {
             functionName = functionName.substring(tickPos + 1);
         }
-        final String nameToDemangle = functionName;
-        final CharSequence nameToDemangleSeq = nameToDemangle.subSequence(0, nameToDemangle.length());
-
-        return DLightExecutorService.submit(new Callable<String>() {
-
-            public String call() {
-                if (demangled_functions.containsKey(nameToDemangleSeq)) {
-                    return demangled_functions.get(nameToDemangleSeq).toString();
-                }
-                NativeProcessBuilder npb = new NativeProcessBuilder(env, dem_util_path + " " + nameToDemangle); //NOI18N
-                ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
-                        InputOutput.NULL).outLineBased(true);
-                StringWriter result = new StringWriter();
-                descriptor = descriptor.outProcessorFactory(new InputRedirectorFactory(result));
-                ExecutionService execService = ExecutionService.newService(
-                        npb, descriptor, "Demangling function " + nameToDemangle); // NOI18N
-                Future<Integer> res = execService.run();
-                try {
-                    res.get();
-                    String demangled_name = result.toString();
-                    if (cppCompiler == CPPCompiler.SS){
-                        if (demangled_name != null && demangled_name.indexOf(EQUALS_EQUALS) != -1){
-                            demangled_name = demangled_name.substring(demangled_name.indexOf(EQUALS_EQUALS) + 2);
-                            demangled_name = demangled_name.trim();
-                        }
-                    }
-                    
-                    demangled_functions.put(nameToDemangleSeq,
-                            demangled_name.subSequence(0, demangled_name.length()));
-                    return demangled_name;
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (ExecutionException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                demangled_functions.put(nameToDemangleSeq, nameToDemangleSeq);
-                return nameToDemangle;
-            }
-        }, "Demangle function " + nameToDemangle); // NOI18N
+        return functionName;
     }
 
-    private static class InputRedirectorFactory implements ExecutionDescriptor.InputProcessorFactory {
+    private void demangleImpl(List<String> mangledNames) {
+        NativeProcessBuilder npb = new NativeProcessBuilder(env, demanglerTool);
+        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL).outLineBased(true);
 
-        private final Writer writer;
+        final List<String> demangledNames = new ArrayList<String>();
 
-        public InputRedirectorFactory(Writer writer) {
-            this.writer = writer;
+        ListIterator<String> it = mangledNames.listIterator();
+        while (it.hasNext()) {
+
+            int startIdx = it.nextIndex();
+            int cmdlineLength = demanglerTool.length();
+            while (it.hasNext() && cmdlineLength < MAX_CMDLINE_LENGTH) {
+                String name = it.next();
+                cmdlineLength += name.length() + 3; // space and quotes
+                it.set(name);
+            }
+            int endIdx = it.nextIndex();
+
+            List<String> mangledNamesSublist = mangledNames.subList(startIdx, endIdx);
+            npb = npb.setArguments(mangledNamesSublist.toArray(new String[mangledNamesSublist.size()]));
+            descriptor = descriptor.outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+
+                public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                    return InputProcessors.bridge(new DemanglerLineProcessor(demangledNames));
+                }
+            });
+
+            ExecutionService execService = ExecutionService.newService(
+                    npb, descriptor, "Batch demangling"); // NOI18N
+            Future<Integer> res = execService.run();
+            try {
+                res.get();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            if (mangledNamesSublist.size() == demangledNames.size()) {
+                for (int i = 0; i < mangledNamesSublist.size(); ++i) {
+                    mangledNamesSublist.set(i, demangledNames.get(i));
+                }
+            }
+            demangledNames.clear();
+        }
+    }
+
+    private boolean isMangled(String name) {
+        // aggressive optimization, but invoking dozens of processes
+        // on remote machine is not very fast
+        return 0 < name.length() && name.charAt(0) == '_' || 0 <= name.indexOf("__"); // NOI18N
+    }
+
+    private class Demangler implements Callable<String> {
+
+        private final String nameToDemangle;
+
+        public Demangler(String nameToDemangle) {
+            this.nameToDemangle = nameToDemangle;
         }
 
-        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-            return InputProcessors.copying(writer);
+        public String call() {
+            String mangledName = demangleDtrace(nameToDemangle);
+
+            if (!isMangled(mangledName)) {
+                return mangledName;
+            }
+
+            String demangledName = null;
+
+            synchronized (demangledCache) {
+                demangledName = demangledCache.get(mangledName);
+            }
+
+            if (demangledName == null) {
+                List<String> list = Collections.singletonList(mangledName);
+                demangleImpl(list);
+                demangledName = list.get(0);
+                synchronized (demangledCache) {
+                    demangledCache.put(mangledName, demangledName);
+                }
+            }
+
+            return demangledName;
+        }
+    }
+
+    private class BatchDemangler implements Callable<List<String>> {
+
+        private final List<String> namesToDemangle;
+
+        public BatchDemangler(List<String> namesToDemangle) {
+            this.namesToDemangle = namesToDemangle;
+        }
+
+        public List<String> call() {
+            List<String> result = new ArrayList<String>(namesToDemangle.size());
+            for (String name : namesToDemangle) {
+                result.add(demangleDtrace(name));
+            }
+
+            List<String> missedNames = new ArrayList<String>();
+            List<Integer> missedIdxs = new ArrayList<Integer>();
+
+            synchronized (demangledCache) {
+                for (int i = 0; i < result.size(); ++i) {
+                    String mangledName = result.get(i);
+                    if (isMangled(mangledName)) {
+                        String demangledName = demangledCache.get(mangledName);
+                        if (demangledName == null) {
+                            missedNames.add(mangledName);
+                            missedIdxs.add(i);
+                        } else {
+                            result.set(i, demangledName);
+                        }
+                    }
+                }
+            }
+
+            if (!missedNames.isEmpty()) {
+                demangleImpl(missedNames);
+                synchronized (demangledCache) {
+                    for (int i = 0; i < missedNames.size(); ++i) {
+                        int idx = missedIdxs.get(i);
+                        String mangledName = result.get(idx);
+                        String demangledName = missedNames.get(i);
+                        demangledCache.put(mangledName, demangledName);
+                        result.set(idx, demangledName);
+                    }
+                }
+            }
+
+            return result;
+        }
+    }
+
+    private class DemanglerLineProcessor implements LineProcessor {
+
+        private final List<String> output;
+
+        public DemanglerLineProcessor(List<String> output) {
+            this.output = output;
+        }
+
+        @Override
+        public void processLine(String line) {
+            if (0 < line.length()) {
+                if (cppCompiler == CPPCompiler.SS) {
+                    int eqPos = line.indexOf(EQUALS_EQUALS);
+                    if (0 <= eqPos) {
+                        line = line.substring(eqPos + EQUALS_EQUALS.length());
+                    }
+                }
+                output.add(line);
+            }
+        }
+
+        public void reset() {
+            //throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void close() {
+            //throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 }

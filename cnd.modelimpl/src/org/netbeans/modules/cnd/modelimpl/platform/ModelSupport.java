@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.modelimpl.options.CodeAssistanceOptions;
 import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -398,7 +399,7 @@ public class ModelSupport implements PropertyChangeListener {
     }
 
     public static FileBuffer getFileBuffer(File file) {
-        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        FileObject fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(file));
         if (fo != null) {
             try {
                 DataObject dao = DataObject.find(fo);
@@ -517,7 +518,6 @@ public class ModelSupport implements PropertyChangeListener {
                 // the file can null, for example, when we edit templates
                 if (file != null) {
                     try {
-                        file = FileUtil.normalizeFile(file);
                         fo = FileUtil.toFileObject(file.getCanonicalFile());
                         curObj = DataObject.find(fo);
                         return curObj.getLookup().lookup(NativeFileItemSet.class);

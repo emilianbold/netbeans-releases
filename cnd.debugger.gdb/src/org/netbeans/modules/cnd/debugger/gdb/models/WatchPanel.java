@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.ui.FilteredKeymap;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
 import org.openide.cookies.EditorCookie;
@@ -153,7 +154,7 @@ public class WatchPanel {
             String fullname = csf.getFullname();
 
             if (fullname != null && fullname.trim().length() > 0) {
-                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(fullname)));
+                FileObject fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(new File(fullname)));
                 return new Context(fo, csf.getLineNumber());
             }
         } else {

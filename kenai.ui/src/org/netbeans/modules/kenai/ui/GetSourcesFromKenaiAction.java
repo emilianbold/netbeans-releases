@@ -87,6 +87,9 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
         options[0] = getOption;
         options[1] = cancelOption;
 
+        KenaiTopComponent.findInstance().open();
+        KenaiTopComponent.findInstance().requestActive();
+
         GetSourcesFromKenaiPanel getSourcesPanel = new GetSourcesFromKenaiPanel(prjAndFeature);
 
         DialogDescriptor dialogDesc = new DialogDescriptor(getSourcesPanel, dialogTitle,

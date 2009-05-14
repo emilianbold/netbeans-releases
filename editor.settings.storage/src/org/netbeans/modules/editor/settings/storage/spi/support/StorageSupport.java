@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,7 +61,7 @@ import org.openide.util.Utilities;
 public final class StorageSupport {
 
     private static final Logger LOG = Logger.getLogger(StorageSupport.class.getName());
-    private static HashMap<String, Integer> names;
+    private static Map<String, Integer> names;
 
     private StorageSupport() {
 
@@ -181,11 +182,12 @@ public final class StorageSupport {
         if (ks != null) {
             return KeyStroke.getKeyStroke(ks.getKeyCode(), modifiers);
         } else {// probably a VK_* key
-            return KeyStroke.getKeyStroke(getName2Keycode().get(keyStroke), modifiers);
+            Integer keyCode = getName2Keycode().get(keyStroke);
+            return keyCode != null ? KeyStroke.getKeyStroke(keyCode, modifiers) : null;
         }
     }
 
-    private static HashMap<String, Integer> getName2Keycode() {
+    private static synchronized Map<String, Integer> getName2Keycode() {
         if (names != null) {
             return names;
         } else {

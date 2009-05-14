@@ -102,6 +102,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Confi
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
@@ -1106,6 +1108,20 @@ public class MakeActionProvider implements ActionProvider {
         // TODO: all validation below works, but it may be more efficient to make a verifying script
         }
 
+        // Check build/run/debug platform vs. host platform
+        int buildPlatformId = conf.getPlatform().getValue();
+        Platform buildPlatform = Platforms.getPlatform(buildPlatformId);
+
+        ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
+        int hostPlatformId = CompilerSetManager.getDefault(execEnv).getPlatform();
+        Platform hostPlatform = Platforms.getPlatform(hostPlatformId);
+
+        if (buildPlatform != hostPlatform) {
+            String errormsg = getString("WRONG_PLATFORM", hostPlatform.getDisplayName(), buildPlatform.getDisplayName());
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
+            return false;
+        }
+
         boolean unknownCompilerSet = false;
         if (csconf.getFlavor() != null && csconf.getFlavor().equals("Unknown")) { // NOI18N
             // Confiiguration was created with unknown tool set. Use the now default one.
@@ -1363,13 +1379,11 @@ public class MakeActionProvider implements ActionProvider {
 
     // Private methods -----------------------------------------------------
     /** Look up i18n strings here */
-    private static ResourceBundle bundle;
-
     private static String getString(String s) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(MakeActionProvider.class);
-        }
-        return bundle.getString(s);
+        return NbBundle.getMessage(MakeActionProvider.class, s);
+    }
+    private static String getString(String s, String arg1, String arg2) {
+        return NbBundle.getMessage(MakeActionProvider.class, s, arg1, arg2);
     }
 
     private abstract static class CancellableTask implements Runnable, Cancellable {

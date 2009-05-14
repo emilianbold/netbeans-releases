@@ -169,11 +169,7 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     @Override
     public String getValue() {
         if (requestValue) {
-            if (getType().length() > 0) {
-                value = getDebugger().evaluate(getExpanded());
-            } else {
-                value = ""; // NOI18N
-            }
+            value = getDebugger().evaluate(getExpanded());
             setModifiedValue(value);
             requestValue = false;
         }

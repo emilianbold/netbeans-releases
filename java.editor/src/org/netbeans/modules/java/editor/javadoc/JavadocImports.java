@@ -384,7 +384,7 @@ public final class JavadocImports {
     }
 
     private static JavaReference findReference(Tag tag, DocPositions positions, TokenSequence<JavadocTokenId> jdTokenSequence) {
-        if (!isReferenceTag(tag)) {
+        if (tag == null || !isReferenceTag(tag)) {
             return null;
         }
         int[] tagSpan = positions.getTagSpan(tag);
@@ -401,8 +401,8 @@ public final class JavadocImports {
     }
     
     private static boolean isReferenceTag(Tag tag) {
-        String tagName = tag.name().intern();
-        return ALL_REF_TAG_NAMES.contains(tagName);
+        String tagName = tag.name();
+        return ALL_REF_TAG_NAMES.contains(tagName.intern());
     }
     
     private static final Set<String> ALL_REF_TAG_NAMES = new HashSet<String>(
