@@ -228,17 +228,17 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         byAttributesPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
-        jLabel2.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        jLabel2.setFont(new java.awt.Font("Lucida Grande", 1, 13));
         jLabel2.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel2.text_1")); // NOI18N
 
         reporterTextField.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.reporterTextField.text")); // NOI18N
 
-        jLabel8.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        jLabel8.setFont(new java.awt.Font("Lucida Grande", 1, 13));
         jLabel8.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel8.text")); // NOI18N
 
         assigneeTextField.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.assigneeTextField.text")); // NOI18N
 
-        projectLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        projectLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 13));
         projectLabel1.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.projectLabel1.text")); // NOI18N
 
         jScrollPane9.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -401,7 +401,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         byTextPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
-        queryLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        queryLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
         queryLabel.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.queryLabel.text_1")); // NOI18N
 
         queryTextField.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.queryTextField.text")); // NOI18N
@@ -494,6 +494,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         tableFieldsPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
 
+        tablePanel.setBackground(new java.awt.Color(224, 224, 224));
         tablePanel.setMinimumSize(new java.awt.Dimension(100, 350));
         tablePanel.setLayout(new java.awt.BorderLayout());
 
@@ -555,6 +556,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         searchButton.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.searchButton.text")); // NOI18N
 
+        criteriaPanel.setBackground(new java.awt.Color(224, 224, 224));
         criteriaPanel.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("Button.disabledText")));
 
         byTextLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
@@ -587,16 +589,16 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
             .add(criteriaPanelLayout.createSequentialGroup()
                 .add(byLastChangeLabel)
                 .addContainerGap())
-            .add(byTextContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(byLastChangeContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(byTextContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 992, Short.MAX_VALUE)
+            .add(byLastChangeContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 992, Short.MAX_VALUE)
             .add(criteriaPanelLayout.createSequentialGroup()
                 .add(byDetailsLabel)
                 .addContainerGap())
-            .add(byDetailsContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(byDetailsContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 992, Short.MAX_VALUE)
             .add(criteriaPanelLayout.createSequentialGroup()
                 .add(byPeopleLabel)
                 .addContainerGap())
-            .add(byPeopleContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(byPeopleContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 992, Short.MAX_VALUE)
         );
         criteriaPanelLayout.setVerticalGroup(
             criteriaPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -628,6 +630,8 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 saveButtonActionPerformed(evt);
             }
         });
+
+        gotoPanel.setBackground(new java.awt.Color(224, 224, 224));
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel1.text_1")); // NOI18N
 
