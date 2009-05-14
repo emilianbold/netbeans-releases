@@ -61,8 +61,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -263,6 +261,7 @@ public class SimplifiedJspServlet {
 
         Visitor visitor = new Visitor() {
 
+            @Override
             public void visit(IncludeDirective includeDirective) throws JspException {
                 String fileName = includeDirective.getAttributeValue("file");
                 processIncludedFile(fileName, processedFiles);
@@ -578,8 +577,6 @@ public class SimplifiedJspServlet {
                 writer.print(virtualClassBody);
                 writer.close();
 
-                FileObject jspFile = NbEditorUtilities.getFileObject(doc);
-                //ClasspathInfo cpInfo = ClasspathInfo.create(jspFile);
                 Source source = Source.create(fileDummyJava);
                 process(fileDummyJava, source);
             } catch (IOException ex) {
