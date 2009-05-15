@@ -320,11 +320,19 @@ public class ChatPanel extends javax.swing.JPanel {
 
 
     private Date lastDatePrinted;
+    private Date lastMessageDate;
+    private String lastNickPrinted = null;
 
     protected void insertMessage(Message message) {
         try {
             HTMLDocument doc = (HTMLDocument) inbox.getStyledDocument();
             final Date timestamp = getTimestamp(message);
+            String fromRes = StringUtils.parseResource(message.getFrom());
+            boolean yourmessage = (muc.getNickname().equals(fromRes));
+            boolean printheader = ((lastNickPrinted != null)?(!lastNickPrinted.equals(fromRes)):true); //Nickname is different from the last one, or...
+            printheader |= (lastMessageDate != null && timestamp != null)?(timestamp.getTime() > lastMessageDate.getTime() + 120000):true;
+            lastNickPrinted = fromRes;
+            lastMessageDate = timestamp;
             if (!isSameDate(lastDatePrinted,timestamp)) {
                 lastDatePrinted = timestamp;
                 String d = "<table border=\"0\" borderwith=\"0\" width=\"100%\"><tbody><tr><td class=\"date\" align=\"left\">" + // NOI18N
@@ -332,10 +340,14 @@ public class ChatPanel extends javax.swing.JPanel {
                     DateFormat.getTimeInstance(DateFormat.SHORT).format(timestamp) + "</td></tr></tbody></table>"; // NOI18N
                 editorKit.insertHTML(doc, doc.getLength(), d, 0, 0, null);
             }
-            String text = "<table border=\"0\" borderwith=\"0\" width=\"100%\"><tbody><tr><td class=\"buddy\" align=\"left\">"+ // NOI18N
-                    StringUtils.parseResource(message.getFrom()) + "</td><td class=\"time\" align=\"right\">" + // NOI18N
-                    DateFormat.getTimeInstance(DateFormat.SHORT).format(getTimestamp(message)) + "</td></tr></tbody></table>" + // NOI18N
-                    "<div class=\"message\">" + replaceLinks(removeTags(message.getBody())) + "</div>"; // NOI18N
+            String text = "";
+            if (printheader || !isSameDate(lastDatePrinted,timestamp)) {
+                text += "<table border=\"0\" borderwith=\"0\" width=\"100%\" style=\"background-color: #" + (yourmessage?"ddffdd":"ffdddd") + //NOI18N
+                    "\"><tbody><tr><td class=\"buddy\" align=\"left\">"+ // NOI18N
+                    fromRes + "</td><td class=\"time\" align=\"right\">" + // NOI18N
+                    DateFormat.getTimeInstance(DateFormat.SHORT).format(getTimestamp(message)) + "</td></tr></tbody></table>"; // NOI18N
+            }
+            text += "<div class=\"message\">" + replaceLinks(removeTags(message.getBody())) + "</div>"; // NOI18N
 
             editorKit.insertHTML(doc, doc.getLength(), text, 0, 0, null);
         } catch (IOException ex) {
