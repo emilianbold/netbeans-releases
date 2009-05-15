@@ -39,7 +39,9 @@
 
 package org.netbeans.debuggercore;
 
+import java.awt.Component;
 import java.io.IOException;
+import javax.swing.JTable;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
@@ -52,6 +54,7 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
@@ -62,6 +65,7 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
 import org.netbeans.junit.NbModuleSuite;
+import org.openide.nodes.Node.Property;
 /**
  *
  * @author felipee
@@ -163,7 +167,31 @@ public class LineBreakpointsHitCountTest extends JellyTestCase{
             Utilities.showDebuggerView(Utilities.localVarsViewTitle);
             jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
             TreeTableOperator treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
-            int row = treeTableOperator.findCellRow("i", comp);
+            final int row = treeTableOperator.findCellRow("i", comp);
+
+            // wait for the values to evaluate
+            treeTableOperator.waitState(new ComponentChooser() {
+                public boolean checkComponent(Component comp) {
+
+                    Property prop = (Property)((JTable)comp).getValueAt(row, 2);
+                    boolean result = false;
+
+                    try
+                    {
+                        result = ! (prop.getValue().toString().toLowerCase().contains("evaluating"));
+                    }
+                    catch (Exception e)
+                    {
+                        result = false;
+                    }
+
+                    return result;
+                }
+                public String getDescription() {
+                    return "TreeTable contains any rows.";
+                }
+            });
+
             org.openide.nodes.Node.Property property = (org.openide.nodes.Node.Property) treeTableOperator.getValueAt(row, 2);
             assertEquals("44", property.getValue());
 /* THIS PART IS ABOUT TO BE REVIEWED */

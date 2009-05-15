@@ -72,7 +72,7 @@ public class ActionsTest extends JellyTestCase {
 
 
     public static final String[] tests = new String[] {
-        // "testCheckEnabledActions",
+        "testCheckEnabledActions",
         "testCheckEnabledActionsDebugging"
     };
 

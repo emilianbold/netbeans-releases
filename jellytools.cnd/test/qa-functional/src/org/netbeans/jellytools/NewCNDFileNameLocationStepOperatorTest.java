@@ -48,7 +48,7 @@ import junit.textui.TestRunner;
  * Test of org.netbeans.jellytools.NewFileNameLocationStepOperator.
  * @author tb115823
  */
-public class NewCNDFileNameLocationStepOperatorTest extends JellyTestCase {
+public class NewCNDFileNameLocationStepOperatorTest extends CNDTestCase {
 
     public static NewCNDFileNameLocationStepOperator op;
 
@@ -71,7 +71,7 @@ public class NewCNDFileNameLocationStepOperatorTest extends JellyTestCase {
     
     protected void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
-        openDataProjects("SampleCNDProject");
+        openTestProject();
     }
     
     /** Constructor required by JUnit.
@@ -84,7 +84,7 @@ public class NewCNDFileNameLocationStepOperatorTest extends JellyTestCase {
     /** Test of invoke method. Opens New File wizard and waits for the dialog. */
     public void testInvoke() {
         NewFileWizardOperator wop = NewFileWizardOperator.invoke();
-        wop.selectProject("SampleCNDProject"); //NOI18N
+        wop.selectProject(getTestProjectName()); //NOI18N
         // C++
         String javaClassesLabel = "C++"; //TODO: find appropriate bundle (unable to locate it so far)
         // C++ Source File
@@ -97,11 +97,11 @@ public class NewCNDFileNameLocationStepOperatorTest extends JellyTestCase {
     
     public void testComponents() {
         op.txtObjectName().setText("NewObject"); // NOI18N
-        assertEquals("Project name not propagated from previous step", "SampleCNDProject", op.txtProject().getText()); // NOI18N
+        assertEquals("Project name not propagated from previous step", getTestProjectName(), op.txtProject().getText()); // NOI18N
         op.selectExtension("cpp"); //NOI18N
         
         String filePath = op.txtCreatedFile().getText();
-        assertTrue("Created file path doesn't contain SampleProject.", filePath.indexOf("SampleCNDProject") > 0);  // NOI18N
+        assertTrue("Created file path doesn't contain " + getTestProjectName() + ".", filePath.indexOf(getTestProjectName()) > 0);  // NOI18N
         assertTrue("Created file path doesn't contain NewObject name.", filePath.indexOf("NewObject") > 0);  //NOI18N
         op.cancel();
     }

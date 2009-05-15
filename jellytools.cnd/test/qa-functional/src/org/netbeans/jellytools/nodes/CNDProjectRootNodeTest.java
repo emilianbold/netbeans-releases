@@ -44,6 +44,7 @@ import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.FindInFilesOperator;
 import org.netbeans.jellytools.CNDProjectsTabOperator;
+import org.netbeans.jellytools.CNDTestCase;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -55,23 +56,9 @@ import org.netbeans.jellytools.NbDialogOperator;
  *
  * @author Vojtech.Sigler@sun.com
  */
-public class CNDProjectRootNodeTest extends JellyTestCase
+public class CNDProjectRootNodeTest extends CNDTestCase
 {
 
-    public static final String projectName;
-    static
-    {
-        String lsOsType = System.getProperty("os.name");
-        String lsProj = "SampleCNDProject";
-
-        if (lsOsType.toLowerCase().contains("linux"))
-            projectName = lsProj + "-Linux";
-        else if (lsOsType.toLowerCase().contains("sun"))
-            projectName = lsProj + "-Solaris";
-        else if (lsOsType.toLowerCase().contains("win"))
-            projectName = lsProj + "-Windows";
-        else projectName = lsProj;
-    }
 
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
@@ -100,9 +87,9 @@ public class CNDProjectRootNodeTest extends JellyTestCase
     /** Find node. */
     protected void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
-        openDataProjects(projectName);
+        openTestProject();
         if(projectRootNode == null) {
-            projectRootNode = CNDProjectsTabOperator.invoke().getCNDProjectRootNode(projectName); // NOI18N
+            projectRootNode = CNDProjectsTabOperator.invoke().getCNDProjectRootNode(getTestProjectName()); // NOI18N
         }
     }
     
@@ -144,6 +131,6 @@ public class CNDProjectRootNodeTest extends JellyTestCase
     /** Test properties */
     public void testProperties() {
         projectRootNode.properties();
-        new NbDialogOperator(projectName).close(); //NOI18N
+        new NbDialogOperator(getTestProjectName()).close(); //NOI18N
     }
 }
