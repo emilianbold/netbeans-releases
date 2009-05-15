@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -65,17 +66,10 @@ public abstract class Crawler {
      */
     protected Crawler (final URL root, boolean checkTimeStamps, Set<String> mimeTypesToCheck) throws IOException {
         this.root = root;
-        this.timeStamps = checkTimeStamps ? TimeStamps.forRoot(root) : null;
+        this.checkTimeStamps = checkTimeStamps;
+        this.timeStamps = TimeStamps.forRoot(root, checkTimeStamps);
         this.mimeTypesToCheck = mimeTypesToCheck;
     }
-
-//    public final synchronized String getDigest () throws IOException {
-//        init ();
-//        return this.digest;
-//    }
-//
-//    protected final void addToDigest () {
-//    }
 
     public final synchronized Map<String, Collection<Indexable>> getResources() throws IOException {
         init ();
@@ -84,11 +78,13 @@ public abstract class Crawler {
 
     public final Collection<Indexable> getDeletedResources () throws IOException {
         init ();
-        return Collections.unmodifiableCollection(deleted);
+        return deleted;
     }
 
-    protected final TimeStamps getTimeStamps() {
-        return timeStamps;
+    protected final boolean isUpToDate(FileObject f) {
+        // always call this in order to update the file's timestamp
+        boolean upToDate = timeStamps.checkAndStoreTimestamp(f);
+        return checkTimeStamps ? upToDate : false;
     }
 
     protected abstract Map<String, Collection<Indexable>> collectResources(final Set<? extends String> supportedMimeTypes);
@@ -98,22 +94,23 @@ public abstract class Crawler {
     // -----------------------------------------------------------------------
 
     private final URL root;
+    private final boolean checkTimeStamps;
     private final TimeStamps timeStamps;
     private final Set<String> mimeTypesToCheck;
 
-//    private String digest;
     private Map<String, Collection<Indexable>> cache;
     private Collection<Indexable> deleted;
 
     private void init () throws IOException {
         if (this.cache == null) {
-            this.cache = collectResources(mimeTypesToCheck);
-            if (timeStamps != null) {
-                final Set<String> unseen = timeStamps.store();
+            this.cache = Collections.unmodifiableMap(collectResources(mimeTypesToCheck));
+            final Set<String> unseen = timeStamps.store();
+            if (unseen != null) {
                 deleted = new ArrayList<Indexable>(unseen.size());
                 for (String u : unseen) {
                     deleted.add(SPIAccessor.getInstance().create(new DeletedIndexable(root, u)));
                 }
+                deleted = Collections.unmodifiableCollection(deleted);
             } else {
                 deleted = Collections.<Indexable>emptyList();
             }

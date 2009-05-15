@@ -85,8 +85,8 @@ public final class NativeProcessBuilder implements Callable<Process> {
      */
     public NativeProcessBuilder(
             final ExecutionEnvironment execEnv,
-            final String executable) {
-        info = new NativeProcessInfo(execEnv, executable);
+            final String executable, boolean escapeCommand) {
+        info = new NativeProcessInfo(execEnv, executable, escapeCommand);
     }
 
     /**
@@ -95,7 +95,7 @@ public final class NativeProcessBuilder implements Callable<Process> {
      * @param executable executable to run.
      */
     public NativeProcessBuilder(final String executable) {
-        this(ExecutionEnvironmentFactory.getLocal(), executable);
+        this(ExecutionEnvironmentFactory.getLocal(), executable, false);
     }
 
     private NativeProcessBuilder(NativeProcessBuilder b) {

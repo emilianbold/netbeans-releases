@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.cnd.completion.cplusplus.ext;
 
+import java.awt.Component;
+import java.awt.Graphics;
 import java.text.MessageFormat;
 import java.util.Collections;
 import org.netbeans.api.lexer.TokenSequence;
@@ -82,15 +84,18 @@ import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
+import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletion.BaseType;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateParameterResultItem;
 import org.openide.util.NbBundle;
@@ -98,6 +103,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
+import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -754,8 +760,12 @@ abstract public class CsmCompletionQuery {
             this.instantiateTypes = instantiateTypes;
         }
 
+        private int convertOffset(int pos) {
+            return sup.doc2context(pos);
+        }
+
         private boolean resolve(int varPos, String var, boolean match) {
-            varPos = sup.doc2context(varPos);
+            varPos = convertOffset(varPos);
             return (compResolver.refresh() && compResolver.resolve(varPos, var, match));
         }
 
@@ -1972,6 +1982,16 @@ abstract public class CsmCompletionQuery {
                     break;
             }
 
+            if ((result == null || result.getItems().isEmpty()) && lastType != null) {
+                if(lastType.isTemplateBased() ||
+                        CsmFileReferences.isTemplateParameterInvolved(lastType) ||
+                        CsmFileReferences.hasTemplateBasedAncestors(lastType)) {
+                    Collection<CsmObject> data = new ArrayList();
+                    data.add(new TemplateBasedReferencedObjectImpl());
+                    result = new CsmCompletionResult(component, getBaseDocument(), data, "title", item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
+                }
+            }
+
             if (lastType == null && lastNamespace == null) { // !!! shouldn't be necessary
                 cont = false;
             }
@@ -2004,7 +2024,8 @@ abstract public class CsmCompletionQuery {
                         break;
                     }
                 }
-                return ip.instantiate(template, params, getFinder().getCsmFile());
+                int contextOffset = exp.getTokenOffset(0);
+                return ip.instantiate(template, params, getFinder().getCsmFile(), contextOffset);
             }
             return null;
         }
@@ -2506,6 +2527,8 @@ abstract public class CsmCompletionQuery {
                 return getCsmItemFactory().createLabelResultItem((CsmLabel) csmObj);
             } else if (CsmKindUtilities.isNamespaceAlias(csmObj)) {
                 return getCsmItemFactory().createNamespaceAliasResultItem((CsmNamespaceAlias) csmObj, false);
+            } else if(csmObj instanceof CsmTemplateBasedReferencedObject) {
+                return new TemplateBasedReferencedObjectResultItem((CsmObject) obj);
             }
         }
         return null;
@@ -2724,5 +2747,76 @@ abstract public class CsmCompletionQuery {
     private static boolean isDeclaration(CsmCompletionExpression substituteExp, CsmOffsetableDeclaration scopeElement) {
         int expId = substituteExp.getExpID();
         return scopeElement == null && (expId == CsmCompletionExpression.VARIABLE || expId == CsmCompletionExpression.SCOPE || expId == CsmCompletionExpression.SCOPE_OPEN);
+    }
+
+    private static class TemplateBasedReferencedObjectImpl implements CsmTemplateBasedReferencedObject {
+
+        public int getNameStartOffset() {
+            return 0;
+        }
+
+        public int getNameEndOffset() {
+            return 0;
+        }
+
+        public CharSequence getName() {
+            return "template based ref object"; // NOI18N
+        }
+
+        public CsmFile getContainingFile() {
+            return null;
+        }
+
+        public int getStartOffset() {
+            return 0;
+        }
+
+        public int getEndOffset() {
+            return 0;
+        }
+
+        public Position getStartPosition() {
+            return null;
+        }
+
+        public Position getEndPosition() {
+            return null;
+        }
+
+        public CharSequence getText() {
+            return getName();
+        }
+    }
+
+    private static class TemplateBasedReferencedObjectResultItem extends CsmResultItem {
+
+        TemplateBasedReferencedObjectResultItem(CsmObject obj) {
+            super(obj, 0);
+        }
+
+        @Override
+        public String getItemText() {
+            return "TemplateBasedReferencedObjectResultItem for " + getAssociatedObject(); // NOI18N
+        }
+
+        @Override
+        protected Component getPaintComponent(boolean isSelected) {
+            return new CsmPaintComponent() {
+
+                @Override
+                protected void draw(Graphics g) {
+                }
+
+                @Override
+                public String toString() {
+                    return "fake TemplateBasedReferencedObjectResultItem paint component"; // NOI18N
+                }
+            };
+        }
+
+        @Override
+        public String toString() {
+            return "TemplateBasedReferencedObjectResultItem for " + getAssociatedObject(); // NOI18N
+        }
     }
 }

@@ -123,20 +123,8 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
     }
 
     private String fixAgentArg(String agentArg) {
-        agentArg = agentArg.replace("\\", "/");
-
         if (agentArg.indexOf(' ') != -1) { //NOI18N
-            if (Utilities.isUnix()) {
-                // Profiler is installed in directory with space on Unix (Linux, Solaris, Mac OS X)
-                // create temporary link in /tmp directory and use it instead of directory with space
-                String libsDir = Profiler.getDefault().getLibsDir();
-                return IntegrationUtils.fixLibsDirPath(libsDir, agentArg); //NOI18N
-            } else if (Utilities.isWindows()) {
-                // Profiler is installed in directory with space on Windows
-                // surround the whole -agentpath argument with quotes for NB source module
-                agentArg = "\\\"" + agentArg + "\\\""; //NOI18N
-                return agentArg; //NOI18N
-            }
+            return "\"" + agentArg + "\"";
         }
         return agentArg;
     }

@@ -84,8 +84,10 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
             }
             
         });
-        for (File f : candidates) {
-            model.addElement(f.getName());
+        if (null != candidates) {
+            for (File f : candidates) {
+                model.addElement(f.getName());
+            }
         }
         domainField.setModel(model);
         domainField.getEditor().getEditorComponent().addKeyListener(new KeyListener() {

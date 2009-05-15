@@ -166,7 +166,7 @@ public class DebuggerAnnotation extends Annotation implements Lookup.Provider {
             synchronized(DebuggerAnnotation.class) {
                 if (doc != null) {
                     OffsetsBag bag = getHighlightsBag(doc);
-                    bag.removeHighlights(start, end, true);
+                    bag.removeHighlights(start, end, false);
                 }
             }
         }

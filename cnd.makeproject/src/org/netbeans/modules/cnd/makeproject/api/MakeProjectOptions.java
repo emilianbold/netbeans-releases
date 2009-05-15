@@ -102,16 +102,16 @@ public class MakeProjectOptions {
     /**
      * @Deprecated
      */
-    public static void setDefaultPlatform(int platform) {
-        MakeOptions.getInstance().setPlatform(platform);
-    }
+//    public static void setDefaultPlatform(int platform) {
+//        MakeOptions.getInstance().setPlatform(platform);
+//    }
 
     /**
      * @Deprecated
      */
-    public static int getDefaultPlatform() {
-        return MakeOptions.getInstance().getPlatform();
-    }
+//    public static int getDefaultPlatform() {
+//        return MakeOptions.getInstance().getPlatform();
+//    }
 
     /**
      * @Deprecated

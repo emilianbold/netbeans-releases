@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -97,6 +98,10 @@ public class JavaCustomIndexer extends CustomIndexer {
         JavaIndex.LOG.log(Level.FINE, context.isSupplementaryFilesIndexing() ? "index suplementary({0})" :"index({0})", files);
         try {
             final FileObject root = context.getRoot();
+            if (root == null) {
+                JavaIndex.LOG.fine("Ignoring request with no root");
+                return;
+            }
             String sourceLevel = SourceLevelQuery.getSourceLevel(root);
             if (JavaIndex.ensureAttributeValue(context.getRootURI(), SOURCE_LEVEL_ROOT, sourceLevel, true)) {
                 JavaIndex.LOG.fine("forcing reindex due to source level change");
@@ -107,8 +112,11 @@ public class JavaCustomIndexer extends CustomIndexer {
             final ClassPath bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
             final ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);
             if (sourcePath == null || bootPath == null || compilePath == null) {
-                String rootName = FileUtil.getFileDisplayName(root);
-                JavaIndex.LOG.warning("Ignoring root with no ClassPath: " + rootName);    // NOI18N
+                JavaIndex.LOG.warning("Ignoring root with no ClassPath: " + FileUtil.getFileDisplayName(root)); // NOI18N
+                return;
+            }
+            if (!Arrays.asList(sourcePath.getRoots()).contains(root)) {
+                JavaIndex.LOG.warning("Source root: " + FileUtil.getFileDisplayName(root) + " is not on its sourcepath"); // NOI18N
                 return;
             }
             ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
@@ -183,6 +191,10 @@ public class JavaCustomIndexer extends CustomIndexer {
 
     private static void clearFiles(final Context context, final Iterable<? extends Indexable> files) {
         try {
+            if (context.getRoot() == null) {
+                JavaIndex.LOG.fine("Ignoring request with no root");
+                return;
+            }
             ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
                 public Void run() throws IOException, InterruptedException {
                     return TaskCache.getDefault().refreshTransaction(new ExceptionAction<Void>() {
@@ -226,7 +238,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             try {
                 String binaryName = FileObjects.getBinaryName(file, classFolder);
                 for (String className : readRSFile(file, classFolder)) {
-                    File f = new File (classFolder, FileObjects.convertPackage2Folder(className) + '.' + FileObjects.CLASS);
+                    File f = new File (classFolder, FileObjects.convertPackage2Folder(className) + '.' + FileObjects.SIG);
                     if (!binaryName.equals(className)) {
                         toDelete.add(Pair.<String,String>of (className, sourceRelative));
                         removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));

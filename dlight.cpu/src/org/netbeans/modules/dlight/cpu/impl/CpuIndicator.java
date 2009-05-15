@@ -58,6 +58,7 @@ import org.netbeans.modules.dlight.indicators.graph.RepairPanel;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
+import org.netbeans.modules.dlight.util.UIUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -150,17 +151,24 @@ import org.openide.util.NbBundle;
     @Override
     protected void repairNeeded(boolean needed) {
         if (needed) {
-            final RepairPanel repairPanel = new RepairPanel(getRepairActionProvider().getValidationStatus(), new ActionListener() {
+            final RepairPanel repairPanel = new RepairPanel(getRepairActionProvider().getValidationStatus());
+            repairPanel.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    final Future<Boolean> result = getRepairActionProvider().asyncRepair();
+                    final Future<Boolean> repairResult = getRepairActionProvider().asyncRepair();
                     DLightExecutorService.submit(new Callable<Boolean>() {
                         public Boolean call() throws Exception {
                             UIThread.invoke(new Runnable() {
                                 public void run() {
-                                    panel.getPanel().setOverlay(null);
+                                    repairPanel.setEnabled(false);
                                 }
                             });
-                            return result.get();
+                            Boolean retValue = repairResult.get();
+                            UIThread.invoke(new Runnable() {
+                                public void run() {
+                                    repairPanel.setEnabled(true);
+                                }
+                            });
+                            return retValue;
                         }
                     }, "Click On Repair in CPU Indicator task");//NOI18N
                 }
@@ -172,11 +180,7 @@ import org.openide.util.NbBundle;
                 }
             });
         } else {
-            final JLabel label = new JLabel(
-                    "<html><center>" // NOI18N
-                    + getRepairActionProvider().getMessage(getRepairActionProvider().getValidationStatus()) // NOI18N
-                    + "</center></html>"); // NOI18N
-            label.setForeground(GraphConfig.TEXT_COLOR);
+            final JEditorPane label= UIUtilities.createJEditorPane(getRepairActionProvider().getMessage(getRepairActionProvider().getValidationStatus()), false, GraphConfig.TEXT_COLOR);
             UIThread.invoke(new Runnable() {
                 public void run() {
                     panel.getPanel().setOverlay(label);

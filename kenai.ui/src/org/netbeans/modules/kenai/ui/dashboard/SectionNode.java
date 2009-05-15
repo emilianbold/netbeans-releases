@@ -52,7 +52,9 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.openide.awt.HtmlRenderer;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -92,9 +94,9 @@ public abstract class SectionNode extends TreeListNode implements PropertyChange
             panel = new JPanel( new GridBagLayout() );
             panel.setOpaque(false);
 
-            lblName = new JLabel(displayName);
+            lblName = new TreeLabel(displayName);
             lblStatus = createProgressLabel(NbBundle.getMessage(SectionNode.class, "LBL_LoadingInProgress"));
-            lblError = new JLabel();
+            lblError = new TreeLabel();
             lblStatus.setVisible(false);
             lblError.setVisible(false);
             Image img = ImageUtilities.loadImage("org/netbeans/modules/kenai/ui/resources/error.png"); //NOI18N

@@ -50,7 +50,6 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 
@@ -73,7 +72,7 @@ public class ProjectOptionsPanel extends JPanel {
         reuseCheckBox.getAccessibleContext().setAccessibleDescription(getString("REUSE_CHECKBOX_AD"));
         saveCheckBox.getAccessibleContext().setAccessibleDescription(getString("SAVE_CHECKBOX_AD"));
         dependencyCheckingCheckBox.getAccessibleContext().setAccessibleDescription(getString("DEPENDENCY_CHECKBOX_AD"));
-        platformComboBox.getAccessibleContext().setAccessibleDescription(getString("DEFAULT_PLATFORM_AD"));
+//        platformComboBox.getAccessibleContext().setAccessibleDescription(getString("DEFAULT_PLATFORM_AD"));
         filePathcomboBox.getAccessibleContext().setAccessibleDescription(getString("FILE_PATH_AD"));
         makeOptionsTextField.getAccessibleContext().setAccessibleDescription(getString("MAKE_OPTIONS_AD"));
         filePathTxt.getAccessibleContext().setAccessibleDescription(getString("FILE_PATH_TXT_AD"));
@@ -112,11 +111,11 @@ public class ProjectOptionsPanel extends JPanel {
         MakeOptions makeOptions = MakeOptions.getInstance();
         
         // Platform
-        platformComboBox.removeAllItems();
-        for (int i = 0; i < Platforms.getPlatformDisplayNames().length; i++) {
-            platformComboBox.addItem(Platforms.getPlatformDisplayNames()[i]);
-        }
-        platformComboBox.setSelectedIndex(makeOptions.getPlatform());
+//        platformComboBox.removeAllItems();
+//        for (int i = 0; i < Platforms.getPlatformDisplayNames().length; i++) {
+//            platformComboBox.addItem(Platforms.getPlatformDisplayNames()[i]);
+//        }
+//        platformComboBox.setSelectedIndex(makeOptions.getPlatform());
         
         // Dependency Checking
         dependencyCheckingCheckBox.setSelected(makeOptions.getDepencyChecking());
@@ -147,7 +146,7 @@ public class ProjectOptionsPanel extends JPanel {
         MakeOptions makeOptions = MakeOptions.getInstance();
         
         // Platform
-        makeOptions.setPlatform(platformComboBox.getSelectedIndex());
+//        makeOptions.setPlatform(platformComboBox.getSelectedIndex());
         
         // Dependency Checking
         makeOptions.setDepencyChecking(dependencyCheckingCheckBox.isSelected());
@@ -216,9 +215,6 @@ public class ProjectOptionsPanel extends JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        platformLabel = new javax.swing.JLabel();
-        platformComboBox = new javax.swing.JComboBox();
-        defaultPlatformInfoLabel = new javax.swing.JLabel();
         makeOptionsLabel = new javax.swing.JLabel();
         makeOptionsTextField = new javax.swing.JTextField();
         makeOptionsTxt = new javax.swing.JLabel();
@@ -232,38 +228,9 @@ public class ProjectOptionsPanel extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        platformLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("DEFAULT_PLATFORM_MN").charAt(0));
-        platformLabel.setLabelFor(platformComboBox);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle"); // NOI18N
-        platformLabel.setText(bundle.getString("DEFAULT_PLATFORM")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
-        add(platformLabel, gridBagConstraints);
-
-        platformComboBox.setMinimumSize(new java.awt.Dimension(60, 18));
-        platformComboBox.setPreferredSize(new java.awt.Dimension(60, 20));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 0);
-        add(platformComboBox, gridBagConstraints);
-
-        defaultPlatformInfoLabel.setText(bundle.getString("USED_TXT")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 12);
-        add(defaultPlatformInfoLabel, gridBagConstraints);
-
         makeOptionsLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("MAKE_OPTIONS_MN").charAt(0));
         makeOptionsLabel.setLabelFor(makeOptionsTextField);
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle"); // NOI18N
         makeOptionsLabel.setText(bundle.getString("MAKE_OPTIONS")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -382,7 +349,6 @@ public class ProjectOptionsPanel extends JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel defaultPlatformInfoLabel;
     private javax.swing.JCheckBox dependencyCheckingCheckBox;
     private javax.swing.JLabel filePathLabel;
     private javax.swing.JTextArea filePathTxt;
@@ -391,8 +357,6 @@ public class ProjectOptionsPanel extends JPanel {
     private javax.swing.JLabel makeOptionsLabel;
     private javax.swing.JTextField makeOptionsTextField;
     private javax.swing.JLabel makeOptionsTxt;
-    private javax.swing.JComboBox platformComboBox;
-    private javax.swing.JLabel platformLabel;
     private javax.swing.JCheckBox reuseCheckBox;
     private javax.swing.JCheckBox saveCheckBox;
     // End of variables declaration//GEN-END:variables

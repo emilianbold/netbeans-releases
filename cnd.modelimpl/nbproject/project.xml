@@ -245,6 +245,7 @@
                 <friend>org.netbeans.modules.cnd.modelui</friend>
                 <package>org.netbeans.modules.cnd.modelimpl.csm</package>
                 <package>org.netbeans.modules.cnd.modelimpl.csm.core</package>
+                <package>org.netbeans.modules.cnd.modelimpl.parser.apt</package>
                 <package>org.netbeans.modules.cnd.modelimpl.trace</package>
             </friend-packages>
         </data>

@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.perfan.dataprovider;
 
 import java.text.DecimalFormat;
 import java.text.ParseException;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.perfan.util.TasksCachedProcessor;
 import org.netbeans.modules.dlight.perfan.util.Computable;
 import java.util.ArrayList;
@@ -61,6 +62,7 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.management.spi.PathMapper;
 import org.netbeans.modules.dlight.management.spi.PathMapperProvider;
+import org.netbeans.modules.dlight.perfan.spi.datafilter.HotSpotFunctionsFilter;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionImpl;
 import org.netbeans.modules.dlight.perfan.storage.impl.FunctionStatistic;
@@ -113,9 +115,18 @@ class SSStackDataProvider implements StackDataProvider {
             MemoryMetric.LeakBytesMetric,
             MemoryMetric.LeaksCountMetric);
     private PerfanDataStorage storage;
+    private volatile HotSpotFunctionsFilter filter;
 
     public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
         //throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void dataFiltersChanged(List<DataFilter> newSet) {
+        for (DataFilter f : newSet) {
+            if (f instanceof HotSpotFunctionsFilter) {
+                filter =  (HotSpotFunctionsFilter) f;
+            }
+        }
     }
 
     private static enum CC_MODE {
@@ -180,7 +191,7 @@ class SSStackDataProvider implements StackDataProvider {
 
         try {
             result = hotSpotFunctionsFetcher.compute(
-                    new HotSpotFunctionsFetcherParams("lines", columns, orderBy, limit)); // NOI18N
+                    new HotSpotFunctionsFetcherParams("lines", columns, orderBy, limit, filter)); // NOI18N
         } catch (InterruptedException ex) {
             log.fine("HotSpotFunctionsFetcher interrupted"); // NOI18N
         }
@@ -192,7 +203,7 @@ class SSStackDataProvider implements StackDataProvider {
             final List<Column> columns, final List<Column> orderBy, final int limit) {
 
         try {
-            return hotSpotFunctionsFetcher.compute(new HotSpotFunctionsFetcherParams("lines", columns, orderBy, limit));//NOI18N
+            return hotSpotFunctionsFetcher.compute(new HotSpotFunctionsFetcherParams("lines", columns, orderBy, limit, filter));//NOI18N
         } catch (InterruptedException ex) {
             log.fine("HotSpotFunctionsFetcher interrupted."); // NOI18N
         }
@@ -279,11 +290,13 @@ class SSStackDataProvider implements StackDataProvider {
         private final List<Column> orderBy;
         private final int limit;
         private final Metrics metrics;
+        private final HotSpotFunctionsFilter filter;
 
         HotSpotFunctionsFetcherParams(String command,
                 final List<Column> columns,
                 final List<Column> orderBy,
-                final int limit) {
+                final int limit,
+                HotSpotFunctionsFilter filter) {
 
             if (columns == null) {
                 throw new NullPointerException();
@@ -292,15 +305,13 @@ class SSStackDataProvider implements StackDataProvider {
             if (columns.isEmpty()) {
                 throw new IllegalArgumentException("HotSpotFunctionsFetcherParams: empty columns list!"); // NOI18N
             }
-            if (command == null) {
-                this.command = "functions"; // NOI18N
-            } else {
-                this.command = command;
-            }
+
+            this.command = (command == null) ? "functions" : command; // NOI18N
             this.columns = columns;
             this.orderBy = orderBy == null ? Arrays.asList(columns.get(0)) : orderBy;
             this.limit = limit;
             this.metrics = Metrics.constructFrom(columns, orderBy);
+            this.filter = filter;
         }
 
         boolean isDefaultCommand() {
@@ -379,6 +390,9 @@ class SSStackDataProvider implements StackDataProvider {
                             lineNumber = Integer.valueOf(match.group(2));
                             fileName = match.group(3);
                         } else {
+                            if (filter != null && filter.getType() == HotSpotFunctionsFilter.CollectedDataType.WITHSOURCECODEONLY) {
+                                continue;
+                            }
                             match = noLineInfoPattern.matcher(name);
                             if (match.matches()) {
                                 name = match.group(1);
@@ -394,7 +408,7 @@ class SSStackDataProvider implements StackDataProvider {
                         }
                     }
                 }
-                
+
                 Function f = new FunctionImpl(name, name.hashCode());
 
                 Map<FunctionMetric, Object> metricsValues =

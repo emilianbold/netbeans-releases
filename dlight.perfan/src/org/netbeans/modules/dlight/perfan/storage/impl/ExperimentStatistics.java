@@ -99,6 +99,18 @@ public final class ExperimentStatistics {
                 } catch (ParseException ex) {
                     Exceptions.printStackTrace(ex);
                 }
+            } else if (id.startsWith("Total Thread Time") || id.startsWith("Total LWP Time")) { // NOI18N
+                try {
+                    _totalThreadTime = nf.parse(s.substring(scidx + 1).trim()).doubleValue();
+                } catch (ParseException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            } else if (id.startsWith("Duration")) { // NOI18N
+                try {
+                    _duration = nf.parse(s.substring(scidx + 1).trim()).doubleValue();
+                } catch (ParseException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
 
@@ -117,7 +129,15 @@ public final class ExperimentStatistics {
         t_usrLock_p = _t_usrLock_p;
     }
 
-    public Double getULock_p() {
-        return t_usrLock_p;
+    public Double getDuration() {
+        return duration;
+    }
+
+    public Double getTotalThreadTime() {
+        return totalThreadTime;
+    }
+
+    public Double getULock() {
+        return t_usrLock;
     }
 }

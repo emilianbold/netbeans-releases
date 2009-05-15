@@ -40,6 +40,8 @@
 package org.netbeans.modules.jira.util;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import javax.swing.JButton;
@@ -47,7 +49,6 @@ import javax.swing.JPanel;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
-import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.jira.Jira;
@@ -150,6 +151,18 @@ public class JiraUtils {
         return "reopen issue".equals(operationLabel.toLowerCase());    //NOI18N
     }
 
+    public static boolean isCloseOperation(String operationLabel) {
+        return "close issue".equals(operationLabel.toLowerCase());    //NOI18N
+    }
+
+    public static boolean isStartProgressOperation(String operationLabel) {
+        return "start progress".equals(operationLabel.toLowerCase());    //NOI18N
+    }
+
+    public static boolean isStopProgressOperation(String operationLabel) {
+        return "stop progress".equals(operationLabel.toLowerCase());    //NOI18N
+    }
+
     public static String getMappedValue(TaskAttribute a, String key) {
         TaskAttribute ma = a.getMappedAttribute(key);
         if (ma != null) {
@@ -171,5 +184,28 @@ public class JiraUtils {
             if(r.getName().equals(resolutionName)) return r;
         }
         throw new IllegalStateException("Unknown resolution type: " + resolutionName); //NOI18N
+    }
+
+    /**
+     * Copies all content from the supplied reader to the supplies writer and closes both streams when finished.
+     *
+     * @param writer where to write
+     * @param reader what to read
+     * @throws IOException if any I/O operation fails
+     */
+    public static void copyStreamsCloseAll(OutputStream writer, InputStream reader) throws IOException {
+        byte [] buffer = new byte[4096];
+        int n;
+        while ((n = reader.read(buffer)) != -1) {
+            writer.write(buffer, 0, n);
+        }
+        writer.close();
+        reader.close();
+    }
+
+    public static boolean isAssertEnabled() {
+        boolean retval = false;
+        assert retval = true;
+        return retval;
     }
 }

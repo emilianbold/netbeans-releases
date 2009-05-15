@@ -319,6 +319,17 @@ public final class RailsServerManager {
             result.add(railsEnv);
         }
         if(server instanceof GlassFishGem) {
+            GlassFishGem gfGem = (GlassFishGem) server;
+            if(gfGem.compareVersion("0.9.0") >=0) {
+                // port option supported on 0.9.0 and above
+                result.add("--port");
+                result.add(Integer.toString(port));
+            }
+            if(gfGem.compareVersion("0.9.3") >=0) {
+                // log level option supported on 0.9.3 and above
+                result.add("--log-level");
+                result.add("7");
+            }
             result.add(dir.getAbsolutePath());
         } else {
             result.add("--port");

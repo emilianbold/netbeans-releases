@@ -81,7 +81,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
             try {
                 //String cmd = "(chmod 755 " + SCRIPT + ") && " + SCRIPT;
                 String cmd = SCRIPT;
-                NativeProcessBuilder pb = new NativeProcessBuilder(executionEnvironment, cmd);
+                NativeProcessBuilder pb = new NativeProcessBuilder(executionEnvironment, cmd,false);
                 Process process = pb.call();
                 InputStream is = process.getInputStream();
                 in = new BufferedReader(new InputStreamReader(is));

@@ -420,7 +420,7 @@ public class CsmFinderImpl implements CsmFinder {
     public List<CsmField> findFields(CsmOffsetableDeclaration contextDeclaration, CsmClass classifier, String name, boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses, boolean scopeAccessedClassifier, boolean sort) {
         // get class variables visible in this method
         CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
-        List<CsmField> classFields = contResolver.getFields(classifier, contextDeclaration, name, staticOnly, exactMatch, inspectParentClasses, scopeAccessedClassifier);
+        List<CsmField> classFields = contResolver.getFields(classifier, contextDeclaration, name, staticOnly, exactMatch, inspectParentClasses, inspectOuterClasses, scopeAccessedClassifier);
         return classFields;
     }
 
@@ -436,7 +436,7 @@ public class CsmFinderImpl implements CsmFinder {
      */
     public List<CsmEnumerator> findEnumerators(CsmOffsetableDeclaration contextDeclaration, CsmClass classifier, String name, boolean exactMatch, boolean inspectOuterClasses, boolean inspectParentClasses, boolean scopeAccessedClassifier, boolean sort) {
         CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
-        List<CsmEnumerator> classEnumerators = contResolver.getEnumerators(classifier, contextDeclaration, name, exactMatch, inspectParentClasses, scopeAccessedClassifier);
+        List<CsmEnumerator> classEnumerators = contResolver.getEnumerators(classifier, contextDeclaration, name, exactMatch, inspectParentClasses, inspectOuterClasses, scopeAccessedClassifier);
         return classEnumerators;
     }
 
@@ -458,14 +458,14 @@ public class CsmFinderImpl implements CsmFinder {
             // in global context get all
             contextDeclaration = clazz;
         }
-        List<CsmMethod> classMethods = contResolver.getMethods(clazz, contextDeclaration, name, staticOnly, exactMatch, inspectParentClasses, scopeAccessedClassifier);
+        List<CsmMethod> classMethods = contResolver.getMethods(clazz, contextDeclaration, name, staticOnly, exactMatch, inspectParentClasses, inspectOuterClasses, scopeAccessedClassifier);
         return classMethods;
     }
 
     public List<CsmClassifier> findNestedClassifiers(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch, boolean inspectParentClasses, boolean sort) {
         CsmClass clazz = c;
         CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
-        List<CsmClassifier> classClassifiers = contResolver.getNestedClassifiers(clazz, contextDeclaration, name, exactMatch, inspectParentClasses);
+        List<CsmClassifier> classClassifiers = contResolver.getNestedClassifiers(clazz, contextDeclaration, name, exactMatch, inspectParentClasses, true);
         return classClassifiers;
     }
 

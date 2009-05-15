@@ -77,12 +77,12 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
                 throw new SourceFileInfoCannotBeProvided();
             }
             String name = functionName.indexOf("(") != -1 ? functionName.substring(0, functionName.indexOf("(")) : functionName; // NOI18N
-            CsmFunctionDefinition csmFunctionDefinition = getFirstDefinition(csmProject, name);
-            if (csmFunctionDefinition == null){
+            CsmFunction function = getFunction(csmProject, name);
+            if (function == null){
                 throw new SourceFileInfoCannotBeProvided();
             }
-            String sourceFile =    csmFunctionDefinition.getContainingFile().getAbsolutePath().toString();
-            int startOffset = csmFunctionDefinition.getStartOffset();
+            String sourceFile =    function.getContainingFile().getAbsolutePath().toString();
+            int startOffset = function.getStartOffset();
             return new SourceFileInfo(sourceFile, startOffset);//) + offset);
 //            CsmDeclaration csmDeclaration = csmProject.findDeclaration(functionName);
 //            if (csmDeclaration == null) {
@@ -110,21 +110,23 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
     }
 
 
-    static CsmFunctionDefinition getFirstDefinition(CsmProject project, CharSequence qualifiedName) {
-
+    private static CsmFunction getFunction(CsmProject project, CharSequence qualifiedName) {
        Iterator<CsmFunction> iter = CsmSelect.getFunctions(project, qualifiedName);
+       CsmFunction declaration = null;
        while (iter.hasNext()) {
-           CsmFunction foo = iter.next();
-           if (CsmKindUtilities.isFunctionDefinition(foo)) {
-               return (CsmFunctionDefinition) foo;
-           } else {
-               CsmFunctionDefinition def = foo.getDefinition();
-               if (def != null) {
-                   return def;
+           CsmFunction function = iter.next();
+           if (CsmKindUtilities.isFunctionDefinition(function)) {
+               return function;
+           } else { // declaration
+               CsmFunctionDefinition definition = function.getDefinition();
+               if (definition != null) {
+                   return definition;
+               } else {
+                   declaration = function;
                }
            }
        }
-       return null;
+       return declaration;
    }
 
 }

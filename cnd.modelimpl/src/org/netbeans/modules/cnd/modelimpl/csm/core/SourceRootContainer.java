@@ -49,8 +49,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -97,7 +97,7 @@ public class SourceRootContainer {
     }
     
     private void addFile(File file){
-        File parentFile = FileUtil.normalizeFile(file).getParentFile();
+        File parentFile = CndFileUtils.normalizeFile(file).getParentFile();
         String path = parentFile.getAbsolutePath();
         addPath(path);
         String canonicalPath;

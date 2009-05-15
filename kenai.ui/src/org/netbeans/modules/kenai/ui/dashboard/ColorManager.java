@@ -50,10 +50,10 @@ public class ColorManager {
     
     private static ColorManager theInstance;
 
-    private static final boolean isAqua = "Aqua".equals(UIManager.getLookAndFeel().getID());
+    private static final boolean isAqua = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
 
-    private Color defaultBackground = Color.white;
-    private Color defaultForeground = Color.black;
+    private Color defaultBackground = UIManager.getColor("Tree.background"); //NOI18N
+    private Color defaultForeground = UIManager.getColor("black"); //NOI18N
     private Color disabledColor = Color.gray;
     private Color linkColor = Color.blue;
     private Color errorColor = new Color(153,0,0);
@@ -71,7 +71,7 @@ public class ColorManager {
 
     public Color getDefaultBackground() {
         if( isAqua )
-            return UIManager.getColor("NbExplorerView.background");
+            return UIManager.getColor("NbExplorerView.background"); // NOI18N
         return defaultBackground;
     }
 

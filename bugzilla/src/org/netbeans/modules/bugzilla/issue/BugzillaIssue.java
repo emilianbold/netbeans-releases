@@ -119,46 +119,50 @@ public class BugzillaIssue extends Issue {
     static final int FIELD_STATUS_MODIFIED = 4;
 
     enum IssueField {
-        SUMMARY(BugzillaAttribute.SHORT_DESC.getKey()),
-        STATUS(TaskAttribute.STATUS),
-        PRIORITY(BugzillaAttribute.PRIORITY.getKey()),
-        RESOLUTION(TaskAttribute.RESOLUTION),
-        PRODUCT(BugzillaAttribute.PRODUCT.getKey()),
-        COMPONENT(BugzillaAttribute.COMPONENT.getKey()),
-        VERSION(BugzillaAttribute.VERSION.getKey()),
-        PLATFORM(BugzillaAttribute.REP_PLATFORM.getKey()),
-        OS(BugzillaAttribute.OP_SYS.getKey()),
-        MILESTONE(BugzillaAttribute.TARGET_MILESTONE.getKey()),
-        REPORTER(BugzillaAttribute.REPORTER.getKey()),
-        REPORTER_NAME(BugzillaAttribute.REPORTER_NAME.getKey()),
-        ASSIGNED_TO(BugzillaAttribute.ASSIGNED_TO.getKey()),
-        ASSIGNED_TO_NAME(BugzillaAttribute.ASSIGNED_TO_NAME.getKey()),
-        QA_CONTACT(BugzillaAttribute.QA_CONTACT.getKey()),
-        QA_CONTACT_NAME(BugzillaAttribute.QA_CONTACT_NAME.getKey()),
-        NEWCC(BugzillaAttribute.NEWCC.getKey()),
-        REMOVECC(BugzillaAttribute.REMOVECC.getKey()),
-        CC(BugzillaAttribute.CC.getKey()),
-        DEPENDS_ON(BugzillaAttribute.DEPENDSON.getKey()),
-        BLOCKS(BugzillaAttribute.BLOCKED.getKey()),
-        URL(BugzillaAttribute.BUG_FILE_LOC.getKey()),
-        KEYWORDS(BugzillaAttribute.KEYWORDS.getKey()),
-        SEVERITY(BugzillaAttribute.BUG_SEVERITY.getKey()),
-        DESCRIPTION(BugzillaAttribute.LONG_DESC.getKey()),
-        CREATION(TaskAttribute.DATE_CREATION),
-        MODIFICATION(TaskAttribute.DATE_MODIFICATION),
-        COMMENT_COUNT(TaskAttribute.TYPE_COMMENT, false),
-        ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, false);
+        SUMMARY(BugzillaAttribute.SHORT_DESC.getKey(), "LBL_SUMMARY"),
+        STATUS(TaskAttribute.STATUS, "LBL_STATUS"),
+        PRIORITY(BugzillaAttribute.PRIORITY.getKey(), "LBL_PRIORITY"),
+        RESOLUTION(TaskAttribute.RESOLUTION, "LBL_RESOLUTION"),
+        PRODUCT(BugzillaAttribute.PRODUCT.getKey(), "LBL_PRODUCT"),
+        COMPONENT(BugzillaAttribute.COMPONENT.getKey(), "LBL_COMPONENT"),
+        VERSION(BugzillaAttribute.VERSION.getKey(), "LBL_VERSION"),
+        PLATFORM(BugzillaAttribute.REP_PLATFORM.getKey(), "LBL_PLATFORM"),
+        OS(BugzillaAttribute.OP_SYS.getKey(), "LBL_OS"),
+        MILESTONE(BugzillaAttribute.TARGET_MILESTONE.getKey(), "LBL_MILESTONE"),
+        REPORTER(BugzillaAttribute.REPORTER.getKey(), "LBL_REPORTER"),
+        REPORTER_NAME(BugzillaAttribute.REPORTER_NAME.getKey(), "LBL_REPORTER_NAME"),
+        ASSIGNED_TO(BugzillaAttribute.ASSIGNED_TO.getKey(), "LBL_ASSIGNED_TO"),
+        ASSIGNED_TO_NAME(BugzillaAttribute.ASSIGNED_TO_NAME.getKey(), "LBL_ASSIGNED_TO_NAME"),
+        QA_CONTACT(BugzillaAttribute.QA_CONTACT.getKey(), "LBL_QA_CONTACT"),
+        QA_CONTACT_NAME(BugzillaAttribute.QA_CONTACT_NAME.getKey(), "LBL_QA_CONTACT_NAME"),
+        DEPENDS_ON(BugzillaAttribute.DEPENDSON.getKey(), "LBL_DEPENDS_ON"),
+        BLOCKS(BugzillaAttribute.BLOCKED.getKey(), "LBL_BLOCKS"),
+        URL(BugzillaAttribute.BUG_FILE_LOC.getKey(), "LBL_URL"),
+        KEYWORDS(BugzillaAttribute.KEYWORDS.getKey(), "LBL_KEYWORDS"),
+        SEVERITY(BugzillaAttribute.BUG_SEVERITY.getKey(), "LBL_SEVERITY"),
+        DESCRIPTION(BugzillaAttribute.LONG_DESC.getKey(), "LBL_DESCRIPTION"),
+        CREATION(TaskAttribute.DATE_CREATION, "LBL_CREATION"),
+        CC(BugzillaAttribute.CC.getKey(), "LBL_CC"),
+        MODIFICATION(TaskAttribute.DATE_MODIFICATION, null),
+        NEWCC(BugzillaAttribute.NEWCC.getKey(), null),
+        REMOVECC(BugzillaAttribute.REMOVECC.getKey(), null),
+        COMMENT_COUNT(TaskAttribute.TYPE_COMMENT, null, false),
+        ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, null, false);
 
         private final String key;
+        private final String displayNameKey;
         private boolean singleAttribute;
 
-        IssueField(String key) {
-            this(key, true);
+        IssueField(String key, String displayNameKey) {
+            this(key, displayNameKey, true);
         }
-        IssueField(String key, boolean singleAttribute) {
+
+        IssueField(String key, String displayNameKey, boolean singleAttribute) {
             this.key = key;
             this.singleAttribute = singleAttribute;
+            this.displayNameKey = displayNameKey;
         }
+
         public String getKey() {
             return key;
         }
@@ -168,6 +172,12 @@ public class BugzillaIssue extends Issue {
         public boolean isReadOnly() {
             return !singleAttribute;
         }
+
+        public String getDisplayName() {
+            assert displayNameKey != null; // shouldn't be called for a field with a null display name
+            return NbBundle.getMessage(BugzillaIssue.class, displayNameKey);
+        }
+
     }
 
     private Map<String, String> attributes;
@@ -263,10 +273,6 @@ public class BugzillaIssue extends Issue {
             String value;
             for (IssueField field : IssueField.values()) {
                 switch(field) {
-                    case REPORTER_NAME:
-                    case QA_CONTACT_NAME:
-                    case ASSIGNED_TO_NAME:
-                        continue;
                     default:
                         value = getFieldValue(field);
                 }
@@ -296,6 +302,13 @@ public class BugzillaIssue extends Issue {
             Map<String, String> seenAtributes = getSeenAttributes();
             assert seenAtributes != null;
             for (IssueField f : IssueField.values()) {
+                switch(f) {
+                    case MODIFICATION :
+                    case REPORTER_NAME :
+                    case QA_CONTACT_NAME :
+                    case ASSIGNED_TO_NAME :
+                        continue;
+                }
                 String value = getFieldValue(f);
                 String seenValue = seenAtributes.get(f.key);
                 if(seenValue == null) {
@@ -306,7 +319,6 @@ public class BugzillaIssue extends Issue {
                 }
             }
             int changedCount = changedFields.size();
-            assert changedCount > 0 : "status MODIFIED yet zero changes found"; // NOI18N
             if(changedCount == 1) {
                 String ret = null;
                 for (IssueField changedField : changedFields) {
@@ -324,8 +336,22 @@ public class BugzillaIssue extends Issue {
                         case BLOCKS :
                             ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_DEPENDENCE_CHANGED_STATUS");
                             break;
+                        case COMMENT_COUNT :
+                            String value = getFieldValue(changedField);
+                            String seenValue = seenAtributes.get(changedField.key);
+                            int count = 0;
+                            try {
+                                count = Integer.parseInt(value) - Integer.parseInt(seenValue);
+                            } catch(NumberFormatException ex) {
+                                Bugzilla.LOG.log(Level.WARNING, ret, ex);
+                            }
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_COMMENTS_CHANGED", new Object[] {count});
+                            break;
+                        case ATTACHEMENT_COUNT :
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_ATTACHMENTS_CHANGED");
+                            break;
                         default :
-                            ret = changedField.name() +  NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGED_TO") + getFieldValue(changedField);
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGED_TO", new Object[] {changedField.getDisplayName(), getFieldValue(changedField)});
                     }
                 }
                 return ret;
@@ -334,47 +360,47 @@ public class BugzillaIssue extends Issue {
                 for (IssueField changedField : changedFields) {
                     switch(changedField) {
                         case SUMMARY :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_SUMMARY");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_SUMMARY", new Object[] {changedCount});
                             break;
                         case PRIORITY :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_PRIORITY");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_PRIORITY", new Object[] {changedCount});
                             break;
                         case SEVERITY :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_SEVERITY");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_SEVERITY", new Object[] {changedCount});
                             break;
                         case PRODUCT :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_PRODUCT");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_PRODUCT", new Object[] {changedCount});
                             break;
                         case COMPONENT :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_COMPONENT");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_COMPONENT", new Object[] {changedCount});
                             break;
                         case PLATFORM :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_PLATFORM");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_PLATFORM", new Object[] {changedCount});
                             break;
                         case VERSION :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_VERSION");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_VERSION", new Object[] {changedCount});
                             break;
                         case MILESTONE :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_MILESTONE");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_MILESTONE", new Object[] {changedCount});
                             break;
                         case KEYWORDS :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_KEYWORDS");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_KEYWORDS", new Object[] {changedCount});
                             break;
                         case URL :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_URL");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_URL", new Object[] {changedCount});
                             break;
                         case ASSIGNED_TO :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_ASSIGNEE");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_ASSIGNEE", new Object[] {changedCount});
                             break;
                         case QA_CONTACT :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_QA_CONTACT");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_QA_CONTACT", new Object[] {changedCount});
                             break;
                         case DEPENDS_ON :
                         case BLOCKS :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCLUSIVE_DEPENDENCE");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCLUSIVE_DEPENDENCE", new Object[] {changedCount});
                             break;
                         default :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES", new Object[] {changedCount});
                     }
                     return ret;
                 }
@@ -538,10 +564,20 @@ public class BugzillaIssue extends Issue {
     }
 
     void resolve(String resolution) {
+        assert !data.isNew();
+
         setOperation(BugzillaOperation.resolve);
         TaskAttribute rta = data.getRoot();
-        TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.resolve.getInputId());
-        ta.setValue(resolution);
+        String value = getFieldValue(IssueField.STATUS);
+        if(!value.equals("RESOLVED")) {                                         // NOI18N
+            TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.resolve.getInputId());
+            assert ta != null;
+            if(ta != null) {
+                ta.setValue(resolution);
+            } else {
+                Bugzilla.LOG.warning("Can't set resolve operation for issue " + getID()); // NOI18N
+            }
+        }
     }
 
     void accept() {

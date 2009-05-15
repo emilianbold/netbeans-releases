@@ -107,6 +107,21 @@ is the proper place.
     <changes>
         <change>
             <api name="database_explorer_api"/>
+            <summary>Add a DatabaseConnection.getJDBCDriver() method</summary>
+            <version major="1" minor="32"/>
+            <date day="6" month="5" year="2009"/>
+            <author login="jrechtacek"/>
+            <compatibility addition="yes"/>
+            <description>
+                Currently there is no easy way to get the JDBCDriver instance that a
+                DatabaseConnection will use / used to connect to a database. A
+                <code>DatabaseConnection.getJDBCDriver()</code> method should be added.
+            </description>
+            <class package="org.netbeans.api.db.explorer" name="DatabaseConnection"/>
+            <issue number="90210"/>
+        </change>
+        <change>
+            <api name="database_explorer_api"/>
             <summary>Add ability to ensure a JDBC connection is valid</summary>
             <version major="1" minor="30"/>
             <date day="27" month="8" year="2008"/>

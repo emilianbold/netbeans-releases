@@ -70,6 +70,9 @@ public class LoginPanel extends javax.swing.JPanel {
     /** Creates new form LoginPanel */
     public LoginPanel() {
         initComponents();
+        lblKenaiLogoCenter.setBorder(null);
+        lblKenaiLogoLeft.setBorder(null);
+        lblKenaiLogoRight.setBorder(null);
     }
 
     public boolean isStorePassword() {
@@ -77,7 +80,6 @@ public class LoginPanel extends javax.swing.JPanel {
     }
 
     public void showError(KenaiException ex) {
-        errorProgress.setVisible(true);
         progressBar.setVisible(false);
         error.setText(ex.getMessage());
         error.setVisible(true);
@@ -85,14 +87,14 @@ public class LoginPanel extends javax.swing.JPanel {
     }
 
     public void showProgress() {
-        errorProgress.setVisible(true);
         error.setVisible(false);
         progressBar.setVisible(true);
         progressBar.setIndeterminate(true);
     }
 
     public void clearStatus() {
-        errorProgress.setVisible(false);
+        error.setVisible(false);
+        progressBar.setVisible(false);
     }
 
     /** This method is called from within the constructor to
@@ -104,9 +106,6 @@ public class LoginPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        errorProgress = new javax.swing.JPanel();
-        progressBar = new javax.swing.JProgressBar();
-        error = new javax.swing.JLabel();
         lblKenaiLogoCenter = new javax.swing.JLabel();
         lblUserName = new javax.swing.JLabel();
         username = new javax.swing.JTextField();
@@ -118,19 +117,12 @@ public class LoginPanel extends javax.swing.JPanel {
         signUp = new LinkButton(NbBundle.getMessage(LoginPanel.class, "LoginPanel.register.text"), new URLDisplayerAction("",registerUrl));
         lblKenaiLogoLeft = new javax.swing.JLabel();
         lblKenaiLogoRight = new javax.swing.JLabel();
+        error = new javax.swing.JLabel();
+        progressBar = new javax.swing.JProgressBar();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
-        errorProgress.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        errorProgress.setLayout(new java.awt.CardLayout());
-        errorProgress.add(progressBar, "card3");
-
-        error.setForeground(java.awt.Color.red);
-        error.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/error.png"))); // NOI18N
-        errorProgress.add(error, "card3");
-
         lblKenaiLogoCenter.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/kenai_center.png"))); // NOI18N
-        lblKenaiLogoCenter.setBorder(null);
         lblKenaiLogoCenter.setMinimumSize(new java.awt.Dimension(0, 50));
 
         lblUserName.setLabelFor(username);
@@ -152,10 +144,11 @@ public class LoginPanel extends javax.swing.JPanel {
         });
 
         lblKenaiLogoLeft.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/kenai_left.png"))); // NOI18N
-        lblKenaiLogoLeft.setBorder(null);
 
         lblKenaiLogoRight.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/kenai_right.png"))); // NOI18N
-        lblKenaiLogoRight.setBorder(null);
+
+        error.setForeground(java.awt.Color.red);
+        error.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/error.png"))); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -170,7 +163,7 @@ public class LoginPanel extends javax.swing.JPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(errorProgress, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, error)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(lblUserName)
@@ -182,9 +175,13 @@ public class LoginPanel extends javax.swing.JPanel {
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(signUp))
                             .add(chkRememberMe)
-                            .add(password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
-                            .add(username, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
+                            .add(password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE)
+                            .add(username, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE)
                             .add(forgotPassword))))
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(progressBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -214,8 +211,10 @@ public class LoginPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblNoAccount)
                     .add(signUp))
-                .add(18, 18, 18)
-                .add(errorProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(error)
+                .add(0, 0, 0)
+                .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
         lblUserName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.lblUserName.AccessibleContext.accessibleDescription")); // NOI18N
@@ -236,7 +235,6 @@ public class LoginPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     javax.swing.JCheckBox chkRememberMe;
     javax.swing.JLabel error;
-    javax.swing.JPanel errorProgress;
     javax.swing.JButton forgotPassword;
     javax.swing.JLabel lblKenaiLogoCenter;
     javax.swing.JLabel lblKenaiLogoLeft;
