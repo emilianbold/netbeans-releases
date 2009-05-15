@@ -1305,12 +1305,12 @@ public class UnitTab extends javax.swing.JPanel {
                 return;
             }
             for (Unit u : units) {
-                if (!isEnabled(u)) {
-                    setEnabled(false);
-                    return;
+                if (isEnabled(u)) {
+                    setEnabled(true);
+                    return ;
                 }
             }
-            setEnabled(true);
+            setEnabled(false);
         }
 
         @Override
@@ -1319,7 +1319,7 @@ public class UnitTab extends javax.swing.JPanel {
             final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnits ());
             OperationContainer<OperationSupport> c = Containers.forEnable();
             for (Unit u : model.getUnits()) {
-                if (u.isMarked()) {
+                if (u.isMarked() && isEnabled(u)) {
                     c.add(u.updateUnit, u.getRelevantElement());
                 }
             }
@@ -1440,12 +1440,12 @@ public class UnitTab extends javax.swing.JPanel {
             }
 
             for (Unit u : units) {
-                if (!isEnabled(u)) {
-                    setEnabled(false);
+                if (isEnabled(u)) {
+                    setEnabled(true);
                     return;
                 }
             }
-            setEnabled(true);
+            setEnabled(false);
         }
 
         @Override
@@ -1453,7 +1453,7 @@ public class UnitTab extends javax.swing.JPanel {
             final int row = getSelectedRow ();
             OperationContainer<OperationSupport> c = Containers.forDisable();
             for (Unit u : model.getUnits()) {
-                if (u.isMarked()) {
+                if (u.isMarked() && isEnabled(u)) {
                     c.add(u.updateUnit, u.getRelevantElement());
                 }
             }
