@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
         </packagings>
         <goals>
             <goal>process-classes</goal>
-            <goal>org.codehaus.mojo:exec-maven-plugin:1.1:exec</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:1.1.1:exec</goal>
         </goals>
         <properties>
             <exec.args>${profiler.args} -classpath %classpath ${packageClassName}</exec.args>
@@ -62,9 +62,9 @@ made subject to such option by the copyright holder.
     <action>
         <actionName>profile</actionName>
         <packagings>
-            <packaging>war</packaging>
             <packaging>ejb</packaging>
             <packaging>ear</packaging>
+            <packaging>war</packaging>
         </packagings>
         <goals>
             <goal>package</goal>
@@ -100,7 +100,7 @@ made subject to such option by the copyright holder.
         </packagings>
         <goals>
             <goal>process-classes</goal>
-            <goal>org.codehaus.mojo:exec-maven-plugin:1.1:exec</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:1.1.1:exec</goal>
         </goals>
         <properties>
             <exec.args>${profiler.args} -classpath %classpath ${packageClassName}</exec.args>
@@ -111,7 +111,7 @@ made subject to such option by the copyright holder.
     </action>
 
     <action>
-        <actionName>profile-single</actionName>
+        <actionName>profile-single.deploy</actionName>
         <packagings>
             <packaging>war</packaging>
         </packagings>
@@ -120,6 +120,7 @@ made subject to such option by the copyright holder.
         </goals>
         <properties>
             <netbeans.deploy>true</netbeans.deploy>
+            <netbeans.deploy.clientUrlPart>${webpagePath}</netbeans.deploy.clientUrlPart>
             <netbeans.deploy.profilemode>true</netbeans.deploy.profilemode>
         </properties>
     </action>
