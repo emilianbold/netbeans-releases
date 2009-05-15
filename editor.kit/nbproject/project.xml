@@ -6,6 +6,13 @@
             <code-name-base>org.netbeans.modules.editor.kit</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.xml.schema.model</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.4.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.css.visual</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>

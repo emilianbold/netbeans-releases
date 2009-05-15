@@ -103,7 +103,7 @@
                     <code-name-base>org.netbeans.modules.ruby.railsprojects</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.76.2</specification-version>
+                        <specification-version>0.76.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
