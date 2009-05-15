@@ -125,7 +125,6 @@ public final class SourcesHelper {
         private final Icon openedIcon;
         private final String includes;
         private final String excludes;
-        private PathMatcher matcher;
 
         public SourceRoot(String location, String includes, String excludes, String displayName, Icon icon, Icon openedIcon) {
             super(location);
@@ -185,7 +184,7 @@ public final class SourcesHelper {
                     path += "/"; // NOI18N
                 }
                 computeIncludeExcludePatterns();
-                if (!matcher.matches(path, true)) {
+                if (!computeIncludeExcludePatterns().matches(path, true)) {
                     return false;
                 }
                 Project p = getProject();
@@ -226,7 +225,7 @@ public final class SourcesHelper {
                 if (prop == null ||
                         (includes != null && includes.contains("${" + prop + "}")) || // NOI18N
                         (excludes != null && excludes.contains("${" + prop + "}"))) { // NOI18N
-                    matcher = null;
+                    resetIncludeExcludePatterns();
                     pcs.firePropertyChange(PROP_CONTAINERSHIP, null, null);
                 }
                 // XXX should perhaps react to ProjectInformation changes? but nothing to fire currently
@@ -249,15 +248,24 @@ public final class SourcesHelper {
             return patterns;
         }
 
-        private void computeIncludeExcludePatterns() {
-            if (matcher != null) {
-                return;
+        private PathMatcher matcher;
+        private PathMatcher computeIncludeExcludePatterns() {
+            synchronized (this) {
+                if (matcher != null) {
+                    return matcher;
+                }
             }
             String includesPattern = evalForMatcher(includes);
             String excludesPattern = evalForMatcher(excludes);
-            matcher = new PathMatcher(includesPattern, excludesPattern, getActualLocation());
+            PathMatcher _matcher = new PathMatcher(includesPattern, excludesPattern, getActualLocation());
+            synchronized (this) {
+                matcher = _matcher;
+            }
+            return _matcher;
         }
-
+        private synchronized void resetIncludeExcludePatterns() {
+            matcher = null;
+        }
 
         @Override
         public Collection<FileObject> getIncludeRoots(boolean minimalSubfolders) {
@@ -267,8 +275,7 @@ public final class SourcesHelper {
             }
             else if (supe.size() == 1) {
                 Set<FileObject> roots = new HashSet<FileObject>();
-                computeIncludeExcludePatterns();
-                for (File r : matcher.findIncludedRoots()) {
+                for (File r : computeIncludeExcludePatterns().findIncludedRoots()) {
                     FileObject subroot = FileUtil.toFileObject(r);
                     if (subroot != null) {
                         roots.add(subroot);
@@ -852,7 +859,7 @@ public final class SourcesHelper {
         }
 
         public void fileAttributeChanged(FileAttributeEvent fe) {
-            maybeFireChange();
+            // #164930 - ignore
         }
 
         public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
@@ -868,7 +875,7 @@ public final class SourcesHelper {
         public void propertyChange(PropertyChangeEvent evt) {
             // Some properties changed; external roots might have changed, so check them.
             for (SourceRoot r : principalSourceRoots) {
-                r.matcher = null;
+                r.resetIncludeExcludePatterns();
             }
             remarkExternalRoots();
         }

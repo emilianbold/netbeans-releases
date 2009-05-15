@@ -65,7 +65,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
      */
     public GeneralEditorPanel () {
         initComponents ();
-                
+
         loc (lCodeFolding, "Code_Folding");
         loc (lUseCodeFolding, "Code_Folding_Section");
         loc (lCollapseByDefault, "Fold_by_Default");
@@ -81,7 +81,8 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         loc (lCamelCaseBehavior, "Camel_Case_Behavior");
         loc (cbCamelCaseBehavior, "Enable_Camel_Case_In_Java");
         loc (lCamelCaseBehaviorExample, "Camel_Case_Behavior_Example");
-        
+        cbUseCodeFolding.setMnemonic(NbBundle.getMessage (GeneralEditorPanel.class, "MNEMONIC_Use_Folding").charAt(0));
+
     }
     
     /** This method is called from within the constructor to
@@ -112,6 +113,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
 
         lCodeFolding.setText("Code Folding");
 
+        lUseCodeFolding.setLabelFor(cbUseCodeFolding);
         lUseCodeFolding.setText("Use Code Folding:");
 
         lCollapseByDefault.setText("Collapse by Default:");
@@ -141,7 +143,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
             .add(layout.createSequentialGroup()
                 .add(lCodeFolding)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 838, Short.MAX_VALUE))
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 839, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(lCamelCaseBehavior)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -164,7 +166,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                     .add(cbFoldInnerClasses)
                     .add(cbFoldImports)
                     .add(cbCamelCaseBehavior))
-                .addContainerGap(205, Short.MAX_VALUE))
+                .addContainerGap(220, Short.MAX_VALUE))
         );
 
         layout.linkSize(new java.awt.Component[] {cbFoldImports, cbFoldInitialComments, cbFoldInnerClasses, cbFoldJavadocComments, cbFoldMethods}, org.jdesktop.layout.GroupLayout.HORIZONTAL);

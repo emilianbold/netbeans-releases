@@ -100,6 +100,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.settings.CppSettings;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -257,7 +258,7 @@ public class GdbDebugger implements PropertyChangeListener {
             if (iotab != null) {
                 iotab.setErrSeparated(false);
             }
-            runDirectory = pathMap.getRemotePath(pae.getProfile().getRunDirectory().replace("\\", "/") + "/");  // NOI18N
+            runDirectory = pathMap.getRemotePath(pae.getProfile().getRunDirectory().replace("\\", "/") + "/",true);  // NOI18N
             baseDir = pae.getConfiguration().getBaseDir().replace("\\", "/");  // NOI18N
             profile = (GdbProfile) pae.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
             conType = execEnv.isLocal() ? pae.getProfile().getConsoleType().getValue() : RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
@@ -677,10 +678,6 @@ public class GdbDebugger implements PropertyChangeListener {
         return threadsList;
     }
 
-    public int getThreadCount() {
-        return 1;
-    }
-
     private void resetThreadInfo() {
         threadsList = emptyThreadsList;
     }
@@ -699,7 +696,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
             }
         }
-        return pathMap.getRemotePath(programName.toString());
+        return pathMap.getRemotePath(programName.toString(),true);
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -1432,7 +1429,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 killcmd.add(signal.toString());
 
                 killcmd.add(Long.toString(pid));
-                NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, killcmd.get(0));
+                NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, killcmd.get(0),false);
                 String[] args = killcmd.subList(1, killcmd.size()).toArray(new String[killcmd.size()-1]);
                 // setArguments returns new builder instance, so it is necessary to reassign it...
                 npb = npb.setArguments(args);
@@ -2161,7 +2158,7 @@ public class GdbDebugger implements PropertyChangeListener {
             }
             File file = new File(path);
             if (file.exists()) {
-                String mime_type = FileUtil.getMIMEType(FileUtil.toFileObject(FileUtil.normalizeFile(file)));
+                String mime_type = FileUtil.getMIMEType(FileUtil.toFileObject(CndFileUtils.normalizeFile(file)));
                 if (mime_type != null && mime_type.startsWith("application/x-exe")) { // NOI18N
                     return true;
                 }
@@ -2228,7 +2225,7 @@ public class GdbDebugger implements PropertyChangeListener {
      *
      * @return list of local variables
      */
-    public List<GdbVariable> getLocalVariables() {
+    List<GdbVariable> getLocalVariables() {
         assert !(Thread.currentThread().getName().equals("GdbReaderRP"));
         synchronized (localVariables) {
             return new ArrayList<GdbVariable>(localVariables);
@@ -2511,7 +2508,7 @@ public class GdbDebugger implements PropertyChangeListener {
      *  @return The possibly modified path
      */
     public String getBestPath(String path) {
-        path = pathMap.getRemotePath(path);
+        path = pathMap.getRemotePath(path,true);
         if (path.startsWith(baseDir + '/')) {
             return path.substring(baseDir.length() + 1);
         } else {

@@ -50,14 +50,9 @@ import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.cnd.debugger.gdb.Field;
-import org.netbeans.modules.cnd.debugger.gdb.InvalidExpressionException;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.LocalVariable;
 import org.netbeans.modules.cnd.debugger.gdb.Variable;
 
 /*
@@ -81,7 +76,7 @@ public class VariablesTableModel implements TableModel, Constants {
                 return "";
         } else if (columnID.equals(LOCALS_TO_STRING_COLUMN_ID) || columnID.equals(WATCH_TO_STRING_COLUMN_ID)) {
             if (row instanceof Variable) {
-                return ((Variable) row).getValue();
+                return ValuePresenter.getValue((Variable) row);
             }
         } else if (columnID.equals(LOCALS_TYPE_COLUMN_ID) || columnID.equals(WATCH_TYPE_COLUMN_ID)) {
             if (row instanceof Variable) {
@@ -89,7 +84,7 @@ public class VariablesTableModel implements TableModel, Constants {
             }
         } else if ( columnID.equals(LOCALS_VALUE_COLUMN_ID) || columnID.equals(WATCH_VALUE_COLUMN_ID)) {
             if (row instanceof Variable) {
-                return ((Variable) row).getValue();
+                return ValuePresenter.getValue((Variable) row);
             }
         }
         if (row instanceof JToolTip) {
@@ -117,7 +112,7 @@ public class VariablesTableModel implements TableModel, Constants {
                     columnID.equals(WATCH_TYPE_COLUMN_ID)) {
                 return true;
             } else if (columnID.equals(LOCALS_VALUE_COLUMN_ID) || columnID.equals(WATCH_VALUE_COLUMN_ID)) {
-                String t = var.waitForType();
+                String t = var.getType();
                 if (t == null) {
                     if (log.isLoggable(Level.FINE) && debugger.isStopped() &&
                             !SwingUtilities.isEventDispatchThread()) {
@@ -144,24 +139,9 @@ public class VariablesTableModel implements TableModel, Constants {
         
         if (debugger == null || !debugger.isStopped()) {
             return;
-        } else if (row instanceof LocalVariable) {
+        } else if (row instanceof Variable) {
             if (columnID.equals(LOCALS_VALUE_COLUMN_ID) || columnID.equals(WATCH_VALUE_COLUMN_ID)) {
-                if (row instanceof GdbWatchVariable) {
-                    ((GdbWatchVariable) row).setValueAt((String) value);
-                } else {
-                    ((LocalVariable) row).setValue((String) value);
-                }
-                return;
-            }
-        } else if (row instanceof Field) {
-            if (columnID.equals (LOCALS_VALUE_COLUMN_ID) || columnID.equals (WATCH_VALUE_COLUMN_ID)) {
-                try {
-                    ((Field) row).setValue((String) value);
-                } catch (InvalidExpressionException e) {
-                    NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(
-                            e.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
-                    DialogDisplayer.getDefault().notify(descriptor);
-                }
+                ((Variable) row).setValue((String) value);
                 return;
             }
         }

@@ -68,6 +68,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void testIZ164583() throws Exception {
+        // IZ#164583: Inaccuracy tests: unstable results in MySQL
+        performTest("iz164583.cpp");
+    }
+
     public void testIZ149525() throws Exception {
         // IZ#149525: can't process lazy body of macro expanded function
         performTest("iz149525.cc");
@@ -258,5 +263,10 @@ public class FileModel2Test extends TraceModelTestBase {
     public void testIZ142674() throws Exception {
         // IZ#142674 : Function-try-catch (C++) in editor shows error
         performTest("iz142674.cc");
+    }
+
+    public void testIZ165038() throws Exception {
+        // IZ#165038 : parser fail on variable declaration
+        performTest("iz165038.cc");
     }
 }

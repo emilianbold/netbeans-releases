@@ -39,7 +39,6 @@
 
 package org.netbeans.editor.ext.html;
 
-import java.util.Set;
 import org.netbeans.editor.ext.html.dtd.*;
 import org.netbeans.editor.ext.html.dtd.DTD.Content;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
@@ -54,6 +53,7 @@ import static org.junit.Assert.*;
 public class DTDParserTest extends TestBase {
 
     private static final String FALLBACK_DOCTYPE = "-//W3C//DTD HTML 4.01//EN";  // NOI18N
+    private static final String XHTML_DOCTYPE = "-//W3C//DTD XHTML 1.0 Strict//EN";  // NOI18N
 
     public DTDParserTest() {
         super(DTDParserTest.class.getName());
@@ -65,6 +65,29 @@ public class DTDParserTest extends TestBase {
         NbReaderProvider.setupReaders();
     }
 
+    public void testDTDParserXHTML() {
+        DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(XHTML_DOCTYPE, null);
+        assertNotNull(dtd);
+
+        Element htmlElement = dtd.getElement("html");
+        assertNotNull(htmlElement);
+        Content htmlc = htmlElement.getContentModel().getContent();
+        assertNotNull(htmlc);
+        assertEquals(1,htmlc.getPossibleElements().size());
+
+        Element headElement = dtd.getElement("head");
+        assertNotNull(headElement);
+
+        Content c = htmlElement.getContentModel().getContent();
+        assertTrue(c.getPossibleElements().contains(headElement));
+
+        c = c.reduce("head");
+
+        Element bodyElement = dtd.getElement("body");
+        assertNotNull(bodyElement);
+
+        assertTrue(c.getPossibleElements().contains(bodyElement));
+    }
 
     public void testDTDParser_HTML_BODY_Elements() {
         DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(FALLBACK_DOCTYPE, null);

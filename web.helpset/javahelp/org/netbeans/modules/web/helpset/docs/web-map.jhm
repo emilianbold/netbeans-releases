@@ -154,6 +154,6 @@
     -->
 	<mapID target="org.netbeans.modules.web.wizards.ServletIterator.servlet" url="web/csh/servletwiz/PanelConfigureServlet.html"/>
 	<mapID target="org.netbeans.modules.web.wizards.DeployDataPanel.servlet" url="web/csh/servletwiz/PanelConfigureServletDeploy.html"/>
-
+	<mapID target="org.netbeans.modules.html.editor.HtmlKit" url="web/create/jsp/about_jsp_edit.html"/>
 </map>
 

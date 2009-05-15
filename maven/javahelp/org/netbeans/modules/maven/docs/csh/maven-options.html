@@ -24,44 +24,24 @@
             <li><strong>External Maven Home.</strong>
             Click Browse to locate the local version of your Maven installation
             (e.g., <tt>/usr/local/maven/apache-maven-209</tt>).</li>
-            
+            <li><strong>Gobal Execution Options.</strong></li>
+            <li><strong>Local Repository.</strong> Click Browse to specify or modify the location of the
+            local Maven repository if different from the repository specified by your Maven installation.</li>
+            <li><strong>On Project Open.</strong>
+                Use the dropdown list to specify how often the IDE performs the listed tasks when a Maven project is opened.
+                The default setting for the tasks is <tt>Never</tt>.
+                Modifying the setting can have a significant impact on performance
+                when opening a Maven project.
+            </li>
             <li><strong>Edit Global Custom Goal Definitions.</strong>
             Opens a dialog box where you can configure custom Maven goals
             that can be invoked from any Maven project.
             You can invoke custom goals by right-clicking the project in the Projects window
             and choosing Custom.</li>
-            <li><strong>Work Offline.</strong></li>
-            <li><strong>Produce Debug Output.</strong></li>
-            <li><strong>Produce Exception Error Messages.</strong></li>
-            <li><strong>Use Plugin Registry.</strong></li>
-            
-            <li><strong>Multiproject build fail policy.</strong>
-            Select how the IDE handles a failure when building a project with build dependencies.</li>
-            <li><strong>Checksum policy.</strong>
-            <ul>
-                <li><strong>No Global Policy.</strong> (Default)
-                When selected, the IDE ignores checksums when caching an artifact from the remote repository. </li>
-                <li><strong>Strict (Fail).</strong>
-                When selected, the IDE will not cache an artifact from the remote repository if the checksums do not match.</li>
-                <li><strong>Lax (Warn Only).</strong>
-                When selected, the IDE will cache an artifact from the remote repository if the checksums do not match and
-                will also print a warning to the output window.</li>
-            </ul>
-            </li>
-            <li><strong>Plugin Update Policy.</strong>
-            <ul>
-                <li><strong>No Global Policy.</strong> (Default)
-                If selected, plugin updates are not suppressed.</li>
-                <li><strong>Check For Updates.</strong> If selected, plugins are checked for updates.</li>
-                <li><strong>Suppress Checking.</strong> If selected, plugins are not checked for updates.</li>
-            </ul>
-            </li>
-            <li><strong>Local Repository.</strong> Click Browse to specify or modify the location of the
-            local Maven repository.
-            The location is populated by default when you install the IDE.</li>
-            <li><strong>Index.</strong> Use the drop-down menu to specify how often the IDE
+            <li><strong>Index Update Frequency.</strong> Use the drop-down list to specify how often the IDE
             checks the remote repository for updates.</li>
             <li><strong>Include Snapshots.</strong></li>
+
         </ul>
 
 

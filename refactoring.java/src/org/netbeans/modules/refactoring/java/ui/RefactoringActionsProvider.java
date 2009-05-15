@@ -551,6 +551,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     Element e = selectedElement.resolveElement(info);
+                    if (e == null) {
+                        return null;
+                    }
                     if ((e.getKind().isClass() || e.getKind().isInterface()) &&
                             SourceUtils.getOutermostEnclosingTypeElement(e)==e) {
                         try {

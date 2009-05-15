@@ -90,17 +90,17 @@ import org.openide.util.Utilities;
         return CompilerSetManager.computeLocalPlatform();
     }
 
-    private static class LocalPathMap implements PathMap {
+    private static class LocalPathMap extends PathMap {
 
-        public boolean isRemote(String path, boolean fixMissingPath) {
+        public boolean checkRemotePath(String path, boolean fixMissingPath) {
             return false;
         }
 
-        public String getLocalPath(String rpath) {
+        public String getLocalPath(String rpath,boolean useDefault) {
             return rpath;
         }
 
-        public String getRemotePath(String lpath) {
+        public String getRemotePath(String lpath,boolean useDefault) {
             return lpath;
         }
     }

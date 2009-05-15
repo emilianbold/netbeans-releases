@@ -1044,6 +1044,8 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 		function_definition_with_fun_as_ret_type
 		{ #external_declaration = #(#[CSM_FUNCTION_RET_FUN_DEFINITION, "CSM_FUNCTION_RET_FUN_DEFINITION"], #external_declaration); }
 	|
+                asm_block
+        |
 		{isCPlusPlus()}?
 		{if (statementTrace>=1) 
 			printf("external_declaration_12[%d]: Namespace declaration\n",
@@ -1961,6 +1963,10 @@ declarator[int kind]
         //i.e. void foo (char **__restrict a)
         (ptr_operator)=> ptr_operator // AMPERSAND or STAR
         restrict_declarator[kind]
+    |
+        // type (var) = {...}
+        (LPAREN declarator[kind] RPAREN ASSIGNEQUAL LCURLY) =>
+        LPAREN declarator[kind] RPAREN
     |
         // typedef ((...));
         // int (i);

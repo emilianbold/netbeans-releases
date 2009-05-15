@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
@@ -184,7 +185,7 @@ public class ProjectCreator {
             Set<String> folders, Set<String> libs) throws IOException {
         File dirF = new File(projectFolder);
         if (dirF != null) {
-            dirF = FileUtil.normalizeFile(dirF);
+            dirF = CndFileUtils.normalizeFile(dirF);
         }
         String target = "Default"; // NOI18N
 

@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
-//import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
 /**
  *

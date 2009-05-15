@@ -44,7 +44,9 @@ made subject to such option by the copyright holder.
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <toolchain name="Intel" display="GNU Compiler Collection from Intel" family="GNU"/>
     <platforms stringvalue="windows"/>
-    <base_folder regestry="hklm\software\INTEL\Compilers\C++"  pattern="ProductDir.*REG_SZ(.*)" suffix="Bin" path_patern=".*[\\/]Intel[\\/]Compiler[\\/]"/>
+    <base_folders>
+        <base_folder regestry="hklm\software\INTEL\Compilers\C++"  pattern="ProductDir.*REG_SZ(.*)" suffix="Bin" path_patern=".*[\\/]Intel[\\/]Compiler[\\/]"/>
+    </base_folders>
     <c>
         <compiler name="icl"/>
         <recognizer pattern=".*[\\/]Intel[\\/]Compiler[\\/]"/>

@@ -23,132 +23,139 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <html>
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href=
-    "nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type=
-    "text/css">
-    <meta content="Helen" name="generator">
-<style type="text/css">
-<!--
-.comment {
-  color: blue;
-}
-.change-bar {
-  border-left: thin;
-  border-left-style: solid;
-  border-color: black;
-  padding-left: 6px;
-}
-.deleted {
-  text-decoration: line-through;
-}
--->
-</style>
-    <title>Customizing the Project Settings: Run Configuration</title>
-  </head>
-  <body>
-    <h1>
-       Customizing the Project Settings: Run Configuration
-    </h1>
-    <p>
-       <small><a href="#seealso">See Also</a></small>
-    </p>
-    <p>
-       Run configurations accommodate the most commonly used PHP development use cases. A run
-      configuration is a stored setting for running a PHP project. You can define several
-      configurations for one project and switch between them back and forth. Run configurations
-      apply to both running and debugging.
-    </p>
-    <p>
-       During the project creation, the default run configuration is defined. The available options
-      are:
-    </p>
-    <ul>
-      <li>
-        Local Web Site
-      </li>
-      <li>
-        Remote Web Site (FTP)
-      </li>
-      <li>
-        Script
-      </li>
-    </ul>
-    <p>
-       On the Run Configuration panel, modify the default run configuration and/or define new run
-      configurations, if necessary.
-    </p>
-    <ol>
-      <li>
-        To modify the default settings, <a href="new-project-run-configuration.html">update the</a>
-        <a href="new-project-run-configuration.html">fields as during the project creation</a>.
-      </li>
-      <li>
-        To define a new run configuration, click New next to the Configuration dropdown list. The
-        Create New Configuration dialog box opens.
-      </li>
-      <li>
-        In the Configuration Name field, enter the name of the new run configuration and click OK.
-        You return to the Run Configuration panel.
-      </li>
-      <li>
-        Define the run configuration settings in the same way as you defined the <a href=
-        "new-project-run-configuration.html">default run configuration</a> during the project
-        creation and click OK. The new configuration is added to the Configuration dropdown list.
-      </li>
-      <li>
-        To remove a configuration, select it from the Configuration dropdown list and click
-        Delete.<br>
-      </li>
-    </ol>
-    <dl>
-      <dt>
-         <a name="seealso">See Also</a>
-      </dt>
-      <dd>
-        <a href="http://www.netbeans.org/kb/trails/php.html">PHP Learning Trail</a>
-      </dd>
-      <dd>
-        <a href="new-project-configure_no_sources.html" title=
-        "Configurinag a New PHP Project without Previously Developed Sources">New PHP Project
-        without Previously Developed Sources</a>
-      </dd>
-      <dd>
-        <a href="new-project-configure_existing_sources.html" title=
-        "Importing Previously Developed Source Files into a New Project">Importing Previously
-        Developed Source Files into a New Project</a>
-      </dd>
-      <dd>
-        <a href="new-project-run-configuration.html" title="Run Configurations">Run
-        Configuration</a>
-      </dd>
-      <dd>
-        <a href="customize-project-sources.html" title=
-        "Customizing the Project Settings: Source Files Location">Customizing the Project Settings:
-        Source Files Location</a>
-      </dd>
-    </dl>
-    <hr>
-    <p>
-       <small><a href="credits.html">Legal Notices</a></small>
-    </p>
-    <table border="0" cellpadding="150">
-      <tr>
-        <td>
-          &nbsp;
-        </td>
-      </tr>
-      <tr>
-        <td>
-          &nbsp;
-        </td>
-      </tr>
-      <tr>
-        <td>
-          &nbsp;
-        </td>
-      </tr>
-    </table>
-  </body>
+    <head>
+        <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+        <link rel="stylesheet" href=
+              "nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type=
+              "text/css">
+        <meta content="Helen" name="generator">
+        <style type="text/css">
+            <!--
+            .comment {
+                color: blue;
+            }
+            .change-bar {
+                border-left: thin;
+                border-left-style: solid;
+                border-color: black;
+                padding-left: 6px;
+            }
+            .deleted {
+                text-decoration: line-through;
+            }
+            -->
+        </style>
+        <title>Customizing the Project Settings: Run Configuration</title>
+    </head>
+    <body>
+        <h1>
+            Customizing the Project Settings: Run Configuration
+        </h1>
+        <p>
+            <small><a href="#seealso">See Also</a></small>
+        </p>
+        <p>
+            Run configurations accommodate the most commonly used PHP development use cases. A run
+            configuration is a stored setting for running a PHP project. You can define several
+            configurations for one project and switch between them back and forth. Run configurations
+            apply to both running and debugging.
+        </p>
+        <p>
+            During the project creation, the default run configuration is defined. The available options
+            are:
+        </p>
+        <ul>
+            <li>
+                Local Web Site
+            </li>
+            <li>
+                Remote Web Site (FTP/SFTP)
+            </li>
+            <li>
+                Script
+            </li>
+        </ul>
+        <p>
+            On the Run Configuration panel, modify the default run configuration and/or define new run
+            configurations, if necessary.
+        </p>
+        <ol>
+            <li>
+                To modify the default settings, <a href="new-project-run-configuration.html">update the</a>
+                <a href="new-project-run-configuration.html">fields as during the project creation</a>.
+            </li>
+            <li>
+                To define a new run configuration, click New next to the Configuration dropdown list. The
+                Create New Configuration dialog box opens.
+            </li>
+            <li>
+                In the Configuration Name field, enter the name of the new run configuration and click OK.
+                You return to the Run Configuration panel.
+            </li>
+            <li>
+                Define the run configuration settings in the same way as you defined the <a href=
+                                                                                            "new-project-run-configuration.html">default run configuration</a> during the project
+                creation and click OK. The new configuration is added to the Configuration dropdown list.
+            </li>
+            <li>If you are using Remote Debugging or Symbolic Links, click Advanced and set up
+                path mapping. See <a href="new-project-run-configuration.html#pathmapping">Path Mapping</a>.</li>
+            <li>
+                To remove a configuration, select it from the Configuration dropdown list and click
+                Delete.<br>
+            </li>
+        </ol>
+        <dl>
+            <dt>
+                <a name="seealso">See Also</a>
+            </dt>
+            <dd>
+                <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.netbeans.org/kb/trails/php.html">
+                    <param name="text" value="<html><u>PHP Learning Trail (Web document)</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>
+            </dd>
+            <dd>
+                <a href="new-project-configure_no_sources.html" title=
+                   "Configuring a New PHP Project without Previously Developed Sources">New PHP Project
+                    without Previously Developed Sources</a>
+            </dd>
+            <dd>
+                <a href="new-project-configure_existing_sources.html" title=
+                   "Importing Previously Developed Source Files into a New Project">Importing Previously
+                    Developed Source Files into a New Project</a>
+            </dd>
+            <dd>
+                <a href="new-project-run-configuration.html" title="Run Configurations">Run
+                    Configuration</a>
+            </dd>
+            <dd>
+                <a href="customize-project-sources.html" title=
+                   "Customizing the Project Settings: Source Files Location">Customizing the Project Settings:
+                    Source Files Location</a>
+            </dd>
+        </dl>
+        <hr>
+        <p>
+            <small><a href="credits.html">Legal Notices</a></small>
+        </p>
+        <table border="0" cellpadding="150">
+            <tr>
+                <td>
+                    &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    &nbsp;
+                </td>
+            </tr>
+        </table>
+    </body>
 </html>

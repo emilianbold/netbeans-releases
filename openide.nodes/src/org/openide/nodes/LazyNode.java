@@ -48,12 +48,12 @@ import javax.swing.Action;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class LazyNode extends FilterNode {
-    private Map map;
+    private Map<String,?> map;
 
-    LazyNode(Map map) {
+    LazyNode(Map<String,?> map) {
         this(new ChFactory(), map);
     }
-    private LazyNode(ChFactory factory, Map map) {
+    private LazyNode(ChFactory factory, Map<String,?> map) {
         super(new AbstractNode(Children.create(factory, true)));
         factory.node = this;
         this.map = map;
@@ -63,7 +63,10 @@ final class LazyNode extends FilterNode {
         an.setName((String) map.get("name")); // NOI18N
         an.setDisplayName((String) map.get("displayName")); // NOI18N
         an.setShortDescription((String) map.get("shortDescription")); // NOI18N
-        an.setIconBaseWithExtension((String)map.get("iconResource")); // NOI18N
+        String iconBase = (String) map.get("iconResource"); // NOI18N
+        if (iconBase != null) {
+            an.setIconBaseWithExtension(iconBase);
+        }
     }
 
     @Override

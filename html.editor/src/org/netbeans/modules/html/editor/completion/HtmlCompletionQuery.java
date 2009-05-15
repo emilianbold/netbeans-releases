@@ -67,7 +67,7 @@ public class HtmlCompletionQuery {
 
     private static final String SCRIPT_TAG_NAME = "SCRIPT"; //NOI18N
     private static final String STYLE_TAG_NAME = "STYLE"; //NOI18N
-    private static final String XHtml_PUBLIC_ID = "-//W3C//DTD XHtml 1.0 Strict//EN";
+
     private static boolean lowerCase;
     private static boolean isXHtml = false;
     private static HtmlCompletionQuery DEFAULT;
@@ -89,33 +89,43 @@ public class HtmlCompletionQuery {
      * @return result of the query or null if there's no result.
      */
     public CompletionResult query(JTextComponent component, int offset) {
-        BaseDocument doc = (BaseDocument) component.getDocument();
+        Document document = component.getDocument();
+        if(document == null) {
+            return null;
+        }
+        HtmlSyntaxSupport sup = HtmlSyntaxSupport.get(document);
+        if(sup == null) {
+            return null;
+        }
+        DTD dtd = sup.getDTD();
+        return query(document, offset, sup, dtd);
+    }
 
-        //temporarily disabled functionality since we do not have any UI in preferences to change it.
+    //for unit tests
+    CompletionResult query(Document document, int offset, HtmlSyntaxSupport sup, DTD dtd) {
+
+        assert document != null;
+        assert sup != null;
+        assert dtd != null;
+        assert offset >= 0;
+
+        BaseDocument doc = (BaseDocument) document;
+
+        //XXX temporarily disabled functionality since we do not have any UI in preferences to change it.
 //        if (kitClass != null) {
 //            lowerCase = SettingsUtil.getBoolean(kitClass,
 //                    HtmlSettingsNames.COMPLETION_LOWER_CASE,
 //                    HtmlSettingsDefaults.defaultCompletionLowerCase);
 //        }
+
         lowerCase = true;
         int anchor = -1;
 
         if (doc.getLength() == 0) {
             return null; // nothing to examine
         }
-        HtmlSyntaxSupport sup = HtmlSyntaxSupport.get(doc);
 
-        if (sup == null) {
-            return null;// No SyntaxSupport for us, no hint for user
-        }
-        DTD dtd = sup.getDTD();
-        if (dtd == null) {
-            return null; // We have no knowledge about the structure!
-        }
-        if (XHtml_PUBLIC_ID.equalsIgnoreCase(dtd.getIdentifier())) {
-            //we are completing xhtml document
-            isXHtml = true;
-        }
+        isXHtml = org.netbeans.editor.ext.html.dtd.Utils.isXHTMLPublicId(dtd.getIdentifier());
 
         doc.readLock();
         try {
@@ -216,18 +226,18 @@ public class HtmlCompletionQuery {
             } else if (id == HTMLTokenId.TEXT && preText.endsWith("</")) { // NOI18N
                 /* EndTag finder */
                 anchor = offset;
-                result = getPossibleEndTags(doc, offset, "");
+                result = getPossibleEndTags(doc, offset, "", dtd);
 
             } else if (id == HTMLTokenId.TAG_OPEN_SYMBOL && preText.endsWith("</")) { // NOI18N
                 anchor = offset;
-                result = getPossibleEndTags(doc, offset, "");
+                result = getPossibleEndTags(doc, offset, "", dtd);
 
             } else if (id == HTMLTokenId.TAG_CLOSE) { // NOI18N
                 anchor = itemOffset;
-                result = getPossibleEndTags(doc, offset, preText);
+                result = getPossibleEndTags(doc, offset, preText, dtd);
 
             } else if (id == HTMLTokenId.TAG_CLOSE_SYMBOL) {
-                result = getAutocompletedEndTag(doc, offset);
+                result = getAutocompletedEndTag(doc, offset, dtd);
 
             } else if (id == HTMLTokenId.WS || id == HTMLTokenId.ARGUMENT) {
                 /*Argument finder */
@@ -253,7 +263,7 @@ public class HtmlCompletionQuery {
                 }
 
                 if (elem.getElementOffset() == offset) {
-                    //we are at the border between two syntax elements, 
+                    //we are at the border between two syntax elements,
                     //but need to use the previous one
                     //
                     //for example: < a hre|<td>...</td>
@@ -268,8 +278,7 @@ public class HtmlCompletionQuery {
                 if (elem.getType() == SyntaxElement.TYPE_TAG) { // not endTags
                     SyntaxElement.Tag tagElem = (SyntaxElement.Tag) elem;
 
-                    String tagName = tagElem.getName().toUpperCase();
-                    DTD.Element tag = dtd.getElement(tagName);
+                    DTD.Element tag = dtd.getElement(tagElem.getName());
 
                     if (tag == null) {
                         return null; // unknown tag
@@ -295,7 +304,10 @@ public class HtmlCompletionQuery {
                     for (Iterator i = possible.iterator(); i.hasNext();) {
                         DTD.Attribute attr = (DTD.Attribute) i.next();
                         String aName = attr.getName();
-                        if (aName.equals(prefix) || (!existingAttrsNames.contains(aName.toUpperCase()) && !existingAttrsNames.contains(aName.toLowerCase(Locale.ENGLISH))) || (wordAtCursor.equals(aName) && prefix.length() > 0)) {
+                        if (aName.equals(prefix) || 
+                                (!existingAttrsNames.contains(isXHtml ? aName : aName.toUpperCase()) &&
+                                !existingAttrsNames.contains(isXHtml ? aName : aName.toLowerCase(Locale.ENGLISH)))
+                                || (wordAtCursor.equals(aName) && prefix.length() > 0)) {
                             attribs.add(attr);
                         }
                     }
@@ -336,8 +348,7 @@ public class HtmlCompletionQuery {
                 if (elem.getType() == SyntaxElement.TYPE_TAG) {
                     SyntaxElement.Tag tagElem = (SyntaxElement.Tag) elem;
 
-                    String tagName = tagElem.getName().toUpperCase();
-                    DTD.Element tag = dtd.getElement(tagName);
+                    DTD.Element tag = dtd.getElement(tagElem.getName());
                     if (tag == null) {
                         return null; // unknown tag
                     }
@@ -351,7 +362,10 @@ public class HtmlCompletionQuery {
                     if (argItem.id() != HTMLTokenId.ARGUMENT) {
                         return null; // no ArgItem
                     }
-                    String argName = argItem.text().toString().toLowerCase(Locale.ENGLISH);
+                    String argName = argItem.text().toString();
+                    if(isXHtml) {
+                        argName = argName.toLowerCase(Locale.ENGLISH);
+                    }
 
                     DTD.Attribute arg = tag.getAttribute(argName);
                     if (arg == null || arg.getType() != DTD.Attribute.TYPE_SET) {
@@ -393,28 +407,27 @@ public class HtmlCompletionQuery {
     }
 
     private List<CompletionItem> addEndTag(String tagName, String preText, int offset) {
-        int commonLength = getLastCommonCharIndex("</" + tagName + ">", preText.toUpperCase().trim()); //NOI18N
+        int commonLength = getLastCommonCharIndex("</" + tagName + ">", isXHtml ? preText.trim() : preText.toUpperCase().trim()); //NOI18N
         if (commonLength == -1) {
             commonLength = 0;
         }
         if (commonLength == preText.trim().length()) {
             ArrayList<CompletionItem> items = new ArrayList<CompletionItem>(1);
-            tagName = lowerCase ? tagName.toLowerCase(Locale.ENGLISH) : tagName;
+            tagName = isXHtml ? tagName : (lowerCase ? tagName.toLowerCase(Locale.ENGLISH) : tagName);
             items.add(HtmlCompletionItem.createEndTag(tagName, offset - commonLength, null, -1));
             return items;
         }
         return null;
     }
 
-    public List getPossibleEndTags(Document doc, int offset, String prefix) throws BadLocationException {
-        prefix = prefix.toUpperCase();
+    public List getPossibleEndTags(Document doc, int offset, String prefix, DTD dtd) throws BadLocationException {
+        prefix = isXHtml ? prefix : prefix.toUpperCase();
         int prefixLen = prefix.length();
         HtmlSyntaxSupport sup = HtmlSyntaxSupport.get(doc);
         SyntaxElement elem = sup.getElementChain(offset);
         Stack stack = new Stack();
         List result = new ArrayList();
         Set found = new HashSet();
-        DTD dtd = sup.getDTD();
 
         if (elem == null) {
             if (offset > 0) {
@@ -436,9 +449,10 @@ public class HtmlCompletionQuery {
                 if (tagName.length() == 0) {
                     continue;
                 }
-                DTD.Element tag = dtd.getElement(tagName.toUpperCase());
+                DTD.Element tag = dtd.getElement(tagName);
                 if (tag != null) {
-                    stack.push(((SyntaxElement.Named) elem).getName().toUpperCase());
+                    String nm = ((SyntaxElement.Named) elem).getName();
+                    stack.push(isXHtml ? nm : nm.toUpperCase());
                 } else {
                     stack.push(tagName); //non-html tag, store it with the original case
                 }
@@ -449,7 +463,7 @@ public class HtmlCompletionQuery {
                 }
 
                 String tagName = ((SyntaxElement.Named) elem).getName();
-                DTD.Element tag = dtd.getElement(tagName.toUpperCase());
+                DTD.Element tag = dtd.getElement(tagName);
 
                 if (tag != null) {
                     tagName = tag.getName();
@@ -464,11 +478,11 @@ public class HtmlCompletionQuery {
                         found.add(tagName);
                         if (tag != null) {
                             //html item
-                            tagName = lowerCase ? tagName.toLowerCase(Locale.ENGLISH) : tagName;
+                            tagName = isXHtml ? tagName : (lowerCase ? tagName.toLowerCase(Locale.ENGLISH) : tagName);
                             result.add(HtmlCompletionItem.createEndTag(tagName, offset - 2 - prefixLen, tagName, itemsCount));
                         } else {
                             //non html item
-                            //do not change the case, keep the original 
+                            //do not change the case, keep the original
                             result.add(HtmlCompletionItem.createEndTag(tagName, offset - 2 - prefixLen, null, itemsCount));
                         }
                     }
@@ -488,7 +502,7 @@ public class HtmlCompletionQuery {
         return result;
     }
 
-    public List getAutocompletedEndTag(Document doc, int offset) {
+    public List getAutocompletedEndTag(Document doc, int offset, DTD dtd) {
         List l = new ArrayList();
         HtmlSyntaxSupport sup = HtmlSyntaxSupport.get(doc);
         try {
@@ -496,7 +510,7 @@ public class HtmlCompletionQuery {
             if (elem != null && elem.getType() == SyntaxElement.TYPE_TAG) {
                 String tagName = ((SyntaxElement.Named) elem).getName();
                 //check if the tag has required endtag
-                Element dtdElem = sup.getDTD().getElement(tagName.toUpperCase());
+                Element dtdElem = dtd.getElement(tagName);
                 if (!((SyntaxElement.Tag) elem).isEmpty() && (dtdElem == null || !dtdElem.isEmpty())) {
                     if(dtdElem != null) {
                         //change case
@@ -540,7 +554,7 @@ public class HtmlCompletionQuery {
         String name;
         for (Iterator i = tags.iterator(); i.hasNext();) {
             name = ((DTD.Element) i.next()).getName();
-            name = lowerCase ? name.toLowerCase(Locale.ENGLISH) : name.toUpperCase();
+            name = isXHtml ? name : (lowerCase ? name.toLowerCase(Locale.ENGLISH) : name.toUpperCase());
             result.add(HtmlCompletionItem.createTag(name, offset, name));
         }
         return result;

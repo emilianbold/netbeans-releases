@@ -294,7 +294,8 @@ public class FruchtermanReingoldLayout extends SceneLayout {
     
     private boolean isThereFreeSpace(Point pnt, ArtifactGraphNode node) {
         Rectangle bnds = scene.findWidget(node).getBounds();
-        bnds = new Rectangle(pnt.x, pnt.y, bnds.width, bnds.height);
+        bnds = new Rectangle(pnt.x, pnt.y, bnds != null ? bnds.width : 0,
+                bnds != null ? bnds.height : 0);
         for (ArtifactGraphNode nd : scene.getNodes()) {
             Rectangle bounds = scene.findWidget(nd).getBounds();
             Point point = new Point();

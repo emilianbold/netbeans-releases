@@ -94,11 +94,6 @@ public class InstantRenameAction extends BaseAction {
     }
 
     public void actionPerformed(ActionEvent evt, final JTextComponent target) {
-        if(InstantRenamePerformer.isInstantRenameInProgress(target)) {
-            //we already do instant rename
-            return ;
-        }
-
         try {
             final int caret = target.getCaretPosition();
             String ident = Utilities.getIdentifier(Utilities.getDocument(target), caret);
@@ -109,7 +104,7 @@ public class InstantRenameAction extends BaseAction {
             }
 
             if (IndexingManager.getDefault().isIndexing()) {
-                Utilities.setStatusBoldText(target, NbBundle.getMessage(IndexingManager.class, "scanning-in-progress"));
+                Utilities.setStatusBoldText(target, NbBundle.getMessage(InstantRenameAction.class, "scanning-in-progress"));
                 return;
             }
 

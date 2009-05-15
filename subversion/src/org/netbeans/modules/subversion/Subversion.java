@@ -112,11 +112,7 @@ public class Subversion {
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion");
 
     private Result<? extends SvnHook> hooksResult;
-    private Result<? extends HyperlinkProvider> hpResult;
-    /**
-     * Hyperlink providers available for the commit message TooltipWindow
-     */
-    private List<HyperlinkProvider> hyperlinkProviders;    
+    private Result<? extends HyperlinkProvider> hpResult; 
 
     public static synchronized Subversion getInstance() {
         if (instance == null) {
@@ -142,10 +138,6 @@ public class Subversion {
         SubversionVCS svcs  = org.openide.util.Lookup.getDefault().lookup(SubversionVCS.class);
         fileStatusCache.addVersioningListener(svcs);
         addPropertyChangeListener(svcs);
-
-        hooksResult = (Result<? extends SvnHook>) Lookup.getDefault().lookupResult(SvnHook.class);
-        hpResult = (Result<? extends HyperlinkProvider>) Lookup.getDefault().lookupResult(HyperlinkProvider.class);
-        setHyperlinkProviders();
     }
 
     /**
@@ -524,6 +516,9 @@ public class Subversion {
     }
     
     public List<SvnHook> getHooks() {
+        if (hooksResult == null) {
+            hooksResult = (Result<? extends SvnHook>) Lookup.getDefault().lookupResult(SvnHook.class);
+        }
         if(hooksResult == null) {
             return Collections.EMPTY_LIST;
         }
@@ -537,22 +532,21 @@ public class Subversion {
         return ret;
     }
 
-    private void setHyperlinkProviders () {
-        Collection<? extends HyperlinkProvider> providersCol = hpResult.allInstances();
-        List<HyperlinkProvider> providersList = new ArrayList<HyperlinkProvider>(providersCol.size());
-        providersList.addAll(providersCol);
-        hyperlinkProviders = Collections.unmodifiableList(providersList);
-    }
-
     /**
      *
      * @return registered hyperlink providers
      */
     public List<HyperlinkProvider> getHyperlinkProviders() {
-        if (hyperlinkProviders == null) {
-            setHyperlinkProviders();
+        if (hpResult == null) {
+            hpResult = (Result<? extends HyperlinkProvider>) Lookup.getDefault().lookupResult(HyperlinkProvider.class);
         }
-        return hyperlinkProviders;
+        if (hpResult == null) {
+            return Collections.EMPTY_LIST;
+        }
+        Collection<? extends HyperlinkProvider> providersCol = hpResult.allInstances();
+        List<HyperlinkProvider> providersList = new ArrayList<HyperlinkProvider>(providersCol.size());
+        providersList.addAll(providersCol);
+        return Collections.unmodifiableList(providersList);
     }
     
 }

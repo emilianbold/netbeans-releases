@@ -41,6 +41,10 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import com.sun.jdi.InternalException;
+import com.sun.jdi.InvalidStackFrameException;
+import com.sun.jdi.ObjectCollectedException;
+import com.sun.jdi.VMDisconnectedException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -427,6 +431,20 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
         try {
             java.lang.reflect.Method isInstanceOfMethod = ct.getClass().getMethod("isInstanceOf", String.class);
             return (Boolean) isInstanceOfMethod.invoke(ct, className);
+        } catch (java.lang.reflect.InvocationTargetException itex) {
+            Throwable t = itex.getTargetException();
+            if (t instanceof VMDisconnectedException) {
+                return false;
+            } else if (t instanceof ObjectCollectedException) {
+                return false;
+            } else if (t instanceof InternalException) {
+                return false;
+            } else if (t instanceof InvalidStackFrameException) {
+                return false;
+            } else {
+                Exceptions.printStackTrace(itex);
+                return false;
+            }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
             return false;

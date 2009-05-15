@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
-import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.openide.ErrorManager;
@@ -97,7 +96,7 @@ final class XmlOutputParser extends DefaultHandler {
     /** */
     private final XMLReader xmlReader;
     /** */
-    private TestSuite suite;
+    private JUnitTestSuite suite;
     /** */
     private Testcase testcase;
     /** */
@@ -114,7 +113,7 @@ final class XmlOutputParser extends DefaultHandler {
      * @exception  org.xml.sax.SAXException
      *             if initialization of the parser failed
      */
-    static TestSuite parseXmlOutput(Reader reader, TestSession session) throws SAXException,
+    static JUnitTestSuite parseXmlOutput(Reader reader, TestSession session) throws SAXException,
                                                        IOException {
         XmlOutputParser parser = new XmlOutputParser(session);
         try {
@@ -346,7 +345,7 @@ final class XmlOutputParser extends DefaultHandler {
     
     /**
      */
-    private TestSuite createSuite(String suiteName,
+    private JUnitTestSuite createSuite(String suiteName,
                                 String testsCountStr,
                                 String failuresStr,
                                 String errorsStr,
@@ -384,13 +383,9 @@ final class XmlOutputParser extends DefaultHandler {
         /* Parse the elapsed time: */
         int timeMillis = regexp.parseTimeMillisNoNFE(timeStr);
         
-        /* Create a report: */
-        TestSuite testSuite = new JUnitTestSuite(suiteName, testSession);
-//        report.totalTests = numbers[0];
-//        report.failures = numbers[1];
-//        report.errors = numbers[2];
-//        report.elapsedTimeMillis = timeMillis;
-        
+        JUnitTestSuite testSuite = new JUnitTestSuite(suiteName, testSession);
+        testSuite.setElapsedTime(timeMillis);
+
         return testSuite;
     }
     

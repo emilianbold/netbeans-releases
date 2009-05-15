@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.settings.CppSettings;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.execution.ExecutorTask;
@@ -337,7 +338,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         //} catch (IOException ioe) {
         //    // FIXUP
         //}
-        buildDir = FileUtil.normalizeFile(buildDir.getAbsoluteFile());
+        buildDir = CndFileUtils.normalizeFile(buildDir.getAbsoluteFile());
         return buildDir;
     }
 }

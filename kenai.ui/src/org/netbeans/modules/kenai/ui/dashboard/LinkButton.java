@@ -48,6 +48,7 @@ import javax.swing.DefaultButtonModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.UIManager;
 import javax.swing.plaf.UIResource;
 
 /**
@@ -141,6 +142,7 @@ public class LinkButton extends JButton {
             setEnabled(false);
             setForeground(ColorManager.getDefault().getDisabledColor());
         }
+        setFont(UIManager.getFont("Tree.font"));//NOI18N
     }
 
     private static class Model extends DefaultButtonModel {

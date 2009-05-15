@@ -44,8 +44,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
@@ -53,7 +51,6 @@ import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
 import org.netbeans.modules.ruby.testrunner.TestRunnerUtilities;
-import org.netbeans.modules.ruby.testrunner.TestUnitRunner;
 import org.openide.util.NbBundle;
 
 /**
@@ -78,6 +75,7 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
         result.add(new SuiteErrorOutputHandler());
         result.add(new ShouldaTestStartedHandler());
         result.add(new ShouldaTestFailedHandler());
+        result.add(new ShouldaTestErrorHandler());
         result.add(new TestStartedHandler());
         result.add(new TestFailedHandler());
         result.add(new TestErrorHandler());
@@ -174,8 +172,13 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
 
         private List<String> output;
 
+
         public TestErrorHandler() {
-            super("%TEST_ERROR%\\stime=(.+)\\stestname=(.+)\\((.+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
+            this("%TEST_ERROR%\\stime=(.+)\\stestname=(.+)\\((.+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
+        }
+
+        public TestErrorHandler(String regex) {
+            super(regex); //NOI18N
         }
 
         @Override
@@ -263,6 +266,17 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
 
         public ShouldaTestFinishedHandler() {
             super("%TEST_FINISHED%\\stime=(.+)\\stest:\\s(.*)\\.\\s\\((.+)\\)"); //NOI18N
+        }
+
+    }
+
+    /**
+     * Support for Shoulda tests -- see #150613
+     */
+    static class ShouldaTestErrorHandler extends TestErrorHandler {
+
+        public ShouldaTestErrorHandler() {
+            super("%TEST_ERROR%\\stime=(.+)\\stestname=test:\\s(.+)\\.\\s\\((.+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
         }
 
     }

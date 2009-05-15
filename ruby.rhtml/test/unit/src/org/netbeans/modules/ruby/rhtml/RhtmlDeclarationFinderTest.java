@@ -39,7 +39,9 @@
 
 package org.netbeans.modules.ruby.rhtml;
 
-//import org.netbeans.modules.gsf.api.DeclarationFinder;
+import org.netbeans.modules.csl.api.DeclarationFinder;
+import org.netbeans.modules.ruby.RubyDeclarationFinder;
+
 
 /**
  *
@@ -47,10 +49,10 @@ package org.netbeans.modules.ruby.rhtml;
  */
 public class RhtmlDeclarationFinderTest extends RhtmlTestBase {
 
-//    @Override
-//    protected DeclarationFinder getFinder() {
-//        return new RubyDeclarationFinder();
-//    }
+    @Override
+    protected DeclarationFinder getFinder() {
+        return new RubyDeclarationFinder();
+    }
 
     public RhtmlDeclarationFinderTest(String testName) {
         super(testName);

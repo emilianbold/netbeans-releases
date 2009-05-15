@@ -106,7 +106,7 @@ public final class TransferFilter extends JPanel {
                             int row = model.getRowForUnit(unit);
                             restoreSelectedRow(row);
                         }
-                        TransferFileTableModel.restoreState(model.getData(), state, model.isMarkedAsDefault());
+                        TransferFileTableModel.restoreState(model.getData(), state, TransferFileTableModel.isMarkedAsDefault());
                         refreshState();
                     }
                 };

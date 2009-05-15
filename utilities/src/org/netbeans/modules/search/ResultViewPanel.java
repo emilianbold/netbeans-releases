@@ -1082,7 +1082,7 @@ class ResultViewPanel extends JPanel{
     }
 
     void setBtnReplaceEnabled(boolean enabled){
-        btnReplace.setEnabled(enabled);
+        btnReplace.setEnabled(enabled && !basicSearchCriteria.isReplacePatternInvalid());
     }
 
     void setBtnShowDetailsEnabled(boolean enabled){

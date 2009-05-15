@@ -100,17 +100,6 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
         return qs.getIssue();
     }
 
-    private void enableFields() {
-        boolean repoSelected = repositoryComboBox.getSelectedItem() != null;
-        boolean enableFields = getIssue() != null && repoSelected;
-
-        descriptionTextField.setEnabled(enableFields);
-        descriptionLabel.setEnabled(enableFields);
-        
-        issueLabel.setEnabled(repoSelected);
-        qs.enableFields(repoSelected);
-    }
-
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -210,6 +199,9 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         Repository repo = BugtrackingUtil.createRepository();
+        if(repo == null) {
+            return;
+        }
         repositoryComboBox.addItem(repo);
         repositoryComboBox.setSelectedItem(repo);
     }//GEN-LAST:event_jButton2ActionPerformed
@@ -261,13 +253,26 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
     @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
-        descriptionTextField.setEnabled(enabled);
-        descriptionLabel.setEnabled(enabled);
 
-        issueLabel.setEnabled(enabled);
-        qs.enableFields(enabled);
+        enableFields(enabled);
+
         repositoryLabel.setEnabled(enabled);
         repositoryComboBox.setEnabled(enabled);
+    }
+
+    private void enableFields() {
+        enableFields(true);
+    }
+
+    private void enableFields(boolean enable) {
+        boolean repoSelected = repositoryComboBox.getSelectedItem() != null;
+        boolean enableFields = getIssue() != null && repoSelected;
+
+        descriptionTextField.setEnabled(enableFields && enable);
+        descriptionLabel.setEnabled(enableFields && enable);
+
+        issueLabel.setEnabled(repoSelected && enable);
+        qs.enableFields(repoSelected && enable);
     }
 
 }

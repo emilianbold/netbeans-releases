@@ -43,11 +43,23 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import hidden.org.codehaus.plexus.util.StringOutputStream;
+import java.awt.event.ActionEvent;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import org.netbeans.modules.maven.api.problem.ProblemReport;
+import org.netbeans.modules.maven.problems.ProblemReporterImpl;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -63,6 +75,7 @@ import org.xml.sax.SAXException;
  * @author mkleint
  */
 public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
+    public static final String BROKEN_NBCONFIG = "BROKENNBCONFIG"; //NOI18N
 
     private static final String AUX_CONFIG = "AuxilaryConfiguration"; //NOI18N
     private static final String CONFIG_FILE_NAME = "nb-configuration.xml"; //NOI18N
@@ -70,6 +83,8 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
     private NbMavenProjectImpl project;
     private RequestProcessor.Task savingTask;
     private Document scheduledDocument;
+    private Date timeStamp = new Date(0);
+    private Document cachedDoc;
 
     /** Creates a new instance of M2AuxilaryConfigImpl */
     public M2AuxilaryConfigImpl(NbMavenProjectImpl proj) {
@@ -132,30 +147,53 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 }
                 return el;
             }
-            //TODO shall we generally do some caching?
             final FileObject config = project.getProjectDirectory().getFileObject(CONFIG_FILE_NAME);
             if (config != null) {
-                Document doc;
-                InputStream in = null;
-                try {
-                    in = config.getInputStream();
-                    //TODO shall be have some kind of caching here to prevent frequent IO?
-                    doc = XMLUtil.parse(new InputSource(in), false, true, null, null);
-                    return findElement(doc.getDocumentElement(), elementName, namespace);
-                } catch (SAXException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                } finally {
-                    if (in != null) {
-                        try {
-                            in.close();
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
+                if (config.lastModified().after(timeStamp)) {
+                    // we need to re-read the config file..
+                    Document doc;
+                    InputStream in = null;
+                    try {
+                        in = config.getInputStream();
+                        //TODO shall be have some kind of caching here to prevent frequent IO?
+                        doc = XMLUtil.parse(new InputSource(in), false, true, null, null);
+                        cachedDoc = doc;
+                        return findElement(doc.getDocumentElement(), elementName, namespace);
+                    } catch (SAXException ex) {
+                        ProblemReporterImpl impl = project.getProblemReporter();
+                        if (!impl.hasReportWithId(BROKEN_NBCONFIG)) {
+                            ProblemReport rep = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
+                                    NbBundle.getMessage(M2AuxilaryConfigImpl.class, "TXT_Problem_Broken_Config"),
+                                    NbBundle.getMessage(M2AuxilaryConfigImpl.class, "DESC_Problem_Broken_Config", ex.getMessage()),
+                                    new OpenConfigAction(config));
+                            rep.setId(BROKEN_NBCONFIG);
+                            impl.addReport(rep);
+                        }
+                        Logger.getLogger(M2AuxilaryConfigImpl.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+                        cachedDoc = null;
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                        cachedDoc = null;
+                    } finally {
+                        timeStamp = config.lastModified();
+                        if (in != null) {
+                            try {
+                                in.close();
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
                         }
                     }
+                    return null;
+                } else {
+                    //reuse cached value if available;
+                    if (cachedDoc != null) {
+                        return findElement(cachedDoc.getDocumentElement(), elementName, namespace);
+                    }
                 }
-                return null;
+            } else {
+                // no file.. remove possible cache
+                cachedDoc = null;
             }
             return null;
         } else {
@@ -314,5 +352,28 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
             }
         }
         return result;
+    }
+
+    static class OpenConfigAction extends AbstractAction {
+
+        private FileObject fo;
+
+        OpenConfigAction(FileObject file) {
+            putValue(Action.NAME, NbBundle.getMessage(M2AuxilaryConfigImpl.class, "TXT_OPEN_FILE"));
+            fo = file;
+        }
+
+
+        public void actionPerformed(ActionEvent e) {
+            if (fo != null) {
+                try {
+                    DataObject dobj = DataObject.find(fo);
+                    EditCookie edit = dobj.getCookie(EditCookie.class);
+                    edit.edit();
+                } catch (DataObjectNotFoundException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
     }
 }
