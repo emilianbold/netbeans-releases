@@ -45,6 +45,10 @@ getPort() {
    echo $freePort
 }
 
+getHostName() {
+   echo `$java_exe -jar "$script_dir"/getport.jar "getHostName"`
+}
+
 if [ -f $ant_bin ]
 then
   echo Ant found:
@@ -60,9 +64,10 @@ then
   orb_port=`getPort 3700`
   imq_port=`getPort 7676`
   https_port=`getPort 8181`
+  host_name=`getHost`
 
   $ant_bin --noconfig -v -f setup.xml -Dinstall.home="$2" -Dsource="$SERVICE_TAG_SOURCE" -Dadmin.port=$admin_port -Dinstance.port=$instance_port -Dorb.port=$orb_port -Dimq.port=$imq_port -Dhttps.port=$https_port
-
+#TODO replase admin.host=localhost to admin.host=$host_name in ./samples/common.properties file
 
 else
   echo No ant found: $ant_bin

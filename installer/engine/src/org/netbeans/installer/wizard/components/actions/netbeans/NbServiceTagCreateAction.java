@@ -137,7 +137,7 @@ public class NbServiceTagCreateAction extends WizardAction {
             }
             List<Product> bundledAppservers = bundledRegistry.getProducts("sjsas");
             
-            if (bundledAppservers.size() > 0) {
+            if (bundledAppservers.size() > 0 && NetBeansUtils.getNetBeansId().equals("NBEETOOLS")) {
                 source = SOURCE_NAME_JTB;
             }
         } catch (InitializationException e) {
@@ -154,6 +154,8 @@ public class NbServiceTagCreateAction extends WizardAction {
             if (uid.equals("glassfish")) {
                 createSTGlassFish(product, true);
             } else if (uid.equals("glassfish-mod")) {
+                createSTGlassFish(product, false);
+            } else if (uid.equals("glassfish-mod-sun")) {
                 createSTGlassFish(product, false);
             } else if (uid.equals("sjsas")) {
                 createSTGlassFish(product, false);

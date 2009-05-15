@@ -84,10 +84,10 @@ Microsystems, Inc. All Rights Reserved.
         <echo file="${scriptsdir}/env.sh"><![CDATA[
 NETBEANS_INSTALL_DIR="${app.name}"
 NETBEANS_BUILDNUMBER="${buildnumber}"
-GLASSFISH_INSTALL_DIR="${glassfish.install.dir}"
+GLASSFISH_INSTALL_DIR="${sjsas.install.dir}"
 TOMCAT_INSTALL_DIR="${tomcat.install.dir}"
 NB_CLUSTER_DIR="${nbClusterDir}"
-GLASSFISH_V3_INSTALL_DIR="${glassfish.v3.install.dir}"
+GLASSFISH_V3_INSTALL_DIR="${glassfish.v3.sun.install.dir}"
 MYSQL_INSTALL_DIR="${mysql.install.dir}"
 SERVICE_TAG_SOURCE="${servicetag.source}"
 ]]></echo>
