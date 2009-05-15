@@ -90,6 +90,9 @@ public class DepotWizardIterator implements WizardDescriptor.InstantiatingIterat
         prjDirF.mkdirs();
 
         FileObject template = Templates.getTemplate(wiz);
+        if (!template.isValid()) {
+            template = FileUtil.getConfigFile(template.getPath());
+        }
         FileObject prjDir = FileUtil.toFileObject(prjDirF);
         unZipFile(template.getInputStream(), prjDir);
 

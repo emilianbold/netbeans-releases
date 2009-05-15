@@ -112,7 +112,7 @@ implements LookupListener {
     }
     
     private ModuleLayeredFileSystem(FileSystem writableLayer, boolean addLookup, FileSystem[] otherLayers, LayerCacheManager mgr) throws IOException {
-        this(writableLayer, addLookup, otherLayers, mgr, loadCache(mgr));
+        this(writableLayer, addLookup, otherLayers, mgr, mgr.loadCache());
     }
     
     private ModuleLayeredFileSystem(FileSystem writableLayer, boolean addLookup, FileSystem[] otherLayers, LayerCacheManager mgr, FileSystem cacheLayer) throws IOException {
@@ -142,31 +142,6 @@ implements LookupListener {
             result.allItems();
         }
         
-    }
-    
-    private static FileSystem loadCache(LayerCacheManager mgr) throws IOException {
-        String location = mgr.cacheLocation();
-        FileSystem fs = null;
-        
-        if (location != null) {
-            setStatusText(NbBundle.getMessage(ModuleLayeredFileSystem.class, "MSG_start_load_cache"));
-
-            ByteBuffer bb = Stamps.getModulesJARs().asMappedByteBuffer(location);
-            if (bb != null) {
-                try {
-                    StartLog.logStart("Loading layers"); // NOI18N
-                    fs = mgr.load(mgr.createEmptyFileSystem(), bb);
-                    setStatusText(NbBundle.getMessage(ModuleLayeredFileSystem.class, "MSG_end_load_cache"));
-                    StartLog.logEnd("Loading layers"); // NOI18N
-                } catch (IOException ex) {
-                    LayerCacheManager.err.log(Level.WARNING, "Ignoring cache of layers");
-                    if (LayerCacheManager.err.isLoggable(Level.FINE)) {
-                        LayerCacheManager.err.log(Level.WARNING, "Ignoring cache of layers", ex);
-                    }
-                }
-            }
-        }
-        return fs;
     }
     
     private static FileSystem[] appendLayers(FileSystem fs1, boolean addLookup, FileSystem[] fs2s, FileSystem fs3, boolean addClasspathLayers) {
@@ -274,65 +249,16 @@ implements LookupListener {
         }
         
         StartLog.logStart("setURLs"); // NOI18N
-
-        class Updater implements AtomicAction, Stamps.Updater {
-            private byte[] data;
-            
-            public void flushCaches(DataOutputStream os) throws IOException {
-                err.log(Level.FINEST, "flushing layers");
-                os.write(data);
-                err.log(Level.FINEST, "layers flushed");
-            }
-            public void cacheReady() {
-                /*
-                try {
-                    err.log(Level.FINEST, "cache is ready");
-                    cacheLayer = loadCache(manager);
-                    err.log(Level.FINEST, "update delegates for userdir:" + addLookup + " manager: " + manager);
-                    setDelegates(appendLayers(writableLayer, addLookup, otherLayers, cacheLayer));
-                    err.log(Level.FINEST, "delegates updated");
-                } catch (IOException ex) {
-                    err.log(Level.INFO, "Cannot re-read cache", ex); // NOI18N
-                }
-                 */
-            }
-            public void run() throws IOException {
-                ByteArrayOutputStream os = new ByteArrayOutputStream();
-                synchronized (ModuleLayeredFileSystem.this) {
-                    try {
-                        err.log(Level.FINEST, "storing to memory {0}", urls);
-                        manager.store(cacheLayer, urls, os);
-                        data = os.toByteArray();
-                        ByteBuffer bb = ByteBuffer.wrap(data);
-                        err.log(Level.FINEST, "reading from memory, size {0}", bb.limit());
-                        cacheLayer = manager.load(cacheLayer, bb.order(ByteOrder.LITTLE_ENDIAN));
-                    } catch (IOException ioe) {
-                        err.log(Level.WARNING, null, ioe);
-                        XMLFileSystem fallback = new XMLFileSystem();
-                        try {
-                            fallback.setXmlUrls(urls.toArray(new URL[0]));
-                        } catch (PropertyVetoException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                        cacheLayer = fallback;
-                    }
-                }
-                err.log(Level.FINEST, "changing delegates");
-                setDelegates(appendLayers(writableLayer, addLookup, otherLayers, cacheLayer, false));
-                err.log(Level.FINEST, "delegates changed");
-                err.log(Level.FINEST, "scheduling save");
-                Stamps.getModulesJARs().scheduleSave(this, manager.cacheLocation(), false);
-            }
-
-        }
         if (this.urls == null && cacheLayer != null) {
             // start where the BinaryFS was used to initialize the content
         } else {
             if (cacheLayer == null) {
                 cacheLayer = manager.createEmptyFileSystem();
             }
-            Updater u = new Updater();
-            runAtomicAction(u);
+            cacheLayer = manager.store(cacheLayer, urls);
+            err.log(Level.FINEST, "changing delegates");
+            setDelegates(appendLayers(writableLayer, addLookup, otherLayers, cacheLayer, false));
+            err.log(Level.FINEST, "delegates changed");
         }
         
         this.urls = urls;

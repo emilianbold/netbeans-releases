@@ -43,17 +43,26 @@ package org.netbeans.core.startup.layers;
 
 import java.beans.PropertyVetoException;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.Stamps;
+import org.netbeans.core.startup.Main;
+import org.netbeans.core.startup.StartLog;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileSystem.AtomicAction;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.XMLFileSystem;
+import org.openide.util.NbBundle;
 
 /** Interface for a manager which can handle XML layer caching.
  * @see "#20168"
@@ -65,18 +74,113 @@ public abstract class LayerCacheManager {
      */
     static final Logger err = Logger.getLogger("org.netbeans.core.projects.cache"); // NOI18N
     
-    private static LayerCacheManager mgr = new BinaryCacheManager();
-    private static LayerCacheManager non = new NonCacheManager();
+    private static final LayerCacheManager mgr = new BinaryCacheManager();
+    private static final LayerCacheManager non = new NonCacheManager();
     /**
      * Get a cache manager which does nothing.
      */
     public static LayerCacheManager manager(boolean real) {
         return real ? mgr : non;
     }
+
+    /** Creates new cache manager for given cache location. The
+     * location shall be unique file name.
+     *
+     * @param cacheLocation unique file name
+     * @return cache manager
+     */
+    public static LayerCacheManager create(String cacheLocation) {
+        return new BinaryCacheManager(cacheLocation);
+    }
+
+    /** Loads the filesystem from cache if cache is available.
+     *
+     * @return the file system read or null, if the cache is out of date
+     * @throws IOException if an I/O error occurs
+     */
+    public final FileSystem loadCache() throws IOException {
+        String location = cacheLocation();
+        FileSystem fs = null;
+
+        if (location != null) {
+            Main.setStatusText(NbBundle.getMessage(ModuleLayeredFileSystem.class, "MSG_start_load_cache"));
+
+            ByteBuffer bb = Stamps.getModulesJARs().asMappedByteBuffer(location);
+            if (bb != null) {
+                try {
+                    StartLog.logStart("Loading layers"); // NOI18N
+                    fs = load(createEmptyFileSystem(), bb);
+                    Main.setStatusText(NbBundle.getMessage(ModuleLayeredFileSystem.class, "MSG_end_load_cache"));
+                    StartLog.logEnd("Loading layers"); // NOI18N
+                } catch (IOException ex) {
+                    err.log(Level.WARNING, "Ignoring cache of layers");
+                    if (err.isLoggable(Level.FINE)) {
+                        err.log(Level.WARNING, "Ignoring cache of layers", ex);
+                    }
+                }
+            }
+        }
+        return fs;
+    }
+
+    public final FileSystem store(final FileSystem fs, final List<URL> urls) throws IOException {
+        class Updater implements AtomicAction, Stamps.Updater {
+            private FileSystem toRet;
+            private byte[] data;
+
+            public void flushCaches(DataOutputStream os) throws IOException {
+                err.log(Level.FINEST, "flushing layers");
+                os.write(data);
+                err.log(Level.FINEST, "layers flushed");
+            }
+
+            public void cacheReady() {
+                /*
+                try {
+                err.log(Level.FINEST, "cache is ready");
+                cacheLayer = loadCache(manager);
+                err.log(Level.FINEST, "update delegates for userdir:" + addLookup + " manager: " + manager);
+                setDelegates(appendLayers(writableLayer, addLookup, otherLayers, cacheLayer));
+                err.log(Level.FINEST, "delegates updated");
+                } catch (IOException ex) {
+                err.log(Level.INFO, "Cannot re-read cache", ex); // NOI18N
+                }
+                 */
+            }
+
+            public void run() throws IOException {
+                ByteArrayOutputStream os = new ByteArrayOutputStream();
+                synchronized (LayerCacheManager.this) {
+                    try {
+                        err.log(Level.FINEST, "storing to memory {0}", urls);
+                        store(fs, urls, os);
+                        data = os.toByteArray();
+                        ByteBuffer bb = ByteBuffer.wrap(data);
+                        err.log(Level.FINEST, "reading from memory, size {0}", bb.limit());
+                        toRet = load(fs, bb.order(ByteOrder.LITTLE_ENDIAN));
+                    } catch (IOException ioe) {
+                        err.log(Level.WARNING, null, ioe);
+                        XMLFileSystem fallback = new XMLFileSystem();
+                        try {
+                            fallback.setXmlUrls(urls.toArray(new URL[0]));
+                        } catch (PropertyVetoException ex) {
+                            err.log(Level.WARNING, null, ex);
+                        }
+                        toRet = fallback;
+                    }
+                }
+                Stamps.getModulesJARs().scheduleSave(this, cacheLocation(), false);
+            }
+        }
+        Updater u = new Updater();
+        FileUtil.runAtomicAction(u);
+        return u.toRet;
+    }
+
     
     /** Create a cache manager (for subclass use).
      */
-    protected LayerCacheManager() {
+    LayerCacheManager() {
     }
     
     /** Create an empty cache filesystem, i.e. with no initial layers.
@@ -109,7 +213,7 @@ public abstract class LayerCacheManager {
      * 
      * @return path to cache
      */
-    public abstract String cacheLocation();
+    abstract String cacheLocation();
     
     private static final class NonCacheManager extends LayerCacheManager {
         @Override
