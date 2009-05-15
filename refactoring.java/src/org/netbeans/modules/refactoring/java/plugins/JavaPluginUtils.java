@@ -37,74 +37,41 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.openide.nodes;
+package org.netbeans.modules.refactoring.java.plugins;
 
-import java.util.List;
-import java.util.Map;
-import javax.swing.Action;
+import javax.lang.model.element.Element;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
-/** Lazy delegating node.
- *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+/**
+ * Utility class for java plugins.
  */
-final class LazyNode extends FilterNode {
-    private Map<String,?> map;
+final class JavaPluginUtils {
 
-    LazyNode(Map<String,?> map) {
-        this(new ChFactory(), map);
-    }
-    private LazyNode(ChFactory factory, Map<String,?> map) {
-        super(new AbstractNode(Children.create(factory, true)));
-        factory.node = this;
-        this.map = map;
-        
-        AbstractNode an = (AbstractNode)getOriginal();
-
-        an.setName((String) map.get("name")); // NOI18N
-        an.setDisplayName((String) map.get("displayName")); // NOI18N
-        an.setShortDescription((String) map.get("shortDescription")); // NOI18N
-        String iconBase = (String) map.get("iconResource"); // NOI18N
-        if (iconBase != null) {
-            an.setIconBaseWithExtension(iconBase);
+    public static final Problem isSourceElement(Element el, CompilationInfo info) {
+        Problem preCheckProblem = null;
+        if (RetoucheUtils.isFromLibrary(el, info.getClasspathInfo())) { //NOI18N
+            preCheckProblem = new Problem(true, NbBundle.getMessage(
+                    JavaPluginUtils.class, "ERR_CannotRefactorLibraryClass",
+                    el.getEnclosingElement()
+                    ));
+            return preCheckProblem;
         }
-    }
-
-    @Override
-    public Action[] getActions(boolean context) {
-        return switchToOriginal().getActions(context);
-    }
-
-    final Node switchToOriginal() {
-        final Node[] n = new Node[]{null};
-        synchronized (this) {
-            if (map == null) {
-                return getOriginal();
-            }
-            n[0] = (Node)map.get("original"); // NOI18N
-            map = null;
+        FileObject file = SourceUtils.getFile(el,info.getClasspathInfo());
+        // RetoucheUtils.isFromLibrary already checked file for null
+        if (!RetoucheUtils.isElementInOpenProject(file)) {
+            preCheckProblem =new Problem(true, NbBundle.getMessage(
+                    JavaPluginUtils.class,
+                    "ERR_ProjectNotOpened",
+                    FileUtil.getFileDisplayName(file)));
+            return preCheckProblem;
         }
-        Children.MUTEX.postWriteRequest(new Runnable() {
-
-            public void run() {
-                changeOriginal(n[0], true);
-            }
-        });
-        return n[0];
+        return null;
     }
 
-    private static final class ChFactory extends ChildFactory<Object> {
-        LazyNode node;
-
-        @Override
-        protected boolean createKeys(List<Object> toPopulate) {
-            LazyNode n = node;
-            node = null;
-            if (n != null) {
-                n.switchToOriginal();
-                return true;
-            } else {
-                return false;
-            }
-        }
-    }
 }

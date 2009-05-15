@@ -131,7 +131,7 @@ public class ScpSyncWorkerTestCase extends RemoteTestBase {
     }
 
     private CharSequence runCommand(ExecutionEnvironment execEnv, String command, String... args) throws Exception {
-        NativeProcessBuilder pb = new NativeProcessBuilder(execEnv, command);
+        NativeProcessBuilder pb = new NativeProcessBuilder(execEnv, command,false);
         if (args != null) {
             pb = pb.setArguments(args);
         }
