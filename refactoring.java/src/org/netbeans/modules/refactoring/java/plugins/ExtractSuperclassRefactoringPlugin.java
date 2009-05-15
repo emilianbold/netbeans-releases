@@ -144,15 +144,13 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                 // fatal error -> don't continue with further checks
                 return result;
             }
-            if (!RetoucheUtils.isElementInOpenProject(sourceType.getFileObject())) {
-                return new Problem(true, NbBundle.getMessage(
-                        ExtractSuperclassRefactoringPlugin.class,
-                        "ERR_ProjectNotOpened", // NOI18N
-                        FileUtil.getFileDisplayName(sourceType.getFileObject())));
-            }
             
             // check whether the element is an unresolved class
             Element sourceElm = sourceType.resolveElement(javac);
+            result = JavaPluginUtils.isSourceElement(sourceElm, javac);
+            if (result != null) {
+                return result;
+            }
             if (sourceElm == null || (sourceElm.getKind() != ElementKind.CLASS)) {
                 // fatal error -> return
                 return new Problem(true, NbBundle.getMessage(ExtractSuperclassRefactoringPlugin.class, "ERR_ElementNotAvailable")); // NOI18N

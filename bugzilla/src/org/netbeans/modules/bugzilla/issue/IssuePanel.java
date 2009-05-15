@@ -40,6 +40,8 @@
 package org.netbeans.modules.bugzilla.issue;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
@@ -59,6 +61,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -105,7 +108,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private Map<BugzillaIssue.IssueField,String> initialValues = new HashMap<BugzillaIssue.IssueField,String>();
     private List<String> keywords = new LinkedList<String>();
     private boolean reloading;
-    private boolean submitting;
+    private boolean skipReload;
     private boolean usingTargetMilestones;
 
     public IssuePanel() {
@@ -119,6 +122,7 @@ public class IssuePanel extends javax.swing.JPanel {
         headerLabel.setFont(font.deriveFont((float)(font.getSize()*1.7)));
         duplicateLabel.setVisible(false);
         duplicateField.setVisible(false);
+        duplicateButton.setVisible(false);
         attachDocumentListeners();
 
         // A11Y - Issues 163597 and 163598
@@ -143,9 +147,6 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     void reloadFormInAWT(final boolean force) {
-        if (submitting) {
-            return;
-        }
         if (EventQueue.isDispatchThread()) {
             reloadForm(force);
         } else {
@@ -218,6 +219,9 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private int oldCommentCount;
     private void reloadForm(boolean force) {
+        if (skipReload) {
+            return;
+        }
         int noWarnings = fieldWarnings.size();
         int noErrors = fieldErrors.size();
         if (force) {
@@ -249,6 +253,7 @@ public class IssuePanel extends javax.swing.JPanel {
         attachmentsLabel.setVisible(!isNew);
         attachmentsPanel.setVisible(!isNew);
         refreshButton.setVisible(!isNew);
+        separatorLabel.setVisible(!isNew);
         cancelButton.setVisible(!isNew);
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
         if (isNew && force) {
@@ -374,7 +379,8 @@ public class IssuePanel extends javax.swing.JPanel {
         boolean valueModifiedByServer = (initialValue != null) && (newValue != null) && !initialValue.equals(newValue);
         if (force || !valueModifiedByUser) {
             if (component instanceof JComboBox) {
-                ((JComboBox)component).setSelectedItem(newValue);
+                JComboBox combo = (JComboBox)component;
+                selectInCombo(combo, newValue, true);
             } else if (component instanceof JTextField) {
                 ((JTextField)component).setText(newValue);
             }
@@ -410,6 +416,19 @@ public class IssuePanel extends javax.swing.JPanel {
         }
         initialValues.put(field, newValue);
         return currentValue;
+    }
+
+    private void selectInCombo(JComboBox combo, Object value, boolean forceInModel) {
+        if (value == null) return;
+        combo.setSelectedItem(value);
+        if (forceInModel && !value.equals("") && !value.equals(combo.getSelectedItem())) { // NOI18N
+            // Reload of server attributes is needed - workarounding it
+            ComboBoxModel model = combo.getModel();
+            if (model instanceof DefaultComboBoxModel) {
+                ((DefaultComboBoxModel)model).insertElementAt(value, 0);
+                combo.setSelectedIndex(0);
+            }
+        }
     }
 
     private String fieldName(JLabel fieldLabel) {
@@ -666,6 +685,35 @@ public class IssuePanel extends javax.swing.JPanel {
         }
     }
 
+    private Map<Component, Boolean> enableMap = new HashMap<Component, Boolean>();
+    private void enableComponents(boolean enable) {
+        enableComponents(this, enable);
+        if (enable) {
+            enableMap.clear();
+        }
+    }
+
+    private void enableComponents(Component comp, boolean enable) {
+        if (comp instanceof Container) {
+            for (Component subComp : ((Container)comp).getComponents()) {
+                enableComponents(subComp, enable);
+            }
+        }
+        if ((comp instanceof JComboBox)
+                || ((comp instanceof JTextComponent) && ((JTextComponent)comp).isEditable())
+                || (comp instanceof AbstractButton)) {
+            if (enable) {
+                Boolean b = enableMap.get(comp);
+                if (b != null) {
+                    comp.setEnabled(b);
+                }
+            } else {
+                enableMap.put(comp, comp.isEnabled());
+                comp.setEnabled(false);
+            }
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -679,6 +727,7 @@ public class IssuePanel extends javax.swing.JPanel {
         productLabel = new javax.swing.JLabel();
         componentLabel = new javax.swing.JLabel();
         versionLabel = new javax.swing.JLabel();
+        duplicateButton = new javax.swing.JButton();
         platformLabel = new javax.swing.JLabel();
         productCombo = new javax.swing.JComboBox();
         componentCombo = new javax.swing.JComboBox();
@@ -754,6 +803,8 @@ public class IssuePanel extends javax.swing.JPanel {
         blocksWarning = new javax.swing.JLabel();
         dummyWarning = new javax.swing.JLabel();
         summaryWarning = new javax.swing.JLabel();
+        reloadButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+        separatorLabel = new javax.swing.JLabel();
 
         FormListener formListener = new FormListener();
 
@@ -774,6 +825,11 @@ public class IssuePanel extends javax.swing.JPanel {
 
         versionLabel.setLabelFor(versionCombo);
         org.openide.awt.Mnemonics.setLocalizedText(versionLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.versionLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(duplicateButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateButton.text")); // NOI18N
+        duplicateButton.setFocusPainted(false);
+        duplicateButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        duplicateButton.addActionListener(formListener);
 
         platformLabel.setLabelFor(platformCombo);
         org.openide.awt.Mnemonics.setLocalizedText(platformLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.platformLabel.text")); // NOI18N
@@ -885,6 +941,7 @@ public class IssuePanel extends javax.swing.JPanel {
         );
 
         org.openide.awt.Mnemonics.setLocalizedText(refreshButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshButton.text")); // NOI18N
+        refreshButton.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshButton.toolTipText")); // NOI18N
         refreshButton.addActionListener(formListener);
 
         duplicateLabel.setLabelFor(duplicateField);
@@ -915,6 +972,12 @@ public class IssuePanel extends javax.swing.JPanel {
 
         messagePanel.setLayout(new javax.swing.BoxLayout(messagePanel, javax.swing.BoxLayout.PAGE_AXIS));
 
+        org.openide.awt.Mnemonics.setLocalizedText(reloadButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.reloadButton.text")); // NOI18N
+        reloadButton.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.reloadButton.toolTipText")); // NOI18N
+        reloadButton.addActionListener(formListener);
+
+        separatorLabel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -926,8 +989,12 @@ public class IssuePanel extends javax.swing.JPanel {
                 .add(headerLabel)
                 .addContainerGap())
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(527, Short.MAX_VALUE)
+                .addContainerGap(402, Short.MAX_VALUE)
                 .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(separatorLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(reloadButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .addContainerGap()
@@ -1059,6 +1126,8 @@ public class IssuePanel extends javax.swing.JPanel {
                                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
                                         .add(layout.createSequentialGroup()
                                             .add(duplicateField)
+                                            .add(0, 0, 0)
+                                            .add(duplicateButton)
                                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                             .add(dummyWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))))
@@ -1099,7 +1168,10 @@ public class IssuePanel extends javax.swing.JPanel {
                             .add(versionLabel)
                             .add(versionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(versionWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(reloadButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(separatorLabel)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(platformLabel)
@@ -1132,7 +1204,8 @@ public class IssuePanel extends javax.swing.JPanel {
                     .add(duplicateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(duplicateLabel)
                     .add(resolutionWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(dummyWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(dummyWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(duplicateButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(dependsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -1205,8 +1278,11 @@ public class IssuePanel extends javax.swing.JPanel {
 
         layout.linkSize(new java.awt.Component[] {dummyLabel1, dummyLabel2, severityCombo}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
+        layout.linkSize(new java.awt.Component[] {reloadButton, separatorLabel}, org.jdesktop.layout.GroupLayout.VERTICAL);
+
         layout.linkSize(new java.awt.Component[] {assignedLabel, blocksLabel, ccLabel, componentLabel, dependsLabel, keywordsLabel, osLabel, platformLabel, priorityLabel, productLabel, qaContactLabel, resolutionLabel, severityLabel, statusCombo, statusLabel, targetMilestoneLabel, urlLabel, versionLabel}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
+        duplicateButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateButton.AccessibleContext.accessibleDescription")); // NOI18N
         productCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.productCombo.AccessibleContext.accessibleDescription")); // NOI18N
         componentCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.componentCombo.AccessibleContext.accessibleDescription")); // NOI18N
         versionCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.versionCombo.AccessibleContext.accessibleDescription")); // NOI18N
@@ -1289,6 +1365,12 @@ public class IssuePanel extends javax.swing.JPanel {
             else if (evt.getSource() == osCombo) {
                 IssuePanel.this.osComboActionPerformed(evt);
             }
+            else if (evt.getSource() == reloadButton) {
+                IssuePanel.this.reloadButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == duplicateButton) {
+                IssuePanel.this.duplicateButtonActionPerformed(evt);
+            }
         }
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1311,20 +1393,18 @@ public class IssuePanel extends javax.swing.JPanel {
         usingTargetMilestones = (targetMilestones.size() != 0);
         targetMilestoneCombo.setModel(toComboModel(targetMilestones));
         // Attempt to keep selection
-        if (component != null) {
-            componentCombo.setSelectedItem(component);
-        }
-        if (version != null) {
-            versionCombo.setSelectedItem(version);
-        }
-        if (usingTargetMilestones && (targetMilestone != null)) {
-            targetMilestoneCombo.setSelectedItem(targetMilestone);
+        boolean isNew = issue.getTaskData().isNew();
+        selectInCombo(componentCombo, component, !isNew);
+        selectInCombo(versionCombo, version, !isNew);
+        if (usingTargetMilestones) {
+            selectInCombo(targetMilestoneCombo, targetMilestone, !isNew);
         }
         targetMilestoneLabel.setVisible(usingTargetMilestones);
         targetMilestoneCombo.setVisible(usingTargetMilestones);
         milestoneWarning.setVisible(usingTargetMilestones);
         TaskData data = issue.getTaskData();
         if (data.isNew()) {
+            String summary = summaryField.getText();
             issue.setFieldValue(BugzillaIssue.IssueField.PRODUCT, product);
             BugzillaRepositoryConnector connector = Bugzilla.getInstance().getRepositoryConnector();
             try {
@@ -1333,6 +1413,7 @@ public class IssuePanel extends javax.swing.JPanel {
             } catch (CoreException cex) {
                 cex.printStackTrace();
             }
+            summaryField.setText(summary); // Issue 165107
         }
     }//GEN-LAST:event_productComboActionPerformed
 
@@ -1353,6 +1434,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 resolutionCombo.setVisible(false);
                 duplicateLabel.setVisible(false);
                 duplicateField.setVisible(false);
+                duplicateButton.setVisible(false);
             }
         }
         if (!resolutionField.getText().trim().equals("")) { // NOI18N
@@ -1366,6 +1448,7 @@ public class IssuePanel extends javax.swing.JPanel {
             }
             duplicateLabel.setVisible(false);
             duplicateField.setVisible(false);
+            duplicateButton.setVisible(false);
         }
         resolutionLabel.setLabelFor(resolutionCombo.isVisible() ? resolutionCombo : resolutionField);
     }//GEN-LAST:event_statusComboActionPerformed
@@ -1419,11 +1502,12 @@ public class IssuePanel extends javax.swing.JPanel {
         final ProgressHandle handle = ProgressHandleFactory.createHandle(submitMessage);
         handle.start();
         handle.switchToIndeterminate();
+        skipReload = true;
+        enableComponents(false);
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 boolean ret = false;
                 try {
-                    submitting = true;
                     ret = issue.submitAndRefresh();
                     for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
                         if (attachment.file.exists()) {
@@ -1436,7 +1520,12 @@ public class IssuePanel extends javax.swing.JPanel {
                         }
                     }
                 } finally {
-                    submitting = false;
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            enableComponents(true);
+                            skipReload = false;
+                        }
+                    });
                     handle.finish();
                     if(ret) {
                         reloadFormInAWT(true);
@@ -1496,11 +1585,22 @@ public class IssuePanel extends javax.swing.JPanel {
         final ProgressHandle handle = ProgressHandleFactory.createHandle(refreshMessage);
         handle.start();
         handle.switchToIndeterminate();
+        skipReload = true;
+        enableComponents(false);
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                issue.refresh();
-                handle.finish();
-                reloadFormInAWT(true);
+                try {
+                    issue.refresh();
+                } finally {
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            enableComponents(true);
+                            skipReload = false;
+                        }
+                    });
+                    handle.finish();
+                    reloadFormInAWT(true);
+                }
             }
         });
     }//GEN-LAST:event_refreshButtonActionPerformed
@@ -1513,6 +1613,7 @@ public class IssuePanel extends javax.swing.JPanel {
         boolean shown = "DUPLICATE".equals(resolutionCombo.getSelectedItem()); // NOI18N
         duplicateLabel.setVisible(shown);
         duplicateField.setVisible(shown);
+        duplicateButton.setVisible(shown && duplicateField.isEditable());
     }//GEN-LAST:event_resolutionComboActionPerformed
 
     private void keywordsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keywordsButtonActionPerformed
@@ -1573,6 +1674,53 @@ public class IssuePanel extends javax.swing.JPanel {
         cancelHighlight(osLabel);
     }//GEN-LAST:event_osComboActionPerformed
 
+    private void reloadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadButtonActionPerformed
+        String reloadMessage = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reloadMessage"); // NOI18N
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(reloadMessage);
+        handle.start();
+        handle.switchToIndeterminate();
+        skipReload = true;
+        enableComponents(false);
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                issue.getRepository().refreshConfiguration();
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        try {
+                            reloading = true;
+                            Object product = productCombo.getSelectedItem();
+                            Object platform = platformCombo.getSelectedItem();
+                            Object os = osCombo.getSelectedItem();
+                            Object priority = priorityCombo.getSelectedItem();
+                            Object severity = severityCombo.getSelectedItem();
+                            Object resolution = resolutionCombo.getSelectedItem();
+                            initCombos();
+                            selectInCombo(productCombo, product, false);
+                            selectInCombo(platformCombo, platform, false);
+                            selectInCombo(osCombo, os, false);
+                            selectInCombo(priorityCombo, priority, false);
+                            selectInCombo(severityCombo, severity, false);
+                            initStatusCombo(statusCombo.getSelectedItem().toString());
+                            selectInCombo(resolutionCombo, resolution, false);
+                        } finally {
+                            reloading = false;
+                            enableComponents(true);
+                            skipReload = false;
+                        }
+                    }
+                });
+                handle.finish();
+            }
+        });
+    }//GEN-LAST:event_reloadButtonActionPerformed
+
+    private void duplicateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateButtonActionPerformed
+        Issue newIssue = BugtrackingUtil.selectIssue(NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateButton.message"), issue.getRepository(), this); // NOI18N
+        if (newIssue != null) {
+            duplicateField.setText(newIssue.getID());
+        }
+    }//GEN-LAST:event_duplicateButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea addCommentArea;
     private javax.swing.JLabel addCommentLabel;
@@ -1600,6 +1748,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel dummyLabel1;
     private javax.swing.JLabel dummyLabel2;
     private javax.swing.JLabel dummyWarning;
+    private javax.swing.JButton duplicateButton;
     private javax.swing.JTextField duplicateField;
     private javax.swing.JLabel duplicateLabel;
     private javax.swing.JLabel headerLabel;
@@ -1628,6 +1777,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel qaContactLabel;
     private javax.swing.JLabel qaContactWarning;
     private org.netbeans.modules.bugtracking.util.LinkButton refreshButton;
+    private org.netbeans.modules.bugtracking.util.LinkButton reloadButton;
     private javax.swing.JTextField reportedField;
     private javax.swing.JLabel reportedLabel;
     private javax.swing.JComboBox resolutionCombo;
@@ -1636,6 +1786,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel resolutionWarning;
     private javax.swing.JScrollPane scrollPane1;
     private javax.swing.JSeparator separator;
+    private javax.swing.JLabel separatorLabel;
     private javax.swing.JComboBox severityCombo;
     private javax.swing.JLabel severityLabel;
     private javax.swing.JLabel severityWarning;

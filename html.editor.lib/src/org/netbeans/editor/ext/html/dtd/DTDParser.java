@@ -1286,7 +1286,7 @@ class DTDParser extends Object {
         
         /** Get the Element of given name. */
         public DTD.Element getElement( String name ) {
-            return (DTD.Element)elements.get( name );
+            return (DTD.Element)elements.get( xmlDTD ? name : name.toUpperCase() );
         }
         
         /** Get List of all CharRefs whose aliases starts with given prefix. */

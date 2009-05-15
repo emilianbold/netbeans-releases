@@ -470,7 +470,7 @@ public final class NodeOp extends Object {
     /** more info in class javadoc.
      * @since 7.9
      */
-    static Node factory(Map<?,?> map) {
+    static Node factory(Map<String,?> map) {
         return new LazyNode(map);
     }
 

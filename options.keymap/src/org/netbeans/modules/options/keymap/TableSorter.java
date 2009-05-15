@@ -59,6 +59,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
@@ -426,6 +427,28 @@ public class TableSorter extends AbstractTableModel {
         @Override
         public void mouseClicked(MouseEvent e) {
             JTableHeader h = (JTableHeader) e.getSource();
+            JTable table = h.getTable();
+            int selectedRow = table.getSelectedRow();
+            TableModel model = table.getModel();
+            //remember selection to keep after sorting
+            Object selectedAction=null;
+            int objectColumn=-1;
+            if(selectedRow>-1) {
+                for(int i=0; i<table.getColumnCount(); i++) {
+                    //first find colum with appropriate object
+                    if(model.getValueAt(selectedRow, i) instanceof ActionHolder) {
+                        //remember this object
+                        selectedAction=model.getValueAt(selectedRow, i);
+                        objectColumn=i;
+                        //stop edition as we click somewhere ouside of editor
+                        TableCellEditor editor=table.getCellEditor();
+                        if(editor!=null) {
+                            editor.stopCellEditing();
+                        }
+                        break;
+                    }
+                }
+            }
             TableColumnModel columnModel = h.getColumnModel();
             int viewColumn = columnModel.getColumnIndexAtX(e.getX());
             int column = columnModel.getColumn(viewColumn).getModelIndex();
@@ -439,6 +462,23 @@ public class TableSorter extends AbstractTableModel {
                 status = status + (e.isShiftDown() ? -1 : 1);
                 status = (status + 4) % 3 - 1; // signed mod, returning {-1, 0, 1}
                 setSortingStatus(column, status);
+                //reselect the same object
+                if(selectedAction!=null)setSelectedRow(table, selectedAction, objectColumn);
+            }
+        }
+
+        private void setSelectedRow(JTable table, Object selectedObject, int objectColumn) {
+            if(table==null || selectedObject==null || objectColumn==-1)return;
+            //after move to java6 as minimum requirent for nb may consider to replace with JTable::convertRowIndexToModel and back
+            //current mplementation works with java5
+            TableModel model = table.getModel();
+            int rowCount=table.getRowCount();
+            for(int i=0; i<rowCount; i++) {
+                if(selectedObject.equals(model.getValueAt(i, objectColumn))) {
+                    table.setRowSelectionInterval(i, i);
+                    table.scrollRectToVisible(table.getCellRect(i, objectColumn, true));
+                    break;
+                }
             }
         }
     }

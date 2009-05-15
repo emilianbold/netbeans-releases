@@ -87,6 +87,8 @@ public final class M2RepositoryBrowserTopComponent extends TopComponent implemen
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         btv = new BeanTreeView();
         btv.setRootVisible(false);
+        btv.getAccessibleContext().setAccessibleName(NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "A11Y_BrowserName")); //NOI18N
+        btv.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "A11Y_BrowserDescription")); //NOI18N
         manager = new ExplorerManager();
         ActionMap map = getActionMap();
         map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
@@ -174,6 +176,8 @@ public final class M2RepositoryBrowserTopComponent extends TopComponent implemen
             }
         });
         jToolBar1.add(btnIndex);
+        btnIndex.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "M2RepositoryBrowserTopComponent.btnIndex.AccessibleContext.accessibleName")); // NOI18N
+        btnIndex.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "M2RepositoryBrowserTopComponent.btnIndex.AccessibleContext.accessibleDescription")); // NOI18N
 
         btnAddRepo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/maven/repository/AddRepo.png"))); // NOI18N
         btnAddRepo.setToolTipText(org.openide.util.NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "LBL_Add_Repo", new Object[] {})); // NOI18N
@@ -185,6 +189,8 @@ public final class M2RepositoryBrowserTopComponent extends TopComponent implemen
             }
         });
         jToolBar1.add(btnAddRepo);
+        btnAddRepo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "M2RepositoryBrowserTopComponent.btnAddRepo.AccessibleContext.accessibleName")); // NOI18N
+        btnAddRepo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "M2RepositoryBrowserTopComponent.btnAddRepo.AccessibleContext.accessibleDescription")); // NOI18N
 
         btnFind.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/maven/repository/FindInRepo.png"))); // NOI18N
         btnFind.setToolTipText(org.openide.util.NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "LBL_REPO_Find")); // NOI18N
@@ -196,6 +202,8 @@ public final class M2RepositoryBrowserTopComponent extends TopComponent implemen
             }
         });
         jToolBar1.add(btnFind);
+        btnFind.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "M2RepositoryBrowserTopComponent.btnFind.AccessibleContext.accessibleName")); // NOI18N
+        btnFind.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "M2RepositoryBrowserTopComponent.btnFind.AccessibleContext.accessibleDescription")); // NOI18N
 
         add(jToolBar1, java.awt.BorderLayout.PAGE_START);
     }// </editor-fold>//GEN-END:initComponents

@@ -83,7 +83,8 @@ public class FileBufferFile extends AbstractFileBuffer {
 
     private String getEncoding() {
         File file = getFile();
-        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        // file must be normalized
+        FileObject fo = FileUtil.toFileObject(file);
         Charset cs = null;
         if (fo != null) {
             cs = FileEncodingQuery.getEncoding(fo);
@@ -170,7 +171,8 @@ public class FileBufferFile extends AbstractFileBuffer {
     
     public InputStream getInputStream() throws IOException {
         File file = getFile();
-        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        // file must be normalized
+        FileObject fo = FileUtil.toFileObject(file);
         InputStream is;
         if (fo != null) {
             is = fo.getInputStream();

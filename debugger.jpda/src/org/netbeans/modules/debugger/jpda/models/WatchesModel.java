@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.debugger.jpda.models;
 
+import com.sun.jdi.ObjectReference;
 import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.Value;
 
@@ -68,6 +69,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.Expression;
 import org.netbeans.modules.debugger.jpda.expr.ParseException;
 
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
@@ -405,6 +407,14 @@ public class WatchesModel implements TreeModel {
                     JPDAObjectWatchImpl jwi = new JPDAObjectWatchImpl (debugger, w, v);
                     jwi.addPropertyChangeListener(this);
                     jw = jwi;
+                    /* Uncomment if evaluator returns variables with disabled collection
+                    if (v instanceof ObjectReference) {
+                        // Returned variable with disabled collection. When not used any more,
+                        // it's collection must be enabled again.
+                        try {
+                            ObjectReferenceWrapper.enableCollection((ObjectReference) v);
+                        } catch (Exception ex) {}
+                    }*/
                 }
             } catch (InvalidExpressionException e) {
                 JPDAWatchImpl jwi = new JPDAWatchImpl (debugger, w, e, this);

@@ -50,6 +50,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -87,6 +88,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.PropertySupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -110,11 +112,12 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private final FunctionDatatableDescription functionDatatableDescription;
     private final FunctionsListDataProvider dataProvider;
     private final DataTableMetadata metadata;
-    private final ColumnsUIMapping  columnsUIMapping;
+    private final ColumnsUIMapping columnsUIMapping;
     private final List<Column> metrics;
     private final FunctionsListViewVisualizerConfiguration configuration;
     private final TableCellRenderer outlineNodePropertyDefault;
     private final VisualizersSupport visSupport;
+    private FunctionCallChildren currentChildren;
 
     public FunctionsListViewVisualizer(FunctionsListDataProvider dataProvider, FunctionsListViewVisualizerConfiguration configuration) {
         visSupport = new VisualizersSupport(new VisualizerImplSessionStateListener());
@@ -127,9 +130,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
         this.metadata = configuration.getMetadata();
         setLoadingContent();
         addComponentListener(this);
-        String nodeLabel = columnsUIMapping == null || columnsUIMapping.getDisplayedName(functionDatatableDescription.getNameColumn()) == null?
-            metadata.getColumnByName(functionDatatableDescription.getNameColumn()).getColumnUName() :
-             columnsUIMapping.getDisplayedName(functionDatatableDescription.getNameColumn());
+        String nodeLabel = columnsUIMapping == null || columnsUIMapping.getDisplayedName(functionDatatableDescription.getNameColumn()) == null ? metadata.getColumnByName(functionDatatableDescription.getNameColumn()).getColumnUName() : columnsUIMapping.getDisplayedName(functionDatatableDescription.getNameColumn());
         outlineView = new OutlineView(nodeLabel);
         outlineView.getOutline().setRootVisible(false);
         outlineView.getOutline().setDefaultRenderer(Object.class, new ExtendedTableCellRendererForNode());
@@ -216,7 +217,8 @@ public class FunctionsListViewVisualizer extends JPanel implements
                             list == null || list.isEmpty();
                     setContent(isEmptyConent);
                     if (!isEmptyConent) {
-                        explorerManager.setRootContext(new AbstractNode(new FunctionCallChildren(list)));
+                        currentChildren = new FunctionCallChildren(list);
+                        explorerManager.setRootContext(new AbstractNode(currentChildren));
                         setNonEmptyContent();
                     }
                 }
@@ -415,7 +417,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
                             @Override
                             public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                              }
+                            }
                         });
                     }
                     return result.toArray(new Property[0]);
@@ -444,6 +446,10 @@ public class FunctionsListViewVisualizer extends JPanel implements
             return goToSourceAction;
         }
 
+        private void fire() {
+            fireDisplayNameChange(getDisplayName() + "_", getDisplayName()); // NOI18N
+        }
+
         @Override
         public Action[] getActions(boolean context) {
             return actions;
@@ -464,19 +470,80 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private class GoToSourceAction extends AbstractAction {
 
         private final FunctionCallNode functionCallNode;
+        private final Future<SourceFileInfo> sourceFileInfoTask;
+        private boolean isEnabled = true;
+        private boolean gotTheInfo = false;
 
-        public GoToSourceAction(FunctionCallNode functionCallNode) {
+        public GoToSourceAction(FunctionCallNode funcCallNode) {
             super(NbBundle.getMessage(FunctionsListViewVisualizer.class, "GoToSourceActionName"));//NOI18N
-            this.functionCallNode = functionCallNode;
+            this.functionCallNode = funcCallNode;
+            sourceFileInfoTask = DLightExecutorService.submit(new Callable<SourceFileInfo>() {
+
+                public SourceFileInfo call() {
+                    FunctionCall functionCall = functionCallNode.getFunctionCall();
+                    return dataProvider.getSourceFileInfo(functionCall);
+                }
+            }, "SourceFileInfo getting info from Functions List View"); // NOI18N
+            waitForSourceFileInfo();
+//            try {
+//                SourceFileInfo sourceFileInfo = sourceFileInfoTask.get();
+//                isEnabled = sourceFileInfo != null && sourceFileInfo.isSourceKnown();
+//            } catch (InterruptedException ex) {
+//                isEnabled = false;
+//            } catch (ExecutionException ex) {
+//                isEnabled = false;
+//            } finally {
+//                synchronized (GoToSourceAction.this) {
+//                    gotTheInfo = true;
+//                }
+//                setEnabled(isEnabled);
+//                functionCallNode.fire();
+//
+//            }
         }
 
-        public void actionPerformed(ActionEvent e) {
+        private void waitForSourceFileInfo() {
             DLightExecutorService.submit(new Runnable() {
 
                 public void run() {
-                    FunctionCall functionCall = functionCallNode.getFunctionCall();
-                    SourceFileInfo sourceFileInfo = dataProvider.getSourceFileInfo(functionCall);
+                    try {
+                        SourceFileInfo sourceFileInfo = sourceFileInfoTask.get();
+                        isEnabled = sourceFileInfo != null && sourceFileInfo.isSourceKnown();
+                    } catch (InterruptedException ex) {
+                        isEnabled = false;
+                    } catch (ExecutionException ex) {
+                        isEnabled = false;
+                    } finally {
+                        synchronized (GoToSourceAction.this) {
+                            gotTheInfo = true;
+                        }
+                        setEnabled(isEnabled);
+                        functionCallNode.fire();
 
+                    }
+
+                }
+            }, "Wait For the SourceFileInfo");//NOI18N
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return isEnabled;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+
+            DLightExecutorService.submit(new Runnable() {
+
+                public void run() {
+                    SourceFileInfo sourceFileInfo = null;
+                    try {
+                        sourceFileInfo = sourceFileInfoTask.get();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (ExecutionException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                     if (sourceFileInfo == null) {// TODO: what should I do here if there is no source file info
                         return;
                     }
@@ -485,6 +552,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
                     sourceSupportProvider.showSource(sourceFileInfo);
                 }
             }, "GoToSource from Functions List View"); // NOI18N
+
         }
     }
 
@@ -495,22 +563,34 @@ public class FunctionsListViewVisualizer extends JPanel implements
             if (column != 0) {//we have
                 return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             }
-
+            //get function call
             PropertyEditor editor = PropertyEditorManager.findEditor(metadata.getColumnByName(functionDatatableDescription.getNameColumn()).getColumnClass());
+            FunctionCallNode node = null;
+            synchronized (FunctionsListViewVisualizer.this.uiLock) {
+                if (currentChildren != null){
+                    Node[] nodes  =  currentChildren.getNodes();
+                    if (row >= 0 && row < nodes.length) {
+                        node = (FunctionCallNode) nodes[row];
+                    }
+                }
+            }
+
+            //get node object
             if (editor != null && value != null && !(value + "").trim().equals("")) {//NOI18N
                 editor.setValue(value);
-                return super.getTableCellRendererComponent(table, editor.getAsText(), isSelected, hasFocus, row, column);
+                DefaultTableCellRenderer c = (DefaultTableCellRenderer) super.getTableCellRendererComponent(table, editor.getAsText(), isSelected, hasFocus, row, column);
+                c.setEnabled(node != null && node.getPreferredAction().isEnabled());
+                return c;
             }
 
             return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
     }
 
-    private class VisualizerImplSessionStateListener implements SessionStateListener{
+    private class VisualizerImplSessionStateListener implements SessionStateListener {
 
         public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
             //throw new UnsupportedOperationException("Not supported yet.");
         }
-
     }
 }

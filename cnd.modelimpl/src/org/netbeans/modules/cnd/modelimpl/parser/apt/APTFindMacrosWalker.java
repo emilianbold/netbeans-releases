@@ -78,8 +78,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
-import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -329,7 +329,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
                 File searchFile = new File(mi.includePath.toString());
                 ProjectBase targetPrj = ((ProjectBase) current.getProject()).findFileProject(searchFile.getAbsolutePath());
                 if (targetPrj == null) {
-                    searchFile = FileUtil.normalizeFile(searchFile);
+                    searchFile = CndFileUtils.normalizeFile(searchFile);
                     targetPrj = ((ProjectBase) current.getProject()).findFileProject(searchFile.getAbsolutePath());
                 }
                 if (targetPrj != null) {

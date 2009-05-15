@@ -81,8 +81,12 @@ import org.openide.util.NbBundle;
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 JLabel out = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                CompilerSet cset = (CompilerSet) value;
-                out.setText(cset.getDisplayName());
+                if (value == null) {
+                    out.setText(""); //NOI18N
+                } else {
+                    CompilerSet cset = (CompilerSet) value;
+                    out.setText(cset.getDisplayName());
+                }
                 return out;
             }
         });

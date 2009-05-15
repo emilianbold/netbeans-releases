@@ -59,6 +59,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.*;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
@@ -68,6 +70,7 @@ import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.openide.util.Exceptions;
 
 /**
@@ -84,7 +87,7 @@ public class EvaluationContext {
      */
     private StackFrame frame;
     private int frameDepth;
-    private ThreadReference thread;
+    private JPDAThreadImpl thread;
     private ObjectReference contextVariable;
     private List<String> sourceImports;
     private List<String> staticImports;
@@ -99,6 +102,8 @@ public class EvaluationContext {
     private Map<Tree, VariableInfo> variables = new HashMap<Tree, VariableInfo>();
     private Stack<Map<String, ScriptVariable>> stack = new Stack<Map<String, ScriptVariable>>();
     private Map<String, ScriptVariable> scriptLocalVariables = new HashMap<String, ScriptVariable>();
+    private final List<ObjectReference> disabledCollectionObjects = new ArrayList<ObjectReference>();
+    private PropertyChangeListener threadPropertyChangeListener = null;
 
     /**
      * Creates a new context in which to evaluate expresions.
@@ -107,7 +112,7 @@ public class EvaluationContext {
      * @param imports list of imports
      * @param staticImports list of static imports
      */
-    public EvaluationContext(ThreadReference thread, StackFrame frame, int frameDepth,
+    public EvaluationContext(JPDAThreadImpl thread, StackFrame frame, int frameDepth,
                              ObjectReference contextVariable,
                              List<String> imports, List<String> staticImports,
                              boolean canInvokeMethods, Runnable methodInvokePreproc,
@@ -170,7 +175,7 @@ public class EvaluationContext {
     void methodInvokeDone() throws IncompatibleThreadStateException {
         try {
             // Refresh the stack frame
-            frame = ThreadReferenceWrapper.frame(thread, frameDepth);
+            frame = ThreadReferenceWrapper.frame(thread.getThreadReference(), frameDepth);
         } catch (InternalExceptionWrapper ex) {
             InvalidExpressionException ieex = new InvalidExpressionException (ex);
             ieex.initCause(ex);
@@ -260,6 +265,53 @@ public class EvaluationContext {
         Map<String, ScriptVariable> map = stack.pop();
         for (String name : map.keySet()) {
             scriptLocalVariables.remove(name);
+        }
+    }
+
+    public void disableCollectionOf(ObjectReference or) {
+        synchronized (disabledCollectionObjects) {
+            if (threadPropertyChangeListener == null) {
+                threadPropertyChangeListener = new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if (thread.equals(evt.getSource()) && JPDAThreadImpl.PROP_SUSPENDED.equals(evt.getPropertyName())
+                            || thread.getDebugger().equals(evt.getSource()) && JPDADebuggerImpl.PROP_STATE.equals(evt.getPropertyName())) {
+                            //System.err.println("SUSPENDED state of "+thread.getName()+" changed, isMethodInvoking = "+thread.isMethodInvoking()+", isRunning = "+(!thread.isSuspended()));
+                            if (thread.getDebugger().getState() != JPDADebuggerImpl.STATE_DISCONNECTED) {
+                                if (thread.isMethodInvoking()) return ;
+                                if (thread.isSuspended()) return ;
+                            }
+                            synchronized (disabledCollectionObjects) {
+                                // Enable collection of all objects on thread resume to prevent from memory leaks in target VM.
+                                //System.err.println("Enabling collection of ALL objects: "+disabledCollectionObjects);
+                                enableCollectionOfObjects(null);
+                            }
+                            thread.removePropertyChangeListener(threadPropertyChangeListener);
+                            thread.getDebugger().removePropertyChangeListener(threadPropertyChangeListener);
+                        }
+                    }
+                };
+                thread.addPropertyChangeListener(threadPropertyChangeListener);
+                thread.getDebugger().addPropertyChangeListener(threadPropertyChangeListener);
+            }
+            if (disabledCollectionObjects.add(or)) {
+                or.disableCollection();
+                //System.err.println("\nDISABLED COLLECTION of "+or);
+                //Thread.dumpStack();
+                //System.err.println("");
+            }
+        }
+    }
+
+    public void enableCollectionOfObjects(Value skip) {
+        synchronized (disabledCollectionObjects) {
+            Set<ObjectReference> collectedObjects = new HashSet<ObjectReference>(disabledCollectionObjects);
+            for (ObjectReference or : collectedObjects) {
+                if (skip == null || !skip.equals(or)) {
+                    or.enableCollection();
+                    disabledCollectionObjects.remove(or);
+                    //System.err.println("\nENABLED COLLECTION of "+or+"\n");
+                }
+            }
         }
     }
 

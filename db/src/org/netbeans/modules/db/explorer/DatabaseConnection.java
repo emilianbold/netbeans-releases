@@ -50,10 +50,10 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -169,9 +169,11 @@ public class DatabaseConnection implements DBConnection {
     public static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
     public static final int DERBY_UNICODE_ERROR_CODE = 20000;
     private OpenConnectionInterface openConnection = null;
+    private volatile JDBCDriver jdbcdrv = null;
+    private JDBCDriver[] drivers = null;
 
     static private final Lookup.Result<OpenConnectionInterface> openConnectionLookupResult;
-    static private Collection openConnectionServices = null;
+    static private Collection<? extends OpenConnectionInterface> openConnectionServices = null;
     static {
         openConnectionLookupResult = Lookup.getDefault().lookup(new Lookup.Template<OpenConnectionInterface>(OpenConnectionInterface.class));
         openConnectionLookupResult.addLookupListener(new LookupListener() {
@@ -221,18 +223,24 @@ public class DatabaseConnection implements DBConnection {
 
     public JDBCDriver findJDBCDriver() {
         JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(drv);
-        if (drvs.length <= 0) {
-            return null;
-        }
+        if (drivers == null || ! Arrays.equals(drvs, drivers)) {
+            drivers = drvs;
 
-        JDBCDriver useDriver = drvs[0];
-        for (int i = 0; i < drvs.length; i++) {
-            if (drvs[i].getName().equals(getDriverName())) {
-                useDriver = drvs[i];
-                break;
+            if (drvs.length <= 0) {
+                return null;
             }
+
+            JDBCDriver useDriver = drvs[0];
+            for (int i = 0; i < drvs.length; i++) {
+                if (drvs[i].getName().equals(getDriverName())) {
+                    useDriver = drvs[i];
+                    break;
+                }
+            }
+            jdbcdrv = useDriver;
+            
         }
-        return useDriver;
+        return jdbcdrv;
     }
 
     public Connection getJDBCConnection(boolean test) {
@@ -278,7 +286,7 @@ public class DatabaseConnection implements DBConnection {
 
     }
 
-     private Collection getOpenConnections() {
+     private Collection<? extends OpenConnectionInterface> getOpenConnections() {
          if (openConnectionServices == null) {
              openConnectionServices = openConnectionLookupResult.allInstances();
          }
@@ -297,9 +305,7 @@ public class DatabaseConnection implements DBConnection {
 
          // For Java Studio Enterprise. Create instanceof OpenConnection
          try {
-             Collection c = getOpenConnections();
-             for (Iterator i=c.iterator(); driver != null && i.hasNext();) {
-                 OpenConnectionInterface oci = (OpenConnectionInterface) i.next();
+             for (OpenConnectionInterface oci : getOpenConnections()) {
                  if (oci.isFor(driver)) {
                      openConnection = oci;
                      break;
@@ -749,9 +755,7 @@ public class DatabaseConnection implements DBConnection {
     private void sendException(Exception exc) {
         List<ExceptionListener> listeners = new ArrayList<ExceptionListener>();
         synchronized (exceptionListeners) {
-            Iterator it = exceptionListeners.iterator();
-            while (it.hasNext()) {
-                ExceptionListener l = (ExceptionListener) it.next();
+            for (ExceptionListener l : exceptionListeners) {
                 listeners.add(l);
             }
         }
@@ -868,8 +872,7 @@ public class DatabaseConnection implements DBConnection {
         TopComponent runtimePanel = null;
         ExplorerManager runtimeExplorer = null;
 
-        for (Iterator i = TopComponent.getRegistry().getOpened().iterator(); i.hasNext();) {
-            TopComponent component = (TopComponent)i.next();
+        for (TopComponent component : TopComponent.getRegistry().getOpened()) {
             Component[] children = component.getComponents();
             if (children.length > 0) {
                 ExplorerManager explorer = ExplorerManager.find(children[0]);

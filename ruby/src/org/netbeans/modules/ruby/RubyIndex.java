@@ -638,6 +638,10 @@ public final class RubyIndex {
         return m;
     }
 
+    private static boolean isEmptyOrNull(String str) {
+        return str == null || "".equals(str.trim());
+    }
+
     public IndexedConstant createConstant(String signature, IndexResult ir) {
         String classFQN = ir.getValue(FIELD_FQN_NAME);
         String require = ir.getValue(FIELD_REQUIRE);
@@ -649,8 +653,9 @@ public final class RubyIndex {
         // TODO parse possibly multiple types
         String type = typeIndex == -1 ? null : signature.substring(typeIndex + 1);
 
+        RubyType rubyType = isEmptyOrNull(type) ? RubyType.createUnknown() : RubyType.create(type);
         IndexedConstant m = IndexedConstant.create(
-                this, name, classFQN, ir, require, flags, context, RubyType.create(type));
+                this, name, classFQN, ir, require, flags, context, rubyType);
 
         return m;
     }

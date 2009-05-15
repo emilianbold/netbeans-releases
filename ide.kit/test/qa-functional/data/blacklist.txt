@@ -407,3 +407,4 @@ org.netbeans.modules.hibernate.loaders.reveng.HibernateRevengDataLoader
 org.netbeans.modules.profiler.categories.Categorization
 org.netbeans.modules.profiler.categories.CategoryBuilder
 
+org.netbeans.modules.profiler.actions.SelfSamplerAction

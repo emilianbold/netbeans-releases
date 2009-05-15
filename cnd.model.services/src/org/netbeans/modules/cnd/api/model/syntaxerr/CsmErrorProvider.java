@@ -172,7 +172,13 @@ public abstract class CsmErrorProvider implements NamedEntity {
                 RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         if (!request.isCancelled()){
-                            provider.getErrors(request, response);
+                            try {
+                                provider.getErrors(request, response);
+                            } catch (AssertionError ex) {
+                                ex.printStackTrace();
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
                         }
                     }
                 });

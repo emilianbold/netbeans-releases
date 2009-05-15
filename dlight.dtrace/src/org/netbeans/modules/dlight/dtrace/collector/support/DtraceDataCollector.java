@@ -69,6 +69,7 @@ import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.impl.DTDCConfigurationAccessor;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
@@ -455,7 +456,7 @@ public final class DtraceDataCollector
             taskCommand += " " + extraParams; // NOI18N
         }
 
-        NativeProcessBuilder npb = new NativeProcessBuilder(target.getExecEnv(), taskCommand);
+        NativeProcessBuilder npb = new NativeProcessBuilder(target.getExecEnv(), taskCommand,false);
 
         ExecutionDescriptor descr = new ExecutionDescriptor();
         descr = descr.outProcessorFactory(new DtraceInputProcessorFactory());
@@ -521,6 +522,9 @@ public final class DtraceDataCollector
                 targetFinished(event.target);
                 return;
         }
+    }
+
+    public void dataFiltersChanged(List<DataFilter> newSet) {
     }
 
     private final class ProcessLineCallBackImpl implements ProcessLineCallback {

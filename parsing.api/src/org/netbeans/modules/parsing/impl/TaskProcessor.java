@@ -850,7 +850,7 @@ public class TaskProcessor {
         
         public Thread newThread(Runnable r) {
             assert this.t == null;
-            this.t = new Thread (r,"Java Source Worker Thread");     //NOI18N
+            this.t = new Thread(r, "Parsing & Indexing Loop (" + System.getProperty("netbeans.buildnumber") + ")"); //NOI18N
             return this.t;
         }
         /**
@@ -877,18 +877,26 @@ public class TaskProcessor {
         private Request canceledReference;
         private Parser activeParser;
         private long cancelTime;
-        private final AtomicBoolean canceled = new AtomicBoolean();
+        private boolean canceled;
+        /**
+         * Threading: The CurrentRequestReference has it's own private lock
+         * rather than the INTERNAL_LOCK to prevent deadlocks caused by events
+         * fired under Document locks. So, it's NOT allowed to call outside this
+         * class (to the rest of the parsing api) under the private lock!
+         */
+        private static final Object CRR_LOCK = new Object();
         
         boolean setCurrentTask (Request reference) throws InterruptedException {
             boolean result = false;
             assert !parserLock.isHeldByCurrentThread();
             assert reference == null || reference.cache == null || !Thread.holdsLock(reference.cache.getSnapshot().getSource());
-            synchronized (INTERNAL_LOCK) {
+            synchronized (CRR_LOCK) {
                 while (this.canceledReference!=null) {
                     assert canceledReference.cache == null || !Thread.holdsLock(canceledReference.cache.getSnapshot().getSource());
-                    INTERNAL_LOCK.wait();
+                    CRR_LOCK.wait();
                 }
-                result = this.canceled.getAndSet(false);
+                result = this.canceled;
+                canceled = false;
                 this.cancelTime = 0;
                 this.activeParser = null;
                 this.reference = reference;
@@ -897,13 +905,13 @@ public class TaskProcessor {
         }
 
         void clearCurrentTask () {
-            synchronized (INTERNAL_LOCK) {
+            synchronized (CRR_LOCK) {
                 this.reference = null;
             }
         }
 
         void setCurrentParser (final Parser parser) {
-            synchronized (INTERNAL_LOCK) {
+            synchronized (CRR_LOCK) {
                 activeParser = parser;
             }
         }
@@ -911,13 +919,13 @@ public class TaskProcessor {
         Request getTaskToCancel (final int priority) {
             Request request = null;
             if (!factory.isDispatchThread(Thread.currentThread())) {
-                synchronized (INTERNAL_LOCK) {
+                synchronized (CRR_LOCK) {
                     if (this.reference != null && priority<this.reference.task.getPriority()) {
                         assert this.canceledReference == null;
                         request = this.reference;
                         this.canceledReference = request;
                         this.reference = null;
-                        this.canceled.set(true);                    
+                        this.canceled = true;
                         this.cancelTime = System.currentTimeMillis();
                     }
                 }
@@ -930,13 +938,13 @@ public class TaskProcessor {
             assert tasks != null;
             Request request = null;
             if (!factory.isDispatchThread(Thread.currentThread())) {
-                synchronized (INTERNAL_LOCK) {
+                synchronized (CRR_LOCK) {
                     if (this.reference != null && tasks.contains(this.reference.task)) {
                         assert this.canceledReference == null;
                         request = this.reference;
                         this.canceledReference = request;
                         this.reference = null;
-                        this.canceled.set(true);
+                        this.canceled = true;
                     }
                 }
             }
@@ -946,13 +954,13 @@ public class TaskProcessor {
         Request getTaskToCancel () {
             Request request = null;
             if (!factory.isDispatchThread(Thread.currentThread())) {                
-                synchronized (INTERNAL_LOCK) {
+                synchronized (CRR_LOCK) {
                      request = this.reference;
                     if (request != null) {
                         assert this.canceledReference == null;
                         this.canceledReference = request;
                         this.reference = null;
-                        this.canceled.set(true);
+                        this.canceled = true;
                         this.cancelTime = System.currentTimeMillis();
                     }
                 }
@@ -964,13 +972,13 @@ public class TaskProcessor {
             Request request = null;
             if (!factory.isDispatchThread(Thread.currentThread())) {
                 Parser parser;
-                synchronized (INTERNAL_LOCK) {
+                synchronized (CRR_LOCK) {
                     if (this.reference != null) {
                         assert this.canceledReference == null;
                         request = this.reference;
                         this.canceledReference = request;
                         this.reference = null;
-                        this.canceled.set(true);
+                        this.canceled = true;
                         //todo: Cancel parser
                         this.cancelTime = System.currentTimeMillis();
                     }
@@ -994,7 +1002,7 @@ public class TaskProcessor {
             assert request.length == 1;
             boolean result = false;
             if (!factory.isDispatchThread(Thread.currentThread())) {
-                synchronized (INTERNAL_LOCK) {
+                synchronized (CRR_LOCK) {
                      request[0] = this.reference;
                     if (request[0] != null) {
                         result = request[0].cache == null;
@@ -1003,7 +1011,7 @@ public class TaskProcessor {
                             this.canceledReference = request[0];
                             this.reference = null;
                         }
-                        this.canceled.set(result);
+                        this.canceled = result;
                         this.cancelTime = System.currentTimeMillis();
                     }
                 }
@@ -1012,23 +1020,23 @@ public class TaskProcessor {
         }
                         
         boolean isCanceled () {
-            synchronized (INTERNAL_LOCK) {
-                return this.canceled.get();
+            synchronized (CRR_LOCK) {
+                return this.canceled;
             }
         }                
         
         long getCancelTime () {
-            synchronized (INTERNAL_LOCK) {
+            synchronized (CRR_LOCK) {
                 return this.cancelTime;
             }
         }
         
         void cancelCompleted (final Request request) {
             if (request != null) {
-                synchronized (INTERNAL_LOCK) {
+                synchronized (CRR_LOCK) {
                     assert request == this.canceledReference;
                     this.canceledReference = null;
-                    INTERNAL_LOCK.notify();
+                    CRR_LOCK.notify();
                 }
             }
         }

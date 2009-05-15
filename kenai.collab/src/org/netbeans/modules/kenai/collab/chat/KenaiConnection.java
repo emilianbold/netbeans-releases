@@ -46,13 +46,17 @@ import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.Roster;
+import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.MessageTypeFilter;
@@ -81,7 +85,7 @@ public class KenaiConnection implements PropertyChangeListener {
     private HashMap<String, PacketListener> listeners = new HashMap<String, PacketListener>();
     private XMPPConnection connection;
     //Map <kenai project name, multi user chat>
-    private HashMap<String, MultiUserChat> chats = new HashMap<String, MultiUserChat>();
+    final private Map<String, MultiUserChat> chats = Collections.synchronizedMap(new HashMap<String, MultiUserChat>());
 
     //singleton instance
     private static KenaiConnection instance;
@@ -150,24 +154,18 @@ public class KenaiConnection implements PropertyChangeListener {
         assert put == null;
     }
 
-    private XMPPException xmppEx;
-
     /**
      * 
      */
-    public synchronized void tryConnect() {
+    public synchronized void tryConnect()  {
         try {
             connect();
             initChats();
-            xmppEx = null;
             PresenceIndicator.getDefault().setStatus(Status.ONLINE);
+            isConnectionFailed = false;
         } catch (XMPPException ex) {
-            xmppEx = ex;
+            isConnectionFailed = true;
         }
-    }
-
-    public XMPPException getXMPPException() {
-        return xmppEx;
     }
 
     /**
@@ -234,8 +232,11 @@ public class KenaiConnection implements PropertyChangeListener {
         }
     }
 
-    public Collection<MultiUserChat> getChats() {
-        return chats.values();
+    public List<MultiUserChat> getChats() {
+        synchronized (chats) {
+            ArrayList<MultiUserChat> copy = new ArrayList<MultiUserChat>(chats.values());
+            return copy;
+        }
     }
 
     /**
@@ -270,42 +271,50 @@ public class KenaiConnection implements PropertyChangeListener {
         return xmppProcessor.post(run);
     }
 
+   private boolean isConnectionFailed;
+    public boolean isConnectionFailed() {
+        return isConnectionFailed;
+    }
+
     public void propertyChange(final PropertyChangeEvent e) {
         if (Kenai.PROP_LOGIN.equals(e.getPropertyName())) {
-            post(new Runnable() {
-                public void run() {
-                    final PasswordAuthentication pa = (PasswordAuthentication) e.getNewValue();
-                    if (pa != null) {
+            if (e.getNewValue() != null) {
+                post(new Runnable() {
+                    public void run() {
+                        final PasswordAuthentication pa = (PasswordAuthentication) e.getNewValue();
                         USER = pa.getUserName();
-                        PASSWORD = System.getProperty("kenai.xmpp.password",new String(pa.getPassword()));
+                        PASSWORD = System.getProperty("kenai.xmpp.password", new String(pa.getPassword()));
                         tryConnect();
-                    } else {
-                        for (MultiUserChat muc : getChats()) {
-                            try {
-                                muc.leave();
-                            } catch (IllegalStateException e) {
-                                //we can ignore exceptions on logout
-                                XMPPLOG.log(Level.FINE, null, e);
-                            }
-                        }
-                        chats.clear();
-                        connection.disconnect();
-                        messageQueue.clear();
-                        listeners.clear();
-                        PresenceIndicator.getDefault().setStatus(Status.OFFLINE);
-                        ChatNotifications.getDefault().clearAll();
                     }
+                });
+            } else {
+                try {
+                    for (MultiUserChat muc : getChats()) {
+                        try {
+                            muc.leave();
+                        } catch (IllegalStateException ise) {
+                            //we can ignore exceptions on logout
+                            XMPPLOG.log(Level.FINE, null, ise);
+                        }
+                    }
+                    chats.clear();
+                    connection.disconnect();
+                    messageQueue.clear();
+                    listeners.clear();
+                    PresenceIndicator.getDefault().setStatus(Status.OFFLINE);
+                    ChatNotifications.getDefault().clearAll();
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            });
+            }
         }
     }
-    
+
 //------------------------------------------
 
     private String USER;
     private String PASSWORD;
     
-    //TODO this should be removed when xmpp server starts working on kenai.com
     private static final String XMPP_SERVER = System.getProperty("kenai.com.url","https://kenai.com").substring(System.getProperty("kenai.com.url","https://kenai.com").lastIndexOf("/")+1);
     private static final String CHAT_ROOM = "@muc." + XMPP_SERVER; // NOI18N
 

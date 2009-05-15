@@ -182,7 +182,10 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
 
     private static void problemOccurred(final Exception e) {
         String message = NbBundle.getMessage(RubyDebugger.class, "RubyDebugger.startup.problem", e.getLocalizedMessage());
-        LOGGER.log(Level.WARNING, message, e);
+        // logging as INFO (instead of WARNING) since WARNING pops up the exception dialog
+        // at least in dev builds, which we don't want since we display a dialog for this
+        // in any case
+        LOGGER.log(Level.INFO, message, e);
         Util.showWarning(message);
     }
     

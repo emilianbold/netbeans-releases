@@ -63,9 +63,9 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 public class APTPredefinedMacroMap implements APTMacroMap {
        
     private static String []preMacro = new String [] { 
-         "__FILE__", "__LINE__", "__DATE__", "__TIME__"  // NOI18N
+         "__FILE__", "__LINE__", "__DATE__", "__TIME__", "__FUNCTION__"  // NOI18N
     };
-    
+
     public APTPredefinedMacroMap() {
     }
 
