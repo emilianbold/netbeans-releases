@@ -72,6 +72,7 @@ public class PhpWhereUsedQueryPlugin extends ProgressProviderAdapter implements 
             Set<FileObject> relevantFiles = usages.getRelevantFiles();
             fireProgressListenerStart(ProgressEvent.START, relevantFiles.size());
             for (FileObject fileObject : relevantFiles) {
+                if (fileObject == null) continue;
                 if (isFindDirectSubclassesOnly()) {
                     usages.collectDirectSubclasses(fileObject);
                 } else {
