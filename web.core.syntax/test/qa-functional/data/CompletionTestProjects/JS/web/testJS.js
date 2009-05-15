@@ -10,7 +10,7 @@ y = x;
 
 /**CC
 y.cha
-charCodeAt(index) : Number
+String charCodeAt ( index ) : Number
 y.charCodeAt(index)
 */
 
