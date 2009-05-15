@@ -481,7 +481,7 @@ public class APTUtils {
     }
 
     public static List<APTToken> toList(TokenStream ts) {
-        List<APTToken> tokens = new ArrayList<APTToken>();
+        ArrayList<APTToken> tokens = new ArrayList<APTToken>(1024);
         try {
             APTToken token = (APTToken) ts.nextToken();
             while (!isEOF(token)) {
@@ -492,6 +492,7 @@ public class APTUtils {
         } catch (TokenStreamException ex) {
             LOG.log(Level.INFO, "error on converting token stream to list", ex.getMessage()); // NOI18N
         }
+        tokens.trimToSize();
         return tokens;
     }
     

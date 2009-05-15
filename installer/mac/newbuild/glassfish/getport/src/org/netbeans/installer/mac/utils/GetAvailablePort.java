@@ -7,6 +7,8 @@ package org.netbeans.installer.mac.utils;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  *
@@ -19,7 +21,11 @@ public class GetAvailablePort {
      */
     public static void main(String[] args) {
         if(args.length>0) {
-            System.out.println("" + getAvailablePort(new Integer(args[0]).intValue()));
+            if (args[0].equalsIgnoreCase("getHostName")) {
+                System.out.println("" + getHostName());
+            } else {
+                System.out.println("" + getAvailablePort(new Integer(args[0]).intValue()));
+            }
         }
     }
     public static boolean isPortAvailable(int port) {        
@@ -70,6 +76,18 @@ public class GetAvailablePort {
         } else {
             return port;
         }
+    }
+
+    public static String getHostName() {
+        try{
+            String hostName=InetAddress.getLocalHost().getHostName();
+            if(hostName != null) {
+                return hostName;
+            }
+        } catch (UnknownHostException e) {
+            System.out.println("getHostName: " + e.getStackTrace());
+        }
+        return "localhost";
     }
 
 }

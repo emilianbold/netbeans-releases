@@ -33,6 +33,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 
@@ -54,8 +55,8 @@ public class APTFindUnusedBlocksWalker extends APTSelfWalker {
         blocks.add(Utils.createOffsetable(csmFile, startOffset, endOffset));
     }
     
-    public APTFindUnusedBlocksWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler) {
-        super(apt, csmFile, preprocHandler);
+    public APTFindUnusedBlocksWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
+        super(apt, csmFile, preprocHandler, cacheEntry);
     }
     
     protected @Override boolean onIfdef(APT apt) {

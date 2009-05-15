@@ -44,8 +44,8 @@
         </ccTool>
         <linkerTool>
           <linkerLibItems>
+            <linkerOptionItem>`pkg-config --libs gtk+-2.0`</linkerOptionItem>
           </linkerLibItems>
-          <commandLine>`pkg-config --libs gtk+-2.0`</commandLine>
         </linkerTool>
       </compileType>
     </conf>
