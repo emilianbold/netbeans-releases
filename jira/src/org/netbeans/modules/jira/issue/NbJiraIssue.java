@@ -26,7 +26,7 @@
  * "[Contributor] elects to include this software in this distribution
  * under the [CDDL or GPL Version 2] license." If you do not indicate a
  * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
+ * your version of this file aunder either the CDDL, the GPL Version 2 or
  * to extend the choice of license to its licensees as provided above.
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
@@ -673,7 +673,7 @@ public class NbJiraIssue extends Issue {
         mapper.applyTo(attAttribute);
         JiraCommand cmd = new JiraCommand() {
             public void execute() throws CoreException, IOException {
-                refresh();
+//                refresh(); // XXX no refreshing may cause a midair collision - we should refresh in such a case and attach then
                 if (Jira.LOG.isLoggable(Level.FINER)) {
                     Jira.LOG.finer("adding an attachment: issue: " + getKey());
                 }
