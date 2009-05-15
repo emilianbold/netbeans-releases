@@ -51,6 +51,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.support.TargetLister;
 import org.apache.tools.ant.module.spi.AntEvent;
@@ -82,6 +84,7 @@ import org.w3c.dom.Element;
  */
 public class AntDebugger extends ActionsProviderSupport {
 
+    private static final Logger logger = Logger.getLogger(AntDebugger.class.getName());
     
     /** The ReqeustProcessor used by action performers. */
     private static RequestProcessor     actionsRequestProcessor;
@@ -159,6 +162,7 @@ public class AntDebugger extends ActionsProviderSupport {
         synchronized (LOCK_ACTIONS) {
             actionRunning = true;
         }
+        logger.fine("AntDebugger.doAction("+action+"), is kill = "+(action == ActionsManager.ACTION_KILL));
         if (action == ActionsManager.ACTION_KILL) {
             finish ();
         } else
@@ -216,6 +220,8 @@ public class AntDebugger extends ActionsProviderSupport {
      * Called from DebuggerAntLogger.
      */
     void taskStarted (AntEvent event) {
+        if (finished) return ;
+        if (logger.isLoggable(Level.FINE)) logger.fine("AntDebugger.taskStarted("+event+")");
         Object taskLine = Utils.getLine (event);
         callStackList.addFirst(
                 new Task (event.getTaskStructure (), 
@@ -227,12 +233,17 @@ public class AntDebugger extends ActionsProviderSupport {
     }
     
     private void elementStarted(AntEvent event) {
+        if (logger.isLoggable(Level.FINE)) logger.fine("AntDebugger.elementStarted("+event+"), doStop = "+doStop);
+        if (finished) return ;
         if (!doStop) {
             if (!onBreakpoint ()) {
+                logger.fine(" Not on breakpoint, continuing...");
                 return ; // continue
-            }
+            } else logger.fine(" Is on breakpoint.");
         }
+        logger.fine("AntDebugger.elementStarted() stopping...");
         stopHere(event);
+        logger.fine("AntDebugger.elementStarted() finished.");
     }
     
     private void stopHere(AntEvent event) {
@@ -258,9 +269,12 @@ public class AntDebugger extends ActionsProviderSupport {
         // wait for next stepping orders
         synchronized (LOCK) {
             try {
+                if (logger.isLoggable(Level.FINE)) logger.fine("stopHere(): waiting in thread '"+Thread.currentThread()+"' ...");
                 LOCK.wait ();
+                if (logger.isLoggable(Level.FINE)) logger.fine("stopHere(): wait in thread '"+Thread.currentThread()+"' notified.");
             } catch (InterruptedException ex) {
-                ex.printStackTrace ();
+                logger.fine("AntDebugger.stopHere() was interrupted.");
+                Thread.currentThread().interrupt();
             }
         }
         synchronized (this) {
@@ -269,6 +283,7 @@ public class AntDebugger extends ActionsProviderSupport {
     }
     
     void taskFinished (AntEvent event) {
+        if (finished) return ;
         callStackList.remove(0);//(callStackList.size() - 1);
         if (taskEndToStopAt != null &&
             taskEndToStopAt.equals(event.getTaskStructure().getName()) &&
@@ -304,6 +319,7 @@ public class AntDebugger extends ActionsProviderSupport {
     }
     
     void targetStarted(AntEvent event) {
+        if (finished) return ;
         String targetName = event.getTargetName();
         //updateTargetsByName(event.getScriptLocation());
         TargetLister.Target target = findTarget(targetName, event.getScriptLocation());
@@ -374,6 +390,7 @@ public class AntDebugger extends ActionsProviderSupport {
     }
     
     void targetFinished(AntEvent event) {
+        if (finished) return ;
         callStackList.remove(0);//(callStackList.size() - 1);
         if (targetEndToStopAt != null && targetEndToStopAt.equals(event.getTargetName()) &&
             fileToStopAt.equals(event.getScriptLocation())) {
@@ -545,7 +562,8 @@ public class AntDebugger extends ActionsProviderSupport {
     private String      targetEndToStopAt = null;
     private String      taskEndToStopAt = null;
     private File        fileToStopAt = null;
-    private boolean     doStop = true; // stop on the next task/target
+    private volatile boolean doStop = true; // stop on the next task/target
+    private volatile boolean finished = false; // When the debugger has finished.
     
     private void doContinue () {
         Utils.unmarkCurrent ();
@@ -633,18 +651,27 @@ public class AntDebugger extends ActionsProviderSupport {
     }
     
     private void finish () {
+        logger.fine("AntDebugger.finish()");
+        if (finished) {
+            logger.fine("finish(): already finished.");
+            return ;
+        }
         if (execTask != null) {
             execTask.stop();
         }
+        logger.fine("finish(): task stopped.");
         Utils.unmarkCurrent ();
         doStop = false;
+        finished = true;
         taskEndToStopAt = null;
         targetEndToStopAt = null;
         fileToStopAt = null;
         synchronized (LOCK) {
             LOCK.notify ();
         }
+        logger.fine("finish(): notify called.");
         buildFinished(null);
+        logger.fine("finish() done, build finished.");
     }
     
     

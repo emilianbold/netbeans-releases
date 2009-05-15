@@ -154,7 +154,6 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     
     protected void componentHidden () {
         super.componentHidden ();
-        contentComponent.removeAll();
         if (viewModelListener != null) {
             viewModelListener.destroy ();
         }

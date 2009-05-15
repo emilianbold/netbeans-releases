@@ -805,6 +805,9 @@
       </Properties>
     </Component>
     <Container class="javax.swing.JScrollPane" name="scrollPane1">
+      <Properties>
+        <Property name="verticalScrollBarPolicy" type="int" value="21"/>
+      </Properties>
       <AuxValues>
         <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
       </AuxValues>
@@ -812,15 +815,14 @@
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
         <Component class="javax.swing.JTextArea" name="addCommentArea">
-          <Properties>
-            <Property name="columns" type="int" value="20"/>
-            <Property name="rows" type="int" value="5"/>
-          </Properties>
           <AccessibilityProperties>
             <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.addCommentArea.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JTextArea() {&#xa;    @Override&#xa;    public Dimension getPreferredScrollableViewportSize() {&#xa;        Dimension dim = super.getPreferredScrollableViewportSize();&#xa;        JScrollPane scrollPane = (JScrollPane)SwingUtilities.getAncestorOfClass(JScrollPane.class, this);&#xa;        int delta = 0;&#xa;        if (scrollPane != null) {&#xa;            Component comp = scrollPane.getHorizontalScrollBar();&#xa;            delta = comp.isVisible() ? comp.getHeight() : 0;&#xa;        }&#xa;        dim = new Dimension(dim.width, delta + ((dim.height &lt; 100) ? 100 : dim.height));&#xa;        return dim;&#xa;    }&#xa;}"/>
+          </AuxValues>
         </Component>
       </SubComponents>
     </Container>

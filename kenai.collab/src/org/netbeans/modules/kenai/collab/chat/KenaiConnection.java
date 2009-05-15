@@ -56,13 +56,13 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.Roster;
-import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.MessageTypeFilter;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Message.Type;
 import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.Kenai;
@@ -105,6 +105,7 @@ public class KenaiConnection implements PropertyChangeListener {
     public static synchronized KenaiConnection getDefault() {
         if (instance == null) {
             instance = new KenaiConnection();
+            ProviderManager.getInstance().addExtensionProvider("delay", "urn:xmpp:delay", new DelayExtensionProvider());//NOI18N
             Kenai.getDefault().addPropertyChangeListener(instance);
         }
         return instance;
