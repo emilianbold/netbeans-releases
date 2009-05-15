@@ -39,6 +39,7 @@
 
 package org.openide.nodes;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.Action;
@@ -78,6 +79,9 @@ final class LazyNode extends FilterNode {
                 return getOriginal();
             }
             n[0] = (Node)map.get("original"); // NOI18N
+            if (n[0] == null) {
+                throw new IllegalArgumentException("Original Node from map " + map + " is null");
+            }
             map = null;
         }
         Children.MUTEX.postWriteRequest(new Runnable() {
