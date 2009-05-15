@@ -136,6 +136,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
     public void start(boolean force) {
         boolean schedule = false;
+        boolean clogUpTheLoop = false;
 
         synchronized (this) {
             if (state == State.CREATED) {
@@ -147,13 +148,21 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 EditorRegistry.addPropertyChangeListener(this);
 
                 if (force) {
+                    // No need for TheClog when the InitialRootsWork is giong to be scheduled
                     schedule = true;
+                } else {
+                    clogUpTheLoop = true;
                 }
             }
         }
 
         if (schedule) {
             scheduleWork(null, false);
+        } else if (clogUpTheLoop) {
+            // The whole point of this is to block TaskProcessor right after the
+            // IDE starts until all projects are opened. It's a feeble attempt to
+            // improve situation described in #165170.
+            getWorker().schedule(new TheClog(), false);
         }
     }
 
@@ -724,33 +733,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         if (scheduleExtraWork) {
-            getWorker().schedule(new RootsWork(scannedRoots2Dependencies, scannedBinaries, true) {
-                public @Override boolean getDone() {
-                    try {
-                        if (work != null) {
-                            try {
-                                long tm = System.currentTimeMillis();
-                                LOGGER.fine("Initial scan waiting for projects"); //NOI18N
-                                OpenProjects.getDefault().openProjects().get();
-                                LOGGER.log(Level.FINE, "Initial scan blocked for {0} ms", System.currentTimeMillis() - tm); //NOI18N
-                            } catch (Exception ex) {
-                                // ignore
-                                LOGGER.log(Level.FINE, "Waiting for projects before initial scan timed out", ex); // NOI18N
-                            }
-                        } // else forced (eg. from tests) so don't wait for projects
-
-                        return super.getDone();
-                    } finally {
-                        if (state == State.INITIAL_SCAN_RUNNING) {
-                            synchronized (RepositoryUpdater.this) {
-                                if (state == State.INITIAL_SCAN_RUNNING) {
-                                    state = State.ACTIVE;
-                                }
-                            }
-                        }
-                    }
-                }
-            }, false);
+            boolean waitForProjects = work != null;  // else forced (eg. from tests) so don't wait for projects
+            getWorker().schedule(new InitialRootsWork(scannedRoots2Dependencies, scannedBinaries, waitForProjects), false);
 
             if (work instanceof RootsWork) {
                 // if the work is the initial RootsWork it's superseeded
@@ -1240,6 +1224,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         public final void cancelBy(Work newWork) {
             if (isCancelledBy(newWork)) {
+                LOGGER.log(Level.FINE, "{0} cancelled by {1}", new Object [] { this, newWork }); //NOI18N
                 cancelled.set(true);
             }
         }
@@ -1857,6 +1842,70 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
     } // End of RootsWork class
 
+    private final class InitialRootsWork extends RootsWork {
+
+        private final boolean waitForProjects;
+
+        public InitialRootsWork(Map<URL, List<URL>> scannedRoots2Depencencies, Set<URL> scannedBinaries, boolean waitForProjects) {
+            super(scannedRoots2Depencencies, scannedBinaries, true);
+            this.waitForProjects = waitForProjects;
+        }
+        
+        public @Override boolean getDone() {
+            try {
+                if (waitForProjects) {
+                    try {
+                        OpenProjects.getDefault().openProjects().get();
+                    } catch (Exception ex) {
+                        // ignore
+                    }
+                }
+
+                return super.getDone();
+            } finally {
+                if (state == State.INITIAL_SCAN_RUNNING) {
+                    synchronized (RepositoryUpdater.this) {
+                        if (state == State.INITIAL_SCAN_RUNNING) {
+                            state = State.ACTIVE;
+                        }
+                    }
+                }
+            }
+        }
+    } // End of InitialRootsWork class
+
+    private static final class TheClog extends Work {
+
+        private final AtomicBoolean cancelledByInitialWork = new AtomicBoolean(false);
+
+        public TheClog() {
+            super(false, false, false);
+        }
+
+        protected @Override boolean getDone() {
+            final long tm = System.currentTimeMillis();
+
+            for( ; !cancelledByInitialWork.get(); ) {
+                try {
+                    Thread.sleep(321);
+                } catch (InterruptedException ex) {
+                    // ignore, but stop waiting
+                    break;
+                }
+                LOGGER.log(Level.FINE, "TheClog has been successfully clogging for {0} ms", (System.currentTimeMillis() - tm)); //NOI18N
+            }
+            return true;
+        }
+
+        protected @Override boolean isCancelledBy(Work newWork) {
+            assert newWork instanceof InitialRootsWork : "Expecting InitialRootsWork: " + newWork; //NOI18N
+            LOGGER.log(Level.FINE, "TheClog cancelled by {0}", newWork); //NOI18N
+            cancelledByInitialWork.set(true);
+            return true;
+        }
+
+    } // End of TheClog class
+
     private static final class Task extends ParserResultTask {
 
         // -------------------------------------------------------------------
@@ -2064,6 +2113,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     if (cancelledWork != null) {
                         cancelledWork.setCancelled(true);
                     }
+                    
+                    recordCaller();
                 }
             }
         }
