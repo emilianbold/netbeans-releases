@@ -689,6 +689,14 @@ public abstract class J2eeModuleProvider {
     public DeployOnSaveSupport getDeployOnSaveSupport() {
         return null;
     }
+
+    /**
+     * @since 1.56
+     */
+
+    public DeployOnSaveClassInterceptor getDeployOnSaveClassInterceptor() {
+        return null;
+    }
     
     /**
      * Return InstanceProperties of the server instance
@@ -893,6 +901,15 @@ public abstract class J2eeModuleProvider {
          * @since 1.54
          */
         public boolean containsIdeArtifacts();
+    }
+
+    /**
+     * @since 1.56
+     */
+    public static interface DeployOnSaveClassInterceptor {
+
+        public ArtifactListener.Artifact convert(ArtifactListener.Artifact original);
+
     }
     
     private static class WarningInstanceProperties extends InstanceProperties {

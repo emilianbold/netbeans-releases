@@ -100,7 +100,9 @@
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="null"/>
         </Property>
-        <Property name="dividerLocation" type="int" value="370"/>
+        <Property name="dividerLocation" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="Integer.parseInt(NbBundle.getMessage (UnitTab.class, &quot;UnitTab_Splitter_DefaultDividerLocation&quot;))" type="code"/>
+        </Property>
         <Property name="resizeWeight" type="double" value="0.5"/>
         <Property name="oneTouchExpandable" type="boolean" value="true"/>
       </Properties>

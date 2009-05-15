@@ -135,12 +135,13 @@ final class RootNodeChildren extends Children.Keys<TestsuiteNode> {
         if (runningSuiteName != null) {
             
             if (live) {
+                correspondingNode = runningSuiteNode;
+                if (report.completed || !filtered || !isPassedSuite){
+                    correspondingNode.displayReport(report);
+                }
                 if (filtered && isPassedSuite && report.completed) {
-                    refreshKey(runningSuiteNode);
-                    correspondingNode = null;
-                } else {
-                    runningSuiteNode.displayReport(report);
-                    correspondingNode = runningSuiteNode;
+                    runningSuiteNode = null;
+                    refreshKey(correspondingNode);
                 }
             } else {
                 correspondingNode = null;
