@@ -69,7 +69,10 @@ public class WinPath {
      * @return
      */
     public static String win2cyg(String path) {
-        return CYGDRIVE_PREFIX + path.charAt(0) + path.substring(2).replace('\\', '/'); // NOI18N
+        if (isWinPath(path)) {
+            return CYGDRIVE_PREFIX + path.charAt(0) + path.substring(2).replace('\\', '/'); // NOI18N
+        }
+        return path;
     }
 
     /**
@@ -90,6 +93,13 @@ public class WinPath {
      * @return
      */
     public static String win2ming(String path) {
-        return "/" + path.charAt(0) + "/" + path.substring(2).replace('\\', '/'); // NOI18N
+        if (isWinPath(path)) {
+            return "/" + path.charAt(0) + "/" + path.substring(2).replace('\\', '/'); // NOI18N
+        }
+        return path;
+    }
+
+    public static boolean isWinPath(String path) {
+        return path.length() > 2 && Character.isLetter(path.charAt(0)) && path.charAt(1) == ':';
     }
 }
