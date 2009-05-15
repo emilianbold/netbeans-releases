@@ -285,7 +285,11 @@ public class JiraConfiguration extends JiraClientCache {
     @Override
     public Project getProjectById(String id) {
         synchronized(PROJECT_LOCK) {
-            Project project = data.projectsById.get(id);
+            Project project = getProject(data.projectsById, id);
+            if(project == null) {
+                Jira.LOG.warning("No project with id '" + id + "' available.");
+                return null;
+            }
             ensureProjectLoaded(project);
             return project;
         }
@@ -294,23 +298,36 @@ public class JiraConfiguration extends JiraClientCache {
     @Override
     public Project getProjectByKey(String key) {
         synchronized(PROJECT_LOCK) {
-            Project project = data.projectsByKey.get(key);
+            Project project = getProject(data.projectsByKey, key);
+            if(project == null) {
+                Jira.LOG.warning("No project with key '" + key + "' available.");
+                return null;
+            }
             ensureProjectLoaded(project);
             return project;
         }
     }
 
-    @Override
-    public Project[] getProjects() {
-        return data.projects;
+    private Project getProject(Map<String, Project> projectMap, String mapKey) {
+        Project project = projectMap.get(mapKey);
+        if(project == null) {
+            loadProjects();
+            project = projectMap.get(mapKey);
+        }
+        return project;
     }
 
-    public void ensureProjectLoaded(Project project) {
-        if (!loadedProjects.contains(project.getId())) {
-            initProject(project);
-            loadedProjects.add(project.getId());
+    @Override
+    public Project[] getProjects() {
+            return data.projects;
         }
-    }
+
+    public void ensureProjectLoaded(Project project) {
+            if (!loadedProjects.contains(project.getId())) {
+                initProject(project);
+                loadedProjects.add(project.getId());
+            }
+        }
 
     protected void initProject(final Project project) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
@@ -325,6 +342,17 @@ public class JiraConfiguration extends JiraClientCache {
 
                 // XXX what else !!!
 
+            }
+        };
+        repository.getExecutor().execute(cmd);
+    }
+
+    private void loadProjects() {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+        JiraCommand cmd = new JiraCommand() {
+            @Override
+            public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
+                data.projects = client.getProjects(new NullProgressMonitor());
             }
         };
         repository.getExecutor().execute(cmd);
