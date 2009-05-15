@@ -39,10 +39,15 @@
 
 package org.netbeans.modules.hudson.kenai;
 
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.api.HudsonJobBuild;
+import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
+import org.netbeans.modules.hudson.api.UI;
 import org.netbeans.modules.kenai.ui.spi.BuildHandle;
+import org.openide.util.RequestProcessor;
 
 class BuildHandleImpl extends BuildHandle {
 
@@ -80,8 +85,45 @@ class BuildHandleImpl extends BuildHandle {
     public void removePropertyChangeListener(PropertyChangeListener l) {}
 
     public ActionListener getDefaultAction() {
-        // XXX similar to ProblemNotification if not stable, else just select build node?
-        return null;
+        return new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                // Mostly copied from ProblemNotification.actionPerformed.
+                final int build = job.getLastBuild();
+                UI.selectNode(job.getInstance().getUrl(), job.getName(), Integer.toString(build));
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        for (HudsonJobBuild b : job.getBuilds()) {
+                            if (b.getNumber() == build) {
+                                switch (b.getResult()) {
+                                case FAILURE:
+                                case ABORTED:
+                                    UI.showConsoleAction(b).actionPerformed(e);
+                                    break;
+                                case UNSTABLE:
+                                    if (b.getMavenModules().isEmpty()) {
+                                        UI.showFailuresAction(b).actionPerformed(e);
+                                    } else {
+                                        for (HudsonMavenModuleBuild module : b.getMavenModules()) {
+                                            switch (module.getColor()) {
+                                            case yellow:
+                                            case yellow_anime:
+                                                UI.showFailuresAction(module).actionPerformed(e);
+                                            }
+                                        }
+                                    }
+                                    break;
+                                case SUCCESS:
+                                case NOT_BUILT:
+                                    UI.showChangesAction(b).actionPerformed(e);
+                                    break;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                });
+            }
+        };
     }
 
 }

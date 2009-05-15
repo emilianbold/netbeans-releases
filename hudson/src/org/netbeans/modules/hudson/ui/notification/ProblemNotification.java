@@ -84,6 +84,7 @@ class ProblemNotification implements ActionListener {
     }
 
     public void actionPerformed(final ActionEvent e) {
+        // BuildHandleImpl.getDefaultAction similar but not identical.
         UI.selectNode(job.getInstance().getUrl(), job.getName(), Integer.toString(build));
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
