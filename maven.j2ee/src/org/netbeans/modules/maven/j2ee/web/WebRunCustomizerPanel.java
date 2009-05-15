@@ -79,9 +79,13 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
 
     private NetbeansActionMapping debug;
 
+    private NetbeansActionMapping profile;
+
     private boolean isRunCompatible;
 
     private boolean isDebugCompatible;
+
+    private boolean isProfileCompatible;
 
     private String oldUrl;
     private ComboBoxUpdater<Wrapper> listener;
@@ -114,8 +118,12 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         
         run = ModelHandle.getActiveMapping(ActionProvider.COMMAND_RUN, project);
         debug = ModelHandle.getActiveMapping(ActionProvider.COMMAND_DEBUG, project);
+        profile = ModelHandle.getActiveMapping("profile", project); // NOI18N
+
         isRunCompatible = checkMapping(run);
         isDebugCompatible = checkMapping(debug);
+        isProfileCompatible = checkMapping(profile);
+
         oldUrl = isRunCompatible ? run.getProperties().getProperty(PROP_CLIENT_URL_PART) : //NOI18N
                                    debug.getProperties().getProperty(PROP_CLIENT_URL_PART); //NOI18N
         
@@ -302,6 +310,11 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
             if (isDebugCompatible) {
                 debug.getProperties().setProperty( PROP_CLIENT_URL_PART, newUrl); //NOI18N
                 ModelHandle.setUserActionMapping(debug, handle.getActionMappings());
+                handle.markAsModified(handle.getActionMappings());
+            }
+            if (isProfileCompatible) {
+                profile.getProperties().setProperty( PROP_CLIENT_URL_PART, newUrl); //NOI18N
+                ModelHandle.setUserActionMapping(profile, handle.getActionMappings());
                 handle.markAsModified(handle.getActionMappings());
             }
         }
