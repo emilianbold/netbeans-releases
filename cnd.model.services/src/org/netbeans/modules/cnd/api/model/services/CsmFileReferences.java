@@ -65,7 +65,9 @@ import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.openide.util.Lookup;
 
 /**
@@ -208,7 +210,7 @@ public abstract class CsmFileReferences {
        return null;
    }
 
-   private static boolean hasTemplateBasedAncestors(CsmType type, int level) {
+   public static boolean hasTemplateBasedAncestors(CsmType type, int level) {
        if( type != null) {
            if (level == 0) {
                CndUtils.assertTrueInConsole(false, "Infinite recursion in file " + type.getContainingFile() + " class " + type); //NOI18N
@@ -290,11 +292,29 @@ public abstract class CsmFileReferences {
        return false;
    }
 
+   public static boolean isBuiltInBased(CsmReference ref) {
+       CharSequence txt = null;
+       if (ref != null) {
+           txt = ref.getText();
+       }
+       if (txt != null && txt.length() > 0) {
+           String strTxt = txt.toString();
+           if (strTxt.equals("__func__")) { // NOI18N
+               return true;
+           } else if (strTxt.startsWith("__builtin_")) { // NOI18N
+               return true;
+           }
+       }
+       return false;
+   }
+
    public static boolean isAfterUnresolved(CsmReferenceContext context) {
        if (2 <= context.size() && isDereference(context.getToken())) {
            CsmReference ref = context.getReference(context.size() - 2);
            if (ref != null && !getDefault().isThis(ref)) {
-               if (ref.getReferencedObject() == null) {
+                final CsmObject referencedObject = ref.getReferencedObject();
+                if (referencedObject == null ||
+                       referencedObject instanceof CsmTemplateBasedReferencedObject) {
                    return true;
                }
            }
@@ -302,7 +322,7 @@ public abstract class CsmFileReferences {
        return false;
    }
 
-   private static boolean isTemplateParameterInvolved(CsmObject obj) {
+   public static boolean isTemplateParameterInvolved(CsmObject obj) {
        if (CsmKindUtilities.isTemplateParameter(obj)) {
            return true;
        }

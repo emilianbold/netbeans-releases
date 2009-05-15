@@ -70,7 +70,7 @@ public final class GdbBreakpointEvent extends EventObject {
     private GdbDebugger	    debugger;
     //private CndThread	    thread;
     //private ReferenceType   referenceType;
-    private Variable        variable;
+//    private Variable        variable;
     private boolean         resume = false;
     
 
@@ -89,7 +89,7 @@ public final class GdbBreakpointEvent extends EventObject {
         super(sourceBreakpoint);
         this.conditionResult = conditionResult;
         this.debugger = debugger;
-        this.variable = variable;
+//        this.variable = variable;
     }
     
     /**
@@ -106,7 +106,7 @@ public final class GdbBreakpointEvent extends EventObject {
         this.conditionResult = CONDITION_FAILED;
         this.conditionException = conditionException;
         this.debugger = debugger;
-        this.variable = variable;
+//        this.variable = variable;
     }
     
     /**

@@ -36,29 +36,53 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.kenai.collab.chat;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.cnd.debugger.gdb.models;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.GdbVariable;
+import org.netbeans.modules.cnd.debugger.gdb.LocalVariable;
 
 /**
- * TODO: delete this class
- * @author Jan Becicka
+ *
+ * @author Egor Ushakov
  */
-public final class SendChatMessageDisabled extends AbstractAction {
+public class GdbLocalVariable extends AbstractVariable implements LocalVariable, PropertyChangeListener {
+    private final String name;
+    private final String type;
 
-    public SendChatMessageDisabled() {
-        super(NbBundle.getMessage(WhoIsOnlineDisabled.class, "CTL_SendChatMessageAction"));
+    public GdbLocalVariable(GdbDebugger debugger, GdbVariable var) {
+        super(debugger, var.getValue());
+        this.name = var.getName();
+        this.type = getDebugger().requestWhatis(name);
+        
+        debugger.addPropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, this);
     }
 
-    public void actionPerformed(ActionEvent e) {
-        ChatTopComponent.openAction(ChatTopComponent.findInstance(), "", "", false).actionPerformed(e); // NOI18N
+    public GdbLocalVariable(GdbDebugger debugger, String name) {
+        super(debugger, null);
+        this.name = name;
+        this.type = getDebugger().requestWhatis(name);
+        String expr = name;
+        if (!GdbWatchVariable.disableMacros) {
+            expr = GdbWatchVariable.expandMacro(getDebugger(), expr);
+        }
+        value = getDebugger().requestValue(expr);
+        
+        debugger.addPropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, this);
     }
 
-    @Override
-    public boolean isEnabled() {
-        return System.getProperty(("kenai.com.url"), "https://kenai.com").endsWith("testkenai.com");
+    public String getType() {
+        return type;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        onValueChange(evt);
+    }
+
+    public String getName() {
+        return name;
     }
 }
-

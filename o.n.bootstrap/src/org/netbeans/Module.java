@@ -259,7 +259,7 @@ public abstract class Module extends ModuleInfo {
         if (src != null) {
             try {
                 URL loc = src.getLocation();
-                if (loc.toString().matches("file:.+\\.jar")) {
+                if (loc.toString().matches(".+\\.jar")) {
                     // URLClassLoader inconsistency.
                     loc = new URL("jar:" + loc + "!/");
                 }

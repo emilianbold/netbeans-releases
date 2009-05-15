@@ -814,7 +814,7 @@ public class Resolver3 implements Resolver {
                             }
                         }
                         if (newNs == null) {
-                            Collection<CsmNamespace> namespaces = CsmUsingResolver.getDefault().findVisibleNamespaces(ns, project);
+                            Collection<CsmNamespace> namespaces = ns.getNestedNamespaces();
                             for (CsmNamespace namespace : namespaces) {
                                 if (namespace.getName().toString().equals(name.toString())) {
                                     newNs = namespace;

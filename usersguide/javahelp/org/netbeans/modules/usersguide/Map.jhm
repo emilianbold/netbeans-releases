@@ -355,6 +355,8 @@
   <mapID target="netbeans.optionsDialog.editor.hints" url="configure/options_editor.html" />
   <mapID target="netbeans.optionsDialog.editor.markOccurences" url="configure/options_editor.html" />
   <mapID target="netbeans.optionsDialog.editor.tasklist" url="configure/options_editor.html" />
+  <mapID target="netbeans.optionsDialog.editor.identation" url="configure/options_editor.html" />
+  <mapID target="netbeans.optionsDialog.editor.codeCompletion" url="configure/options_editor.html" />
 
   <!--ID for CSH in Options | Basic Options - Fonts and Colors Category: --> 
   <mapID target="netbeans.optionsDialog.fontAndColorsPanel" url="configure/options_fontscolors.html" />

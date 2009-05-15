@@ -36,29 +36,25 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.kenai.collab.chat;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.html.editor.completion;
+
+import java.io.IOException;
+import javax.swing.text.BadLocationException;
 
 /**
- * TODO: delete this class
- * @author Jan Becicka
+ *
+ * @author marekfukala
  */
-public final class WhoIsOnlineDisabled extends AbstractAction {
+public class HtmlCompletionQueryTest_XHTML extends HtmlCompletionQueryTest {
 
-    public WhoIsOnlineDisabled() {
-        super(NbBundle.getMessage(WhoIsOnlineDisabled.class, "CTL_WhoIsOnlineAction"));
+    public HtmlCompletionQueryTest_XHTML() throws IOException, BadLocationException {
+        super(HtmlCompletionQueryTest_XHTML.class.getName());
     }
 
-    public void actionPerformed(ActionEvent e) {
-        new WhoIsOnlineAction().actionPerformed(e);
-    }
     @Override
-    public boolean isEnabled() {
-        return System.getProperty(("kenai.com.url"), "https://kenai.com").endsWith("testkenai.com");
+    protected String getPublicID() {
+        return "-//W3C//DTD XHTML 1.0 Strict//EN";
     }
-
+    
 }
-
