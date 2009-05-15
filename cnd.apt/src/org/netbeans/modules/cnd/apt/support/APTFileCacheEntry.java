@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,43 +31,71 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.apt.support;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
-import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import org.netbeans.modules.cnd.apt.structure.APTInclude;
+import org.netbeans.modules.cnd.apt.support.APTMacroMap.State;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public final class APTIncludePathStorage {
-    private final Map<CharSequence, List<CharSequence>> allIncludes = new HashMap<CharSequence, List<CharSequence>>();
+public final class APTFileCacheEntry {
+    private final ConcurrentMap<APTInclude, Data> cache = new ConcurrentHashMap<APTInclude, Data>();
+    private final CharSequence filePath;
+    private static boolean TRACE = false;
+    public APTFileCacheEntry(CharSequence filePath) {
+        assert (filePath != null);
+        this.filePath = filePath;
+    }
     
-    public APTIncludePathStorage() {
+    /*package*/ APTMacroMap.State getPostIncludeMacroState(APTInclude node) {
+        Data data = cache.get(node);
+        if (data != null && data.state != null) {
+            if (TRACE) {
+                System.err.println("HIT cache for :" + node.getToken().getLine() + ":" + node.getText() + " in " + filePath);
+            }
+            return data.state;
+        }
+        return null;
     }
 
-    public List<CharSequence> get(CharSequence configID, List<? extends CharSequence> sysIncludes) {
-        CharSequence key = CharSequenceKey.create(configID);
-        synchronized (allIncludes) {
-            List<CharSequence> list = allIncludes.get(key);
-            if (list == null) {
-                // create new one with light char sequences and put in map
-                list = FilePathCache.asList(sysIncludes);
-                allIncludes.put(key, list);
-            }
-            return list;
+    /*package*/ void setPostIncludeMacroState(APTInclude node, APTMacroMap.State state) {
+        if (TRACE) {
+            System.err.println("PUT cache for cache for [line " + node.getToken().getLine() + "]:" + node.getText() + " in " + filePath);
+        }
+        cache.get(node).state = state;
+    }
+
+    /*package*/ synchronized Object getLock(APTInclude node) {
+        Data data = new Data(null);
+        cache.put(node, data);
+        return data.lock;
+    }
+
+    public CharSequence getFilePath() {
+        return filePath;
+    }
+
+    @Override
+    public String toString() {
+        return "APT cache for " + filePath; // NOI18N
+    }
+
+    private static final class Data {
+        APTMacroMap.State state;
+        private final Object lock = new Object();
+
+        public Data(State state) {
+            this.state = state;
         }
     }
-    
-    public void dispose() {
-        synchronized (allIncludes) {
-            allIncludes.clear();
-        }
-    }
-    
 }

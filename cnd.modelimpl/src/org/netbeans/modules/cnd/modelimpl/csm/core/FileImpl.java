@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
+import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -821,7 +822,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         APTLanguageFilter languageFilter = getLanguageFilter(ppState);
         FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(getAbsolutePath());
-        APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler, false, pcBuilder);
+        APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler, false, pcBuilder, getIncludeCacheEntry(preprocHandler));
         tsCache.addNewPair(pcBuilder, walker.getTokenStream(false), languageFilter);
         return true;
     }    
@@ -908,6 +909,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
+    public final APTFileCacheEntry getIncludeCacheEntry(APTPreprocHandler preprocHandler) {
+        return null; //new APTFileCacheEntry(getAbsolutePath());
+    }
+
     public ReadOnlyTokenBuffer getErrors(final Collection<RecognitionException> result) {
         CPPParserEx.ErrorDelegate delegate = new CPPParserEx.ErrorDelegate() {
 
@@ -934,7 +939,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         try {
             APTFile aptFull = getFullAPT();
             if (aptFull != null) {
-                APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, false, null);
+                APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, false, null, getIncludeCacheEntry(preprocHandler));
                 CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter(ppState)), flags);
                 parser.setErrorDelegate(delegate);
                 parser.setLazyCompound(false);
@@ -998,7 +1003,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
             // We gather conditional state here as well, because sources are not included anywhere
             FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(getAbsolutePath());
-            APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, true, pcBuilder);
+            APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, true, pcBuilder, getIncludeCacheEntry(preprocHandler));
             walker.addMacroAndIncludes(true);
             if (TraceFlags.DEBUG) {
                 System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocState(ppState));
