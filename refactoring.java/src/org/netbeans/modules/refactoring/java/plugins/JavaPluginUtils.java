@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,75 +31,47 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.core.syntax;
+package org.netbeans.modules.refactoring.java.plugins;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import org.netbeans.modules.parsing.api.Embedding;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.EmbeddingProvider;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
-import org.openide.util.Exceptions;
+import javax.lang.model.element.Element;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
- *
- * @author Jan Lahoda
+ * Utility class for java plugins.
  */
-public class EmbeddingProviderImpl extends EmbeddingProvider {
+final class JavaPluginUtils {
 
-    @Override
-    public List<Embedding> getEmbeddings(Snapshot snapshot) {
-        //XXX: should not use the document, I guess:
-        Document doc = snapshot.getSource().getDocument(false);
-
-        if (doc == null) {
-            return Collections.emptyList();
+    public static final Problem isSourceElement(Element el, CompilationInfo info) {
+        Problem preCheckProblem = null;
+        if (RetoucheUtils.isFromLibrary(el, info.getClasspathInfo())) { //NOI18N
+            preCheckProblem = new Problem(true, NbBundle.getMessage(
+                    JavaPluginUtils.class, "ERR_CannotRefactorLibraryClass",
+                    el.getEnclosingElement()
+                    ));
+            return preCheckProblem;
         }
-
-        SimplifiedJspServlet gen = new SimplifiedJspServlet(snapshot, doc);
-        
-        try {
-            gen.process();
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
+        FileObject file = SourceUtils.getFile(el,info.getClasspathInfo());
+        // RetoucheUtils.isFromLibrary already checked file for null
+        if (!RetoucheUtils.isElementInOpenProject(file)) {
+            preCheckProblem =new Problem(true, NbBundle.getMessage(
+                    JavaPluginUtils.class,
+                    "ERR_ProjectNotOpened",
+                    FileUtil.getFileDisplayName(file)));
+            return preCheckProblem;
         }
-        
-        Embedding e = gen.getSimplifiedServlet();
-        
-        if (e != null) {
-            return Collections.singletonList(e);
-        } else {
-            return Collections.emptyList();
-        }
-    }
-
-    @Override
-    public int getPriority() {
-        return 100;
-    }
-
-    @Override
-    public void cancel() {
-        //well...
-    }
-    
-    public static final class Factory extends TaskFactory {
-
-        @Override
-        public Collection<SchedulerTask> create(final Snapshot snapshot) {
-            return Collections.<SchedulerTask>singletonList(new EmbeddingProviderImpl());
-        }
-        
+        return null;
     }
 
 }

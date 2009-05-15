@@ -62,7 +62,6 @@ import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 
@@ -102,17 +101,14 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
                 // fatal error -> don't continue with further checks
                 return problem;
             }
-            if (!RetoucheUtils.isElementInOpenProject(treePathHandle.getFileObject())) {
-                return new Problem(true, NbBundle.getMessage(
-                        PullUpRefactoringPlugin.class,
-                        "ERR_ProjectNotOpened",
-                        FileUtil.getFileDisplayName(treePathHandle.getFileObject())));
-            }
-
 
             // increase progress (step 1)
             fireProgressListenerStep();
             final Element elm = treePathHandle.resolveElement(cc);
+            problem = JavaPluginUtils.isSourceElement(elm, cc);
+            if (problem != null) {
+                return problem;
+            }
             if (!(elm instanceof TypeElement)) {
                 return new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDown_InvalidSource", treePathHandle, elm)); // NOI18N
             }

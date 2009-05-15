@@ -179,11 +179,28 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     }
 
     public boolean isScanInProgress() {
-        return getWorker().isWorking();
+        boolean beforeInitialScanStarted;
+        synchronized (this) {
+            beforeInitialScanStarted = state == State.CREATED || state == State.STARTED;
+        }
+        return beforeInitialScanStarted || getWorker().isWorking() || !PathRegistry.getDefault().isFinished();
     }
 
+    // returns false when timed out
     public boolean waitUntilFinished(long timeout) throws InterruptedException {
-        return getWorker().waitUntilFinished(timeout);
+        long ts1 = System.currentTimeMillis();
+        long ts2 = ts1;
+        //long tout = timeout > 0 ? timeout : 1000;
+
+        do {
+            boolean timedOut = !getWorker().waitUntilFinished(timeout);
+            ts2 = System.currentTimeMillis();
+            if (timedOut) {
+                return false;
+            }
+        } while (isScanInProgress() && (timeout <= 0 || ts2 - ts1 < timeout));
+
+        return timeout <= 0 || ts2 - ts1 < timeout;
     }
 
     /**
@@ -1500,8 +1517,12 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     }
                     newRoots.addAll(PathRegistry.getDefault().getUnknownRoots());
 
+                    Set<String> libraryIds = PathRecognizerRegistry.getDefault().getLibraryIds();
+                    Set<String> binaryLibraryIds = PathRecognizerRegistry.getDefault().getBinaryLibraryIds();
+                    LOGGER.log(Level.FINE, "LibraryIds: {0}", libraryIds);
+                    LOGGER.log(Level.FINE, "BinaryLibraryIds: {0}", binaryLibraryIds);
                     for (URL url : newRoots) {
-                        findDependencies(url, depCtx, PathRecognizerRegistry.getDefault().getLibraryIds(), PathRecognizerRegistry.getDefault().getBinaryLibraryIds());
+                        findDependencies(url, depCtx, libraryIds, binaryLibraryIds);
                     }
 
                     try {

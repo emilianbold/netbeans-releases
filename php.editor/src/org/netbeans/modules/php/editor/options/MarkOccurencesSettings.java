@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,75 +37,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor.options;
 
-package org.netbeans.modules.web.core.syntax;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import org.netbeans.modules.parsing.api.Embedding;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.EmbeddingProvider;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
-import org.openide.util.Exceptions;
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class EmbeddingProviderImpl extends EmbeddingProvider {
+public class MarkOccurencesSettings {
+    
+    private static final String MARK_OCCURENCES = "MarkOccurences"; // NOI18N
 
-    @Override
-    public List<Embedding> getEmbeddings(Snapshot snapshot) {
-        //XXX: should not use the document, I guess:
-        Document doc = snapshot.getSource().getDocument(false);
-
-        if (doc == null) {
-            return Collections.emptyList();
-        }
-
-        SimplifiedJspServlet gen = new SimplifiedJspServlet(snapshot, doc);
-        
-        try {
-            gen.process();
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        
-        Embedding e = gen.getSimplifiedServlet();
-        
-        if (e != null) {
-            return Collections.singletonList(e);
-        } else {
-            return Collections.emptyList();
-        }
+    public static String ON_OFF = "OnOff"; // NOI18N
+    
+    private MarkOccurencesSettings() {
     }
 
-    @Override
-    public int getPriority() {
-        return 100;
-    }
-
-    @Override
-    public void cancel() {
-        //well...
+    public static Preferences getCurrentNode() {
+        Preferences preferences = NbPreferences.forModule(MarkOccurencesOptionsPanelController.class);
+        return preferences.node(MARK_OCCURENCES).node(getCurrentProfileId());
     }
     
-    public static final class Factory extends TaskFactory {
-
-        @Override
-        public Collection<SchedulerTask> create(final Snapshot snapshot) {
-            return Collections.<SchedulerTask>singletonList(new EmbeddingProviderImpl());
-        }
-        
+    private static String getCurrentProfileId() {
+        return "default"; // NOI18N
     }
-
+    
 }

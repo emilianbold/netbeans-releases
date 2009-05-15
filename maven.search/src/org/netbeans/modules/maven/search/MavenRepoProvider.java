@@ -66,33 +66,31 @@ public class MavenRepoProvider implements SearchProvider {
      * @param response Search response object that stores search results. Note that it's important to react to return value of SearchResponse.addResult(...) method and stop computation if false value is returned.
      */
     public void evaluate(final SearchRequest request, final SearchResponse response) {
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                List<NBVersionInfo> infos = null;
-                try {
-                    infos = RepositoryQueries.find(getQuery(request));
-                } catch (BooleanQuery.TooManyClauses e) {
-                    // query too general, just ignore it
-                    return;
-                }
-                Map<String, List<NBVersionInfo>> map = new TreeMap<String, List<NBVersionInfo>>(new Comp(request.getText()));
-                for (NBVersionInfo nbvi : infos) {
-                    String key = nbvi.getGroupId() + " : " + nbvi.getArtifactId(); //NOI18N
-                    List<NBVersionInfo> get = map.get(key);
-                    if (get == null) {
-                        get = new ArrayList<NBVersionInfo>();
-                        map.put(key, get);
-                    }
-                    get.add(nbvi);
-                }
-                Set<Entry<String, List<NBVersionInfo>>> entrySet = map.entrySet();
-                for (Entry<String, List<NBVersionInfo>> entry : entrySet) {
-                    NBArtifactInfo nbai = new NBArtifactInfo(entry.getKey());
-                    nbai.addAlVersionInfos(entry.getValue());
-                    response.addResult(new OpenArtifactInfo(nbai), nbai.getName());
-                }
+        List<NBVersionInfo> infos = null;
+        try {
+            infos = RepositoryQueries.find(getQuery(request));
+        } catch (BooleanQuery.TooManyClauses e) {
+            // query too general, just ignore it
+            return;
+        }
+        Map<String, List<NBVersionInfo>> map = new TreeMap<String, List<NBVersionInfo>>(new Comp(request.getText()));
+        for (NBVersionInfo nbvi : infos) {
+            String key = nbvi.getGroupId() + " : " + nbvi.getArtifactId(); //NOI18N
+            List<NBVersionInfo> get = map.get(key);
+            if (get == null) {
+                get = new ArrayList<NBVersionInfo>();
+                map.put(key, get);
             }
-        });
+            get.add(nbvi);
+        }
+        Set<Entry<String, List<NBVersionInfo>>> entrySet = map.entrySet();
+        for (Entry<String, List<NBVersionInfo>> entry : entrySet) {
+            NBArtifactInfo nbai = new NBArtifactInfo(entry.getKey());
+            nbai.addAlVersionInfos(entry.getValue());
+            if (!response.addResult(new OpenArtifactInfo(nbai), nbai.getName())) {
+                return;
+            }
+        }
     }
 
     List<QueryField> getQuery(SearchRequest request) {
