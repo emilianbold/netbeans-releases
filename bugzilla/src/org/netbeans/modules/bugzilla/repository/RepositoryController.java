@@ -132,6 +132,10 @@ public class RepositoryController extends BugtrackingController implements Docum
         return panel.httpCheckBox.isSelected() ? new String(panel.httpPsswdField.getPassword()) : null;
     }
 
+    private boolean isLocalUserEnabled () {
+        return panel.cbEnableLocalUsers.isSelected();
+    }
+
     private boolean validate() {
         if(validateError) {
             return false;
@@ -206,7 +210,8 @@ public class RepositoryController extends BugtrackingController implements Docum
             getUser(),
             getPassword(),
             getHttpUser(),
-            getHttpPassword());
+            getHttpPassword(),
+            isLocalUserEnabled());
         Bugzilla.getInstance().addRepository(repository);
         repository.getNode().setName(newName);
     }
@@ -233,6 +238,7 @@ public class RepositoryController extends BugtrackingController implements Docum
                     }
                     panel.urlField.setText(repository.getTaskRepository().getUrl());
                     panel.nameField.setText(repository.getDisplayName());
+                    panel.cbEnableLocalUsers.setSelected(repository.isShortUsernamesEnabled());
                     populating = false;
                     fireDataChanged();
                 }
@@ -298,7 +304,8 @@ public class RepositoryController extends BugtrackingController implements Docum
                             getUser(),
                             getPassword(),
                             getHttpUser(),
-                            getHttpPassword());
+                            getHttpPassword(),
+                            isLocalUserEnabled());
 
                     ValidateCommand cmd = new ValidateCommand(taskRepo);
                     repository.getExecutor().execute(cmd, false);

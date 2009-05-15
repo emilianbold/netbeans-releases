@@ -759,8 +759,8 @@ public class AttributedNodes extends DefaultVisitor {
                 }
             }
             if (Kind.CLASS.equals(k) && fName.equals("parent")) {//NOI18N
-                Collection<AttributedElement> values = name2El.values();
                 if (name2El != null) {
+                    Collection<AttributedElement> values = name2El.values();
                     for (AttributedElement ael : values) {
                         if (ael instanceof ClassElement) {
                             ClassElement ce = (ClassElement) ael;
