@@ -117,9 +117,4 @@ public class BuildAccessorImpl extends BuildAccessor {
         return null;
     }
 
-    public ActionListener getDefaultAction(BuildHandle build) {
-        // XXX similar to ProblemNotification if not stable, else just select build node?
-        return null;
-    }
-
 }

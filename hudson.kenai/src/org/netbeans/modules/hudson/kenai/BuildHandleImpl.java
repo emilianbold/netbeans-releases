@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.hudson.kenai;
 
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.kenai.ui.spi.BuildHandle;
@@ -77,5 +78,10 @@ class BuildHandleImpl extends BuildHandle {
     // Unused; create a new HJ and hence new BHI after every server refresh w/ changes
     public void addPropertyChangeListener(PropertyChangeListener l) {}
     public void removePropertyChangeListener(PropertyChangeListener l) {}
+
+    public ActionListener getDefaultAction() {
+        // XXX similar to ProblemNotification if not stable, else just select build node?
+        return null;
+    }
 
 }
