@@ -423,7 +423,6 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
 
     private static void paintHover (Graphics2D g, Rectangle bounds, Color c, boolean selected) {
         g.setColor(c);
-        g.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
         g.drawRect(bounds.x + 1, bounds.y + 1, bounds.width - 2, bounds.height - 2);
         if (!selected) {
             g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 150));

@@ -69,10 +69,10 @@ import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.compilers.impl.ToolchainManagerImpl;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
@@ -255,6 +255,9 @@ public class CompilerSetManager {
                 for (String dir : Path.getPath()) {
                     dir = dir.toLowerCase().replace("\\", "/"); // NOI18N
                     if (dir.contains("cygwin")) { // NOI18N
+                        if (dir.endsWith("/")) { // NOI18N
+                            dir = dir.substring(0, dir.length() - 1);
+                        }
                         if (dir.toLowerCase().endsWith("/usr/bin")) { // NOI18N
                             cygwinBase = dir.substring(0, dir.length() - 8);
                             break;
@@ -458,7 +461,7 @@ public class CompilerSetManager {
             return PlatformTypes.PLATFORM_WINDOWS;
         } else if (os.toLowerCase().contains("linux")) { // NOI18N
             return PlatformTypes.PLATFORM_LINUX;
-        } else if (os.toLowerCase().contains("mac")) { // NOI18N
+        } else if (os.toLowerCase().contains("mac") || os.startsWith("Darwin")) { // NOI18N
             return PlatformTypes.PLATFORM_MACOSX;
         } else {
             return PlatformTypes.PLATFORM_GENERIC;
@@ -503,7 +506,7 @@ public class CompilerSetManager {
                 continue;
             }
             if (!IpeUtils.isPathAbsolute(path)) {
-                path = FileUtil.normalizeFile(new File(path)).getAbsolutePath();
+                path = CndFileUtils.normalizeFile(new File(path)).getAbsolutePath();
             }
             File dir = new File(path);
             if (dir.isDirectory()) {
@@ -691,7 +694,6 @@ public class CompilerSetManager {
                     @SuppressWarnings("unchecked")
                     public void run() {
                         try {
-                            CompilerSetReporter.report("CSM_ConfHost");//NOI18N
                             platform = provider.getPlatform();
                             CompilerSetReporter.report("CSM_ValPlatf", true, PlatformTypes.toString(platform)); //NOI18N
                             CompilerSetReporter.report("CSM_LFTC"); //NOI18N

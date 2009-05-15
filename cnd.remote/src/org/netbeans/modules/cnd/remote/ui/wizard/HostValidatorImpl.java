@@ -108,12 +108,11 @@ public class HostValidatorImpl implements HostValidator {
             return false;
         }
         if (!alreadyOnline) {
+            writer.print(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgDone") + '\n');
+            writer.print(NbBundle.getMessage(getClass(), "CSM_ConfHost") + '\n');
             record.init(null);
         }
         if (record.isOnline()) {
-            if (!alreadyOnline) {
-                writer.print(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgDone") + '\n');
-            }
             CompilerSetReporter.setWriter(new Writer() {
 
                 @Override

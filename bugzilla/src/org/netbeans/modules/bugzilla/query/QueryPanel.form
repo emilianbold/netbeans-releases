@@ -1129,22 +1129,26 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="searchPanel" alignment="0" max="32767" attributes="1"/>
           <Component id="queryHeaderPanel" alignment="0" max="32767" attributes="2"/>
-          <Component id="noContentPanel" alignment="0" pref="1183" max="32767" attributes="0"/>
-          <Component id="tableFieldsPanel" alignment="0" max="32767" attributes="2"/>
+          <Component id="searchPanel" alignment="0" max="32767" attributes="1"/>
+          <Group type="102" alignment="0" attributes="0">
+              <Component id="tableFieldsPanel" max="32767" attributes="2"/>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+          <Component id="noContentPanel" alignment="0" pref="1400" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Component id="queryHeaderPanel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="searchPanel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="tableFieldsPanel" max="32767" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="noContentPanel" pref="106" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="noContentPanel" pref="85" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -1160,13 +1164,12 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="1" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
                   <EmptySpace min="-2" max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="tablePanel" alignment="0" pref="1163" max="32767" attributes="2"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="tablePanel" alignment="0" pref="1360" max="32767" attributes="2"/>
                       <Component id="tableHeaderPanel" alignment="0" max="32767" attributes="2"/>
                   </Group>
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -1174,9 +1177,9 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
                   <Component id="tableHeaderPanel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
                   <Component id="tablePanel" pref="99" max="32767" attributes="0"/>
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -1184,6 +1187,9 @@
       <SubComponents>
         <Container class="javax.swing.JPanel" name="tablePanel">
           <Properties>
+            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+              <Color blue="e0" green="e0" red="e0" type="rgb"/>
+            </Property>
             <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[100, 350]"/>
             </Property>
@@ -1206,7 +1212,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="tableSummaryLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="1040" max="32767" attributes="0"/>
+                      <EmptySpace pref="1183" max="32767" attributes="0"/>
                       <Component id="filterLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="filterComboBox" min="-2" max="-2" attributes="0"/>
@@ -1292,15 +1298,15 @@
                   <EmptySpace pref="505" max="32767" attributes="0"/>
                   <Component id="saveButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
+                  <Component id="separatorLabel1" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="webButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
+                  <Component id="separatorLabel2" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="urlToggleButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jLabel9" min="-2" pref="2" max="-2" attributes="0"/>
+                  <Component id="separatorLabel3" min="-2" pref="2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="refreshConfigurationButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
@@ -1313,8 +1319,8 @@
               <Group type="102" attributes="0">
                   <Component id="gotoPanel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                  <Component id="criteriaPanel" max="32767" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="criteriaPanel" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace pref="8" max="32767" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="103" alignment="0" groupAlignment="3" attributes="0">
                           <Component id="searchButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -1326,9 +1332,9 @@
                           <Component id="urlToggleButton" linkSize="3" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="webButton" linkSize="3" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="saveButton" linkSize="3" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="jLabel7" linkSize="3" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="jLabel8" linkSize="3" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="jLabel9" alignment="3" min="-2" pref="18" max="-2" attributes="0"/>
+                          <Component id="separatorLabel1" linkSize="3" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="separatorLabel2" linkSize="3" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="separatorLabel3" alignment="3" min="-2" pref="18" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
@@ -1389,34 +1395,39 @@
           </AuxValues>
         </Component>
         <Container class="javax.swing.JPanel" name="criteriaPanel">
+          <Properties>
+            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+              <Color blue="e0" green="e0" red="e0" type="rgb"/>
+            </Property>
+          </Properties>
 
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="byLastChangeContainer" alignment="0" pref="1183" max="32767" attributes="1"/>
+                  <Component id="byLastChangeContainer" alignment="0" pref="1400" max="32767" attributes="1"/>
                   <Component id="urlPanel" alignment="0" max="32767" attributes="3"/>
-                  <Component id="byTextContainer" alignment="0" pref="1183" max="32767" attributes="2"/>
+                  <Component id="byTextContainer" alignment="0" pref="1400" max="32767" attributes="2"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="byTextLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="1056" max="32767" attributes="0"/>
+                      <EmptySpace pref="1254" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="byDetailsLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="1028" max="32767" attributes="0"/>
+                      <EmptySpace pref="1224" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="byDetailsContainer" alignment="0" pref="1183" max="32767" attributes="1"/>
+                  <Component id="byDetailsContainer" alignment="0" pref="1400" max="32767" attributes="1"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="byPeopleLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="1078" max="32767" attributes="0"/>
+                      <EmptySpace pref="1280" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="byPeopleContainer" alignment="0" pref="1183" max="32767" attributes="1"/>
+                  <Component id="byPeopleContainer" alignment="0" pref="1400" max="32767" attributes="1"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="byLastChangeLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="1049" max="32767" attributes="0"/>
+                      <EmptySpace pref="1248" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1526,6 +1537,11 @@
               <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
             </Container>
             <Container class="javax.swing.JPanel" name="urlPanel">
+              <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="e0" green="e0" red="e0" type="rgb"/>
+                </Property>
+              </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
               </AuxValues>
@@ -1537,7 +1553,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="urlTextField" pref="1109" max="32767" attributes="0"/>
+                          <Component id="urlTextField" pref="1287" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -1630,6 +1646,11 @@
           </AuxValues>
         </Component>
         <Container class="javax.swing.JPanel" name="gotoPanel">
+          <Properties>
+            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+              <Color blue="e0" green="e0" red="e0" type="rgb"/>
+            </Property>
+          </Properties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
           </AuxValues>
@@ -1644,7 +1665,7 @@
                       <Component id="idTextField" min="-2" pref="191" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="gotoIssueButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="837" max="32767" attributes="0"/>
+                      <EmptySpace pref="997" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1701,10 +1722,10 @@
             </Component>
           </SubComponents>
         </Container>
-        <Component class="javax.swing.JLabel" name="jLabel7">
+        <Component class="javax.swing.JLabel" name="separatorLabel1">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/bugzilla/query/Bundle.properties" key="QueryPanel.jLabel7.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/bugzilla/query/Bundle.properties" key="QueryPanel.separatorLabel1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
@@ -1713,10 +1734,10 @@
             </Property>
           </Properties>
         </Component>
-        <Component class="javax.swing.JLabel" name="jLabel8">
+        <Component class="javax.swing.JLabel" name="separatorLabel2">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/bugzilla/query/Bundle.properties" key="QueryPanel.jLabel8.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/bugzilla/query/Bundle.properties" key="QueryPanel.separatorLabel2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
@@ -1743,10 +1764,10 @@
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
           </AuxValues>
         </Component>
-        <Component class="javax.swing.JLabel" name="jLabel9">
+        <Component class="javax.swing.JLabel" name="separatorLabel3">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/bugzilla/query/Bundle.properties" key="QueryPanel.jLabel9.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/bugzilla/query/Bundle.properties" key="QueryPanel.separatorLabel3.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
@@ -1772,7 +1793,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
                           <Component id="nameLabel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="887" max="32767" attributes="0"/>
+                          <EmptySpace pref="1006" max="32767" attributes="0"/>
                           <Component id="refreshCheckBox" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="lastRefreshLabel" min="-2" max="-2" attributes="0"/>

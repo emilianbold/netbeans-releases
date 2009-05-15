@@ -166,7 +166,7 @@ public final class SunStudioDCConfiguration
             }
         }
         cols.add(c_name);
-        return new DataTableMetadata(tableName, cols);
+        return new DataTableMetadata(tableName, cols, null);
     }
 
 

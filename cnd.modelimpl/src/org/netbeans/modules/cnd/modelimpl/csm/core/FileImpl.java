@@ -41,7 +41,6 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import javax.swing.event.ChangeEvent;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileContainer.StatePair;
 import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
 import antlr.Parser;
 import antlr.RecognitionException;
@@ -345,11 +344,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public APTPreprocHandler getPreprocHandler(int offset) {
-        FileContainer.StatePair bestStatePair = getContextPreprocStatePair(offset, offset);
+        PreprocessorStatePair bestStatePair = getContextPreprocStatePair(offset, offset);
         return getPreprocHandler(bestStatePair);
     }
 
-    private APTPreprocHandler getPreprocHandler(FileContainer.StatePair statePair) {
+    private APTPreprocHandler getPreprocHandler(PreprocessorStatePair statePair) {
         return getProjectImpl(true) == null ? null : getProjectImpl(true).getPreprocHandler(fileBuffer.getFile(), statePair);
     }
 
@@ -357,7 +356,15 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return getProjectImpl(true) == null ? Collections.<APTPreprocHandler>emptyList() : getProjectImpl(true).getPreprocHandlers(this.getFile());
     }
 
-    private StatePair getContextPreprocStatePair(int startContext, int endContext) {
+    public Collection<PreprocessorStatePair> getPreprocStatePairs() {
+      ProjectBase projectImpl = getProjectImpl(true);
+        if (projectImpl == null) {
+            return Collections.<PreprocessorStatePair>emptyList();
+        }
+        return projectImpl.getPreprocessorStatePairs(this.getFile());
+    }
+
+    private PreprocessorStatePair getContextPreprocStatePair(int startContext, int endContext) {
         ProjectBase projectImpl = getProjectImpl(true);
         if (projectImpl == null) {
             return null;
@@ -366,9 +373,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             // zero is in all => no the best state
             return null;
         }
-        Collection<StatePair> preprocStatePairs = getProjectImpl(true).getPreprocStatePairs(this.getFile());
+        Collection<PreprocessorStatePair> preprocStatePairs = projectImpl.getPreprocessorStatePairs(this.getFile());
         // select the best based on context offsets
-        for (FileContainer.StatePair statePair : preprocStatePairs) {
+        for (PreprocessorStatePair statePair : preprocStatePairs) {
             if (statePair.pcState.isInActiveBlock(startContext, endContext)) {
                 return statePair;
             }
@@ -805,7 +812,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (apt == null) {
             return null;
         }
-        FileContainer.StatePair bestStatePair = getContextPreprocStatePair(startContext, endContext);
+        PreprocessorStatePair bestStatePair = getContextPreprocStatePair(startContext, endContext);
         APTPreprocHandler preprocHandler = getPreprocHandler(bestStatePair);
         if (preprocHandler == null) {
             return null;

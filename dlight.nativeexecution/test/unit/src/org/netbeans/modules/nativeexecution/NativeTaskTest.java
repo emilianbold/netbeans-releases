@@ -105,7 +105,7 @@ public class NativeTaskTest extends NativeExecutionTest {
     public void simpleTest() {
         ExternalTerminal term = ExternalTerminalProvider.getTerminal(ExecutionEnvironmentFactory.getLocal(), "gnome-terminal"); // NOI18N
         NativeProcessBuilder npb = new NativeProcessBuilder(
-                ExecutionEnvironmentFactory.getLocal(), "ls").useExternalTerminal(term); // NOI18N
+                ExecutionEnvironmentFactory.getLocal(), "ls",false).useExternalTerminal(term); // NOI18N
         StringWriter result = new StringWriter();
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL).outProcessorFactory(new InputRedirectorFactory(result));
         ExecutionService execService = ExecutionService.newService(
@@ -172,7 +172,7 @@ public class NativeTaskTest extends NativeExecutionTest {
                 nameToDemangle = str;
             }
 
-            NativeProcessBuilder npb = new NativeProcessBuilder(env, dem_util_path).setArguments(nameToDemangle);
+            NativeProcessBuilder npb = new NativeProcessBuilder(env, dem_util_path,false).setArguments(nameToDemangle);
             StringWriter result = new StringWriter();
             ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL).outProcessorFactory(new InputRedirectorFactory(result));
             ExecutionService execService = ExecutionService.newService(
@@ -260,7 +260,7 @@ public class NativeTaskTest extends NativeExecutionTest {
         };
 
         ExternalTerminal term = ExternalTerminalProvider.getTerminal(ExecutionEnvironmentFactory.getLocal(), "gnome-terminal").setTitle("My favorite title"); // NOI18N
-        NativeProcessBuilder npb = new NativeProcessBuilder(ee, cmd).setArguments("1", "2").addEnvironmentVariable("MY_VAR", "/temp/xx/$platform").setWorkingDirectory("/tmp").addNativeProcessListener(l).useExternalTerminal(term); // NOI18N
+        NativeProcessBuilder npb = new NativeProcessBuilder(ee, cmd,false).setArguments("1", "2").addEnvironmentVariable("MY_VAR", "/temp/xx/$platform").setWorkingDirectory("/tmp").addNativeProcessListener(l).useExternalTerminal(term); // NOI18N
         ExecutionDescriptor descr = new ExecutionDescriptor().outLineBased(true).outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
 
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {

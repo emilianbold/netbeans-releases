@@ -83,9 +83,15 @@ public class KenaiConfiguration extends JiraConfiguration {
     @Override
     public JiraClientData getData() {
         if(kenaiData == null) {
-            kenaiData = new ConfigurationData() {};
+            kenaiData = initializeCached();
+            if (kenaiData == null) {
+                kenaiData = new KenaiConfigurationData();
+            }
         }
         return kenaiData;
     }
 
+    static class KenaiConfigurationData extends ConfigurationData {
+        
+    }
 }

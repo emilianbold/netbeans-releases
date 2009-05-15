@@ -277,23 +277,27 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
     public boolean isObjectVisible(CsmFile currentFile, CsmObject item) {
         if (CsmKindUtilities.isOffsetable(item)) {
             CsmFile file = ((CsmOffsetable) item).getContainingFile();
-             if (!file.equals(currentFile)) {
-                if (file.isHeaderFile()) {
-                    if (((ProjectBase)currentFile.getProject()).getGraphStorage().isFileIncluded(currentFile, file)){
-                        return true;
-                    }
+            if (file != null) {
+                if (!file.equals(currentFile)) {
+                    if (file.isHeaderFile()) {
+                        if (((ProjectBase) currentFile.getProject()).getGraphStorage().isFileIncluded(currentFile, file)) {
+                            return true;
+                        }
                     //HashSet<CsmFile> scannedfiles = new HashSet<CsmFile>();
                     //if (isFileVisibleInIncludeFiles(currentFile.getIncludes(), file, scannedfiles)) {
                     //    return true;
                     //}
-                } else if (file.isSourceFile() && CsmKindUtilities.isGlobalVariable(item)) {
-                    HashSet<CsmProject> scannedprojects = new HashSet<CsmProject>();
-                    if (isVariableVisible(currentFile, file.getProject(), (CsmVariable) item, scannedprojects)) {
-                        return true;
+                    } else if (file.isSourceFile() && CsmKindUtilities.isGlobalVariable(item)) {
+                        HashSet<CsmProject> scannedprojects = new HashSet<CsmProject>();
+                        if (isVariableVisible(currentFile, file.getProject(), (CsmVariable) item, scannedprojects)) {
+                            return true;
+                        }
                     }
+                } else {
+                    return true;
                 }
             } else {
-                return true;
+                return false;
             }
         } else if (!CsmKindUtilities.isNamespace(item)) {
             System.err.println("not yet handled object " + item);

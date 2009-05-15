@@ -48,9 +48,10 @@ import java.util.List;
  */
 public class Utils {
 
-
+    public static final String XHTML_STRINCT_PUBLIC_ID = "-//W3C//DTD XHTML 1.0 Strict//EN";
+        
     private static final List<String> XHTML_PUBLIC_IDS = Arrays.asList(new String[]{
-        "-//W3C//DTD XHTML 1.0 Strict//EN",
+        XHTML_STRINCT_PUBLIC_ID,
         "-//W3C//DTD XHTML 1.0 Transitional//EN",
         "-//W3C//DTD XHTML 1.0 Frameset//EN"});
 

@@ -429,6 +429,10 @@ function is_product_in_bundle(product_uid, bundle_uid) {
        }
     }
 
+    if(!bundle) {
+      return false;
+    }
+
     for(var k=0;k<bundle.products.length;k++) { 
        if(product_uid == bundle.products[k]) {
                 return true;

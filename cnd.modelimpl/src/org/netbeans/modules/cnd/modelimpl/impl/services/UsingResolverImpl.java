@@ -147,6 +147,16 @@ public final class UsingResolverImpl extends CsmUsingResolver implements CsmProg
         return getCollector(file, offset, onlyInProject).getNamespaceAliases();
     }
 
+    public Collection<CsmNamespaceAlias> findNamespaceAliases(CsmNamespace namespace) {
+        List<CsmNamespaceAlias> res = new ArrayList<CsmNamespaceAlias>();
+        Iterator<CsmOffsetableDeclaration> udirs = CsmSelect.getDeclarations(
+                    namespace, CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.NAMESPACE_ALIAS));
+        while (udirs.hasNext()) {
+            res.add((CsmNamespaceAlias)udirs.next());
+        }
+        return res;
+    }
+
     /**
      * converts collection of using declarations into ordered list of namespaces
      * each namespace occurs only once according it's first using directive in 'decls' list

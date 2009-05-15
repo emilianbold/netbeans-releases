@@ -89,7 +89,7 @@ public class SpringRefactorings {
         javaSource.runUserActionTask(new Task<CompilationController>() {
 
             public void run(CompilationController cc) throws Exception {
-                cc.toPhase(Phase.ELEMENTS_RESOLVED);
+                cc.toPhase(Phase.RESOLVED);
                 Element element = oldHandle.resolveElement(cc);
                 if (element == null || element.getKind() != ElementKind.METHOD) {
                     return;
@@ -122,7 +122,7 @@ public class SpringRefactorings {
         final RenamedClassName[] result = { null };
         javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController cc) throws IOException {
-                cc.toPhase(Phase.ELEMENTS_RESOLVED);
+                cc.toPhase(Phase.RESOLVED);
                 Element element = oldHandle.resolveElement(cc);
                 if (element == null || element.getKind() != ElementKind.CLASS) {
                     return;

@@ -247,6 +247,8 @@ public final class XRefResultSet<T> {
                 IncludeLevel.UNRESOLVED, UsageStatistics.UNKNOWN);
         public final static ContextEntry UNRESOLVED_MACRO_BASED = new ContextEntry(DeclarationKind.UNRESOLVED, DeclarationScope.UNRESOLVED,
                 IncludeLevel.UNRESOLVED, UsageStatistics.UNKNOWN);
+        public final static ContextEntry UNRESOLVED_BUILTIN_BASED = new ContextEntry(DeclarationKind.UNRESOLVED, DeclarationScope.UNRESOLVED,
+                IncludeLevel.UNRESOLVED, UsageStatistics.UNKNOWN);
         public final static ContextEntry RESOLVED = new ContextEntry(DeclarationKind.UNRESOLVED, DeclarationScope.UNRESOLVED,
                 IncludeLevel.UNRESOLVED, UsageStatistics.UNKNOWN);
 
