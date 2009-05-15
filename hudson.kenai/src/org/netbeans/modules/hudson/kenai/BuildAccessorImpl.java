@@ -43,8 +43,11 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonManager;
@@ -56,6 +59,7 @@ import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.spi.BuildAccessor;
 import org.netbeans.modules.kenai.ui.spi.BuildHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=BuildAccessor.class)
@@ -63,7 +67,9 @@ public class BuildAccessorImpl extends BuildAccessor {
 
     private static final Logger LOG = Logger.getLogger(BuildAccessorImpl.class.getName());
 
-    public List<BuildHandle> getBuilds(ProjectHandle handle) {
+    private final Map<ProjectHandle,HudsonChangeListener> listeners = new WeakHashMap<ProjectHandle,HudsonChangeListener>();
+
+    public List<BuildHandle> getBuilds(final ProjectHandle handle) {
         String id = handle.getId();
         try {
             KenaiProject prj = Kenai.getDefault().getProject(id);
@@ -71,21 +77,37 @@ public class BuildAccessorImpl extends BuildAccessor {
                 for (KenaiFeature feature : prj.getFeatures(Type.HUDSON)) {
                     String server = feature.getWebLocation().toString();
                     { // XXX just for testing until real service works
-                        LOG.warning("Ignoring reported server location " + server);
+                        LOG.warning("Ignoring reported server location " + server + " in favor of http://localhost:8080/");
                         server = "http://localhost:8080/";
                     }
                     // XXX maybe remove these transient instances when the Kenai projects go away somehow?
                     HudsonInstance instance = HudsonManager.addInstance(id, server, 5, false);
+                    synchronized (listeners) {
+                        if (!listeners.containsKey(handle)) {
+                            HudsonChangeListener listener = new HudsonChangeListener() {
+                                private void change() {
+                                    handle.firePropertyChange(ProjectHandle.PROP_BUILD_LIST, null, null);
+                                }
+                                public void stateChanged() {
+                                    change();
+                                }
+                                public void contentChanged() {
+                                    change();
+                                }
+                            };
+                            listeners.put(handle, listener);
+                            instance.addHudsonChangeListener(WeakListeners.create(HudsonChangeListener.class, listener, instance));
+                        }
+                    }
                     List<BuildHandle> builds = new ArrayList<BuildHandle>();
                     for (HudsonJob job : instance.getJobs()) {
-                        builds.add(new BuildHandleImpl(instance, job.getName()));
+                        builds.add(new BuildHandleImpl(job));
                     }
-                    // XXX can call handle.firePropertyChange(ProjectHandle.PROP_BUILD_LIST) as needed
                     return builds;
                 }
             }
         } catch (KenaiException x) {
-            LOG.log(Level.INFO, "Could not find project " + id, x);
+            LOG.log(Level.FINE, "Could not find project " + id, x);
         }
         return Collections.emptyList();
     }

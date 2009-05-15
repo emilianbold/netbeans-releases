@@ -40,47 +40,22 @@
 package org.netbeans.modules.hudson.kenai;
 
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import org.netbeans.modules.hudson.api.HudsonChangeListener;
-import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.kenai.ui.spi.BuildHandle;
-import org.openide.util.WeakListeners;
 
-class BuildHandleImpl extends BuildHandle implements HudsonChangeListener {
+class BuildHandleImpl extends BuildHandle {
 
-    private final HudsonInstance instance;
-    private final String jobName;
-    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private final HudsonJob job;
 
-    public BuildHandleImpl(HudsonInstance instance, String jobName) {
-        this.instance = instance;
-        this.jobName = jobName;
-        instance.addHudsonChangeListener(WeakListeners.create(HudsonChangeListener.class, this, instance));
-    }
-
-    private HudsonJob job() {
-        for (HudsonJob job : instance.getJobs()) {
-            if (job.getName().equals(jobName)) {
-                return job;
-            }
-        }
-        return null;
+    public BuildHandleImpl(HudsonJob job) {
+        this.job = job;
     }
 
     public String getDisplayName() {
-        HudsonJob job = job();
-        if (job == null) {
-            return "";
-        }
         return job.getDisplayName();
     }
 
     public Status getStatus() {
-        HudsonJob job = job();
-        if (job == null) {
-            return Status.UNKNOWN;
-        }
         switch (job.getColor()) {
         case blue_anime:
         case yellow_anime:
@@ -99,18 +74,8 @@ class BuildHandleImpl extends BuildHandle implements HudsonChangeListener {
         }
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        pcs.addPropertyChangeListener(l);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        pcs.removePropertyChangeListener(l);
-    }
-
-    public void stateChanged() {
-        pcs.firePropertyChange(PROP_STATUS, null, null);
-    }
-
-    public void contentChanged() {}
+    // Unused; create a new HJ and hence new BHI after every server refresh w/ changes
+    public void addPropertyChangeListener(PropertyChangeListener l) {}
+    public void removePropertyChangeListener(PropertyChangeListener l) {}
 
 }
