@@ -157,8 +157,7 @@ public class LuceneIndex implements IndexImpl {
                 }
 
                 if (toAdd.size() > 0 || toRemove.size() > 0) {
-                    final IndexReader reader = getReader(true);
-                    flush(indexFolder, toAdd, toRemove, LuceneIndex.this.directory, reader, /*writer,*/ lmListener);
+                    flush(indexFolder, toAdd, toRemove, LuceneIndex.this.directory, lmListener);
                 }
                 
                 return null;
@@ -498,11 +497,12 @@ public class LuceneIndex implements IndexImpl {
     }
 
     // called under LuceneIndexManager.writeAccess
-    private static void flush(File indexFolder, List<LuceneDocument> toAdd, List<String> toRemove, Directory directory, IndexReader in, /*IndexWriter out,*/ LMListener lmListener) throws IOException {
+    private void flush(File indexFolder, List<LuceneDocument> toAdd, List<String> toRemove, Directory directory, LMListener lmListener) throws IOException {
         LOGGER.log(Level.FINE, "Flushing: {0}", indexFolder); //NOI18N
         try {
             //assert ClassIndexManager.getDefault().holdsWriteLock();
             //1) delete all documents from to delete and toAdd
+            final IndexReader in = getReader(true);
             if (in != null) {
                 try {
                     final Searcher searcher = new IndexSearcher (in);
