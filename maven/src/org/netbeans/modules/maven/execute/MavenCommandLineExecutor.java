@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.maven.execute;
 
+import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.maven.api.execute.RunConfig;
@@ -49,21 +50,26 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.options.MavenSettings;
 import hidden.org.codehaus.plexus.util.StringUtils;
 import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
+import java.net.URL;
 import java.util.Collection;
-import java.util.LinkedHashSet;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
+import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
+import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
 
 /**
  * support for executing maven, externally on the command line.
@@ -72,7 +78,7 @@ import org.openide.windows.InputOutput;
 public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     static final String ENV_PREFIX = "Env."; //NOI18N
     static final String ENV_JAVAHOME = "Env.JAVA_HOME"; //NOI18N
-    
+
     private ProgressHandle handle;
     private Process process;
     private Process preProcess;
@@ -154,8 +160,11 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             executionresult = process.waitFor();
             out.waitFor();
         } catch (IOException x) {
-            //TODO
-            LOGGER.log(Level.WARNING , x.getMessage(), x);
+            if (Utilities.isWindows()) { //#153101
+                processIssue153101(x, ioput);
+            } else {
+                LOGGER.log(Level.WARNING , x.getMessage(), x);
+            }
         } catch (InterruptedException x) {
             //TODO
             LOGGER.log(Level.WARNING , x.getMessage(), x);
@@ -200,6 +209,19 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             
         }
     }
+
+    // we run the shell/bat script in the process, on windows we need to quote any spaces
+    //once/if we get rid of shell/bat execution, we might need to remove this
+    //#164234
+    private static String quoteSpaces(String val, String quote) {
+        if (val.indexOf(' ') != -1) { //NOI18N
+            if (Utilities.isWindows()) {
+                return quote + val + quote; //NOI18N
+            }
+        }
+        return val;
+    }
+
     
     public boolean cancel() {
         if (preProcess != null) {
@@ -215,20 +237,26 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         
     private static List<String> createMavenExecutionCommand(RunConfig config) {
         File mavenHome = MavenSettings.getDefault().getCommandLinePath();
-        
+        //#164234
+        //if maven.bat file is in space containing path, we need to quote with simple quotes.
+        String quote = "\"";
+        // the command line parameters with space in them need to be quoted and escaped to arrive
+        // correctly to the java runtime on windows
+        String escaped = "\\" + quote;
         List<String> toRet = new ArrayList<String>();
         String ex = Utilities.isWindows() ? "mvn.bat" : "mvn"; //NOI18N
         if (mavenHome != null) {
             File bin = new File(mavenHome, "bin" + File.separator + ex);//NOI18N
             if (bin.exists()) {
-                toRet.add(bin.getAbsolutePath());
+                    toRet.add(quoteSpaces(bin.getAbsolutePath(), quote));
             } else {
                 toRet.add(ex);
             }
         } else {
             toRet.add(ex);
         }
-        if (Utilities.isWindows()) { //#153101
+
+        if (Utilities.isWindows() && Boolean.getBoolean("maven.run.cmd")) { //#153101
             toRet.add(0, "/c"); //NOI18N
             toRet.add(0, "cmd"); //NOI18N
         }
@@ -238,7 +266,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             String keyStr = (String)key;
             if (!keyStr.startsWith(ENV_PREFIX)) {
                 //skip envs, these get filled in later.
-                toRet.add("-D" + key + "=" + val);//NOI18N
+                toRet.add("-D" + key + "=" + (Utilities.isWindows() ? val.replace(quote, escaped) : val.replace(quote, "'")));
             }
         }
         toRet.add("-Dnetbeans.execution=true"); //NOI18N
@@ -371,6 +399,40 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             }
         }
         return builder;
+    }
+
+    private void processIssue153101(IOException x, InputOutput ioput) {
+        //#153101
+        if (x.getMessage() != null && x.getMessage().contains("CreateProcess error=5")) {
+            System.setProperty("maven.run.cmd", "true");
+            LOGGER.log(Level.INFO, "Cannot create Process, next time we will run the build with 'cmd /c'", x); //NOI18N
+            ioput.getErr().println("Cannot execute the mvn.bat executable directly due to wrong access rights, switching to execution via 'cmd.exe /c mvn.bat'."); //NOI18N - in maven output
+            try {
+                ioput.getErr().println("  See issue http://www.netbeans.org/issues/show_bug.cgi?id=153101 for details.", new OutputListener() {                    //NOI18N - in maven output
+                    public void outputLineSelected(OutputEvent ev) {}
+                    public void outputLineCleared(OutputEvent ev) {}
+                    public void outputLineAction(OutputEvent ev) {
+                        try {
+                            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://www.netbeans.org/issues/show_bug.cgi?id=153101")); //NOI18N - in maven output
+                        } catch (MalformedURLException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            ioput.getErr().println("  This message will show on the next start of the IDE again, to skip it, add -J-Dmaven.run.cmd=true to your etc/netbeans.conf file in your NetBeans installation."); //NOI18N - in maven output
+            ioput.getErr().println("The detailed exception output is printed to the IDE's log file."); //NOI18N - in maven output
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    RunConfig newConfig = new BeanRunConfig(config);
+                    RunUtils.executeMaven(newConfig);
+                }
+            });
+        } else {
+            LOGGER.log(Level.WARNING, x.getMessage(), x);
+        }
     }
     
 }

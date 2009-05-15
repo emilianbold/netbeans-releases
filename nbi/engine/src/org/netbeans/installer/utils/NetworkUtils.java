@@ -76,6 +76,7 @@ class NetworkUtils {
         // if the port is not in the restricted list, we'll try to open a server
         // socket on it, if we fail, then someone is already listening on this port
         // and it is occupied
+        synchronized (Integer.toString(port).intern()) {
         ServerSocket socket = null;
         try {
             socket = new ServerSocket(port);
@@ -92,6 +93,7 @@ class NetworkUtils {
                             e);
                 }
             }
+        }
         }
     }
     

@@ -109,13 +109,11 @@ import org.sonatype.nexus.index.ArtifactAvailablility;
 import org.sonatype.nexus.index.ArtifactContext;
 import org.sonatype.nexus.index.ArtifactContextProducer;
 import org.sonatype.nexus.index.ArtifactInfo;
-import org.sonatype.nexus.index.ArtifactInfoGroup;
 import org.sonatype.nexus.index.FlatSearchRequest;
 import org.sonatype.nexus.index.FlatSearchResponse;
 import org.sonatype.nexus.index.search.grouping.GGrouping;
 import org.sonatype.nexus.index.GroupedSearchRequest;
 import org.sonatype.nexus.index.GroupedSearchResponse;
-import org.sonatype.nexus.index.Grouping;
 import org.sonatype.nexus.index.NexusIndexer;
 import org.sonatype.nexus.index.context.IndexingContext;
 import org.sonatype.nexus.index.creator.AbstractIndexCreator;
@@ -160,7 +158,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
     //#158083 more caching to satisfy the classloading gods..
     private List<? extends IndexCreator> CREATORS;
-    private List<? extends IndexCreator> getIndexCreators() {
+    private List<? extends IndexCreator> getLocalRepoIndexCreators() {
         if (CREATORS == null) {
             CREATORS = Arrays.asList(
                 new MinimalArtifactInfoIndexCreator(),
@@ -178,9 +176,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
 
     public NexusRepositoryIndexerImpl() {
-        //to prevent MaxClauseCount exception (will investigate better way)
-        BooleanQuery.setMaxClauseCount(Integer.MAX_VALUE);
-
         lookup = Lookups.singleton(this);
     }
 
@@ -274,7 +269,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             loc,
                             info.isRemoteDownloadable() ? info.getRepositoryUrl() : null, // repositoryUrl
                             info.isRemoteDownloadable() ? info.getIndexUpdateUrl() : null, // index update url
-                            getIndexCreators());
+                            info.isLocal() ? getLocalRepoIndexCreators() : indexer.FULL_INDEX);
                 } catch (IOException ex) {
                     LOGGER.info("Found a broken index at " + loc.getAbsolutePath()); //NOI18N
                     LOGGER.log(Level.FINE, "Caused by ", ex); //NOI18N
@@ -287,7 +282,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             loc,
                             info.isRemoteDownloadable() ? info.getRepositoryUrl() : null, // repositoryUrl
                             info.isRemoteDownloadable() ? info.getIndexUpdateUrl() : null, // index update url
-                            getIndexCreators());
+                            info.isLocal() ? getLocalRepoIndexCreators() : indexer.FULL_INDEX);
                 }
                 if (index) {
                     indexLoadedRepo(info, true);
@@ -724,6 +719,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             });
         } catch (MutexException ex) {
+            rethrowTooManyClauses(ex);
             Exceptions.printStackTrace(ex);
         }
         return Collections.<NBVersionInfo>emptyList();
@@ -927,6 +923,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             });
         } catch (MutexException ex) {
+            rethrowTooManyClauses(ex);
             Exceptions.printStackTrace(ex);
         }
         return Collections.<NBVersionInfo>emptyList();
@@ -951,7 +948,12 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         return field;
     }
 
-
+    private void rethrowTooManyClauses (MutexException mutEx) {
+        Exception cause = mutEx.getException();
+        if (cause instanceof BooleanQuery.TooManyClauses) {
+            throw (BooleanQuery.TooManyClauses)cause;
+        }
+    }
 
     private Collection<ArtifactInfo> postProcessClasses(Collection<ArtifactInfo> artifactInfos, String classname) {
         int patter = Pattern.DOTALL + Pattern.MULTILINE;
@@ -998,9 +1000,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
         public ArtifactRepository repository = EmbedderFactory.getOnlineEmbedder().getLocalRepository();
 
-        public boolean updateArtifactInfo(IndexingContext ctx, Document d, ArtifactInfo artifactInfo) {
-            return false;
-        }
 
         public void updateDocument(ArtifactInfo context, Document doc) {
             ArtifactInfo ai = context;

@@ -204,6 +204,8 @@ public class WatchesActionsProvider implements NodeActionsProvider {
 
         if (dd.getValue () != org.openide.DialogDescriptor.OK_OPTION) return;
         if (panel.getClientProperty("WatchCanceled") != null) return ; //NOI18N
-        DebuggerManager.getDebuggerManager ().createWatch (wp.getExpression ());
+        String text = wp.getExpression();
+        if ((text == null) || (text.trim().length() == 0)) return;
+        DebuggerManager.getDebuggerManager().createWatch(text);
     }
 }

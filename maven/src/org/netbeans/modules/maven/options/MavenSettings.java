@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.maven.options;
 
+import hidden.org.codehaus.plexus.util.StringUtils;
 import hidden.org.codehaus.plexus.util.cli.Arg;
 import hidden.org.codehaus.plexus.util.cli.CommandLineException;
 import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
@@ -46,9 +47,12 @@ import hidden.org.codehaus.plexus.util.cli.Commandline;
 import hidden.org.codehaus.plexus.util.cli.StreamConsumer;
 import java.io.File;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.maven.execution.MavenExecutionRequest;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
@@ -71,6 +75,14 @@ public class MavenSettings  {
     public static final String PROP_CUSTOM_LOCAL_REPOSITORY = "localRepository"; //NOI18N
     public static final String PROP_SKIP_TESTS = "skipTests"; //NOI18N
 
+    //these are from former versions (6.5) and are here only for conversion
+    private static final String PROP_DEBUG = "showDebug"; // NOI18N
+    private static final String PROP_ERRORS = "showErrors"; //NOI18N
+    private static final String PROP_CHECKSUM_POLICY = "checksumPolicy"; //NOI18N
+    private static final String PROP_PLUGIN_POLICY = "pluginUpdatePolicy"; //NOI18N
+    private static final String PROP_FAILURE_BEHAVIOUR = "failureBehaviour"; //NOI18N
+    private static final String PROP_USE_REGISTRY = "usePluginRegistry"; //NOI18N
+
     
     private static final MavenSettings INSTANCE = new MavenSettings();
     
@@ -79,26 +91,26 @@ public class MavenSettings  {
     }
 
     public boolean isInteractive() {
-        return !hasOption("--batch", "-B");
+        return !hasOption("--batch", "-B"); //NOI18N
     }
 
     public Boolean isOffline() {
-        if (hasOption("--offline", "-o")) {
+        if (hasOption("--offline", "-o")) { //NOI18N
             return Boolean.TRUE;
         }
         return null;
     }
 
     public boolean isShowDebug() {
-        return hasOption("--debug", "-X");
+        return hasOption("--debug", "-X"); //NOI18N
     }
 
     public boolean isShowErrors() {
-        return hasOption("--errors", "-e");
+        return hasOption("--errors", "-e"); //NOI18N
     }
 
     public boolean isUpdateSnapshots() {
-        return hasOption("--update-snapshots", "-U");
+        return hasOption("--update-snapshots", "-U"); //NOI18N
     }
 
 
@@ -142,6 +154,70 @@ public class MavenSettings  {
     }    
     
     private MavenSettings() {
+        //import from older versions
+        String defOpts = getPreferences().get(PROP_DEFAULT_OPTIONS, null);
+        if (defOpts == null) {
+            defOpts = "";
+            //only when not already set by user or by previous import
+            String debug = getPreferences().get(PROP_DEBUG, null);
+            if (debug != null) {
+                boolean val = Boolean.parseBoolean(debug);
+                if (val) {
+                    defOpts = defOpts + " --debug";//NOI18N
+                }
+                getPreferences().remove(PROP_DEBUG);
+            }
+            String error = getPreferences().get(PROP_ERRORS, null);
+            if (error != null) {
+                boolean val = Boolean.parseBoolean(error);
+                if (val) {
+                    defOpts = defOpts + " --errors"; //NOI18N
+                }
+                getPreferences().remove(PROP_ERRORS);
+            }
+            String checksum = getPreferences().get(PROP_CHECKSUM_POLICY, null);
+            if (checksum != null) {
+                if (MavenExecutionRequest.CHECKSUM_POLICY_FAIL.equals(checksum)) {
+                    defOpts = defOpts + " --strict-checksums";//NOI18N
+                } else if (MavenExecutionRequest.CHECKSUM_POLICY_WARN.equals(checksum)) {
+                    defOpts = defOpts + " --lax-checksums";//NOI18N
+                }
+                getPreferences().remove(PROP_CHECKSUM_POLICY);
+            }
+            String fail = getPreferences().get(PROP_FAILURE_BEHAVIOUR, null);
+            if (fail != null) {
+                if (MavenExecutionRequest.REACTOR_FAIL_NEVER.equals(fail)) {
+                    defOpts = defOpts + " --fail-never";//NOI18N
+                } else if (MavenExecutionRequest.REACTOR_FAIL_FAST.equals(fail)) {
+                    defOpts = defOpts + " --fail-fast";//NOI18N
+                } else if (MavenExecutionRequest.REACTOR_FAIL_AT_END.equals(fail)) {
+                    defOpts = defOpts + " --fail-at-end";//NOI18N
+                }
+                getPreferences().remove(PROP_FAILURE_BEHAVIOUR);
+            }
+            String pluginUpdate = getPreferences().get(PROP_PLUGIN_POLICY, null);
+            if (pluginUpdate != null) {
+                if (Boolean.parseBoolean(pluginUpdate)) {
+                    defOpts = defOpts + " --check-plugin-updates";//NOI18N
+                } else {
+                    defOpts = defOpts + " --no-plugin-updates";//NOI18N
+                }
+                getPreferences().remove(PROP_PLUGIN_POLICY);
+            }
+            String registry = getPreferences().get(PROP_USE_REGISTRY, null);
+            if (registry != null) {
+                if (!Boolean.parseBoolean(registry)) {
+                    defOpts = defOpts + " --no-plugin-registry";//NOI18N
+                }
+                getPreferences().remove(PROP_USE_REGISTRY);
+            }
+            setDefaultOptions(defOpts);
+            try {
+                getPreferences().flush();
+            } catch (BackingStoreException ex) {
+//                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     public String getDefaultOptions() {
@@ -174,7 +250,12 @@ public class MavenSettings  {
         if (text != null && text.trim().length() == 0) {
             text = null;
         }
+        String oldText = getCustomLocalRepository();
         putProperty(PROP_CUSTOM_LOCAL_REPOSITORY, text);
+        //reset the project embedder to use the new local repo value.
+        if (!StringUtils.equals(oldText, text)) {
+            EmbedderFactory.resetProjectEmbedder();
+        }
     }
     
     public String getCustomLocalRepository() {

@@ -121,7 +121,11 @@ public class CCFSrcFileIterator implements TemplateWizard.Iterator {
             if (mimeType.equals(MIMENames.SHELL_MIME_TYPE)) {
                 // for shell scripts set default extension explicitly
                 defaultExt = fobj.getExt();
+            } else if (mimeType.equals(MIMENames.HEADER_MIME_TYPE) && fobj.getExt().length() == 0) {
+                // for standard header without extension
+                defaultExt = fobj.getExt();
             }
+
             NewCndFileChooserPanel panel = new NewCndFileChooserPanel(project, groups, null, extensions, defaultExt);
             return panel;
         } else {

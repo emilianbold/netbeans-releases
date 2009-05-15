@@ -109,7 +109,7 @@ public class NativeExecutor implements Runnable {
             boolean unbuffer) {
         this.execEnv = execEnv;
         this.runDir = runDir;
-        executable = LinkSupport.resolveWindowsLinkik(executable);
+        executable = LinkSupport.resolveWindowsLink(executable);
         this.executable = executable;
         this.arguments = arguments;
         this.envp = envp;
@@ -327,7 +327,7 @@ public class NativeExecutor implements Runnable {
     private void executionStarted() {
         if(showHeader) {
             String runDirToShow = execEnv.isLocal() ?
-                runDir : HostInfoProvider.getMapper(execEnv).getRemotePath(runDir);
+                runDir : HostInfoProvider.getMapper(execEnv).getRemotePath(runDir,true);
             
             String preText = MessageFormat.format(getString("PRETEXT"),
 		    exePlusArgsQuoted(executable, arguments), runDirToShow);

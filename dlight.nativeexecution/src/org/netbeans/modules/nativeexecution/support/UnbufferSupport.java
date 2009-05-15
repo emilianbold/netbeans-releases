@@ -97,7 +97,7 @@ public class UnbufferSupport {
 
                         if (remotePath == null) {
                             remotePath = hinfo.getTempDir() + unbufferPath;
-                            NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "/bin/mkdir"); // NOI18N
+                            NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "/bin/mkdir",false); // NOI18N
                             npb = npb.setArguments("-p", remotePath, remotePath + "_64"); // NOI18N
 
                             try {

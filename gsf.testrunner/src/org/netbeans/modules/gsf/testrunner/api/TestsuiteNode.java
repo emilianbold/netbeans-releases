@@ -60,11 +60,11 @@ public class TestsuiteNode extends AbstractNode {
     /**
      * The max number of output lines to display in the tooltip.
      */
-    private static final int MAX_TOOLTIP_LINES = Integer.getInteger("testrunner.max.tooltip.lines", 30); //NOI18N
+    private static final int MAX_TOOLTIP_LINES = Integer.getInteger("testrunner.max.tooltip.lines", 4); //NOI18N
     /**
      * The max line length to display in the tooltip.
      */
-    private static final int MAX_TOOLTIP_LINE_LENGTH = Integer.getInteger("testrunner.max.tooltip.line.length", 200); //NOI18N
+    private static final int MAX_TOOLTIP_LINE_LENGTH = Integer.getInteger("testrunner.max.tooltip.line.length", 80); //NOI18N
     /**
      * The system property for enabling/disabling tooltips.
      */
@@ -122,7 +122,7 @@ public class TestsuiteNode extends AbstractNode {
             result.append("<i>" + NbBundle.getMessage(TestsuiteNode.class, "MSG_NoOutput") + "</i>"); //NOI18N
         } else {
             for (int i = 0; i < lines.size(); i++) {
-                if (i > MAX_TOOLTIP_LINES) {
+                if (i >= MAX_TOOLTIP_LINES) {
                     result.append("<br><i>" +
                             NbBundle.getMessage(TestsuiteNode.class, "MSG_MoreOutput", lines.size() - i) + "</i>"); //NOI18N
                     break;

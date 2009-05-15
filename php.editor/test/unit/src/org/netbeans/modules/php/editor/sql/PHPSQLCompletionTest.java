@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,16 +34,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.editor.sql;
 
 import javax.swing.text.Document;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.db.sql.editor.api.completion.SQLCompletion;
 import org.netbeans.modules.php.editor.PHPLanguage;
-import org.netbeans.modules.php.editor.lexer.PHPLexerUtils;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.ParserTestBase;
 
@@ -117,11 +115,11 @@ public class PHPSQLCompletionTest extends ParserTestBase {
     }
 
     public void testIncompleteString_002() {
-        checkPHPSQLStatement("<?php echo \"SELECT | FROM foo\n?>", " SELECT  FROM foo\n?>");
+        checkPHPSQLStatement("<?php echo \"SELECT | FROM foo\n?>", " SELECT  FROM foo\n?>\n");
     }
 
     public void testIncompleteString_003() {
-        checkPHPSQLStatement("<?php echo <<<HERE\nSELECT | FROM ?>", "SELECT  FROM ?>");
+        checkPHPSQLStatement("<?php echo <<<HERE\nSELECT | FROM ?>", "SELECT  FROM ?>\n");
     }
 
     public void testIncompleteString_004() {

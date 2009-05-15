@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver.SafeTemplateBasedProvider;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
@@ -986,7 +987,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         }
 
         public boolean isReference() {
-            if(originalType != instantiatedType) {
+            if(instantiationHappened()) {
                 return originalType.isReference() || instantiatedType.isReference();
             } else {
                 return originalType.isReference();
@@ -994,7 +995,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         }
 
         public boolean isPointer() {
-            if(originalType != instantiatedType) {
+            if(instantiationHappened()) {
                 return originalType.isPointer() || instantiatedType.isPointer();
             } else {
                 return originalType.isPointer();
@@ -1002,7 +1003,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         }
 
         public boolean isConst() {
-            if(originalType != instantiatedType) {
+            if(instantiationHappened()) {
                 return originalType.isConst() || instantiatedType.isConst();
             } else {
                 return originalType.isConst();
@@ -1043,35 +1044,45 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             }
         }
 
-        public CsmClassifier getClassifier(Resolver resolver) {
+        public CsmClassifier getClassifier(Resolver parent) {
             if (resolved == null) {
                 if (inst) {
                     CsmClassifier classifier;
                     if (originalType instanceof Resolver.SafeClassifierProvider) {
-                        classifier = ((Resolver.SafeClassifierProvider)originalType).getClassifier(resolver);
+                        classifier = ((Resolver.SafeClassifierProvider)originalType).getClassifier(parent);
                     } else {
                         classifier = originalType.getClassifier();
                     }
                     if (CsmKindUtilities.isTemplate(classifier) &&
                             !CsmKindUtilities.isTemplateParameter(classifier)) {
                         CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
-                        CsmObject obj;
+                        CsmObject obj = null;
                         if(ip instanceof InstantiationProviderImpl) {
-                            obj = ((InstantiationProviderImpl)ip).instantiate((CsmTemplate) classifier, getInstantiationParams(), TemplateUtils.gatherMapping(instantiation), getContainingFile(), resolver);
+                            Resolver resolver = ResolverFactory.createResolver(getContainingFile(), getStartOffset(), parent);
+                            if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
+                                obj = ((InstantiationProviderImpl)ip).instantiate((CsmTemplate) classifier, getInstantiationParams(), TemplateUtils.gatherMapping(instantiation), getContainingFile(), getStartOffset(), resolver);
+                            } else {
+                                return null;
+                            }
                         } else {
-                            obj = ip.instantiate((CsmTemplate) classifier, getInstantiationParams(), TemplateUtils.gatherMapping(instantiation), getContainingFile());
+                            obj = ip.instantiate((CsmTemplate) classifier, getInstantiationParams(), TemplateUtils.gatherMapping(instantiation), getContainingFile(), getStartOffset());
                         }
                         if (CsmKindUtilities.isClassifier(obj)) {
                             resolved = (CsmClassifier) obj;
                             return resolved;
                         }
                     }
+                    if(!instantiationHappened()) {
+                        resolved = classifier;
+                    }
                 }
 
-                if (instantiatedType instanceof Resolver.SafeClassifierProvider) {
-                    resolved = ((Resolver.SafeClassifierProvider)instantiatedType).getClassifier(resolver);
-                } else {
-                    resolved = instantiatedType.getClassifier();
+                if (instantiationHappened() || resolved == null) {
+                    if (instantiatedType instanceof Resolver.SafeClassifierProvider) {
+                        resolved = ((Resolver.SafeClassifierProvider) instantiatedType).getClassifier(parent);
+                    } else {
+                        resolved = instantiatedType.getClassifier();
+                    }
                 }
 
                 if (CsmKindUtilities.isTypedef(resolved) && CsmKindUtilities.isClassMember(resolved)) {
@@ -1144,17 +1155,17 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         }
 
         @Override
-        public CsmClassifier getClassifier(Resolver resolver) {
+        public CsmClassifier getClassifier(Resolver parent) {
             if (resolved == null) {
                 if (parentType != null) {
                     CsmClassifier parentClassifier;
                     if (parentType instanceof Resolver.SafeClassifierProvider) {
-                        parentClassifier = ((Resolver.SafeClassifierProvider) parentType).getClassifier(resolver);
+                        parentClassifier = ((Resolver.SafeClassifierProvider) parentType).getClassifier(parent);
                     } else {
                         parentClassifier = parentType.getClassifier();
                     }
                     if (CsmBaseUtilities.isValid(parentClassifier)) {
-                        MemberResolverImpl memberResolver = new MemberResolverImpl(resolver);
+                        MemberResolverImpl memberResolver = new MemberResolverImpl(parent);
                         if (instantiatedType instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType) {
                             resolved = getNestedClassifier(memberResolver, parentClassifier, ((org.netbeans.modules.cnd.modelimpl.csm.NestedType) instantiatedType).getOwnText());
                         } else if (instantiatedType instanceof NestedType) {
@@ -1164,18 +1175,23 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
                 }
                 if (resolved == null) {
                     if (instantiatedType instanceof Resolver.SafeClassifierProvider) {
-                        resolved = ((Resolver.SafeClassifierProvider) instantiatedType).getClassifier(resolver);
+                        resolved = ((Resolver.SafeClassifierProvider) instantiatedType).getClassifier(parent);
                     } else {
                         resolved = instantiatedType.getClassifier();
                     }
                 }
                 if (isInstantiation() && CsmKindUtilities.isTemplate(resolved) && !((CsmTemplate) resolved).getTemplateParameters().isEmpty()) {
                     CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
-                    CsmObject obj;
+                    CsmObject obj = null;
                     if (ip instanceof InstantiationProviderImpl) {
-                        obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) resolved, getInstantiationParams(), this, getContainingFile(), resolver);
+                        Resolver resolver = ResolverFactory.createResolver(getContainingFile(), getStartOffset(), parent);
+                        if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
+                            obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) resolved, getInstantiationParams(), this, getContainingFile(), resolver, getStartOffset());
+                        } else {
+                            return null;
+                        }
                     } else {
-                        obj = ip.instantiate((CsmTemplate) resolved, getInstantiationParams(), this, getContainingFile());
+                        obj = ip.instantiate((CsmTemplate) resolved, getInstantiationParams(), this, getContainingFile(), getStartOffset());
                     }
                     if (CsmKindUtilities.isClassifier(obj)) {
                         resolved = (CsmClassifier) obj;

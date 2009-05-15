@@ -160,6 +160,19 @@ public final class CsmMacroExpansion {
     }
 
     /**
+     * Macro expands specified string in specified contest.
+     *
+     * @param doc - document for macro expansion
+     * @param doc - file of the document
+     * @param startOffset - start offset for expansion
+     * @param endOffset - end offset for expansion
+     * @return - expansion, null otherwise
+     */
+    public static String expand(Document doc, int offset, String code) {
+        return getMacroExpansionDocProvider().expand(doc, offset, code);
+    }
+
+    /**
      * returns interval of macro expansion for offset in original text
      * @param doc document
      * @param offset offset in document
@@ -215,6 +228,17 @@ public final class CsmMacroExpansion {
     }
 
     /**
+     * Returns usages of token on offset
+     *
+     * @param expandedDoc - document
+     * @param offset - offset
+     * @return array of usages
+     */
+    public static int[][] getUsages(Document expandedDoc, int offset) {
+        return getMacroExpansionDocProvider().getUsages(expandedDoc, offset);
+    }
+
+    /**
      * Expands document on specified position and shows Macro Expansion View panel.
      *
      * @param doc - document
@@ -244,6 +268,10 @@ public final class CsmMacroExpansion {
             return null;
         }
         
+        public String expand(Document doc, int offset, String code) {
+            return null;
+        }
+
         public int[] getMacroExpansionSpan(Document doc, int offset, boolean wait) {
             // returns empty expansion
             return new int[]{offset, offset};
@@ -263,6 +291,10 @@ public final class CsmMacroExpansion {
 
         public int getPrevMacroExpansionStartOffset(Document expandedDoc, int expandedOffset) {
             return expandedOffset;
+        }
+
+        public int[][] getUsages(Document expandedDoc, int offset) {
+            return null;
         }
     }
 

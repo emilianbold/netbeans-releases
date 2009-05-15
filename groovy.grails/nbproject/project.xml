@@ -159,6 +159,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.groovy.grailsproject</friend>
+                <friend>org.netbeans.modules.glassfish.grails</friend>
                 <package>org.netbeans.modules.groovy.grails.api</package>
             </friend-packages>
         </data>

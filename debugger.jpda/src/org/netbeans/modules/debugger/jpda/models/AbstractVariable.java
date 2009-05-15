@@ -188,6 +188,8 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
         }
         Value value;
         Value oldV = getInnerValue();
+        //ObjectReference valueToEnableCollectionOn = null;
+        //try {
         try {
             if (oldV instanceof CharValue && expression.startsWith("'") && expression.endsWith("'") && expression.length() > 1) {
                 value = VirtualMachineWrapper.mirrorOf(MirrorWrapper.virtualMachine(oldV), expression.charAt(1));
@@ -211,6 +213,11 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
             } else {
                 // evaluate expression to Value
                 Value evaluatedValue = debugger.evaluateIn (expression);
+                /* Uncomment if evaluator returns a variable with disabled collection.
+                   When not used any more, it's collection must be enabled again.
+                if (evaluatedValue instanceof ObjectReference) {
+                    valueToEnableCollectionOn = (ObjectReference) evaluatedValue;
+                }*/
                 if (oldV != null && evaluatedValue != null) {
                     Type type = ValueWrapper.type(oldV);
                     if (!type.equals(ValueWrapper.type(evaluatedValue))) {
@@ -234,6 +241,13 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
         setValue (value);
         // set new value to this model
         setInnerValue (value);
+        /*} finally {
+            if (valueToEnableCollectionOn != null) {
+                try {
+                    ObjectReferenceWrapper.enableCollection(valueToEnableCollectionOn);
+                } catch (Exception ex) {}
+            }
+        }*/
     }
     
     private Value convertValue(Value value, Type type) {

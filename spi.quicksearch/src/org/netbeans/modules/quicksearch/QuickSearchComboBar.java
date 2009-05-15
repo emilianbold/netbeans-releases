@@ -40,18 +40,42 @@
 package org.netbeans.modules.quicksearch;
 
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
+import javax.swing.Timer;
 import javax.swing.text.JTextComponent;
+import org.openide.util.ImageUtilities;
 
 /**
  * Quick search toolbar component
  * @author  Jan Becicka
  */
 public class QuickSearchComboBar extends AbstractQuickSearchComboBar {
+
+    private final ImageIcon findIcon = new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/quicksearch/resources/find.png")); // NOI18N
+    /** Timer used for progress animation (see #143019).  */
+    private final Timer animationTimer = new Timer(100, new ActionListener() {
+
+        ImageIcon icons[];
+        int index = 0;
+
+        public void actionPerformed(ActionEvent e) {
+            if (icons == null) {
+                icons = new ImageIcon[8];
+                for (int i = 0; i < 8; i++) {
+                    icons[i] = ImageUtilities.loadImageIcon("org/netbeans/modules/quicksearch/resources/progress_" + i + ".png", false);  //NOI18N
+                }
+            }
+            jLabel2.setIcon(icons[index]);
+            index = (index + 1) % 8;
+        }
+    });
 
     public QuickSearchComboBar(KeyStroke ks) {
         super( ks );
@@ -75,7 +99,7 @@ public class QuickSearchComboBar extends AbstractQuickSearchComboBar {
         jPanel1.setName("jPanel1"); // NOI18N
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/quicksearch/resources/find.png"))); // NOI18N
+        jLabel2.setIcon(findIcon);
         jLabel2.setToolTipText(org.openide.util.NbBundle.getMessage(QuickSearchComboBar.class, "QuickSearchComboBar.jLabel2.toolTipText")); // NOI18N
         jLabel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         jLabel2.setName("jLabel2"); // NOI18N
@@ -153,6 +177,19 @@ public class QuickSearchComboBar extends AbstractQuickSearchComboBar {
     @Override
     protected JComponent getInnerComponent() {
         return jPanel1;
+    }
+
+    void startProgressAnimation() {
+        if (animationTimer != null && !animationTimer.isRunning()) {
+            animationTimer.start();
+        }
+    }
+
+    void stopProgressAnimation() {
+        if (animationTimer != null && animationTimer.isRunning()) {
+            animationTimer.stop();
+            jLabel2.setIcon(findIcon);
+        }
     }
 
     private final class DynamicWidthTA extends JTextArea {

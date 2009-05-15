@@ -54,8 +54,10 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -330,7 +332,14 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
     public void saveProject(Project project) throws IOException, ClassCastException {
         Reference<AntProjectHelper> helperRef = project2Helper.get(project);
         if (helperRef == null) {
-            throw new ClassCastException(project.getClass().getName());
+            StringBuffer sBuff = new StringBuffer();
+            sBuff.append(project.getClass().getName() + "\n"); // NOI18N
+            sBuff.append("argument project: " + project + " => " + project.hashCode() + "\n"); // NOI18N
+            sBuff.append("project2Helper keys: " + "\n"); // NOI18N
+            for (Project prj : project2Helper.keySet()) {
+                sBuff.append("    project: " + prj + " => " + prj.hashCode() + "\n"); // NOI18N
+            }
+            throw new ClassCastException(sBuff.toString());
         }
         AntProjectHelper helper = helperRef.get();
         assert helper != null : "AntProjectHelper collected for " + project;

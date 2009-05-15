@@ -120,12 +120,14 @@ public class NestedType extends TypeImpl {
         }
         if (isInstantiation() && CsmKindUtilities.isTemplate(classifier) && !((CsmTemplate)classifier).getTemplateParameters().isEmpty()) {
             CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
-            CsmObject obj;
+            CsmObject obj= null;
             if (ip instanceof InstantiationProviderImpl) {
                 Resolver resolver = ResolverFactory.createResolver(getContainingFile(), getStartOffset(), parent);
-                obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile(), resolver);
+                if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
+                    obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile(), resolver, getStartOffset());
+                }
             } else {
-                obj = ip.instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile());
+                obj = ip.instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile(), getStartOffset());
             }
             if (CsmKindUtilities.isClassifier(obj)) {
                 classifier = (CsmClassifier) obj;

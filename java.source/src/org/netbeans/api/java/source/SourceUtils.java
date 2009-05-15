@@ -91,6 +91,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
@@ -531,7 +532,7 @@ public class SourceUtils {
                 }
                 if (fo != null) {
                     URL url = fo.getURL();
-                    sourceRoot = null;//XXX: Index.getSourceRootForClassFolder(url);
+                    sourceRoot = JavaIndex.getSourceRootForClassFolder(url);
                     if (sourceRoot == null) {
                         binaries.add(url);
                     } else {

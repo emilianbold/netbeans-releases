@@ -94,7 +94,7 @@ final class ResultPanelTree extends JPanel
         treeView = new ResultTreeView();
         treeView.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_TestResults"));
         treeView.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TestResults"));
-        resultBar.setPassedPercentage(0.0f);
+//        resultBar.setPassedPercentage(0.0f);
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
         toolBar.addSeparator(new Dimension(1, 0));
@@ -152,6 +152,7 @@ final class ResultPanelTree extends JPanel
         /* Called from the EventDispatch thread */
 
         rootNode.displayMessageSessionFinished(msg);
+        resultBar.stop();
     }
 
     /**

@@ -70,6 +70,7 @@ final class ResultTreeView extends BeanTreeView implements Runnable {
         defaultTreeCellRenderer = tree.getCellRenderer();
         noIconTreeCellRenderer = createNoIconTreeCellRenderer();
         tree.setCellRenderer(new DelegatingTreeCellRenderer());
+        tree.setDragEnabled(false);
         
         initAccessibility();
     }

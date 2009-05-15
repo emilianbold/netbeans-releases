@@ -66,9 +66,6 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  * @author Vladimir Kvasihn
  */
 public class Resolver3 implements Resolver {
-    private static final boolean TRACE_RECURSION = false;
-    private static final int INFINITE_RECURSION = 200;
-    private static final int LIMITED_RECURSION = 5;
     
     private ProjectBase project;
     private CsmFile file;
@@ -326,7 +323,7 @@ public class Resolver3 implements Resolver {
         return fd.getDeclaration();
     }
     
-    private boolean isRecursionOnResolving(int maxRecursion) {
+    public boolean isRecursionOnResolving(int maxRecursion) {
         Resolver3 parent = (Resolver3)parentResolver;
         int count = 0;
         while(parent != null) {
@@ -799,6 +796,38 @@ public class Resolver3 implements Resolver {
                             
                         }
                     }
+                }
+            }
+
+            if (result == null && needNamespaces()) {
+                CsmObject obj = new Resolver3(this.file, this.origOffset, this).resolve(nameTokens[0], NAMESPACE);
+                if (obj instanceof CsmNamespace) {
+                    CsmNamespace ns = (CsmNamespace) obj;
+                    for (int i = 1; i < nameTokens.length; i++) {
+                        CsmNamespace newNs = null;
+                        CharSequence name = nameTokens[i];
+                        Collection<CsmNamespaceAlias> aliases = CsmUsingResolver.getDefault().findNamespaceAliases(ns);
+                        for (CsmNamespaceAlias alias : aliases) {
+                            if (alias.getAlias().toString().equals(name.toString())) {
+                                newNs = alias.getReferencedNamespace();
+                                break;
+                            }
+                        }
+                        if (newNs == null) {
+                            Collection<CsmNamespace> namespaces = ns.getNestedNamespaces();
+                            for (CsmNamespace namespace : namespaces) {
+                                if (namespace.getName().toString().equals(name.toString())) {
+                                    newNs = namespace;
+                                    break;
+                                }
+                            }
+                        }
+                        ns = newNs;
+                        if (ns == null) {
+                            break;
+                        }
+                    }
+                    result = ns;
                 }
             }
         }

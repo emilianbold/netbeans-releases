@@ -355,6 +355,8 @@
   <mapID target="netbeans.optionsDialog.editor.hints" url="configure/options_editor.html" />
   <mapID target="netbeans.optionsDialog.editor.markOccurences" url="configure/options_editor.html" />
   <mapID target="netbeans.optionsDialog.editor.tasklist" url="configure/options_editor.html" />
+  <mapID target="netbeans.optionsDialog.editor.identation" url="configure/options_editor.html" />
+  <mapID target="netbeans.optionsDialog.editor.codeCompletion" url="configure/options_editor.html" />
 
   <!--ID for CSH in Options | Basic Options - Fonts and Colors Category: --> 
   <mapID target="netbeans.optionsDialog.fontAndColorsPanel" url="configure/options_fontscolors.html" />
@@ -497,12 +499,14 @@
 <mapID target="issues_trackers" url="collab/issues_about.html" />
 <mapID target="issues_workingwith" url="collab/issues_working.html" />
 <mapID target="issues_external" url="collab/issues_external.html" />
+<mapID target="issues_quickref" url="collab/issues_quickref.html" />
 
 <!-- Issue tracking csh topics-->
 <mapID target="org.netbeans.modules.bugzilla.repository.RepositoryController" url="collab/csh/issues_create_tracker.html" />
 <mapID target="org.netbeans.modules.bugzilla.util.KeywordsPanel" url="collab/csh/issues_select_keyword.html" />
 <mapID target="org.netbeans.modules.bugzilla.commands.HtmlPanel" url="collab/csh/issues_html_response.html" />
 <mapID target="org.netbeans.modules.bugzilla.query.savePanel" url="collab/csh/issues_save_query.html" />
+<mapID target="org.netbeans.modules.bugtracking.patchContextChooser" url="collab/csh/issues_patchcontextchooser.html" />
 
 <!-- Issue tracking csh topic for parameter dialog in vcs commit dialog -->
 <mapID target="org.netbeans.modules.bugtracking.vcs.FormatPanel" url="collab/csh/issues_vcs_parameterformat.html" />

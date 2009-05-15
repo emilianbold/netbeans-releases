@@ -315,13 +315,14 @@ public class Commands {
             StringBuilder cmd = new StringBuilder(128);
             cmd.append("path="); // NOI18N
             String usePath = path.getAbsolutePath();
-            if (path.isFile()) {
-                this.path = usePath;
-                int end = usePath.lastIndexOf(File.separatorChar);
-                if (end > -1) {
-                    usePath = usePath.substring(end+1);
-                }
-            }
+//            // support for remote deployment...
+//            if (path.isFile()) {
+//                this.path = usePath;
+//                int end = usePath.lastIndexOf(File.separatorChar);
+//                if (end > -1) {
+//                    usePath = usePath.substring(end+1);
+//                }
+//            }
             cmd.append(usePath);
             fileName = usePath;
             if(name != null && name.length() > 0) {

@@ -621,10 +621,10 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
     private void updateVarListeners(Object[] vars) {
         varListeners = new PropertyChangeListener[vars.length];
         for (int i = 0; i < vars.length; i++) {
-            final Object var = vars[i];
+            Object var = vars[i];
             PropertyChangeListener l = new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    fireNodeChanged(var);
+                    fireNodeChanged(evt.getSource());
                 }
             };
             varListeners[i] = l; // Hold it so that it does not get lost, till the array is updated.

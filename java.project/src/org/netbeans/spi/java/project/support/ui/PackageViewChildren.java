@@ -408,7 +408,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             PackageNode n = get( parent );
             if ( n == null && !contains( parent ) ) {                
                 add(parent, false, true);
-                refreshKeys();
+                refreshKeysAsync();
             }
             else if ( n != null ) {
                 n.updateChildren();

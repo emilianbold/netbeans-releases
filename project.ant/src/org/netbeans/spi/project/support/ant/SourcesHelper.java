@@ -852,7 +852,7 @@ public final class SourcesHelper {
         }
 
         public void fileAttributeChanged(FileAttributeEvent fe) {
-            maybeFireChange();
+            // #164930 - ignore
         }
 
         public void propertyChange(PropertyChangeEvent propertyChangeEvent) {

@@ -83,6 +83,7 @@ import org.apache.maven.project.InvalidProjectModelException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.reactor.MissingModuleException;
+import org.apache.maven.workspace.MavenWorkspaceStore;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;
@@ -118,6 +119,7 @@ import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.cos.CosChecker;
 import org.netbeans.modules.maven.debug.DebuggerChecker;
 import org.netbeans.modules.maven.debug.MavenDebuggerImpl;
+import org.netbeans.modules.maven.embedder.NbMavenWorkspaceStore;
 import org.netbeans.modules.maven.execute.BackwardCompatibilityWithMevenideChecker;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.modules.maven.execute.PrereqCheckerMerger;
@@ -225,6 +227,10 @@ public final class NbMavenProjectImpl implements Project {
 
     public NbMavenProject getProjectWatcher() {
         return watcher;
+    }
+
+    public ProblemReporterImpl getProblemReporter() {
+        return problemReporter;
     }
 
     /**
@@ -508,6 +514,16 @@ public final class NbMavenProjectImpl implements Project {
 
             });
             return;
+        }
+        //when project gets reloaded (pom.xml file changed, build finished)
+        //we need to dmp the weakly referenced caches and start with a clean room
+        try {
+            MavenWorkspaceStore store = (MavenWorkspaceStore) getEmbedder().getPlexusContainer().lookup("org.apache.maven.workspace.MavenWorkspaceStore"); //NOI18N
+            if (store instanceof NbMavenWorkspaceStore) {
+                ((NbMavenWorkspaceStore)store).doManualClear();
+            }
+        } catch (ComponentLookupException ex) {
+            Exceptions.printStackTrace(ex);
         }
         synchronized (this) {
             oldProject = project;

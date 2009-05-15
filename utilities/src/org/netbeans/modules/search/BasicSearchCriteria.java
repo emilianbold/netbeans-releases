@@ -117,6 +117,7 @@ final class BasicSearchCriteria {
     private boolean fileNamePatternSpecified = false;
     
     private boolean textPatternValid = false;
+    private boolean replacePatternValid = false;
     private boolean fileNamePatternValid = false;
     
     private Pattern textPattern;
@@ -235,6 +236,7 @@ final class BasicSearchCriteria {
                 assert (textPattern != null) || !textPatternValid;
             }
         }
+        replacePatternValid = validateReplacePattern();
         updateUsability();
     }
     
@@ -269,7 +271,24 @@ final class BasicSearchCriteria {
             return false;
         }
     }
-    
+
+
+    private boolean validateReplacePattern(){
+        if (regexp && textPatternValid){
+            int groups = getTextPattern().matcher("").groupCount();
+            String tmpSearch = "";
+            for(int i=1; i <= groups; i++){
+                tmpSearch += "(" + i + ")";
+            }
+            try{
+                Pattern.compile(tmpSearch).matcher("123456789").replaceFirst(replaceExpr);
+            }catch(Exception e){
+                return false;
+            }
+        }
+        return true;
+    }
+
     /**
      * Translates the simple text pattern to a regular expression pattern
      * and compiles it. The compiled pattern is stored to field
@@ -325,6 +344,7 @@ final class BasicSearchCriteria {
                 textPattern = null;
             }
         }
+        replacePatternValid = validateReplacePattern();
         updateUsability();
     }
     
@@ -505,12 +525,13 @@ final class BasicSearchCriteria {
     /**
      * Sets a replacement string/expression.
      *
-     * @param  replaceString  string to replace matches with, or {@code null}
+     * @param  replaceExpr  string to replace matches with, or {@code null}
      *                        if no replacing should be performed
      */
     void setReplaceExpr(String replaceExpr) {
         this.replaceExpr = replaceExpr;
         this.replaceString = null;
+        this.replacePatternValid = validateReplacePattern();
     }
 
     //--------------------------------------------------------------------------
@@ -548,6 +569,10 @@ final class BasicSearchCriteria {
     
     boolean isTextPatternInvalid() {
         return textPatternSpecified && !textPatternValid;
+    }
+
+    boolean isReplacePatternInvalid() {
+        return !replacePatternValid;
     }
 
     boolean isFileNamePatternUsable() {

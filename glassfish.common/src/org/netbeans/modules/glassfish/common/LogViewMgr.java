@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.glassfish.common;
 
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -72,6 +73,7 @@ import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.Recognizer;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.IOColorLines;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
@@ -94,6 +96,8 @@ import org.openide.windows.OutputWriter;
 public class LogViewMgr {
 
     private static final Logger LOGGER = Logger.getLogger("glassfish"); //  NOI18N
+
+    private static final boolean strictFilter = Boolean.getBoolean("glassfish.logger.strictfilter");
 
     /**
      * Amount of time in milliseconds to wait between checks of the input
@@ -339,12 +343,11 @@ public class LogViewMgr {
         }
         return levelMap;
     }
-    
+
     private String getLocalizedLevel(String level) {
         String localizedLevel = localizedLevels.get(level);
         return localizedLevel != null ? localizedLevel : level;
     }
-    
 
     /**
      * Selects output panel
@@ -454,20 +457,133 @@ public class LogViewMgr {
             if(LOGGER.isLoggable(Level.FINEST)) {
                 LOGGER.log(Level.FINEST, "processing text: '" + line + "'"); // NOI18N
             }
-            OutputListener listener = null;
-            Iterator<Recognizer> iterator = recognizers.iterator();
-            while(iterator.hasNext() && listener == null) {
-                listener = iterator.next().processLine(line);
+            // XXX sort of a hack to eliminate specific glassfish messages that
+            // ought not to be printed at their current level (INFO vs FINE+).
+            if(!strictFilter && filter(line)) {
+                return;
             }
-            boolean showAsError = isWarning(line);
-            if(listener != null) {
-                line = stripNewline(line);
-                write(line, listener, false, showAsError);
-            } else {
-                write(line, showAsError);
-            }
+            // Track level, color, listener
+            Message message = new Message(line);
+            message.process(recognizers);
+            message.print();
             selectIO();
         }
+    }
+
+    private static Pattern colorPattern = Pattern.compile(
+            "\\033\\[([\\d]{1,3})(?:;([\\d]{1,3}))?(?:;([\\d]{1,3}))?(?:;([\\d]{1,3}))?(?:;([\\d]{1,3}))?m"); // NOI18N
+
+    private static final Color LOG_RED = new Color(204, 0, 0);
+    private static final Color LOG_GREEN = new Color(0, 192, 0);
+    private static final Color LOG_YELLOW = new Color(204, 204, 0);
+    private static final Color LOG_BLUE = Color.BLUE;
+    private static final Color LOG_MAGENTA = new Color(204, 0, 204);
+    private static final Color LOG_CYAN = new Color(0, 153, 255);
+
+    private static Color [] colorTable = {
+        Color.BLACK, LOG_RED, LOG_GREEN, LOG_YELLOW, LOG_BLUE, LOG_MAGENTA, LOG_CYAN,
+    };
+
+    private class Message {
+
+        private String message;
+        private int level;
+        private Color color;
+        private OutputListener listener;
+
+        public Message(String line) {
+            message = line;
+        }
+
+        void process(List<Recognizer> recognizers) {
+            processLevel();
+            processColors();
+            processRecognizers(recognizers);
+        }
+
+        private void processLevel() {
+            level = 0;
+            int colon = message.substring(0, Math.min(message.length(), 15)).indexOf(':');
+            if(colon != -1) {
+                try {
+                    String levelPrefix = message.substring(0, colon);
+                    level = Level.parse(levelPrefix).intValue();
+                } catch(IllegalArgumentException ex) {
+                }
+            }
+        }
+
+        private void processColors() {
+            try {
+                Matcher matcher = colorPattern.matcher(message);
+                boolean result = matcher.find();
+                if(result) {
+                    StringBuffer sb = new StringBuffer(message.length());
+                    do {
+                        int count = matcher.groupCount();
+                        for(int i = 1; i < count && matcher.group(i) != null; i++) {
+                            int code = Integer.parseInt(matcher.group(i));
+                            if(code >= 30 && code <= 36 && color == null) {
+                                color = colorTable[code - 30];
+                            }
+                        }
+                        matcher.appendReplacement(sb, "");
+                        result = matcher.find();
+                    } while(result);
+                    matcher.appendTail(sb);
+                    message = sb.toString();
+                }
+            } catch(Exception ex) {
+                Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
+            }
+            if(color == null && level > 0) {
+                if(level <= Level.FINE.intValue()) {
+                    color = LOG_GREEN;
+                } else if(level <= Level.INFO.intValue()) {
+                    color = Color.GRAY;
+                }
+            }
+        }
+
+        private void processRecognizers(List<Recognizer> recognizers) {
+            // Don't run recognizers on excessively long lines
+            if(message.length() > 500) {
+                return;
+            }
+            Iterator<Recognizer> iterator = recognizers.iterator();
+            while(iterator.hasNext() && listener == null) {
+                listener = iterator.next().processLine(message);
+            }
+        }
+
+        void print() {
+            OutputWriter writer = getWriter(level >= 900);
+            try {
+                if(color != null && listener == null && IOColorLines.isSupported(io)) {
+                    message = stripNewline(message);
+                    IOColorLines.println(io, message, color);
+                } else if(writer != null) {
+                    if(listener != null) {
+                        message = stripNewline(message);
+                        writer.println(message, listener, false);
+                    } else {
+                        writer.print(message);
+                    }
+                }
+            } catch (IOException ex) {
+                LOGGER.log(Level.FINE, ex.getLocalizedMessage(), ex);
+            }
+        }
+
+    }
+
+    private boolean filter(String line) {
+        return line.startsWith("INFO: Started bundle ")
+                || line.startsWith("INFO: Stopped bundle ")
+                || line.startsWith("INFO: ### ")
+//                || line.startsWith("felix.")
+//                || line.startsWith("log4j:")
+                ;
     }
 
     private static final String stripNewline(String s) {
@@ -760,20 +876,16 @@ public class LogViewMgr {
     
     public static InputOutput getServerIO(String uri) {
 
-        // TODO -- avoid depending on the static methods
-        GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
         ServerInstance si = null;
-        if (null != gip) {
-            si = gip.getInstance(uri);
-            gip = GlassfishInstanceProvider.getEe6();
-            if (si == null && null != gip) {
-                si = gip.getInstance(uri);
-            }
-            if (null == si) {
-                return null;
-            }
+        Iterator<GlassfishInstanceProvider> iterator = GlassfishInstanceProvider.getProviders(true).iterator();
+        while(si == null && iterator.hasNext()) {
+            GlassfishInstanceProvider provider = iterator.next();
+            si = provider.getInstance(uri);
         }
-        
+        if(null == si) {
+            return null;
+        }
+
         synchronized (ioWeakMap) {
             // look in the cache
             InputOutput serverIO = ioWeakMap.get(si);

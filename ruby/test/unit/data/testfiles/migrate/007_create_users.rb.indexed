@@ -17,8 +17,6 @@ Not Searchable Keys:
 Document 1
 Searchable Keys:
   dbtable : users
-  require : 007_create_users
-
 
 Not Searchable Keys:
   dbcolumn : hashed_password;string

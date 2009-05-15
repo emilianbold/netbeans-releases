@@ -484,7 +484,8 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         Dimension dim = popupWindow.getSize();
         //#63265 
         Rectangle usableRect = Utilities.getUsableScreenBounds();
-        Point loc = new Point(point.x + this.getSize().width - dim.width - separator.getSize().width - 5 * 2  , point.y - dim.height - 5);
+        int sepShift = separator != null ? separator.getSize().width : 0;
+        Point loc = new Point(point.x + this.getSize().width - dim.width - sepShift - 5 * 2  , point.y - dim.height - 5);
         // -5 in x coordinate is becuase of the hgap between the separator and button and separator and edge
         if (! usableRect.contains(loc)) {
             loc = new Point(loc.x, point.y + 5 + this.getSize().height);
