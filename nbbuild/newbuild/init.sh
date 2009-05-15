@@ -44,10 +44,6 @@ if [ -z ${UPLOAD_ML} ]; then
     export UPLOAD_ML=0
 fi
 
-if [ -z ${UPLOAD_JDK} ]; then
-    export UPLOAD_JDK=0
-fi
-
 export ANT_OPTS="-Xmx512m -XX:MaxPermSize=256m"
 export JAVA_HOME=$JDK_HOME
 
