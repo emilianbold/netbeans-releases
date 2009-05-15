@@ -817,7 +817,7 @@ public class NetBeansUtils {
             }
         }
     }
-    private static String getNetBeansId() {
+    public static String getNetBeansId() {
         return BundleType.getType(
                 System.getProperty(NbWelcomePanel.WELCOME_PAGE_TYPE_PROPERTY)).
                 getNetBeansBundleId();

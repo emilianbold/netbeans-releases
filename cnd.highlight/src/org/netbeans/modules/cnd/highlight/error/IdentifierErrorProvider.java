@@ -147,6 +147,9 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
                     if (CsmFileReferences.isAfterUnresolved(context)) {
                         return;
                     }
+                    if (CsmFileReferences.isBuiltInBased(ref) || CsmFileReferences.isMacroBased(context)) {
+                        return;
+                    }
                     Severity severity = Severity.WARNING;
                     foundError++;
                     response.addError(new IdentifierErrorInfo(

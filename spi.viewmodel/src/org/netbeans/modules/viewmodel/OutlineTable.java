@@ -72,6 +72,7 @@ import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
+import org.netbeans.swing.etable.ETableColumn;
 import org.netbeans.swing.etable.ETableColumnModel;
 import org.netbeans.swing.outline.DefaultOutlineModel;
 import org.netbeans.swing.outline.Outline;
@@ -323,6 +324,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         // 2) save current settings (like columns, expanded paths)
         //List ep = treeTable.getExpandedPaths ();
         saveWidths ();
+        saveSortedState();
         
         this.model = model;
         
@@ -355,7 +357,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         // Moved to 4), because the new root node must be ready when setting columns
         
         // 6) update column widths & expanded nodes
-        updateColumnWidths ();
+        updateColumnWidthsAndSorting();
         //treeTable.expandNodes (expandedPaths);
         // TODO: this is a workaround, we should find a better way later
         /* We must not call children here - it can take a long time...
@@ -651,8 +653,8 @@ ExplorerManager.Provider, PropertyChangeListener {
         return ecm.isColumnHidden(tableColumns[index]);
     }
 
-    void updateColumnWidths () {
-        logger.fine("\nupdateColumnWidths():");
+    void updateColumnWidthsAndSorting() {
+        logger.fine("\nupdateColumnWidthsAndSorting():");
         int i, k = columns.length;
         TableColumnModel tcm = treeTable.getTable().getColumnModel();
         ETableColumnModel ecm = (ETableColumnModel) tcm;
@@ -662,9 +664,9 @@ ExplorerManager.Provider, PropertyChangeListener {
             }
             int visibleOrder = columnVisibleMap[i];
             logger.fine("  visibleOrder["+i+"] = "+visibleOrder+", ");
-            TableColumn tc;
+            ETableColumn tc;
             try {
-                tc = tcm.getColumn (visibleOrder);
+                tc = (ETableColumn) tcm.getColumn (visibleOrder);
             } catch (ArrayIndexOutOfBoundsException aioobex) {
                 ErrorManager.getDefault().notify(
                         ErrorManager.getDefault().annotate(aioobex,
@@ -673,8 +675,12 @@ ExplorerManager.Provider, PropertyChangeListener {
             }
             logger.fine("  GUI column = "+tc.getHeaderValue());
             if (columns[i] instanceof Column) {
-                logger.fine("    Retrieved width "+((Column) columns[i]).getColumnWidth()+" from "+columns[i].getDisplayName()+"["+i+"] for "+tc.getHeaderValue());
-                tc.setPreferredWidth(((Column) columns[i]).getColumnWidth());
+                Column c = (Column) columns[i];
+                logger.fine("    Retrieved width "+c.getColumnWidth()+" from "+columns[i].getDisplayName()+"["+i+"] for "+tc.getHeaderValue());
+                tc.setPreferredWidth(c.getColumnWidth());
+                if (c.isSorted()) {
+                    tc.setSorted(1, !c.isSortedDescending());
+                }
             }
         }
     }
@@ -722,6 +728,38 @@ ExplorerManager.Provider, PropertyChangeListener {
         }
     }
     
+    private void saveSortedState () {
+        if (columns == null) return;
+        int i, k = columns.length;
+        if (k == 0) return ;
+        TableColumnModel tcm = treeTable.getTable().getColumnModel();
+        ETableColumnModel ecm = (ETableColumnModel) tcm;
+        Enumeration<TableColumn> etc = tcm.getColumns();
+        logger.fine("\nsaveSortedState():");
+        for (i = 0; i < k; i++) {
+            if (isHiddenColumn(i)) {
+                continue;
+            }
+            int visibleOrder = columnVisibleMap[i];
+            logger.fine("  visibleOrder["+i+"] = "+visibleOrder+", ");
+            ETableColumn tc;
+            try {
+                tc = (ETableColumn) tcm.getColumn (visibleOrder);
+            } catch (ArrayIndexOutOfBoundsException aioobex) {
+                ErrorManager.getDefault().notify(
+                        ErrorManager.getDefault().annotate(aioobex,
+                        "Column("+i+") "+columns[i].getName()+" visible index = "+visibleOrder));
+                continue ;
+            }
+            logger.fine("  GUI column = "+tc.getHeaderValue());
+            if (columns[i] instanceof Column) {
+                logger.fine("    Setting sorted "+tc.isSorted()+" descending "+(!tc.isAscending())+" to "+columns[i].getDisplayName()+"["+i+"]");
+                ((Column) columns[i]).setSorted(tc.isSorted());
+                ((Column) columns[i]).setSortedDescending(!tc.isAscending());
+            }
+        }
+    }
+
     private void expandDefault (Object[] nodes) {
         int i, k = nodes.length;
         for (i = 0; i < k; i++)
