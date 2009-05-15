@@ -65,9 +65,9 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         cache = new WeakHashMap<String, Map<String, SourceFileInfo>>();
     }
 
-    public SourceFileInfo fileName(String functionName, long offset, Map<String, String> serviceInfo) throws SourceFileInfoCannotBeProvided {
+    public SourceFileInfo fileName(String functionName, long offset, Map<String, String> serviceInfo) {
         if (serviceInfo == null){
-            throw new SourceFileInfoCannotBeProvided();
+            return null;
         }
         String executable = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE);
         if (executable != null) {
@@ -94,7 +94,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
 //                return new SourceFileInfo(sourceFile, lineNumber, 0);
 //            }
         }
-        throw new SourceFileInfoCannotBeProvided();
+        return null;
     }
 
     private synchronized Map<String, SourceFileInfo> getSourceInfo(String executable, Map<String, String> serviceInfo) {
