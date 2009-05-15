@@ -50,10 +50,10 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -69,7 +69,6 @@ import org.netbeans.lib.ddl.DBConnection;
 import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
-import org.netbeans.api.db.explorer.JDBCDriverListener;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 
 import org.netbeans.modules.db.ExceptionListener;
@@ -171,15 +170,10 @@ public class DatabaseConnection implements DBConnection {
     public static final int DERBY_UNICODE_ERROR_CODE = 20000;
     private OpenConnectionInterface openConnection = null;
     private volatile JDBCDriver jdbcdrv = null;
-    private JDBCDriverListener jdbcL = new JDBCDriverListener () {
-        public void driversChanged () {
-            jdbcdrv = null;
-        }
-    };
-
+    private JDBCDriver[] drivers = null;
 
     static private final Lookup.Result<OpenConnectionInterface> openConnectionLookupResult;
-    static private Collection openConnectionServices = null;
+    static private Collection<? extends OpenConnectionInterface> openConnectionServices = null;
     static {
         openConnectionLookupResult = Lookup.getDefault().lookup(new Lookup.Template<OpenConnectionInterface>(OpenConnectionInterface.class));
         openConnectionLookupResult.addLookupListener(new LookupListener() {
@@ -195,7 +189,6 @@ public class DatabaseConnection implements DBConnection {
     public DatabaseConnection() {
         dbconn = DatabaseConnectionAccessor.DEFAULT.createDatabaseConnection(this);
         propertySupport = new PropertyChangeSupport(this);
-        JDBCDriverManager.getDefault().addDriverListener (jdbcL);
     }
 
     /** Advanced constructor
@@ -229,8 +222,10 @@ public class DatabaseConnection implements DBConnection {
     }
 
     public JDBCDriver findJDBCDriver() {
-        if (jdbcdrv == null) {
-            JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(drv);
+        JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(drv);
+        if (drivers == null || ! Arrays.equals(drvs, drivers)) {
+            drivers = drvs;
+
             if (drvs.length <= 0) {
                 return null;
             }
@@ -243,6 +238,7 @@ public class DatabaseConnection implements DBConnection {
                 }
             }
             jdbcdrv = useDriver;
+            
         }
         return jdbcdrv;
     }
@@ -290,7 +286,7 @@ public class DatabaseConnection implements DBConnection {
 
     }
 
-     private Collection getOpenConnections() {
+     private Collection<? extends OpenConnectionInterface> getOpenConnections() {
          if (openConnectionServices == null) {
              openConnectionServices = openConnectionLookupResult.allInstances();
          }
@@ -309,9 +305,7 @@ public class DatabaseConnection implements DBConnection {
 
          // For Java Studio Enterprise. Create instanceof OpenConnection
          try {
-             Collection c = getOpenConnections();
-             for (Iterator i=c.iterator(); driver != null && i.hasNext();) {
-                 OpenConnectionInterface oci = (OpenConnectionInterface) i.next();
+             for (OpenConnectionInterface oci : getOpenConnections()) {
                  if (oci.isFor(driver)) {
                      openConnection = oci;
                      break;
@@ -761,9 +755,7 @@ public class DatabaseConnection implements DBConnection {
     private void sendException(Exception exc) {
         List<ExceptionListener> listeners = new ArrayList<ExceptionListener>();
         synchronized (exceptionListeners) {
-            Iterator it = exceptionListeners.iterator();
-            while (it.hasNext()) {
-                ExceptionListener l = (ExceptionListener) it.next();
+            for (ExceptionListener l : exceptionListeners) {
                 listeners.add(l);
             }
         }
@@ -880,8 +872,7 @@ public class DatabaseConnection implements DBConnection {
         TopComponent runtimePanel = null;
         ExplorerManager runtimeExplorer = null;
 
-        for (Iterator i = TopComponent.getRegistry().getOpened().iterator(); i.hasNext();) {
-            TopComponent component = (TopComponent)i.next();
+        for (TopComponent component : TopComponent.getRegistry().getOpened()) {
             Component[] children = component.getComponents();
             if (children.length > 0) {
                 ExplorerManager explorer = ExplorerManager.find(children[0]);
