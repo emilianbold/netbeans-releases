@@ -50,7 +50,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -88,7 +89,6 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.PropertySupport;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -118,6 +118,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private final TableCellRenderer outlineNodePropertyDefault;
     private final VisualizersSupport visSupport;
     private FunctionCallChildren currentChildren;
+    private ExecutorService sourcePrefetchExecutor;
 
     public FunctionsListViewVisualizer(FunctionsListDataProvider dataProvider, FunctionsListViewVisualizerConfiguration configuration) {
         visSupport = new VisualizersSupport(new VisualizerImplSessionStateListener());
@@ -209,12 +210,25 @@ public class FunctionsListViewVisualizer extends JPanel implements
             return;
         }
 
+        // Our own executor service prefetching source infos.
+        // Don't use DLightExecutorService because:
+        // 1) We want to be able to cancel all pending prefetch tasks
+        //    when the function list is reloaded
+        // 2) We want regular GoToSourceActions
+        //    not to be blocked by prefetch tasks
+        if (sourcePrefetchExecutor != null) {
+            sourcePrefetchExecutor.shutdownNow();
+            sourcePrefetchExecutor = null;
+        }
+        final boolean isEmptyConent = list == null || list.isEmpty();
+        if (!isEmptyContent) {
+            sourcePrefetchExecutor = Executors.newFixedThreadPool(2);
+        }
+
         UIThread.invoke(new Runnable() {
 
             public void run() {
                 synchronized (uiLock) {
-                    final boolean isEmptyConent =
-                            list == null || list.isEmpty();
                     setContent(isEmptyConent);
                     if (!isEmptyConent) {
                         currentChildren = new FunctionCallChildren(list);
@@ -470,89 +484,61 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private class GoToSourceAction extends AbstractAction {
 
         private final FunctionCallNode functionCallNode;
-        private final Future<SourceFileInfo> sourceFileInfoTask;
-        private boolean isEnabled = true;
-        private boolean gotTheInfo = false;
+        private SourceFileInfo sourceInfo;
+        private Future<Boolean> goToSourceTask;
 
         public GoToSourceAction(FunctionCallNode funcCallNode) {
             super(NbBundle.getMessage(FunctionsListViewVisualizer.class, "GoToSourceActionName"));//NOI18N
             this.functionCallNode = funcCallNode;
-            sourceFileInfoTask = DLightExecutorService.submit(new Callable<SourceFileInfo>() {
 
-                public SourceFileInfo call() {
-                    FunctionCall functionCall = functionCallNode.getFunctionCall();
-                    return dataProvider.getSourceFileInfo(functionCall);
-                }
-            }, "SourceFileInfo getting info from Functions List View"); // NOI18N
-            waitForSourceFileInfo();
-//            try {
-//                SourceFileInfo sourceFileInfo = sourceFileInfoTask.get();
-//                isEnabled = sourceFileInfo != null && sourceFileInfo.isSourceKnown();
-//            } catch (InterruptedException ex) {
-//                isEnabled = false;
-//            } catch (ExecutionException ex) {
-//                isEnabled = false;
-//            } finally {
-//                synchronized (GoToSourceAction.this) {
-//                    gotTheInfo = true;
-//                }
-//                setEnabled(isEnabled);
-//                functionCallNode.fire();
-//
-//            }
-        }
-
-        private void waitForSourceFileInfo() {
-            DLightExecutorService.submit(new Runnable() {
-
+            sourcePrefetchExecutor.submit(new Runnable() {
                 public void run() {
-                    try {
-                        SourceFileInfo sourceFileInfo = sourceFileInfoTask.get();
-                        isEnabled = sourceFileInfo != null && sourceFileInfo.isSourceKnown();
-                    } catch (InterruptedException ex) {
-                        isEnabled = false;
-                    } catch (ExecutionException ex) {
-                        isEnabled = false;
-                    } finally {
-                        synchronized (GoToSourceAction.this) {
-                            gotTheInfo = true;
-                        }
-                        setEnabled(isEnabled);
-                        functionCallNode.fire();
-
-                    }
-
+                    getSource();
                 }
-            }, "Wait For the SourceFileInfo");//NOI18N
+            });
         }
 
-        @Override
-        public boolean isEnabled() {
-            return isEnabled;
+        public synchronized void actionPerformed(ActionEvent e) {
+            if (goToSourceTask == null || goToSourceTask.isDone()) {
+                goToSourceTask = DLightExecutorService.submit(new Callable<Boolean>() {
+                    public Boolean call() {
+                        return goToSource();
+                    }
+                }, "GoToSource from Functions List View"); // NOI18N
+            }
         }
 
-        public void actionPerformed(ActionEvent e) {
+        private boolean goToSource() {
+            SourceFileInfo source = getSource();
+            if (source != null && source.isSourceKnown()) {
+                SourceSupportProvider sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
+                sourceSupportProvider.showSource(source);
+                return true;
+            } else {
+                return false;
+            }
+        }
 
-            DLightExecutorService.submit(new Runnable() {
-
-                public void run() {
-                    SourceFileInfo sourceFileInfo = null;
-                    try {
-                        sourceFileInfo = sourceFileInfoTask.get();
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (ExecutionException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    if (sourceFileInfo == null) {// TODO: what should I do here if there is no source file info
-                        return;
-                    }
-
-                    SourceSupportProvider sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
-                    sourceSupportProvider.showSource(sourceFileInfo);
+        private SourceFileInfo getSource() {
+            synchronized (this) {
+                if (sourceInfo != null) {
+                    return sourceInfo;
                 }
-            }, "GoToSource from Functions List View"); // NOI18N
-
+            }
+            FunctionCall functionCall = functionCallNode.getFunctionCall();
+            SourceFileInfo result = dataProvider.getSourceFileInfo(functionCall);
+            if (result != null && result.isSourceKnown()) {
+                synchronized (this) {
+                    if (sourceInfo == null) {
+                        sourceInfo = result;
+                    }
+                }
+                return sourceInfo;
+            } else {
+                setEnabled(false);
+                functionCallNode.fire();
+                return null;
+            }
         }
     }
 

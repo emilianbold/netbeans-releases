@@ -46,7 +46,6 @@ import antlr.Parser;
 import antlr.RecognitionException;
 import antlr.Token;
 import antlr.TokenStream;
-import antlr.TokenStreamException;
 import antlr.collections.AST;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -63,7 +62,6 @@ import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
@@ -76,12 +74,11 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
+import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
-import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc.ChangedSegment;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
@@ -595,9 +592,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 _markModifiedIfBeingParsed();
             }
             if (invalidateCache) {
-                synchronized (tokStreamLock) {
-                    tsRef = null;
-                }
+                tsRef.clear();
                 APTDriver.getInstance().invalidateAPT(this.getBuffer());
             }
         }
@@ -807,36 +802,32 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
-    private TokenStream createFullTokenStream(boolean filtered, int startContext, int endContext, AtomicReference<FilePreprocessorConditionState> outPcState) {
+    // called under tokStreamLock
+    private boolean createAndCacheFullTokenStream(int startContext, int endContext, /*in-out*/FileTokenStreamCache tsCache) {
         APTFile apt = getFullAPT();
         if (apt == null) {
-            return null;
+            return false;
         }
         PreprocessorStatePair bestStatePair = getContextPreprocStatePair(startContext, endContext);
         APTPreprocHandler preprocHandler = getPreprocHandler(bestStatePair);
         if (preprocHandler == null) {
-            return null;
+            return false;
         }
-        outPcState.set(bestStatePair == null ? null : bestStatePair.pcState);
         APTPreprocHandler.State ppState = preprocHandler.getState();
         ProjectBase startProject = ProjectBase.getStartProject(ppState);
         if (startProject == null) {
             System.err.println(" null project for " + APTHandlersSupport.extractStartEntry(ppState) + // NOI18N
                     "\n while getting TS of file " + getAbsolutePath() + "\n of project " + getProject()); // NOI18N
-            return null;
+            return false;
         }
+        APTLanguageFilter languageFilter = getLanguageFilter(ppState);
         FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(getAbsolutePath());
-        APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler, false, pcBuilder);
-        outPcState.set(pcBuilder.build());
-        if(filtered) {
-            return walker.getFilteredTokenStream(getLanguageFilter(ppState));
-        } else {
-            return walker.getTokenStream(false);
-        }
-    }
+        APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler, false, pcBuilder, getIncludeCacheEntry(preprocHandler));
+        tsCache.addNewPair(pcBuilder, walker.getTokenStream(false), languageFilter);
+        return true;
+    }    
     private final Object tokStreamLock = new Object();
-    private Reference<FileTokenStreamCache<OffsetTokenStream>> tsRef = null;
-
+    private Reference<FileTokenStreamCache> tsRef = new SoftReference<FileTokenStreamCache>(null);
     /**
      *
      * @param startOffset
@@ -846,98 +837,45 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      * @return
      */
     public final TokenStream getTokenStream(int startContextOffset, int endContextOffset, int/*CPPTokenTypes*/ firstTokenIDIfExpandMacros, boolean filtered) {
-        try {
-            FileTokenStreamCache<OffsetTokenStream> cache;
+        boolean trace = false;
+        FileTokenStreamCache cache = tsRef.get();
+        TokenStream stream;
+        if (cache == null) {
+            stream = null;
+        } else {
+            stream = cache.getTokenStreamInActiveBlock(filtered, startContextOffset, endContextOffset, firstTokenIDIfExpandMacros);
+        }
+        if (stream != null) {
+            if (trace) {
+                System.err.printf("found for %s %s stream [%d-%d]\n", getAbsolutePath(), (filtered ? "filtered" : ""), startContextOffset, endContextOffset); // NOI18N
+            }
+        } else {
+            // we need to build new full token stream
             synchronized (tokStreamLock) {
-                cache = tsRef != null ? tsRef.get() : null;
-                if (cache != null && cache.isFiltered() == filtered) {
-                    tsRef = null;
+                cache = tsRef.get();
+                if (cache == null) {
+                    cache = new FileTokenStreamCache();
+                    tsRef = new SoftReference<FileTokenStreamCache>(cache);
                 } else {
-                    cache = null;
+                    // could be already created by parallel thread
+                    stream = cache.getTokenStreamInActiveBlock(filtered, startContextOffset, endContextOffset, firstTokenIDIfExpandMacros);
                 }
-            }
-            OffsetTokenStream stream = cache == null ? null : cache.getTokenStream();
-            if (stream == null || stream.getStartOffset() > startContextOffset || !cache.isInActiveBlock(startContextOffset, endContextOffset)) {
-                AtomicReference<FilePreprocessorConditionState> outPcState = new AtomicReference<FilePreprocessorConditionState>();
-                TokenStream fullTS = createFullTokenStream(filtered, startContextOffset, endContextOffset, outPcState);
-                if(fullTS != null) {
-                    stream = new OffsetTokenStream(fullTS, outPcState.get(), filtered);
+                if (stream == null) {
+                    if (trace) {
+                        System.err.printf("creating for %s %s stream [%d-%d]\n", getAbsolutePath(), (filtered ? "filtered" : ""), startContextOffset, endContextOffset); // NOI18N
+                    }
+                    if (createAndCacheFullTokenStream(startContextOffset, endContextOffset, cache)) {
+                        stream = cache.getTokenStreamInActiveBlock(filtered, startContextOffset, endContextOffset, firstTokenIDIfExpandMacros);
+                    }
                 } else {
-                    return null;
-                }
-            }
-            stream.moveTo(startContextOffset, endContextOffset, firstTokenIDIfExpandMacros);
-            return stream;
-        } catch (TokenStreamException ex) {
-            Utils.LOG.severe("Can't create compound statement: " + ex.getMessage());
-            DiagnosticExceptoins.register(ex);
-            return null;
-        }
-    }
-
-    public void releaseTokenStream(TokenStream ts) {
-        if (ts instanceof OffsetTokenStream) {
-            OffsetTokenStream offsTS = (OffsetTokenStream) ts;
-            // for now cache only filtered streams
-            if (offsTS.filtered) {
-                synchronized (tokStreamLock) {
-                    if (tsRef == null && offsTS.filtered) {
-                        tsRef = new SoftReference<FileTokenStreamCache<OffsetTokenStream>>(new FileTokenStreamCache<OffsetTokenStream>(offsTS, offsTS.pcState, offsTS.filtered));
+                    if (trace) {
+                        System.err.printf("found for just cached %s %s stream [%d-%d]\n", getAbsolutePath(), (filtered ? "filtered" : ""), startContextOffset, endContextOffset); // NOI18N
                     }
                 }
             }
         }
+        return stream;
     }
-
-    private static class OffsetTokenStream implements TokenStream {
-        private final FilePreprocessorConditionState pcState;
-        private final TokenStream stream;
-        private final boolean filtered;
-        private Token next;
-        private int endOffset;
-
-        private OffsetTokenStream(TokenStream stream, FilePreprocessorConditionState pcState, boolean filtered) {
-            this.stream = stream;
-            this.pcState = pcState;
-            this.filtered = filtered;
-        }
-
-        public Token nextToken() throws TokenStreamException {
-            Token out = next;
-
-            if (out == null || out.getType() == CPPTokenTypes.EOF ||
-                    (((APTToken) out).getOffset() > endOffset)) {
-                out = APTUtils.EOF_TOKEN;
-            } else {
-                next = stream.nextToken();
-            }
-            return out;
-        }
-
-        private int getStartOffset() {
-            return next == null || (next.getType() == CPPTokenTypes.EOF) ? Integer.MAX_VALUE : ((APTToken) next).getOffset();
-        }
-
-        private void moveTo(int startOffset, int endOffset, int/*CPPTokenTypes*/ startTokenIDIfExpandMacros) throws TokenStreamException {
-            this.endOffset = endOffset;
-            assert this.endOffset >= startOffset;
-            for (next = stream.nextToken(); next != null && !APTUtils.isEOF(next); next = stream.nextToken()) {
-                assert (next instanceof APTToken) : "we have only APTTokens in token stream";
-                int currOffset = ((APTToken) next).getOffset();
-                if (currOffset >= startOffset) {
-                    if ((startTokenIDIfExpandMacros == 0) || (next.getType() == startTokenIDIfExpandMacros) || !APTUtils.isMacroExpandedToken(next)) {
-                        break;
-                    }
-                }
-            }
-        }
-
-        @Override
-        public String toString() {
-            return "TS with " + this.pcState + " endOffset:" +endOffset + " nextToken:" + next; // NOI18N
-        }
-
-    };
 
     /** For test purposes only */
     public interface ErrorListener {
@@ -971,6 +909,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
+    public final APTFileCacheEntry getIncludeCacheEntry(APTPreprocHandler preprocHandler) {
+        return null; //new APTFileCacheEntry(getAbsolutePath());
+    }
+
     public ReadOnlyTokenBuffer getErrors(final Collection<RecognitionException> result) {
         CPPParserEx.ErrorDelegate delegate = new CPPParserEx.ErrorDelegate() {
 
@@ -997,7 +939,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         try {
             APTFile aptFull = getFullAPT();
             if (aptFull != null) {
-                APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, false, null);
+                APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, false, null, getIncludeCacheEntry(preprocHandler));
                 CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter(ppState)), flags);
                 parser.setErrorDelegate(delegate);
                 parser.setLazyCompound(false);
@@ -1061,7 +1003,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
             // We gather conditional state here as well, because sources are not included anywhere
             FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(getAbsolutePath());
-            APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, true, pcBuilder);
+            APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, true, pcBuilder, getIncludeCacheEntry(preprocHandler));
             walker.addMacroAndIncludes(true);
             if (TraceFlags.DEBUG) {
                 System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocState(ppState));
