@@ -456,7 +456,7 @@ public final class DtraceDataCollector
             taskCommand += " " + extraParams; // NOI18N
         }
 
-        NativeProcessBuilder npb = new NativeProcessBuilder(target.getExecEnv(), taskCommand);
+        NativeProcessBuilder npb = new NativeProcessBuilder(target.getExecEnv(), taskCommand,false);
 
         ExecutionDescriptor descr = new ExecutionDescriptor();
         descr = descr.outProcessorFactory(new DtraceInputProcessorFactory());

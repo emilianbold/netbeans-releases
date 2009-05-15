@@ -104,7 +104,7 @@ public class PackagingConfiguration {
         } else if (makeConfiguration.isApplicationConfiguration()) {
             perm = MakeOptions.getInstance().getDefExePerm();
             packageDir = "${PACKAGE_TOP_DIR}bin"; // NOI18N
-            if (makeConfiguration.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
+            if (makeConfiguration.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_WINDOWS) {
                 suffix = ".exe"; // NOI18N
             }
         } else if (makeConfiguration.isLibraryConfiguration()) {
@@ -425,7 +425,7 @@ public class PackagingConfiguration {
         if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_APPLICATION) {
             outputName = outputName.toLowerCase();
         } else if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
-            Platform platform = Platforms.getPlatform(getMakeConfiguration().getPlatform().getValue());
+            Platform platform = Platforms.getPlatform(getMakeConfiguration().getDevelopmentHost().getBuildPlatform());
             outputName = platform.getLibraryName(outputName);
         }
         outputName = createValidPackageName(outputName);
