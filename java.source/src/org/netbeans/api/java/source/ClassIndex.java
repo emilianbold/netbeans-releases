@@ -440,7 +440,7 @@ public final class ClassIndex {
     
     private Iterable<? extends ClassIndexImpl> getQueries (final Set<SearchScope> scope) {
         final Set<ClassIndexImpl> result = new HashSet<ClassIndexImpl> ();
-        synchronized (ClassIndex.class) {
+        synchronized (this) {
             if (scope.contains(SearchScope.SOURCE)) {
                 result.addAll(this.sourceIndeces);
             }
