@@ -67,6 +67,8 @@ import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.CompletionModel;
 import org.netbeans.modules.xml.schema.completion.util.CompletionUtil.DocRoot;
 import org.netbeans.modules.xml.schema.completion.util.CompletionUtil.DocRootAttribute;
+import org.netbeans.modules.xml.schema.model.Schema;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.text.syntax.dom.EmptyTag;
 import org.netbeans.modules.xml.text.syntax.dom.EndTag;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
@@ -609,13 +611,22 @@ public class CompletionContextImpl extends CompletionContext {
     }
     
     private void populateModelMap(CompletionModel m) {
-        String tns = m.getSchemaModel().getSchema().getTargetNamespace();
-        if (tns == null) {
-            noNSModels.add(m); //no namespace models
-            return;
+        if (m != null) {
+            SchemaModel sm = m.getSchemaModel();
+            if (sm != null) {
+                Schema schema = sm.getSchema();
+                if (schema != null) {
+                    String tns = schema.getTargetNamespace();
+                    if (tns != null) {
+                        //models with namespaces
+                        nsModelMap.put(tns, m);
+                        return;
+                    }
+                }
+            }
         }
-        //models with namespaces
-        nsModelMap.put(tns, m);
+        //
+        noNSModels.add(m); //no namespace models
     }
     
     /**

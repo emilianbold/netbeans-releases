@@ -84,16 +84,6 @@ fi
 if [ -z "$BUILD_JTB" ] ; then
     #do not build Java Tools Bundle installers by default
     BUILD_JTB=0
-
-elif [ 1 -eq "$BUILD_JTB" ] ; then
-    if [ -z "$SJSAS_IMAGE_HOSTNAME_WINDOWS" ] || 
-       [ -z "$SJSAS_IMAGE_HOSTNAME_LINUX" ] || 
-       [ -z "$SJSAS_IMAGE_HOSTNAME_SOLARIS_X86" ] || 
-       [ -z "$SJSAS_IMAGE_HOSTNAME_SOLARIS_SPARC" ] || 
-       [ -z "$SJSAS_IMAGE_HOSTNAME_MACOSX" ] ; then
-        echo "Host names used in AppServer installation images should be defined"
-        exit 1;
-    fi 
 fi
 
 if [ -z "$BUILD_MYSQL" ] ; then

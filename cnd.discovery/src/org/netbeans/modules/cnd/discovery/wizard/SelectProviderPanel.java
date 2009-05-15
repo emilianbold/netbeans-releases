@@ -440,6 +440,9 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     public void fileInvalidated(CsmFile file) {
     }
 
+    public void fileAddedToParse(CsmFile file) {
+    }
+
     public void fileParsingStarted(CsmFile file) {
     }
 
@@ -448,7 +451,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
 
     public void parserIdle() {
     }
-    
+
     private static class ProviderItem implements Comparable<ProviderItem> {
         private DiscoveryProvider provider;
         private ProviderItem(DiscoveryProvider provider){

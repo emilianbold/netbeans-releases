@@ -655,7 +655,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                         String gfModLocation = NetBeansUtils.getJvmOption(
                                 installLocation, GLASSFISH_MOD_JVM_OPTION_NAME);
                         if (gfModLocation != null) {
-                            addProductCheckBox(Registry.getInstance().getProducts("glassfish-mod"), gfModLocation);
+                            addProductCheckBox(Registry.getInstance().getProducts("glassfish-mod-sun"), gfModLocation);
                         }
 
                         String tomcatLocation = NetBeansUtils.getJvmOption(

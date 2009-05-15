@@ -320,21 +320,23 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.install.error.shortcuts.creation"), // NOI18N
                     e);
         }
-        try {
-            ClassLoader cl = getClass().getClassLoader();
-            FileUtils.writeFile(new File(directory, JTB_LICENSE),
-                    ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_LICENSE,
-                    cl));
-            FileUtils.writeFile(new File(directory, JTB_THIRDPARTY_README),
-                    ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_THIRDPARTY_README,
-                    cl));   
-            FileUtils.writeFile(new File(directory, JTB_DISTRIBUTION),
-                    ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_DISTRIBUTION,
-                    cl));    
-        } catch (IOException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.legal.creation"), // NOI18N
-                    e);
+        if(NetBeansUtils.getNetBeansId().equals("NBEETOOLS")) {
+            try {
+                ClassLoader cl = getClass().getClassLoader();
+                FileUtils.writeFile(new File(directory, JTB_LICENSE),
+                        ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_LICENSE,
+                        cl));
+                FileUtils.writeFile(new File(directory, JTB_THIRDPARTY_README),
+                        ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_THIRDPARTY_README,
+                        cl));
+                FileUtils.writeFile(new File(directory, JTB_DISTRIBUTION),
+                        ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_DISTRIBUTION,
+                        cl));
+            } catch (IOException e) {
+                throw new InstallationException(
+                        getString("CL.install.error.legal.creation"), // NOI18N
+                        e);
+            }
         }
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
