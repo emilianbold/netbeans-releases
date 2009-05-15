@@ -78,12 +78,6 @@ if [ -n $BUILD_ID ]; then
     cp -rp $DIST/*  $DIST_SERVER2/${BUILD_ID}
     mv $DIST_SERVER2/latest $DIST_SERVER2/latest.old
     ln -s $DIST_SERVER2/${BUILD_ID} $DIST_SERVER2/latest
-    if [ $UPLOAD_JDK == 0 ]; then
-        rm -r $DIST/bundles/jdk
-        if [ $ML_BUILD != 0 ]; then
-            rm -r $DIST/ml/bundles/jdk
-        fi
-    fi
     if [ $UPLOAD_ML == 0 -a ML_BUILD != 0 ]; then
         rm -r $DIST/ml
     fi
