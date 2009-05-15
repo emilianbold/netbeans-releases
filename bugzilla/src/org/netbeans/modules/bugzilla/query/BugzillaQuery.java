@@ -75,6 +75,7 @@ public class BugzillaQuery extends Query {
     private boolean initialUrlDef;
     
     private boolean firstRun = true;
+    private ColumnDescriptor[] columnDescriptors;
 
     public BugzillaQuery(BugzillaRepository repository) {
         this(null, repository, null, false, -1, false);
@@ -133,7 +134,10 @@ public class BugzillaQuery extends Query {
 
     @Override
     public ColumnDescriptor[] getColumnDescriptors() {
-        return BugzillaIssue.getColumnDescriptors();
+        if(columnDescriptors == null) {
+            columnDescriptors = BugzillaIssue.getColumnDescriptors(repository);
+        }
+        return columnDescriptors;
     }
 
     @Override
