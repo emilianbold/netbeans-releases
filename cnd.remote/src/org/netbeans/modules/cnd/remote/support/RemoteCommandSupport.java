@@ -94,8 +94,9 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
             }
             try {
 //                final String substitutedCommand = substituteCommand();
-                NativeProcessBuilder pb = new NativeProcessBuilder(executionEnvironment, cmd,false);
-                pb = pb.addEnvironmentVariables(env);
+                NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
+                pb.setCommandLine(cmd).addEnvironmentVariables(env);
+                
                 Process process = pb.call();
                 InputStream is = process.getInputStream();
                 if (is == null) { // otherwise we can get an NPE in reader
