@@ -45,39 +45,15 @@
 
 package org.netbeans.modules.bugtracking.kenai;
 
-import java.awt.Font;
-import java.net.URL;
-import javax.swing.JLabel;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-import javax.swing.text.html.HTMLEditorKit;
-import javax.swing.text.html.StyleSheet;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.openide.awt.HtmlBrowser;
-
 /**
  *
  * @author Tomas Stupka
  */
-public class MissingJiraSupportPanel extends javax.swing.JPanel implements HyperlinkListener {
+public class MissingJiraSupportPanel extends javax.swing.JPanel{
 
     /** Creates new form MissingClientPanel */
     public MissingJiraSupportPanel() {
         initComponents();
-        HTMLEditorKit kit = (HTMLEditorKit) textPane.getEditorKit();
-        StyleSheet css = kit.getStyleSheet();
-        if (css.getStyleSheets() == null) {
-            StyleSheet css2 = new StyleSheet();
-            Font f = new JLabel().getFont();
-            int size = f.getSize();
-            css2.addRule(new StringBuffer("body { font-size: ").append(size) // NOI18N
-                    .append("; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
-            css2.addStyleSheet(css);
-            kit.setStyleSheet(css2);
-        }
-        textPane.setOpaque(false);
-        textPane.setBackground(new java.awt.Color(0,0,0,0)); // windows and nimbus workaround see issue 145826
-        textPane.addHyperlinkListener(this);
     }
 
     /** This method is called from within the constructor to
@@ -89,44 +65,30 @@ public class MissingJiraSupportPanel extends javax.swing.JPanel implements Hyper
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        textPane.setBorder(null);
-        textPane.setContentType("text/html");
-        textPane.setEditable(false);
-        textPane.setText(org.openide.util.NbBundle.getMessage(MissingJiraSupportPanel.class, "MissingJiraSupportPanel.textPane.text")); // NOI18N
-        textPane.setOpaque(false);
+        jLabel1 = new javax.swing.JLabel();
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(MissingJiraSupportPanel.class, "MissingJiraSupportPanel.jLabel1.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(textPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 667, Short.MAX_VALUE)
+                .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(textPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 40, Short.MAX_VALUE))
+                .add(jLabel1)
+                .addContainerGap(74, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    final javax.swing.JTextPane textPane = new javax.swing.JTextPane();
+    private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
-
-    public void hyperlinkUpdate(HyperlinkEvent e) {
-        if(e.getEventType() != HyperlinkEvent.EventType.ACTIVATED) return;
-        URL url = e.getURL();
-        assert url != null;
-        HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
-        assert displayer != null : "HtmlBrowser.URLDisplayer found.";           // NOI18N
-        if (displayer != null) {
-            displayer.showURL (url);
-        } else {
-            BugtrackingManager.LOG.info("No URLDisplayer found.");              // NOI18N
-        }
-    }
 
 }

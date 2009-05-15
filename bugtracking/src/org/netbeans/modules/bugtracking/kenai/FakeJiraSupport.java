@@ -61,7 +61,10 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.CallableSystemAction;
 
 /**
  *
@@ -171,9 +174,25 @@ public class FakeJiraSupport {
     static void notifyJiraSupport() {
         final DialogDescriptor dd =
             new DialogDescriptor(
-                    new MissingJiraSupportPanel(),
-                    NbBundle.getMessage(FakeJiraSupport.class, "CTL_MissingJiraPlugin")); // NOI18N
-        DialogDisplayer.getDefault().notify(dd);
+                new MissingJiraSupportPanel(), 
+                NbBundle.getMessage(FakeJiraSupport.class, "CTL_MissingJiraPlugin"), 
+                true, 
+                new Object[] {DialogDescriptor.YES_OPTION, DialogDescriptor.CANCEL_OPTION},
+                DialogDescriptor.YES_OPTION,
+                DialogDescriptor.DEFAULT_ALIGN, 
+                new HelpCtx(FakeJiraSupport.class), 
+                null);
+        if(DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.YES_OPTION) {
+            try {
+                ClassLoader cl = Lookup.getDefault ().lookup (ClassLoader.class);
+                Class<CallableSystemAction> clz = (Class<CallableSystemAction>)cl.loadClass("org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction");
+                CallableSystemAction a = CallableSystemAction.findObject(clz, true);
+                a.putValue("InitialTab", "available"); // NOI18N
+                a.performAction ();
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     static class FakeJiraQueryHandle extends QueryHandle implements ActionListener {
