@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.bugzilla.issue;
@@ -69,6 +69,7 @@ import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.openide.filesystems.FileUtil;
@@ -84,6 +85,7 @@ public class BugzillaIssue extends Issue {
     public static final String RESOLVE_FIXED = "FIXED";                         // NOI18N
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";               // NOI18N
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT);
+    private static final int SHORTENED_SUMMARY_LENGTH = 22;
 
     private TaskData data;
     private BugzillaRepository repository;
@@ -210,6 +212,20 @@ public class BugzillaIssue extends Issue {
         return data.isNew() ?
                 NbBundle.getMessage(BugzillaIssue.class, "CTL_NewIssue") : // NOI18N
                 NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue", new Object[] {getID(), getSummary()}); // NOI18N
+    }
+
+    @Override
+    public String getShortenedDisplayName() {
+        if (data.isNew()) {
+            return getDisplayName();
+        }
+
+        String shortSummary = TextUtils.shortenText(getSummary(),
+                                                    2,    //try at least 2 words
+                                                    SHORTENED_SUMMARY_LENGTH);
+        return NbBundle.getMessage(BugzillaIssue.class,
+                                   "CTL_Issue",                         //NOI18N
+                                   new Object[] {getID(), shortSummary});
     }
 
     @Override
