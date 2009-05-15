@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.websvc.core.dev.wizard;
 
+import org.netbeans.api.project.SourceGroup;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  * FinishableProxyWizardPanel.java - used decorator pattern to enable to finish 
@@ -53,10 +55,19 @@ import org.openide.WizardDescriptor;
 public class FinishableProxyWizardPanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor> {
     
     private WizardDescriptor.Panel<WizardDescriptor> original;
+    private SourceGroup[] sourceGroups;
+    private boolean checkSourceGroups;
+    private WizardDescriptor settings;
     /** Creates a new instance of ProxyWizardPanel */
+
     public FinishableProxyWizardPanel(WizardDescriptor.Panel<WizardDescriptor> original) {
+        this.original = original;
+    }
+
+    public FinishableProxyWizardPanel(WizardDescriptor.Panel<WizardDescriptor> original, SourceGroup[] sourceGroups, boolean checkSourceGroups) {
         this.original=original;
-        
+        this.sourceGroups = sourceGroups;
+        this.checkSourceGroups = checkSourceGroups;
     }
 
     public void addChangeListener(javax.swing.event.ChangeListener l) {
@@ -72,11 +83,28 @@ public class FinishableProxyWizardPanel implements WizardDescriptor.Panel<Wizard
     }
 
     public void readSettings(WizardDescriptor settings) {
+        this.settings = settings;
         original.readSettings(settings);
     }
 
     public boolean isValid() {
-        return original.isValid();
+        String warningMessage = null;
+        if (sourceGroups != null && sourceGroups.length == 0) {
+            if (checkSourceGroups) {
+                settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
+                    NbBundle.getMessage(FinishableProxyWizardPanel.class, "ERR_NoSources")); // NOI18N
+                return false;
+            } else {
+                warningMessage = NbBundle.getMessage(FinishableProxyWizardPanel.class, "MSG_NoSources");
+            }
+        }
+        boolean valid = original.isValid();
+        if (valid) {
+            if (warningMessage != null) {
+                settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, warningMessage);
+            }
+        }
+        return valid;
     }
 
     public boolean isFinishPanel() {

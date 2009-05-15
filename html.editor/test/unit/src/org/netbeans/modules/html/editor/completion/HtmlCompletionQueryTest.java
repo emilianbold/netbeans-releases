@@ -48,10 +48,14 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JEditorPane;
+import javax.swing.JFrame;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.ext.html.HtmlSyntaxSupport;
+import org.netbeans.editor.ext.html.dtd.DTD;
+import org.netbeans.editor.ext.html.dtd.Registry;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.html.editor.NbReaderProvider;
 import org.netbeans.modules.html.editor.test.TestBase;
@@ -73,7 +77,11 @@ public class HtmlCompletionQueryTest extends TestBase {
     }
 
     public HtmlCompletionQueryTest() throws IOException, BadLocationException {
-        super("htmlsyntaxsupporttest");
+        this("htmlsyntaxsupporttest");
+    }
+
+    public HtmlCompletionQueryTest(String name) throws IOException, BadLocationException {
+        super(name);
         NbReaderProvider.setupReaders(); //initialize DTD providers
     }
 
@@ -84,14 +92,14 @@ public class HtmlCompletionQueryTest extends TestBase {
     }
 
     //test methods -----------
-    public void testIndexHtml() throws IOException, BadLocationException {
-        testCompletionResults("index.html");
-    }
+//    public void testIndexHtml() throws IOException, BadLocationException {
+//        testCompletionResults("index.html");
+//    }
+//
+//    public void testNetbeansFrontPageHtml() throws IOException, BadLocationException {
+//        testCompletionResults("netbeans.org.html");
+//    }
 
-    public void testNetbeansFrontPageHtml() throws IOException, BadLocationException {
-        testCompletionResults("netbeans.org.html");
-    }
-    
     public void testTags() {
         assertItems("<|", arr("div"), Match.CONTAINS, 1);
         assertItems("<|", arr("jindra"), Match.DOES_NOT_CONTAIN);
@@ -116,36 +124,36 @@ public class HtmlCompletionQueryTest extends TestBase {
 
     public void testTagAttributes() {
         //           012345
-        assertItems("<div |", arr("align"), Match.CONTAINS, 5);
-        assertItems("<div |", arr("jindra"), Match.DOES_NOT_CONTAIN);
-        assertItems("<div a|", arr("align"), Match.CONTAINS, 5);
+        assertItems("<col |", arr("align"), Match.CONTAINS, 5);
+        assertItems("<col |", arr("jindra"), Match.DOES_NOT_CONTAIN);
+        assertItems("<col a|", arr("align"), Match.CONTAINS, 5);
     }
 
     public void testCompleteTagAttributes() throws BadLocationException {
-        assertCompletedText("<div |", "align", "<div align=\"|\"");
-        assertCompletedText("<div a|", "align", "<div align=\"|\"");
+        assertCompletedText("<col |", "align", "<col align=\"|\"");
+        assertCompletedText("<col a|", "align", "<col align=\"|\"");
     }
 
     public void testTagAttributeValues() {
-        assertItems("<div align=\"|\"", arr("center"), Match.CONTAINS, 12);
+        assertItems("<col align=\"|\"", arr("center"), Match.CONTAINS, 12);
         //           01234567890 12
-        assertItems("<div align=\"ce|\"", arr("center"), Match.CONTAINS, 12);
-        assertItems("<div align=\"center|\"", arr("center"), Match.EXACT, 12);
+        assertItems("<col align=\"ce|\"", arr("center"), Match.CONTAINS, 12);
+        assertItems("<col align=\"center|\"", arr("center"), Match.EXACT, 12);
     }
 
     public void testCompleteTagAttributeValues() throws BadLocationException {
-        assertCompletedText("<div align=\"|\"", "center", "<div align=\"center|\"");
-        assertCompletedText("<div align=\"ce|\"", "center", "<div align=\"center|\"");
+        assertCompletedText("<col align=\"|\"", "center", "<col align=\"center|\"");
+        assertCompletedText("<col align=\"ce|\"", "center", "<col align=\"center|\"");
 
         //regression test - issue #161852
-        assertCompletedText("<div align=\"|\"", "left", "<div align=\"left|\"");
+        assertCompletedText("<col align=\"|\"", "left", "<col align=\"left|\"");
 
         //test single quote
-        assertCompletedText("<div align='|'", "center", "<div align='center'|");
+        assertCompletedText("<col align='|'", "center", "<col align='center'|");
 
         //test values cc without quotation
-        assertCompletedText("<div align=|", "left", "<div align=left|");
-        assertCompletedText("<div align=ri|", "right", "<div align=right|");
+        assertCompletedText("<col align=|", "left", "<col align=left|");
+        assertCompletedText("<col align=ri|", "right", "<col align=right|");
     }
 
     public void testCharacterReferences() throws BadLocationException {
@@ -164,6 +172,12 @@ public class HtmlCompletionQueryTest extends TestBase {
     }
 
     //helper methods ------------
+
+    //test HTML 4.01
+    protected String getPublicID() {
+        return "-//W3C//DTD HTML 4.01 Transitional//EN";
+    }
+
     private void assertItems(String documentText, final String[] expectedItemsNames, final Match type) {
         assertItems(documentText, expectedItemsNames, type, -1);
     }
@@ -181,12 +195,22 @@ public class HtmlCompletionQueryTest extends TestBase {
         HtmlCompletionQuery query = new HtmlCompletionQuery();
         JEditorPane component = new JEditorPane();
         component.setDocument(doc);
-        HtmlCompletionQuery.CompletionResult result = query.query(component, pipeOffset);
+
+        HtmlSyntaxSupport sup = HtmlSyntaxSupport.get(doc);
+        assertNotNull(sup);
+
+        DTD dtd = Registry.getDTD(getPublicID(), null);
+        assertNotNull(dtd);
+        if(getPublicID() != null) {
+            assertEquals(getPublicID(), dtd.getIdentifier());
+        }
+
+        HtmlCompletionQuery.CompletionResult result = query.query(doc, pipeOffset, sup, dtd);
         assertNotNull(result);
 
         List<CompletionItem> items = result.getItems();
         assertNotNull(items);
-        
+
         if(expectedAnchor > 0) {
             assertEquals(expectedAnchor, result.getAnchor());
         }
@@ -209,12 +233,22 @@ public class HtmlCompletionQueryTest extends TestBase {
         expectedContent.deleteCharAt(expectedPipeOffset);
 
         Document doc = getDocument(content.toString());
- 
+
         HtmlCompletionQuery query = new HtmlCompletionQuery();
         JEditorPane component = new JEditorPane();
         component.setDocument(doc);
         component.getCaret().setDot(pipeOffset);
-        HtmlCompletionQuery.CompletionResult result = query.query(component, pipeOffset);
+
+        HtmlSyntaxSupport sup = HtmlSyntaxSupport.get(doc);
+        assertNotNull(sup);
+
+        DTD dtd = Registry.getDTD(getPublicID(), null);
+        assertNotNull(dtd);
+        if(getPublicID() != null) {
+            assertEquals(getPublicID(), dtd.getIdentifier());
+        }
+
+        HtmlCompletionQuery.CompletionResult result = query.query(doc, pipeOffset, sup, dtd);
         assertNotNull(result);
         List<CompletionItem> items = result.getItems();
         assertNotNull(items);

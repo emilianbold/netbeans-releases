@@ -61,7 +61,6 @@ import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.DevelopmentHostNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.PlatformNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNodeProp;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
@@ -101,7 +100,6 @@ public class MakeConfiguration extends Configuration {
     private LanguageBooleanConfiguration fortranRequired;
     private LanguageBooleanConfiguration assemblerRequired;
     private DevelopmentHostConfiguration developmentHost;
-    private PlatformConfiguration platform;
     private BooleanConfiguration dependencyChecking;
     private CCompilerConfiguration cCompilerConfiguration;
     private CCCompilerConfiguration ccCompilerConfiguration;
@@ -133,7 +131,6 @@ public class MakeConfiguration extends Configuration {
         cppRequired = new LanguageBooleanConfiguration();
         fortranRequired = new LanguageBooleanConfiguration();
         assemblerRequired = new LanguageBooleanConfiguration();
-        platform = new PlatformConfiguration(developmentHost, compilerSet.getPlatform(), Platforms.getPlatformDisplayNames());
         makefileConfiguration = new MakefileConfiguration(this);
         dependencyChecking = new BooleanConfiguration(null, isMakefileConfiguration() ? false : MakeOptions.getInstance().getDepencyChecking());
         cCompilerConfiguration = new CCompilerConfiguration(baseDir, null);
@@ -148,7 +145,6 @@ public class MakeConfiguration extends Configuration {
         qmakeConfiguration = new QmakeConfiguration(this);
 
         developmentHost.addPropertyChangeListener(compilerSet);
-        developmentHost.addPropertyChangeListener(platform);
     }
 
     public void setMakefileConfiguration(MakefileConfiguration makefileConfiguration) {
@@ -229,19 +225,6 @@ public class MakeConfiguration extends Configuration {
 
     public void setDevelopmentHost(DevelopmentHostConfiguration developmentHost) {
         this.developmentHost = developmentHost;
-    }
-
-    public PlatformConfiguration getPlatform() {
-//        if (platform.getValue() == -1 && developmentHost.getName().equals("sg155630@eaglet-sr") ) { //TODO: till platform setup bug will be fixed
-//            return new PlatformConfiguration(PlatformTypes.PLATFORM_SOLARIS_INTEL, platform.getNames());
-//        }
-        return platform;
-    }
-
-    public void setPlatform(PlatformConfiguration platform) {
-        developmentHost.removePropertyChangeListener(this.platform);
-        this.platform = platform;
-        developmentHost.addPropertyChangeListener(this.platform);
     }
 
     public boolean isApplicationConfiguration() {
@@ -398,7 +381,6 @@ public class MakeConfiguration extends Configuration {
         getCppRequired().assign(makeConf.getCppRequired());
         getFortranRequired().assign(makeConf.getFortranRequired());
         getAssemblerRequired().assign(makeConf.getAssemblerRequired());
-        getPlatform().assign(makeConf.getPlatform());
         getDependencyChecking().assign(makeConf.getDependencyChecking());
 
         getMakefileConfiguration().assign(makeConf.getMakefileConfiguration());
@@ -480,8 +462,6 @@ public class MakeConfiguration extends Configuration {
         clone.setCppRequired(getCppRequired().clone());
         clone.setFortranRequired(getFortranRequired().clone());
         clone.setAssemblerRequired(getAssemblerRequired().clone());
-        PlatformConfiguration pconf = getPlatform().clone();
-        clone.setPlatform(pconf);
         clone.setMakefileConfiguration(getMakefileConfiguration().clone());
         clone.setDependencyChecking(getDependencyChecking().clone());
         clone.setCCompilerConfiguration(getCCompilerConfiguration().clone());
@@ -496,7 +476,6 @@ public class MakeConfiguration extends Configuration {
         clone.setQmakeConfiguration(getQmakeConfiguration().clone());
 
         dhconf.addPropertyChangeListener(csconf);
-        dhconf.addPropertyChangeListener(pconf);
 
         // Clone all the aux objects
         //Vector clonedAuxObjects = new Vector();
@@ -527,7 +506,7 @@ public class MakeConfiguration extends Configuration {
         set.setShortDescription(getString("ProjectDefaultsHint"));
         set.put(new DevelopmentHostNodeProp(getDevelopmentHost(), true, getString("DevelopmentHostTxt"), getString("DevelopmentHostHint"))); // NOI18N
         set.put(new CompilerSetNodeProp(getCompilerSet(), true, "CompilerSCollection2", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
-        set.put(new PlatformNodeProp(getPlatform(), false, getString("PlatformTxt"), getString("PlatformHint"))); // NOI18N
+        //set.put(new PlatformNodeProp(getPlatform(), false, getString("PlatformTxt"), getString("PlatformHint"))); // NOI18N
         set.put(new BooleanNodeProp(getCRequired(), true, "cRequired", getString("CRequiredTxt"), getString("CRequiredHint"))); // NOI18N
         set.put(new BooleanNodeProp(getCppRequired(), true, "cppRequired", getString("CppRequiredTxt"), getString("CppRequiredHint"))); // NOI18N
         set.put(new BooleanNodeProp(getFortranRequired(), true, "fortranRequired", getString("FortranRequiredTxt"), getString("FortranRequiredHint"))); // NOI18N
@@ -696,7 +675,7 @@ public class MakeConfiguration extends Configuration {
         if (getCompilerSet().getCompilerSet() == null) {
             return ret;
         }
-        return getVariant(getCompilerSet().getCompilerSet(), getPlatform().getValue());
+        return getVariant(getCompilerSet().getCompilerSet(), getDevelopmentHost().getBuildPlatform());
 //        ret += getCompilerSet().getCompilerSet().getName() + "-"; // NOI18N
 //        ret += Platforms.getPlatform(getPlatform().getValue()).getName();
 //        return ret;

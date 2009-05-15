@@ -27,23 +27,20 @@
  */
 package org.netbeans.modules.java.hints.introduce;
 
+import java.beans.PropertyChangeEvent;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.swing.JMenuItem;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.modules.editor.MainMenuAction;
 import org.netbeans.modules.java.hints.infrastructure.HintAction;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.Presenter;
 
 public final class IntroduceAction extends HintAction {
     
@@ -52,6 +49,11 @@ public final class IntroduceAction extends HintAction {
     private static String INTRODUCE_VARIABLE = "introduce-variable";//NOI18N
     private static String INTRODUCE_METHOD = "introduce-method";//NOI18N
     private static String INTRODUCE_FIELD = "introduce-field";//NOI18N
+
+    /** Property identifier for menu text, neccessary for display in menu */
+    private static final String MENU_TEXT = "menuText"; //NOI18N
+    /** Property identifier for popup textm, neccessary for display popup */
+    private static final String POPUP_TEXT = "popupText"; //NOI18N
     
 
     private IntroduceAction(IntroduceKind type) {
@@ -60,21 +62,36 @@ public final class IntroduceAction extends HintAction {
             case CREATE_CONSTANT:
                 putValue(NAME, INTRODUCE_CONSTANT);
                 putValue(SHORT_DESCRIPTION, NbBundle.getMessage(IntroduceAction.class, "CTL_IntroduceConstantAction"));
+                putValue(MENU_TEXT, NbBundle.getMessage(IntroduceAction.class, "CTL_IntroduceConstantAction"));
+                putValue(POPUP_TEXT, NbBundle.getMessage(IntroduceAction.class, "CTL_IntroduceConstantAction"));
                 break;
             case CREATE_VARIABLE:
                 putValue(NAME, INTRODUCE_VARIABLE);
                 putValue(SHORT_DESCRIPTION, NbBundle.getMessage(IntroduceAction.class, "CTL_IntroduceVariableAction"));
+                putValue(MENU_TEXT, NbBundle.getMessage(IntroduceAction.class, "CTL_IntroduceVariableAction"));
+                putValue(POPUP_TEXT, NbBundle.getMessage(IntroduceAction.class, "CTL_IntroduceVariableAction"));
                 break;
             case CREATE_FIELD:
                 putValue(NAME, INTRODUCE_FIELD);
                 putValue(SHORT_DESCRIPTION, NbBundle.getMessage(IntroduceAction.class, "CTL_IntroduceFieldAction"));
+                putValue(MENU_TEXT, NbBundle.getMessage(IntroduceAction.class, "CTL_IntroduceFieldAction"));
+                putValue(POPUP_TEXT, NbBundle.getMessage(IntroduceAction.class, "CTL_IntroduceFieldAction"));
                 break;
             case CREATE_METHOD:
                 putValue(NAME, INTRODUCE_METHOD);
                 putValue(SHORT_DESCRIPTION, NbBundle.getMessage(IntroduceAction.class, "CTL_IntroduceMethodAction"));
+                putValue(MENU_TEXT, NbBundle.getMessage(IntroduceAction.class, "CTL_IntroduceMethodAction"));
+                putValue(POPUP_TEXT, NbBundle.getMessage(IntroduceAction.class, "CTL_IntroduceMethodAction"));
                 break;
         }
+
+        setEnabled(true);
     }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+    }
+
 
     
     protected void perform(JavaSource js, int[] selection) {
@@ -136,81 +153,4 @@ public final class IntroduceAction extends HintAction {
         return new IntroduceAction(IntroduceKind.CREATE_METHOD);
     }
     
-    public static MainMenuAction createMenuVariable() {
-        return new GlobalAction(IntroduceKind.CREATE_VARIABLE);
-    }
-    
-    public static MainMenuAction createMenuConstant() {
-        return new GlobalAction(IntroduceKind.CREATE_CONSTANT);
-    }
-    
-    public static MainMenuAction createMenuField() {
-        return new GlobalAction(IntroduceKind.CREATE_FIELD);
-    }
-
-    public static MainMenuAction createMenuMethod() {
-        return new GlobalAction(IntroduceKind.CREATE_METHOD);
-    }
-
-    
-    public static final class GlobalAction extends MainMenuAction implements Presenter.Popup {
-
-        private final JMenuItem menuPresenter;
-        private final JMenuItem popupPresenter;
-        private IntroduceKind type;
-
-        public GlobalAction(IntroduceKind type) {
-            super();
-            this.type = type;
-            this.menuPresenter = new JMenuItem(getMenuItemText());
-            this.popupPresenter = new JMenuItem();
-            setMenu();
-        }
-
-        @Override
-        protected void setMenu() {
-            super.setMenu();
-            popupPresenter.setAction(getActionByName(getActionName()));
-            Mnemonics.setLocalizedText(popupPresenter, getMenuItemText());
-        }
-
-        protected String getMenuItemText() {
-            switch (type) {
-                case CREATE_CONSTANT:
-                    return NbBundle.getMessage(IntroduceAction.class, "CTL_IntroduceConstantAction");
-                case CREATE_VARIABLE:
-                    return NbBundle.getMessage(IntroduceAction.class, "CTL_IntroduceVariableAction");
-                case CREATE_FIELD:
-                    return NbBundle.getMessage(IntroduceAction.class, "CTL_IntroduceFieldAction");
-                case CREATE_METHOD:
-                    return NbBundle.getMessage(IntroduceAction.class, "CTL_IntroduceMethodAction");
-                default:
-                    return null;
-            }
-        }
-
-        protected String getActionName() {
-            switch (type) {
-                case CREATE_CONSTANT:
-                    return INTRODUCE_CONSTANT;
-                case CREATE_VARIABLE:
-                    return INTRODUCE_VARIABLE;
-                case CREATE_FIELD:
-                    return INTRODUCE_FIELD;
-                case CREATE_METHOD:
-                    return INTRODUCE_METHOD;
-                default:
-                    return null;
-            }
-        }
-
-        public JMenuItem getMenuPresenter() {
-            return menuPresenter;
-        }
-
-        public JMenuItem getPopupPresenter() {
-            return popupPresenter;
-        }
-    }
 }
- 

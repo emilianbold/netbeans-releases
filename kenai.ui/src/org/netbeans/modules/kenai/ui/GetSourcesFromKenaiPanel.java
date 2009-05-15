@@ -227,7 +227,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         add(kenaiRepoComboBox, gridBagConstraints);
 
@@ -363,6 +363,8 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         boolean loginSuccess = UIUtils.showLogin();
         if (loginSuccess) {
             refreshUsername();
+            KenaiTopComponent.findInstance().open();
+            KenaiTopComponent.findInstance().requestActive();
         } else {
             // login failed, do nothing
         }
@@ -554,7 +556,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
     private void updatePanelUI() {
         KenaiFeatureListItem featureItem = (KenaiFeatureListItem) kenaiRepoComboBox.getSelectedItem();
         if (featureItem != null) {
-            String serviceName = featureItem.feature.getService(); // XXX service or name
+            String serviceName = featureItem.feature.getService();
             String repositoryText = NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
                     "GetSourcesFromKenaiPanel.RepositoryLabel"); // NOI18N
             if (KenaiService.Names.SUBVERSION.equals(serviceName)) {

@@ -79,21 +79,16 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     private boolean requestValue = true;
     private boolean requestResolved = true;
 
-    private String resolvedType;
+    private String type = null;
+    private String resolvedType = null;
     private String expandedWatch = null;
     
     /** Creates a new instance of GdbWatchVariable */
-    public GdbWatchVariable(Watch watch) {
+    public GdbWatchVariable(GdbDebugger debugger, Watch watch) {
+        super(debugger, null);
         this.watch = watch;
-        name = watch.getExpression();
-        type = null;
-        value = null;
-        tinfo = null;
-//        derefValue = null;
         
-        if (getDebugger() != null) {
-            getDebugger().addPropertyChangeListener(this);
-        }
+        debugger.addPropertyChangeListener(this);
         watch.addPropertyChangeListener(this);
     }
     
@@ -115,20 +110,16 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
                 pname.equals(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME) ||
                 pname.equals(Watch.PROP_EXPRESSION)) {
                     if (pname.equals(Watch.PROP_EXPRESSION)) {
-                        resetVariable();
+                        tinfo = null;
+                        emptyFields();
                     }
                     requestType = true;
                     requestValue = true;
                     requestResolved = true;
                     expandedWatch = null;
-        } else if (ev.getPropertyName().equals(GdbDebugger.PROP_VALUE_CHANGED)) {
-            super.propertyChange(ev);
+        } else if (GdbDebugger.PROP_VALUE_CHANGED.equals(pname)) {
+            onValueChange(ev);
         }
-    }
-
-    private void resetVariable() {
-        tinfo = null;
-        emptyFields();
     }
     
     /**
@@ -169,11 +160,7 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     @Override
     public String getValue() {
         if (requestValue) {
-            if (getType().length() > 0) {
-                value = getDebugger().evaluate(getExpanded());
-            } else {
-                value = ""; // NOI18N
-            }
+            value = getDebugger().evaluate(getExpanded());
             setModifiedValue(value);
             requestValue = false;
         }
@@ -203,14 +190,5 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
             }
         }
         return expr;
-    }
-    
-    @Override
-    public void setValue(String value) {
-        this.value = value;
-    }
-    
-    public void setValueAt(String value) {
-        super.setValue(value);
     }
 }

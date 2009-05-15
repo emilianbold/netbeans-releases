@@ -344,6 +344,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
 //                    }
                     //  visualizer = Visualiz.newVisualizerInstance(visualizerID, activeSession, dataProvider, configuration);
                     dataProvider.attachTo(storage);
+                    activeSession.addDataFilterListener(dataProvider);
                     break;
                 }
             }

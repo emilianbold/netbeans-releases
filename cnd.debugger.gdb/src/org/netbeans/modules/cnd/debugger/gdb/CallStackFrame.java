@@ -48,9 +48,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -61,16 +61,19 @@ import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmSwitchStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.completion.csm.CsmContext;
 import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
-import org.netbeans.modules.cnd.debugger.gdb.models.AbstractVariable;
+import org.netbeans.modules.cnd.debugger.gdb.models.GdbLocalVariable;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 
 /**
  * Represents one stack frame.
@@ -83,6 +86,8 @@ import org.openide.text.NbDocument;
  * @author Gordon Prieur (copied from Jan Jancura's JPDA implementation)
  */
 public class CallStackFrame {
+    protected static boolean enableMacros = Boolean.getBoolean("gdb.autos.macros");
+
     private final GdbDebugger debugger;
     private final int lineNumber;
     private final String func;
@@ -92,8 +97,8 @@ public class CallStackFrame {
     private final String address;
     private final String from;
     
-    private LocalVariable[] cachedLocalVariables = null;
-    private LocalVariable[] cachedAutos = null;
+    private Variable[] cachedLocalVariables = null;
+    private Variable[] cachedAutos = null;
 
     private Collection<GdbVariable> arguments = null;
     private StyledDocument document = null;
@@ -173,7 +178,7 @@ public class CallStackFrame {
      */
     public String getFullname() {
         // PathMap.getLocalPath throws NPE when argument is null
-        return fullname == null? null : debugger.getPathMap().getLocalPath(debugger.checkCygwinLibs(fullname));
+        return fullname == null? null : debugger.getPathMap().getLocalPath(debugger.checkCygwinLibs(fullname),true);
     }
 
     public String getOriginalFullName() {
@@ -226,7 +231,7 @@ public class CallStackFrame {
             if (fullname != null && fullname.length() > 0) {
                 File docFile = new File(fullname);
                 if (docFile.exists()) {
-                    FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(docFile));
+                    FileObject fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(docFile));
                     document = (StyledDocument) CsmUtilities.getDocument(fo);
                 }
             }
@@ -250,7 +255,7 @@ public class CallStackFrame {
      *
      * @return local variables
      */
-    public LocalVariable[] getLocalVariables() {
+    public Variable[] getLocalVariables() {
         assert !(Thread.currentThread().getName().equals("GdbReaderRP"));
         assert !(SwingUtilities.isEventDispatchThread()); 
 
@@ -258,9 +263,9 @@ public class CallStackFrame {
             List<GdbVariable> list = debugger.getLocalVariables();
             int n = list.size();
 
-            LocalVariable[] locals = new LocalVariable[n];
+            Variable[] locals = new Variable[n];
             for (int i = 0; i < n; i++) {
-                locals[i] = new AbstractVariable(list.get(i));
+                locals[i] = new GdbLocalVariable(debugger, list.get(i));
             }
             cachedLocalVariables = locals;
             return locals;
@@ -269,7 +274,7 @@ public class CallStackFrame {
         }
     }
 
-    public LocalVariable[] getAutos() {
+    public Variable[] getAutos() {
         if (cachedAutos == null) {
             if (getDocument() == null) {
                 return null;
@@ -305,18 +310,29 @@ public class CallStackFrame {
                             for (int[] span : spans) {
                                 if (span[0] <= reference.getStartOffset() && reference.getEndOffset() <= span[1]) {
                                     CsmObject referencedObject = reference.getReferencedObject();
-                                    if (CsmKindUtilities.isVariable(referencedObject) || CsmKindUtilities.isMacro(referencedObject)) {
-                                        autos.add(((CsmNamedElement)referencedObject).getName().toString());
+                                    if (CsmKindUtilities.isVariable(referencedObject)) {
+                                        autos.add(reference.getText().toString());
+                                    } else if (enableMacros && CsmKindUtilities.isMacro(referencedObject)) {
+                                        String txt = reference.getText().toString();
+                                        int[] macroExpansionSpan = CsmMacroExpansion.getMacroExpansionSpan(document, reference.getStartOffset(), false);
+                                        if (macroExpansionSpan != null && macroExpansionSpan[0] != macroExpansionSpan[1]) {
+                                            try {
+                                                txt = document.getText(macroExpansionSpan[0], macroExpansionSpan[1] - macroExpansionSpan[0]);
+                                            } catch (BadLocationException ex) {
+                                                Exceptions.printStackTrace(ex);
+                                            }
+                                        }
+                                        autos.add(txt);
                                     }
                                 }
                             }
                         }
                     });
                 }
-                cachedAutos = new LocalVariable[autos.size()];
+                cachedAutos = new Variable[autos.size()];
                 int i = 0;
                 for (String name : autos) {
-                    cachedAutos[i++] = new AbstractVariable(name);
+                    cachedAutos[i++] = new GdbLocalVariable(debugger, name);
                 }
             }
         }

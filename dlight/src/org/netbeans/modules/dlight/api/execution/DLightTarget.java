@@ -61,7 +61,7 @@ public abstract class DLightTarget {
     //@GuardedBy("this")
     private final List<DLightTargetListener> listeners;
     private final Info info;
-    private final DLightTargetExecutionService executionService;
+    private final DLightTargetExecutionService<DLightTarget> executionService;
 
 
     static {
@@ -79,7 +79,7 @@ public abstract class DLightTarget {
         this.info = new Info();
     }
 
-    private final DLightTargetExecutionService getExecutionService() {
+    private final DLightTargetExecutionService<DLightTarget> getExecutionService() {
         return executionService;
     }
 
@@ -252,7 +252,7 @@ public abstract class DLightTarget {
     private static final class DLightTargetAccessorImpl extends DLightTargetAccessor {
 
         @Override
-        public DLightTargetExecutionService getDLightTargetExecution(DLightTarget target) {
+        public DLightTargetExecutionService<DLightTarget> getDLightTargetExecution(DLightTarget target) {
             return target.getExecutionService();
         }
 

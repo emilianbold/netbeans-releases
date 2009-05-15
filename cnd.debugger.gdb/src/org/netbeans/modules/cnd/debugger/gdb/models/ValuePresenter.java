@@ -83,6 +83,10 @@ public class ValuePresenter {
             assert pos > 0;
             pos = value.indexOf('"', pos);
             if (pos > 0) {
+                // fix for \" quotes
+                if (value.charAt(pos-1) == '\\') {
+                    return present(type, value.replace("\\\"", "\"")); // NOI18N
+                }
                 int end = GdbUtils.findEndOfString(value, pos+1);
                 if (end != -1) {
                     return value.substring(pos, end+1);

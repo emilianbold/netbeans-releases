@@ -108,7 +108,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
                     NbBundle.getMessage(KeymapViewModel.class, "Actions"), //NOI18N
                     NbBundle.getMessage(KeymapViewModel.class, "Shortcut"), //NOI18N
                     NbBundle.getMessage(KeymapViewModel.class, "Category"), //NOI18N
-                    NbBundle.getMessage(KeymapViewModel.class, "Scope") //NOI18N
+//                    NbBundle.getMessage(KeymapViewModel.class, "Scope") //NOI18N
                 }, 0);
         currentProfile = model.getCurrentProfile ();
     }
@@ -224,14 +224,14 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
 //                    System.out.println("### " + sca.getDisplayName() + " " + searched(displayName.toLowerCase()));
                     if (searched(caseSensitiveSearch ? displayName : displayName.toLowerCase(), searchTxt)) {
                         if (shortcuts.length == 0)
-                            addRow(new Object[]{new ActionHolder(sca, false), new ShortcutCell(), category, ""});
+                            addRow(new Object[]{new ActionHolder(sca, false), new ShortcutCell(), category});
                         else
                             for (int i = 0; i < shortcuts.length; i++) {
                                 String shortcut = shortcuts[i];
 //                                String shownDisplayName = i == 0 ? displayName : displayName + " (alternative shortcut)";
                                 addRow(new Object[]{
                                             i == 0 ? new ActionHolder(sca, false) : new ActionHolder(sca, true),
-                                            new ShortcutCell(shortcut), category, ""
+                                            new ShortcutCell(shortcut), category, 
                                         });
                             }
                     }

@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -111,8 +112,11 @@ public class JavaCustomIndexer extends CustomIndexer {
             final ClassPath bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
             final ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);
             if (sourcePath == null || bootPath == null || compilePath == null) {
-                String rootName = FileUtil.getFileDisplayName(root);
-                JavaIndex.LOG.warning("Ignoring root with no ClassPath: " + rootName);    // NOI18N
+                JavaIndex.LOG.warning("Ignoring root with no ClassPath: " + FileUtil.getFileDisplayName(root)); // NOI18N
+                return;
+            }
+            if (!Arrays.asList(sourcePath.getRoots()).contains(root)) {
+                JavaIndex.LOG.warning("Source root: " + FileUtil.getFileDisplayName(root) + " is not on its sourcepath"); // NOI18N
                 return;
             }
             ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
@@ -234,7 +238,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             try {
                 String binaryName = FileObjects.getBinaryName(file, classFolder);
                 for (String className : readRSFile(file, classFolder)) {
-                    File f = new File (classFolder, FileObjects.convertPackage2Folder(className) + '.' + FileObjects.CLASS);
+                    File f = new File (classFolder, FileObjects.convertPackage2Folder(className) + '.' + FileObjects.SIG);
                     if (!binaryName.equals(className)) {
                         toDelete.add(Pair.<String,String>of (className, sourceRelative));
                         removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
