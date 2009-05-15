@@ -71,10 +71,10 @@ import javax.swing.text.StyledDocument;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.util.IssueFinderUtils;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.StackTraceSupport;
 import org.netbeans.modules.bugzilla.Bugzilla;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -87,6 +87,7 @@ public class CommentsPanel extends JPanel {
     private final static String ISSUE_ATTRIBUTE = "issue"; // NOI18N
     private final static String REPLY_TO_PROPERTY = "replyTo"; // NOI18N
     private final static String QUOTE_PREFIX = "> "; // NOI18N
+    private final BugzillaIssueFinder issueFinder;
     private BugzillaIssue issue;
     private MouseAdapter listener;
     private NewCommentHandler newCommentHandler;
@@ -104,7 +105,11 @@ public class CommentsPanel extends JPanel {
                         AttributeSet as = elem.getAttributes();
                         IssueAction issueAction = (IssueAction)as.getAttribute(ISSUE_ATTRIBUTE);
                         if (issueAction != null) {
-                            issueAction.openIssue(pane.getText(), elem.getStartOffset(), elem.getEndOffset());
+                            int startOffset = elem.getStartOffset();
+                            int endOffset = elem.getEndOffset();
+                            int length = endOffset - startOffset;
+                            String hyperlinkText = doc.getText(startOffset, length);
+                            issueAction.openIssue(hyperlinkText);
                         }
                     }
                 } catch(Exception ex) {
@@ -112,6 +117,9 @@ public class CommentsPanel extends JPanel {
                 }
             }
         };
+
+        issueFinder = Lookup.getDefault().lookup(BugzillaIssueFinder.class);
+        assert issueFinder != null;
     }
 
     public void setIssue(BugzillaIssue issue) {
@@ -202,7 +210,7 @@ public class CommentsPanel extends JPanel {
         StackTraceSupport.addHyperlinks(textPane);
 
         // Issues/bugs
-        int[] pos = IssueFinderUtils.getIssueSpans(comment);
+        int[] pos = issueFinder.getIssueSpans(comment);
         if (pos.length > 0) {
             Style defStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
             Style hlStyle = doc.addStyle("bugBlue", defStyle); // NOI18N
@@ -259,8 +267,8 @@ public class CommentsPanel extends JPanel {
     }
 
     private class IssueAction {
-        void openIssue(String comment, int startOffset, int endOffset) {
-            final String issueNo = IssueFinderUtils.getIssueNumber(comment, startOffset, endOffset);
+        void openIssue(String hyperlinkText) {
+            final String issueNo = issueFinder.getIssueId(hyperlinkText);
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     Issue is = issue.getRepository().getIssue(issueNo);
