@@ -194,10 +194,13 @@ public final class NativeProcessInfo {
             // deal with spaces in the command...
             if (isWindows) {
                 cmd = "'" + cmd + "'"; // NOI18N
-                cmd = cmd.replaceAll("\\\\", "/"); // NOI18N
             } else {
                 cmd = cmd.replaceAll("([^\\\\]) ", "$1\\\\ "); // NOI18N
             }
+        }
+
+        if (isWindows) {
+            cmd = cmd.replaceAll("\\\\", "/"); // NOI18N
         }
 
         StringBuilder sb = new StringBuilder(cmd);
