@@ -170,8 +170,10 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             } else {
                 return createProblem(result, true, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateWrongType"));
             }
-            if (!RetoucheUtils.isElementInOpenProject(sourceType.getFileObject())) {
-                return new Problem(true, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_ProjectNotOpened", FileUtil.getFileDisplayName(sourceType.getFileObject())));
+
+            result = JavaPluginUtils.isSourceElement(field, javac);
+            if (result != null) {
+                return result;
             }
             
             TypeElement encloser = (TypeElement) field.getEnclosingElement();

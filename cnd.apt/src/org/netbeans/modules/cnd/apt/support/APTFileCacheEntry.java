@@ -37,44 +37,65 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.spi.remote.setup;
+package org.netbeans.modules.cnd.apt.support;
+
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import org.netbeans.modules.cnd.apt.structure.APTInclude;
+import org.netbeans.modules.cnd.apt.support.APTMacroMap.State;
 
 /**
- * Allows to plug in a different way of setting up a remote host.
  *
- * It's a factory that creates instances of HostSetupWorker
- * (which carries up the work of setting up a host)
- *
- * @author Vladimir Kvashin
+ * @author Vladimir Voskresensky
  */
-public interface HostSetupProvider {
+public final class APTFileCacheEntry {
+    private final ConcurrentMap<APTInclude, Data> cache = new ConcurrentHashMap<APTInclude, Data>();
+    private final CharSequence filePath;
+    private static boolean TRACE = false;
+    public APTFileCacheEntry(CharSequence filePath) {
+        assert (filePath != null);
+        this.filePath = filePath;
+    }
+    
+    /*package*/ APTMacroMap.State getPostIncludeMacroState(APTInclude node) {
+        Data data = cache.get(node);
+        if (data != null && data.state != null) {
+            if (TRACE) {
+                System.err.println("HIT cache for :" + node.getToken().getLine() + ":" + node.getText() + " in " + filePath);
+            }
+            return data.state;
+        }
+        return null;
+    }
 
-    /**
-     * Gets a string that identifies this provider;
-     * it can be used for storing, say, last selected provider in properties
-     * @return this provider ID
-     */
-    String getID();
+    /*package*/ void setPostIncludeMacroState(APTInclude node, APTMacroMap.State state) {
+        if (TRACE) {
+            System.err.println("PUT cache for cache for [line " + node.getToken().getLine() + "]:" + node.getText() + " in " + filePath);
+        }
+        cache.get(node).state = state;
+    }
 
-    /**
-     * Gets this provider name to be displayed in UI
-     * (most likely, in combo box or radio button group)
-     * @return this provider name to be displayed in UI
-     */
-    String getDisplayName();
+    /*package*/ synchronized Object getLock(APTInclude node) {
+        Data data = new Data(null);
+        cache.put(node, data);
+        return data.lock;
+    }
 
-    /**
-     * Creates an instance of HostSetupWorker,
-     * which provide UI and performs actual work
-     * @return an instance of HostSetupWorker
-     */
-    HostSetupWorker createHostSetupWorker();
+    public CharSequence getFilePath() {
+        return filePath;
+    }
 
-    /**
-     * Determines whether this provider is applicable.
-     * This allows switching providers ON and OFF programmatically
-     * e.g. via -J-D... ;-)
-     * @return true if this provider is applicable, otherwise false
-     */
-    boolean isApplicable();
+    @Override
+    public String toString() {
+        return "APT cache for " + filePath; // NOI18N
+    }
+
+    private static final class Data {
+        APTMacroMap.State state;
+        private final Object lock = new Object();
+
+        public Data(State state) {
+            this.state = state;
+        }
+    }
 }

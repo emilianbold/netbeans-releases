@@ -364,6 +364,7 @@ public final class ParserQueue {
         if (TraceFlags.TRACE_PARSER_QUEUE) {
             System.err.println("ParserQueue: add " + file.getAbsolutePath() + " as " + position); // NOI18N
         }
+        boolean newEntry = false;
         synchronized (lock) {
             if (state == State.OFF) {
                 return;
@@ -422,6 +423,7 @@ public final class ParserQueue {
             } else {
                 assert (findEntry(file) == null) : "The queue should not contain the file " + traceState4File(file, files); // NOI18N
                 files.add(file);
+                newEntry = true;
             }
             if (entry == null) {
                 entry = new Entry(file, ppStates, position, serial.incrementAndGet());
@@ -436,6 +438,9 @@ public final class ParserQueue {
             lock.notifyAll();
         }
         ProgressSupport.instance().fireFileInvalidated(file);
+        if (newEntry) {
+            ProgressSupport.instance().fireFileAddedToParse(file);
+        }
     }
 
     public void waitReady() throws InterruptedException {

@@ -63,11 +63,13 @@ public abstract class APTAbstractWalker extends APTWalker {
     
     private final APTPreprocHandler preprocHandler;
     private final CharSequence startPath;
+    private final APTFileCacheEntry cacheEntry;
     
-    protected APTAbstractWalker(APTFile apt, APTPreprocHandler preprocHandler) {
+    protected APTAbstractWalker(APTFile apt, APTPreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
         super(apt, preprocHandler == null ? null: preprocHandler.getMacroMap());
         this.startPath = apt.getPath();
         this.preprocHandler = preprocHandler;
+        this.cacheEntry = cacheEntry;
     }
     
     protected void onInclude(APT apt) {
@@ -85,7 +87,7 @@ public abstract class APTAbstractWalker extends APTWalker {
                             new Object[] { startPath, apt });
                 }
             }
-            include(resolvedPath, (APTInclude)apt);
+            includeImpl(resolvedPath, (APTInclude)apt);
         }
     }
     
@@ -104,11 +106,32 @@ public abstract class APTAbstractWalker extends APTWalker {
                             new Object[] { startPath, apt });
                 }
             }
-            include(resolvedPath, (APTInclude) apt);
+            includeImpl(resolvedPath, (APTInclude) apt);
         }
     }
-    
-    abstract protected void include(ResolvedPath resolvedPath, APTInclude aPTInclude);
+
+    private void includeImpl(ResolvedPath resolvedPath, APTInclude aptInclude) {
+        if (cacheEntry != null) {
+            if (!startPath.equals(cacheEntry.getFilePath())) {
+                System.err.println("using not expected entry " + cacheEntry + " when work with file " + startPath);
+            }
+            Object lock = cacheEntry.getLock(aptInclude);
+            synchronized (lock) {
+                APTMacroMap.State postIncludeState = cacheEntry.getPostIncludeMacroState(aptInclude);
+                if (postIncludeState != null) {
+                    getPreprocHandler().getMacroMap().setState(postIncludeState);
+                    return;
+                }
+                include(resolvedPath, aptInclude);
+                postIncludeState = getPreprocHandler().getMacroMap().getState();
+                cacheEntry.setPostIncludeMacroState(aptInclude, postIncludeState);
+            }
+        } else {
+            include(resolvedPath, aptInclude);
+        }
+    }
+
+    abstract protected void include(ResolvedPath resolvedPath, APTInclude aptInclude);
    
     protected void onDefine(APT apt) {
         APTDefine define = (APTDefine)apt;

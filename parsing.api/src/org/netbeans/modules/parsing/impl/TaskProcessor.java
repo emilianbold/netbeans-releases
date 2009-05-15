@@ -850,7 +850,7 @@ public class TaskProcessor {
         
         public Thread newThread(Runnable r) {
             assert this.t == null;
-            this.t = new Thread (r,"Java Source Worker Thread");     //NOI18N
+            this.t = new Thread(r, "Parsing & Indexing Loop (" + System.getProperty("netbeans.buildnumber") + ")"); //NOI18N
             return this.t;
         }
         /**

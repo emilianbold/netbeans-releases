@@ -100,6 +100,10 @@ public class NbRegistrationAction extends WizardAction {
                         //not yet ready to register GlassFish V3...
                         //productId = productId + "gfmod";
                         productsToRegister.add(product);
+                    } else if (uid.equals("glassfish-mod-sun")) {
+                        //not yet ready to register GlassFish V3...
+                        //productId = productId + "gfmod";
+                        productsToRegister.add(product);
                     } else if (uid.equals("sjsas")) {
                         productId = productId + "as";
                         productsToRegister.add(product);

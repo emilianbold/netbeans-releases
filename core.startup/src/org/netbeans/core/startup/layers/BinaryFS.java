@@ -88,7 +88,7 @@ import org.openide.util.io.NbObjectInputStream;
  *
  * @author Petr Nejedly
  */
-public class BinaryFS extends FileSystem {
+final class BinaryFS extends FileSystem {
     /* Format:
      *     MAGIC
      *  4B length of the full image

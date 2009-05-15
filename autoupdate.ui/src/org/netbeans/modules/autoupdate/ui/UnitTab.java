@@ -95,6 +95,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
+import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.api.progress.ProgressHandle;
@@ -166,6 +167,7 @@ public class UnitTab extends javax.swing.JPanel {
         this.model = (UnitCategoryTableModel) m;
         table.getSelectionModel ().setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         initComponents ();
+        lWarning.setVisible(false);//#164953
         //TODO: for WINDOWS - don't paint background and let visible the native look
         /*
         if (UIManager.getLookAndFeel().getName().toLowerCase().startsWith("windows")) {//NOI18N
@@ -611,7 +613,7 @@ public class UnitTab extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lSearch, org.openide.util.NbBundle.getMessage(UnitTab.class, "lSearch1.text")); // NOI18N
 
         spTab.setBorder(null);
-        spTab.setDividerLocation(370);
+        spTab.setDividerLocation(Integer.parseInt(NbBundle.getMessage (UnitTab.class, "UnitTab_Splitter_DefaultDividerLocation")));
         spTab.setResizeWeight(0.5);
         spTab.setOneTouchExpandable(true);
 
@@ -1288,7 +1290,10 @@ public class UnitTab extends javax.swing.JPanel {
                 
         @Override
         protected boolean isVisible (Unit u) {
-              return super.isVisible (u);
+            if (u.getRelevantElement().getUpdateUnit().getType() == UpdateManager.TYPE.FEATURE) {
+                return false;
+            }
+            return super.isVisible (u);
         }
     }
     
@@ -1304,12 +1309,12 @@ public class UnitTab extends javax.swing.JPanel {
                 return;
             }
             for (Unit u : units) {
-                if (!isEnabled(u)) {
-                    setEnabled(false);
-                    return;
+                if (isEnabled(u)) {
+                    setEnabled(true);
+                    return ;
                 }
             }
-            setEnabled(true);
+            setEnabled(false);
         }
 
         @Override
@@ -1318,7 +1323,7 @@ public class UnitTab extends javax.swing.JPanel {
             final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnits ());
             OperationContainer<OperationSupport> c = Containers.forEnable();
             for (Unit u : model.getUnits()) {
-                if (u.isMarked()) {
+                if (u.isMarked() && isEnabled(u)) {
                     c.add(u.updateUnit, u.getRelevantElement());
                 }
             }
@@ -1421,6 +1426,9 @@ public class UnitTab extends javax.swing.JPanel {
                 
         @Override
         protected boolean isVisible (Unit u) {
+            if (u.getRelevantElement().getUpdateUnit().getType() == UpdateManager.TYPE.FEATURE) {
+                return false;
+            }
             return isEnabled();
         }
     }
@@ -1439,12 +1447,12 @@ public class UnitTab extends javax.swing.JPanel {
             }
 
             for (Unit u : units) {
-                if (!isEnabled(u)) {
-                    setEnabled(false);
+                if (isEnabled(u)) {
+                    setEnabled(true);
                     return;
                 }
             }
-            setEnabled(true);
+            setEnabled(false);
         }
 
         @Override
@@ -1452,7 +1460,7 @@ public class UnitTab extends javax.swing.JPanel {
             final int row = getSelectedRow ();
             OperationContainer<OperationSupport> c = Containers.forDisable();
             for (Unit u : model.getUnits()) {
-                if (u.isMarked()) {
+                if (u.isMarked() && isEnabled(u)) {
                     c.add(u.updateUnit, u.getRelevantElement());
                 }
             }
@@ -1555,6 +1563,9 @@ public class UnitTab extends javax.swing.JPanel {
         }
         @Override
         protected boolean isVisible (Unit u) {
+            if (u.getRelevantElement().getUpdateUnit().getType() == UpdateManager.TYPE.FEATURE) {
+                return false;
+            }
             return isEnabled();
         }
     }
@@ -1597,6 +1608,9 @@ public class UnitTab extends javax.swing.JPanel {
         
         @Override
         protected boolean isVisible (Unit u) {
+            if (u.getRelevantElement().getUpdateUnit().getType() == UpdateManager.TYPE.FEATURE) {
+                return false;
+            }
             return super.isVisible(u);
         }
         

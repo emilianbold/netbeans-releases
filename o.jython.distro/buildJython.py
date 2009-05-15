@@ -10,7 +10,7 @@ __date__ ="$Aug 9, 2008 9:25:01 AM$"
 import os
 
 #repoURL="https://jython.svn.sourceforge.net/svnroot/jython/trunk/jython"
-repoURL="https://jython.svn.sourceforge.net/svnroot/jython/tags/Release_2_5rc2/jython"
+repoURL="https://jython.svn.sourceforge.net/svnroot/jython/trunk/jython"
 zipName = "jython-2.5.zip"
 location = "jython"
 svnCommand="svn export "

@@ -162,6 +162,22 @@ public class Column extends PropertySupport.ReadWrite {
         super.setValue (propertyName, newValue);
     }
 
+    boolean isSorted() {
+        return columnModel.isSorted();
+    }
+
+    boolean isSortedDescending() {
+        return columnModel.isSortedDescending();
+    }
+
+    void setSorted(boolean sorted) {
+        columnModel.setSorted(sorted);
+    }
+
+    void setSortedDescending(boolean descending) {
+        columnModel.setSortedDescending(descending);
+    }
+
     public PropertyEditor getPropertyEditor () {
         return propertyEditor;
     }

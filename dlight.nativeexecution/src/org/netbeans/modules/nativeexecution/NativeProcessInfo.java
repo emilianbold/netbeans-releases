@@ -73,6 +73,7 @@ public final class NativeProcessInfo {
     private boolean unbuffer;
     public final MacroExpander macroExpander;
     private Collection<ChangeListener> listeners = null;
+    private final boolean escapeCommand;
 
     public NativeProcessInfo(NativeProcessInfo info) {
         execEnv = info.execEnv;
@@ -95,9 +96,11 @@ public final class NativeProcessInfo {
 
         unbuffer = info.unbuffer;
         isWindows = info.isWindows;
+        escapeCommand = info.escapeCommand;
     }
 
-    public NativeProcessInfo(ExecutionEnvironment execEnv, String command) {
+    public NativeProcessInfo(ExecutionEnvironment execEnv, String command, boolean escapeCommand) {
+        this.escapeCommand = escapeCommand;
         this.execEnv = execEnv;
         this.command = command;
         this.unbuffer = false;
@@ -187,13 +190,17 @@ public final class NativeProcessInfo {
             cmd = command;
         }
 
-        // deal with spaces in the command...
+        if (escapeCommand) {
+            // deal with spaces in the command...
+            if (isWindows) {
+                cmd = "'" + cmd + "'"; // NOI18N
+            } else {
+                cmd = cmd.replaceAll("([^\\\\]) ", "$1\\\\ "); // NOI18N
+            }
+        }
 
         if (isWindows) {
-            cmd = "'" + cmd + "'"; // NOI18N
             cmd = cmd.replaceAll("\\\\", "/"); // NOI18N
-        } else {
-            cmd = cmd.replaceAll("([^\\\\]) ", "$1\\\\ "); // NOI18N
         }
 
         StringBuilder sb = new StringBuilder(cmd);

@@ -42,6 +42,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -65,6 +66,8 @@ public class DevelopmentHostConfiguration {
     private int value;
     private List<ExecutionEnvironment> servers;
 
+    private int buildPlatform; // Actual build platform
+
     private boolean modified;
     private boolean dirty = false;
     private PropertyChangeSupport pcs;
@@ -80,6 +83,12 @@ public class DevelopmentHostConfiguration {
         }
         def = value;
         pcs = new PropertyChangeSupport(this);
+
+        buildPlatform = CompilerSetManager.getDefault(execEnv).getPlatform();
+        if (buildPlatform == -1) {
+            // TODO: CompilerSet is not reliable about platform; it must be.
+            buildPlatform = PlatformTypes.PLATFORM_NONE;
+        }
     }
 
     /** TODO: deprecate and remove, see #158983 */
@@ -146,6 +155,11 @@ public class DevelopmentHostConfiguration {
         for (int i = 0; i < servers.size(); i++) {
             if (servers.get(i).equals(execEnv)) {
                 value = i;
+                setBuildPlatform(CompilerSetManager.getDefault(execEnv).getPlatform());
+                if (getBuildPlatform() == -1) {
+                    // TODO: CompilerSet is not reliable about platform; it must be.
+                    setBuildPlatform(PlatformTypes.PLATFORM_NONE);
+                }
                 return true;
             }
         }
@@ -159,6 +173,11 @@ public class DevelopmentHostConfiguration {
             //TODO: could we use something straightforward here?
             if (currRecord.getDisplayName().equals(v)) {
                 value = i;
+                setBuildPlatform(CompilerSetManager.getDefault(currEnv).getPlatform());
+                if (getBuildPlatform() == -1) {
+                    // TODO: CompilerSet is not reliable about platform; it must be.
+                    setBuildPlatform(PlatformTypes.PLATFORM_NONE);
+                }
                 if (firePC) {
                     pcs.firePropertyChange(PROP_DEV_HOST, 
                             ExecutionEnvironmentFactory.toUniqueID(currRecord.getExecutionEnvironment()),
@@ -227,4 +246,28 @@ public class DevelopmentHostConfiguration {
     public boolean isLocalhost() {
         return getExecutionEnvironment().isLocal();
     }
+
+    /**
+     * @return the buildPlatform
+     */
+    public int getBuildPlatform() {
+        return buildPlatform;
+    }
+
+    /**
+     * @param buildPlatform the buildPlatform to set
+     */
+    public void setBuildPlatform(int buildPlatform) {
+        this.buildPlatform = buildPlatform;
+    }
+
+    public String getBuildPlatformDisplayName() {
+        if (isConfigured()) {
+            return Platforms.getPlatform(getBuildPlatform()).getDisplayName();
+        }
+        else {
+            return "";
+        }
+    }
+
 }

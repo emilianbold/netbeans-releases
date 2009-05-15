@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.apt.structure.APTIfndef;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
 import org.netbeans.modules.cnd.apt.structure.APTUndefine;
+import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
@@ -92,8 +93,8 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
 public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
     protected final Map<CharSequence, CsmFile> macro2file = new HashMap<CharSequence, CsmFile>();
 
-    public APTFindMacrosWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler) {
-        super(apt, csmFile, preprocHandler);
+    public APTFindMacrosWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
+        super(apt, csmFile, preprocHandler, cacheEntry);
     }
 
     @Override

@@ -55,6 +55,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.print.ConvertedLine;
@@ -64,7 +65,6 @@ import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.glassfish.jruby.ui.JRubyServerCustomizer;
 import org.netbeans.modules.glassfish.spi.Recognizer;
-import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.glassfish.spi.CustomizerCookie;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
@@ -495,7 +495,7 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie, Recogn
             File [] grizzlyJars = modulesDir.listFiles(new FileFilter() {
                 public boolean accept(File pathname) {
                     String name = pathname.getName();
-                    return name.startsWith("grizzly") && name.endsWith(".jar") && !name.contains("jruby-module");
+                    return name.startsWith("grizzly") && name.endsWith(".jar");
                 }
             });
 
@@ -633,10 +633,23 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie, Recogn
     // ------------------------------------------------------------------------
     // RecognizerCookie support
     // ------------------------------------------------------------------------
-    
+
+    private static final String PREFIX = "(?:\\s+|(?:[^:\\s\\d]{1,20}:\\s*))?"; // NOI18N
+    private static final String DRIVE = "(?:\\S{1}:)"; // NOI18N
+    private static final String FILE_CHAR = "[^\\s\\[\\]\\:\\\"]"; // NOI18N
+    private static final String FILE = "(?:" + FILE_CHAR + "*)"; // NOI18N
+    private static final String LINE = "([1-9][0-9]*)"; // NOI18N
+    private static final String ROL = ".*\\s?"; // NOI18N
+    private static final String FILE_SEP = "[\\\\/]"; // NOI18N
+    private static final String LINE_SEP = "\\:"; // NOI18N
+
+    // DRIVE?(FILE_SEP FILE)+ LINE_SEP LINE ROL
+    private static final Pattern PATH_RECOGNIZER = Pattern.compile(
+            PREFIX + DRIVE + "?(" + FILE_SEP + FILE + ")+" + LINE_SEP + LINE + ROL); // NOI18N
+
     public Collection<? extends Recognizer> getRecognizers() {
         FileLocator locator = new DirectoryFileLocator(FileUtil.toFileObject(FileUtil.normalizeFile(new File("/")))); //NOI18N
-        LineConvertor convertor = LineConvertors.filePattern(locator, RubyLineConvertorFactory.RAILS_RECOGNIZER, RubyLineConvertorFactory.EXT_RE, 1, 2);
+        LineConvertor convertor = LineConvertors.filePattern(locator, PATH_RECOGNIZER, RubyLineConvertorFactory.EXT_RE, 1, 2);
         return Collections.singleton(wrapRubyRecognizer(convertor));
     }
 

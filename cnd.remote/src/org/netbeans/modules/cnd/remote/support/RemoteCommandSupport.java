@@ -94,7 +94,7 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
             }
             try {
 //                final String substitutedCommand = substituteCommand();
-                NativeProcessBuilder pb = new NativeProcessBuilder(executionEnvironment, cmd);
+                NativeProcessBuilder pb = new NativeProcessBuilder(executionEnvironment, cmd,false);
                 pb = pb.addEnvironmentVariables(env);
                 Process process = pb.call();
                 InputStream is = process.getInputStream();

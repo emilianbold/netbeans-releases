@@ -242,8 +242,13 @@ public class OutputWindowWriter extends Writer {
                 if (fileName.startsWith("/cygdrive/")) { // NOI18N
                     fileName = fileName.substring("/cygdrive/".length()); // NOI18N
                     fileName = "" + fileName.charAt(0) + ':' + fileName.substring(1); // NOI18N
-                    fileName = fileName.replace('/', '\\');
+                } else if (fileName.length() > 3 && fileName.charAt(0) == '/' && fileName.charAt(2) == '/') {// NOI18N
+                    fileName = "" + fileName.charAt(1) + ':' + fileName.substring(2);// NOI18N
                 }
+                if (fileName.startsWith("/") || fileName.startsWith(".")) {// NOI18N
+                    return null;
+                }
+                fileName = fileName.replace('/', '\\');// NOI18N
             }
             fileName = HostInfoProvider.getMapper(execEnv).getLocalPath(fileName,true);
             File file = CndFileUtils.normalizeFile(new File(fileName));
@@ -644,7 +649,10 @@ public class OutputWindowWriter extends Writer {
         
         public boolean handleLine(OutputWriter delegate, String line, Matcher m) throws IOException {
             if (m.pattern() == SUN_DIRECTORY_ENTER) {
-                relativeTo = resolveFile(m.group(1));
+                FileObject myObj = resolveFile(m.group(1));
+                if (myObj != null) {
+                    relativeTo = myObj;
+                }
                 return false;
             }
             if (    m.pattern() == SUN_ERROR_SCANNER_CPP_ERROR

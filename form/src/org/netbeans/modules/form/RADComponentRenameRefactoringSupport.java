@@ -168,11 +168,19 @@ public class RADComponentRenameRefactoringSupport {
                 if (privateField) {
                     // private field - need to rename occurrences out of generated code, but
                     // within the same class, so full and slow RenameRefactoring can be avoided
-                    renameOutOfGuardedCode((GuardedDocument) scanner.info.getDocument(),
-                                           scanner.usagesPositions,
-                                           component.getName(), newName);
+                    boolean codeChanged = renameOutOfGuardedCode(
+                                            (GuardedDocument) scanner.info.getDocument(),
+                                            scanner.usagesPositions,
+                                            component.getName(), newName);
                     FormRefactoringUpdate.renameComponentInCustomCode(component, newName);
                     component.setName(newName);
+                    if (codeChanged) {
+                        // changed some references to the variable out of generated
+                        // code - need to regenerate variables so the references
+                        // are correct (and so e.g. found in subsequent renaming)
+                        ((JavaCodeGenerator)FormEditor.getCodeGenerator(component.getFormModel()))
+                                .regenerateVariables();
+                    }
                 } else { // need to run full RenameRefactoring
                     doRenameRefactoring(formDO, newName, scanner.getHandle());
                 }
@@ -182,13 +190,15 @@ public class RADComponentRenameRefactoringSupport {
         }
     }
 
-    private static void renameOutOfGuardedCode(final GuardedDocument doc,
+    private static boolean renameOutOfGuardedCode(final GuardedDocument doc,
                           final List<Integer> positions,
                           final String oldName, final String newName)
             throws IOException {
         if (positions == null || positions.isEmpty()) {
-            return;
+            return false;
         }
+
+        final boolean[] codeChanged = { false };
 
         // rename the private variable occurrences in user code out of guarded blocks
         doc.runAtomic(new Runnable() {
@@ -203,6 +213,7 @@ public class RADComponentRenameRefactoringSupport {
                             doc.remove(pos, len);
                             doc.insertString(pos, newName, null);
                             positionDiff += newName.length() - len;
+                            codeChanged[0] = true;
                         }
                     }
                 } catch (BadLocationException ex) {
@@ -210,6 +221,8 @@ public class RADComponentRenameRefactoringSupport {
                 }
             }
         });
+
+        return codeChanged[0];
     }
 
     private static void doRenameRefactoring(FormDataObject dao, String newName, TreePathHandle handle) throws IOException {
