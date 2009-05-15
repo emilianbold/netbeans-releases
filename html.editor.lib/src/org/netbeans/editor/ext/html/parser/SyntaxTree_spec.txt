@@ -6,6 +6,15 @@ how these should be marked and how the parsing shoult be recovered.
 
 Feel free to add new case or correct the existing ones.
 
+Notes:
+======
+1) never put unexpected tag into the nodes stack => cannot be paired
+2) probably better is to say "Unknown tag" rather than "Unknown content"
+
+
+Usecases:
+=========
+
 A. Crossed tags
 
 1. <p> has optional end and can contain <a>
@@ -31,12 +40,19 @@ ast: a(script())
 4. <a> has required end and cannot contain <div> with required end
 <a><div></a></div>
    ^^^^^ error: Unexpected content
-            ^^^^^^ error: Unexpected content
+            ^^^^^^ error: Unmatched tag
 
 ast: a()
 
-B. Unexpected known paired tag
+4.1
+<a><div><b></b></a></div>
+   ^^^^^           ^^^^^^
+ast: a(b())
 
+
+B. Unexpected tag
+
+a. known, paired
 <html>
   ...
   <body>
@@ -46,3 +62,38 @@ B. Unexpected known paired tag
 </html>
 
 recovery: just ignore both tags and continue parsing
+
+b. known, unpaired
+<html>
+  ...
+  <body>
+    <style>
+    ^^^^^^^ error:Unexpected tag content
+  </body>
+</html>
+
+c. unknown, paired or unpaired
+<html>
+  ...
+  <body>
+    <xyz>(</xyz>)
+    ^^^^^ error:Unexpected tag content
+         (^^^^^^) error: Unmatched tag, Unknown content (tag)
+  </body>
+</html>
+
+C. Unresolved tags
+
+<html>
+    <head>
+    ^^^^^^ error: unresolved tag, expecting XXX
+        //title is mandatory here
+    </head>
+    <body>
+    </body>
+</html>
+
+note: whether a tag is resolved or not doesn't affect the parsing/nesting of
+its content or following siblings
+
+

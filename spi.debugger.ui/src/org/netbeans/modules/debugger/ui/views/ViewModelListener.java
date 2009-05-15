@@ -173,6 +173,13 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             this
         );
         preferences.removePreferenceChangeListener(prefListener);
+        final boolean haveModels = treeModels.size() > 0 || nodeModels.size() > 0 || tableModels.size() > 0;
+        if (tabbedPane == null) {
+            if (haveModels && view.getComponentCount() > 0) {
+                JComponent tree = (JComponent) view.getComponent(0);
+                Models.setModelsToView(tree, null);
+            }
+        }
         models.clear();
         treeModels = null;
         treeModelFilters = null;
