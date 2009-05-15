@@ -274,12 +274,18 @@ public final class DeployOnSaveManager {
         }
 
         public void artifactsUpdated(Iterable<File> artifacts) {
+            J2eeModuleProvider.DeployOnSaveClassInterceptor interceptor = provider.getDeployOnSaveClassInterceptor();
             Set<Artifact> realArtifacts = new HashSet<Artifact>();
             for (File file : artifacts) {
                 if (file != null) {
-                    realArtifacts.add(Artifact.forFile(file));
+                    Artifact a = Artifact.forFile(file);
+                    if (interceptor != null) {
+                        a = interceptor.convert(a);
+                    }
+                    realArtifacts.add(a);
                 }
             }
+
             DeployOnSaveManager.getDefault().submitChangedArtifacts(provider, realArtifacts);
         }
 
