@@ -52,14 +52,9 @@ public class HostSetupResultImpl implements HostSetupWorker.Result {
     private String displayName;
     private RemoteSyncFactory syncFactory;
     private Runnable runOnFinish;
+    private static ExecutionEnvironment lastExecutionEnvironment;
 
     public HostSetupResultImpl() {
-    }
-
-    public HostSetupResultImpl(ExecutionEnvironment executionEnvironment, String displayName, RemoteSyncFactory syncFactory) {
-        this.executionEnvironment = executionEnvironment;
-        this.displayName = displayName;
-        this.syncFactory = syncFactory;
     }
 
     @Override
@@ -83,7 +78,11 @@ public class HostSetupResultImpl implements HostSetupWorker.Result {
     }
 
     public void setExecutionEnvironment(ExecutionEnvironment executionEnvironment) {
-        this.executionEnvironment = executionEnvironment;
+        this.executionEnvironment = lastExecutionEnvironment = executionEnvironment;
+    }
+
+    public static ExecutionEnvironment getLastExecutionEnvironment() {
+        return lastExecutionEnvironment;
     }
 
     public void setSyncFactory(RemoteSyncFactory syncFactory) {
