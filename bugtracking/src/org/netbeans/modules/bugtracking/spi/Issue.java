@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.bugtracking.spi;
@@ -51,6 +51,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.openide.util.NbBundle;
+import static java.lang.Character.isSpaceChar;
 
 /**
  * Represens a bugtracking Issue
@@ -58,6 +59,8 @@ import org.openide.util.NbBundle;
  * @author Tomas Stupka
  */
 public abstract class Issue {
+
+    private static final int SHORT_DISP_NAME_LENGTH = 15;
 
     private final PropertyChangeSupport support;
 
@@ -132,6 +135,41 @@ public abstract class Issue {
      * @return
      */
     public abstract String getDisplayName();
+
+    /**
+     * Returns a short variant of the display name. The short variant is used
+     * in cases where the full display name might be too long, such as when used
+     * as a title of a tab. The default implementation uses the
+     * the {@linkplain #getDisplayName full display name} as a base and trims
+     * it to maximum of {@value #SHORT_DISP_NAME_LENGTH} characters if
+     * necessary. If it was necessary to trim the name (i.e. if the full name
+     * was longer then {@value #SHORT_DISP_NAME_LENGTH}), then an ellipsis
+     * is appended to the end of the trimmed display name.
+     * 
+     * @return  short variant of the display name
+     * @see #getDisplayName
+     */
+    public String getShortenedDisplayName() {
+        String displayName = getDisplayName();
+
+        int length = displayName.length();
+        int limit = SHORT_DISP_NAME_LENGTH;
+
+        if (length <= limit) {
+            return displayName;
+        }
+
+        String trimmed = displayName.substring(0, limit).trim();
+
+        StringBuilder buf = new StringBuilder(limit + 4);
+        buf.append(trimmed);
+        if ((length > (limit + 1)) && isSpaceChar(displayName.charAt(limit))) {
+            buf.append(' ');
+        }
+        buf.append("...");                                              //NOI18N
+
+        return buf.toString();
+    }
 
     /**
      * Returns this issues tooltip
