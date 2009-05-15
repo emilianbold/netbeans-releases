@@ -47,9 +47,7 @@ import javax.swing.Icon;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
-import org.netbeans.modules.hudson.ui.actions.ShowBuildConsole;
-import org.netbeans.modules.hudson.ui.actions.ShowFailures;
-import org.netbeans.modules.hudson.ui.nodes.HudsonRootNode;
+import org.netbeans.modules.hudson.api.UI;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.NotificationDisplayer.Priority;
@@ -86,21 +84,21 @@ class ProblemNotification implements ActionListener {
     }
 
     public void actionPerformed(final ActionEvent e) {
-        HudsonRootNode.select(job.getInstance().getUrl(), job.getName(), Integer.toString(build));
+        UI.selectNode(job.getInstance().getUrl(), job.getName(), Integer.toString(build));
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 for (HudsonJobBuild b : job.getBuilds()) {
                     if (b.getNumber() == build) {
                         if (failed) {
-                            new ShowBuildConsole(b).actionPerformed(e);
+                            UI.showConsoleAction(b).actionPerformed(e);
                         } else if (b.getMavenModules().isEmpty()) {
-                            new ShowFailures(b).actionPerformed(e);
+                            UI.showFailuresAction(b).actionPerformed(e);
                         } else {
                             for (HudsonMavenModuleBuild module : b.getMavenModules()) {
                                 switch (module.getColor()) {
                                 case yellow:
                                 case yellow_anime:
-                                    new ShowFailures(module).actionPerformed(e);
+                                    UI.showFailuresAction(module).actionPerformed(e);
                                 }
                             }
                         }
