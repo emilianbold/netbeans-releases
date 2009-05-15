@@ -1985,10 +1985,10 @@ abstract public class CsmCompletionQuery {
             if ((result == null || result.getItems().isEmpty()) && lastType != null) {
                 if(lastType.isTemplateBased() ||
                         CsmFileReferences.isTemplateParameterInvolved(lastType) ||
-                        CsmFileReferences.hasTemplateBasedAncestors(lastType, MAX_DEPTH)) {
+                        CsmFileReferences.hasTemplateBasedAncestors(lastType)) {
                     Collection<CsmObject> data = new ArrayList();
                     data.add(new TemplateBasedReferencedObjectImpl());
-                    result = new CsmCompletionResult(component, getBaseDocument(), data, "title", item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes);
+                    result = new CsmCompletionResult(component, getBaseDocument(), data, "title", item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
                 }
             }
 

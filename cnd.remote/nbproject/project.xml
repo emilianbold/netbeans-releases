@@ -177,7 +177,11 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>com.sun.cloud.cnd</friend>
+                <package>org.netbeans.modules.cnd.spi.remote.setup</package>
+                <package>org.netbeans.modules.cnd.spi.remote.setup.support</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>
