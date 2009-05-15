@@ -45,10 +45,7 @@
 
 package org.netbeans.modules.kenai.ui;
 
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -59,6 +56,7 @@ import javax.swing.ListCellRenderer;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.ui.GetSourcesFromKenaiPanel.KenaiFeatureListItem;
+import org.netbeans.modules.kenai.ui.dashboard.ColorManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -91,14 +89,15 @@ public class KenaiFeatureCellRenderer extends JPanel implements ListCellRenderer
         projectNameLabel.setText(NbBundle.getMessage(KenaiFeatureCellRenderer.class, "KenaiFeatureCellRenderer.projectNameLabel.text")); // NOI18N
         projectNameLabel.setName("projectNameLabel"); // NOI18N
         gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new Insets(2, 4, 0, 0);
+        gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         add(projectNameLabel, gridBagConstraints);
 
-        projectRepoLabel.setForeground(Color.blue);
         projectRepoLabel.setText(NbBundle.getMessage(KenaiFeatureCellRenderer.class, "KenaiFeatureCellRenderer.projectRepoLabel.text")); // NOI18N
         projectRepoLabel.setName("projectRepoLabel"); // NOI18N
         gridBagConstraints = new GridBagConstraints();
@@ -106,7 +105,7 @@ public class KenaiFeatureCellRenderer extends JPanel implements ListCellRenderer
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 4, 4, 0);
+        gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         add(projectRepoLabel, gridBagConstraints);
 
         repoTypeLabel.setText(NbBundle.getMessage(KenaiFeatureCellRenderer.class, "KenaiFeatureCellRenderer.repoTypeLabel.text")); // NOI18N
@@ -116,10 +115,9 @@ public class KenaiFeatureCellRenderer extends JPanel implements ListCellRenderer
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 4, 4, 0);
+        gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         add(repoTypeLabel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel projectNameLabel;
@@ -138,28 +136,29 @@ public class KenaiFeatureCellRenderer extends JPanel implements ListCellRenderer
 
         if (feature != null) {
             if (index == -1) {
-                return new JLabel(((KenaiFeatureListItem) value).feature.getLocation());
+                projectNameLabel.setText(null);
+                projectRepoLabel.setText(feature.getLocation());
+                projectRepoLabel.setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
+                projectRepoLabel.setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
+                repoTypeLabel.setText(null);
+            } else {
+                projectNameLabel.setText(project.getDisplayName() + " (" + project.getName() + ")"); // NOI18N
+                projectNameLabel.setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
+                projectNameLabel.setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
+                projectRepoLabel.setText(feature.getLocation());
+                projectRepoLabel.setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
+                projectRepoLabel.setForeground(isSelected ? list.getSelectionForeground() : ColorManager.getDefault().getLinkColor());
+                repoTypeLabel.setText("(" + feature.getService() + ")"); // NOI18N
+                repoTypeLabel.setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
+                repoTypeLabel.setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
             }
-            projectNameLabel.setText(project.getDisplayName() + " (" + project.getName() + ")"); // NOI18N
-            projectRepoLabel.setText(feature.getLocation());
-            repoTypeLabel.setText("(" + feature.getService() + ")"); // NOI18N
         }
 
         setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
         setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
 
         return this;
-        
-    }
 
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        Graphics2D g2d = (Graphics2D) g;
-        int w = getWidth();
-        int h = getHeight();
-        g2d.setColor(Color.LIGHT_GRAY);
-        g2d.drawLine(0, h - 1, w, h - 1);
     }
 
 }
