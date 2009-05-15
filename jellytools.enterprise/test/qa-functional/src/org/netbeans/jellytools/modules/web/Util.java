@@ -44,8 +44,6 @@ package org.netbeans.jellytools.modules.web;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import org.netbeans.api.project.Project;
-//import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;

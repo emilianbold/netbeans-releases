@@ -58,6 +58,21 @@ import org.netbeans.jellytools.NbDialogOperator;
 public class CNDProjectRootNodeTest extends JellyTestCase
 {
 
+    public static final String projectName;
+    static
+    {
+        String lsOsType = System.getProperty("os.name");
+        String lsProj = "SampleCNDProject";
+
+        if (lsOsType.toLowerCase().contains("linux"))
+            projectName = lsProj + "-Linux";
+        else if (lsOsType.toLowerCase().contains("sun"))
+            projectName = lsProj + "-Solaris";
+        else if (lsOsType.toLowerCase().contains("win"))
+            projectName = lsProj + "-Windows";
+        else projectName = lsProj;
+    }
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
@@ -85,9 +100,9 @@ public class CNDProjectRootNodeTest extends JellyTestCase
     /** Find node. */
     protected void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
-        openDataProjects("SampleCNDProject");
+        openDataProjects(projectName);
         if(projectRootNode == null) {
-            projectRootNode = CNDProjectsTabOperator.invoke().getCNDProjectRootNode("SampleCNDProject"); // NOI18N
+            projectRootNode = CNDProjectsTabOperator.invoke().getCNDProjectRootNode(projectName); // NOI18N
         }
     }
     
@@ -129,6 +144,6 @@ public class CNDProjectRootNodeTest extends JellyTestCase
     /** Test properties */
     public void testProperties() {
         projectRootNode.properties();
-        new NbDialogOperator("SampleCNDProject").close(); //NOI18N
+        new NbDialogOperator(projectName).close(); //NOI18N
     }
 }
