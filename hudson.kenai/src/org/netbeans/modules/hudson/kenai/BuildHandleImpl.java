@@ -89,9 +89,17 @@ class BuildHandleImpl extends BuildHandle {
             public void actionPerformed(final ActionEvent e) {
                 // Mostly copied from ProblemNotification.actionPerformed.
                 final int build = job.getLastBuild();
-                UI.selectNode(job.getInstance().getUrl(), job.getName(), Integer.toString(build));
+                if (build == -1) {
+                    UI.selectNode(job.getInstance().getUrl(), job.getName());
+                } else {
+                    UI.selectNode(job.getInstance().getUrl(), job.getName(), Integer.toString(build));
+                }
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
+                        if (build == -1) {
+                            job.start();
+                            return;
+                        }
                         for (HudsonJobBuild b : job.getBuilds()) {
                             if (b.getNumber() == build) {
                                 switch (b.getResult()) {
