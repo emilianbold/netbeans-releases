@@ -159,7 +159,7 @@ public class KenaiRepository extends BugzillaRepository {
     }
 
     protected void setCredentials(String user, String password) {
-        super.setTaskRepository(getDisplayName(), getUrl(), user, password, null, null);
+        super.setTaskRepository(getDisplayName(), getUrl(), user, password, null, null, isShortUsernamesEnabled());
     }
 
     @Override
