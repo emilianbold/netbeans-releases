@@ -78,6 +78,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
+import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTMacroExpandedStream;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
@@ -432,7 +433,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             }
         }
         synchronized(cache) {
-            StopOnOffsetParseFileWalker walker = new StopOnOffsetParseFileWalker(base, aptLight, fileImpl, offset, handler, cache);
+            StopOnOffsetParseFileWalker walker = new StopOnOffsetParseFileWalker(base, aptLight, fileImpl, offset, handler, cache, fileImpl.getIncludeCacheEntry(handler));
             walker.visit();
         }
         TokenStream ts = APTTokenStreamBuilder.buildTokenStream(code);
@@ -1197,8 +1198,8 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         private final int stopOffset;
         private final StopOnOffsetParseFileWalkerCache cache;
 
-        public StopOnOffsetParseFileWalker(ProjectBase base, APTFile apt, FileImpl file, int offset, APTPreprocHandler preprocHandler, StopOnOffsetParseFileWalkerCache cache) {
-            super(base, apt, file, preprocHandler, false, null);
+        public StopOnOffsetParseFileWalker(ProjectBase base, APTFile apt, FileImpl file, int offset, APTPreprocHandler preprocHandler, StopOnOffsetParseFileWalkerCache cache, APTFileCacheEntry cacheEntry) {
+            super(base, apt, file, preprocHandler, false, null, cacheEntry);
             stopOffset = offset;
             this.cache = cache;
         }

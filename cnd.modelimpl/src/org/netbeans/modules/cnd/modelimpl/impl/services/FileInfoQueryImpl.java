@@ -126,7 +126,8 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                         DiagnosticExceptoins.register(new IllegalStateException("Empty preprocessor handlers for " + file.getAbsolutePath())); //NOI18N
                         return Collections.<CsmOffsetable>emptyList();
                     } else if (handlers.size() == 1) {
-                        APTFindUnusedBlocksWalker walker = new APTFindUnusedBlocksWalker(apt, fileImpl, handlers.iterator().next());
+                        APTPreprocHandler handler = handlers.iterator().next();
+                        APTFindUnusedBlocksWalker walker = new APTFindUnusedBlocksWalker(apt, fileImpl, handler, fileImpl.getIncludeCacheEntry(handler));
                         walker.visit();
                         out = walker.getBlocks();
                     } else {
@@ -135,7 +136,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                         List<CsmOffsetable> result = new  ArrayList<CsmOffsetable>();
                         boolean first = true;
                         for (APTPreprocHandler handler : handlers) {
-                            APTFindUnusedBlocksWalker walker = new APTFindUnusedBlocksWalker(apt, fileImpl, handler);
+                            APTFindUnusedBlocksWalker walker = new APTFindUnusedBlocksWalker(apt, fileImpl, handler, fileImpl.getIncludeCacheEntry(handler));
                             walker.visit();
                             List<CsmOffsetable> blocks = walker.getBlocks();
                             if (first) {
@@ -227,14 +228,15 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                                 DiagnosticExceptoins.register(new IllegalStateException("Empty preprocessor handlers for " + file.getAbsolutePath())); //NOI18N
                                 return Collections.<CsmReference>emptyList();
                             } else if (handlers.size() == 1) {
-                                APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handlers.iterator().next());
+                                APTPreprocHandler handler = handlers.iterator().next();
+                                APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, fileImpl.getIncludeCacheEntry(handler));
                                 walker.getTokenStream();
                                 out = walker.getCollectedData();
                             } else {
                                 Comparator<CsmReference> comparator = new OffsetableComparator<CsmReference>();
                                 TreeSet<CsmReference> result = new TreeSet<CsmReference>(comparator);
                                 for (APTPreprocHandler handler : handlers) {
-                                    APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler);
+                                    APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, fileImpl.getIncludeCacheEntry(handler));
                                     walker.getTokenStream();
                                     result.addAll(walker.getCollectedData());
                                 }
