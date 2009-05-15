@@ -41,7 +41,7 @@ package org.netbeans.modules.hudson.kenai;
 
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -51,6 +51,7 @@ import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonManager;
+import org.netbeans.modules.hudson.api.UI;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
@@ -69,7 +70,8 @@ public class BuildAccessorImpl extends BuildAccessor {
 
     private final Map<ProjectHandle,HudsonChangeListener> listeners = new WeakHashMap<ProjectHandle,HudsonChangeListener>();
 
-    public List<BuildHandle> getBuilds(final ProjectHandle handle) {
+    private static Collection<HudsonInstance> findServers(ProjectHandle handle) {
+        List<HudsonInstance> servers = new ArrayList<HudsonInstance>();
         String id = handle.getId();
         try {
             KenaiProject prj = Kenai.getDefault().getProject(id);
@@ -81,40 +83,53 @@ public class BuildAccessorImpl extends BuildAccessor {
                         server = "http://localhost:8080/";
                     }
                     // XXX maybe remove these transient instances when the Kenai projects go away somehow?
-                    HudsonInstance instance = HudsonManager.addInstance(id, server, 5, false);
-                    synchronized (listeners) {
-                        if (!listeners.containsKey(handle)) {
-                            HudsonChangeListener listener = new HudsonChangeListener() {
-                                private void change() {
-                                    handle.firePropertyChange(ProjectHandle.PROP_BUILD_LIST, null, null);
-                                }
-                                public void stateChanged() {
-                                    change();
-                                }
-                                public void contentChanged() {
-                                    change();
-                                }
-                            };
-                            listeners.put(handle, listener);
-                            instance.addHudsonChangeListener(WeakListeners.create(HudsonChangeListener.class, listener, instance));
-                        }
-                    }
-                    List<BuildHandle> builds = new ArrayList<BuildHandle>();
-                    for (HudsonJob job : instance.getJobs()) {
-                        builds.add(new BuildHandleImpl(job));
-                    }
-                    return builds;
+                    servers.add(HudsonManager.addInstance(id, server, 5, false));
                 }
             }
         } catch (KenaiException x) {
             LOG.log(Level.FINE, "Could not find project " + id, x);
         }
-        return Collections.emptyList();
+        return servers;
     }
 
-    public ActionListener getNewBuildAction(ProjectHandle project) {
-        // XXX return CreateJob instance
-        return null;
+    public List<BuildHandle> getBuilds(final ProjectHandle handle) {
+        HudsonChangeListener newListener;
+        synchronized (listeners) {
+            if (listeners.containsKey(handle)) {
+                newListener = null;
+            } else {
+                listeners.put(handle, newListener = new HudsonChangeListener() {
+                    private void change() {
+                        handle.firePropertyChange(ProjectHandle.PROP_BUILD_LIST, null, null);
+                    }
+                    public void stateChanged() {
+                        change();
+                    }
+                    public void contentChanged() {
+                        change();
+                    }
+                });
+            }
+        }
+        List<BuildHandle> builds = new ArrayList<BuildHandle>();
+        for (HudsonInstance instance : findServers(handle)) {
+            if (newListener != null) {
+                instance.addHudsonChangeListener(WeakListeners.create(HudsonChangeListener.class, newListener, instance));
+            }
+            for (HudsonJob job : instance.getJobs()) {
+                builds.add(new BuildHandleImpl(job));
+            }
+        }
+        return builds;
+    }
+
+    public ActionListener getNewBuildAction(ProjectHandle handle) {
+        Collection<HudsonInstance> servers = findServers(handle);
+        if (servers.isEmpty()) {
+            return null;
+        } else {
+            return UI.createJobAction(servers.iterator().next());
+        }
     }
 
 }

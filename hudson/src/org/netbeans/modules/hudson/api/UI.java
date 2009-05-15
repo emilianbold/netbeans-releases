@@ -43,6 +43,7 @@ import java.beans.PropertyVetoException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import org.netbeans.modules.hudson.ui.actions.CreateJob;
 import org.netbeans.modules.hudson.ui.actions.ShowBuildConsole;
 import org.netbeans.modules.hudson.ui.actions.ShowChanges;
 import org.netbeans.modules.hudson.ui.actions.ShowFailures;
@@ -139,6 +140,13 @@ public class UI {
      */
     public static Action showFailuresAction(HudsonMavenModuleBuild build) {
         return new ShowFailures(build);
+    }
+
+    /**
+     * Action to create a new job on a server.
+     */
+    public static Action createJobAction(HudsonInstance server) {
+        return new CreateJob(server);
     }
 
 }
