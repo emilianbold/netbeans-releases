@@ -319,15 +319,19 @@ public class JiraConfiguration extends JiraClientCache {
 
     @Override
     public Project[] getProjects() {
+        synchronized(PROJECT_LOCK) {
             return data.projects;
         }
+    }
 
     public void ensureProjectLoaded(Project project) {
+        synchronized(PROJECT_LOCK) {
             if (!loadedProjects.contains(project.getId())) {
                 initProject(project);
                 loadedProjects.add(project.getId());
             }
         }
+    }
 
     protected void initProject(final Project project) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
