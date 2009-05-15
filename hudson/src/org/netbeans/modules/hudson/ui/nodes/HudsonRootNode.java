@@ -62,6 +62,7 @@ import org.openide.nodes.NodeOp;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * Root node in Services tab.
@@ -121,37 +122,37 @@ public class HudsonRootNode extends AbstractNode {
     public static void select(final String... path) {
         Mutex.EVENT.readAccess(new Runnable() {
             public void run() {
-                for (TopComponent tab : TopComponent.getRegistry().getOpened()) {
-                    if (!tab.getClass().getName().equals("org.netbeans.core.ide.ServicesTab")) { // NOI18N
-                        continue;
-                    }
-                    tab.requestActive();
-                    if (!(tab instanceof ExplorerManager.Provider)) {
-                        LOG.fine("ServicesTab not an ExplorerManager.Provider");
-                        return;
-                    }
-                    ExplorerManager mgr = ((ExplorerManager.Provider) tab).getExplorerManager();
-                    Node root = mgr.getRootContext();
-                    Node hudson = NodeOp.findChild(root, HUDSON_NODE_NAME);
-                    if (hudson == null) {
-                        LOG.fine("ServicesTab does not contain " + HUDSON_NODE_NAME);
-                        return;
-                    }
-                    Node selected;
-                    try {
-                        selected = NodeOp.findPath(hudson, path);
-                    } catch (NodeNotFoundException x) {
-                        LOG.log(Level.FINE, "Could not find subnode", x);
-                        selected = x.getClosestNode();
-                    }
-                    try {
-                        mgr.setSelectedNodes(new Node[] {selected});
-                    } catch (PropertyVetoException x) {
-                        LOG.log(Level.FINE, "Could not select path", x);
-                    }
+                TopComponent tab = WindowManager.getDefault().findTopComponent("services"); // NOI18N
+                if (tab == null) {
+                    // XXX have no way to open it, other than by calling ServicesTabAction
+                    LOG.fine("No ServicesTab found");
                     return;
                 }
-                LOG.fine("No ServicesTab found open");
+                tab.open();
+                tab.requestActive();
+                if (!(tab instanceof ExplorerManager.Provider)) {
+                    LOG.fine("ServicesTab not an ExplorerManager.Provider");
+                    return;
+                }
+                ExplorerManager mgr = ((ExplorerManager.Provider) tab).getExplorerManager();
+                Node root = mgr.getRootContext();
+                Node hudson = NodeOp.findChild(root, HUDSON_NODE_NAME);
+                if (hudson == null) {
+                    LOG.fine("ServicesTab does not contain " + HUDSON_NODE_NAME);
+                    return;
+                }
+                Node selected;
+                try {
+                    selected = NodeOp.findPath(hudson, path);
+                } catch (NodeNotFoundException x) {
+                    LOG.log(Level.FINE, "Could not find subnode", x);
+                    selected = x.getClosestNode();
+                }
+                try {
+                    mgr.setSelectedNodes(new Node[] {selected});
+                } catch (PropertyVetoException x) {
+                    LOG.log(Level.FINE, "Could not select path", x);
+                }
             }
         });
     }
