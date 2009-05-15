@@ -130,10 +130,10 @@ final class RendererPanel extends JPanel {
         Border border = null;
         if (hasFocus) {
             if (isSelected) {
-                border = UIManager.getBorder("List.focusSelectedCellHighlightBorder");
+                border = UIManager.getBorder("List.focusSelectedCellHighlightBorder"); // NOI18N
             }
             if (border == null) {
-                border = UIManager.getBorder("List.focusCellHighlightBorder");
+                border = UIManager.getBorder("List.focusCellHighlightBorder"); // NOI18N
             }
         }
         if( null == border )
@@ -180,7 +180,7 @@ final class RendererPanel extends JPanel {
                 UIManager.getLookAndFeel().getClass().getName()
             );
 
-        boolean nimbus = "Nimbus".equals(UIManager.getLookAndFeel().getID());
+        boolean nimbus = "Nimbus".equals(UIManager.getLookAndFeel().getID()); // NOI18N
 
         expandableRootBackground = UIManager.getColor("PropSheet.setBackground"); //NOI18N
         expandableRootSelectedBackground = UIManager.getColor("PropSheet.selectedSetBackground"); //NOI18N
@@ -226,7 +226,7 @@ final class RendererPanel extends JPanel {
             expandableRootForeground = UIManager.getColor("Table.foreground"); //NOI18N
 
             if (expandableRootForeground == null) {
-                expandableRootForeground = UIManager.getColor("textText");
+                expandableRootForeground = UIManager.getColor("textText"); // NOI18N
 
                 if (expandableRootForeground == null) {
                     expandableRootForeground = Color.BLACK;

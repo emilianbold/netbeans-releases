@@ -381,7 +381,7 @@ public class WSUtils {
                 jaxWsSupport.removeService(client);
             }
         }
-
+        
     }
 
     public static void detectWsdlClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder)  {
@@ -404,9 +404,9 @@ public class WSUtils {
     }
 
     private static List<JaxWsService> getJaxWsClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder) {
-        List<WsimportPomInfo> canditates = MavenModelUtils.getWsdlFiles(prj);
+        List<WsimportPomInfo> candidates = MavenModelUtils.getWsdlFiles(prj);
         List<JaxWsService> clients = new ArrayList<JaxWsService>();
-        for (WsimportPomInfo candidate : canditates) {
+        for (WsimportPomInfo candidate : candidates) {
             String wsdlPath = candidate.getWsdlPath();
             if (isClient(prj, jaxWsSupport, wsdlPath)) {
                 JaxWsService client = new JaxWsService(wsdlPath, false);

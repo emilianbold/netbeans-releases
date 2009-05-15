@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -571,6 +572,36 @@ public class NbModuleSuite {
             }
         }
 
+        static void findClusters(Collection<File> clusters, List<String> regExps) throws IOException {
+            File plat = findPlatform().getCanonicalFile();
+            String selectiveClusters = System.getProperty("cluster.path.final"); // NOI18N
+            Set<File> path = null;
+            if (selectiveClusters != null) {
+                path = new HashSet<File>();
+                for (String p : selectiveClusters.split(File.pathSeparator)) {
+                    File f = new File(p);
+                    path.add(f.getCanonicalFile());
+                }
+            }
+            for (String c : regExps) {
+                for (File f : plat.getParentFile().listFiles()) {
+                    if (f.equals(plat)) {
+                        continue;
+                    }
+                    if (!f.getName().matches(c)) {
+                        continue;
+                    }
+                    if (path != null && !path.contains(f)) {
+                        continue;
+                    }
+                    File m = new File(new File(f, "config"), "Modules");
+                    if (m.exists()) {
+                        clusters.add(f);
+                    }
+                }
+            }
+        }
+
         private void runInRuntimeContainer(TestResult result) throws Exception {
             System.getProperties().remove("netbeans.dirs");
             File platform = findPlatform();
@@ -716,7 +747,7 @@ public class NbModuleSuite {
             }
         }
 
-        private File findPlatform() {
+        static File findPlatform() {
             try {
                 Class<?> lookup = Class.forName("org.openide.util.Lookup"); // NOI18N
                 File util = new File(lookup.getProtectionDomain().getCodeSource().getLocation().toURI());
@@ -743,25 +774,10 @@ public class NbModuleSuite {
             }
         }
 
-        private File[] findClusters() {
+        private File[] findClusters() throws IOException {
             Collection<File> clusters = new LinkedHashSet<File>();
             if (config.clusterRegExp != null) {
-                File plat = findPlatform();
-
-                for (String c : config.clusterRegExp) {
-                    for (File f : plat.getParentFile().listFiles()) {
-                        if (f.equals(plat)) {
-                            continue;
-                        }
-                        if (!f.getName().matches(c)) {
-                            continue;
-                        }
-                        File m = new File(new File(f, "config"), "Modules");
-                        if (m.exists()) {
-                            clusters.add(f);
-                        }
-                    }
-                }
+                findClusters(clusters, config.clusterRegExp);
             }
 
             if (config.enableClasspathModules) {

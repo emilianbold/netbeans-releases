@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.websvc.core.dev.wizard;
 
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.core.ProjectInfo;
 import java.io.IOException;
 import java.util.Collections;
@@ -87,9 +89,10 @@ public class LogicalHandlerWizard implements WizardDescriptor.InstantiatingItera
         //create the Java Project chooser
 //        firstPanel = JavaTemplates.createPackageChooser(project, sourceGroups, new BottomPanel());
         
-        if (sourceGroups.length == 0)
-            firstPanel = new FinishableProxyWizardPanel(Templates.createSimpleTargetChooser(project, sourceGroups, new BottomPanel()));
-        else
+        if (sourceGroups.length == 0) {
+            SourceGroup[] genericSourceGroups = ProjectUtils.getSources(project).getSourceGroups(Sources.TYPE_GENERIC);
+            firstPanel = new FinishableProxyWizardPanel(Templates.createSimpleTargetChooser(project, genericSourceGroups, new BottomPanel()), sourceGroups, false);
+        } else
             firstPanel = new FinishableProxyWizardPanel(JavaTemplates.createPackageChooser(project, sourceGroups, new BottomPanel(), true));
         
         JComponent c = (JComponent) firstPanel.getComponent();

@@ -51,12 +51,14 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.prefs.Preferences;
+import javax.swing.event.ChangeListener;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -68,6 +70,7 @@ import org.openide.util.NbPreferences;
 public final class MIMEExtensions {
     private final static Preferences preferences = NbPreferences.forModule(MIMEExtensions.class);
     private final static Manager manager = new Manager();
+    private final ChangeSupport cs = new ChangeSupport(this);
 
     // access methods
     public static MIMEExtensions get(String mimeType) {
@@ -93,6 +96,21 @@ public final class MIMEExtensions {
         } else {
             return out.contains(ext);
         }
+    }
+    /**
+     * Add a listener to changes.
+     * @param l a listener to add
+     */
+    public void addChangeListener(ChangeListener l) {
+        cs.addChangeListener(l);
+    }
+
+    /**
+     * Stop listening to changes.
+     * @param l a listener to remove
+     */
+    public void removeChangeListener(ChangeListener l) {
+        cs.removeChangeListener(l);
     }
 
     private final String mimeType;
@@ -138,6 +156,7 @@ public final class MIMEExtensions {
         if (!toRemove.isEmpty() || !toAdd.isEmpty()) {
             exts.clear();
             exts.addAll(newExts);
+            cs.fireChange();
         }
         preferences.put(getMIMEType(), defaultExt);
     }

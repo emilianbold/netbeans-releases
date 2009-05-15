@@ -48,7 +48,8 @@ import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
-import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
+import org.netbeans.modules.cnd.debugger.gdb.models.GdbWatchVariable;
+import org.netbeans.modules.cnd.debugger.gdb.models.ValuePresenter;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.text.Annotation;
@@ -112,15 +113,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
 
         final int offset = NbDocument.findLineOffset(doc, lp.getLine().getLineNumber()) + lp.getColumn();
         
-        String expression;
-
-        int[] span = CsmMacroExpansion.getMacroExpansionSpan(doc, offset, true);
-        if (span != null && span[0] != span[1]) {
-            // macro expansion
-            expression = CsmMacroExpansion.expand(doc, span[0], span[1]);
-        } else {
-            expression = getIdentifier(doc, ep,offset);
-        }
+        String expression = getIdentifier(doc, ep, offset);
         
         if (expression == null) {
             return;
@@ -134,10 +127,15 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         if (!debugger.isStopped()) {
             return;
         }
+
+        expression = GdbWatchVariable.expandMacro(debugger, expression);
+
+        String type = debugger.requestWhatis(expression);
+        String value = debugger.evaluate(expression);
+
+        String res = ValuePresenter.getValue(type, value);
         
-        String toolTipText = debugger.evaluate(expression);
-        
-        firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTipText);
+        firePropertyChange(PROP_SHORT_DESCRIPTION, null, res);
     }
 
     public String getAnnotationType () {

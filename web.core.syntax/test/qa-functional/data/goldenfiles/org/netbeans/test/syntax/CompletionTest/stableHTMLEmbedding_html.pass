@@ -117,22 +117,41 @@ word-spacing
 z-index
 End cursor position = 317
 [<style> h1{border: |} </style>, color red, <style> h1{border: red} </style>, 425]
+color activeborder
+color activecaption
+color appworkspace
 color aqua
+color background
 color black
 color blue
+color buttonface
+color buttonhighlight
+color buttonshadow
+color buttontext
+color captiontext
 border-style dashed
 border-style dotted
 border-style double
 color fuchsia
 color gray
+color graytext
 color green
 border-style groove
 border-style hidden
+color highlight
+color highlighttext
+color inactiveborder
+color inactivecaption
+color inactivecaptiontext
+color infobackground
+color infotext
 border inherit
 border-style inset
 color lime
 color maroon
 border-width medium
+color menu
+color menutext
 color navy
 border-style none
 color olive
@@ -142,13 +161,22 @@ color purple
 color red
 color rgb
 border-style ridge
+color scrollbar
 color silver
 border-style solid
 color teal
 border-width thick
 border-width thin
+color threeddarkshadow
+color threedface
+color threedhighlight
+color threedlightshadow
+color threedshadow
 border-top-color transparent
 color white
+color window
+color windowframe
+color windowtext
 color yellow
 End cursor position = 448
 [<style> | </style>, @import, <style> @import </style>, 530]
@@ -158,6 +186,95 @@ End cursor position = 448
 @import
 @media
 @page
+a
+abbr
+acronym
+address
+applet
+area
+b
+base
+basefont
+big
+blockquote
+body
+br
+button
+caption
+center
+cite
+code
+col
+colgroup
+dd
+del
+dfn
+dir
+div
+dl
+dt
+em
+fieldset
+font
+form
+frame
+frameset
+h1
+h2
+h3
+h4
+h5
+h6
+head
+hr
+html
+i
+iframe
+img
+input
+ins
+isindex
+kbd
+label
+li
+link
+map
+menu
+meta
+nobr
+noframes
+noscript
+object
+ol
+option
+p
+param
+pre
+q
+s
+samp
+script
+select
+small
+span
+strike
+strong
+style
+sub
+sup
+table
+tbody
+td
+textarea
+tfoot
+th
+thead
+title
+tr
+tt
+u
+ul
+var
 End cursor position = 546
 [<table style="|"></table>, background, <table style="background:"></table>, 680]
 azimuth
@@ -278,19 +395,38 @@ word-spacing
 z-index
 End cursor position = 706
 [<table style="background:|"></table>, background-repeat no-repeat, <table style="background:no-repeat"></table>, 843]
+color activeborder
+color activecaption
+color appworkspace
 color aqua
+color background
 color black
 color blue
 background-position bottom
+color buttonface
+color buttonhighlight
+color buttonshadow
+color buttontext
+color captiontext
 background-position center
 background-attachment fixed
 color fuchsia
 color gray
+color graytext
 color green
+color highlight
+color highlighttext
+color inactiveborder
+color inactivecaption
+color inactivecaptiontext
+color infobackground
+color infotext
 background inherit
 background-position left
 color lime
 color maroon
+color menu
+color menutext
 color navy
 background-repeat no-repeat
 background-image none
@@ -304,11 +440,20 @@ background-repeat repeat-y
 color rgb
 background-position right
 background-attachment scroll
+color scrollbar
 color silver
 color teal
+color threeddarkshadow
+color threedface
+color threedhighlight
+color threedlightshadow
+color threedshadow
 background-position top
 background-color transparent
 background-image url
 color white
+color window
+color windowframe
+color windowtext
 color yellow
 End cursor position = 878

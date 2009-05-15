@@ -87,10 +87,25 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     static private String EE6_INSTANCES_PATH = "/GlassFishEE6/Instances"; // NOI18N
     static private String PRELUDE_INSTANCES_PATH = "/GlassFish/Instances"; // NOI18N
 
-    public static GlassfishInstanceProvider getEe6() {
-        FileObject fo = FileUtil.getConfigFile("GlassFish v3/Enable Experimental Features");
+    public static List<GlassfishInstanceProvider> getProviders(boolean initialize) {
+        List<GlassfishInstanceProvider> providerList = new ArrayList<GlassfishInstanceProvider>();
+        if(initialize) {
+            getPrelude();
+            getEe6();
+        }
+        if(preludeProvider != null) {
+            providerList.add(preludeProvider);
+        }
+        if(ee6Provider != null) {
+            providerList.add(ee6Provider);
+        }
+        return providerList;
+    }
+
+    public static synchronized GlassfishInstanceProvider getEe6() {
+        FileObject fo = FileUtil.getConfigFile("GlassFish v3/Enable Experimental Features"); // NOI18N
         String v3Root = System.getProperty(EE6_INSTALL_ROOT_PROP);
-        if ("true".equals(System.getProperty(PRELUDE_PROP_ROOT + ENABLE_EXPERIMENTAL_SUFFIX)) || 
+        if ("true".equals(System.getProperty(PRELUDE_PROP_ROOT + ENABLE_EXPERIMENTAL_SUFFIX)) || // NOI18N
                (null != v3Root && v3Root.trim().length() > 0) || null != fo) {
             if (ee6Provider == null) {
                 ee6Provider = new GlassfishInstanceProvider(new String[] {EE6_DEPLOYER_FRAGMENT},
@@ -111,14 +126,16 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         return ee6Provider;
     }
 
-    public static GlassfishInstanceProvider getPrelude() {
+    public static synchronized GlassfishInstanceProvider getPrelude() {
         if ("true".equals(System.getProperty(PRELUDE_PROP_ROOT + DISABLE_PRELUDE_SUFFIX))) { // NOI18N
             return preludeProvider;
         }
         String[] uriFragments;
         String[] instanceDirs;
-        String v3Root = System.getProperty(PRELUDE_PROP_ROOT + INSTALL_ROOT_SUFFIX);
-        if (!("true".equals(System.getProperty(PRELUDE_PROP_ROOT + ENABLE_EXPERIMENTAL_SUFFIX))) && // NOI18N
+        FileObject fo = FileUtil.getConfigFile("GlassFish v3/Enable Experimental Features"); // NOI18N
+        String v3Root = System.getProperty(EE6_INSTALL_ROOT_PROP);
+        if (!("true".equals(System.getProperty(PRELUDE_PROP_ROOT + ENABLE_EXPERIMENTAL_SUFFIX))) &&  // NOI18N
+                null == fo  &&
                (null == v3Root || v3Root.trim().length() < 1) ) {
             // make sure v3 Servers do not cause problems if the user forgets to
             // define the enableExperimentalFeatures property after they have registered

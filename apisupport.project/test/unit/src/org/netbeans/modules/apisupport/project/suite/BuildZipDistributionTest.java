@@ -62,9 +62,11 @@ import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.modules.apisupport.project.ui.SuiteActions;
+import org.netbeans.modules.apisupport.project.ui.customizer.BasicBrandingModel;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
@@ -129,7 +131,8 @@ public class BuildZipDistributionTest extends TestBase {
     
     public void testBuildTheZipAppWhenAppNamePropIsSet() throws Exception {
         EditableProperties ep = suite.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        ep.setProperty("app.name", "fakeapp");
+        ep.setProperty(BasicBrandingModel.NAME_PROPERTY, "fakeapp");
+        ep.setProperty(BasicBrandingModel.BRANDING_TOKEN_PROPERTY, "${app.name}");
         
         ep.setProperty("enabled.clusters", TestBase.CLUSTER_PLATFORM);
         ep.setProperty("disabled.modules", "org.netbeans.modules.autoupdate," +

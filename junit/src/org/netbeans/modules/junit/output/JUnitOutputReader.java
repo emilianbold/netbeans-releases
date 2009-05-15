@@ -127,8 +127,6 @@ final class JUnitOutputReader {
     /** */
     private final Manager manager = Manager.getInstance();
     /** */
-    private String classpath;
-    /** */
     private ClassPath platformSources;
     
     private TestSession testSession;
@@ -263,18 +261,7 @@ final class JUnitOutputReader {
             case SUITE_FINISHED:
             case TESTCASE_ISSUE:
             {
-                /* Look for classpaths: */
-
-                /* Code copied from JavaAntLogger */
-
-                Matcher matcher;
-
-                matcher = RegexpUtils.CLASSPATH_ARGS.matcher(msg);
-                if (matcher.find()) {
-                    this.classpath = matcher.group(1);
-                }
-                // XXX should also probably clear classpath when taskFinished called
-                matcher = RegexpUtils.JAVA_EXECUTABLE.matcher(msg);
+                Matcher matcher = RegexpUtils.JAVA_EXECUTABLE.matcher(msg);
                 if (matcher.find()) {
                     String executable = matcher.group(1);
                     ClassPath platformSrcs = findPlatformSources(executable);
@@ -546,7 +533,6 @@ final class JUnitOutputReader {
     /**
      */
     void testTaskFinished() {
-        closePereviousReport();
     }
 
     private void closePereviousReport(){
@@ -556,8 +542,9 @@ final class JUnitOutputReader {
             if (resultsDir != null) {
                 File reportFile = findReportFile();
                 if ((reportFile != null) && isValidReportFile(reportFile)) {
-                    TestSuite reportSuite = parseReportFile(reportFile);
+                    JUnitTestSuite reportSuite = parseReportFile(reportFile);
                     if ((reportSuite != null) && (reportSuite.getName().equals(currentSuite.getName()))) {
+                        lastSuiteTime = reportSuite.getElapsedTime();
                         for(Testcase tc: currentSuite.getTestcases()){
                             if (!tc.getOutput().isEmpty()){
                                 List<String> output = new ArrayList();
@@ -598,6 +585,7 @@ final class JUnitOutputReader {
     /**
      */
     void buildFinished(final AntEvent event) {
+        closePereviousReport();
         manager.sessionFinished(testSession);
     }
 
@@ -612,13 +600,9 @@ final class JUnitOutputReader {
     private void suiteStarted(final String suiteName) {
         closePereviousReport();
         TestSuite suite = new JUnitTestSuite(suiteName, testSession);
-        if (classpath != null){
-//            suite.setClassPath(classpath, platformSources);
-        }
         testSession.addSuite(suite);
         manager.displaySuiteRunning(testSession, suiteName);
         state = State.SUITE_STARTED;
-        classpath = null;
         platformSources = null;
     }
     
@@ -785,13 +769,13 @@ final class JUnitOutputReader {
         
     }
 
-    private TestSuite parseReportFile(File reportFile) {
+    private JUnitTestSuite parseReportFile(File reportFile) {
         final long fileSize = reportFile.length();
         if ((fileSize < 0l) || (fileSize > MAX_REPORT_FILE_SIZE)) {
             return null;
         }
 
-        TestSuite suite = null;
+        JUnitTestSuite suite = null;
         try {
             suite = XmlOutputParser.parseXmlOutput(
                     new InputStreamReader(

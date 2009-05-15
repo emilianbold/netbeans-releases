@@ -334,12 +334,15 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 }
             }
         }
-        LP lp = getLibraries(loadArea(pli.mainPropertiesFile.toURL()));
+        ProjectLibraryArea pla = loadArea(pli.mainPropertiesFile.toURI().toURL());
+        if (pla != null) {
+        LP lp = getLibraries(pla);
         if (lp.libraries.remove(pli.name) != null) {
             // if library removal was successful it means we are running under FS Atomic action 
             // and file events trigerring recalculate() were not fired yet. fire PROP_LIBRARIES
             // here to refresh libraries list:
             lp.pcs.firePropertyChange(LibraryProvider.PROP_LIBRARIES, null, null);
+        }
         }
     }
 

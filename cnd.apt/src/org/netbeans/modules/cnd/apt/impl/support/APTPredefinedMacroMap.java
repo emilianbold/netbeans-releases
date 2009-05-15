@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.TokenBasedTokenStream;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  *
@@ -62,9 +63,9 @@ import org.netbeans.modules.cnd.apt.utils.TokenBasedTokenStream;
 public class APTPredefinedMacroMap implements APTMacroMap {
        
     private static String []preMacro = new String [] { 
-         "__FILE__", "__LINE__", "__DATE__", "__TIME__"  // NOI18N
+         "__FILE__", "__LINE__", "__DATE__", "__TIME__", "__FUNCTION__"  // NOI18N
     };
-    
+
     public APTPredefinedMacroMap() {
     }
 
@@ -133,8 +134,8 @@ public class APTPredefinedMacroMap implements APTMacroMap {
             this.macro =  macro;           
         }
 
-        public APTFile getFile() {
-            return null;
+        public CharSequence getFile() {
+            return CharSequenceKey.empty();
         }
 
         public Kind getKind() {

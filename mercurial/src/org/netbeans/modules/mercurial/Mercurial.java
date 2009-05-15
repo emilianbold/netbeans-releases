@@ -64,14 +64,12 @@ import org.netbeans.modules.mercurial.ui.diff.Setup;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.NbBundle;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.hooks.spi.HgHook;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
-import org.openide.util.LookupEvent;
 import org.openide.util.Utilities;
 
 /**
@@ -135,34 +133,19 @@ public class Mercurial {
 
     private Result<? extends HgHook> hooksResult;
     private Result<? extends HyperlinkProvider> hpResult;
-    /**
-     * Hyperlink providers available
-     */
-    private List<HyperlinkProvider> hyperlinkProviders;
 
     private Mercurial() {
     }
 
 
     private void init() {
-        HgConfigFiles.getSysInstance();
         setDefaultPath();
         fileStatusCache = new FileStatusCache();
         mercurialAnnotator = new MercurialAnnotator();
         mercurialInterceptor = new MercurialInterceptor();
         checkVersion(); // Does the Hg check but postpones querying user until menu is activated
-
-        hooksResult = (Result<? extends HgHook>) Lookup.getDefault().lookupResult(HgHook.class);
-        hpResult = (Result<? extends HyperlinkProvider>) Lookup.getDefault().lookupResult(HyperlinkProvider.class);
-        setHyperlinkProviders();
     }
-
-    public void resultChanged(LookupEvent ev) {
-        hooksResult = (Result<? extends HgHook>) Lookup.getDefault().lookupResult(HgHook.class);
-        setHyperlinkProviders();
-    }
-
-
+    
     private void setDefaultPath() {
         // Set default executable location for mercurial on mac
         if (System.getProperty("os.name").equals("Mac OS X")) { // NOI18N
@@ -543,6 +526,9 @@ public class Mercurial {
     }
 
     public List<HgHook> getHooks() {
+        if (hooksResult == null) {
+            hooksResult = (Result<? extends HgHook>) Lookup.getDefault().lookupResult(HgHook.class);
+        }
         if(hooksResult == null) {
             return Collections.EMPTY_LIST;
         }
@@ -556,21 +542,20 @@ public class Mercurial {
         return ret;
     }
 
-    private void setHyperlinkProviders () {
-        Collection<? extends HyperlinkProvider> providersCol = hpResult.allInstances();
-        List<HyperlinkProvider> providersList = new ArrayList<HyperlinkProvider>(providersCol.size());
-        providersList.addAll(providersCol);
-        hyperlinkProviders = Collections.unmodifiableList(providersList);
-    }
-
     /**
      *
      * @return registered hyperlink providers
      */
     public List<HyperlinkProvider> getHyperlinkProviders() {
-        if (hyperlinkProviders == null) {
-            setHyperlinkProviders();
+        if (hpResult == null) {
+            hpResult = (Result<? extends HyperlinkProvider>) Lookup.getDefault().lookupResult(HyperlinkProvider.class);
         }
-        return hyperlinkProviders;
+        if (hpResult == null) {
+            return Collections.EMPTY_LIST;
+        }
+        Collection<? extends HyperlinkProvider> providersCol = hpResult.allInstances();
+        List<HyperlinkProvider> providersList = new ArrayList<HyperlinkProvider>(providersCol.size());
+        providersList.addAll(providersCol);
+        return Collections.unmodifiableList(providersList);
     }
 }

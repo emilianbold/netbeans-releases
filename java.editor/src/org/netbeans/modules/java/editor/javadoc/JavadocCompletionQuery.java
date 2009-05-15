@@ -762,8 +762,10 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
 //                                isOfKindAndType(asMemberOf(e, t, types), e, kinds, baseType, scope, trees, types) &&
                                 tu.isAccessible(scope, e, t);
                     case METHOD:
-                        return Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
-                                (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e));
+                        String sn = e.getSimpleName().toString();
+                        return Utilities.startsWith(sn, prefix) &&
+                                (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
+                                (!Utilities.isExcludeMethods() || !Utilities.isExcluded(Utilities.getElementName(e.getEnclosingElement(), true) + "." + sn)); //NOI18N
 //                                &&
 //                                isOfKindAndType(((ExecutableType)asMemberOf(e, t, types)).getReturnType(), e, kinds, baseType, scope, trees, types) &&
 //                                (isSuperCall && e.getModifiers().contains(PROTECTED) || tu.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t)) &&
@@ -1042,7 +1044,10 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         for(Element e : pe.getEnclosedElements()) {
             if (e.getKind().isClass() || e.getKind().isInterface()) {
                 String name = e.getSimpleName().toString();
-                    if (Utilities.startsWith(name, prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && trees.isAccessible(scope, (TypeElement)e) && isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types)) {
+                    if (Utilities.startsWith(name, prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e))
+                        && trees.isAccessible(scope, (TypeElement)e)
+                        && isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types)
+                        && !Utilities.isExcluded(Utilities.getElementName(e, true))) {
                         items.add(JavadocCompletionItem.createTypeItem((TypeElement) e, substitutionOffset, false, elements.isDeprecated(e)/*, isOfSmartType(env, e.asType(), smartTypes)*/));
                 }
             }

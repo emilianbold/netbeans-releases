@@ -43,7 +43,6 @@ import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.bugtracking.ui.nodes.RepositoryNode;
-import org.netbeans.modules.bugtracking.util.IssueCache;
 import org.openide.nodes.Node;
 
 /**

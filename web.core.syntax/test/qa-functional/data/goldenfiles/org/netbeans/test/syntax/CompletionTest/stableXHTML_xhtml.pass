@@ -28,6 +28,7 @@ style
 tabindex
 title
 type
+xml:lang
 End cursor position = 375
 [<p dir="|, rtl, <p dir="rtl, 439]
 ltr
@@ -44,6 +45,4 @@ End cursor position = 451
 End cursor position = 517
 [<table><tr><td></|, </td, <table><tr><td></td>, 599]
 </td >
-</tr >
-</table >
 End cursor position = 620

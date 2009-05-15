@@ -47,10 +47,8 @@ import javax.swing.text.Document;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
-import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
-import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.util.Exceptions;
 
 /**
@@ -76,7 +74,7 @@ public class EmbeddingProviderImpl extends EmbeddingProvider {
             Exceptions.printStackTrace(ex);
         }
         
-        Embedding e = gen.getVirtualClassBody();
+        Embedding e = gen.getSimplifiedServlet();
         
         if (e != null) {
             return Collections.singletonList(e);

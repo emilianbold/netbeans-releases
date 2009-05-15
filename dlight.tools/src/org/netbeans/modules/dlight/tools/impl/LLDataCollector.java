@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.tools.impl;
 import java.io.IOException;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.tools.*;
 import java.io.File;
 import java.net.ConnectException;
@@ -231,7 +232,7 @@ public class LLDataCollector
         NativeProcessBuilder npb = null;
         for (Map.Entry<String, File> entry : locateProfMonitors(env).entrySet()) {
             npb = new NativeProcessBuilder(env,
-                    getRemoteDir(env, entry.getValue(), entry.getKey()) + "/" + entry.getValue().getName()); // NOI18N
+                    getRemoteDir(env, entry.getValue(), entry.getKey()) + "/" + entry.getValue().getName(),false); // NOI18N
             break;
         }
         if (npb == null) {
@@ -261,6 +262,9 @@ public class LLDataCollector
 
         ExecutionService service = ExecutionService.newService(npb, descr, "monitor"); // NOI18N
         service.run();
+    }
+
+    public void dataFiltersChanged(List<DataFilter> newSet) {
     }
 
     private class MonitorOutputProcessor implements LineProcessor {

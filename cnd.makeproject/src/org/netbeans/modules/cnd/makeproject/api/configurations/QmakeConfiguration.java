@@ -222,7 +222,7 @@ public class QmakeConfiguration implements Cloneable {
         String file = getTargetValue();
         switch (makeConfiguration.getConfigurationType().getValue()) {
             case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
-                file = Platforms.getPlatform(makeConfiguration.getPlatform().getValue()).getQtLibraryName(file, getVersion().getValue());
+                file = Platforms.getPlatform(makeConfiguration.getDevelopmentHost().getBuildPlatform()).getQtLibraryName(file, getVersion().getValue());
                 break;
             case MakeConfiguration.TYPE_QT_STATIC_LIB:
                 file = "lib" + file + ".a"; // NOI18N

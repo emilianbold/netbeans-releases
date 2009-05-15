@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.management.ui.spi.impl;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -50,10 +51,8 @@ import java.util.concurrent.Future;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
+import javax.swing.JEditorPane;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.Validateable;
@@ -65,6 +64,7 @@ import org.netbeans.modules.dlight.api.tool.DLightTool;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
+import org.netbeans.modules.dlight.util.UIUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -76,8 +76,8 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
     private final DLightConfiguration configuration;
     private final DLightTool currentTool;
     private final DLightTarget targetToValidateWith;
-    private final Map<Validateable, ValidationStatus> states = new HashMap<Validateable, ValidationStatus>();
-    private final Map<Validateable, Integer> panels = new HashMap<Validateable, Integer>();
+    private final Map<Validateable<DLightTarget>, ValidationStatus> states = new HashMap<Validateable<DLightTarget>, ValidationStatus>();
+    private final Map<Validateable<DLightTarget>, Integer> panels = new HashMap<Validateable<DLightTarget>, Integer>();
     private final List<JPanel> panelsList;
 
     public EmptyDetailsViewPanel(DLightConfiguration dlightConfiguration, DLightTool tool, DLightTarget targetToValidateWith) {
@@ -97,12 +97,13 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
             JPanel p = new JPanel();
             p.setBorder(new EmptyBorder(10, 10, 10, 10));
             p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-            p.add(new JLabel("<html><body><center>" + NbBundle.getMessage(EmptyDetailsViewPanel.class, "NoCollectorsFound") + "</center></body></html>", SwingConstants.CENTER));//NOI18N
-//                p.add(label);
+            JEditorPane editorPane = UIUtilities.createJEditorPane(NbBundle.getMessage(EmptyDetailsViewPanel.class, "NoCollectorsFound"), true);//NOI18N
+            p.add(editorPane);
             repairPanel.add(p);
+            repairPanel.add(Box.createVerticalGlue());
 
         } else {
-            for (final DataCollector c : collectors) {
+            for (final Validateable<DLightTarget> c : collectors) {
                 if (c.getValidationStatus() == ValidationStatus.initialStatus()) {
                     c.addValidationListener(this);
                     //validate one more time
@@ -110,10 +111,10 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
                     JPanel p = new JPanel();
                     p.setBorder(new EmptyBorder(10, 10, 10, 10));
                     p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-                    JLabel label = new JLabel(NbBundle.getMessage(EmptyDetailsViewPanel.class, "Validating"));//NOI18N
-                    label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+                    JEditorPane label = UIUtilities.createJEditorPane(NbBundle.getMessage(EmptyDetailsViewPanel.class, "Validating"), true);//NOI18N
                     p.add(label);
                     repairPanel.add(p);
+                    repairPanel.add(Box.createVerticalGlue());
                     panelsList.add(p);
                     panels.put(c, panelsList.indexOf(p));
                     repair(c);
@@ -124,12 +125,14 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
                     JPanel p = new JPanel();
                     p.setBorder(new EmptyBorder(10, 10, 10, 10));
                     p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-                    JLabel label = new JLabel(c.getValidationStatus().getReason());
-                    label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+                    JEditorPane label = UIUtilities.createJEditorPane(c.getValidationStatus().getReason(), false);//NOI18N
+                    Dimension d = label.getPreferredSize();
+                    label.setMaximumSize(new Dimension(d.width + 10, d.height));
+                    label.setAlignmentX(Component.CENTER_ALIGNMENT);
                     p.add(label);
                     p.add(Box.createVerticalStrut(10));
                     JButton repairButton = new JButton(NbBundle.getMessage(EmptyDetailsViewPanel.class, "Repair"));//NOI18N
-                    repairButton.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+                    repairButton.setAlignmentX(Component.CENTER_ALIGNMENT);
                     repairButton.addActionListener(new ActionListener() {
 
                         public void actionPerformed(ActionEvent e) {
@@ -137,7 +140,10 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
                         }
                     });
                     p.add(repairButton);
+                    p.add(Box.createVerticalGlue());
+//                    p.add(Box.createRigidArea(new Dimension(20, 10)));
                     repairPanel.add(p);
+                    repairPanel.add(Box.createVerticalGlue());
                     panelsList.add(p);
                     panels.put(c, panelsList.indexOf(p));
 
@@ -147,21 +153,19 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
                     p.setBorder(new EmptyBorder(10, 10, 10, 10));
                     p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
                     if (!status.isKnown()) {
-                        p.add(new JLabel("<html><body><center>" + status.getReason() + "</center></body></html>", SwingConstants.CENTER));//NOI18N
+                        p.add(UIUtilities.createJEditorPane(status.getReason(), false));//NOI18N
                     } else if (status.isValid()) {
                         String message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "NextRun");//NOI18N
                         if (!configuration.getConfigurationOptions(false).areCollectorsTurnedOn()) {
                             message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "DataCollectorDisabled");//NOI18N
                         }
-                        p.add(new JLabel("<html><body><center>" + message + "</center></body></html>", SwingConstants.CENTER));//NOI18N
+                        p.add(UIUtilities.createJEditorPane(message, true));
                     } else if (status.isInvalid()) {
-                        p.add(new JLabel("<html><body><center>" + status.getReason() + "</center></body></html>", SwingConstants.CENTER));//NOI18N
-
+                        JEditorPane editorPane = UIUtilities.createJEditorPane(status.getReason(), false);//NOI18N
+                        p.add(editorPane);
                     }
-//                JLabel label = new JLabel(c.getValidationStatus().getReason());
-//                label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-//                p.add(label);
                     repairPanel.add(p);
+                    repairPanel.add(Box.createVerticalGlue());
                     panelsList.add(p);
                     panels.put(c, panelsList.indexOf(p));
                 }
@@ -178,7 +182,7 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
         }
     }
 
-    private void repair(final DataCollector<?> c) {
+    private void repair(final Validateable<DLightTarget> c) {
         final ValidateableSupport<DLightTarget> support = new ValidateableSupport<DLightTarget>(c);
         final Future<ValidationStatus> taskStatus = support.asyncValidate(targetToValidateWith, true);
         DLightExecutorService.submit(new Callable<Boolean>() {
@@ -196,14 +200,29 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
         }, "EmptyDetailsViewPanel task");//NOI18N
     }
 
-    private void updateUI(Validateable v) {
+    private void updateUI(final Validateable<DLightTarget> v) {
         //get panel
         JPanel p = panelsList.get(panels.get(v));
         //we should renove all and set new message
         p.removeAll();
-        ValidationStatus status = v.getValidationStatus();
+        final ValidationStatus status = v.getValidationStatus();
         if (!status.isKnown()) {
-            p.add(new JLabel("<html><body><center>" + status.getReason() + "</center></body></html>", SwingConstants.CENTER));//NOI18N
+            JEditorPane label = UIUtilities.createJEditorPane(status.getReason(), false);//NOI18N
+            Dimension d = label.getPreferredSize();
+            label.setMaximumSize(new Dimension(d.width + 10, d.height));
+            label.setAlignmentX(Component.CENTER_ALIGNMENT);
+            p.add(label);
+            p.add(Box.createVerticalStrut(10));
+            JButton repairButton = new JButton(NbBundle.getMessage(EmptyDetailsViewPanel.class, "Repair"));//NOI18N
+            repairButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+            repairButton.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+                    repair(v);
+                }
+            });
+            p.add(repairButton);
+            p.add(Box.createVerticalGlue());
             p.repaint();
             repaint();
             return;
@@ -213,13 +232,13 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
             if (!configuration.getConfigurationOptions(false).areCollectorsTurnedOn()) {
                 message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "DataCollectorDisabled");//NOI18N
             }
-            p.add(new JLabel("<html><body><center>" + message + "</center></body></html>", SwingConstants.CENTER));//NOI18N
+            p.add(UIUtilities.createJEditorPane(message, true));
             p.repaint();
             repaint();
             return;
         }
         if (status.isInvalid()) {
-            p.add(new JLabel("<html><body><center>" + status.getReason() + "</center></body></html>", SwingConstants.CENTER));//NOI18N
+            p.add(UIUtilities.createJEditorPane(status.getReason(), false));
             p.repaint();
             repaint();
             return;
@@ -229,21 +248,38 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
 
     private void updateAllUI() {
         //get panel
-        for (Validateable v : states.keySet()) {
+        for (final Validateable<DLightTarget> v : states.keySet()) {
             JPanel p = panelsList.get(panels.get(v));
             //we should renove all and set new message
             p.removeAll();
             ValidationStatus status = v.getValidationStatus();
             if (!status.isKnown()) {
-                p.add(new JLabel("<html><body><center>" + status.getReason() + "</center></body></html>", SwingConstants.CENTER));//NOI18N
+                JEditorPane label = UIUtilities.createJEditorPane(status.getReason(), false);//NOI18N
+                Dimension d = label.getPreferredSize();
+                label.setMaximumSize(new Dimension(d.width + 10, d.height));
+                label.setAlignmentX(Component.CENTER_ALIGNMENT);
+                p.add(label);
+                p.add(Box.createVerticalStrut(10));
+                JButton repairButton = new JButton(NbBundle.getMessage(EmptyDetailsViewPanel.class, "Repair"));//NOI18N
+                repairButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+                repairButton.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        repair(v);
+                    }
+                });
+                p.add(repairButton);
+                p.add(Box.createVerticalGlue());
+                p.repaint();
+                repaint();
             } else if (status.isValid()) {
                 String message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "NextRun");//NOI18N
                 if (!configuration.getConfigurationOptions(false).areCollectorsTurnedOn()) {
                     message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "DataCollectorDisabled");//NOI18N
                 }
-                p.add(new JLabel("<html><body><center>" + message + "</center></body></html>", SwingConstants.CENTER));//NOI18N
+                p.add(UIUtilities.createJEditorPane(message, true));
             } else if (status.isInvalid()) {
-                p.add(new JLabel("<html><body><center>" + status.getReason() + "</center></body></html>", SwingConstants.CENTER));//NOI18N
+                p.add(UIUtilities.createJEditorPane(status.getReason(), false));//NOI18N
             }
             p.repaint();
         }
@@ -262,6 +298,7 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
         }
         UIThread.invoke(new Runnable() {
 
+            @SuppressWarnings("unchecked")
             public void run() {
                 updateUI(source);
             }

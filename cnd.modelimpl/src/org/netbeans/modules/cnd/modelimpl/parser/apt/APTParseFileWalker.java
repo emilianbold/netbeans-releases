@@ -81,12 +81,14 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         void onEval(APT apt, boolean result);
     }
     private boolean createMacroAndIncludes;
+    private final boolean triggerParsingActivity;
     private final EvalCallback evalCallback;
 
-    public APTParseFileWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler, EvalCallback evalCallback) {
+    public APTParseFileWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler, boolean triggerParsingActivity, EvalCallback evalCallback) {
         super(base, apt, file, preprocHandler);
         this.createMacroAndIncludes = false;
         this.evalCallback = evalCallback;
+        this.triggerParsingActivity = triggerParsingActivity;
     }
 
     public void addMacroAndIncludes(boolean create) {
@@ -95,6 +97,10 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
 
     protected boolean needMacroAndIncludes() {
         return this.createMacroAndIncludes;
+    }
+
+    public final boolean isTriggerParsingActivity() {
+        return triggerParsingActivity;
     }
 
     public TokenStream getFilteredTokenStream(APTLanguageFilter lang) {
@@ -149,7 +155,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
 
     protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt) throws IOException {
         try {
-            return inclFileOwner.onFileIncluded(getStartProject(), inclPath, getPreprocHandler(), mode);
+            return inclFileOwner.onFileIncluded(getStartProject(), inclPath, getPreprocHandler(), mode, isTriggerParsingActivity());
         } catch (NullPointerException ex) {
             APTUtils.LOG.log(Level.SEVERE, "NPE when processing file", ex);// NOI18N
             DiagnosticExceptoins.register(ex);

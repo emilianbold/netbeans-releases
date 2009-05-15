@@ -43,7 +43,7 @@ import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.NbBundle;
 
-public class BooleanNodeProp extends PropertySupport.ReadWrite<Boolean> {
+public class BooleanNodeProp extends PropertySupport<Boolean> {
 
     private final CodeStyle.Language language;
     private final String optionID;
@@ -51,11 +51,20 @@ public class BooleanNodeProp extends PropertySupport.ReadWrite<Boolean> {
     private boolean state;
 
     public BooleanNodeProp(CodeStyle.Language language, PreviewPreferences preferences, String optionID) {
-        super(optionID, Boolean.class, getString("LBL_" + optionID), getString("HINT_" + optionID)); // NOI18N
+        super(optionID, Boolean.class, getString("LBL_" + optionID), getString("HINT_" + optionID), true, true); // NOI18N
         this.language = language;
         this.optionID = optionID;
         this.preferences = preferences;
         init();
+    }
+
+    // create read only property
+    public BooleanNodeProp(CodeStyle.Language language, PreviewPreferences preferences, String optionID, boolean state) {
+        super(optionID, Boolean.class, getString("LBL_" + optionID), getString("HINT_" + optionID), true, false); // NOI18N
+        this.language = language;
+        this.optionID = optionID;
+        this.preferences = preferences;
+        this.state = state;
     }
 
     private static String getString(String key) {

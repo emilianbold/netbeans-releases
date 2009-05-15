@@ -122,6 +122,12 @@ implements PropertyChangeListener, ContextAwareAction {
             if (ret != null) {
                 return ret;
             }
+            if (
+                "iconBase".equals(name) && // NOI18N
+                ((Action)delegate).getValue(Action.SMALL_ICON) != null
+            ) {
+                return null;
+            }
         }
 
         return extractCommonAttribute(map, this, name);

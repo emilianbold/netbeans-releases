@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupProvider;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupWorker;
+import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -50,8 +51,8 @@ import org.openide.util.NbBundle;
 @org.openide.util.lookup.ServiceProvider(service=HostSetupProvider.class, position=100)
 public class RemoteHostSetupProvider implements HostSetupProvider {
 
-    public HostSetupWorker createHostSetupWorker() {
-        return new RemoteHostSetupWorker();
+    public HostSetupWorker createHostSetupWorker(ToolsCacheManager toolsCacheManager) {
+        return new RemoteHostSetupWorker(toolsCacheManager);
     }
 
     public String getDisplayName() {

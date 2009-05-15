@@ -63,7 +63,7 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
     private static MessageFormat unseenFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultUnseen"));     // NOI18N
     private static MessageFormat newFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultNew"));           // NOI18N
 
-    public QueryResultHandleImpl(Query query, String label, Filter filter) {
+    QueryResultHandleImpl(Query query, String label, Filter filter) {
         this.query = query;
         this.label = label;
         this.filter = filter;
@@ -79,7 +79,7 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
         QueryAction.openKenaiQuery(query, null);
     }
 
-    public static QueryResultHandleImpl forStatus(Query query, int status) {
+    static QueryResultHandleImpl forStatus(Query query, int status) {
         Issue[] issues;
         switch(status) {
 

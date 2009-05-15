@@ -41,15 +41,15 @@ package org.netbeans.modules.kenai.collab.chat;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.spi.MessagingAccessor;
 import org.netbeans.modules.kenai.ui.spi.MessagingHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -63,23 +63,31 @@ public class MessagingAccessorImpl extends MessagingAccessor {
     public MessagingHandle getMessaging(ProjectHandle project) {
         KenaiConnection kc = KenaiConnection.getDefault();
         Kenai k = Kenai.getDefault();
-        try {
-            final KenaiProject prj = k.getProject(project.getId());
-            if (k.getMyProjects().contains(prj)) {
-                if (kc.getChat(project.getId()) == null) {
-                    KenaiFeature[] f;
-                    f = prj.getFeatures(KenaiService.Type.CHAT);
-                    if (f.length == 1) {
-                        kc.getChat(f[0]);
+        synchronized (kc) {
+            try {
+                final KenaiProject prj = k.getProject(project.getId());
+                if (k.getMyProjects().contains(prj)) {
+                    if (kc.getChat(project.getId()) == null) {
+                        KenaiFeature[] f;
+                        f = prj.getFeatures(KenaiService.Type.CHAT);
+                        if (f.length == 1) {
+                            kc.getChat(f[0]);
+                        }
                     }
                 }
+            } catch (Exception ex) {
+                Logger.getLogger(MessagingAccessorImpl.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+                MessagingHandleImpl m = new MessagingHandleImpl(project.getId());
+                m.setMessageCount(-1);
+                m.setOnlineCount(-3);
+                return m;
             }
-        } catch (KenaiException ex) {
-            Exceptions.printStackTrace(ex);
-        }
 
-        return ChatNotifications.getDefault().getMessagingHandle(project.getId());
+            return ChatNotifications.getDefault().getMessagingHandle(project.getId());
+        }
     }
+
+
 
     @Override
     public ActionListener getOpenMessagesAction(final ProjectHandle project) {
@@ -96,5 +104,15 @@ public class MessagingAccessorImpl extends MessagingAccessor {
     @Override
     public ActionListener getCreateChatAction(final ProjectHandle project) {
         return new CreateChatAction(project.getId());
+    }
+
+    @Override
+    public ActionListener getReconnectAction(final ProjectHandle project) {
+        return new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                ChatTopComponent.findInstance().reconnect(project);
+            }
+        };
     }
 }

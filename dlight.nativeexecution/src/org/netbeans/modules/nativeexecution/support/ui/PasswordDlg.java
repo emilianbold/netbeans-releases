@@ -113,11 +113,6 @@ public class PasswordDlg extends javax.swing.JPanel {
         tfUser = new javax.swing.JTextField();
 
         tfPassword.setText(null);
-        tfPassword.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tfPasswordActionPerformed(evt);
-            }
-        });
         tfPassword.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 tfPasswordonPwdFocus(evt);
@@ -201,10 +196,6 @@ public class PasswordDlg extends javax.swing.JPanel {
     private void tfPasswordonPwdFocus(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tfPasswordonPwdFocus
         tfPassword.selectAll();
 }//GEN-LAST:event_tfPasswordonPwdFocus
-
-    private void tfPasswordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tfPasswordActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_tfPasswordActionPerformed
 
     private static String loc(String key, Object... params) {
         return NbBundle.getMessage(PasswordDlg.class, key, params);

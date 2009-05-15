@@ -17,7 +17,7 @@ module ActiveRecord
             OR d.indkey[6]=a.attnum OR d.indkey[7]=a.attnum
             OR d.indkey[8]=a.attnum OR d.indkey[9]=a.attnum )
       ORDER BY i.relname
-  |>PARAMETER:  SQ<|L
+  |>PARAMETER:  SQL<|
   end
 
   def |>METHOD:columns<|(|>PARAMETER:table_name<|, |>PARAMETER:name<| = nil) #:nodoc:

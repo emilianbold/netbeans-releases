@@ -34,14 +34,22 @@
  * copyright holder.
  */
 
-var PROPERTY_NONE      = 0;
-var PROPERTY_FULL      = 1;
-var PROPERTY_JAVA      = 2;
-var PROPERTY_JAVASE    = 8;
-var PROPERTY_RUBY      = 16;
-var PROPERTY_CND       = 32;
-var PROPERTY_PHP       = 64;
-var PROPERTY_HIDDEN    = 128;
+var PRODUCT_INFOS = new Array();
+
+var BUNDLES = new Array();
+
+var product_uids           = new Array();
+var product_versions       = new Array();
+var product_display_names  = new Array();
+var product_notes          = new Array();
+var product_descriptions   = new Array();
+var product_download_sizes = new Array();
+var product_platforms      = new Array();
+
+var group_products         = new Array();
+var group_display_names    = new Array();
+var group_descriptions     = new Array();
+
 
 var INFO_ICON   = getImagesLocation() + "info_icon.gif";
 var INFO_ICON_H = getImagesLocation() + "info_icon_h.gif";
@@ -127,45 +135,88 @@ function write_components() {
         if (i != 0) {
 			document.write('<tr class="row_hover bottom_border top_border">');			
 			document.write('    <th class="onhover_change left">' + ((i==1) ? BUNDLED_SERVERS_GROUP_NAME : group_display_names[i]) + '</th>');
-			document.write('    <th class="onhover_change beige left_border"></th>');
-			document.write('    <th class="onhover_change left_border"></th>');            
-			document.write('    <th class="onhover_change beige left_border"></th>');
-			document.write('    <th class="onhover_change left_border"></th>');
-			document.write('    <th class="onhover_change beige left_border"></th>');
-			//document.write('    <th class="onhover_change left_border"></th>');
-			document.write('    <th class="onhover_change left_border right_border"></th>');
+
+			for(var k=0;k<BUNDLE_IDS.length;k++) {
+				document.write('    <th class="onhover_change ' + (k%2==0 ? 'beige ': '') + 'left_border' + (k==(BUNDLE_IDS.length - 1) ? ' right_border': '') + '"></th>');
+                        }
+
 			document.write('</tr>');
         }
 
         for (var j = 0; j < group_products[i].length; j++) {
-            var index = group_products[i][j];
+		var uid = group_products[i][j];
+                var index = "";
+                for(var k=0;k<product_uids.length;k++) { 
+                   if (product_uids[k] == uid) {
+                      index = k;
+                      break;
+                   }
+                }
+		if (is_product_hidden(uid)) {
+		    continue;
+		}
             
-            if (product_properties[index] & PROPERTY_HIDDEN) {
-                continue;
-            }
-            
-			document.write('<tr class="row_hover"' + (j % 2 ? ' class="even"' : '') + '>');
-			
-			document.write('    <td class="onhover_change left">');			
+		document.write('<tr class="row_hover"' + (j % 2 ? ' class="even"' : '') + '>');
+		
+		document.write('    <td class="onhover_change left">');			
 
-			document.write('<div id="product_' + index + '_description" class="pop_up">' + '<span style="font-weight:bold">'+ product_display_names[index] + '</span><br><br>' + product_descriptions[index] + '</div>');			
-			document.write('<img src="' + INFO_ICON + '" onmouseover="this.src=&quot;' + INFO_ICON_H + '&quot;;show_description(' + index + ');" onmouseout="this.src=&quot;' + INFO_ICON +  '&quot;;hide_description(' + index + ');"></img>');
-			//document.write('<span id="product_' + index + '_display_name" onmouseover="show_description(' + index + ');" onmouseout="hide_description(' + index + ');"><a class="product_display_name">' + product_display_names[index] + '</a></span>');
-			document.write('<span id="product_' + index + '_display_name""><a class="product_display_name">' + product_display_names[index] + '</a></span>');
-			if (product_notes[j] != '') {
-				document.write('<br><span class="product_note">' + product_notes[index] + '</span>');
-			}
-			document.write('	</td>');
-
-			document.write('    <td class="onhover_change beige left_border" id="product_' + index + '_javase"></td>');
-			document.write('    <td class="onhover_change left_border" id="product_' + index + '_java"></td>');
-			document.write('    <td class="onhover_change beige left_border" id="product_' + index + '_ruby"></td>');
-			document.write('    <td class="onhover_change left_border" id="product_' + index + '_cnd"></td>');
-			document.write('    <td class="onhover_change beige left_border" id="product_' + index + '_php"></td>');
-			document.write('    <td class="onhover_change left_border right_border" id="product_' + index + '_full"></td>');
-			document.write('</tr>');
+		document.write('<div id="product_' + index + '_description" class="pop_up">' + '<span style="font-weight:bold">'+ product_display_names[index] + '</span><br><br>' + product_descriptions[index] + '</div>');			
+		document.write('<img src="' + INFO_ICON + '" onmouseover="this.src=&quot;' + INFO_ICON_H + '&quot;;show_description(' + index + ');" onmouseout="this.src=&quot;' + INFO_ICON +  '&quot;;hide_description(' + index + ');"></img>');
+		//document.write('<span id="product_' + index + '_display_name" onmouseover="show_description(' + index + ');" onmouseout="hide_description(' + index + ');"><a class="product_display_name">' + product_display_names[index] + '</a></span>');
+		document.write('<span id="product_' + index + '_display_name""><a class="product_display_name">' + product_display_names[index] + '</a></span>');
+		if (product_notes[j] != '') {
+			document.write('<br><span class="product_note">' + product_notes[index] + '</span>');
+		}
+		document.write('	</td>');
+		
+		for(var k=0;k<BUNDLE_IDS.length;k++) {
+		    document.write('    <td class="onhover_change ' + (k%2==0 ? 'beige ' : '') + 'left_border' + (k == (BUNDLE_IDS.length - 1) ? ' right_border' : '') + '" id="product_' + index + '_' + BUNDLE_IDS[k] + '"></td>');
+                }
+		
+		document.write('</tr>');
         }
     }
+}
+
+function parseList(list) {
+   var obj = new Array();
+   var idx = -1;
+   var rest = list;
+   while (rest!="") {
+      idx = rest.indexOf(", ");
+      if(idx !=-1) {
+         obj[obj.length] = rest.substring(0, idx);
+         rest = rest.substring(idx + 2, rest.length);
+      } else {
+        obj[obj.length] = rest; 
+        rest = "";
+      }   
+   }
+ 
+   return obj;
+}
+
+function add_product_info(uid, version, name, note, description, size, platforms) {
+    product_uids[product_uids.length] = uid;
+    product_versions[product_versions.length] = version;
+    product_display_names[product_display_names.length] = name;
+    product_notes[product_notes.length] = note;
+    product_descriptions[product_descriptions.length] = description;
+    product_download_sizes[product_download_sizes.length] = size;
+    product_platforms[product_platforms.length] = parseList(platforms);    
+}
+
+function add_group_info(products, name, description) {
+    group_products[group_products.length] = parseList(products);
+    group_display_names[group_display_names.length] = name;
+    group_descriptions[group_descriptions.length] = description;    
+}
+
+function add_bundle_info(uid, products) {
+    var index = BUNDLES.length;
+    BUNDLES[index] = new Object;
+    BUNDLES[index].uid = uid;
+    BUNDLES[index].products = parseList(products);
 }
 
 function getHeader(community) {
@@ -187,36 +238,39 @@ function write_table_header() {
     document.write('<br><br>');	
     document.write('<tr class="no_hover">');
     document.write('<th class="left no_border bottom_border wide bottom">' + NETBEANS_PACKS_MSG + '<a class="star">*</a></th>');    
-    document.write('<td class="no_border bottom_border" id="javase_bundle_name"> <a class="bundle_display_name">' + getBundleLongName("javase") + '</a></td>');
-    document.write('<td class="no_border bottom_border" id="java_bundle_name">   <a class="bundle_display_name">' + getBundleLongName("java") + '</a></td>');
-    document.write('<td class="no_border bottom_border" id="ruby_bundle_name">   <a class="bundle_display_name">' + getBundleLongName("ruby") + '</a></td>');
-    document.write('<td class="no_border bottom_border" id="cnd_bundle_name">    <a class="bundle_display_name">' + getBundleLongName("cpp") + '</a></td>');
-    document.write('<td class="no_border bottom_border" id="php_bundle_name">    <a class="bundle_display_name">' + getBundleLongName("php") + '</a></td>');
-    document.write('<td class="no_border bottom_border" id="full_bundle_name">   <a class="bundle_display_name">' + getBundleLongName("all") + '</a></td>');
+    for(var i=0;i<BUNDLE_IDS.length;i++) {
+        var id = BUNDLE_IDS[i];
+        document.write('<td class="no_border bottom_border" id="'+ id + '_bundle_name"> <a class="bundle_display_name">' + getBundleLongName(id) + '</a></td>');
+    }    
     document.write('</tr>');
+}
+
+function get_download_button(id, enabled) {
+   if(enabled) {
+       return '<a href="javascript: download(\'' + id + '\')"     id="' + id + '_name"> ' + DOWNLOAD_IMG + '</a>';
+   } else {
+       return DOWNLOAD_IMG_DISABLED;
+   }   
 }
 
 function write_table_footer() {
     document.write('<tr class="column_hover">');
     document.write('<th class="no_hover left no_border  wide bottom">&nbsp;</th>');
-    document.write('<td class="no_border download_button"  id="javase_link"><a href="javascript: download(\'javase\')"     id="javase_name"> ' + DOWNLOAD_IMG + '</a></td>');
-    document.write('<td class="no_border download_button"  id="java_link">  <a href="javascript: download(\'java\')"       id="java_name"> '   + DOWNLOAD_IMG + '</a></td>');
-    document.write('<td class="no_border download_button"  id="ruby_link">  <a href="javascript: download(\'ruby\')"       id="ruby_name"> '   + DOWNLOAD_IMG + '</a></td>');
-    document.write('<td class="no_border download_button"  id="cnd_link">   <a href="javascript: download(\'cpp\')"        id="cnd_name"> '    + DOWNLOAD_IMG + '</a></td>');
-    document.write('<td class="no_border download_button"  id="php_link">   <a href="javascript: download(\'php\')"        id="php_name"> '    + DOWNLOAD_IMG + '</a></td>');
-    document.write('<td class="no_border download_button"  id="full_link">  <a href="javascript: download(\'all\')"        id="full_name"> '   + DOWNLOAD_IMG + '</a></td>');
+    for(var i=0;i<BUNDLE_IDS.length;i++) {
+        var id = BUNDLE_IDS[i];
+        document.write('<td class="no_border download_button"  id="' + id + '_link">' + get_download_button (id, true) + '</td>');
+    }
     document.write('</tr>');
 }
 
 function write_components_sizes() {
     document.write('<tr class="no-hover">');
     document.write('<td class="no_border"></td>');
-    document.write('<td class="no_border" id="javase_size"></td>');
-    document.write('<td class="no_border" id="java_size"></td>');
-    document.write('<td class="no_border" id="ruby_size"></td>');
-    document.write('<td class="no_border" id="cnd_size"></td>');
-    document.write('<td class="no_border" id="php_size"></td>');
-    document.write('<td class="no_border" id="full_size"></td>');
+    for(var i=0;i<BUNDLE_IDS.length;i++) {
+        var id = BUNDLE_IDS[i];
+            document.write('<td class="no_border" id="' + id + '_size"></td>');
+    }
+
     document.write('</tr>');
 }
 
@@ -368,6 +422,32 @@ function select_language() {
     last_selected_lang = select.selectedIndex;
 }
 
+
+
+function is_product_hidden(product_uid) {
+    return is_product_in_bundle(product_uid, "hidden");
+}
+function is_product_in_bundle(product_uid, bundle_uid) {
+    var hidden = false;
+    var bundle;
+    for(var k=0; k < BUNDLES.length; k++ ) {
+       if(BUNDLES[k].uid == bundle_uid) {  
+           bundle = BUNDLES[k];
+           break;
+       }
+    }
+    if(!bundle) {
+      return false;
+    }
+    for(var k=0;k<bundle.products.length;k++) { 
+       if(product_uid == bundle.products[k]) {
+                return true;
+        }
+    }
+    return false;
+}
+
+
 function update() {
     var langselect = document.getElementById("language_select");
     if(langselect.options[langselect.selectedIndex].value == MORE_LANG_ID) {
@@ -392,7 +472,7 @@ function update() {
     // update the "checks" and generate error messages, if any
     var product_messages = new Array();
     for (var i = 0; i < product_uids.length; i++) {
-        if (product_properties[i] & PROPERTY_HIDDEN) {
+        if (is_product_hidden(product_uids[i])) {
             continue;
         }
         
@@ -403,65 +483,20 @@ function update() {
 	     product_messages[i] = product_display_names[i];
         }
 		
-        if (product_properties[i] & PROPERTY_FULL) {
-            if (product_messages[i] == null) {
-                document.getElementById("product_" + i + "_full").innerHTML = IMAGE_CHECKED_WHITE;
-            } else {
-                document.getElementById("product_" + i + "_full").innerHTML = IMAGE_WARNING_WHITE;
-            }
-        } else {
-            document.getElementById("product_" + i + "_full").innerHTML = '';
-        }
-		
-        if (product_properties[i] & PROPERTY_JAVA) {
-            if (product_messages[i] == null) {
-                document.getElementById("product_" + i + "_java").innerHTML = IMAGE_CHECKED_BEIGE;
-            } else {
-                document.getElementById("product_" + i + "_java").innerHTML = IMAGE_WARNING_BEIGE;
-            }
-        } else {
-            document.getElementById("product_" + i + "_java").innerHTML = '';
-        }
+        for(var k=0;k<BUNDLE_IDS.length;k++) {
+                var id = BUNDLE_IDS[k];
 
-        if (product_properties[i] & PROPERTY_JAVASE) {
-            if (product_messages[i] == null) {
-                document.getElementById("product_" + i + "_javase").innerHTML = IMAGE_CHECKED_BEIGE;
-            } else {
-                document.getElementById("product_" + i + "_javase").innerHTML = IMAGE_WARNING_BEIGE;
-            }
-        } else {
-            document.getElementById("product_" + i + "_javase").innerHTML = '';
-        }	
+                if(is_product_in_bundle(product_uids[i], BUNDLE_IDS[k])) {
+                    if (product_messages[i] == null) {
+                        document.getElementById("product_" + i + "_" + id).innerHTML = IMAGE_CHECKED_WHITE;
+                    } else {
+                        document.getElementById("product_" + i + "_" + id).innerHTML = IMAGE_WARNING_WHITE;
+                    }
+                } else {
+                    document.getElementById("product_" + i + "_" + id).innerHTML = '';
+                }
+	}	
 
-		
-	if (product_properties[i] & PROPERTY_RUBY) {
-            if (product_messages[i] == null) {
-                document.getElementById("product_" + i + "_ruby").innerHTML = IMAGE_CHECKED_WHITE;
-            } else {
-                document.getElementById("product_" + i + "_ruby").innerHTML = IMAGE_WARNING_WHITE;
-            }
-        } else {
-            document.getElementById("product_" + i + "_ruby").innerHTML = '';
-        }
-		
-        if (product_properties[i] & PROPERTY_CND) {
-            if (product_messages[i] == null) {
-                document.getElementById("product_" + i + "_cnd").innerHTML = IMAGE_CHECKED_BEIGE;
-            } else {
-                document.getElementById("product_" + i + "_cnd").innerHTML = IMAGE_WARNING_BEIGE;
-            }
-        } else {
-            document.getElementById("product_" + i + "_cnd").innerHTML = '';
-        }
-        if (product_properties[i] & PROPERTY_PHP) {
-            if (product_messages[i] == null) {
-                document.getElementById("product_" + i + "_php").innerHTML = IMAGE_CHECKED_BEIGE;
-            } else {
-                document.getElementById("product_" + i + "_php").innerHTML = IMAGE_WARNING_BEIGE;
-            }
-        } else {
-            document.getElementById("product_" + i + "_php").innerHTML = '';
-        }
 
 	if (product_messages[i] == null) {
 		document.getElementById("product_" + i + "_display_name").innerHTML = '<a class="product_display_name">' + product_display_names[i] + "</a>";
@@ -533,79 +568,51 @@ function update() {
 
     document.getElementById("error_message").innerHTML = error_message;
     
-    // update the sizes 
-    var full_size   = 0;
-    var java_size = 0;
-    var javase_size   = 0;    
-    var ruby_size   = 0;
-    var cnd_size    = 0;
-    var php_size    = 0;
-    
+    // update the sizes  
+    var sizes = new Array(BUNDLE_IDS.length); 
+    for(var i=0;i<BUNDLE_IDS.length;i++) {
+      sizes[i] = 0;
+    }
 
     for (var i = 0; i < product_uids.length; i++) {
         if (!is_compatible(i, platform)) {
             continue;
         }
-		
-	if (product_properties[i] & PROPERTY_FULL) {
-            full_size += new Number(product_download_sizes[i]);
-        }
-        
-	if (product_properties[i] & PROPERTY_JAVA) {
-            java_size += new Number(product_download_sizes[i]);
-        }        	
-		
-        if (product_properties[i] & PROPERTY_JAVASE) {
-            javase_size += new Number(product_download_sizes[i]);
-        }
-		
-        if (product_properties[i] & PROPERTY_RUBY) {
-            ruby_size += new Number(product_download_sizes[i]);
-        }
-        
-	if (product_properties[i] & PROPERTY_CND) {
-            cnd_size += new Number(product_download_sizes[i]);
-        }        
-	if (product_properties[i] & PROPERTY_PHP) {
-            php_size += new Number(product_download_sizes[i]);
-        }        
+
+        for(var k=0;k<BUNDLE_IDS.length;k++) {
+	    if (is_product_in_bundle(product_uids[i], BUNDLE_IDS[k])) {
+                sizes[k] += new Number(product_download_sizes[i]);
+            }
+             
+        }       
     }
-	
-    full_size   = Math.ceil(full_size / 1024.0);
-    javase_size = Math.ceil(javase_size / 1024.0);
-    java_size   = Math.ceil(java_size / 1024.0);
-    ruby_size   = Math.ceil(ruby_size / 1024.0);
-    cnd_size    = Math.ceil(cnd_size / 1024.0);
-    php_size    = Math.ceil(php_size / 1024.0);
 
-    if( platform == "zip") {       
-       full_size   = 191;
-       javase_size =  71;
-       java_size   = 149;
-       ruby_size   =  60;
-       cnd_size    =  36;
-       php_size    =  37;
-    } 
-
+    for(var k=0;k<sizes.length;k++) {
+        sizes[k]   = Math.ceil(sizes[k] / 1024.0);
+    }
+    
     if(platform.indexOf("macosx")!=-1) {
 	platform = "macosx";
     }
 
-
-    full_size   = get_file_size_mb(get_file_name(platform, "all",   lang_id), lang_id, full_size);
-    javase_size = get_file_size_mb(get_file_name(platform, "javase",lang_id), lang_id, javase_size);
-    java_size   = get_file_size_mb(get_file_name(platform, "java",  lang_id), lang_id, java_size);
-    ruby_size   = get_file_size_mb(get_file_name(platform, "ruby",  lang_id), lang_id, ruby_size);
-    cnd_size    = get_file_size_mb(get_file_name(platform, "cpp",   lang_id), lang_id, cnd_size);
-    php_size    = get_file_size_mb(get_file_name(platform, "php",   lang_id), lang_id, php_size);
-
-    document.getElementById("full_size").innerHTML   = FREE_SIZE_MESSAGE.replace('{0}', full_size  );
-    document.getElementById("java_size").innerHTML = FREE_SIZE_MESSAGE.replace('{0}', java_size);    
-    document.getElementById("javase_size").innerHTML   = FREE_SIZE_MESSAGE.replace('{0}', javase_size  );
-    document.getElementById("ruby_size").innerHTML   = FREE_SIZE_MESSAGE.replace('{0}', ruby_size  );
-    document.getElementById("cnd_size").innerHTML    = FREE_SIZE_MESSAGE.replace('{0}', cnd_size   );
-    document.getElementById("php_size").innerHTML    = FREE_SIZE_MESSAGE.replace('{0}', php_size   );
+    for(var k=0;k<sizes.length;k++) {
+        sizes[k]   = get_file_size_mb(get_file_name(platform, BUNDLE_IDS[k],   lang_id), lang_id, sizes[k]);
+        document.getElementById(BUNDLE_IDS[k] + "_size").innerHTML   = FREE_SIZE_MESSAGE.replace('{0}', sizes[k]);
+    }
     
+    for(var k=0;k<BUNDLE_IDS.length;k++) {
+        var exists = false;
+        var id = BUNDLE_IDS[k];
+ 
+        for(var j=0;j<BUNDLES.length;j++) { 
+            if(id == BUNDLES[j].uid) {
+               exists = true;
+            }
+        }  
+        exists = exists && is_file_available(platform, id, lang_id);
+        document.getElementById(id + "_link").innerHTML   = get_download_button(id, exists);
+    }
+
     if (platform.indexOf("macosx")!=-1) {
         document.getElementById("jdk_note").innerHTML = JDK_NOTE_MACOSX;
     }
@@ -632,10 +639,14 @@ function is_compatible(index, platform) {
     if ( platform == "zip" ) {
          for (var i = 0; i < group_products.length; i++) {
           for (var j = 0; j < group_products[i].length; j++) {
-              var idx = group_products[i][j];
-              if((idx==index) && (i == 0) ) {
-                   return true;
-              } 
+	      var uid = group_products[i][j];
+              for(var k=0;k<product_uids.length;k++) { 
+                 if (product_uids[k] == uid) {
+                    if((k==index) && (i == 0) ) {//runtimes are not available in zip
+                        return true;
+                    } 
+                 }
+              }              
           }
         }
     } else {

@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.Map;
 import java.text.DateFormat;
@@ -219,8 +220,9 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
             try {
                 FileLock lock = fo.lock();
                 try {
+                    Charset encoding = FileEncodingQuery.getEncoding(fo);
                     BufferedWriter w = new BufferedWriter(new OutputStreamWriter(
-                            fo.getOutputStream(lock), FileEncodingQuery.getEncoding(fo)));
+                            fo.getOutputStream(lock), encoding));
                     try {
                         String current;
                         while ((current = r.readLine()) != null) {

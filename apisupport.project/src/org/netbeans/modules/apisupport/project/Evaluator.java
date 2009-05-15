@@ -263,7 +263,6 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
     
     /** See issue #69440 for more details. */
     public void setRunInAtomicAction(boolean runInAtomicAction) {
-        assert ProjectManager.mutex().isWriteAccess();
         this.runInAtomicAction = runInAtomicAction;
     }
     

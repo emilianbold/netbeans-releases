@@ -93,6 +93,10 @@ public class WarnPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbNextTime))
         );
+
+        cbNextTime.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WarnPanel.class, "WarnPanel.cbNextTime.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WarnPanel.class, "WarnPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 

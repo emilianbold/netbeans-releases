@@ -41,59 +41,103 @@
 
 package org.netbeans.modules.cnd.makeproject.api.remote;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.Utilities;
 
-public class FilePathAdaptor {
+public final class FilePathAdaptor {
+    private static final FilePathMapper DEFAULT = new FilePathMapperDefault();
+
+    private FilePathAdaptor() {
+    }
 
     public static String mapToRemote(String local) {
-        FilePathMapper conv = getConverting();
-        return conv.mapToRemote(local);
+        return DEFAULT.mapToRemote(local);
     }
 
     public static String mapToLocal(String remote) {
-        FilePathMapper conv = getConverting();
-        return conv.mapToLocal(remote);
+        return DEFAULT.mapToLocal(remote);
     }
 
     public static String normalize(String path) {
-        FilePathMapper conv = getConverting();
-        return conv.normalize(path);
+        return DEFAULT.normalize(path);
     }
     
     public static String naturalize(String path) {
-        FilePathMapper conv = getConverting();
-        return conv.naturalize(path);
+        return DEFAULT.naturalize(path);
     }
 
-    private static FilePathMapper getConverting() {
-        FilePathMapper conv = Lookup.getDefault().lookup(FilePathMapper.class);
-        return conv == null ? FilePathMapperDefault.DEFAULT : conv;
-    }
-    
-    private static class FilePathMapperDefault implements FilePathMapper {
-        public final static FilePathMapper DEFAULT = new FilePathMapperDefault();
-        
+    private static class FilePathMapperDefault implements FilePathMapper, LookupListener {
+        private final Lookup.Result<FilePathMapper> res;
+        private final AtomicBoolean fixed = new AtomicBoolean(false);
+        private FilePathMapper fixedMapper;
+
+        private FilePathMapperDefault() {
+            res = Lookup.getDefault().lookupResult(FilePathMapper.class);
+            res.addLookupListener(this);
+            resultChanged(null);
+        }
+
+        public void resultChanged(LookupEvent ev) {
+            synchronized (fixed) {
+                fixed.set(false);
+            }
+        }
+
+        private FilePathMapper getService(){
+            FilePathMapper service = fixedMapper;
+            synchronized (fixed) {
+                if (!fixed.get()) {
+                    for (FilePathMapper mapper : res.allInstances()) {
+                        service = mapper;
+                        break;
+                    }
+                    fixedMapper = service;
+                    fixed.set(true);
+                }
+            }
+            return service;
+        }
+
         public String mapToRemote(String local) {
+            FilePathMapper service = getService();
+            if (service != null) {
+                return service.mapToRemote(local);
+            }
             return local;
         }
 
         public String mapToLocal(String remote) {
+            FilePathMapper service = getService();
+            if (service != null) {
+                return service.mapToLocal(remote);
+            }
             return remote;
         }
 
         public String normalize(String path) {
+            FilePathMapper service = getService();
+            if (service != null) {
+                return service.normalize(path);
+            }
             // Always use Unix file separators
             return path.replaceAll("\\\\", "/"); // NOI18N
         }
         
         public String naturalize(String path) {
-            if (Utilities.isUnix())
+            FilePathMapper service = getService();
+            if (service != null) {
+                return service.naturalize(path);
+            }
+            if (Utilities.isUnix()) {
                 return path.replaceAll("\\\\", "/"); // NOI18N
-            else if (Utilities.isWindows())
+            } else if (Utilities.isWindows()) {
                 return path.replaceAll("/", "\\\\"); // NOI18N
-            else
+            } else {
                 return path;
+            }
         }
     }
 }

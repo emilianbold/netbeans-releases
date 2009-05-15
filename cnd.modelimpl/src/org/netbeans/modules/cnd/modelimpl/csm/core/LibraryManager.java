@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileUtil;
 
@@ -138,7 +139,7 @@ public final class LibraryManager {
             }
             return res;
         }
-        String folder = FileUtil.normalizeFile(new File(resolvedPath.getFolder().toString())).getAbsolutePath();
+        String folder = CndFileUtils.normalizeAbsolutePath(resolvedPath.getFolder().toString());
         res = searchInProjectRoots(baseProject, getPathToFolder(folder, absPath));
         if (res != null) {
             if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
@@ -189,7 +190,7 @@ public final class LibraryManager {
         List<String> res = new ArrayList<String>(3);
         res.add(folder);
         if (path.startsWith(folder)) {
-            File file = FileUtil.normalizeFile(new File(path));
+            File file = CndFileUtils.normalizeFile(new File(path));
             while (file != null) {
                 String dir = file.getParent();
                 if (folder.equals(dir) || !dir.startsWith(folder)) {

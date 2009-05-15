@@ -98,7 +98,7 @@ public class GlassFishV2JaxRpcStack implements WSStackImplementation<JaxRpc> {
     }
 
     public boolean isFeatureSupported(Feature feature) {
-        if (feature == JaxRpc.Feature.JSR109_OLD) {
+        if (feature == JaxRpc.Feature.JSR109) {
             return true;
         } else {
             return false;

@@ -124,6 +124,7 @@ public class ModulesNode extends AbstractNode {
 
         @Override
         public void addNotify() {
+            setKeys(Collections.<NbMavenProjectImpl>emptyList());
             loadModules();
             NbMavenProject.addPropertyChangeListener(project, listener);
         }
@@ -141,28 +142,32 @@ public class ModulesNode extends AbstractNode {
         }
 
         private void loadModules() {
-            Collection<NbMavenProjectImpl> modules = new ArrayList<NbMavenProjectImpl>();
-            File base = project.getOriginalMavenProject().getBasedir();
-            for (Iterator it = project.getOriginalMavenProject().getModules().iterator(); it.hasNext();) {
-                String elem = (String) it.next();
-                File projDir = FileUtil.normalizeFile(new File(base, elem));
-                FileObject fo = FileUtil.toFileObject(projDir);
-                if (fo != null) {
-                    try {
-                        Project prj = ProjectManager.getDefault().findProject(fo);
-                        if (prj != null && prj.getLookup().lookup(NbMavenProjectImpl.class) != null) {
-                            modules.add((NbMavenProjectImpl) prj);
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    Collection<NbMavenProjectImpl> modules = new ArrayList<NbMavenProjectImpl>();
+                    File base = project.getOriginalMavenProject().getBasedir();
+                    for (Iterator it = project.getOriginalMavenProject().getModules().iterator(); it.hasNext();) {
+                        String elem = (String) it.next();
+                        File projDir = FileUtil.normalizeFile(new File(base, elem));
+                        FileObject fo = FileUtil.toFileObject(projDir);
+                        if (fo != null) {
+                            try {
+                                Project prj = ProjectManager.getDefault().findProject(fo);
+                                if (prj != null && prj.getLookup().lookup(NbMavenProjectImpl.class) != null) {
+                                    modules.add((NbMavenProjectImpl) prj);
+                                }
+                            } catch (IllegalArgumentException ex) {
+                                ex.printStackTrace();
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        } else {
+                            //TODO broken module reference.. show as such..
                         }
-                    } catch (IllegalArgumentException ex) {
-                        ex.printStackTrace();
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
                     }
-                } else {
-                    //TODO broken module reference.. show as such..
+                    setKeys(modules);
                 }
-            }
-            setKeys(modules);
+            });
         }
     }
 

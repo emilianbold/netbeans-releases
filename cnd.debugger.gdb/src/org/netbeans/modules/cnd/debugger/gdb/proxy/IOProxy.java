@@ -306,7 +306,7 @@ public abstract class IOProxy {
 
         @Override
         protected OutputStream createInStream() throws IOException {
-            NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "cat > " + inFilename); // NOI18N
+            NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "cat > " + inFilename,false); // NOI18N
             return npb.call().getOutputStream();
         }
 
@@ -317,7 +317,7 @@ public abstract class IOProxy {
 
         @Override
         protected InputStream createOutStream() throws IOException {
-            NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "cat " + outFilename); // NOI18N
+            NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "cat " + outFilename,false); // NOI18N
             return npb.call().getInputStream();
         }
 

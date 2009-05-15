@@ -48,6 +48,10 @@ import java.util.*;
  * @author Vladimir Kvasihn
  */
 public interface Resolver {
+    public static final boolean TRACE_RECURSION = false;
+    public static final int INFINITE_RECURSION = 200;
+    public static final int LIMITED_RECURSION = 5;
+
     public static final int NAMESPACE = 1 << 0;
     public static final int CLASSIFIER = 1 << 1;
     public static final int CLASS = 1 << 2;
@@ -84,6 +88,13 @@ public interface Resolver {
      */
     public CsmObject resolve(CharSequence qualifiedName, int interestedKind);
 
+    /**
+     * Check infinite recursion in resolving
+     */
+    public boolean isRecursionOnResolving(int maxRecursion);
+
+    public CsmClassifier getOriginalClassifier(CsmClassifier orig);
+
     public interface SafeClassifierProvider {
         CsmClassifier getClassifier(Resolver resolver);
     }    
@@ -92,5 +103,4 @@ public interface Resolver {
         boolean isTemplateBased(Set<CsmType> visited);
     }    
     
-    public CsmClassifier getOriginalClassifier(CsmClassifier orig);
 }
