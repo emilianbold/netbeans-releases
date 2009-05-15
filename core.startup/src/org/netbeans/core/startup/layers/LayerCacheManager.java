@@ -198,7 +198,7 @@ public abstract class LayerCacheManager {
      * Not called if the manager does not support loading;
      * otherwise must be overridden.
      */
-    abstract FileSystem load(FileSystem previous, ByteBuffer bb) throws IOException;
+    public abstract FileSystem load(FileSystem previous, ByteBuffer bb) throws IOException;
     
     /**
      * Save a new cache to disk, load it, and return that filesystem.
@@ -207,7 +207,7 @@ public abstract class LayerCacheManager {
      * Not called if the manager supports loading;
      * otherwise must be overridden.
      */
-    abstract void store(FileSystem fs, List<URL> urls, OutputStream os) throws IOException;
+    public abstract void store(FileSystem fs, List<URL> urls, OutputStream os) throws IOException;
     
     /** Location of cache.
      * 
