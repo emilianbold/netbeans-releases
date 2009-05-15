@@ -145,7 +145,6 @@ public class FodDataObjectFactoryTest extends NbTestCase {
         if (found != 2) {
             fail("Two shall be found, was " + found + ":\n" + sb);
         }
-
         FeatureInfo info = FeatureInfo.create(
             "TestFactory",
             ParseXMLContentTest.class.getResource("FeatureInfoTest.xml"),
