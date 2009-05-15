@@ -156,24 +156,10 @@ public class LuceneIndex implements IndexImpl {
                     LuceneIndex.this.staleFiles.removeAll(toRemove);
                 }
 
-                final IndexReader reader = getReader(true);
-//                try {
-//                    IndexWriter writer = new IndexWriter(
-//                        LuceneIndex.this.directory, // index directory
-//                        false, // auto-commit each flush
-//                        new KeywordAnalyzer(),
-//                        reader == null // open existing or create new index
-//                    );
-//                    try {
-                        flush(indexFolder, toAdd, toRemove, LuceneIndex.this.directory, reader, /*writer,*/ lmListener);
-//                    } finally {
-//                        writer.close();
-//                    }
-//                } finally {
-//                    if (reader != null) {
-//                        reader.close();
-//                    }
-//                }
+                if (toAdd.size() > 0 || toRemove.size() > 0) {
+                    final IndexReader reader = getReader(true);
+                    flush(indexFolder, toAdd, toRemove, LuceneIndex.this.directory, reader, /*writer,*/ lmListener);
+                }
                 
                 return null;
             }

@@ -105,6 +105,12 @@ public final class ExperimentStatistics {
                 } catch (ParseException ex) {
                     Exceptions.printStackTrace(ex);
                 }
+            } else if (id.startsWith("Duration")) { // NOI18N
+                try {
+                    _duration = nf.parse(s.substring(scidx + 1).trim()).doubleValue();
+                } catch (ParseException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
 
@@ -121,6 +127,10 @@ public final class ExperimentStatistics {
         t_waitCPU_p = _t_waitCPU_p;
         t_usrLock = _t_usrLock;
         t_usrLock_p = _t_usrLock_p;
+    }
+
+    public Double getDuration() {
+        return duration;
     }
 
     public Double getTotalThreadTime() {

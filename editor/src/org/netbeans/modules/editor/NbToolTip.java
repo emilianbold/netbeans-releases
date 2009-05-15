@@ -448,7 +448,7 @@ public class NbToolTip extends FileChangeAdapter {
                     }
                 }
             }
-            if (tooltipFromHighlightingLayers != null && tts != null) {
+            if (tooltipFromHighlightingLayers != null && tts != null && isRequestValid()) {
                 tts.setToolTipText(tooltipFromHighlightingLayers);
             }
         }

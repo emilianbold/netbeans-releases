@@ -1,0 +1,48 @@
+SyntaxTree functional specification
+-----------------------------------
+
+This document describes the typical errorneout usecases in html code and a description
+how these should be marked and how the parsing shoult be recovered.
+
+Feel free to add new case or correct the existing ones.
+
+A. Crossed tags
+
+1. <p> has optional end and can contain <a>
+<p><a></p></a>
+      ^^^^ error: Unmatched tag
+
+ast: p(a())
+
+2. <p> has optional end and cannot contain <div>
+<p><div></p></div>
+   ^^^^^  error: Unexpected content
+            ^^^^^^ error: Unmatched tag
+
+recovery: </p> is matched to the <p>
+ast: p()
+
+3. <a> has required end and can contain <script> with required end
+<a><script></a></script>
+           ^^^^ error: unmatched tag
+
+ast: a(script())
+
+4. <a> has required end and cannot contain <div> with required end
+<a><div></a></div>
+   ^^^^^ error: Unexpected content
+            ^^^^^^ error: Unexpected content
+
+ast: a()
+
+B. Unexpected known paired tag
+
+<html>
+  ...
+  <body>
+    <style></style>
+    ^^^^^^^^^^^^^^^ error:Unexpected tag content
+  </body>
+</html>
+
+recovery: just ignore both tags and continue parsing

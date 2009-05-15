@@ -824,7 +824,7 @@ public class SolarisLogReader {
             } else {
                 fullName = compilePath+"/"+sourceName; //NOI18N
             }
-            fullName = CndFileUtils.normalizePath(fullName);
+            fullName = CndFileUtils.normalizeAbsolutePath(fullName);
             fullName = PathCache.getString(fullName);
             this.userIncludes = userIncludes;
             this.userMacros = userMacros;

@@ -37,8 +37,9 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugzilla.issue;
 
+import org.junit.After;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -46,13 +47,21 @@ import static org.junit.Assert.*;
  *
  * @author  Marian Petras
  */
-public class IssueFinderTest {
+public class BugzillaIssueFinderTest {
 
-    public IssueFinderTest() {
+    private BugzillaIssueFinder issueFinder;
+
+    public BugzillaIssueFinderTest() { }
+
+    @After
+    public void tearDown() {
+        issueFinder = null;
     }
 
     @Test
     public void testGetIssueSpans() {
+        issueFinder = BugzillaIssueFinder.getTestInstance();
+
         checkNoIssueSpansFound("");
         checkNoIssueSpansFound("bug");
         checkNoIssueSpansFound("bug ");
@@ -108,11 +117,11 @@ public class IssueFinderTest {
         checkIssueSpans("issues #67888 and #73573", "#67888", "#73573");
         checkIssueSpans("bugs #67888, #12345 and #73573", "#67888", "#12345", "#73573");
 
-        checkIssueSpans("#123cdE", "#123cdE");
-        checkIssueSpans("#123CDe", "#123CDe");
+        checkNoIssueSpansFound("#123cdE");
+        checkNoIssueSpansFound("#123CDe");
 
-        checkIssueSpans("#123cd G", "#123cd");
-        checkIssueSpans("#123cd g", "#123cd");
+        checkNoIssueSpansFound("#123cd G");
+        checkNoIssueSpansFound("#123cd g");
         checkNoIssueSpansFound("#123cdG");
         checkNoIssueSpansFound("#123cdg");
 
@@ -155,6 +164,8 @@ public class IssueFinderTest {
 
     @Test
     public void testGetIssueNumber() {
+        issueFinder = BugzillaIssueFinder.getTestInstance();
+
         testGetIssueNumber("#123456", "123456");
         testGetIssueNumber("# 123456", "123456");
         testGetIssueNumber(" #123456", "123456");
@@ -171,11 +182,11 @@ public class IssueFinderTest {
         testGetIssueNumber("bug# #123456", "123456");
         testGetIssueNumber("sbug #123456", "123456");
 
-        testGetIssueNumber("bug #abcdef", "abcdef");
-        testGetIssueNumber("bug #ABCDEF", "ABCDEF");
+        checkNoIssueSpansFound("bug #abcdef");
+        checkNoIssueSpansFound("bug #ABCDEF");
 
-        testGetIssueNumber("bug # abcdef", "abcdef");
-        testGetIssueNumber("# abcdef", "abcdef");
+        checkNoIssueSpansFound("bug # abcdef");
+        checkNoIssueSpansFound("# abcdef");
 
         testGetIssueNumber("Bug 123456", "123456");
         testGetIssueNumber("BUG 123456", "123456");
@@ -214,7 +225,7 @@ public class IssueFinderTest {
 
         checkTestValidity(expectedBounds.length % 2 == 0);
 
-        int[] spans = IssueFinder.getIssueSpans(str);
+        int[] spans = issueFinder.getIssueSpans(str);
         assertNotNull(spans);
         assertTrue("incorrect bounds detected: "
                        + "expected: " + printArray(expectedBounds)
@@ -224,7 +235,7 @@ public class IssueFinderTest {
 
     private void checkNoIssueSpansFound(String str) {
         checkTestValidity(str != null);
-        int[] spans = IssueFinder.getIssueSpans(str);
+        int[] spans = issueFinder.getIssueSpans(str);
         assertNotNull(spans);
         assertTrue("incorrect bounds detected for \"" + str + "\": "
                        + "no spans expected but got: " + printArray(spans),
@@ -273,7 +284,7 @@ public class IssueFinderTest {
     }
 
     private void testGetIssueNumber(String hyperlinkText, String issueNumber) {
-        assertEquals(issueNumber, IssueFinder.getIssueNumber(hyperlinkText));
+        assertEquals(issueNumber, issueFinder.getIssueId(hyperlinkText));
     }
 
     private static void checkTestValidity(boolean condition) {

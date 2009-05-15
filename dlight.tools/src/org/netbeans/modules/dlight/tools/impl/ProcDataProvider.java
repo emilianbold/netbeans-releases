@@ -84,7 +84,8 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
             NAME, Arrays.asList(
             ProcDataProviderConfiguration.SYS_TIME,
             ProcDataProviderConfiguration.USR_TIME,
-            ProcDataProviderConfiguration.THREADS));
+            ProcDataProviderConfiguration.THREADS),
+            null);
 
     private List<ValidationListener> validationListeners;
     private ValidationStatus validationStatus;

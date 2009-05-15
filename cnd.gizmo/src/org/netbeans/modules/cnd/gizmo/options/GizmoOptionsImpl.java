@@ -79,7 +79,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
 
 //    // Profile on Run
     private BooleanConfiguration profileOnRun;
-    public static String PROFILE_ON_RUN_PROP = "profileOnRun"; // NOI18N
+    public static final String PROFILE_ON_RUN_PROP = "profileOnRun"; // NOI18N
     private final Map<String, BooleanConfiguration> toolConfigurations;
     private final Map<String, String> toolDescriptions;
     // Data Provider
@@ -101,7 +101,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     };
     private IntConfiguration dataProvider;
     private DataProvidersCollection currentDPCollection = DataProvidersCollection.DEFAULT;
-    public static String DATA_PROVIDER_PROP = "dataProvider"; // NOI18N
+    public static final String DATA_PROVIDER_PROP = "dataProvider"; // NOI18N
 
     public GizmoOptionsImpl(String baseDir, PropertyChangeSupport pcs) {
         this.baseDir = baseDir;

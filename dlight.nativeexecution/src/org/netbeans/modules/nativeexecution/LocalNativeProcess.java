@@ -110,10 +110,6 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
             String cmd = "exec " + info.getCommandLine() + "\n"; // NOI18N
 
-            if (isWindows) {
-                cmd = cmd.replaceAll("\\\\", "/"); // NOI18N
-            }
-
             processInput.write(cmd.getBytes());
             processInput.flush();
 

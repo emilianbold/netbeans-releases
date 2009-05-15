@@ -37,25 +37,52 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.gizmo;
+package org.netbeans.modules.cnd.debugger.gdb.models;
 
-import org.netbeans.modules.dlight.spi.DemanglingFunctionNameService;
-import org.netbeans.modules.dlight.spi.DemanglingFunctionNameServiceFactory;
-import org.openide.util.lookup.ServiceProvider;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.GdbVariable;
+import org.netbeans.modules.cnd.debugger.gdb.LocalVariable;
 
 /**
  *
- * @author mt154047
+ * @author Egor Ushakov
  */
-@ServiceProvider(service = DemanglingFunctionNameServiceFactory.class)
-public final class  CndDemanglingFunctionNameServiceFactory  implements DemanglingFunctionNameServiceFactory{
+public class GdbLocalVariable extends AbstractVariable implements LocalVariable, PropertyChangeListener {
+    private final String name;
+    private final String type;
 
-    public DemanglingFunctionNameService getForCurrentSession() {
-        return new CndDemanglingFunctionNameServiceImpl();
+    public GdbLocalVariable(GdbDebugger debugger, GdbVariable var) {
+        super(debugger, var.getValue());
+        this.name = var.getName();
+        this.type = getDebugger().requestWhatis(name);
+        
+        debugger.addPropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, this);
     }
 
-    public DemanglingFunctionNameService geDemanglingServiceFor(CPPCompiler cppCompiler) {
-        return new CndDemanglingFunctionNameServiceImpl(cppCompiler);
+    public GdbLocalVariable(GdbDebugger debugger, String name) {
+        super(debugger, null);
+        this.name = name;
+        this.type = getDebugger().requestWhatis(name);
+        String expr = name;
+        if (!GdbWatchVariable.disableMacros) {
+            expr = GdbWatchVariable.expandMacro(getDebugger(), expr);
+        }
+        value = getDebugger().requestValue(expr);
+        
+        debugger.addPropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, this);
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        onValueChange(evt);
+    }
+
+    public String getName() {
+        return name;
+    }
 }

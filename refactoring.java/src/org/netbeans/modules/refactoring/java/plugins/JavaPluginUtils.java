@@ -36,29 +36,42 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.kenai.collab.chat;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
+package org.netbeans.modules.refactoring.java.plugins;
+
+import javax.lang.model.element.Element;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
- * TODO: delete this class
- * @author Jan Becicka
+ * Utility class for java plugins.
  */
-public final class WhoIsOnlineDisabled extends AbstractAction {
+final class JavaPluginUtils {
 
-    public WhoIsOnlineDisabled() {
-        super(NbBundle.getMessage(WhoIsOnlineDisabled.class, "CTL_WhoIsOnlineAction"));
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        new WhoIsOnlineAction().actionPerformed(e);
-    }
-    @Override
-    public boolean isEnabled() {
-        return System.getProperty(("kenai.com.url"), "https://kenai.com").endsWith("testkenai.com");
+    public static final Problem isSourceElement(Element el, CompilationInfo info) {
+        Problem preCheckProblem = null;
+        if (RetoucheUtils.isFromLibrary(el, info.getClasspathInfo())) { //NOI18N
+            preCheckProblem = new Problem(true, NbBundle.getMessage(
+                    JavaPluginUtils.class, "ERR_CannotRefactorLibraryClass",
+                    el.getEnclosingElement()
+                    ));
+            return preCheckProblem;
+        }
+        FileObject file = SourceUtils.getFile(el,info.getClasspathInfo());
+        // RetoucheUtils.isFromLibrary already checked file for null
+        if (!RetoucheUtils.isElementInOpenProject(file)) {
+            preCheckProblem =new Problem(true, NbBundle.getMessage(
+                    JavaPluginUtils.class,
+                    "ERR_ProjectNotOpened",
+                    FileUtil.getFileDisplayName(file)));
+            return preCheckProblem;
+        }
+        return null;
     }
 
 }
-
