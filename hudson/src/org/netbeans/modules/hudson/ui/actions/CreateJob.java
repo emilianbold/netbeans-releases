@@ -82,8 +82,7 @@ public class CreateJob extends AbstractAction {
 
     public CreateJob() {
         super(NbBundle.getMessage(CreateJob.class, "CTL_CreateJob"));
-        Collection<? extends HudsonInstance> instances = HudsonManagerImpl.getDefault().getInstances();
-        this.instance = instances.isEmpty() ? null : instances.iterator().next();
+        this.instance = null;
     }
 
     public CreateJob(HudsonInstance instance) {
@@ -113,7 +112,14 @@ public class CreateJob extends AbstractAction {
                 }
             }
         });
-        panel.init(dd, instance);
+        HudsonInstance _instance;
+        if (instance != null) {
+            _instance = instance;
+        } else {
+            Collection<? extends HudsonInstance> instances = HudsonManagerImpl.getDefault().getInstances();
+            _instance = instances.isEmpty() ? null : instances.iterator().next();
+        }
+        panel.init(dd, _instance);
         dd.setOptions(new Object[] {createButton, NotifyDescriptor.CANCEL_OPTION});
         dd.setClosingOptions(new Object[] {NotifyDescriptor.CANCEL_OPTION});
         dialog.set(DialogDisplayer.getDefault().createDialog(dd));
