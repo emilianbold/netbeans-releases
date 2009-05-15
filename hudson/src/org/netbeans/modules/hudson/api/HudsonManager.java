@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,26 +31,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.hudson.api;
 
-import java.util.EventListener;
+import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
+import org.netbeans.modules.hudson.impl.HudsonInstanceProperties;
+import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 
 /**
- * Hudson change listener
- *
- * @author Michal Mocnak
+ * Manages the list of Hudson instances.
  */
-public interface HudsonChangeListener extends EventListener {
+public class HudsonManager {
+
+    private HudsonManager() {}
 
     /**
-     * Change of the state
+     * Adds a Hudson instance to the system (if not already registered).
+     * @param name a name by which the instance will be identified (e.g. {@code Deadlock})
+     * @param url the master URL (e.g. {@code http://deadlock.netbeans.org/hudson/})
+     * @param sync interval (in minutes) between refreshes, or 0 to disable
+     * @param persistent if true, persist this configuration; if false, will be transient
+     * @return a new or existing instance
      */
-    public void stateChanged();
-    
-    /**
-     * Change of the content
-     */
-    public void contentChanged();
+    public static HudsonInstance addInstance(String name, String url, int sync, final boolean persistent) {
+        for (HudsonInstance existing : HudsonManagerImpl.getDefault().getInstances()) {
+            if (existing.getUrl().equals(url)) {
+                return existing;
+            }
+        }
+        HudsonInstanceImpl nue = HudsonInstanceImpl.createHudsonInstance(new HudsonInstanceProperties(name, url, Integer.toString(sync)) {
+            public @Override boolean isPersisted() {
+                return persistent;
+            }
+        });
+        HudsonManagerImpl.getDefault().addInstance(nue);
+        return nue;
+    }
+
 }
