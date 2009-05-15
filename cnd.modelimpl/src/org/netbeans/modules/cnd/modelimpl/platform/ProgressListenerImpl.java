@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.modelimpl.platform;
 
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -108,13 +109,44 @@ public class ProgressListenerImpl implements CsmProgressListener {
     public void fileInvalidated(CsmFile file) {
     }
 
+    public void fileAddedToParse(CsmFile file) {
+        CsmProject project = file.getProject();
+        ParsingProgress handle = getHandle(project, false);
+        if (handle != null) {
+            handle.addedToParse(file);
+        } else if (project.isArtificial()) {
+            for (CsmProject p : CsmModelAccessor.getModel().projects()){
+                if (!p.isArtificial()) {
+                    if (p.getLibraries().contains(project)){
+                        handle = getHandle(p, false);
+                        if (handle != null) {
+                            handle.addedToParse(file);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public void fileParsingStarted(CsmFile file) {
         if (TraceFlags.TRACE_PARSER_QUEUE) {
             System.err.println("  ProgressListenerImpl.fileParsingStarted " + file.getAbsolutePath());
         }
-        ParsingProgress handle = getHandle(file.getProject(), false);
+        CsmProject project = file.getProject();
+        ParsingProgress handle = getHandle(project, false);
         if (handle != null) {
             handle.nextCsmFile(file);
+        } else if (project.isArtificial()) {
+            for (CsmProject p : CsmModelAccessor.getModel().projects()){
+                if (!p.isArtificial()) {
+                    if (p.getLibraries().contains(project)){
+                        handle = getHandle(p, false);
+                        if (handle != null) {
+                            handle.nextCsmFile(file);
+                        }
+                    }
+                }
+            }
         }
     }
 

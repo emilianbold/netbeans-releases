@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTAbstractWalker;
+import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -64,8 +65,8 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
     private final ProjectBase startProject;
     private int mode;
     
-    public APTProjectFileBasedWalker(ProjectBase startProject, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler) {
-        super(apt, preprocHandler);
+    public APTProjectFileBasedWalker(ProjectBase startProject, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
+        super(apt, preprocHandler, cacheEntry);
         this.mode = ProjectBase.GATHERING_MACROS;
         this.file = file;
         this.startProject = startProject;
