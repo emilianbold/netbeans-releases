@@ -194,9 +194,18 @@ public class PluginsOperator extends NbDialogOperator {
      */
     public JButtonOperator btUninstall() {
         selectInstalled();
-        return new JButtonOperator(this, Bundle.getStringTrimmed(
-                "org.netbeans.modules.autoupdate.ui.Bundle",
-                "InstalledTableModel_Columns_Uninstall"));
+        return new JButtonOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.autoupdate.ui.Bundle",
+                "UnitTab_bTabAction_Name_INSTALLED"));
+    }
+
+    /** Switches to Installed tab and finds "Show details" JCheckBox.
+     * @return JButtonOperator
+     */
+    public JCheckBoxOperator cbShowDetails()
+    {
+         return new JCheckBoxOperator(selectInstalled(), Bundle.getStringTrimmed("org.netbeans.modules.autoupdate.ui.Bundle",
+                "UnitTab.detailView.text"));
+         
     }
 
     /** Finds search text field. */
