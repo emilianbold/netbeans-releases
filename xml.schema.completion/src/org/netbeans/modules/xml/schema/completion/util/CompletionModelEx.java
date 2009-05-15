@@ -41,6 +41,7 @@
 package org.netbeans.modules.xml.schema.completion.util;
 
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.CompletionModel;
+import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 
 /**
@@ -71,6 +72,10 @@ public class CompletionModelEx extends CompletionModel {
     }
     
     public String getTargetNamespace() {
-        return model.getSchema().getTargetNamespace();
+        Schema schema = model.getSchema();
+        if (schema != null) {
+            return schema.getTargetNamespace();
+        }
+        return null;
     }
 }
