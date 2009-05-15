@@ -43,8 +43,6 @@ import org.netbeans.modules.bugzilla.*;
 import java.awt.Image;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Constructor;
-import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -52,11 +50,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
-import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
+import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
@@ -69,7 +65,6 @@ import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.IssueCache;
-import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
 import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
@@ -108,6 +103,10 @@ public class BugzillaRepository extends Repository {
     }
 
     public BugzillaRepository(String repoName, String url, String user, String password, String httpUser, String httpPassword) {
+        this(repoName, url, user, password, httpUser, httpPassword, false);
+    }
+
+    public BugzillaRepository(String repoName, String url, String user, String password, String httpUser, String httpPassword, boolean shortLoginEnabled) {
         this();
         name = repoName;
         if(user == null) {
@@ -116,7 +115,7 @@ public class BugzillaRepository extends Repository {
         if(password == null) {
             password = "";                                                      // NOI18N
         }
-        taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
+        taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword, shortLoginEnabled);
     }
 
     public TaskRepository getTaskRepository() {
@@ -341,13 +340,13 @@ public class BugzillaRepository extends Repository {
         return queries;
     }
 
-    protected void setTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
-        taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
+    protected void setTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword, boolean shortLoginEnabled) {
+        taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword, shortLoginEnabled);
         Bugzilla.getInstance().addRepository(this);
         resetRepository(); // only on url, user or passwd change        
     }
 
-    static TaskRepository createTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
+    static TaskRepository createTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword, boolean shortLoginEnabled) {
         TaskRepository repository = new TaskRepository(Bugzilla.getInstance().getRepositoryConnector().getConnectorKind(), url);
         AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user, password);
         repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
@@ -358,6 +357,7 @@ public class BugzillaRepository extends Repository {
             authenticationCredentials = new AuthenticationCredentials(httpUser, httpPassword);
             repository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
         }
+        repository.setProperty(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN, shortLoginEnabled ? "true" : "false"); //NOI18N
 
         // XXX need proxy settings from the IDE
         
@@ -387,6 +387,14 @@ public class BugzillaRepository extends Repository {
 
     public boolean authenticate(String errroMsg) {
         return BugtrackingUtil.editRepository(this, errroMsg);
+    }
+
+    /**
+     *
+     * @return true if the repository accepts usernames in a short form (without domain specification).
+     */
+    public boolean isShortUsernamesEnabled() {
+        return taskRepository != null && "true".equals(taskRepository.getProperty(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN));
     }
 
     private class Cache extends IssueCache {
