@@ -224,6 +224,9 @@ public class BugzillaIssue extends Issue {
                 new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
                                                   loc.getString("CTL_Issue_ID_Title"), // NOI18N
                                                   loc.getString("CTL_Issue_ID_Desc")), // NOI18N
+                new ColumnDescriptor<String>(LABEL_NAME_SUMMARY, String.class,
+                                                  loc.getString("CTL_Issue_Summary_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Summary_Desc")), // NOI18N
                 new ColumnDescriptor<String>(LABEL_NAME_SEVERITY, String.class,
                                                   loc.getString("CTL_Issue_Severity_Title"), // NOI18N
                                                   loc.getString("CTL_Issue_Severity_Desc")), // NOI18N
@@ -235,10 +238,7 @@ public class BugzillaIssue extends Issue {
                                                   loc.getString("CTL_Issue_Status_Desc")), // NOI18N
                 new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
                                                   loc.getString("CTL_Issue_Resolution_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Resolution_Desc")), // NOI18N
-                new ColumnDescriptor<String>(LABEL_NAME_SUMMARY, String.class,
-                                                  loc.getString("CTL_Issue_Summary_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Summary_Desc")) // NOI18N
+                                                  loc.getString("CTL_Issue_Resolution_Desc")) // NOI18N
             };
         }
         return DESCRIPTORS;
