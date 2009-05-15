@@ -20,7 +20,11 @@ rollback() {
 
 HEADS=`hg heads --template "{node}\n" | wc -l`
 if [ $HEADS = 2 ]; then
-    echo "There is something wrong going on, wipe out the workspace"
+    echo "2 heads, here is some diagnostic"
+    echo hg heads:
+    hg heads
+    echo hg stat
+    hg stat
     exit 1
 fi
 BASETIP=`hg id -i | tr -d "+"`
