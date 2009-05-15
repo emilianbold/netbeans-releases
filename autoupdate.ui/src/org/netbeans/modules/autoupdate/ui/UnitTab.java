@@ -166,6 +166,7 @@ public class UnitTab extends javax.swing.JPanel {
         this.model = (UnitCategoryTableModel) m;
         table.getSelectionModel ().setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         initComponents ();
+        //lWarning.setVisible(false);//#164953
         //TODO: for WINDOWS - don't paint background and let visible the native look
         /*
         if (UIManager.getLookAndFeel().getName().toLowerCase().startsWith("windows")) {//NOI18N
