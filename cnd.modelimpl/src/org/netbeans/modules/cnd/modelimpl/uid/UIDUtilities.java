@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.uid;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.cnd.api.model.CsmBuiltIn;
@@ -73,6 +74,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
@@ -361,9 +363,44 @@ public class UIDUtilities {
     // impl details
 
     /**
+     * Base UID for cached objects
+     */
+    /* package */ static class CachedUID<T> extends KeyBasedUID<T> {
+        private WeakReference<T> weakT;
+
+        protected CachedUID(Key key) {
+            super(key);
+        }
+
+        /* package */ CachedUID(DataInput aStream) throws IOException {
+            super(aStream);
+        }
+
+        @Override
+        public T getObject() {
+            T out = null;
+            WeakReference<T> weak = null;
+            if (TraceFlags.USE_WEAK_MEMORY_CACHE) {
+                weak = weakT;
+                if (weak != null) {
+                    out = weak.get();
+                    if (out != null) {
+                        return out;
+                    }
+                }
+            }
+            out = RepositoryUtils.get(this);
+            if (TraceFlags.USE_WEAK_MEMORY_CACHE && out != null) {
+                weakT = new WeakReference<T>(out);
+            }
+            return out;
+        }
+    }
+
+    /**
      * UID for CsmProject
      */
-    /* package */ static final class ProjectUID extends KeyBasedUID<CsmProject> {
+    /* package */ static final class ProjectUID extends CachedUID<CsmProject> { //KeyBasedUID<CsmProject> {
 
         public ProjectUID(ProjectBase project) {
             super(KeyUtilities.createProjectKey(project));
@@ -377,7 +414,7 @@ public class UIDUtilities {
     /**
      * UID for CsmNamespace
      */
-    /* package */ static final class NamespaceUID extends KeyBasedUID<CsmNamespace> {
+    /* package */ static final class NamespaceUID extends CachedUID<CsmNamespace> { //KeyBasedUID<CsmNamespace> {
 
         public NamespaceUID(CsmNamespace ns) {
             super(KeyUtilities.createNamespaceKey(ns));
@@ -391,7 +428,7 @@ public class UIDUtilities {
     /**
      * UID for CsmFile
      */
-    /* package */ static final class FileUID extends KeyBasedUID<CsmFile> {
+    /* package */ static final class FileUID extends CachedUID<CsmFile> { //KeyBasedUID<CsmFile> {
 
         public FileUID(FileImpl file) {
             super(KeyUtilities.createFileKey(file));
@@ -416,6 +453,34 @@ public class UIDUtilities {
         }
 
         /* package */ OffsetableDeclarationUIDBase(DataInput aStream) throws IOException {
+            super(aStream);
+        }
+
+        @Override
+        public String toString() {
+            String retValue = getToStringPrefix() + ":" + super.toString(); // NOI18N
+            return retValue;
+        }
+
+        protected String getToStringPrefix() {
+            return "UID for OffsDecl"; // NOI18N
+        }
+    }
+
+    /**
+     * base UID for cached CsmDeclaration
+     */
+    private static abstract class OffsetableDeclarationUIDBaseCached<T extends CsmOffsetableDeclaration> extends CachedUID<T> { //KeyBasedUID<T> {
+
+        public OffsetableDeclarationUIDBaseCached(T declaration) {
+            this(KeyUtilities.createOffsetableDeclarationKey((OffsetableDeclarationBase<?>) declaration));
+        }
+
+        protected OffsetableDeclarationUIDBaseCached(Key key) {
+            super(key);
+        }
+
+        /* package */ OffsetableDeclarationUIDBaseCached(DataInput aStream) throws IOException {
             super(aStream);
         }
 
@@ -519,7 +584,7 @@ public class UIDUtilities {
     /**
      * UID for CsmClassifier
      */
-    /* package */ static final class ClassifierUID<T extends CsmOffsetableDeclaration> extends OffsetableDeclarationUIDBase<T> {
+    /* package */ static final class ClassifierUID<T extends CsmOffsetableDeclaration> extends OffsetableDeclarationUIDBaseCached<T> {//OffsetableDeclarationUIDBase<T> {
 
         public ClassifierUID(T classifier) {
             super(classifier);
