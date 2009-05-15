@@ -46,6 +46,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -86,6 +87,7 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
     }
@@ -384,6 +386,42 @@ public class GeneratorUtilitiesTest extends NbTestCase {
                 fail("toArray method not found");
             }
         }, false);
+    }
+
+    public void testGetterNamingConvention0() throws Exception {//#165241
+        performTest("package test;\npublic class Test {\nprivate int eMai;\npublic Test(){\n}\n }\n", new GetterSetterTask(34, false), new Validator() {
+
+            public void validate(CompilationInfo info) {
+                ClassTree ct = (ClassTree) info.getCompilationUnit().getTypeDecls().get(0);
+
+                for (Tree member : ct.getMembers()) {
+                    if (member.getKind() == Kind.METHOD) {
+                        String name = ((MethodTree) member).getName().toString();
+                        if (!name.equals("<init>")) {
+                            assertEquals(name, "seteMai");
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    public void testGetterNamingConvention1() throws Exception {//#165241
+        performTest("package test;\npublic class Test {\nprivate int emai;\npublic Test(){\n}\n }\n", new GetterSetterTask(34, false), new Validator() {
+
+            public void validate(CompilationInfo info) {
+                ClassTree ct = (ClassTree) info.getCompilationUnit().getTypeDecls().get(0);
+
+                for (Tree member : ct.getMembers()) {
+                    if (member.getKind() == Kind.METHOD) {
+                        String name = ((MethodTree) member).getName().toString();
+                        if (!name.equals("<init>")) {
+                            assertEquals(name, "setEmai");
+                        }
+                    }
+                }
+            }
+        });
     }
     
     public static interface Validator {
