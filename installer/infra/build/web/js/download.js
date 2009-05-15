@@ -245,12 +245,20 @@ function write_table_header() {
     document.write('</tr>');
 }
 
+function get_download_button(id, enabled) {
+   if(enabled) {
+       return '<a href="javascript: download(\'' + id + '\')"     id="' + id + '_name"> ' + DOWNLOAD_IMG + '</a>';
+   } else {
+       return DOWNLOAD_IMG_DISABLED;
+   }   
+}
+
 function write_table_footer() {
     document.write('<tr class="column_hover">');
     document.write('<th class="no_hover left no_border  wide bottom">&nbsp;</th>');
     for(var i=0;i<BUNDLE_IDS.length;i++) {
         var id = BUNDLE_IDS[i];
-        document.write('<td class="no_border download_button"  id="' + id + '_link"><a href="javascript: download(\'' + id + '\')"     id="' + id + '_name"> ' + DOWNLOAD_IMG + '</a></td>');
+        document.write('<td class="no_border download_button"  id="' + id + '_link">' + get_download_button (id, true) + '</td>');
     }
     document.write('</tr>');
 }
@@ -428,11 +436,9 @@ function is_product_in_bundle(product_uid, bundle_uid) {
            break;
        }
     }
-
     if(!bundle) {
       return false;
     }
-
     for(var k=0;k<bundle.products.length;k++) { 
        if(product_uid == bundle.products[k]) {
                 return true;
@@ -594,6 +600,18 @@ function update() {
         document.getElementById(BUNDLE_IDS[k] + "_size").innerHTML   = FREE_SIZE_MESSAGE.replace('{0}', sizes[k]);
     }
     
+    for(var k=0;k<BUNDLE_IDS.length;k++) {
+        var exists = false;
+        var id = BUNDLE_IDS[k];
+ 
+        for(var j=0;j<BUNDLES.length;j++) { 
+            if(id == BUNDLES[j].uid) {
+               exists = true;
+            }
+        }  
+        exists = exists && is_file_available(platform, id, lang_id);
+        document.getElementById(id + "_link").innerHTML   = get_download_button(id, exists);
+    }
 
     if (platform.indexOf("macosx")!=-1) {
         document.getElementById("jdk_note").innerHTML = JDK_NOTE_MACOSX;
