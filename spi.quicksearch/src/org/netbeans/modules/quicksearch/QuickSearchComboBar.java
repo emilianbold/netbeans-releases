@@ -74,8 +74,6 @@ public class QuickSearchComboBar extends AbstractQuickSearchComboBar {
             }
             jLabel2.setIcon(icons[index]);
             index = (index + 1) % 8;
-            //jLabel2.setIcon(icons[index++]);
-            //index = index % 8;
         }
     });
 
