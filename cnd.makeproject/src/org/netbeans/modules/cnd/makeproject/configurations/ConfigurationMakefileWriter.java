@@ -326,9 +326,9 @@ public class ConfigurationMakefileWriter {
 
         if (conf.isQmakeConfiguration()) {
             String qmakeSpec = conf.getQmakeConfiguration().getQmakeSpec().getValue();
-            if (qmakeSpec.length() == 0 && conf.getPlatform().getValue() == Platform.PLATFORM_MACOSX) {
+            if (qmakeSpec.length() == 0 && conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_MACOSX) {
                 // on Mac we force spec to macx-g++, otherwise qmake generates xcode project
-                qmakeSpec = compilerSet.getQmakeSpec(conf.getPlatform().getValue());
+                qmakeSpec = compilerSet.getQmakeSpec(conf.getDevelopmentHost().getBuildPlatform());
             }
             if (0 < qmakeSpec.length()) {
                 qmakeSpec = "-spec " + qmakeSpec + " "; // NOI18N
@@ -338,7 +338,7 @@ public class ConfigurationMakefileWriter {
             // Otherwise qmake will complain that sources are not found.
             bw.write("\tqmake VPATH=. " + qmakeSpec + "-o qttmp-${CONF}.mk nbproject/qt-${CONF}.pro\n"); // NOI18N
             bw.write("\tmv -f qttmp-${CONF}.mk nbproject/qt-${CONF}.mk\n"); // NOI18N
-            if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
+            if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_WINDOWS) {
                 // qmake uses backslashes on Windows, this code corrects them to forward slashes
                 bw.write("\t@sed -e 's:\\\\\\(.\\):/\\1:g' nbproject/qt-${CONF}.mk >nbproject/qt-${CONF}.tmp\n"); // NOI18N
                 bw.write("\t@mv -f nbproject/qt-${CONF}.tmp nbproject/qt-${CONF}.mk\n"); // NOI18N
@@ -669,7 +669,7 @@ public class ConfigurationMakefileWriter {
 
     private static String getOutput(MakeConfiguration conf) {
         String output = conf.getOutputValue();
-        switch (conf.getPlatform().getValue()) {
+        switch (conf.getDevelopmentHost().getBuildPlatform()) {
             case Platform.PLATFORM_WINDOWS:
                 switch (conf.getConfigurationType().getValue()) {
                     case MakeConfiguration.TYPE_APPLICATION:

@@ -117,7 +117,7 @@ public final class CommonTasksSupport {
             return null;
         }
 
-        final String cmd = "scp -p -t " + dstFileName; // NOI18N
+        final String cmd = "scp"; // NOI18N
 
         ChangeListener processListener = new ChangeListener() {
 
@@ -139,7 +139,8 @@ public final class CommonTasksSupport {
             }
         };
 
-        NativeProcessBuilder npb = new NativeProcessBuilder(dstExecEnv, cmd);
+        NativeProcessBuilder npb = new NativeProcessBuilder(dstExecEnv, cmd,false);
+        npb = npb.setArguments("-p", "-t", dstFileName); // NOI18N
         npb = npb.addNativeProcessListener(processListener);
 
         ExecutionDescriptor descriptor =
@@ -179,7 +180,7 @@ public final class CommonTasksSupport {
             ExecutionEnvironment execEnv,
             String fname, final Writer error) {
         NativeProcessBuilder npb =
-                new NativeProcessBuilder(execEnv, "rm"); // NOI18N
+                new NativeProcessBuilder(execEnv, "rm",false); // NOI18N
         npb = npb.setArguments("-f", fname); // NOI18N
 
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
@@ -209,7 +210,7 @@ public final class CommonTasksSupport {
      */
     public static Future<Integer> chmod(final ExecutionEnvironment execEnv,
             final String file, final int mode, final Writer error) {
-        NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "chmod"); // NOI18N
+        NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "chmod",false); // NOI18N
         npb = npb.setArguments(String.format("0%03o", mode), file); // NOI18N
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
                 InputOutput.NULL);
@@ -245,7 +246,7 @@ public final class CommonTasksSupport {
                 ? new String[]{"-rf", dirname} : new String[]{"-f", dirname}; // NOI18N
 
         NativeProcessBuilder npb =
-                new NativeProcessBuilder(execEnv, cmd); // NOI18N
+                new NativeProcessBuilder(execEnv, cmd,false); // NOI18N
         npb = npb.setArguments(args);
 
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
@@ -275,7 +276,7 @@ public final class CommonTasksSupport {
      */
     public static Future<Integer> mkDir(final ExecutionEnvironment execEnv,
             final String dirname, final Writer error) {
-        NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "mkdir"); // NOI18N
+        NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "mkdir",false); // NOI18N
         npb = npb.setArguments("-p", dirname); // NOI18N
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
                 InputOutput.NULL);

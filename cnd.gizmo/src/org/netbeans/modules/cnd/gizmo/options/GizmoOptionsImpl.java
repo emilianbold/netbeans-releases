@@ -135,7 +135,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
                 break;
             }
         }
-        String platform = makeConfiguration.getPlatform().getName();
+        String platform = makeConfiguration.getDevelopmentHost().getBuildPlatformDisplayName();
         int index = getDataProvider().getValue();
         //if there is no SS in toolchain
         if (platform.indexOf("Linux") != -1 || platform.equals("MacOS")) {//NOI18N

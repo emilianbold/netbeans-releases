@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.spi.remote.setup;
 
+import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+
 /**
  * Allows to plug in a different way of setting up a remote host.
  *
@@ -68,7 +70,7 @@ public interface HostSetupProvider {
      * which provide UI and performs actual work
      * @return an instance of HostSetupWorker
      */
-    HostSetupWorker createHostSetupWorker();
+    HostSetupWorker createHostSetupWorker(ToolsCacheManager toolsCacheManager);
 
     /**
      * Determines whether this provider is applicable.

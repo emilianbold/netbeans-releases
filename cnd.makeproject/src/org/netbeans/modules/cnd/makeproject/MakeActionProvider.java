@@ -563,7 +563,7 @@ public class MakeActionProvider implements ActionProvider {
                     return;
                 } else if (conf.isApplicationConfiguration()) {
                     RunProfile runProfile = null;
-                    int platform = conf.getPlatform().getValue();
+                    int platform = conf.getDevelopmentHost().getBuildPlatform();
                     if (platform == Platform.PLATFORM_WINDOWS) {
                         // On Windows we need to add paths to dynamic libraries from subprojects to PATH
                         runProfile = conf.getProfile().clone(conf);
@@ -738,7 +738,7 @@ public class MakeActionProvider implements ActionProvider {
                         args = buildCommand.substring(index + 1);
                         buildCommand = buildCommand.substring(0, index);
                     }
-                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getPlatform().getValue());
+                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
                     profile.setArgs(args);
                     ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                             project,
@@ -760,7 +760,7 @@ public class MakeActionProvider implements ActionProvider {
                 }
                 String buildCommand;
                 String args;
-                if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
+                if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_WINDOWS) {
                     buildCommand = "cmd.exe"; // NOI18N
                     args = "/c sh "; // NOI18N
                 } else {
@@ -771,7 +771,7 @@ public class MakeActionProvider implements ActionProvider {
                     args += " -x "; // NOI18N
                 }
                 args += "nbproject/Package-" + conf.getName() + ".bash"; // NOI18N
-                RunProfile profile = new RunProfile(conf.getBaseDir(), conf.getPlatform().getValue());
+                RunProfile profile = new RunProfile(conf.getBaseDir(), conf.getDevelopmentHost().getBuildPlatform());
                 profile.setArgs(args);
                 ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                         project,
@@ -795,7 +795,7 @@ public class MakeActionProvider implements ActionProvider {
                         args = buildCommand.substring(index + 1);
                         buildCommand = buildCommand.substring(0, index);
                     }
-                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getPlatform().getValue());
+                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
                     profile.setArgs(args);
                     ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                             project,
@@ -851,14 +851,14 @@ public class MakeActionProvider implements ActionProvider {
                         // Clean command
                         String commandLine;
                         String args;
-                        if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
+                        if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_WINDOWS) {
                             commandLine = "cmd.exe"; // NOI18N
                             args = "/c rm -rf " + outputFile; // NOI18N
                         } else {
                             commandLine = "rm"; // NOI18N
                             args = "-rf " + outputFile; // NOI18N
                         }
-                        RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getPlatform().getValue());
+                        RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
                         profile.setArgs(args);
                         ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                                 project,
@@ -878,7 +878,7 @@ public class MakeActionProvider implements ActionProvider {
                             commandLine = commandLine.substring(0, index);
                         }
                         // Add the build commandLine
-                        profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getPlatform().getValue());
+                        profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
                         profile.setArgs(args);
                         projectActionEvent = new ProjectActionEvent(
                                 project,
@@ -1109,14 +1109,12 @@ public class MakeActionProvider implements ActionProvider {
         }
 
         // Check build/run/debug platform vs. host platform
-        int buildPlatformId = conf.getPlatform().getValue();
-        Platform buildPlatform = Platforms.getPlatform(buildPlatformId);
-
+        int buildPlatformId = conf.getDevelopmentHost().getBuildPlatform();
         ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
         int hostPlatformId = CompilerSetManager.getDefault(execEnv).getPlatform();
-        Platform hostPlatform = Platforms.getPlatform(hostPlatformId);
-
-        if (buildPlatform != hostPlatform) {
+        if (buildPlatformId != hostPlatformId) {
+            Platform buildPlatform = Platforms.getPlatform(buildPlatformId);
+            Platform hostPlatform = Platforms.getPlatform(hostPlatformId);
             String errormsg = getString("WRONG_PLATFORM", hostPlatform.getDisplayName(), buildPlatform.getDisplayName());
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
             return false;
@@ -1370,7 +1368,7 @@ public class MakeActionProvider implements ActionProvider {
 //    }
 
     private static boolean isAbsolutePath(MakeConfiguration conf, String path) {
-        if (conf.getPlatform().getValue() == PlatformTypes.PLATFORM_WINDOWS) {
+        if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
             return path.length() > 3 && path.charAt(1) == ':' && path.charAt(2) == '/';
         } else {
             return path.length() > 0 && path.charAt(0) == '/';

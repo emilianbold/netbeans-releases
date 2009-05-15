@@ -210,7 +210,11 @@ public abstract class CsmFileReferences {
        return null;
    }
 
-   public static boolean hasTemplateBasedAncestors(CsmType type, int level) {
+   public static boolean hasTemplateBasedAncestors(CsmType type) {
+       return hasTemplateBasedAncestors(type, MAX_INHERITANCE_DEPTH);
+   }
+
+   private static boolean hasTemplateBasedAncestors(CsmType type, int level) {
        if( type != null) {
            if (level == 0) {
                CndUtils.assertTrueInConsole(false, "Infinite recursion in file " + type.getContainingFile() + " class " + type); //NOI18N
