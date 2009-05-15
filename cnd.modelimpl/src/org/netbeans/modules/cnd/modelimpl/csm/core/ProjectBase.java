@@ -44,6 +44,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -2639,34 +2640,94 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         this.FAKE_GLOBAL_NAMESPACE = new NamespaceImpl(this, true);
     }
 
+    private WeakReference<DeclarationContainer> weakDeclarationContainer;
     DeclarationContainer getDeclarationsSorage() {
-        DeclarationContainer dc = (DeclarationContainer) RepositoryUtils.get(declarationsSorageKey);
+        DeclarationContainer dc = null;
+        WeakReference<DeclarationContainer> weak = null;
+        if (TraceFlags.USE_WEAK_MEMORY_CACHE && isValid()) {
+            weak = weakDeclarationContainer;
+            if (weak != null) {
+                dc = weak.get();
+                if (dc != null) {
+                    return dc;
+                }
+            }
+        }
+        dc = (DeclarationContainer) RepositoryUtils.get(declarationsSorageKey);
         if (dc == null && isValid()) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get DeclarationsSorage by key " + declarationsSorageKey)); // NOI18N
+        }
+        if (TraceFlags.USE_WEAK_MEMORY_CACHE && dc != null) {
+            weakDeclarationContainer = new WeakReference<DeclarationContainer>(dc);
         }
         return dc != null ? dc : DeclarationContainer.empty();
     }
 
+    private WeakReference<FileContainer> weakFileContainer;
     FileContainer getFileContainer() {
-        FileContainer fc = (FileContainer) RepositoryUtils.get(fileContainerKey);
+        FileContainer fc = null;
+        WeakReference<FileContainer> weak = null;
+        if (TraceFlags.USE_WEAK_MEMORY_CACHE && isValid()) {
+            weak = weakFileContainer;
+            if (weak != null) {
+                fc = weak.get();
+                if (fc != null) {
+                    return fc;
+                }
+            }
+        }
+        fc = (FileContainer) RepositoryUtils.get(fileContainerKey);
         if (fc == null && isValid()) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get FileContainer by key " + fileContainerKey)); // NOI18N
+        }
+        if (TraceFlags.USE_WEAK_MEMORY_CACHE && fc != null) {
+            weakFileContainer = new WeakReference<FileContainer>(fc);
         }
         return fc != null ? fc : FileContainer.empty();
     }
 
+    private WeakReference<GraphContainer> weakGraphContainer;
     public final GraphContainer getGraphStorage() {
-        GraphContainer gc = (GraphContainer) RepositoryUtils.get(graphStorageKey);
+        GraphContainer gc = null;
+        WeakReference<GraphContainer> weak = null;
+        if (TraceFlags.USE_WEAK_MEMORY_CACHE && isValid()) {
+            weak = weakGraphContainer;
+            if (weak != null) {
+                gc = weak.get();
+                if (gc != null) {
+                    return gc;
+                }
+            }
+        }
+        gc = (GraphContainer) RepositoryUtils.get(graphStorageKey);
         if (gc == null && isValid()) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get GraphContainer by key " + graphStorageKey)); // NOI18N
+        }
+        if (TraceFlags.USE_WEAK_MEMORY_CACHE && gc != null) {
+            weakGraphContainer = new WeakReference<GraphContainer>(gc);
         }
         return gc != null ? gc : GraphContainer.empty();
     }
 
+    private WeakReference<ClassifierContainer> weakClassifierContainer;
     final ClassifierContainer getClassifierSorage() {
-        ClassifierContainer cc = (ClassifierContainer) RepositoryUtils.get(classifierStorageKey);
+        ClassifierContainer cc = null;
+        WeakReference<ClassifierContainer> weak = null;
+        if (TraceFlags.USE_WEAK_MEMORY_CACHE && isValid()) {
+            weak = weakClassifierContainer;
+            if (weak != null) {
+                cc = weak.get();
+                if (cc != null) {
+                    return cc;
+                }
+            }
+        }
+        cc = (ClassifierContainer) RepositoryUtils.get(classifierStorageKey);
         if (cc == null && isValid()) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get ClassifierSorage by key " + classifierStorageKey)); // NOI18N
+        }
+        if (TraceFlags.USE_WEAK_MEMORY_CACHE && cc != null) {
+            weakClassifierContainer = new WeakReference<ClassifierContainer>(cc);
         }
         return cc != null ? cc : ClassifierContainer.empty();
     }
