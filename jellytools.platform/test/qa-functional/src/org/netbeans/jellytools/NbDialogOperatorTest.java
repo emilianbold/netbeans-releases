@@ -60,6 +60,21 @@ public class NbDialogOperatorTest extends JellyTestCase {
 
     private static final String TEST_DIALOG_TITLE = "Test Dialog";
     protected static final String TEST_DIALOG_LABEL = "  This is a test dialog.";
+
+    public static final String[] tests = new String[] {
+        "testBtCancel",
+        "testBtClose",
+        "testBtHelp",
+        "testBtNo",
+        "testBtOK",
+        "testBtYes",
+        "testCancel",
+        "testClose",
+        "testHelp",
+        "testNo",
+        "testOK",
+        "testYes"
+    };
     
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
@@ -73,7 +88,7 @@ public class NbDialogOperatorTest extends JellyTestCase {
     public static Test suite() {
         //NbTestSuite suite = new NbTestSuite(NbDialogOperatorTest.class);
         //return suite;
-        return createModuleTest(NbDialogOperatorTest.class);
+        return createModuleTest(NbDialogOperatorTest.class, tests);
     }
     
     /** Shows dialog to test. */
