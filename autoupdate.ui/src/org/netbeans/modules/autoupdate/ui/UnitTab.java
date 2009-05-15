@@ -95,6 +95,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
+import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.api.progress.ProgressHandle;
@@ -1288,7 +1289,10 @@ public class UnitTab extends javax.swing.JPanel {
                 
         @Override
         protected boolean isVisible (Unit u) {
-              return super.isVisible (u);
+            if (u.getRelevantElement().getUpdateUnit().getType() == UpdateManager.TYPE.FEATURE) {
+                return false;
+            }
+            return super.isVisible (u);
         }
     }
     
@@ -1421,6 +1425,9 @@ public class UnitTab extends javax.swing.JPanel {
                 
         @Override
         protected boolean isVisible (Unit u) {
+            if (u.getRelevantElement().getUpdateUnit().getType() == UpdateManager.TYPE.FEATURE) {
+                return false;
+            }
             return isEnabled();
         }
     }
@@ -1555,6 +1562,9 @@ public class UnitTab extends javax.swing.JPanel {
         }
         @Override
         protected boolean isVisible (Unit u) {
+            if (u.getRelevantElement().getUpdateUnit().getType() == UpdateManager.TYPE.FEATURE) {
+                return false;
+            }
             return isEnabled();
         }
     }
@@ -1597,6 +1607,9 @@ public class UnitTab extends javax.swing.JPanel {
         
         @Override
         protected boolean isVisible (Unit u) {
+            if (u.getRelevantElement().getUpdateUnit().getType() == UpdateManager.TYPE.FEATURE) {
+                return false;
+            }
             return super.isVisible(u);
         }
         
