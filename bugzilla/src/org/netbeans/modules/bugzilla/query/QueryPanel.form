@@ -1801,7 +1801,7 @@
                           <Component id="lastRefreshDateLabel" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
-                          <Component id="refreshButton" min="-2" max="-2" attributes="0"/>
+                          <Component id="seenButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="jLabel4" min="-2" pref="2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -1809,7 +1809,7 @@
                           <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
                           <Component id="jLabel5" min="-2" pref="2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="seenButton" min="-2" max="-2" attributes="0"/>
+                          <Component id="refreshButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                           <Component id="jLabel6" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
@@ -1843,9 +1843,9 @@
                       <Component id="jLabel5" linkSize="2" alignment="2" min="-2" pref="11" max="-2" attributes="0"/>
                       <Component id="jLabel6" linkSize="2" alignment="2" min="-2" max="-2" attributes="0"/>
                       <Component id="modifyButton" linkSize="2" alignment="2" min="-2" max="-2" attributes="0"/>
-                      <Component id="seenButton" linkSize="2" alignment="2" min="-2" max="-2" attributes="0"/>
+                      <Component id="refreshButton" linkSize="2" alignment="2" min="-2" max="-2" attributes="0"/>
                       <Component id="removeButton" linkSize="2" alignment="2" min="-2" max="-2" attributes="0"/>
-                      <Component id="refreshButton" alignment="2" min="-2" max="-2" attributes="0"/>
+                      <Component id="seenButton" alignment="2" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -1853,10 +1853,10 @@
         </DimensionLayout>
       </Layout>
       <SubComponents>
-        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="refreshButton">
+        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="seenButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/bugzilla/query/Bundle.properties" key="QueryPanel.refreshButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/bugzilla/query/Bundle.properties" key="QueryPanel.seenButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <AccessibilityProperties>
@@ -1865,7 +1865,7 @@
             </Property>
           </AccessibilityProperties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="refreshButtonActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="seenButtonActionPerformed"/>
           </Events>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
@@ -1906,10 +1906,10 @@
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
           </AuxValues>
         </Component>
-        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="seenButton">
+        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="refreshButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/bugzilla/query/Bundle.properties" key="QueryPanel.seenButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/bugzilla/query/Bundle.properties" key="QueryPanel.refreshButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <AccessibilityProperties>
@@ -1918,7 +1918,7 @@
             </Property>
           </AccessibilityProperties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="seenButtonActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="refreshButtonActionPerformed"/>
           </Events>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
