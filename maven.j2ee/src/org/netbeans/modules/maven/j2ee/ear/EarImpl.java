@@ -440,14 +440,11 @@ class EarImpl implements EarImplementation,
             Artifact elem = it.next();
             if ("war".equals(elem.getType()) || "ejb".equals(elem.getType())) {//NOI18N
                 File fil = elem.getFile();
-                FileObject fo = FileUtil.toFileObject(fil);
-                if (fo != null) {
-                    Project owner = FileOwnerQuery.getOwner(fo);
-                    if (owner != null) {
-                        J2eeModuleProvider prov = owner.getLookup().lookup(J2eeModuleProvider.class);
-                        if (prov != null) {
-                            toRet.add(owner);
-                        }
+                Project owner = FileOwnerQuery.getOwner(fil.toURI());
+                if (owner != null) {
+                    J2eeModuleProvider prov = owner.getLookup().lookup(J2eeModuleProvider.class);
+                    if (prov != null) {
+                        toRet.add(owner);
                     }
                 }
             }
@@ -839,6 +836,16 @@ class EarImpl implements EarImplementation,
 
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             module.removePropertyChangeListener(listener);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return module.equals(obj);
+        }
+
+        @Override
+        public int hashCode() {
+            return module.hashCode();
         }
 
     }
