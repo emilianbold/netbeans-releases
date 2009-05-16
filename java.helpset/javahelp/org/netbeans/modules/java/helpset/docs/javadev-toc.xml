@@ -79,6 +79,7 @@
             <tocitem text="Working with Builds" target="comp_process" />
             <tocitem text="Building Tasks: Quick Reference" target="comp_quickref" />
             <tocitem text="Building a Project" target="comp_project" />
+            <tocitem text="Using a Build Server" target="build_server"/>
             <tocitem text="Compiling a Single File" target="comp_file" />
             <tocitem text="Managing the Classpath" target="comp_classpath" />
             <tocitem text="Creating Dependencies Between Projects" target="comp_dependencies" />
