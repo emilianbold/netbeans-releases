@@ -1876,6 +1876,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
     private static final class TheClog extends Work {
 
+        private static final long MRPROPPER = 60000; // one minute
+        private static final boolean inTests = System.getProperty("netbeans.buildnumber") == null; //NOI18N
         private final AtomicBoolean cancelledByInitialWork = new AtomicBoolean(false);
 
         public TheClog() {
@@ -1883,22 +1885,23 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         protected @Override boolean getDone() {
-            final long tm = System.currentTimeMillis();
-
-            for( ; !cancelledByInitialWork.get(); ) {
-                try {
-                    Thread.sleep(321);
-                } catch (InterruptedException ex) {
-                    // ignore, but stop waiting
-                    break;
+            if (!inTests) {
+                final long tm = System.currentTimeMillis();
+                for( ; !cancelledByInitialWork.get() && System.currentTimeMillis() - tm < MRPROPPER; ) {
+                    try {
+                        Thread.sleep(321);
+                    } catch (InterruptedException ex) {
+                        // ignore, but stop waiting
+                        break;
+                    }
+                    LOGGER.log(Level.FINE, "TheClog has been successfully clogging for {0} ms", (System.currentTimeMillis() - tm)); //NOI18N
                 }
-                LOGGER.log(Level.FINE, "TheClog has been successfully clogging for {0} ms", (System.currentTimeMillis() - tm)); //NOI18N
             }
             return true;
         }
 
         protected @Override boolean isCancelledBy(Work newWork) {
-            assert newWork instanceof InitialRootsWork : "Expecting InitialRootsWork: " + newWork; //NOI18N
+//            assert newWork instanceof InitialRootsWork : "Expecting InitialRootsWork: " + newWork; //NOI18N
             LOGGER.log(Level.FINE, "TheClog cancelled by {0}", newWork); //NOI18N
             cancelledByInitialWork.set(true);
             return true;
