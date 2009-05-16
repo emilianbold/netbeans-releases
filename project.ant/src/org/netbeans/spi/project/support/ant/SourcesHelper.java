@@ -183,7 +183,6 @@ public final class SourcesHelper {
                 if (file.isFolder()) {
                     path += "/"; // NOI18N
                 }
-                computeIncludeExcludePatterns();
                 if (!computeIncludeExcludePatterns().matches(path, true)) {
                     return false;
                 }

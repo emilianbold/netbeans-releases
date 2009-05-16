@@ -62,6 +62,8 @@ import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
@@ -75,6 +77,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
+import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -909,8 +912,24 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
+    private ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> aptCaches = new ConcurrentHashMap<APTIncludeHandler.State, APTFileCacheEntry>();
     public final APTFileCacheEntry getIncludeCacheEntry(APTPreprocHandler preprocHandler) {
-        return null; //new APTFileCacheEntry(getAbsolutePath());
+        if (true) {
+            return null;
+        }
+        APTIncludeHandler.State key = preprocHandler.getIncludeHandler().getState();
+        APTFileCacheEntry out = aptCaches.get(key);
+        if (out == null) {
+            out = new APTFileCacheEntry(getAbsolutePath());
+            APTFileCacheEntry prev = aptCaches.putIfAbsent(key, out);
+            if (prev != null) {
+                out = prev;
+            }
+        } else {
+            int i = 0;
+        }
+        assert out != null;
+        return out;
     }
 
     public ReadOnlyTokenBuffer getErrors(final Collection<RecognitionException> result) {

@@ -56,28 +56,38 @@ public final class APTFileCacheEntry {
         assert (filePath != null);
         this.filePath = filePath;
     }
-    
+
+    private static volatile int hits = 0;
+    /** must be called under lock */
     /*package*/ APTMacroMap.State getPostIncludeMacroState(APTInclude node) {
         Data data = cache.get(node);
-        if (data != null && data.state != null) {
+        assert data != null;
+        if (data.state != null) {
+            hits++;
             if (TRACE) {
-                System.err.println("HIT cache for :" + node.getToken().getLine() + ":" + node.getText() + " in " + filePath);
+                if (hits % 10 == 0) {
+                    System.err.println("HIT " + hits + " cache for line:" + node.getToken().getLine() + " in " + filePath);
+                }
             }
-            return data.state;
         }
-        return null;
+        return data.state;
     }
 
+    /** must be called under lock */
     /*package*/ void setPostIncludeMacroState(APTInclude node, APTMacroMap.State state) {
-        if (TRACE) {
-            System.err.println("PUT cache for cache for [line " + node.getToken().getLine() + "]:" + node.getText() + " in " + filePath);
-        }
+        assert cache.get(node).state == null;
         cache.get(node).state = state;
     }
 
-    /*package*/ synchronized Object getLock(APTInclude node) {
-        Data data = new Data(null);
-        cache.put(node, data);
+    /*package*/ Object getLock(APTInclude node) {
+        Data data = cache.get(node);
+        if (data == null) {
+            data = new Data(null);
+            Data prev = cache.putIfAbsent(node, data);
+            if (prev != null) {
+                data = prev;
+            }
+        }
         return data.lock;
     }
 
