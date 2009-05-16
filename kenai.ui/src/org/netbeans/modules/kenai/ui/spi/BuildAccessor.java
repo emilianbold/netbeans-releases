@@ -38,10 +38,4 @@ public abstract class BuildAccessor {
      */
     public abstract ActionListener getNewBuildAction( ProjectHandle project );
 
-    /**
-     *
-     * @param query
-     * @return Action to invoke when user pressed Enter key on given build line.
-     */
-    public abstract ActionListener getDefaultAction( BuildHandle build );
 }
