@@ -168,7 +168,7 @@ public final class ToolsCacheManager {
     public synchronized CompilerSetManager getCompilerSetManagerCopy(ExecutionEnvironment env) {
         CompilerSetManager out = copiedManagers.get(env);
         if (out == null) {
-            out = CompilerSetManager.getDefault(env, false).deepCopy();
+            out = CompilerSetManager.getDeepCopy(env);
             if (out.getCompilerSets().size() == 1 && out.getCompilerSets().get(0).getName().equals(CompilerSet.None)) {
                 out.remove(out.getCompilerSets().get(0));
             }

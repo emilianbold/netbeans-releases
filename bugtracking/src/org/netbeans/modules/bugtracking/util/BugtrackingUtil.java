@@ -43,6 +43,7 @@ import java.awt.AWTKeyStroke;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -74,6 +75,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.SwingConstants;
 import org.jdesktop.layout.LayoutStyle;
@@ -470,6 +472,17 @@ public class BugtrackingUtil {
     public static void logAutoRefreshEvent(String connector, String queryName, boolean isKenai, boolean on) {
         queryName = obfuscateQueryName(queryName);
         logBugtrackingEvents(USG_BUGTRACKING_AUTOMATIC_REFRESH, new Object[] {connector, queryName, isKenai, on} );
+    }
+
+    public static int getColumnWidthInPixels(int widthInLeters, JComponent comp) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < widthInLeters; i++, sb.append("u"));                // NOI18N
+        return getColumnWidthInPixels(sb.toString(), comp);
+    }
+
+    public static int getColumnWidthInPixels(String str, JComponent comp) {
+        FontMetrics fm = comp.getFontMetrics(comp.getFont());
+        return fm.stringWidth(str);
     }
 
     /**

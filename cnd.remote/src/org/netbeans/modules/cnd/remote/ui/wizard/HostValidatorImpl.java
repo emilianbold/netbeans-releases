@@ -130,7 +130,7 @@ public class HostValidatorImpl implements HostValidator {
                 }
             });
             final CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(env);
-           csm.initialize(false, false);
+            csm.initialize(false, false);
             runOnFinish = new Runnable() {
                 public void run() {
                     csm.finishInitialization();
