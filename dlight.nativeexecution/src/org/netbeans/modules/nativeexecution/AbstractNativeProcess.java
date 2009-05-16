@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CancellationException;
+import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -105,7 +106,8 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             setState(State.RUNNING);
         } catch (Throwable ex) {
             String msg = ex.getMessage() == null ? ex.toString() : ex.getMessage();
-            log.info(loc("NativeProcess.exceptionOccured.text", msg)); // NOI18N
+            //log.info(loc("NativeProcess.exceptionOccured.text", msg)); // NOI18N
+            log.log(Level.INFO, loc("NativeProcess.exceptionOccured.text"), ex);
             setState(State.ERROR);
             interrupt();
         }
