@@ -77,6 +77,10 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
         this.env = env;
     }
 
+    public RemoteCommandSupport(ExecutionEnvironment execEnv, String cmd) {
+        this(execEnv, cmd, null);
+    }
+
     public boolean isInterrupted() {
         return interrupted;
     }
@@ -150,10 +154,6 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
         return getExitStatus();
     }
 
-    public RemoteCommandSupport(ExecutionEnvironment execEnv, String cmd) {
-        this(execEnv, cmd, null);
-    }
-
     @Override
     public String toString() {
         return getOutput();
@@ -166,41 +166,4 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
             return "";
         }
     }
-
-//    public void setPreserveCommand(boolean value) {
-//        preserveCommand = value;
-//    }
-//
-//    private boolean preserveCommand = true; // false;
-
-    //TODO (execution): ???
-//    private String substituteCommand() {
-//        StringBuilder cmdline = new StringBuilder();
-//        if (!preserveCommand) {
-//            if (env != null) {
-//                // we can't use ssh env routine cause it allows only vars described by AllowEnv in /etc/ssh/sshd_config
-//                // echannel.setEnv(ev, env.get(ev));
-//                // so we do next
-//                cmdline.append(ShellUtils.prepareExportString(env));
-//            }
-//
-//            String pathName = "PATH";//PlatformInfo.getDefault(key).getPathName();//NOI18N
-//            if (env == null || env.get(pathName) == null) {
-//                cmdline.append(ShellUtils.prepareExportString(new String[] {pathName + "=/bin:/usr/bin:$PATH"}));//NOI18N
-//            }
-//        } else {
-//            assert env==null || env.size() == 0; // if one didn't want command to be changed but provided env he should be aware of doing something wrong
-//        }
-//
-//
-//        cmdline.append(cmd);
-//
-//        String theCommand = cmdline.toString();
-//
-//        if (!preserveCommand) {
-//            theCommand = ShellUtils.wrapCommand(executionEnvironment, theCommand);
-//        }
-//
-//        return theCommand;
-//    }
 }
