@@ -57,11 +57,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonInstance;
+import org.netbeans.modules.hudson.api.UI;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ProjectHudsonJobCreator;
 import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
-import org.netbeans.modules.hudson.ui.nodes.HudsonRootNode;
 import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -82,8 +82,7 @@ public class CreateJob extends AbstractAction {
 
     public CreateJob() {
         super(NbBundle.getMessage(CreateJob.class, "CTL_CreateJob"));
-        Collection<? extends HudsonInstance> instances = HudsonManagerImpl.getDefault().getInstances();
-        this.instance = instances.isEmpty() ? null : instances.iterator().next();
+        this.instance = null;
     }
 
     public CreateJob(HudsonInstance instance) {
@@ -113,7 +112,14 @@ public class CreateJob extends AbstractAction {
                 }
             }
         });
-        panel.init(dd, instance);
+        HudsonInstance _instance;
+        if (instance != null) {
+            _instance = instance;
+        } else {
+            Collection<? extends HudsonInstance> instances = HudsonManagerImpl.getDefault().getInstances();
+            _instance = instances.isEmpty() ? null : instances.iterator().next();
+        }
+        panel.init(dd, _instance);
         dd.setOptions(new Object[] {createButton, NotifyDescriptor.CANCEL_OPTION});
         dd.setClosingOptions(new Object[] {NotifyDescriptor.CANCEL_OPTION});
         dialog.set(DialogDisplayer.getDefault().createDialog(dd));
@@ -135,7 +141,7 @@ public class CreateJob extends AbstractAction {
             ProjectHudsonProvider.getDefault().recordAssociation(project,
                     new ProjectHudsonProvider.Association(instance.getUrl(), name));
             OpenProjects.getDefault().open(new Project[] {project}, false);
-            HudsonRootNode.select(instance.getUrl(), name);
+            UI.selectNode(instance.getUrl(), name);
         } catch (IOException x) {
             Exceptions.attachLocalizedMessage(x, NbBundle.getMessage(CreateJob.class, "CreateJob.failure"));
             Logger.getLogger(CreateJob.class.getName()).log(Level.WARNING, null, x);

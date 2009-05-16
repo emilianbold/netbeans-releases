@@ -145,16 +145,22 @@ import org.openide.util.NbBundle;
         setPreferredSize(new java.awt.Dimension(534, 409));
         setRequestFocusEnabled(false);
 
+        jLabel1.setLabelFor(textHostDisplayName);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.jLabel1.text")); // NOI18N
 
+        labelPlatform.setLabelFor(labelPlatformValue);
         org.openide.awt.Mnemonics.setLocalizedText(labelPlatform, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.labelPlatform.text")); // NOI18N
 
+        labelHostname.setLabelFor(labelHostnameValue);
         org.openide.awt.Mnemonics.setLocalizedText(labelHostname, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.labelHostname.text")); // NOI18N
 
+        labelUsername.setLabelFor(labelUsernameValue);
         org.openide.awt.Mnemonics.setLocalizedText(labelUsername, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.labelUsername.text")); // NOI18N
 
+        jLabel2.setLabelFor(jTextArea1);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.jLabel2.text")); // NOI18N
 
+        jLabel3.setLabelFor(cbDefaultToolchain);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.jLabel3.text")); // NOI18N
 
         jTextArea1.setColumns(20);
@@ -169,6 +175,7 @@ import org.openide.util.NbBundle;
 
         org.openide.awt.Mnemonics.setLocalizedText(labelUsernameValue, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.labelUsernameValue.text")); // NOI18N
 
+        jLabel4.setLabelFor(cbSyncMode);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.jLabel4.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -178,7 +185,7 @@ import org.openide.util.NbBundle;
             .add(layout.createSequentialGroup()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(textHostDisplayName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE))
+                .add(textHostDisplayName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 462, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(labelPlatform)
@@ -199,10 +206,10 @@ import org.openide.util.NbBundle;
                     .add(jLabel3))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(cbSyncMode, 0, 386, Short.MAX_VALUE)
-                    .add(cbDefaultToolchain, 0, 386, Short.MAX_VALUE)))
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
-            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
+                    .add(cbSyncMode, 0, 445, Short.MAX_VALUE)
+                    .add(cbDefaultToolchain, 0, 445, Short.MAX_VALUE)))
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
+            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -227,7 +234,7 @@ import org.openide.util.NbBundle;
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel2)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel3)

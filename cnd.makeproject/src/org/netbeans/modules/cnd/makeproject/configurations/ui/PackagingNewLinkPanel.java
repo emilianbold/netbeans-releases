@@ -119,7 +119,7 @@ public class PackagingNewLinkPanel extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         nameLabel.setLabelFor(nameTextField);
-        nameLabel.setText(org.openide.util.NbBundle.getMessage(PackagingNewLinkPanel.class, "PackagingNewLinkPanel.nameLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(PackagingNewLinkPanel.class, "PackagingNewLinkPanel.nameLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
@@ -157,7 +157,7 @@ public class PackagingNewLinkPanel extends javax.swing.JPanel {
         linkTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PackagingNewLinkPanel.class, "PackagingNewLinkPanel.linkTextField.AccessibleContext.accessibleDescription")); // NOI18N
 
         link.setLabelFor(linkTextField);
-        link.setText(org.openide.util.NbBundle.getMessage(PackagingNewLinkPanel.class, "PackagingNewLinkPanel.link.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(link, org.openide.util.NbBundle.getMessage(PackagingNewLinkPanel.class, "PackagingNewLinkPanel.link.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
