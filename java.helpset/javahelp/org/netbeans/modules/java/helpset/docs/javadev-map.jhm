@@ -15,6 +15,7 @@
 <mapID target="comp_jar" url="compile/comp_jar.html" />
 <mapID target="comp_project" url="compile/comp_project.html" />
 <mapID target="comp_process" url="compile/comp_process.html" />
+<mapID target="build_server" url="compile/comp_hudson.html" />
 <mapID target="comp_quickref" url="compile/comp_quickref.html" />
 <mapID target="comp_libraries" url="compile/comp_libraries.html" />
 <mapID target="output.window" url="compile/comp_output.html" />
