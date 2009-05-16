@@ -101,7 +101,7 @@ public class NbModuleProjectGenerator {
                     if (ProjectManager.getDefault().findProject(dirFO) != null) {
                         throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
                     }
-                    createProjectXML(dirFO, cnb, NbModuleProvider.STANDALONE);
+                    createProjectXML(dirFO, cnb, NbModuleProvider.STANDALONE, osgi);
                     createPlatformProperties(dirFO, platformID);
                     createManifest(dirFO, cnb, bundlePath, layerPath, osgi);
                     if (bundlePath != null) {
@@ -133,7 +133,7 @@ public class NbModuleProjectGenerator {
                     if (ProjectManager.getDefault().findProject(dirFO) != null) {
                         throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
                     }
-                    createProjectXML(dirFO, cnb, NbModuleProvider.SUITE_COMPONENT);
+                    createProjectXML(dirFO, cnb, NbModuleProvider.SUITE_COMPONENT, osgi);
                     createSuiteProperties(dirFO, suiteDir);
                     createManifest(dirFO, cnb, bundlePath, layerPath, osgi);
                     if (bundlePath != null) {
@@ -269,7 +269,7 @@ public class NbModuleProjectGenerator {
                         throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
                     }
                     createNetBeansOrgBuildXML(dirFO, cnb, nborg);
-                    createProjectXML(dirFO, cnb, NbModuleProvider.NETBEANS_ORG);
+                    createProjectXML(dirFO, cnb, NbModuleProvider.NETBEANS_ORG, osgi);
                     createManifest(dirFO, cnb, bundlePath, layerPath, osgi);
                     createBundle(dirFO, bundlePath, name);
                     if (layerPath != null) {
@@ -293,10 +293,11 @@ public class NbModuleProjectGenerator {
      * <em>standalone</em> or <em>module in suite</em> module.
      */
     private static void createProjectXML(FileObject projectDir,
-            String cnb, NbModuleProvider.NbModuleType type) throws IOException {
+            String cnb, NbModuleProvider.NbModuleType type, boolean osgi) throws IOException {
+        String[] deps = osgi ? new String[] { "org.netbeans.core.netigso" } : new String[0]; // NOI18N
         ProjectXMLManager.generateEmptyModuleTemplate(
                 createFileObject(projectDir, AntProjectHelper.PROJECT_XML_PATH),
-                cnb, type);
+                cnb, type, deps);
     }
     
     /**

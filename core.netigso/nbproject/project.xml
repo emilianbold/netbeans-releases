@@ -95,9 +95,11 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <public-packages>
+                <package>org.osgi.framework</package>
+            </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/felix.jar</runtime-relative-path>
+                <runtime-relative-path>felix.jar</runtime-relative-path>
                 <binary-origin>external/felix.jar</binary-origin>
             </class-path-extension>
         </data>
