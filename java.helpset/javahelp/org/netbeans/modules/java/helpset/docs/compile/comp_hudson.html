@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 2009 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Using a Build Server</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<meta name="keywords" content="build" />
+
+</head>
+<body>
+<h2>Using a Build Server</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+<p>The IDE supports creating and starting build jobs using the Hudson build server.
+Hudson is an open-source server that you can use to build your applications.
+You can use the Hudson server as part of your continuous integration (CI) process
+for automated building, verification and testing.</p>
+
+<p>For more information about setting up and using a Hudson build server, see the following documents.</p>
+<ul>
+    <li><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="https://hudson.dev.java.net/">
+        <param name="text" value="<html><u>https://hudson.dev.java.net/</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+        </object>
+    </li>
+    <li><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://wiki.hudson-ci.org/display/HUDSON/Meet+Hudson">
+        <param name="text" value="<html><u>http://wiki.hudson-ci.org/display/HUDSON/Meet+Hudson</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+        </object>
+    </li>
+</ul>
+
+<p><strong>Adding a Hudson instance.</strong></p>
+<ol>
+    <li>Right-click the Hudson Builders node in the Services window and choose Add Hudson Instance.</li>
+    <li>Type the Name for the instance that will be displayed under the Hudson Builders node.</li>
+    <li>Specify the server URL, the auto-refresh setting. Click Add.</li>
+</ol>
+
+<p>After you add a Hudson instance, a node for the instance is added below the Hudson Builders node.
+You can expand the node to view the status of builds on that instance.</p>
+
+<h3>Creating a build</h3>
+<p>You can specify the applications that you want the server to build
+    by creating a new build.
+When you create the build, you specify the repository containing the sources
+for the application.
+A node for the build is added under the instance node.
+You can view additional details about the status of builds by right-clicking the
+node for the build and choosing Open in Browser.</p>
+
+<p><strong>Setting up a new continuous build.</strong></p>
+<ol>
+    <li>Right-click the Hudson instance you want to use and choose New Build.</li>
+    <li>Specify the project name and source repository. Click Create.</li>
+</ol>
+
+<p></p>
+
+<p><strong>Starting a job.</strong></p>
+<ul>
+    <li>Right-click the build that you want to start and choose Start Job.</li>
+</ul>
+
+<ul class="notes">
+    <li>To create builds and start jobs you must have access to a Hudson server.</li>
+</ul>
+
+<!--  <dl>
+      <dt><a name="seealso">See also</a></dt>
+      <dd><a href="comp_classpath.html">Managing the Classpath</a></dd>
+      <dd><a href="../run/run_args.html">Setting the Main Class and Runtime Arguments</a></dd>    
+  </dl>-->
+
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small> 
+
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>
