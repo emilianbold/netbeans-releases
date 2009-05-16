@@ -138,7 +138,8 @@ public class HostPropertiesDialog extends JPanel {
 
         setFocusCycleRoot(true);
 
-        lblHost.setText(org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.lblHost.text")); // NOI18N
+        lblHost.setLabelFor(tfHost);
+        org.openide.awt.Mnemonics.setLocalizedText(lblHost, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.lblHost.text")); // NOI18N
 
         tfHost.setEditable(false);
         tfHost.setText(org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.tfHost.text")); // NOI18N
@@ -148,7 +149,8 @@ public class HostPropertiesDialog extends JPanel {
             }
         });
 
-        lblPort.setText(org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.lblPort.text")); // NOI18N
+        lblPort.setLabelFor(tfPort);
+        org.openide.awt.Mnemonics.setLocalizedText(lblPort, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.lblPort.text")); // NOI18N
 
         tfPort.setEditable(false);
         tfPort.setText(org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.tfPort.text")); // NOI18N
@@ -158,7 +160,8 @@ public class HostPropertiesDialog extends JPanel {
             }
         });
 
-        lblUser.setText(org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.lblUser.text")); // NOI18N
+        lblUser.setLabelFor(tfUser);
+        org.openide.awt.Mnemonics.setLocalizedText(lblUser, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.lblUser.text")); // NOI18N
 
         tfUser.setEditable(false);
         tfUser.setText(org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.tfUser.text")); // NOI18N
@@ -168,7 +171,8 @@ public class HostPropertiesDialog extends JPanel {
             }
         });
 
-        lblName.setText(org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.lblName.text")); // NOI18N
+        lblName.setLabelFor(tfName);
+        org.openide.awt.Mnemonics.setLocalizedText(lblName, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.lblName.text")); // NOI18N
 
         tfName.setText(org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.tfName.text")); // NOI18N
         tfName.addActionListener(new java.awt.event.ActionListener() {
@@ -177,7 +181,8 @@ public class HostPropertiesDialog extends JPanel {
             }
         });
 
-        lblSync.setText(org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.lblSync.text")); // NOI18N
+        lblSync.setLabelFor(cbSync);
+        org.openide.awt.Mnemonics.setLocalizedText(lblSync, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.lblSync.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -194,7 +199,7 @@ public class HostPropertiesDialog extends JPanel {
                         .add(18, 18, 18)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
-                                .add(tfHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE)
+                                .add(tfHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                                 .add(lblPort)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -204,7 +209,7 @@ public class HostPropertiesDialog extends JPanel {
                     .add(layout.createSequentialGroup()
                         .add(lblSync)
                         .add(18, 18, 18)
-                        .add(cbSync, 0, 263, Short.MAX_VALUE)))
+                        .add(cbSync, 0, 279, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
