@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.bugzilla.issue;
@@ -53,6 +53,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
+import javax.swing.JComponent;
+import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -69,6 +71,9 @@ import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.TextUtils;
+import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.openide.filesystems.FileUtil;
@@ -84,6 +89,7 @@ public class BugzillaIssue extends Issue {
     public static final String RESOLVE_FIXED = "FIXED";                         // NOI18N
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";               // NOI18N
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT);
+    private static final int SHORTENED_SUMMARY_LENGTH = 22;
 
     private TaskData data;
     private BugzillaRepository repository;
@@ -182,11 +188,6 @@ public class BugzillaIssue extends Issue {
 
     private Map<String, String> attributes;
 
-    /**
-     * Defines columns for a view table.
-     */
-    public static ColumnDescriptor[] DESCRIPTORS;
-
     public BugzillaIssue(TaskData data, BugzillaRepository repo) {
         super(repo);
         this.data = data;
@@ -213,35 +214,71 @@ public class BugzillaIssue extends Issue {
     }
 
     @Override
+    public String getShortenedDisplayName() {
+        if (data.isNew()) {
+            return getDisplayName();
+        }
+
+        String shortSummary = TextUtils.shortenText(getSummary(),
+                                                    2,    //try at least 2 words
+                                                    SHORTENED_SUMMARY_LENGTH);
+        return NbBundle.getMessage(BugzillaIssue.class,
+                                   "CTL_Issue",                         //NOI18N
+                                   new Object[] {getID(), shortSummary});
+    }
+
+    @Override
     public String getTooltip() {
         return getDisplayName();
     }
 
-    public static ColumnDescriptor[] getColumnDescriptors() {
-        if(DESCRIPTORS == null) {
-            ResourceBundle loc = NbBundle.getBundle(BugzillaIssue.class);
-            DESCRIPTORS = new ColumnDescriptor[] {
-                new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
-                                                  loc.getString("CTL_Issue_ID_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_ID_Desc")), // NOI18N
-                new ColumnDescriptor<String>(LABEL_NAME_SEVERITY, String.class,
-                                                  loc.getString("CTL_Issue_Severity_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Severity_Desc")), // NOI18N
-                new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
-                                                  loc.getString("CTL_Issue_Priority_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Priority_Desc")), // NOI18N
-                new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
-                                                  loc.getString("CTL_Issue_Status_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Status_Desc")), // NOI18N
-                new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
-                                                  loc.getString("CTL_Issue_Resolution_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Resolution_Desc")), // NOI18N
-                new ColumnDescriptor<String>(LABEL_NAME_SUMMARY, String.class,
-                                                  loc.getString("CTL_Issue_Summary_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Summary_Desc")) // NOI18N
-            };
+    public static ColumnDescriptor[] getColumnDescriptors(BugzillaRepository repository) {
+        ResourceBundle loc = NbBundle.getBundle(BugzillaIssue.class);
+        BugzillaConfiguration bc = repository.getConfiguration();
+        JTable t = new JTable();
+        return new ColumnDescriptor[] {
+            new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
+                                              loc.getString("CTL_Issue_ID_Title"),              // NOI18N
+                                              loc.getString("CTL_Issue_ID_Desc"),               // NOI18N
+                                              BugtrackingUtil.getColumnWidthInPixels(7, t)),
+            new ColumnDescriptor<String>(LABEL_NAME_SUMMARY, String.class,
+                                              loc.getString("CTL_Issue_Summary_Title"),         // NOI18N
+                                              loc.getString("CTL_Issue_Summary_Desc")),         // NOI18N
+            new ColumnDescriptor<String>(LABEL_NAME_SEVERITY, String.class,
+                                              loc.getString("CTL_Issue_Severity_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Severity_Desc"),         // NOI18N
+                                              getLongestWordWidth(
+                                                loc.getString("CTL_Issue_Severity_Title"),      // NOI18N
+                                                bc.getSeverities(), t)),
+            new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
+                                              loc.getString("CTL_Issue_Priority_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Priority_Desc"),         // NOI18N
+                                              getLongestWordWidth(
+                                                loc.getString("CTL_Issue_Priority_Title"),      // NOI18N
+                                                bc.getPriorities(), t)),
+            new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
+                                              loc.getString("CTL_Issue_Status_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_Status_Desc"),           // NOI18N
+                                              getLongestWordWidth(
+                                                loc.getString("CTL_Issue_Status_Title"),        // NOI18N
+                                                bc.getStatusValues(), t)),
+            new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
+                                              loc.getString("CTL_Issue_Resolution_Title"),      // NOI18N
+                                              loc.getString("CTL_Issue_Resolution_Desc"),       // NOI18N
+                                              getLongestWordWidth(
+                                                loc.getString("CTL_Issue_Resolution_Title"),    // NOI18N
+                                                bc.getResolutions(), t))
+        };
+    }
+
+    private static int getLongestWordWidth(String header, List<String> values, JComponent comp) {
+        int size = header.length();
+        for (String s : values) {
+            if(size < s.length()) {
+                size = s.length();
+            }
         }
-        return DESCRIPTORS;
+        return BugtrackingUtil.getColumnWidthInPixels(size, comp);
     }
 
     @Override

@@ -115,7 +115,7 @@ public class KenaiREST extends KenaiImpl {
         }
 
         if (resp.getResponseCode() != 200)
-            throw new KenaiException(resp.getResponseMessage(),resp.getDataAsString());
+            throw new KenaiException(name + ": " + resp.getResponseMessage(), resp.getDataAsString()); // NOI18N
 
         String sss = resp.getDataAsString();
 

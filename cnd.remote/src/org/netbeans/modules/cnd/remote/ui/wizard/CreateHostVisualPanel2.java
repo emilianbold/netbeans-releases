@@ -49,6 +49,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.spi.remote.setup.support.TextComponentWriter;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.openide.util.NbBundle;
 
 /*package*/ final class CreateHostVisualPanel2 extends JPanel {
@@ -62,6 +63,15 @@ import org.openide.util.NbBundle;
         initComponents();
 
         textLoginName.setText(System.getProperty("user.name"));
+        
+        // default password to the last entered one
+        ExecutionEnvironment lastEnv = CreateHostData.getLastExecutionEnvironment();
+        if (lastEnv != null) {
+            char[] passwd = PasswordManager.getInstance().get(lastEnv);
+            if (passwd != null) {
+                textPassword.setText(new String(passwd));
+            }
+        }
 
         DocumentListener dl = new DocumentListener() {
 
