@@ -80,6 +80,9 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             String path = null;
             if (dirf != null) {
                 path = RemotePathMap.getPathMap(executionEnvironment).getRemotePath(dirf.getAbsolutePath(),true);
+                if (log.isLoggable(Level.FINEST) && path.contains(" ")) {
+                    log.finest("A PATH WITH A SPACE\n");
+                }
                 pb = pb.setWorkingDirectory(path);
             }
             process = pb.call();

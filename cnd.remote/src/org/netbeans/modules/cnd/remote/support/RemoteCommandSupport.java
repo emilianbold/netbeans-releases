@@ -63,6 +63,8 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
     private StringWriter out;
     private final String cmd;
     private final Map<String, String> env;
+    private final boolean escape;
+    private final String[] args;
 
     private boolean interrupted = false;
 
@@ -71,10 +73,26 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
         return support.run();
     }
 
+    public static int run(ExecutionEnvironment execEnv, String cmd, String... args) {
+        RemoteCommandSupport support = new RemoteCommandSupport(execEnv, cmd, null, args);
+        return support.run();
+    }
+
+    public RemoteCommandSupport(ExecutionEnvironment execEnv, String cmd, Map<String, String> env, String... args) {
+        super(execEnv);
+        this.cmd = cmd;
+        this.env = env;
+        this.escape = true;
+        this.args = args;
+    }
+
+
     public RemoteCommandSupport(ExecutionEnvironment execEnv, String cmd, Map<String, String> env) {
         super(execEnv);
         this.cmd = cmd;
         this.env = env;
+        this.escape = false;
+        this.args = null;
     }
 
     public RemoteCommandSupport(ExecutionEnvironment execEnv, String cmd) {
@@ -98,7 +116,10 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
             }
             try {
 //                final String substitutedCommand = substituteCommand();
-                NativeProcessBuilder pb = new NativeProcessBuilder(executionEnvironment, cmd,false);
+                NativeProcessBuilder pb = new NativeProcessBuilder(executionEnvironment, cmd, this.escape);
+                if (args != null) {
+                    pb = pb.setArguments(args);
+                }
                 pb = pb.addEnvironmentVariables(env);
                 Process process = pb.call();
                 InputStream is = process.getInputStream();
