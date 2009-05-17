@@ -64,7 +64,7 @@ public final class APTMacroImpl implements APTMacro {
     private final APTToken[] paramsArray;
     private final List<APTToken> body;
     private final Kind macroType;
-    private int hashCode = 0;
+    private volatile int hashCode = 0;
 
     public APTMacroImpl(CharSequence file, APTToken name, Collection<APTToken> params, List<APTToken> body, Kind macroType) {
         assert (name != null);
