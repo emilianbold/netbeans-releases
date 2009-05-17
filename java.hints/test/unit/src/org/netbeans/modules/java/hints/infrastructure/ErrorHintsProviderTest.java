@@ -44,7 +44,10 @@ package org.netbeans.modules.java.hints.infrastructure;
 import java.io.File;
 import java.io.FilenameFilter;
 import javax.swing.text.Document;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -52,9 +55,12 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.TestUtil;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 
@@ -80,7 +86,7 @@ public class ErrorHintsProviderTest extends NbTestCase {
     
     private static File cache;
     private static FileObject cacheFO;
-    
+
     @Override
     protected void setUp() throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml"}, new Object[0]);
@@ -91,6 +97,12 @@ public class ErrorHintsProviderTest extends NbTestCase {
             
             cache.deleteOnExit();
         }
+
+        RepositoryUpdater.getDefault().start(true);
+        ClassPath empty = ClassPathSupport.createClassPath(new FileObject[0]);
+        JavaSource.create(ClasspathInfo.create(empty, empty, empty)).runWhenScanFinished(new Task<CompilationController>() {
+            public void run(CompilationController parameter) throws Exception {}
+        }, true).get();
     }
     
     private void prepareTest(String capitalizedName) throws Exception {
@@ -126,6 +138,8 @@ public class ErrorHintsProviderTest extends NbTestCase {
         TestUtil.copyFiles(getDataDir(), FileUtil.toFile(sourceRoot), files);
         
         packageRoot.refresh();
+
+        SourceUtilsTestUtil.compileRecursively(sourceRoot);
         
         testSource = packageRoot.getFileObject(capitalizedName + ".java");
         
