@@ -113,6 +113,7 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.core</friend>
+                <friend>org.netbeans.core.netigso</friend>
                 <friend>org.netbeans.core.registry</friend>
                 <friend>org.netbeans.modules.apisupport.ant</friend>
                 <friend>org.netbeans.modules.apisupport.project</friend>

@@ -46,6 +46,7 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.felix.moduleloader.IContent;
 import org.apache.felix.moduleloader.IContentLoader;
@@ -55,20 +56,28 @@ import org.apache.felix.moduleloader.IURLPolicy;
 import org.apache.felix.moduleloader.ResourceNotFoundException;
 import org.netbeans.Module;
 import org.netbeans.ProxyClassLoader;
+import org.netbeans.core.startup.MainLookup;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Enumerations;
 import org.openide.util.Exceptions;
+import org.openide.util.lookup.InstanceContent;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
+import org.osgi.framework.Constants;
+import org.osgi.framework.ServiceEvent;
+import org.osgi.framework.ServiceListener;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.SynchronousBundleListener;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-class NetigsoActivator implements BundleActivator, SynchronousBundleListener {
+final class NetigsoActivator
+implements BundleActivator, SynchronousBundleListener, ServiceListener,
+InstanceContent.Convertor<ServiceReference, Object> {
     static final Logger LOG = Logger.getLogger(NetigsoActivator.class.getName());
 
     private Set<Module> all = new CopyOnWriteArraySet<Module>();
@@ -80,10 +89,12 @@ class NetigsoActivator implements BundleActivator, SynchronousBundleListener {
     public void start(BundleContext context) {
         m_context = context;
         context.addBundleListener(this);
+        context.addServiceListener(this);
     }
 
     public void stop(BundleContext context) {
         context.removeBundleListener(this);
+        context.removeServiceListener(this);
         m_context = null;
     }
 
@@ -143,6 +154,40 @@ class NetigsoActivator implements BundleActivator, SynchronousBundleListener {
             c = c.getSuperclass();
         }
         throw first;
+    }
+
+    public void serviceChanged(ServiceEvent ev) {
+        final ServiceReference ref = ev.getServiceReference();
+        if (ev.getType() == ServiceEvent.REGISTERED) {
+            MainLookup.register(ref, this);
+        }
+        if (ev.getType() == ServiceEvent.UNREGISTERING) {
+            MainLookup.unregister(ref, this);
+        }
+    }
+
+    public Object convert(ServiceReference obj) {
+        return obj.getBundle().getBundleContext().getService(obj);
+    }
+
+    public Class<? extends Object> type(ServiceReference obj) {
+        String[] arr = (String[])obj.getProperty(Constants.OBJECTCLASS);
+        if (arr.length > 0) {
+            try {
+                return (Class<?>)obj.getBundle().loadClass(arr[0]);
+            } catch (ClassNotFoundException ex) {
+                LOG.log(Level.INFO, "Cannot load service class", arr[0]); // NOI18N
+            }
+        }
+        return Object.class;
+    }
+
+    public String id(ServiceReference obj) {
+        return (String) obj.getProperty(Constants.SERVICE_ID);
+    }
+
+    public String displayName(ServiceReference obj) {
+        return (String) obj.getProperty(Constants.SERVICE_DESCRIPTION);
     }
 
     private static final class ModuleContentLoader implements IContentLoader,

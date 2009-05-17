@@ -233,6 +233,15 @@ implements Stamps.Updater {
         }
     }
 
+    static Bundle findBundle(String cnb) {
+        for (Bundle b : activator.getBundles()) {
+            if (cnb.equals(b.getSymbolicName())) {
+                return b;
+            }
+        }
+        return null;
+    }
+
     public void flushCaches(DataOutputStream os) throws IOException {
         Writer w = new OutputStreamWriter(os);
         for (String s : registered) {
