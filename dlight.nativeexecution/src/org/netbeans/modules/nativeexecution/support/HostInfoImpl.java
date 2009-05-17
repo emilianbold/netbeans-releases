@@ -134,7 +134,7 @@ public class HostInfoImpl implements HostInfo {
             // So this case sould be handled.
 
             // We safely can do this in the same thread (in this exact case)
-            List<String> errorLines = new ArrayList();
+            List<String> errorLines = new ArrayList<String>();
             InputStream err = hostinfoProcess.getErrorStream();
 
             if (err != null) {
