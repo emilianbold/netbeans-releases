@@ -1047,9 +1047,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
             CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter(ppState)), flags);
             FilePreprocessorConditionState pcState = pcBuilder.build();
-            if (false) {
-                setAptCacheEntry(preprocHandler, aptCacheEntry);
-            }
+            setAptCacheEntry(preprocHandler, aptCacheEntry);
             startProject.setParsedPCState(this, ppState, pcState);
             long time = (emptyAstStatictics) ? System.currentTimeMillis() : 0;
             try {
