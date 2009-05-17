@@ -51,6 +51,7 @@ public interface CommandProvider {
    
     /**
      * Run a remote commane via cnd.remote's RemoteCommandSupport.
+     * NB: it is recommended to use a version with explicit parameters!
      *
      * @param env The user and remote host (user@host)
      * @param cmd The command to run
@@ -59,6 +60,17 @@ public interface CommandProvider {
      */
     public int run(ExecutionEnvironment executionEnvironment, String cmd, Map<String, String> env);
 
+    /**
+     * Run a remote commane via cnd.remote's RemoteCommandSupport.
+     * NB: THIS IS PREFERRABLE OVER run(ExecutionEnvironment, String, Map<String, String>)
+     *
+     * @param env The user and remote host (user@host)
+     * @param cmd The command to run
+     * @param env Environment
+     * @param args arguments
+     * @return The exit status of the command
+     */
+    public int run(ExecutionEnvironment executionEnvironment, String cmd, Map<String, String> env, String... args);
 
     /**
      * Return the output of the remote command.
