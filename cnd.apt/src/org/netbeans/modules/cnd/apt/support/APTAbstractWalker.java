@@ -115,7 +115,7 @@ public abstract class APTAbstractWalker extends APTWalker {
             if (!startPath.equals(cacheEntry.getFilePath())) {
                 System.err.println("using not expected entry " + cacheEntry + " when work with file " + startPath);
             }
-            Object lock = cacheEntry.getLock(aptInclude);
+            Object lock = cacheEntry.getIncludeLock(aptInclude);
             synchronized (lock) {
                 APTMacroMap.State postIncludeState = cacheEntry.getPostIncludeMacroState(aptInclude);
                 if (postIncludeState != null) {
@@ -199,7 +199,15 @@ public abstract class APTAbstractWalker extends APTWalker {
         }
         boolean res = false;
         try {
-            res = APTConditionResolver.evaluate(apt, getMacroMap());
+            Boolean cachedRes = cacheEntry != null ? cacheEntry.getEvalResult(apt) : null;
+            if (cachedRes != null) {
+                res = cachedRes.booleanValue();
+            } else {
+                res = APTConditionResolver.evaluate(apt, getMacroMap());
+                if (cacheEntry != null) {
+                    cacheEntry.setEvalResult(apt, res);
+                }
+            }
         } catch (TokenStreamException ex) {
             APTUtils.LOG.log(Level.SEVERE, "error on evaluating condition node " + apt, ex);// NOI18N
         }
