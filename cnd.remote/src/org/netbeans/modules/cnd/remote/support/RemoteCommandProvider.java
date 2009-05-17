@@ -64,7 +64,13 @@ public class RemoteCommandProvider implements CommandProvider {
         support = new RemoteCommandSupport(execEnv, cmd, env);
         return support.run();
     }
-    
+
+    public int run(ExecutionEnvironment execEnv, String cmd, Map<String, String> env, String... args) {
+        log.finest(getClass().getSimpleName() + " running " + cmd + " on " + execEnv);
+        support = new RemoteCommandSupport(execEnv, cmd, env, args);
+        return support.run();
+    }
+
     public String getOutput() {
         return support.getOutput();
     }
