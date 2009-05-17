@@ -254,7 +254,7 @@ public class PhpProject implements Project {
     /**
      * @return selenium tests directory or <code>null</code>
      */
-    synchronized FileObject getSeleniumDirectory() {
+    FileObject getSeleniumDirectory() {
         if (seleniumDirectory == null) {
             ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
                 public Void run() {
