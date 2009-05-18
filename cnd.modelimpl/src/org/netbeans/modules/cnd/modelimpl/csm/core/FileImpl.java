@@ -1629,17 +1629,27 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
+    private static final boolean TRACE_SCHUDULE_PARSING = Boolean.getBoolean("cnd.trace.schedule.parsing"); // NOI18N
     public void scheduleParsing(boolean wait) throws InterruptedException {
         synchronized (stateLock) {
-            if (!isParsed()) {
-                while (!isParsed()) {
+            while (!isParsed()) {
+                if (!isParsingOrParsed()) {
+                    if (TRACE_SCHUDULE_PARSING) {
+                        System.err.printf("scheduleParsing: enqueue %s in states %s, %s\n", getAbsolutePath(), state, parsingState); // NOI18N
+                    }
                     ParserQueue.instance().add(this, Collections.singleton(DUMMY_STATE),
                             ParserQueue.Position.HEAD, false, ParserQueue.FileAction.NOTHING);
-                    if (wait) {
-                        stateLock.wait();
-                    } else {
-                        return;
+                }
+                if (wait) {
+                    if (TRACE_SCHUDULE_PARSING) {
+                        System.err.printf("scheduleParsing: waiting for %s in states %s, %s\n", getAbsolutePath(), state, parsingState); // NOI18N
                     }
+                    stateLock.wait();
+                    if (TRACE_SCHUDULE_PARSING) {
+                        System.err.printf("scheduleParsing: lock notified for %s in states %s, %s\n", getAbsolutePath(), state, parsingState); // NOI18N
+                    }
+                } else {
+                    return;
                 }
             }
         }
