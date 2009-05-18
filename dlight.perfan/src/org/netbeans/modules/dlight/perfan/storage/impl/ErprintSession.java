@@ -61,9 +61,10 @@ public class ErprintSession {
     public ErprintSession(ExecutionEnvironment execEnv, String sproHome, String experimentDirectory, SunStudioFiltersProvider dataFiltersProvider) {
         id = idCounter.incrementAndGet();
         String er_printCmd = sproHome + "/bin/er_print"; // NOI18N
-        NativeProcessBuilder erProcessBuilder = new NativeProcessBuilder(execEnv, er_printCmd,false);
-        erProcessBuilder = erProcessBuilder.setWorkingDirectory(experimentDirectory);
-        erProcessBuilder = erProcessBuilder.setArguments(experimentDirectory).unbufferOutput(true);
+        NativeProcessBuilder erProcessBuilder = NativeProcessBuilder.newProcessBuilder(execEnv);
+        erProcessBuilder.setExecutable(er_printCmd);
+        erProcessBuilder.setWorkingDirectory(experimentDirectory);
+        erProcessBuilder.setArguments(experimentDirectory).unbufferOutput(true);
         this.dataFiltersProvider = dataFiltersProvider;
 
         npb = erProcessBuilder;

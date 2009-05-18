@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTAbstractWalker;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
+import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -76,7 +77,7 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
     ////////////////////////////////////////////////////////////////////////////
     // impl of abstract methods
     
-    protected void include(ResolvedPath resolvedPath, APTInclude apt) {
+    protected boolean include(ResolvedPath resolvedPath, APTInclude apt, APTMacroMap.State postIncludeState) {
         FileImpl included = null;
         if (resolvedPath != null) {
             CharSequence path = resolvedPath.getPath();
@@ -86,7 +87,7 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
                     if (aStartProject.isValid()) {
                         ProjectBase inclFileOwner = LibraryManager.getInstance().resolveFileProjectOnInclude(aStartProject, getFile(), resolvedPath);
                         try {
-                            included = includeAction(inclFileOwner, path, mode, apt);
+                            included = includeAction(inclFileOwner, path, mode, apt, postIncludeState);
                         } catch (FileNotFoundException ex) {
                             APTUtils.LOG.log(Level.WARNING, "APTProjectFileBasedWalker: file {0} not found", new Object[] {path});// NOI18N
                             DiagnosticExceptoins.register(ex);
@@ -104,9 +105,10 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
             }
         }
         postInclude(apt, included);
+        return true;
     }
     
-    abstract protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt) throws IOException;
+    abstract protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt, APTMacroMap.State postIncludeState) throws IOException;
 
     protected void postInclude(APTInclude apt, FileImpl included) {
     }

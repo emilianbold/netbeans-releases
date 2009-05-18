@@ -206,6 +206,7 @@ public final class AddModulePanel extends JPanel {
         final boolean nonApiDeps = showNonAPIModules.isSelected();
         ModuleProperties.RP.post(new Runnable() {
             public void run() {
+                props.resetUniverseDependencies();  // #165300 refresh in case of added friends/public packages
                 final Set<ModuleDependency> universeDeps = props.getUniverseDependencies(true, !nonApiDeps);
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {

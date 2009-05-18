@@ -43,6 +43,8 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.WizardDescriptor;
@@ -56,7 +58,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
     public SourceFoldersPanel(SourceFoldersDescriptorPanel sourceFoldersDescriptorPanel) {
         initComponents();
         this.sourceFoldersDescriptorPanel = sourceFoldersDescriptorPanel;
-        sourceFilesPanel = new SourceFilesPanel();
+        sourceFilesPanel = new SourceFilesPanel(sourceFoldersDescriptorPanel);
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -86,10 +88,22 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
     void store(WizardDescriptor wizardDescriptor) {
         wizardDescriptor.putProperty("sourceFolders", sourceFilesPanel.getListData().iterator()); // NOI18N
         wizardDescriptor.putProperty("sourceFoldersList", new ArrayList<FolderEntry>(sourceFilesPanel.getListData())); // NOI18N
-        wizardDescriptor.putProperty("sourceFoldersFilter", sourceFilesPanel.getFoldersFilter()); // NOI18N
+        if (sourceFilesPanel.getFoldersFilter().trim().length()==0) {
+            // change empty pattern on "no ignore folder pattern"
+            wizardDescriptor.putProperty("sourceFoldersFilter", MakeConfigurationDescriptor.DEFAULT_NO_IGNORE_FOLDERS_PATTERN); // NOI18N
+        } else {
+            wizardDescriptor.putProperty("sourceFoldersFilter", sourceFilesPanel.getFoldersFilter()); // NOI18N
+        }
     }
     
     boolean valid(WizardDescriptor settings) {
+        String regex = sourceFilesPanel.getFoldersFilter();
+        try {
+            Pattern.compile(regex);
+        } catch (PatternSyntaxException e){
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, e.getMessage());
+            return false;
+        }
         return true;
     }
 

@@ -107,7 +107,11 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
             runDirectory = mapper.getRemotePath(runDirectory, true);
         }
 
-        File executable = new File(runDirectory, pae.getExecutable());
+        File executable = new File(pae.getExecutable());
+
+        if (!executable.isAbsolute()) {
+            executable = new File(runDirectory, executable.getPath());
+        }
 
         NativeExecutableTargetConfiguration targetConf = new NativeExecutableTargetConfiguration(
                 executable.getAbsolutePath(),

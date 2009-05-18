@@ -45,13 +45,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
+import org.netbeans.modules.nativeexecution.api.util.CommandLineHelper;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.MacroMap;
 import org.netbeans.modules.nativeexecution.support.UnbufferSupport;
-import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.util.NbBundle;
 
 public final class LocalNativeProcess extends AbstractNativeProcess {
+
     private Process process = null;
     private InputStream processOutput = null;
     private OutputStream processInput = null;
@@ -64,7 +65,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
     protected void create() throws Throwable {
         try {
             boolean isWindows = hostInfo.getOSFamily() == OSFamily.WINDOWS;
-            
+
             if (isWindows && hostInfo.getShell() == null) {
                 throw new IOException(loc("NativeProcess.shellNotFound.text")); // NOI18N
             }
@@ -74,9 +75,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
             if (workingDirectory != null) {
                 workingDirectory = new File(workingDirectory).getAbsolutePath();
-                if (isWindows) {
-                    workingDirectory = WindowsSupport.getInstance().normalizePath(workingDirectory);
-                }
+                workingDirectory = CommandLineHelper.getInstance(info.getExecutionEnvironment()).toShellPath(workingDirectory);
             }
 
             final MacroMap env = info.getEnvVariables();
@@ -105,10 +104,10 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             ew.write(env);
 
             if (workingDirectory != null) {
-                processInput.write(("cd \"" + workingDirectory + "\"\n").getBytes()); // NOI18N
+                processInput.write(("cd " + workingDirectory + "\n").getBytes()); // NOI18N
             }
 
-            String cmd = "exec " + info.getCommandLine() + "\n"; // NOI18N
+            String cmd = "exec " + info.getCommandLineForShell() + "\n"; // NOI18N
 
             processInput.write(cmd.getBytes());
             processInput.flush();
