@@ -99,6 +99,7 @@ public final class ManifestManager {
     public static final String OPENIDE_MODULE_LAYER = "OpenIDE-Module-Layer"; // NOI18N
     public static final String OPENIDE_MODULE_LOCALIZING_BUNDLE = "OpenIDE-Module-Localizing-Bundle"; // NOI18N
     public static final String OPENIDE_MODULE_PUBLIC_PACKAGES = "OpenIDE-Module-Public-Packages"; // NOI18N
+    public static final String BUNDLE_EXPORT_PACKAGE = "Export-Package"; // NOI18N
     public static final String OPENIDE_MODULE_FRIENDS = "OpenIDE-Module-Friends"; // NOI18N
     public static final String OPENIDE_MODULE_MODULE_DEPENDENCIES = "OpenIDE-Module-Module-Dependencies"; // NOI18N
     public static final String CLASS_PATH = "Class-Path"; // NOI18N
@@ -205,6 +206,12 @@ public final class ManifestManager {
     public static ManifestManager getInstance(Manifest manifest, boolean loadPublicPackages, boolean withGeneratedLayer) {
         Attributes attr = manifest.getMainAttributes();
         String codename = attr.getValue(OPENIDE_MODULE);
+        if (codename == null) {
+            if (attr.getValue(BUNDLE_SYMBOLIC_NAME) != null) {
+                return getOSGiInstance(manifest, loadPublicPackages, withGeneratedLayer);
+            }
+        }
+
         String codenamebase = null;
         String releaseVersion = null;
         if (codename != null) {
@@ -249,6 +256,39 @@ public final class ManifestManager {
                 friendNames,
                 deprecated,
                 autoUpdateShowInClient != null ? Boolean.valueOf(autoUpdateShowInClient) : null,
+                attr.getValue(OPENIDE_MODULE_MODULE_DEPENDENCIES));
+    }
+
+    private static ManifestManager getOSGiInstance(Manifest manifest, boolean loadPublicPackages, boolean withGeneratedLayer) {
+        Attributes attr = manifest.getMainAttributes();
+        String codenamebase = attr.getValue(BUNDLE_SYMBOLIC_NAME);
+        PackageExport[] publicPackages = null;
+        if (loadPublicPackages) {
+            publicPackages = EMPTY_EXPORTED_PACKAGES;
+            String pp = attr.getValue(BUNDLE_EXPORT_PACKAGE);
+            if (pp != null) {
+                List<PackageExport> arr = new ArrayList<PackageExport>();
+                for (String p : pp.split(",")) {
+                    arr.add(new PackageExport(p.trim(), false));
+                }
+                publicPackages = arr.toArray(new PackageExport[0]);
+            }
+        }
+        return new ManifestManager(
+                codenamebase, null,
+                attr.getValue(BUNDLE_VERSION),
+                attr.getValue(OPENIDE_MODULE_IMPLEMENTATION_VERSION),
+                null, // provides
+                null, // requires
+                null, // needs
+                attr.getValue(OPENIDE_MODULE_LOCALIZING_BUNDLE),
+                attr.getValue(OPENIDE_MODULE_LAYER),
+                withGeneratedLayer,
+                attr.getValue(CLASS_PATH),
+                publicPackages, //publicPackages,
+                null, //friendNames,
+                false, // deprecated,
+                null, // autoUpdateShowInClient != null ? Boolean.valueOf(autoUpdateShowInClient) : null,
                 attr.getValue(OPENIDE_MODULE_MODULE_DEPENDENCIES));
     }
     
