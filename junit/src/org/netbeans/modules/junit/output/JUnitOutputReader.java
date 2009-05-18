@@ -601,7 +601,7 @@ final class JUnitOutputReader {
         closePereviousReport();
         TestSuite suite = new JUnitTestSuite(suiteName, testSession);
         testSession.addSuite(suite);
-        manager.displaySuiteRunning(testSession, suiteName);
+        manager.displaySuiteRunning(testSession, suite);
         state = State.SUITE_STARTED;
         platformSources = null;
     }
