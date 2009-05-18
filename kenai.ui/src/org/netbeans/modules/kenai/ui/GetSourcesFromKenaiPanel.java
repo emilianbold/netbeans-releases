@@ -58,6 +58,7 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
@@ -426,6 +427,12 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                 }
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
+            } catch (IOException io) {
+                if (Subversion.CLIENT_UNAVAILABLE_ERROR_MESSAGE.equals(io.getMessage())) {
+                    // DO SOMETHING, svn client is unavailable
+                } else {
+                    Exceptions.printStackTrace(io);
+                }
             }
         }
         if (svnFolders != null) {
