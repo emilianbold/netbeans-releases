@@ -172,10 +172,20 @@ implements Stamps.Updater {
             activators.add(activator);
             configMap.put("felix.systembundle.activators", activators);
             felix = new Felix(configMap);
-            felix.start();
+            felix.init();
+            NetigsoActivator.LOG.finer("Felix initialized"); // NOI18N
         }
         return felix;
     }
+
+    static void startContainer() throws BundleException {
+        if (getContainer().getState() == Bundle.STARTING) {
+            NetigsoActivator.LOG.finer("Felix start:"); // NOI18N
+            getContainer().start();
+            NetigsoActivator.LOG.finer("Felix started"); // NOI18N
+        }
+    }
+
 
     /** Creates a fake bundle definition that represents one NetBeans module
      *

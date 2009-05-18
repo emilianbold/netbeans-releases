@@ -104,10 +104,13 @@ final class NetigsoModule extends Module {
     @Override
     protected void classLoaderUp(Set<Module> parents) throws IOException {
         NetigsoActivator.LOG.log(Level.FINE, "classLoaderUp {0}, state: {1}", new Object[] { getCodeNameBase(), bundle.getState() }); // NOI18N
-        if (bundle.getState() != Bundle.INSTALLED) {
-            return;
+        switch (bundle.getState()) {
+            case Bundle.INSTALLED: break;
+            case Bundle.ACTIVE: break;
+            default: return;
         }
         try {
+            NetigsoModuleFactory.startContainer();
             bundle.start();
         } catch (BundleException ex) {
             throw (IOException) new IOException(ex.getMessage()).initCause(ex);
