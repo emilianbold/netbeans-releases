@@ -60,14 +60,17 @@ public class PropertySplitter {
         public PropertySplitter(String line) {
             this(line, new char[] { '"' } , '\\', '\n', '\n'); //NOI18N
         }
-        
+
         private PropertySplitter(String line, char[] quotes, char escape, char separator, char nl) {
             this.line = line;
             this.quotes = quotes;
             this.separator = separator;
-            this.trim = trim;
             this.escape = escape;
             newline = nl;
+        }
+
+        void setSeparator(char sep) {
+            separator = sep;
         }
         
         
