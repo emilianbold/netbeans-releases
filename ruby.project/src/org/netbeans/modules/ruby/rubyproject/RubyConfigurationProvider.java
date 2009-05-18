@@ -137,6 +137,7 @@ public final class RubyConfigurationProvider implements ProjectConfigurationProv
         }
     };
     private final FileChangeListener fclWeak;
+    private final FileObject nbp;
     private FileObject configDir;
     private Map<String,Config> configs;
 
@@ -145,7 +146,7 @@ public final class RubyConfigurationProvider implements ProjectConfigurationProv
         this.customizerCategory = customizerCategory;
 
         fclWeak = FileUtil.weakFileChangeListener(fcl, null);
-        FileObject nbp = p.getProjectDirectory().getFileObject("nbproject"); // NOI18N
+        nbp = p.getProjectDirectory().getFileObject("nbproject"); // NOI18N
         if (nbp != null) {
             nbp.addFileChangeListener(fclWeak);
             LOGGER.log(Level.FINER, "Added listener to {0}", nbp);
