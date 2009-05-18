@@ -82,7 +82,7 @@ public class TreeTableVisualizerConfiguration implements VisualizerConfiguration
         this.tableColumns = tableColumns;
         List<Column> columns = Arrays.asList(treeColumn);
         columns.addAll(Arrays.asList(tableColumns));
-        this.dataTableMetadata = new DataTableMetadata(tableName, columns);
+        this.dataTableMetadata = new DataTableMetadata(tableName, columns, null);
     }
 
     /**

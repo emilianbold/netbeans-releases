@@ -1,0 +1,117 @@
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+
+Contributor(s):
+
+Portions Copyrighted 2009 Sun Microsystems, Inc.
+-->
+<html>
+    <head>
+        <title>Working with Maven Artifacts</title>
+        <link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+    <body>
+        <h2>Working with Maven Artifacts</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small></p>
+
+        <p>The project dependencies that are displayed under a project's Libraries node
+        are Maven artifacts that are specified in the POM.
+        Each Maven artifact has a unique coordinate (groupId, artifactId and version)
+        that is used to identify the artifact in the POM.
+        An artifact can also have dependencies that are specified in the artifact's POM.
+        </p>
+        
+        <p>You can see the details about individual artifacts in the Artifact Viewer.
+            The Artifact Viewer displays details in the following tabs.</p>
+        <ul>
+            <li><strong>Basic.</strong> The Basic tab displays the artifacts coordinates and version details.</li>
+            <li><strong>Project.</strong> The Project tab displays metadata contained in the artifact's POM
+            such as the description of the artifact, the URL for the project and issue tracking and version control details.</li>
+            <li><strong>Classpath.</strong> The Classpath tab displays the artifact's compilation, runtime and test dependencies.</li>
+            <li><strong>Graph.</strong> The Graph tab displays a visualization of the artifact's primary and secondary dependencies.</li>
+        </ul>
+
+        <p>The buttons in the toolbar of the Artifact Viewer enable you to perform the following tasks.</p>
+
+        <table border="1" cellpadding="5" cellspacing="0">
+            <tr>
+            <th align="left" scope="col"><b>Button</b></th>
+            <th align="left" scope="col"><b>Description</b></th>
+            </tr>
+            <tr><td><img src="img/DependencyIcon.png" alt="Add as Dependency to"></td><td>Add as Dependency.
+            Click this to open the Add Dependency dialog box and choose a project.</td></tr>
+            <tr><td><img src="img/update.png" alt="Checkout Sources"></td><td>Checkout Sources.
+            If the sources of the artifact are available in a repository, click this to open the Checkout Sources wizard
+            and specify a location for a local repository for the sources.</td></tr>
+            <tr><td><img src="img/library.png" alt="Create Library"></td><td>Create Library.
+            Click this to create a NetBeans library from the artifact.
+            The new library will be available in the Library Manager.</td></tr>
+        </table>
+
+        <p><strong>To open the Artifact Viewer.</strong></p>
+        <ul>
+            <li>In the Projects window, right-click an artifact under the Libraries node and choose View Artifact Details.</li>
+            <li>In the Maven Repository Browser, right-click an artifact and choose View Details.</li>
+        </ul>
+
+
+        <h3>Visualizing Dependency Conflicts</h3>
+        <p>The Graph tab of the Artifact Viewer enables you to easily visualize dependencies.
+        The visualizer also provides tools to help you find and resolve potential problems resulting from dependency version conflicts.
+        In the Graphs tab, artifacts with a version conflict are indicated by a red background.
+        You can click on the suggestion icon to open a dialog box with a description of the conflict
+        and options for resolving the conflict.</p>
+
+        <p><strong>To open the Graphs tab of the Artifact Viewer.</strong></p>
+        <ul>
+            <li>Right-click the Libraries node and choose Show Dependency Graph.</li>
+            <li>Right-click in the <tt>pom.xml</tt> editor and choose Show Dependency Graph.</li>
+        </ul>
+
+
+        
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/maven/maven-about.html">About Working with Maven</a></dd>
+    <dd><a href="maven_settings.html">Configuring Maven Settings</a></dd>
+    <dd><a href="maven-pom.html">Working with the Maven POM</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

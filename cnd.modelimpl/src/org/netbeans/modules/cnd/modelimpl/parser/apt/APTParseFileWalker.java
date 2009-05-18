@@ -84,8 +84,8 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     private final boolean triggerParsingActivity;
     private final EvalCallback evalCallback;
 
-    public APTParseFileWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler, boolean triggerParsingActivity, EvalCallback evalCallback) {
-        super(base, apt, file, preprocHandler);
+    public APTParseFileWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler, boolean triggerParsingActivity, EvalCallback evalCallback, APTFileCacheEntry cacheEntry) {
+        super(base, apt, file, preprocHandler, cacheEntry);
         this.createMacroAndIncludes = false;
         this.evalCallback = evalCallback;
         this.triggerParsingActivity = triggerParsingActivity;
@@ -153,9 +153,9 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         }
     }
 
-    protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt) throws IOException {
+    protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt, APTMacroMap.State postIncludeState) throws IOException {
         try {
-            return inclFileOwner.onFileIncluded(getStartProject(), inclPath, getPreprocHandler(), mode, isTriggerParsingActivity());
+            return inclFileOwner.onFileIncluded(getStartProject(), inclPath, getPreprocHandler(), postIncludeState, mode, isTriggerParsingActivity());
         } catch (NullPointerException ex) {
             APTUtils.LOG.log(Level.SEVERE, "NPE when processing file", ex);// NOI18N
             DiagnosticExceptoins.register(ex);

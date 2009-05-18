@@ -50,7 +50,15 @@ import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
  * @author Milos Kleint
  */
 public interface  GenericFindQuery {
-    
+
+    /**
+     * @throws BooleanQuery.TooManyClauses This runtime exception can be thrown if given query is too
+     * general and such search can't be executed as it would probably end with
+     * OutOfMemoryException. Callers should either assure that no such dangerous
+     * queries are constructed or catch BooleanQuery.TooManyClauses and act
+     * accordingly, for example by telling user that entered text for
+     * search is too general.
+     */
     public List<NBVersionInfo> find(List<QueryField> fields, List<RepositoryInfo> repos);
     
 }

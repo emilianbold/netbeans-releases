@@ -242,7 +242,7 @@ public class TestUtil {
             String msg = "junit: TestUtil.isClassImplementingTestInterface(...) " //NOI18N
                          + "could not find TypeElement for "            //NOI18N
                          + testIfaceFullName;
-            Logger.getLogger("global").log(Level.WARNING, msg);         //NOI18N
+            Logger.getLogger("global").log(Level.FINE, msg);         //NOI18N
             return false;
         }
         

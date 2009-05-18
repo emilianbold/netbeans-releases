@@ -666,7 +666,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
 
             if (classPath != null) {
-                wsimportFO = classPath.findResource("com/sun/tools/ws/ant/WsImport.class"); //NOI18N
+                wsimportFO = classPath.findResource("javax/xml/ws/Service.class"); //NOI18N
                 wscompileFO = classPath.findResource("com/sun/xml/rpc/tools/ant/Wscompile.class"); //NOI18N
             }
         }

@@ -294,10 +294,13 @@ public final class ToolchainManagerImpl {
             String pattern = folder.getFolderPattern();
             String key = folder.getFolderKey();
             if (key == null || pattern == null) {
-                return null;
+                continue;
             }
             String base = readRegistry(key, pattern);
-            if (base != null && folder.getFolderSuffix() != null) {
+            if (base == null) {
+                continue;
+            }
+            if (folder.getFolderSuffix() != null) {
                 base += "/" + folder.getFolderSuffix(); // NOI18N
             }
             return base;

@@ -56,7 +56,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
@@ -67,8 +66,8 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricsFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
-import org.netbeans.modules.dlight.spi.DemanglingFunctionNameService;
-import org.netbeans.modules.dlight.spi.DemanglingFunctionNameServiceFactory;
+import org.netbeans.modules.dlight.spi.CppSymbolDemangler;
+import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory;
 import org.openide.util.Lookup;
 
 /**
@@ -79,15 +78,15 @@ import org.openide.util.Lookup;
 public final class SQLStackStorage {
 
     public static final List<FunctionMetric> METRICS = Arrays.<FunctionMetric>asList(
-        FunctionMetric.CpuTimeInclusiveMetric, FunctionMetric.CpuTimeExclusiveMetric);
+            FunctionMetric.CpuTimeInclusiveMetric, FunctionMetric.CpuTimeExclusiveMetric);
     protected final SQLDataStorage sqlStorage;
     private final Map<CharSequence, Integer> funcCache;
     private final Map<NodeCacheKey, Integer> nodeCache;
     private int funcIdSequence;
     private int nodeIdSequence;
     private final ExecutorThread executor;
-    private boolean isRunning =  true;
-    private final DemanglingFunctionNameService demanglingService;
+    private boolean isRunning = true;
+    private final CppSymbolDemangler demangler;
 
     public SQLStackStorage(SQLDataStorage sqlStorage) throws SQLException, IOException {
         this.sqlStorage = sqlStorage;
@@ -99,11 +98,11 @@ public final class SQLStackStorage {
         executor = new ExecutorThread();
         executor.setPriority(Thread.MIN_PRIORITY);
         executor.start();
-        DemanglingFunctionNameServiceFactory factory = Lookup.getDefault().lookup(DemanglingFunctionNameServiceFactory.class);
+        CppSymbolDemanglerFactory factory = Lookup.getDefault().lookup(CppSymbolDemanglerFactory.class);
         if (factory != null) {
-            demanglingService = factory.getForCurrentSession();
+            demangler = factory.getForCurrentSession();
         } else {
-            demanglingService = null;
+            demangler = null;
         }
     }
 
@@ -117,11 +116,11 @@ public final class SQLStackStorage {
         }
     }
 
-    public boolean shutdown(){
-       isRunning = false;
-       funcCache.clear();
-       nodeCache.clear();
-       return true;
+    public boolean shutdown() {
+        isRunning = false;
+        funcCache.clear();
+        nodeCache.clear();
+        return true;
     }
 
     public int putStack(List<CharSequence> stack, long sampleDuration) {
@@ -147,8 +146,8 @@ public final class SQLStackStorage {
     public List<Long> getPeriodicStacks(long startTime, long endTime, long interval) throws SQLException {
         List<Long> result = new ArrayList<Long>();
         PreparedStatement ps = sqlStorage.prepareStatement(
-            "SELECT time_stamp FROM CallStack " + //NOI18N
-            "WHERE ? <= time_stamp AND time_stamp < ? ORDER BY time_stamp"); //NOI18N
+                "SELECT time_stamp FROM CallStack " + //NOI18N
+                "WHERE ? <= time_stamp AND time_stamp < ? ORDER BY time_stamp"); //NOI18N
         ps.setMaxRows(1);
         for (long time1 = startTime; time1 < endTime; time1 += interval) {
             long time2 = Math.min(time1 + interval, endTime);
@@ -175,7 +174,11 @@ public final class SQLStackStorage {
             Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
             metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
             metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
-            result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), rs.getString(2), rs.getString(3)), metrics));
+            String funcName = rs.getString(2);
+            if (demangler != null) {
+                funcName = demangler.demangle(funcName);
+            }
+            result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), funcName, rs.getString(3)), metrics));
         }
         rs.close();
         return result;
@@ -189,7 +192,11 @@ public final class SQLStackStorage {
             Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
             metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
             metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
-            result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), rs.getString(2), rs.getString(3)), metrics));
+            String funcName = rs.getString(2);
+            if (demangler != null) {
+                funcName = demangler.demangle(funcName);
+            }
+            result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), funcName, rs.getString(3)), metrics));
         }
         rs.close();
         return result;
@@ -197,37 +204,40 @@ public final class SQLStackStorage {
 
     public List<FunctionCall> getHotSpotFunctions(FunctionMetric metric, int limit) {
         try {
-            List<FunctionCall> result = new ArrayList<FunctionCall>();
+            List<String> funcNames = new ArrayList<String>();
+            List<FunctionCall> funcList = new ArrayList<FunctionCall>();
             PreparedStatement select = sqlStorage.prepareStatement(
-                "SELECT func_id, func_name, func_full_name,  time_incl, time_excl " + //NOI18N
-                "FROM Func ORDER BY " + metric.getMetricID() + " DESC"); //NOI18N
+                    "SELECT func_id, func_name, func_full_name,  time_incl, time_excl " + //NOI18N
+                    "FROM Func ORDER BY " + metric.getMetricID() + " DESC"); //NOI18N
             select.setMaxRows(limit);
             ResultSet rs = select.executeQuery();
             while (rs.next()) {
                 Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
                 metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
                 metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
-                String func_name = rs.getString(2);
-                if (demanglingService != null) {
-                    try {
-                        func_name = demanglingService.demangle(func_name).get();
-                    } catch (InterruptedException ex) {
-//                        Exceptions.printStackTrace(ex);
-                    } catch (ExecutionException ex) {
-  //                      Exceptions.printStackTrace(ex);
-                    }
-                }
-                result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), func_name, rs.getString(3)), metrics));
+                String name = rs.getString(2);
+                funcNames.add(name);
+                funcList.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), name, rs.getString(3)), metrics));
             }
             rs.close();
-            return result;
+
+            if (demangler != null) {
+                funcNames = demangler.demangle(funcNames);
+                if (funcNames.size() == funcList.size()) {
+                    for (int i = 0; i < funcList.size(); ++i) {
+                        ((FunctionImpl) funcList.get(i).getFunction()).setName(funcNames.get(i));
+                    }
+                }
+            }
+
+            return funcList;
         } catch (SQLException ex) {
         }
         return Collections.emptyList();
     }
 
     public List<FunctionCall> getFunctionsList(DataTableMetadata metadata,
-        List<Column> metricsColumn, FunctionDatatableDescription functionDescription) {
+            List<Column> metricsColumn, FunctionDatatableDescription functionDescription) {
         try {
             Collection<FunctionMetric> metrics = new ArrayList<FunctionMetric>();
             for (Column metricColumn : metricsColumn) {
@@ -237,10 +247,9 @@ public final class SQLStackStorage {
             String functionColumnName = functionDescription.getNameColumn();
             String offesetColumnName = functionDescription.getOffsetColumn();
             String functionUniqueID = functionDescription.getUniqueColumnName();
-//          ResultSet rs = storage.select(tableMetadata.getName(), columns, tableMetadata.getViewStatement());
-            List<FunctionCall> result = new ArrayList<FunctionCall>();
+            List<String> funcNames = new ArrayList<String>();
+            List<FunctionCall> funcList = new ArrayList<FunctionCall>();
             PreparedStatement select = sqlStorage.prepareStatement(metadata.getViewStatement());
-//            select.setMaxRows(limit);
             ResultSet rs = select.executeQuery();
             while (rs.next()) {
                 Map<FunctionMetric, Object> metricValues = new HashMap<FunctionMetric, Object>();
@@ -255,22 +264,23 @@ public final class SQLStackStorage {
                     } catch (SQLException e) {
                     }
                 }
-                //should create functions themself
-                String func_name = rs.getString(functionColumnName);
-                if (demanglingService != null) {
-                    try {
-                        func_name = demanglingService.demangle(func_name).get();
-                    } catch (InterruptedException ex) {
-//                        Exceptions.printStackTrace(ex);
-                    } catch (ExecutionException ex) {
-//                        Exceptions.printStackTrace(ex);
-                    }
-                }
-                result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(functionUniqueID), func_name, func_name), offesetColumnName != null ? rs.getLong(offesetColumnName): -1, metricValues));
+                String funcName = rs.getString(functionColumnName);
+                funcNames.add(funcName);
+                funcList.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(functionUniqueID), funcName, funcName), offesetColumnName != null ? rs.getLong(offesetColumnName) : -1, metricValues));
             }
             rs.close();
-            return result;
-        } catch (SQLException ex) {            
+
+            if (demangler != null) {
+                funcNames = demangler.demangle(funcNames);
+                if (funcNames.size() == funcList.size()) {
+                    for (int i = 0; i < funcList.size(); ++i) {
+                        ((FunctionImpl) funcList.get(i).getFunction()).setName(funcNames.get(i));
+                    }
+                }
+            }
+
+            return funcList;
+        } catch (SQLException ex) {
         }
         return Collections.emptyList();
     }
@@ -427,25 +437,25 @@ public final class SQLStackStorage {
     protected static class FunctionImpl implements Function {
 
         private final int id;
-        private final String name;
+        private String name;
         private final String quilifiedName;
 
-        public FunctionImpl(int id, String name, String qualified_name) {
+        public FunctionImpl(int id, String name, String qualifiedName) {
             this.id = id;
             this.name = name;
-            this.quilifiedName = qualified_name;
+            this.quilifiedName = qualifiedName;
         }
 
-//        public FunctionImpl(int id, String name) {
-//            this.id = id;
-//            this.name = name;
-//        }
         public int getId() {
             return id;
         }
 
         public String getName() {
             return name;
+        }
+
+        private void setName(String name) {
+            this.name = name;
         }
 
         public String getQuilifiedName() {
@@ -473,10 +483,8 @@ public final class SQLStackStorage {
 
         @Override
         public String getDisplayedName() {
-            return getFunction().getName() + (hasOffset() ?  ("+0x" + getOffset()) : ""); //NOI18N
+            return getFunction().getName() + (hasOffset() ? ("+0x" + getOffset()) : ""); //NOI18N
         }
-
-
 
         @Override
         public Object getMetricValue(FunctionMetric metric) {
@@ -589,7 +597,7 @@ public final class SQLStackStorage {
                         // first pass: collect metrics
                         Iterator<Object> cmdIterator = cmds.iterator();
                         while (cmdIterator.hasNext()) {
-                            if (!isRunning){
+                            if (!isRunning) {
                                 return;
                             }
                             Object cmd = cmdIterator.next();
@@ -609,7 +617,7 @@ public final class SQLStackStorage {
                         // second pass: execute inserts
                         cmdIterator = cmds.iterator();
                         while (cmdIterator.hasNext()) {
-                            if (!isRunning){
+                            if (!isRunning) {
                                 return;
                             }
                             Object cmd = cmdIterator.next();
@@ -699,5 +707,4 @@ public final class SQLStackStorage {
             }
         }
     }
-
 }

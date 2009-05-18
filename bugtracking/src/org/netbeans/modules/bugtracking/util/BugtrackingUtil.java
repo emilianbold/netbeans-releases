@@ -43,6 +43,7 @@ import java.awt.AWTKeyStroke;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -51,8 +52,11 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -71,6 +75,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.SwingConstants;
 import org.jdesktop.layout.LayoutStyle;
@@ -80,6 +85,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
 import org.netbeans.modules.bugtracking.patch.ContextualPatch;
+import org.netbeans.modules.bugtracking.patch.Patch;
 import org.netbeans.modules.bugtracking.patch.PatchException;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
@@ -468,6 +474,17 @@ public class BugtrackingUtil {
         logBugtrackingEvents(USG_BUGTRACKING_AUTOMATIC_REFRESH, new Object[] {connector, queryName, isKenai, on} );
     }
 
+    public static int getColumnWidthInPixels(int widthInLeters, JComponent comp) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < widthInLeters; i++, sb.append("u"));                // NOI18N
+        return getColumnWidthInPixels(sb.toString(), comp);
+    }
+
+    public static int getColumnWidthInPixels(String str, JComponent comp) {
+        FontMetrics fm = comp.getFontMetrics(comp.getFont());
+        return fm.stringWidth(str);
+    }
+
     /**
      * Logs bugtracking events
      *
@@ -534,6 +551,17 @@ public class BugtrackingUtil {
         };
         scrollPane.addMouseWheelListener(listener);
         scrollPane.getViewport().getView().addMouseWheelListener(listener);
+    }
+
+    public static boolean isPatch(FileObject fob) throws IOException {
+        boolean isPatch = false;
+        Reader reader = new BufferedReader(new InputStreamReader(fob.getInputStream()));
+        try {
+            isPatch = (Patch.parse(reader).length > 0);
+        } finally {
+            reader.close();
+        }
+        return isPatch;
     }
     
 }

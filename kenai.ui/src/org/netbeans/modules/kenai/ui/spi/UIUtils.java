@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.kenai.ui.spi;
 
+import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.Font;
@@ -48,6 +49,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.prefs.Preferences;
 import javax.swing.JButton;
+import javax.swing.JRootPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -197,12 +199,17 @@ public final class UIUtils {
 
                             public void run() {
                                 try {
-                                    if (loginPanel.getUsername().contains("@")) //NOI18N
-                                        throw new KenaiException(NbBundle.getMessage(LoginPanel.class, "ERR_InvalidUsername"));
                                     Kenai.getDefault().login(loginPanel.getUsername(), loginPanel.getPassword());
                                     SwingUtilities.invokeLater(new Runnable() {
+
                                         public void run() {
-                                            loginPanel.getRootPane().getParent().setVisible(false);
+                                            JRootPane rootPane = loginPanel.getRootPane();
+                                            if (rootPane != null) {
+                                                Container parent = rootPane.getParent();
+                                                if (parent != null) {
+                                                    parent.setVisible(false);
+                                                }
+                                            }
                                         }
                                     });
                                 } catch (final KenaiException ex) {

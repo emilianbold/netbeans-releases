@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeInfo;
+import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -66,7 +67,7 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
     
     /** Creates a new instance of APTRestorePreprocStateWalker */
     public APTRestorePreprocStateWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler, Stack<IncludeInfo> inclStack, String interestedFile) {
-        super(base, apt, file, preprocHandler);
+        super(base, apt, file, preprocHandler, null);
         this.searchInterestedFile = true;
         this.interestedFile = interestedFile;
         this.inclStack = inclStack;
@@ -77,14 +78,14 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
     
     /** Creates a new instance of APTRestorePreprocStateWalker */
     public APTRestorePreprocStateWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler) {
-        super(base, apt, file, preprocHandler);
+        super(base, apt, file, preprocHandler, null);
         this.searchInterestedFile = false;
         this.interestedFile = null;
         this.inclStack = null;
         this.stopDirective = null;
     }
     
-    protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt) throws IOException {
+    protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt, APTMacroMap.State postIncludeState) throws IOException {
         FileImpl csmFile = null;
         boolean foundDirective = false;
         if (searchInterestedFile) {

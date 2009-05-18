@@ -30,7 +30,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="addButton" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="spTab" alignment="1" pref="785" max="32767" attributes="0"/>
+                          <Component id="spTab" alignment="1" pref="789" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace min="1" pref="1" max="1" attributes="0"/>
                   </Group>
@@ -45,12 +45,12 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="lGeneral" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jSeparatorAdvanced" pref="734" max="32767" attributes="0"/>
+                      <Component id="jSeparatorAdvanced" pref="738" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="lConnection" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jSeparatorConnection" pref="626" max="32767" attributes="0"/>
+                      <Component id="jSeparatorConnection" pref="630" max="32767" attributes="0"/>
                   </Group>
                   <Component id="lUpdateCenters" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
@@ -108,7 +108,9 @@
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="null"/>
         </Property>
-        <Property name="dividerLocation" type="int" value="370"/>
+        <Property name="dividerLocation" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="Integer.parseInt(NbBundle.getMessage (SettingsTab.class, &quot;SettingsTab_Splitter_DefaultDividerLocation&quot;))" type="code"/>
+        </Property>
         <Property name="resizeWeight" type="double" value="0.5"/>
         <Property name="oneTouchExpandable" type="boolean" value="true"/>
       </Properties>

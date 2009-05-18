@@ -134,7 +134,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         if (env.isLocal()) {
             return false;
         } else {
-            CompilerSetManager compilerSetManagerCopy = cacheManager.getCompilerSetManagerCopy(env);
+            CompilerSetManager compilerSetManagerCopy = cacheManager.getCompilerSetManagerCopy(env, false);
             return compilerSetManagerCopy.isEmpty();
         }
     }
@@ -158,7 +158,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 public void run() {
                     record.init(pcs);
                     if (record.isOnline()) {
-                        CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(record.getExecutionEnvironment());
+                        CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(record.getExecutionEnvironment(), false);
                         csm.initialize(false, true);
                     }
                     phandle.finish();
@@ -242,7 +242,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             btRemoveServer.setEnabled(idx > 0 && buttonsEnabled);
             btSetAsDefault.setEnabled(idx != defaultIndex && buttonsEnabled && !isEmptyToolchains(record.getExecutionEnvironment()));
             btProperties.setEnabled(record.isRemote());
-            btPathMapper.setEnabled(buttonsEnabled && record.isRemote() && record.isOnline());
+            btPathMapper.setEnabled(buttonsEnabled && record.isRemote());
             if (!record.isOnline()) {
                 showReason(record.getReason());
                 btRetry.setEnabled(true);
@@ -406,7 +406,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(btPathMapper, gridBagConstraints);
 
-        btProperties.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "EditServerListDialog.btProperties.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(btProperties, org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "EditServerListDialog.btProperties.text")); // NOI18N
         btProperties.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btPropertiesActionPerformed(evt);

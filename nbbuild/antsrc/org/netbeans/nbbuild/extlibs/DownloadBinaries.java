@@ -219,6 +219,7 @@ public class DownloadBinaries extends Task {
         if (server == null) {
             throw new BuildException("Must specify a server to download files from", getLocation());
         }
+        Throwable firstProblem = null;
         for (String prefix : server.split(" ")) {
             URL url;
             try {
@@ -235,6 +236,7 @@ public class DownloadBinaries extends Task {
                 }
                 if (code != HttpURLConnection.HTTP_OK) {
                     log("Skipping download from " + url + " due to response code " + code, Project.MSG_VERBOSE);
+                    continue;
                 }
                 log("Downloading: " + url);
                 InputStream is = conn.getInputStream();
@@ -269,10 +271,14 @@ public class DownloadBinaries extends Task {
                 }
                 return;
             } catch (IOException x) {
-                log("Could not download " + url + " to " + destination + ": " + x, Project.MSG_WARN);
+                String msg = "Could not download " + url + " to " + destination + ": " + x;
+                log(msg, Project.MSG_WARN);
+                if (firstProblem == null) {
+                    firstProblem = new IOException(msg).initCause(x);
+                }
             }
         }
-        throw new BuildException("Could not download " + cacheName + " from " + server, getLocation());
+        throw new BuildException("Could not download " + cacheName + " from " + server + ": " + firstProblem, firstProblem, getLocation());
     }
 
     private String hash(File f) {

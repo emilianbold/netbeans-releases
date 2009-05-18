@@ -264,4 +264,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // IZ#142674 : Function-try-catch (C++) in editor shows error
         performTest("iz142674.cc");
     }
+
+    public void testIZ165038() throws Exception {
+        // IZ#165038 : parser fail on variable declaration
+        performTest("iz165038.cc");
+    }
 }

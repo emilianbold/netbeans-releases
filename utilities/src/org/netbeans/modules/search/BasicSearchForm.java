@@ -143,7 +143,9 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             initValuesFromHistory();
         }
         updateTextPatternColor();
-        updateReplacePatternColor();
+        if (searchAndReplace){
+            updateReplacePatternColor();
+        }
     }
 
     /** This method is called from within the constructor to
@@ -405,13 +407,17 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                 if (sourceComboBox == cboxTextToFind) {
                     searchCriteria.setTextPattern(text);
                     updateTextPatternColor();
-                    updateReplacePatternColor();
+                    if (cboxReplacement != null){
+                        updateReplacePatternColor();
+                    }
                 } else if (sourceComboBox == cboxFileNamePattern) {
                     searchCriteria.setFileNamePattern(text);
                 } else {
                     assert sourceComboBox == cboxReplacement;
                     searchCriteria.setReplaceExpr(text);
-                    updateReplacePatternColor();
+                    if (cboxReplacement != null){
+                        updateReplacePatternColor();
+                    }
                 }
             }
         }
@@ -605,7 +611,9 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         if (toggle == chkRegexp) {
             searchCriteria.setRegexp(selected);
             updateTextPatternColor();
-            updateReplacePatternColor();
+            if (cboxReplacement != null){
+                updateReplacePatternColor();
+            }
             chkWholeWords.setEnabled(!selected);
             lblHintTextToFind.setVisible(!selected);
         } else if (toggle == chkCaseSensitive) {

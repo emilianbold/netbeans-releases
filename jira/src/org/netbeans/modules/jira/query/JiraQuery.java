@@ -48,12 +48,15 @@ import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
+import org.eclipse.mylyn.internal.jira.core.model.Project;
+import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
+import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.IssueCache;
+import org.netbeans.modules.bugtracking.spi.IssueCache;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.commands.PerformQueryCommand;
@@ -167,6 +170,7 @@ public class JiraQuery extends Query {
 
                     // run query to know what matches the criteria
                     // IssuesIdCollector will populate the issues set
+                    ensureProjects(jiraFilter);
                     PerformQueryCommand queryCmd = new PerformQueryCommand(repository, jiraFilter, new IssuesCollector());
                     repository.getExecutor().execute(queryCmd, !autoRefresh);
                     ret[0] = !queryCmd.hasFailed();
@@ -188,6 +192,21 @@ public class JiraQuery extends Query {
             }
         });
         return ret[0];
+    }
+
+    private void ensureProjects(JiraFilter jiraFilter) {
+        if(!(jiraFilter instanceof FilterDefinition)) {
+            return;
+        }
+        FilterDefinition fd = (FilterDefinition) jiraFilter;
+        ProjectFilter pf = fd.getProjectFilter();
+        if(pf == null) {
+            return;
+        }
+        Project[] projects = pf.getProjects();
+        for (Project project : projects) {
+            repository.getConfiguration().ensureProjectLoaded(project);
+        }
     }
 
     protected String getStoredQueryName() {
