@@ -134,6 +134,13 @@ public class UnixNativeUtils extends NativeUtils {
             "/etc/xdg/user-dirs.conf";//NOI18N
     public static final String DESKTOP_EXT = 
             ".desktop";//NOI18N
+
+    public static final String XDG_CONFIG_HOME_ENV_VARIABLE =
+            "XDG_CONFIG_HOME";//NOI18N
+    public static final String XDG_CONFIG_HOME_DEFAULT =
+            ".config";//NOI18N
+    public static final String XDG_APPLICATION_MENU_FILE =
+            "menus/applications.menu";//NOI18N
     
     public static final String DEFAULT_XDG_DATA_HOME =
             ".local/share"; // NOI18N
@@ -542,17 +549,42 @@ public class UnixNativeUtils extends NativeUtils {
                     FileUtils.writeStringList(file,
                             getDesktopEntry((FileShortcut)shortcut));
                     addExecutablePermissions(file);
+                    postShortcutCreate(shortcut, locationType);
                 }
             } else if(shortcut instanceof InternetShortcut) {
                 FileUtils.writeStringList(file,
                         getDesktopEntry((InternetShortcut)shortcut));
                 addExecutablePermissions(file);
+                postShortcutCreate(shortcut, locationType);
             }
         } catch (IOException e) {
             throw new NativeException("Cannot create shortcut", e);
         }
 
         return file;
+    }
+
+    private void postShortcutCreate(Shortcut shortcut, LocationType locationType) {
+        if(locationType.equals(LocationType.CURRENT_USER_START_MENU)) {
+            // #165320
+            final String XDG_CONFIG_HOME = System.getenv(XDG_CONFIG_HOME_ENV_VARIABLE);
+            final File configHome = XDG_CONFIG_HOME != null ?
+                new File(XDG_CONFIG_HOME) :
+                new File (SystemUtils.getUserHomeDirectory(), XDG_CONFIG_HOME_DEFAULT);
+            
+            final File appsMenu = new File(configHome, XDG_APPLICATION_MENU_FILE);
+            if(!FileUtils.exists(appsMenu)) {
+                try {
+                    FileUtils.mkdirs(appsMenu.getParentFile());
+                    boolean created = appsMenu.createNewFile();
+                    if(created) {
+                        FileUtils.deleteFile(appsMenu);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();;
+                }
+            }
+        }
     }
 
     public void removeShortcut(Shortcut shortcut, LocationType locationType, boolean cleanupParents) throws NativeException {
