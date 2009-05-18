@@ -55,7 +55,9 @@ import org.netbeans.modules.ruby.railsprojects.queries.RailsProjectEncodingQuery
 import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
 import org.netbeans.modules.ruby.railsprojects.ui.RailsLogicalViewProvider;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsCompositePanelProvider;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
+import org.netbeans.modules.ruby.rubyproject.RubyConfigurationProvider;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -120,7 +122,7 @@ public class RailsProject extends RubyBaseProject {
             new RecommendedTemplatesImpl (this.updateHelper),
             this, // never cast an externally obtained Project to RailsProject - use lookup instead
             new RailsProjectOperations(this),
-            new RailsConfigurationProvider(this),
+            new RubyConfigurationProvider(this, RailsCompositePanelProvider.RAILS),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),
