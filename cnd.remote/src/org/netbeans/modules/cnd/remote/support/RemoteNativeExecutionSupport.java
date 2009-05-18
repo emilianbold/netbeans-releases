@@ -73,7 +73,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
         try {
             //String cmd = makeCommand(dirf, exe, args, envp);
             NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
-            pb.setCommandLine(cmd + " 2>&1"); //NOI18N
+            pb.setExecutable(cmd); //NOI18N
             pb = pb.addEnvironmentVariables(env);
             if (args != null) {
                 pb = pb.setArguments(args.trim().split("[ \t]+")); //NOI18N
