@@ -48,18 +48,22 @@ for automated building, verification and testing.</p>
 You can expand the node to view the status of builds on that instance.</p>
 
 <h3>Creating a build</h3>
-<p>You can specify the applications that you want the server to build
-    by creating a new build.
-When you create the build, you specify the repository containing the sources
-for the application.
-A node for the build is added under the instance node.
+<p>You can specify the application that you want the server to build by creating a new build.
+When you create the build, you specify the repository containing the sources for the application.
+A node for the build is added under the node of the target Hudson instance in the Services window.
 You can view additional details about the status of builds by right-clicking the
 node for the build and choosing Open in Browser.</p>
 
-<p><strong>Setting up a new continuous build.</strong></p>
+<p><strong>Setting up a new build job.</strong></p>
 <ol>
-    <li>Right-click the Hudson instance you want to use and choose New Build.</li>
-    <li>Specify the project name and source repository. Click Create.</li>
+    <li>Choose Team &gt; Create Build Job from the main menu.<br>
+        Alternatively, in the Services window, right-click the Hudson instance you want to use and choose New Build.</li>
+    <li>Select the build server instance from the dropdown list.</li>
+    <li>Specify the name for the build job.</li>
+    <li>Select the project from the dropdown list.
+        <p>The build server will use the sources in the project's repository.</p>
+    </li>
+    <li>Click Create.</li>
 </ol>
 
 <p>After you supply the details for the build, you can start the build process
