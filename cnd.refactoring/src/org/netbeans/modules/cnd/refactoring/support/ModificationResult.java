@@ -147,9 +147,9 @@ public final class ModificationResult {
                     }
                 };
                 if (doc instanceof BaseDocument) {
-                    doc.putProperty("cnd.refactoring.modification.event", Boolean.TRUE);
+                    doc.putProperty("cnd.refactoring.modification.event", Boolean.TRUE); // NOI18N
                     ((BaseDocument) doc).runAtomic(runnable);
-                    doc.putProperty("cnd.refactoring.modification.event", Boolean.FALSE);
+                    doc.putProperty("cnd.refactoring.modification.event", Boolean.FALSE); // NOI18N
                 } else {
                     runnable.run();
                 }
