@@ -32,7 +32,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
 
     protected void create() throws Throwable {
         try {
-            final String commandLine = info.getCommandLine();
+            final String commandLine = info.getCommandLineForShell();
             final ConnectionManager mgr = ConnectionManager.getInstance();
             final ExecutionEnvironment execEnv = info.getExecutionEnvironment();
             final Session session = ConnectionManagerAccessor.getDefault().

@@ -180,8 +180,8 @@ public final class CLIODataCollector
             cmd += argsTemplate;
         }
         log.fine("Starting CLIODataCollector cmd: " + cmd); // NOI18N
-        NativeProcessBuilder npb =
-                new NativeProcessBuilder(target.getExecEnv(), cmd,false);
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(target.getExecEnv());
+        npb.setCommandLine(cmd);
 
         ExecutionDescriptor descriptor =
                 new ExecutionDescriptor().inputOutput(
