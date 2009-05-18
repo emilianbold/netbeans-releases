@@ -60,6 +60,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
 
     static final String OPENIDE_MODULE_INSTALL = "OpenIDE-Module-Install"; // NOI18N
     static final String BUNDLE_ACTIVATOR = "Bundle-Activator"; // NOI18N
+    static final String IMPORT_PACKAGE = "Import-Package"; // NOI18N
     private static final String INSTALLER_CLASS_NAME = "Installer"; // NOI18N
     
     private CreatedModifiedFiles cmf;
@@ -120,6 +121,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         Map<String, String> attribs = new HashMap<String, String>();
         if (osgi) {
             attribs.put(BUNDLE_ACTIVATOR, getPackageName() + '.' + className);
+            attribs.put(IMPORT_PACKAGE, "org.osgi.framework"); // NOI18N
         } else {
             attribs.put(OPENIDE_MODULE_INSTALL, getPackageName().replace('.','/') + '/' + className + ".class"); // NOI18N
         }
