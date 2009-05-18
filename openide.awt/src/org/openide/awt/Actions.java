@@ -63,7 +63,6 @@ import java.util.logging.Logger;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -949,7 +948,7 @@ public class Actions extends Object {
         @Override
         public void updateState(String changedProperty) {
             if ((changedProperty == null) || changedProperty.equals(SystemAction.PROP_ENABLED)) {
-                button.setEnabled(action.isEnabled());
+                ((AbstractButton) this.comp).setEnabled(action.isEnabled());
             }
 
             if ((changedProperty == null) || !changedProperty.equals(Action.ACCELERATOR_KEY)) {
