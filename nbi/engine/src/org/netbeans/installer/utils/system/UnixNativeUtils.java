@@ -581,7 +581,7 @@ public class UnixNativeUtils extends NativeUtils {
                         FileUtils.deleteFile(appsMenu);
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();;
+                    LogManager.log(e);
                 }
             }
         }
