@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright � 2008 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>Creating a Hibernate Reverse Engineering File</title>
+    <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    
+    </head>
+    <body>
+        
+        <h2>Creating a Hibernate Reverse Engineering File</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>To use the Hibernate Mapping Files and POJOs from a Database wizard,
+        you need to first create a Hibernate reverse engineering file (<tt>hibernate.reveng.xml</tt>).
+        The IDE provides a wizard for generating the file based on the data contained in the 
+        Hibernate configuration file and the tables you are using in your application.</p>
+        
+        <p>The reverse engineering file is an XML file that can be used to modify the default settings
+        used when generating Hibernate files from the metadata of the database specified in <tt>hibernate.cfg.xml</tt>.
+        The file can be used to explicitly specify the database schema that is used,
+        to filter out tables that should not be used and how JDBC types are mapped to Hibernate types.</p>
+
+           <p><b>To create <tt>hibernate.reveng.xml</tt> using the New File wizard:</b></p>
+            <ol>
+               <li>Open the New File wizard.</li>
+               <li>Select Hibernate from the Categories list and Hibernate Reverse Engineering Wizard from the File Types list. Click Next.</li>
+               <li>Type <tt>hibernate.reveng</tt> for the name and specify the Folder where you want to save the file. Click Next.</li>
+               <li>Select the Configuration File from the drop down list.
+               <ul class="note">
+                    <li>The configuration file contains the database connection details.
+                    If a connection to the database is not open you may be prompted to
+                    supply a username and password to connect to the database.
+                    The database must be running.</li>
+                </ul>
+               </li>
+               <li>Select any tables in the Available Tables pane and click the Add to move the tables to the Selected Tables pane.
+                Any tables related to the tables you select are automatically added to the list in the Selected Tables pane.
+               </li>
+               <li>Click Finish.</li>
+            </ol>
+        
+            <p>When you click Finish, the file <tt>hibernate.reveng.xml</tt> is created in the location you specified
+            and the file opens in the Source Editor.
+            </p>
+            
+        
+        
+        <dl>
+        <dt><a name="seealso">See Also</a></dt>
+        <dd><a href="hibernate_about.html">About Hibernate Support</a> </dd>
+        <dd><a href="hibernate_cfgedit.html">Editing the Hibernate Configuration File</a> </dd>
+        <dd><a href="hibernate_mapping.html">Creating Hibernate Mapping Files</a> </dd>
+        <dd><a href="hibernate_addsupport.html">Adding Hibernate Support to a Project</a></dd>
+        </dl>
+        
+        <hr>
+        <small> <a href="../credits.html">Legal Notices</a></small> 
+        <table cellpadding="50" border="0"> 
+    <tr><td>&nbsp;</td></tr> 
+        </table> 
+    </body>
+    
+</html>
