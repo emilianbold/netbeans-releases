@@ -84,6 +84,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
@@ -108,6 +109,7 @@ public class NbJiraIssue extends Issue {
     static final String LABEL_NAME_SUMMARY      = "jira.issue.summary";     // NOI18N
 
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";               // NOI18N
+    private static final int SHORTENED_SUMMARY_LENGTH = 22;
 
     private static final String FIXED = "Fixed";                        //NOI18N
 
@@ -587,12 +589,23 @@ public class NbJiraIssue extends Issue {
 
     @Override
     public String getDisplayName() {
-        return "Issue: " + getKey();
+        return taskData.isNew() ?
+            NbBundle.getMessage(NbJiraIssue.class, "CTL_NewIssue") : // NOI18N
+            NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue", new Object[] {getID(), getSummary()}); // NOI18N
     }
 
     @Override
     public String getShortenedDisplayName() {
-        return "Issue: " + getKey();
+        if (taskData.isNew()) {
+            return getDisplayName();
+        }
+
+        String shortSummary = TextUtils.shortenText(getSummary(),
+                                                    2,    //try at least 2 words
+                                                    SHORTENED_SUMMARY_LENGTH);
+        return NbBundle.getMessage(NbJiraIssue.class,
+                                   "CTL_Issue",                         //NOI18N
+                                   new Object[] {getID(), shortSummary});
     }
 
     @Override

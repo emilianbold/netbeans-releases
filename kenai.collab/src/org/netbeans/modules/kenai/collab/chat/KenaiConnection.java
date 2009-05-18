@@ -136,7 +136,7 @@ public class KenaiConnection implements PropertyChangeListener {
             chat.addParticipantListener(PresenceIndicator.getDefault().new PresenceListener());
             chat.join(getUserName());
         } catch (XMPPException ex) {
-            XMPPLOG.log(Level.SEVERE, null, ex);
+            XMPPLOG.log(Level.SEVERE, "Cannot join "  + chat.getRoom(), ex);
         }
     }
 
@@ -229,7 +229,11 @@ public class KenaiConnection implements PropertyChangeListener {
             return;
         }
         for (KenaiFeature prj : KenaiConnection.getDefault().getMyChats()) {
-            createChat(prj);
+            try {
+                createChat(prj);
+            } catch (IllegalStateException ise) {
+                Exceptions.printStackTrace(ise);
+            }
         }
     }
 
