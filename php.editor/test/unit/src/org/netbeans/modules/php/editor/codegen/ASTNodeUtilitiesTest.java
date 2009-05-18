@@ -74,12 +74,14 @@ public class ASTNodeUtilitiesTest extends TestBase {
         final int offset = code.indexOf('|');
         code = code.replace('|', ' ');
         performTest(new String[] { code }, new UserTask() {
+
             public void cancel() {}
-            
+
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
-                ParserResult info = (ParserResult)resultIterator.getParserResult();
+                ParserResult info = (ParserResult) resultIterator.getParserResult();
                 Set<String> varNames = ASTNodeUtilities.getVariablesInScope(info, offset, new ASTNodeUtilities.VariableAcceptor() {
+
                     public boolean acceptVariable(String variableName) {
                         return true;
                     }
@@ -93,6 +95,6 @@ public class ASTNodeUtilitiesTest extends TestBase {
                 assertFalse(varNames.contains("global")); // Since not declared global in the function.
                 assertFalse(varNames.contains("field")); // Since in an entirely different scope.
             }
-        });
+        }, false);
     }
 }

@@ -81,6 +81,8 @@ public class InitMessage extends DbgpMessage {
     public void process( DebugSession session, DbgpCommand command ) {
         setId(session);
         setShowHidden(session);
+        setMaxDepth(session);
+        setMaxChildren(session);
         setMaxDataSize(session);
         
         setBreakpoints( session );
@@ -122,10 +124,19 @@ public class InitMessage extends DbgpMessage {
         }
     }
     private void setShowHidden(DebugSession session) {
+        setFeature(session, Feature.SHOW_HIDDEN, "1");//NOI18N
+    }
+    private void setMaxDepth(DebugSession session) {
+        setFeature(session, Feature.MAX_DEPTH, "3");//NOI18N
+    }
+    private void setMaxChildren(DebugSession session) {
+        setFeature(session, Feature.MAX_CHILDREN, "31");//NOI18N
+    }
+    private void setFeature(DebugSession session, Feature feature, String value) {
         FeatureSetCommand setCommand = new FeatureSetCommand(
                 session.getTransactionId());
-        setCommand.setFeature(Feature.SHOW_HIDDEN);
-        setCommand.setValue("1");
+        setCommand.setFeature(feature);
+        setCommand.setValue(value);
         DbgpResponse response = session.sendSynchronCommand(setCommand);
         assert response instanceof FeatureSetResponse;
     }
