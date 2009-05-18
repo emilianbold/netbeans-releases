@@ -483,7 +483,7 @@ public class BugzillaRepository extends Repository {
     private void scheduleIssueRefresh() {
         int delay = BugzillaConfig.getInstance().getIssueRefreshInterval();
         Bugzilla.LOG.log(Level.FINE, "scheduling issue refresh for repository {0} in {1} minute(s)", new Object[] {name, delay}); // NOI18N
-        if(delay <= 5) {
+        if(delay < 5) {
             Bugzilla.LOG.log(Level.WARNING, " wrong issue refresh delay {0}. Falling back to default {0}", new Object[] {delay, BugzillaConfig.DEFAULT_ISSUE_REFRESH}); // NOI18N
             delay = BugzillaConfig.DEFAULT_ISSUE_REFRESH;
         }
@@ -493,7 +493,7 @@ public class BugzillaRepository extends Repository {
     private void scheduleQueryRefresh() {
         int delay = BugzillaConfig.getInstance().getQueryRefreshInterval();
         Bugzilla.LOG.log(Level.FINE, "scheduling query refresh for repository {0} in {1} minute(s)", new Object[] {name, delay}); // NOI18N
-        if(delay <= 5) {
+        if(delay < 5) {
             Bugzilla.LOG.log(Level.WARNING, " wrong query refresh delay {0}. Falling back to default {0}", new Object[] {delay, BugzillaConfig.DEFAULT_QUERY_REFRESH}); // NOI18N
             delay = BugzillaConfig.DEFAULT_QUERY_REFRESH;
         }
