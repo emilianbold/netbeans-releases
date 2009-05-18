@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.kenai.ui;
 
+import java.awt.Container;
 import java.awt.event.MouseEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -86,17 +87,28 @@ public class LoginPanel extends javax.swing.JPanel {
         error.setText(ex.getMessage());
         error.setVisible(true);
         password.requestFocus();
+        setLoginButtonEnabled(true);
     }
 
     public void showProgress() {
         error.setVisible(false);
         progressBar.setVisible(true);
         progressBar.setIndeterminate(true);
+        setLoginButtonEnabled(false);
     }
 
     public void clearStatus() {
         error.setVisible(false);
         progressBar.setVisible(false);
+        setLoginButtonEnabled(true);
+    }
+
+    private void setLoginButtonEnabled(boolean enabled) {
+        try {
+            ((Container) getParent().getComponents()[1]).getComponents()[0].setEnabled(enabled);
+        } catch (Exception e) {
+            //ignore
+        }
     }
 
     /** This method is called from within the constructor to

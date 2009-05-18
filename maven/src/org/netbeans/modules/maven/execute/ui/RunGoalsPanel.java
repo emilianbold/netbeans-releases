@@ -228,7 +228,15 @@ public class RunGoalsPanel extends javax.swing.JPanel {
         while (token != null) {
             String[] prp = StringUtils.split(token, "=", 2); //NOI18N
             if (prp.length == 2) {
-                props.setProperty(prp[0], prp[1]);
+                String key = prp[0];
+                //in case the user adds -D by mistake, remove it to get a parsable xml file.
+                if (key.startsWith("-D")) { //NOI18N
+                    key = key.substring("-D".length()); //NOI18N
+                }
+                if (key.startsWith("-")) { //NOI18N
+                    key = key.substring(1);
+                }
+                props.setProperty(key, prp[1]);
             }
             token = split.nextPair();
         }
