@@ -110,7 +110,8 @@ public final class NativeProcessBuilder implements Callable<Process> {
     }
 
     /**
-     *
+     * NB! no arguments can be set after that.
+     * command line it not escaped before execution.
      * @param commandLine
      * @return
      */

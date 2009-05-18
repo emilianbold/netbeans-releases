@@ -50,6 +50,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
+import org.netbeans.modules.nativeexecution.api.util.CommandLineHelper;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
@@ -190,7 +191,7 @@ public final class NativeProcessInfo {
 //        return result.toArray(new String[0]);
 //    }
 //
-    public String getCommandLine() {
+    public String getCommandLineForShell() {
         if (commandLine != null) {
             return commandLine;
         }
@@ -203,16 +204,7 @@ public final class NativeProcessInfo {
             cmd = executable;
         }
 
-        // deal with spaces in the command...
-        if (isWindows) {
-            cmd = "'" + cmd + "'"; // NOI18N
-        } else {
-            cmd = cmd.replaceAll("([^\\\\]) ", "$1\\\\ "); // NOI18N
-        }
-
-        if (isWindows) {
-            cmd = cmd.replaceAll("\\\\", "/"); // NOI18N
-        }
+        cmd = CommandLineHelper.getInstance(execEnv).toShellPath(cmd);
 
         StringBuilder sb = new StringBuilder(cmd);
 
@@ -235,6 +227,7 @@ public final class NativeProcessInfo {
 
     public String getWorkingDirectory(boolean expandMacros) {
         String result;
+
         if (expandMacros && macroExpander != null) {
             try {
                 result = macroExpander.expandPredefinedMacros(workingDirectory);
@@ -242,20 +235,11 @@ public final class NativeProcessInfo {
                 result = workingDirectory;
             }
         }
-        result = workingDirectory;
-        return escape(result);
-    }
 
-//    private String escape(String txt) {
-//        if (txt == null) {
-//            return null;
-//        }
-//        else if (isWindows) {
-//            return "'" + txt + "'"; // NOI18N
-//        } else {
-//            return txt.replaceAll("([^\\\\]) ", "$1\\\\ "); // NOI18N
-//        }
-//    }
+        result = workingDirectory;
+
+        return result;
+    }
 
     public MacroMap getEnvVariables() {
         return getEnvVariables(null);
