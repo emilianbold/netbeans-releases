@@ -34,7 +34,7 @@
           <Group type="102" alignment="0" attributes="0">
               <Component id="lblKenaiLogoLeft" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-              <Component id="lblKenaiLogoCenter" pref="240" max="32767" attributes="0"/>
+              <Component id="lblKenaiLogoCenter" pref="291" max="32767" attributes="0"/>
               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
               <Component id="lblKenaiLogoRight" min="-2" max="-2" attributes="0"/>
           </Group>
@@ -65,7 +65,7 @@
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="progressBar" pref="462" max="32767" attributes="0"/>
+              <Component id="progressBar" pref="513" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -174,7 +174,7 @@
         </Property>
       </AccessibilityProperties>
       <Events>
-        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="chkRememberMeStateChanged"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="chkRememberMeActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="lblNoAccount">
