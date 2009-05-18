@@ -72,7 +72,8 @@ import org.openide.util.NbBundle;
 
     void init() {
         textHostDisplayName.setText(data.getExecutionEnvironment().getDisplayName());
-        compilerSetManager = data.getCacheManager().getCompilerSetManagerCopy(data.getExecutionEnvironment());
+        // here we know for sure that it is created and initialized
+        compilerSetManager = data.getCacheManager().getCompilerSetManagerCopy(data.getExecutionEnvironment(), false);
         labelPlatformValue.setText(PlatformTypes.toString(compilerSetManager.getPlatform()));
         labelUsernameValue.setText(data.getExecutionEnvironment().getUser());
         labelHostnameValue.setText(data.getExecutionEnvironment().getHost());
