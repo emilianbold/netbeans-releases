@@ -129,7 +129,10 @@ public class LogicalViewProviderImpl implements LogicalViewProvider {
                     }
                     continue;
                 }
-                findNodeByFileDataObject(nodes[i], fo);
+                Node found = findNodeByFileDataObject(nodes[i], fo);
+                if (found != null) {
+                    return found;
+                }
             }
         }
         
