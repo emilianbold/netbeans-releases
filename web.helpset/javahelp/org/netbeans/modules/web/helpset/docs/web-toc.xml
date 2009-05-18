@@ -14,8 +14,8 @@
        <tocitem text="Creating Web Applications">
             <tocitem text="About Creating Web Applications" target="about_create_webapps" />
             <tocitem text="Creating a Web Application Project" target="create_webapps_proj" />
-            <tocitem text="Adding a Theme" target="projrave_projects_howtoprojects_add_theme" />
-            <tocitem text="Importing a Legacy Project" target="projrave_projects_howtoprojects_import_creator_project" />
+            
+            
        </tocitem>
        <tocitem text="Creating and Editing Web Components">
             <tocitem text="About Creating Web Components" target="about_create_webcomps" />
