@@ -42,6 +42,7 @@ package org.openide.nodes;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import javax.swing.Action;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
@@ -56,6 +57,11 @@ public class LazyNodeTest extends NbTestCase {
 
     public LazyNodeTest(String n) {
         super(n);
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.ALL;
     }
 
     public void testCreateOriginalAfterNodeExpansion() {
