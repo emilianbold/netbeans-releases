@@ -163,7 +163,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
 
     private boolean setForLinux() {        
         String platform = ((MakeConfiguration) getActiveConfiguration()).getDevelopmentHost().getBuildPlatformDisplayName();
-        if (platform.indexOf("Linux") != -1 || platform.indexOf("MacOS") != -1 || platform.indexOf("Windows") != -1) {//NOI18N
+        if (platform.indexOf("Linux") != -1 || !GizmoServiceInfo.isPlatformSupported(platform)) {//NOI18N
             areCollectorsTurnedOn = false;
             if (platform.indexOf("Linux") != -1){//NOI18N
                 DLightCollectorString = SUNSTUDIO;
