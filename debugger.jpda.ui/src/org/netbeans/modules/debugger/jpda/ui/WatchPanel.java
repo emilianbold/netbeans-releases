@@ -250,12 +250,14 @@ public class WatchPanel {
         panel.getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_WatchPanel")); // NOI18N
         JLabel textLabel = new JLabel();
         Mnemonics.setLocalizedText(textLabel, bundle.getString ("CTL_Watch_Name")); // NOI18N
-        JEditorPane editor = EditorContextDispatcher.getDefault().getMostRecentEditor();
-        if (editor.getDocument() instanceof StyledDocument) {
-            StyledDocument doc = (StyledDocument) editor.getDocument();
-            String selectedExpression = getSelectedIdentifier(doc, editor, editor.getCaret ().getDot ());
-            if (selectedExpression != null) {
-                expression = selectedExpression;
+        if (expression != null && expression.trim().length() == 0) {
+            JEditorPane editor = EditorContextDispatcher.getDefault().getMostRecentEditor();
+            if (editor.getDocument() instanceof StyledDocument) {
+                StyledDocument doc = (StyledDocument) editor.getDocument();
+                String selectedExpression = getSelectedIdentifier(doc, editor, editor.getCaret ().getDot ());
+                if (selectedExpression != null) {
+                    expression = selectedExpression;
+                }
             }
         }
         editorPane = new JEditorPane();//expression); // NOI18N

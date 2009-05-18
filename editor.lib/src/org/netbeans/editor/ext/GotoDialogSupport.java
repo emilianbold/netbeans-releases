@@ -128,9 +128,18 @@ public class GotoDialogSupport implements ActionListener {
                 gotoDialog.setBounds( lastBounds );
             } else {  // no history, center it on the screen
                 Dimension dim = gotoDialog.getPreferredSize();
-                Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-                int x = Math.max( 0, (screen.width - dim.width)/2 );
-                int y = Math.max( 0, (screen.height - dim.height)/2 );
+                int x;
+                int y;
+                JTextComponent c = EditorRegistry.lastFocusedComponent();
+                Window w = c != null ? SwingUtilities.getWindowAncestor(c) : null;
+                if (w != null) {
+                    x = Math.max(0, w.getX() + (w.getWidth() - dim.width) / 2);
+                    y = Math.max(0, w.getY() + (w.getHeight() - dim.height) / 2);
+                } else {
+                    Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+                    x = Math.max(0, (screen.width - dim.width) / 2);
+                    y = Math.max(0, (screen.height - dim.height) / 2);
+                }
                 gotoDialog.setLocation( x, y );
             }
             
@@ -164,11 +173,11 @@ public class GotoDialogSupport implements ActionListener {
         gotoPanel.popupNotify(blocker);
         
         WindowAdapter winAdapt = new WindowAdapter(){
-            public void windowClosing(WindowEvent evt) {
+            public @Override void windowClosing(WindowEvent evt) {
                 disposeGotoDialog();
             }
             
-            public void windowClosed(WindowEvent evt) {
+            public @Override void windowClosed(WindowEvent evt) {
                 SwingUtilities.invokeLater(new Runnable(){
                     public void run(){
                         if (blocker!=null){

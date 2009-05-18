@@ -105,8 +105,10 @@ public class ChatNotifications {
                 }
             };
 
-            Notification n = NotificationDisplayer.getDefault().notify(title, getIcon(), description, l, Priority.NORMAL);
-            r.updateNotification(n);
+            if (r.getNewMessageCount()>0) {
+                Notification n = NotificationDisplayer.getDefault().notify(title, getIcon(), description, l, Priority.NORMAL);
+                r.updateNotification(n);
+            }
         } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);
         }

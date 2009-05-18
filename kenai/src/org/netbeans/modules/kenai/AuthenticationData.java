@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,64 +34,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.gsf.testrunner.api;
-
-import java.util.ArrayList;
-import java.util.List;
+package org.netbeans.modules.kenai;
 
 /**
- * Represents a single test suite.
  *
- * @author Erno Mononen
+ * @author Jan Becicka
  */
-public class TestSuite {
-
-    public static final String ANONYMOUS_SUITE = new String();
-
-    public static final TestSuite ANONYMOUS_TEST_SUITE = new TestSuite(ANONYMOUS_SUITE);
-
-    /**
-     * The name of this suite.
-     */
-    private final String name;
-    /**
-     * The test cases that this suite contains.
-     */
-    private final List<Testcase> testcases = new ArrayList<Testcase>();
-
-    /**
-     * Constructs a new TestSuite.
-     * 
-     * @param name the name for the suite, e.g. WhatEverTest. May be null.
-     */
-    public TestSuite(String name) {
-        this.name = name;
-    }
-
-    void addTestcase(Testcase testcase) {
-        testcases.add(testcase);
-    }
-
-    public List<Testcase> getTestcases() {
-        return testcases;
-    }
-
-    /**
-     * @return the name of this suite, may return <code>null</code>.
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * @return the last test case of this suite or <code>null</code> if 
-     * the suite contains no test cases.
-     */
-    public Testcase getLastTestCase() {
-        return testcases.isEmpty() ? null : testcases.get(testcases.size() -1);
-    }
-
+public class AuthenticationData {
+    public String username;
+    public String password;
 }
