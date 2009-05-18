@@ -63,6 +63,7 @@ import java.util.logging.Logger;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -1053,13 +1054,6 @@ public class Actions extends Object {
                     button.setDisabledIcon(createDisabledIcon(img));
                 }
             }
-
-
-        }
-
-        @Override
-        public void addNotify() {
-            // do nothing
         }
 
         @Override
