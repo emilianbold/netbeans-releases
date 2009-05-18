@@ -192,11 +192,7 @@ public final class NativeProcessInfo {
 
         if (escapeCommand) {
             // deal with spaces in the command...
-            if (isWindows) {
-                cmd = "'" + cmd + "'"; // NOI18N
-            } else {
-                cmd = cmd.replaceAll("([^\\\\]) ", "$1\\\\ "); // NOI18N
-            }
+            cmd = escape(cmd);
         }
 
         if (isWindows) {
@@ -223,15 +219,27 @@ public final class NativeProcessInfo {
     }
 
     public String getWorkingDirectory(boolean expandMacros) {
+        String result;
         if (expandMacros && macroExpander != null) {
             try {
-                return macroExpander.expandPredefinedMacros(workingDirectory);
+                result = macroExpander.expandPredefinedMacros(workingDirectory);
             } catch (ParseException ex) {
-                return workingDirectory;
+                result = workingDirectory;
             }
         }
+        result = workingDirectory;
+        return escape(result);
+    }
 
-        return workingDirectory;
+    private String escape(String txt) {
+        if (txt == null) {
+            return null;
+        }
+        else if (isWindows) {
+            return "'" + txt + "'"; // NOI18N
+        } else {
+            return txt.replaceAll("([^\\\\]) ", "$1\\\\ "); // NOI18N
+        }
     }
 
     public MacroMap getEnvVariables() {

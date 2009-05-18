@@ -914,17 +914,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     private ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> aptCaches = new ConcurrentHashMap<APTIncludeHandler.State, APTFileCacheEntry>();
     public final APTFileCacheEntry getIncludeCacheEntry(APTPreprocHandler preprocHandler) {
-        if (true) {
+        if (!TraceFlags.APT_FILE_CACHE_ENTRY) {
             return null;
         }
         APTIncludeHandler.State key = preprocHandler.getIncludeHandler().getState();
         APTFileCacheEntry out = aptCaches.get(key);
         if (out == null) {
             out = new APTFileCacheEntry(getAbsolutePath());
-            APTFileCacheEntry prev = aptCaches.putIfAbsent(key, out);
-            if (prev != null) {
-                out = prev;
-            }
         } else {
             int i = 0;
         }
@@ -932,6 +928,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return out;
     }
 
+    /*package*/final void setAptCacheEntry(APTPreprocHandler preprocHandler, APTFileCacheEntry cache) {
+        if (TraceFlags.APT_FILE_CACHE_ENTRY && cache != null) {
+            APTIncludeHandler.State key = preprocHandler.getIncludeHandler().getState();
+            aptCaches.put(key, cache);
+        }
+    }
+    
     public ReadOnlyTokenBuffer getErrors(final Collection<RecognitionException> result) {
         CPPParserEx.ErrorDelegate delegate = new CPPParserEx.ErrorDelegate() {
 
@@ -1022,7 +1025,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
             // We gather conditional state here as well, because sources are not included anywhere
             FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(getAbsolutePath());
-            APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, true, pcBuilder, getIncludeCacheEntry(preprocHandler));
+            APTFileCacheEntry aptCacheEntry = getIncludeCacheEntry(preprocHandler);
+            APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, true, pcBuilder,aptCacheEntry);
             walker.addMacroAndIncludes(true);
             if (TraceFlags.DEBUG) {
                 System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocState(ppState));
@@ -1043,6 +1047,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
             CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter(ppState)), flags);
             FilePreprocessorConditionState pcState = pcBuilder.build();
+            if(false)setAptCacheEntry(preprocHandler, aptCacheEntry);
             startProject.setParsedPCState(this, ppState, pcState);
             long time = (emptyAstStatictics) ? System.currentTimeMillis() : 0;
             try {

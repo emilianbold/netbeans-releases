@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
+import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
@@ -1201,7 +1202,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
             // gather macro map from all includes and fill preprocessor conditions state
             FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(csmFile.getAbsolutePath());
-            APTParseFileWalker walker = new APTParseFileWalker(base, aptLight, csmFile, preprocHandler, triggerParsingActivity, pcBuilder, csmFile.getIncludeCacheEntry(preprocHandler));
+            APTFileCacheEntry aptCacheEntry = csmFile.getIncludeCacheEntry(preprocHandler);
+            APTParseFileWalker walker = new APTParseFileWalker(base, aptLight, csmFile, preprocHandler, triggerParsingActivity, pcBuilder,aptCacheEntry);
             walker.visit();
             FilePreprocessorConditionState pcState = pcBuilder.build();
             if (mode == ProjectBase.GATHERING_TOKENS && !APTHandlersSupport.extractIncludeStack(newState).isEmpty()) {
@@ -1286,6 +1288,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                                 }
                             }
                         }
+                        csmFile.setAptCacheEntry(preprocHandler, aptCacheEntry);
                         entry.setStates(statesToKeep, new PreprocessorStatePair(newState, pcState));
                         ParserQueue.instance().add(csmFile, statesToParse, ParserQueue.Position.HEAD, clean,
                                 clean ? ParserQueue.FileAction.MARK_REPARSE : ParserQueue.FileAction.MARK_MORE_PARSE);
