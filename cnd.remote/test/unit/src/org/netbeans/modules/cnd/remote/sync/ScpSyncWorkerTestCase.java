@@ -46,11 +46,9 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 
 /**
  * Test for ScpSyncWorker
@@ -131,10 +129,13 @@ public class ScpSyncWorkerTestCase extends RemoteTestBase {
     }
 
     private CharSequence runCommand(ExecutionEnvironment execEnv, String command, String... args) throws Exception {
-        NativeProcessBuilder pb = new NativeProcessBuilder(execEnv, command,false);
+        NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv);
+        pb.setExecutable(command);
+
         if (args != null) {
-            pb = pb.setArguments(args);
+            pb.setArguments(args);
         }
+
         NativeProcess lsProcess = pb.call();
         BufferedReader rdr = new BufferedReader(new InputStreamReader(lsProcess.getInputStream()));
         String line;

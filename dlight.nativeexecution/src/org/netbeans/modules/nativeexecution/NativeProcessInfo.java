@@ -64,45 +64,42 @@ import org.openide.util.Utilities;
 // This class is always used in a thread-safe manner ...
 public final class NativeProcessInfo {
 
+    public final MacroExpander macroExpander;
     private final ExecutionEnvironment execEnv;
-    private final MacroMap envVariables;
-    private final String command;
     private final boolean isWindows;
+    private final MacroMap envVariables;
     private final List<String> arguments = new ArrayList<String>();
+    private String executable;
+    private String commandLine;
     private String workingDirectory;
     private boolean unbuffer;
-    public final MacroExpander macroExpander;
     private Collection<ChangeListener> listeners = null;
-    private final boolean escapeCommand;
 
-    public NativeProcessInfo(NativeProcessInfo info) {
-        execEnv = info.execEnv;
-        command = info.command;
-        macroExpander = MacroExpanderFactory.getExpander(execEnv);
-        workingDirectory = info.workingDirectory;
-
-        if (execEnv.isLocal() && Utilities.isWindows()) {
-            envVariables = new CaseInsensitiveMacroMap(macroExpander);
-        } else {
-            envVariables = new MacroMap(macroExpander);
-        }
-
-        envVariables.putAll(info.envVariables);
-        arguments.addAll(info.arguments);
-
-        if (info.listeners != null) {
-            listeners = new ArrayList<ChangeListener>(info.listeners);
-        }
-
-        unbuffer = info.unbuffer;
-        isWindows = info.isWindows;
-        escapeCommand = info.escapeCommand;
-    }
-
-    public NativeProcessInfo(ExecutionEnvironment execEnv, String command, boolean escapeCommand) {
-        this.escapeCommand = escapeCommand;
+//    public NativeProcessInfo(NativeProcessInfo info) {
+//        execEnv = info.execEnv;
+//        command = info.command;
+//        macroExpander = MacroExpanderFactory.getExpander(execEnv);
+//        workingDirectory = info.workingDirectory;
+//
+//        if (execEnv.isLocal() && Utilities.isWindows()) {
+//            envVariables = new CaseInsensitiveMacroMap(macroExpander);
+//        } else {
+//            envVariables = new MacroMap(macroExpander);
+//        }
+//
+//        envVariables.putAll(info.envVariables);
+//        arguments.addAll(info.arguments);
+//
+//        if (info.listeners != null) {
+//            listeners = new ArrayList<ChangeListener>(info.listeners);
+//        }
+//
+//        unbuffer = info.unbuffer;
+//        isWindows = info.isWindows;
+//    }
+    public NativeProcessInfo(ExecutionEnvironment execEnv) {
         this.execEnv = execEnv;
-        this.command = command;
+        this.executable = null;
         this.unbuffer = false;
         this.workingDirectory = null;
         this.macroExpander = MacroExpanderFactory.getExpander(execEnv);
@@ -130,6 +127,14 @@ public final class NativeProcessInfo {
         }
 
         listeners.add(listener);
+    }
+
+    public void setExecutable(String executable) {
+        this.executable = executable;
+    }
+
+    public void setCommandLine(String commandLine) {
+        this.commandLine = commandLine;
     }
 
     public void setWorkingDirectory(String workingDirectory) {
@@ -160,39 +165,49 @@ public final class NativeProcessInfo {
     }
 
     public void setArguments(String... arguments) {
+        if (commandLine != null) {
+            throw new IllegalStateException("commandLine is already defined. No additional parameters can be set"); // NOI18N
+        }
+
         this.arguments.clear();
         this.arguments.addAll(Arrays.asList(arguments));
     }
 
-    public String[] getCommand() {
-        String cmd;
-
-        try {
-            cmd = macroExpander.expandPredefinedMacros(command);
-        } catch (ParseException ex) {
-            cmd = command;
-        }
-
-        List<String> result = new ArrayList<String>();
-        result.add(cmd);
-        if (!arguments.isEmpty()) {
-            result.addAll(arguments);
-        }
-        return result.toArray(new String[0]);
-    }
-
+//    public String[] getCommand() {
+//        String cmd;
+//
+//        try {
+//            cmd = macroExpander.expandPredefinedMacros(executable);
+//        } catch (ParseException ex) {
+//            cmd = executable;
+//        }
+//
+//        List<String> result = new ArrayList<String>();
+//        result.add(cmd);
+//        if (!arguments.isEmpty()) {
+//            result.addAll(arguments);
+//        }
+//        return result.toArray(new String[0]);
+//    }
+//
     public String getCommandLine() {
+        if (commandLine != null) {
+            return commandLine;
+        }
+
         String cmd;
 
         try {
-            cmd = macroExpander.expandPredefinedMacros(command);
+            cmd = macroExpander.expandPredefinedMacros(executable);
         } catch (ParseException ex) {
-            cmd = command;
+            cmd = executable;
         }
 
-        if (escapeCommand) {
-            // deal with spaces in the command...
-            cmd = escape(cmd);
+        // deal with spaces in the command...
+        if (isWindows) {
+            cmd = "'" + cmd + "'"; // NOI18N
+        } else {
+            cmd = cmd.replaceAll("([^\\\\]) ", "$1\\\\ "); // NOI18N
         }
 
         if (isWindows) {
@@ -231,16 +246,16 @@ public final class NativeProcessInfo {
         return escape(result);
     }
 
-    private String escape(String txt) {
-        if (txt == null) {
-            return null;
-        }
-        else if (isWindows) {
-            return "'" + txt + "'"; // NOI18N
-        } else {
-            return txt.replaceAll("([^\\\\]) ", "$1\\\\ "); // NOI18N
-        }
-    }
+//    private String escape(String txt) {
+//        if (txt == null) {
+//            return null;
+//        }
+//        else if (isWindows) {
+//            return "'" + txt + "'"; // NOI18N
+//        } else {
+//            return txt.replaceAll("([^\\\\]) ", "$1\\\\ "); // NOI18N
+//        }
+//    }
 
     public MacroMap getEnvVariables() {
         return getEnvVariables(null);

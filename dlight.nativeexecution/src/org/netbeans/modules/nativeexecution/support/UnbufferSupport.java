@@ -55,6 +55,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
 public class UnbufferSupport {
+
     private static final java.util.logging.Logger log = Logger.getInstance();
     private static final HashMap<ExecutionEnvironment, String> cache =
             new HashMap<ExecutionEnvironment, String>();
@@ -97,8 +98,8 @@ public class UnbufferSupport {
 
                         if (remotePath == null) {
                             remotePath = hinfo.getTempDir() + unbufferPath;
-                            NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "/bin/mkdir",false); // NOI18N
-                            npb = npb.setArguments("-p", remotePath, remotePath + "_64"); // NOI18N
+                            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+                            npb.setExecutable("/bin/mkdir").setArguments("-p", remotePath, remotePath + "_64"); // NOI18N
 
                             try {
                                 npb.call().waitFor();
