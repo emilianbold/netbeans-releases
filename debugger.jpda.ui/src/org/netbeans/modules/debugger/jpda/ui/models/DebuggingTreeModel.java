@@ -104,13 +104,13 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
                                                            "AWT-XAWT",
                                                            "AWT-Shutdown"}));
     
-    private JPDADebugger debugger;
+    private final JPDADebugger debugger;
     private Listener listener;
     private PreferenceChangeListener prefListener;
-    private PropertyChangeListener debuggerListener = new DebuggerFinishListener();
-    private Collection<ModelListener> listeners = new HashSet<ModelListener>();
-    private Map<JPDAThread, ThreadStateListener> threadStateListeners = new WeakHashMap<JPDAThread, ThreadStateListener>();
-    private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
+    private final PropertyChangeListener debuggerListener = new DebuggerFinishListener();
+    private final Collection<ModelListener> listeners = new HashSet<ModelListener>();
+    private final Map<JPDAThread, ThreadStateListener> threadStateListeners = new WeakHashMap<JPDAThread, ThreadStateListener>();
+    private final Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
 
     private RequestProcessor RP;
     
@@ -133,7 +133,11 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             if (showThreadGroups) {
                 return getTopLevelThreadsAndGroups();
             } else {
-                return debugger.getThreadsCollector().getAllThreads().toArray();
+                JPDAThread[] threads = debugger.getThreadsCollector().getAllThreads().toArray(new JPDAThread[0]);
+                for (JPDAThread t : threads) {
+                    watchState(t);
+                }
+                return threads;
             }
         }
         if (parent instanceof JPDAThread) {
@@ -146,7 +150,10 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             }
         }
         if (parent instanceof JPDAThreadGroup) {
-            Object[] threads = ((JPDAThreadGroup)parent).getThreads();
+            JPDAThread[] threads = ((JPDAThreadGroup)parent).getThreads();
+            for (JPDAThread t : threads) {
+                watchState(t);
+            }
             Object[] groups = ((JPDAThreadGroup)parent).getThreadGroups();
             Object[] result = new Object[threads.length + groups.length];
             System.arraycopy(threads, 0, result, 0, threads.length);
@@ -460,7 +467,8 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             ls = new ArrayList<ModelListener>(listeners);
         }
         ModelEvent event = new ModelEvent.NodeChanged(this, node,
-                ModelEvent.NodeChanged.CHILDREN_MASK);
+                ModelEvent.NodeChanged.CHILDREN_MASK |
+                ModelEvent.NodeChanged.EXPANSION_MASK);
         for (ModelListener ml : ls) {
             ml.modelChanged (event);
         }
@@ -487,9 +495,14 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(JPDAThread.PROP_SUSPENDED));
+            if (!evt.getPropertyName().equals(JPDAThread.PROP_SUSPENDED)) return ;
             JPDAThread t = tr.get();
-            if (t != null && (t.isSuspended() || !isMethodInvoking(t))) {
+            if (t == null) return ;
+            // Refresh the children of the thread (stack frames) when the thread
+            // gets suspended or is resumed
+            // When thread is resumed because of a method invocation, do the
+            // refresh only if the method takes a long time.
+            if (t.isSuspended() || !isMethodInvoking(t)) {
                 boolean suspended = t.isSuspended();
                 synchronized (this) {
                     if (task == null) {
@@ -614,6 +627,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
          *
          * @return  tooltip for given node or <code>null</code>
          */
+        @Override
         public String getShortDescription () {
             return NbBundle.getBundle (DebuggingTreeModel.class).getString 
                 ("CTL_Debugging_Column_Suspend_Desc");

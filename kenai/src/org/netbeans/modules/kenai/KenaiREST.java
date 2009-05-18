@@ -45,6 +45,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.AbstractCollection;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -352,30 +353,36 @@ public class KenaiREST extends KenaiImpl {
     }
 
     @Override
-    public void verify(String username, char[] password) throws KenaiException {
-        String [][] params = {
-            new String [] { "username", username },
-            new String [] { "password", new String(password) }
-        };
-        RestConnection conn = new RestConnection(baseURL.toString() + "/api/login/authenticate", params);
+    public String verify(String username, char[] password) throws KenaiException {
+        AuthenticationData auth = new AuthenticationData();
+        auth.username = username;
+        auth.password = new String(password);
+        PojsonSave<AuthenticationData> save = PojsonSave.create(AuthenticationData.class);
+
+        RestConnection conn = new RestConnection(baseURL.toString() + "/api/login/authenticate.json");
         RestResponse resp = null;
+        
         long start = 0;
         if (TIMER.isLoggable(Level.FINE)) {
             start = System.currentTimeMillis();
-            System.err.println("Loading page "+ baseURL.toString() + "/api/login/authenticate");
+            System.err.println("Loading page "+ baseURL.toString() + "/api/login/authenticate.json");
         }
         try {
-            resp = conn.get(null);
+            resp = conn.post(null, save.asString(auth));
         } catch (IOException iOException) {
             throw new KenaiException(iOException);
         }
         if (TIMER.isLoggable(Level.FINE)) {
-            System.err.println("Page " + baseURL.toString() + "/api/login/authenticate loaded in" + (System.currentTimeMillis()-start) + " ms");
+            System.err.println("Page " + baseURL.toString() + "/api/login/authenticate.json loaded in" + (System.currentTimeMillis()-start) + " ms");
         }
 
         if (resp.getResponseCode() != 200) {
             throw new KenaiException(ResourceBundle.getBundle("org.netbeans.modules.kenai.Bundle").getString("LBL_AuthenticationFailed"), resp.getDataAsString());
         }
+        try {
+            return (String) ((HashMap) PojsonLoad.create().toCollections(resp.getDataAsString())).get("username");
+        } catch (IOException ex) {
+            throw new KenaiException(ex);
+        }
     }
-//        DateFormat df = new SimpleDateFormat("y-M-d'T'H:m:s'Z'");
 }

@@ -454,7 +454,8 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         NbModuleProject project = UIUtil.runLibraryWrapperWizard(getProperties().getProject());
         if (project != null) {
             try {
-                getProperties().libraryWrapperAdded();
+                // presuambly we do not need to reset anything else
+                getProperties().resetUniverseDependencies();
                 ModuleDependency dep = new ModuleDependency(
                         getProperties().getModuleList().getEntry(project.getCodeNameBase()));
                 getDepListModel().addDependency(dep);
