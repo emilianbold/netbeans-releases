@@ -50,6 +50,8 @@ import com.sun.source.util.TreePathScanner;
 import com.sun.tools.javac.util.Context;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
@@ -214,7 +216,8 @@ public final class  UiUtils {
             return null;
         }
     }
-    
+
+    private static Logger log = Logger.getLogger(UiUtils.class.getName());
     static Object[] getOpenInfo(final FileObject fo, final ElementHandle<? extends Element> handle) {
         assert fo != null;
         
@@ -222,7 +225,9 @@ public final class  UiUtils {
             int offset = getOffset(fo, handle);
             return new Object[] {fo, offset};
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+            if (log.isLoggable(Level.SEVERE))
+                log.log(Level.SEVERE, e.getMessage(), e);
+//            ErrorManager.getDefault().notify(e);
             return null;
         }
     }
@@ -342,7 +347,9 @@ public final class  UiUtils {
                 return true;
             }
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            if (log.isLoggable(Level.INFO))
+                log.log(Level.INFO, e.getMessage(), e);
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
         
         return false;
@@ -360,7 +367,9 @@ public final class  UiUtils {
                 try {
                     info.toPhase(JavaSource.Phase.RESOLVED);
                 } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ioe);
+                    if (log.isLoggable(Level.SEVERE))
+                        log.log(Level.SEVERE, ioe.getMessage(), ioe);
+//                    ErrorManager.getDefault().notify(ioe);
                 }
                 Element el = handle.resolve(info);                
                 if (el == null)
