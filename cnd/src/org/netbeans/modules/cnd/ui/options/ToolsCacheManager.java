@@ -165,10 +165,10 @@ public final class ToolsCacheManager {
         return ServerList.getDefaultRecord().getExecutionEnvironment();
     }
 
-    public synchronized CompilerSetManager getCompilerSetManagerCopy(ExecutionEnvironment env) {
+    public synchronized CompilerSetManager getCompilerSetManagerCopy(ExecutionEnvironment env, boolean initialize) {
         CompilerSetManager out = copiedManagers.get(env);
         if (out == null) {
-            out = CompilerSetManager.getDeepCopy(env);
+            out = CompilerSetManager.getDeepCopy(env, initialize);
             if (out.getCompilerSets().size() == 1 && out.getCompilerSets().get(0).getName().equals(CompilerSet.None)) {
                 out.remove(out.getCompilerSets().get(0));
             }

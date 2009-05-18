@@ -134,7 +134,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         if (env.isLocal()) {
             return false;
         } else {
-            CompilerSetManager compilerSetManagerCopy = cacheManager.getCompilerSetManagerCopy(env);
+            CompilerSetManager compilerSetManagerCopy = cacheManager.getCompilerSetManagerCopy(env, false);
             return compilerSetManagerCopy.isEmpty();
         }
     }
@@ -158,7 +158,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 public void run() {
                     record.init(pcs);
                     if (record.isOnline()) {
-                        CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(record.getExecutionEnvironment());
+                        CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(record.getExecutionEnvironment(), false);
                         csm.initialize(false, true);
                     }
                     phandle.finish();
