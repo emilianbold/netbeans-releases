@@ -479,8 +479,8 @@ public class CompilerSetManager {
         }
     }
 
-    public static CompilerSetManager getDeepCopy(ExecutionEnvironment execEnv) {
-        return getDefaultImpl(execEnv, false).deepCopy();
+    public static CompilerSetManager getDeepCopy(ExecutionEnvironment execEnv, boolean initialize) {
+        return getDefaultImpl(execEnv, initialize).deepCopy();
     }
 
     private CompilerSetManager deepCopy() {

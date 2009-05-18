@@ -134,7 +134,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
     }
 
     public CompilerSetManager getCompilerSetManager(ExecutionEnvironment execEnv) {
-        return ToolsPanel.getToolsPanel().getToolsCacheManager().getCompilerSetManagerCopy(execEnv);
+        return ToolsPanel.getToolsPanel().getToolsCacheManager().getCompilerSetManagerCopy(execEnv, true);
     }
     
     private void updateCompilerCollections(CompilerSet csToSelect) {
