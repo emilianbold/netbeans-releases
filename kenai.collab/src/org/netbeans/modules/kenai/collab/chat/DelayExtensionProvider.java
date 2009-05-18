@@ -48,6 +48,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
+import org.openide.util.Exceptions;
 
 public class DelayExtensionProvider implements PacketExtensionProvider {
 
@@ -75,12 +76,25 @@ public class DelayExtensionProvider implements PacketExtensionProvider {
                     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
                     stamp = formatter.parse(parser.getAttributeValue("", "stamp"));
                 } catch (ParseException e2) {
-                    // Last attempt. Try parsing the date assuming that it does not include milliseconds
-                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSz");
-                    formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
-                    String stampString = parser.getAttributeValue("", "stamp");
-                    String modifed = stampString.substring(0, stampString.length() - 6) + "GMT" + stampString.substring(stampString.length() - 6);
-                    stamp = formatter.parse(modifed);
+                    try {
+                        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSz");
+                        formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
+                        String stampString = parser.getAttributeValue("", "stamp");
+                        String modifed = stampString.substring(0, stampString.length() - 6) + "GMT" + stampString.substring(stampString.length() - 6);
+                        stamp = formatter.parse(modifed);
+                    } catch (ParseException e3) {
+                        try {
+                            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSSSSSSSSSz");
+                            formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
+                            String stampString = parser.getAttributeValue("", "stamp");
+                            String modifed = stampString.substring(0, stampString.length() - 6) + "GMT" + stampString.substring(stampString.length() - 6);
+                            stamp = formatter.parse(modifed);
+                        } catch (ParseException pe) {
+                            Exceptions.printStackTrace(e);
+                            stamp = new Date();
+                        }
+
+                    }
                 }
             }
         }

@@ -129,7 +129,7 @@ public class HostValidatorImpl implements HostValidator {
                 public void close() throws IOException {
                 }
             });
-            final CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(env);
+            final CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(env, false);
             csm.initialize(false, false);
             runOnFinish = new Runnable() {
                 public void run() {
