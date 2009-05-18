@@ -140,7 +140,7 @@ public final class HostInfoUtils {
             }
 
             NativeProcessBuilder npb = new NativeProcessBuilder(
-                    execEnv, "test").setArguments("-e", fname); // NOI18N
+                    execEnv, "test",false).setArguments("-e", fname); // NOI18N
 
             try {
                 fileExists = npb.call().waitFor() == 0;
@@ -177,7 +177,7 @@ public final class HostInfoUtils {
             List<String> sp = new ArrayList<String>(searchPaths);
 
             if (searchInUserPaths) {
-                npb = new NativeProcessBuilder(execEnv, shell).setArguments("-c", "echo $PATH"); // NOI18N
+                npb = new NativeProcessBuilder(execEnv, shell,false).setArguments("-c", "echo $PATH"); // NOI18N
                 p = npb.call();
                 p.waitFor();
                 br = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -197,7 +197,7 @@ public final class HostInfoUtils {
                 }
             }
 
-            npb = new NativeProcessBuilder(execEnv, shell).setArguments("-c", cmd.toString()); // NOI18N
+            npb = new NativeProcessBuilder(execEnv, shell,false).setArguments("-c", cmd.toString()); // NOI18N
             p = npb.call();
             p.waitFor();
             br = new BufferedReader(new InputStreamReader(p.getInputStream()));

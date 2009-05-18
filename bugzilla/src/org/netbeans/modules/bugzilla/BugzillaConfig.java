@@ -145,13 +145,15 @@ public class BugzillaConfig {
         String httpUser = repository.getHttpUsername();
         String httpPassword = BugtrackingUtil.scramble(repository.getHttpPassword());
         String url = repository.getUrl();
+        String shortNameEnabled = Boolean.toString(repository.isShortUsernamesEnabled());
         getPreferences().put(
                 REPO_NAME + repoName,
                 url + DELIMITER +
                 user + DELIMITER +
                 password + DELIMITER +
                 httpUser + DELIMITER +
-                httpPassword);
+                httpPassword + DELIMITER +
+                shortNameEnabled);
     }
 
     public BugzillaRepository getRepository(String repoName) {
@@ -160,14 +162,18 @@ public class BugzillaConfig {
             return null;
         }
         String[] values = repoString.split(DELIMITER);
-        assert values.length == 3 || values.length == 5;
+        assert values.length == 3 || values.length == 5 || values.length == 6;
         String url = values[0];
         String user = values[1];
         String password = BugtrackingUtil.descramble(values[2]);
         String httpUser = values.length > 3 ? values[3] : null;
         String httpPassword = values.length > 3 ? BugtrackingUtil.descramble(values[4]) : null;
+        boolean shortNameEnabled = false;
+        if (values.length > 5) {
+            shortNameEnabled = Boolean.parseBoolean(values[5]);
+        }
 
-        return new BugzillaRepository(repoName, url, user, password, httpUser, httpPassword);
+        return new BugzillaRepository(repoName, url, user, password, httpUser, httpPassword, shortNameEnabled);
     }
 
     public String[] getRepositories() {

@@ -38,14 +38,19 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.support.CaseInsensitiveMacroMap;
@@ -62,11 +67,13 @@ public final class NativeProcessInfo {
     private final ExecutionEnvironment execEnv;
     private final MacroMap envVariables;
     private final String command;
+    private final boolean isWindows;
     private final List<String> arguments = new ArrayList<String>();
     private String workingDirectory;
     private boolean unbuffer;
     public final MacroExpander macroExpander;
     private Collection<ChangeListener> listeners = null;
+    private final boolean escapeCommand;
 
     public NativeProcessInfo(NativeProcessInfo info) {
         execEnv = info.execEnv;
@@ -86,11 +93,14 @@ public final class NativeProcessInfo {
         if (info.listeners != null) {
             listeners = new ArrayList<ChangeListener>(info.listeners);
         }
-        
+
         unbuffer = info.unbuffer;
+        isWindows = info.isWindows;
+        escapeCommand = info.escapeCommand;
     }
 
-    public NativeProcessInfo(ExecutionEnvironment execEnv, String command) {
+    public NativeProcessInfo(ExecutionEnvironment execEnv, String command, boolean escapeCommand) {
+        this.escapeCommand = escapeCommand;
         this.execEnv = execEnv;
         this.command = command;
         this.unbuffer = false;
@@ -102,6 +112,16 @@ public final class NativeProcessInfo {
         } else {
             envVariables = new MacroMap(macroExpander);
         }
+
+        HostInfo hostInfo = null;
+
+        try {
+            hostInfo = HostInfoUtils.getHostInfo(execEnv);
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+
+        isWindows = hostInfo != null && hostInfo.getOSFamily() == OSFamily.WINDOWS;
     }
 
     public void addNativeProcessListener(ChangeListener listener) {
@@ -170,6 +190,15 @@ public final class NativeProcessInfo {
             cmd = command;
         }
 
+        if (escapeCommand) {
+            // deal with spaces in the command...
+            cmd = escape(cmd);
+        }
+
+        if (isWindows) {
+            cmd = cmd.replaceAll("\\\\", "/"); // NOI18N
+        }
+
         StringBuilder sb = new StringBuilder(cmd);
 
         if (!arguments.isEmpty()) {
@@ -190,15 +219,27 @@ public final class NativeProcessInfo {
     }
 
     public String getWorkingDirectory(boolean expandMacros) {
+        String result;
         if (expandMacros && macroExpander != null) {
             try {
-                return macroExpander.expandPredefinedMacros(workingDirectory);
+                result = macroExpander.expandPredefinedMacros(workingDirectory);
             } catch (ParseException ex) {
-                return workingDirectory;
+                result = workingDirectory;
             }
         }
+        result = workingDirectory;
+        return escape(result);
+    }
 
-        return workingDirectory;
+    private String escape(String txt) {
+        if (txt == null) {
+            return null;
+        }
+        else if (isWindows) {
+            return "'" + txt + "'"; // NOI18N
+        } else {
+            return txt.replaceAll("([^\\\\]) ", "$1\\\\ "); // NOI18N
+        }
     }
 
     public MacroMap getEnvVariables() {

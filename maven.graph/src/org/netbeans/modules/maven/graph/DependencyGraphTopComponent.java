@@ -42,18 +42,20 @@ package org.netbeans.modules.maven.graph;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.MissingResourceException;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.SpinnerNumberModel;
@@ -69,6 +71,7 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import org.openide.awt.Mnemonics;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -212,7 +215,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         btnSmaller.setEnabled(false);
         comScopes.setEnabled(false);
         add(pane, BorderLayout.CENTER);
-        setPaneText(NbBundle.getMessage(DependencyGraphTopComponent.class, "LBL_Loading"));
+        setPaneText(NbBundle.getMessage(DependencyGraphTopComponent.class, "LBL_Loading"), true);
         result = getLookup().lookup(new Lookup.Template<DependencyNode>(DependencyNode.class));
         result.addLookupListener(this);
         result2 = getLookup().lookup(new Lookup.Template<MavenProject>(MavenProject.class));
@@ -255,6 +258,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel1 = new javax.swing.JPanel();
         jToolBar1 = new javax.swing.JToolBar();
@@ -399,7 +403,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         Iterator<? extends POMModel> it3 = result3.allInstances().iterator();
         final MavenProject prj = it2.hasNext() ? it2.next() : null;
         if (prj != null && "error".equals(prj.getGroupId()) && "error".equals(prj.getArtifactId())) { //NOI18N
-            setPaneText(org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "Err_CannotLoad"));
+            setPaneText(org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "Err_CannotLoad"), false);
         }
         final Project nbProj = getLookup().lookup(Project.class);
         if (prj != null && it1.hasNext()) {
@@ -482,10 +486,36 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         return CloseOperationState.STATE_OK;
     }
 
-    private void setPaneText(String text)  {
-        JLabel lbl = new JLabel(text);
-        lbl.setHorizontalAlignment(JLabel.CENTER);
-        lbl.setVerticalAlignment(JLabel.CENTER);
-        pane.setViewportView(lbl);
+    private void setPaneText(String text, boolean progress)  {
+        JComponent vView = null;
+        if (progress) {
+            JPanel panel = new JPanel();
+            JProgressBar pb = new JProgressBar();
+            JLabel lbl = new JLabel();
+
+            panel.setLayout(new java.awt.GridBagLayout());
+            panel.setOpaque(false);
+
+            pb.setIndeterminate(true);
+            GridBagConstraints gridBagConstraints = new GridBagConstraints();
+            gridBagConstraints.gridx = 1;
+            gridBagConstraints.gridy = 0;
+            panel.add(pb, gridBagConstraints);
+
+            Mnemonics.setLocalizedText(lbl, text);
+            gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = 0;
+            gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
+            panel.add(lbl, gridBagConstraints);
+            vView = panel;
+        } else {
+            JLabel lbl = new JLabel(text);
+            lbl.setHorizontalAlignment(JLabel.CENTER);
+            lbl.setVerticalAlignment(JLabel.CENTER);
+            vView = lbl;
+        }
+
+        pane.setViewportView(vView);
     }
 }

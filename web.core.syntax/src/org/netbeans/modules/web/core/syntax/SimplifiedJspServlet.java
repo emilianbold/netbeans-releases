@@ -61,12 +61,11 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -125,10 +124,11 @@ public class SimplifiedJspServlet {
     private Embedding header;
     private List<Embedding> scriptlets = new LinkedList<Embedding>();
     private List<Embedding> declarations = new LinkedList<Embedding>();
+    private List<Embedding> localImports = new LinkedList<Embedding>();
     // keep bean declarations separate to avoid duplicating the declaration, see #130745
     private Embedding beanDeclarations;
     private boolean processCalled = false;
-    private Embedding importStatements;
+    private Embedding implicitImports;
     private int expressionIndex = 1;
     private static final Logger logger = Logger.getLogger(SimplifiedJspServlet.class.getName());
     private boolean processingSuccessful = true;
@@ -169,7 +169,7 @@ public class SimplifiedJspServlet {
             processingSuccessful = false;
             return;
         }
-        
+
         if (!isServletAPIOnClasspath()){
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -231,13 +231,14 @@ public class SimplifiedJspServlet {
             }
         } while (tokenSequence.moveNext());
 
+        List<String> localImports = processImportDirectives();
 
         if (ex[0] != null) {
             throw ex[0];
         }
 
         header = snapshot.create(getClassHeader(), "text/x-java");
-        importStatements = snapshot.create(createImportStatements(), "text/x-java");
+        implicitImports = snapshot.create(createImplicitImportStatements(localImports), "text/x-java");
         beanDeclarations = snapshot.create("\n" + createBeanVarDeclarations(), "text/x-java");
     }
 
@@ -260,6 +261,7 @@ public class SimplifiedJspServlet {
 
         Visitor visitor = new Visitor() {
 
+            @Override
             public void visit(IncludeDirective includeDirective) throws JspException {
                 String fileName = includeDirective.getAttributeValue("file");
                 processIncludedFile(fileName, processedFiles);
@@ -270,12 +272,76 @@ public class SimplifiedJspServlet {
         try {
             JspParserAPI.ParseResult parseResult = jspSyntax.getParseResult();
 
-            if (parseResult != null){
+            if (parseResult != null && parseResult.getNodes() != null){
                 parseResult.getNodes().visit(visitor);
             }
         } catch (JspException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    private boolean consumeWS(TokenSequence tokenSequence){
+        if (tokenSequence.token().id() == JspTokenId.WHITESPACE){
+            return tokenSequence.moveNext();
+        }
+        
+        return true;
+    }
+
+    /**
+     * The information about imports obtained from the JSP Parser
+     * does not include data about offsets,
+     * therefore it is necessary to some manual parsing.
+     * 
+     * This method creates embeddings and stores them in the
+     * <code>localImports</code>
+     *
+     * additionaly it returns a list of imports found
+     */
+    private List<String> processImportDirectives() {
+        List<String> imports = new ArrayList<String>();
+        TokenHierarchy tokenHierarchy = TokenHierarchy.create(charSequence, JspTokenId.language());//TokenHierarchy.get(doc);
+        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+        tokenSequence.moveStart();
+
+        while (tokenSequence.moveNext()) {
+            if (tokenSequence.token().id() == JspTokenId.TAG 
+                    && TokenUtilities.equals("page", tokenSequence.token().text())) { //NOI18N
+
+                if (tokenSequence.moveNext() && consumeWS(tokenSequence)) {
+
+                    if (tokenSequence.token().id() == JspTokenId.ATTRIBUTE
+                            && TokenUtilities.equals("import", tokenSequence.token().text())) { //NOI18N
+
+                        if (tokenSequence.moveNext()
+                                && consumeWS(tokenSequence)
+                                && tokenSequence.token().id() == JspTokenId.SYMBOL
+                                && TokenUtilities.equals("=", tokenSequence.token().text())) {
+
+                            if (tokenSequence.moveNext() && consumeWS(tokenSequence)
+                                    && tokenSequence.token().id() == JspTokenId.ATTR_VALUE) {
+                                
+                                String val = tokenSequence.token().text().toString();
+
+                                if (val.length() > 2 && val.charAt(0) == '"' 
+                                        && val.charAt(val.length() - 1) == '"') {
+                                    
+                                    int startOffset = tokenSequence.offset() + 1;
+                                    int len = val.length() - 2;
+                                    String imprt = val.substring(1, len);
+                                    localImports.add(snapshot.create("import ", "text/x-java")); //NOI18N
+                                    localImports.add(snapshot.create(startOffset, len, "text/x-java")); //NOI18N
+                                    localImports.add(snapshot.create(";\n", "text/x-java")); //NOI18N
+                                    imports.add(imprt);
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+        return imports;
     }
 
     private void processIncludedFile(String filePath, Collection<String> processedFiles) {
@@ -341,6 +407,10 @@ public class SimplifiedJspServlet {
     }
 
     private String createBeanVarDeclarations() {
+        //TODO: the parser data contains no information about offsets and
+        //therefore it is not possible to create proper java embeddings
+        //inside bean declarations. We need a similar solution to what was
+        //done for imports, see issue #161246
         StringBuilder beanDeclarationsBuff = new StringBuilder();
 
         PageInfo pageInfo = getPageInfo();
@@ -397,7 +467,7 @@ public class SimplifiedJspServlet {
         return beanDeclarationsBuff.toString();
     }
 
-    private String[] getImports() {
+    private String[] getImportsFromJspParser() {
         PageInfo pi = getPageInfo();
         if (pi == null) {
             //we need at least some basic imports
@@ -441,9 +511,16 @@ public class SimplifiedJspServlet {
         return null;
     }
 
-    private String createImportStatements() {
+
+    /**
+     * Add extra imports according to information obtained from the JSP parser
+     *
+     * @param localImports imports already included in the Simplified Servlet
+     * by the processImportDirectives method
+     */
+    private String createImplicitImportStatements(List<String> localImports) {
         StringBuilder importsBuff = new StringBuilder();
-        String[] imports = getImports();
+        String[] imports = getImportsFromJspParser();
 
         if (imports == null || imports.length == 0){
             processingSuccessful = false;
@@ -451,7 +528,9 @@ public class SimplifiedJspServlet {
             // TODO: better support for situation when imports is null
             // (JSP doesn't belong to a project)
             for (String pckg : imports) {
-                importsBuff.append("import " + pckg + ";\n"); //NOI18N
+                if (!localImports.contains(pckg)){
+                    importsBuff.append("import " + pckg + ";\n"); //NOI18N
+                }
             }
         }
 
@@ -481,20 +560,21 @@ public class SimplifiedJspServlet {
         }
     }
 
-    public Embedding getVirtualClassBody() {
+    public Embedding getSimplifiedServlet() {
         assureProcessCalled();
 
         if (!processingSuccessful){
             return null;
         }
 
-        if (declarations.isEmpty() && scriptlets.isEmpty()) {
+        if (localImports.isEmpty() && declarations.isEmpty() && scriptlets.isEmpty()) {
             return null;
         }
 
         List<Embedding> content = new LinkedList<Embedding>();
 
-        content.add(importStatements);
+        content.add(implicitImports);
+        content.addAll(localImports);
         content.add(header);
         content.addAll(declarations);
         content.add(beanDeclarations);
@@ -518,8 +598,6 @@ public class SimplifiedJspServlet {
                 writer.print(virtualClassBody);
                 writer.close();
 
-                FileObject jspFile = NbEditorUtilities.getFileObject(doc);
-                //ClasspathInfo cpInfo = ClasspathInfo.create(jspFile);
                 Source source = Source.create(fileDummyJava);
                 process(fileDummyJava, source);
             } catch (IOException ex) {

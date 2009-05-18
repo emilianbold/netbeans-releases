@@ -78,7 +78,7 @@ public class KenaiProjectsListRenderer extends javax.swing.JPanel {
 
         KenaiSearchPanel.KenaiProjectSearchInfo searchInfo = (KenaiSearchPanel.KenaiProjectSearchInfo) value;
 
-        projectNameLabel.setText("<html><b>" + searchInfo.kenaiProject.getDisplayName() +
+        projectNameLabel.setText("<html><b>" + searchInfo.kenaiProject.getDisplayName() + // NOI18N
                 " (" + searchInfo.kenaiProject.getName() + ")</b></html>"); // NOI18N
         if (searchInfo.kenaiFeature != null) {
             repoPathLabel.setText(searchInfo.kenaiFeature.getLocation());
@@ -90,7 +90,7 @@ public class KenaiProjectsListRenderer extends javax.swing.JPanel {
             description = description.replaceAll("\t+", " "); // NOI18N
             projectDescLabel.setText(description);
             projectDescLabel.setRows(searchInfo.kenaiProject.getDescription().length()/100 + 1);
-            tagsLabel.setText(NbBundle.getMessage(KenaiProjectsListRenderer.class, "KenaiProjectsListRenderer.tagsLabel.text") + " " +
+            tagsLabel.setText(NbBundle.getMessage(KenaiProjectsListRenderer.class, "KenaiProjectsListRenderer.tagsLabel.text") + " " + // NOI18N
                     searchInfo.kenaiProject.getTags());
         } catch (KenaiException kenaiException) {
             Exceptions.printStackTrace(kenaiException);

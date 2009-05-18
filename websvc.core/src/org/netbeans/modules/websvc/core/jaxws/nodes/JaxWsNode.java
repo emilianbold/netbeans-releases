@@ -938,10 +938,38 @@ public class JaxWsNode extends AbstractNode implements
     private String getPortNumber(InstanceProperties instanceProperties) {
         String portNumber = instanceProperties.getProperty(InstanceProperties.HTTP_PORT_NUMBER);
         if (portNumber == null || portNumber.equals("")) { //NOI18N
-            return "8080"; //NOI18N
+            String serverURL = instanceProperties.getProperty(InstanceProperties.URL_ATTR);
+            if (serverURL == null) {
+                return "8080"; //NOI18N
+            } else {
+                String port = parseServerURL(serverURL);
+                return (port == null ? "8080" : port); //NOI18N
+            }
         } else {
             return portNumber;
         }
+    }
+
+    private String parseServerURL(String serverURL) {
+        int index1 = serverURL.indexOf("http://"); //NOI18N
+        if (index1 >= 0) {
+            String s = serverURL.substring(index1+7);
+            int index2 = s.indexOf(":");
+            if (index2 > 0) {
+                s = s.substring(index2+1);
+                if (s.length() > 0) {
+                    StringBuffer buf = new StringBuffer();
+                    int i=0;
+                    while (Character.isDigit(s.charAt(i)) && i < s.length()) {
+                        buf.append(s.charAt(i++));
+                    }
+                    if (buf.length() > 0) {
+                        return buf.toString();
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /** Old way to obtain host name from server instance (using instance properties)

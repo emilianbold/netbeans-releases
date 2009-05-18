@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -26,7 +26,7 @@
  * "[Contributor] elects to include this software in this distribution
  * under the [CDDL or GPL Version 2] license." If you do not indicate a
  * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
+ * your version of this file aunder either the CDDL, the GPL Version 2 or
  * to extend the choice of license to its licensees as provided above.
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.jira.issue;
@@ -84,6 +84,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
@@ -108,6 +109,7 @@ public class NbJiraIssue extends Issue {
     static final String LABEL_NAME_SUMMARY      = "jira.issue.summary";     // NOI18N
 
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";               // NOI18N
+    private static final int SHORTENED_SUMMARY_LENGTH = 22;
 
     private static final String FIXED = "Fixed";                        //NOI18N
 
@@ -322,17 +324,39 @@ public class NbJiraIssue extends Issue {
 
     /**
      * Reloads the task data and refreshes the issue cache
-     * @param id id of the issue, NOT IT'S KEY
+     * @param key key of the issue
      * @return true if successfully refreshed
      */
-    public boolean refresh(String id, boolean cacheThisIssue) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
+    public boolean refresh(String key, boolean cacheThisIssue) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+        try {
+            TaskData td = JiraUtils.getTaskDataByKey(repository, key);
+            if(td == null) {
+                return false;
+            }
+            getRepository().getIssueCache().setIssueData(key, td, this); // XXX
+            if (controller != null) {
+                controller.refreshViewData();
+            }
+        } catch (IOException ex) {
+            Jira.LOG.log(Level.SEVERE, null, ex);
+        }
+        return true;
+    }
+
+    /**
+     * Reloads the task data and refreshes the issue cache
+     * @param id id of the issue
+     * @return true if successfully refreshed
+     */
+    public boolean refreshById(String id) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         try {
             TaskData td = JiraUtils.getTaskDataById(repository, id);
             if(td == null) {
                 return false;
             }
-            String key = getID(td); // XXX cache is currently build on KEYS, not on IDs, MUST BE CHANGED LATER
+            String key = getID(td);
             getRepository().getIssueCache().setIssueData(key, td, this); // XXX
             if (controller != null) {
                 controller.refreshViewData();
@@ -414,6 +438,105 @@ public class NbJiraIssue extends Issue {
     }
 
     /**
+     * Tries to update the taskdata and set issue to closed:resolution.
+     * <strong>Do not forget to submit the issue</strong>
+     * @param resolution
+     * @param comment can be null, in such case no comment will be set
+     * @throws org.eclipse.mylyn.internal.jira.core.service.JiraException
+     * @throws java.lang.IllegalStateException if resolve operation is not permitted for this issue
+     */
+    public void close(Resolution resolution, String comment) throws JiraException {
+        if (Jira.LOG.isLoggable(Level.FINE)) {
+            Jira.LOG.fine(getClass().getName() + ": close issue " + getKey() + ": " + resolution.getName());    //NOI18N
+        }
+        TaskAttribute rta = taskData.getRoot();
+
+        Map<String, TaskOperation> operations = getAvailableOperations();
+        TaskOperation operation = null;
+        for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
+            String operationLabel = entry.getValue().getLabel();
+            if (Jira.LOG.isLoggable(Level.FINEST)) {
+                Jira.LOG.finest(getClass().getName() + ": closing issue" + getKey() + ": available operation: " + operationLabel + "(" + entry.getValue().getOperationId() + ")"); //NOI18N
+            }
+            if (JiraUtils.isCloseOperation(operationLabel)) {
+                operation = entry.getValue();
+                break;
+            }
+        }
+        if (operation == null) {
+            throw new IllegalStateException("Close operation not permitted"); //NOI18N
+        } else {
+            setOperation(operation);
+        }
+
+        TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.RESOLUTION);
+        ta.setValue(resolution.getId());
+        addComment(comment);
+    }
+
+    /**
+     * Tries to update the taskdata and set issue to started.
+     * <strong>Do not forget to submit the issue</strong>
+     * @throws org.eclipse.mylyn.internal.jira.core.service.JiraException
+     * @throws java.lang.IllegalStateException if resolve operation is not permitted for this issue
+     */
+    public void startProgress() throws JiraException {
+        if (Jira.LOG.isLoggable(Level.FINE)) {
+            Jira.LOG.fine(getClass().getName() + ": starting issue " + getKey());    //NOI18N
+        }
+        TaskAttribute rta = taskData.getRoot();
+
+        Map<String, TaskOperation> operations = getAvailableOperations();
+        TaskOperation operation = null;
+        for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
+            String operationLabel = entry.getValue().getLabel();
+            if (Jira.LOG.isLoggable(Level.FINEST)) {
+                Jira.LOG.finest(getClass().getName() + ": starting issue" + getKey() + ": available operation: " + operationLabel + "(" + entry.getValue().getOperationId() + ")"); //NOI18N
+            }
+            if (JiraUtils.isStartProgressOperation(operationLabel)) {
+                operation = entry.getValue();
+                break;
+            }
+        }
+        if (operation == null) {
+            throw new IllegalStateException("Start progress operation not permitted"); //NOI18N
+        } else {
+            setOperation(operation);
+        }
+    }
+
+    /**
+     * Tries to update the taskdata and stops the progress.
+     * <strong>Do not forget to submit the issue</strong>
+     * @throws org.eclipse.mylyn.internal.jira.core.service.JiraException
+     * @throws java.lang.IllegalStateException if resolve operation is not permitted for this issue
+     */
+    public void stopProgress() throws JiraException {
+        if (Jira.LOG.isLoggable(Level.FINE)) {
+            Jira.LOG.fine(getClass().getName() + ": starting issue " + getKey());    //NOI18N
+        }
+        TaskAttribute rta = taskData.getRoot();
+
+        Map<String, TaskOperation> operations = getAvailableOperations();
+        TaskOperation operation = null;
+        for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
+            String operationLabel = entry.getValue().getLabel();
+            if (Jira.LOG.isLoggable(Level.FINEST)) {
+                Jira.LOG.finest(getClass().getName() + ": starting issue" + getKey() + ": available operation: " + operationLabel + "(" + entry.getValue().getOperationId() + ")"); //NOI18N
+            }
+            if (JiraUtils.isStopProgressOperation(operationLabel)) {
+                operation = entry.getValue();
+                break;
+            }
+        }
+        if (operation == null) {
+            throw new IllegalStateException("Stop progress operation not permitted"); //NOI18N
+        } else {
+            setOperation(operation);
+        }
+    }
+
+    /**
      * Updates task data and sets the operation field
      * @param operationId id of requested operation
      * @throws java.lang.IllegalArgumentException if the operation is not permitted for this issue
@@ -466,7 +589,23 @@ public class NbJiraIssue extends Issue {
 
     @Override
     public String getDisplayName() {
-        return "Issue: " + getKey();
+        return taskData.isNew() ?
+            NbBundle.getMessage(NbJiraIssue.class, "CTL_NewIssue") : // NOI18N
+            NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue", new Object[] {getID(), getSummary()}); // NOI18N
+    }
+
+    @Override
+    public String getShortenedDisplayName() {
+        if (taskData.isNew()) {
+            return getDisplayName();
+        }
+
+        String shortSummary = TextUtils.shortenText(getSummary(),
+                                                    2,    //try at least 2 words
+                                                    SHORTENED_SUMMARY_LENGTH);
+        return NbBundle.getMessage(NbJiraIssue.class,
+                                   "CTL_Issue",                         //NOI18N
+                                   new Object[] {getID(), shortSummary});
     }
 
     @Override
@@ -547,7 +686,7 @@ public class NbJiraIssue extends Issue {
         mapper.applyTo(attAttribute);
         JiraCommand cmd = new JiraCommand() {
             public void execute() throws CoreException, IOException {
-                refresh();
+//                refresh(); // XXX no refreshing may cause a midair collision - we should refresh in such a case and attach then
                 if (Jira.LOG.isLoggable(Level.FINER)) {
                     Jira.LOG.finer("adding an attachment: issue: " + getKey());
                 }
@@ -765,7 +904,7 @@ public class NbJiraIssue extends Issue {
                 if (!wasNew) {
                     refresh();
                 } else {
-                    refresh(rr[0].getTaskId(), true);
+                    refreshById(rr[0].getTaskId());
                 }
             }
         };

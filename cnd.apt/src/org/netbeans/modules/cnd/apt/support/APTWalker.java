@@ -85,7 +85,7 @@ public abstract class APTWalker {
         }
     }
      
-    public void nonRecurseVisit() {
+    private void nonRecurseVisit() {
         init(false);
         while(!finished()) {           
             toNextNode();

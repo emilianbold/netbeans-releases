@@ -58,6 +58,7 @@ import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
@@ -823,8 +824,7 @@ public class SolarisLogReader {
             } else {
                 fullName = compilePath+"/"+sourceName; //NOI18N
             }
-            File file = new File(fullName);
-            fullName = FileUtil.normalizeFile(file).getAbsolutePath();
+            fullName = CndFileUtils.normalizeAbsolutePath(fullName);
             fullName = PathCache.getString(fullName);
             this.userIncludes = userIncludes;
             this.userMacros = userMacros;

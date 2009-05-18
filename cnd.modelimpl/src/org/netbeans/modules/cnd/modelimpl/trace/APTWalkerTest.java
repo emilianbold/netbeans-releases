@@ -62,7 +62,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 public class APTWalkerTest extends APTAbstractWalker {
 
     public APTWalkerTest(APTFile apt, APTPreprocHandler ppHandler) {
-        super(apt, ppHandler);
+        super(apt, ppHandler, null);
     }
 
     private long resolvingTime = 0;

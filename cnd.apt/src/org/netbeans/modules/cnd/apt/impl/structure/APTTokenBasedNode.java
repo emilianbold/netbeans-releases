@@ -131,7 +131,7 @@ public abstract class APTTokenBasedNode extends APTBaseNode
         return getOffset() == other.getOffset() &&
                 getEndOffset() == other.getEndOffset() &&
                 getType() == other.getType() &&
-                getText().equals(other.getText());
+                getToken().equals(other.getToken());
     }
 
     @Override
@@ -140,7 +140,7 @@ public abstract class APTTokenBasedNode extends APTBaseNode
         hash = 29 * hash + getOffset();
         hash = 29 * hash + getEndOffset();
         hash = 29 * hash + getType();
-        hash = 29 * hash + getText().hashCode();
+        hash = 29 * hash + getToken().hashCode();
         return hash;
     }
 

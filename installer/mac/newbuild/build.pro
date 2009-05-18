@@ -33,6 +33,44 @@
     <!--<property name="glassfish_location_ml" value="${gf_builds_host}/java/re/glassfish_branch/9.1.1/promoted/fcs/b60e/l10n/mac/glassfish-image-SNAPSHOT-ml.jar"/>-->
     <property name="glassfish_location_ml" value="file:${user.home}/releng/hudson/glassfish-image-v2.1-b60e-ml.jar"/>
 
+
+    <!-- SJSAS properties   -->
+    <property name="sjsas.install.dir" value="${install.dir}/SUNWappserver"/>
+    <property name="sjsas.version" value="v2.1"/>
+    <property name="sjsas.display.version" value="v2.1"/>
+    <property name="sjsas.milestone.number" value="60e"/>
+    <property name="sjsas_location" value="${gf_builds_host}/java/re/glassfish_branch/9.1.1/promoted/fcs/b${sjsas.milestone.number}/bundles/appserver_install_image-mac-b${sjsas.milestone.number}.zip"/>
+    <!--property name="sjsas_location"    value="file:${user.home}/releng/hudson/appserver_install_image-mac-b${sjsas.milestone.number}.zip"/-->
+    <property name="sjsas_location_ml" value="${gf_builds_host}/java/re/glassfish_branch/9.1.1/promoted/fcs/b${sjsas.milestone.number}/l10n-nb/appserver_install_image-mac-b${sjsas.milestone.number}-ml.zip"/>
+    <!--property name="sjsas_location_ml" value="file:${user.home}/releng/hudson/appserver_install_image-mac-b${sjsas.milestone.number}-ml.zip"/-->
+
+
+
+    <!-- Sun GlassFish V3 properties   -->
+    <property name="glassfish.v3.sun.build.type"      value="prelude"/>
+    <property name="glassfish.v3.sun.location.prefix" value="${gf_builds_host}/java/re/glassfish_branch/10.0/promoted"/>
+    <property name="glassfish.v3.sun.build.number"    value="28c"/>
+    <!--
+    <loadresource property="glassfish.v3.sun.build.number">
+          <url url="${glassfish.v3.sun.location.prefix}/prelude/latest/archive/bundles"/>
+          <filterchain>
+	    <striplinebreaks/>
+            <tokenfilter>
+              <replaceregex pattern="(.*)sges-v3-${glassfish.v3.sun.build.type}-b([0-9a-z]+)\.zip(.*)" replace="\2" flags="g"/>
+            </tokenfilter>
+          </filterchain>
+    </loadresource>
+    -->
+    <property name="glassfish.v3.sun.display.version" value="v3 Prelude"/>
+    <property name="glassfish.v3.sun.version"      value="b${glassfish.v3.sun.build.number}"/>
+    <property name="glassfish.v3.sun.install.dir"  value="${install.dir}/sges-v3-${glassfish.v3.sun.build.type}"/>
+    <!--property name="glassfish_v3_sun_location"     value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles/sges-v3-${glassfish.v3.sun.build.type}-${glassfish.v3.sun.version}.zip"/-->
+    <!--property name="glassfish_v3_sun_location_ml"     value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles-ml/sges-v3-${glassfish.v3.sun.build.type}-ml.zip"/-->
+    <property name="glassfish_v3_sun_location"     value="${binary_cache_host}/glassfish/sges-v3-prelude.zip"/>
+    <property name="glassfish_v3_sun_location_ml"  value="${binary_cache_host}/glassfish/sges-v3-prelude-b28d-05_07_2009.zip"/>
+    <property name="glassfish.v3.sun.subdir"       value="glassfishv3-prelude"/>
+
+
     <!-- GlassFish V3 properties   -->   
     <property name="glassfish.v3.build.type"      value="prelude"/>
     <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish_branch/10.0/promoted"/>
@@ -57,7 +95,7 @@
     <property name="glassfish.v3.subdir"       value="glassfishv3-prelude"/>
     
     <!-- Open ESB Properties-->    
-    <property name="openesb.install.dir" value="${glassfish.install.dir}/addons"/>
+    <property name="openesb.install.dir" value="${sjsas.install.dir}/addons"/>
     <property name="openesb.version" value="v2"/>
     <property name="openesb_location" value="${openesb_builds_host}/kits/ojc/openesb_as9_ur2/latest/installers/jbi_components_installer.jar"/>
     <!--property name="openesb_core_source" value="${openesb_builds_host}/kits/openesb/main/latest/CORE/jbi-core-installer.jar"/-->                  

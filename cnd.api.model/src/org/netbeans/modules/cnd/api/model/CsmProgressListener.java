@@ -60,6 +60,8 @@ public interface CsmProgressListener extends EventListener {
     void projectLoaded(CsmProject project);
     
     void fileInvalidated(CsmFile file);
+
+    void fileAddedToParse(CsmFile file);
     
     void fileParsingStarted(CsmFile file);
     

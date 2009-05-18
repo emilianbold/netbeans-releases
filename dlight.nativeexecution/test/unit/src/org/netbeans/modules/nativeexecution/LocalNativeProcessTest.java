@@ -183,7 +183,7 @@ public class LocalNativeProcessTest extends NativeExecutionTest {
 
                             // Make sure process exists...
                             try {
-                                NativeProcessBuilder pb = new NativeProcessBuilder(execEnv, "/bin/kill").setArguments("-0", "" + pid); // NOI18N
+                                NativeProcessBuilder pb = new NativeProcessBuilder(execEnv, "/bin/kill",false).setArguments("-0", "" + pid); // NOI18N
                                 int result = pb.call().waitFor();
                                 assertTrue(result == 0);
                             } catch (InterruptedException ex) {
@@ -199,7 +199,7 @@ public class LocalNativeProcessTest extends NativeExecutionTest {
                             // Make sure process doesn't exist...
                             
                             try {
-                                NativeProcessBuilder pb = new NativeProcessBuilder(execEnv, "/bin/kill").setArguments("-0", "" + pid); // NOI18N
+                                NativeProcessBuilder pb = new NativeProcessBuilder(execEnv, "/bin/kill",false).setArguments("-0", "" + pid); // NOI18N
                                 int result = pb.call().waitFor();
                                 assertTrue(result != 0);
                             } catch (IOException ex) {
@@ -318,7 +318,7 @@ public class LocalNativeProcessTest extends NativeExecutionTest {
         }
 
         public void run() {
-            NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "read"); // NOI18N
+            NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "read",false); // NOI18N
             try {
                 NativeProcess p = npb.call();
                 pqueue.put(p);

@@ -46,6 +46,7 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
@@ -68,7 +69,9 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
@@ -363,6 +366,8 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         boolean loginSuccess = UIUtils.showLogin();
         if (loginSuccess) {
             refreshUsername();
+            KenaiTopComponent.findInstance().open();
+            KenaiTopComponent.findInstance().requestActive();
         } else {
             // login failed, do nothing
         }
@@ -488,7 +493,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                                                 KenaiService.Names.SUBVERSION.equals(feature.getService())) {
                                                 KenaiFeatureListItem item = new KenaiFeatureListItem(project, feature);
                                                 addElement(item);
-                                                if (prjAndFeature != null && 
+                                                if (prjAndFeature != null &&
                                                     prjAndFeature.projectName.equals(project.getName()) &&
                                                     prjAndFeature.feature.equals(feature)) {
                                                     setSelectedItem(item);
@@ -554,7 +559,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
     private void updatePanelUI() {
         KenaiFeatureListItem featureItem = (KenaiFeatureListItem) kenaiRepoComboBox.getSelectedItem();
         if (featureItem != null) {
-            String serviceName = featureItem.feature.getService(); // XXX service or name
+            String serviceName = featureItem.feature.getService();
             String repositoryText = NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
                     "GetSourcesFromKenaiPanel.RepositoryLabel"); // NOI18N
             if (KenaiService.Names.SUBVERSION.equals(serviceName)) {
