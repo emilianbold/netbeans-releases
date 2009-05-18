@@ -146,7 +146,7 @@ public class ConfigurationMakefileWriterTest {
         }
         CompilerSetManager.getDefault().add(compilerSet);
         conf.getCompilerSet().setNameAndFlavor("MyCompilerSet|" + flavorName, 51);
-        conf.getPlatform().setValue(platform);
+        conf.getDevelopmentHost().setBuildPlatform(platform);
 
         // Setup streams
         PipedOutputStream pipedOutputStream = new PipedOutputStream();
@@ -212,7 +212,7 @@ public class ConfigurationMakefileWriterTest {
         }
         CompilerSetManager.getDefault().add(compilerSet);
         conf.getCompilerSet().setNameAndFlavor("MyCompilerSet|" + flavorName, 51);
-        conf.getPlatform().setValue(platform);
+        conf.getDevelopmentHost().setBuildPlatform(platform);
 
         // Setup streams
         PipedOutputStream pipedOutputStream = new PipedOutputStream();

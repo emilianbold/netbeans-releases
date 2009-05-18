@@ -39,23 +39,46 @@
 
 package org.netbeans.modules.hudson.kenai;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
+import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.api.KenaiService.Type;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=ProjectHudsonProvider.class, position=300)
 public class KenaiHudsonBuildAssociation extends ProjectHudsonProvider {
 
+    private static final Logger LOG = Logger.getLogger(KenaiHudsonBuildAssociation.class.getName());
+
     public Association findAssociation(Project project) {
-        // XXX need to:
-        // 1. Find a KenaiProject associated with this Project. How?
-        // 2. Ask it getFeatures(Type.HUDSON).
-        // 3. Use getLocation or getWebLocation (not yet sure which).
+        Object loc = project.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation");
+        if (loc instanceof String) {
+            try {
+                KenaiProject p = KenaiProject.forRepository((String) loc);
+                if (p != null) {
+                    for (KenaiFeature feature : p.getFeatures(Type.HUDSON)) {
+                        String server = feature.getWebLocation().toString();
+                        { // XXX just for testing until real service works
+                            LOG.warning("Ignoring reported server location " + server + " in favor of http://localhost:8080/");
+                            server = "http://localhost:8080/";
+                        }
+                        return Association.fromString(server);
+                    }
+                }
+            } catch (KenaiException x) {
+                LOG.log(Level.FINE, "Looking up association for " + project, x);
+            }
+        }
         return null;
     }
 
     public boolean recordAssociation(Project project, Association assoc) {
-        return findAssociation(project) != null;
+        return Utilities.compareObjects(assoc, findAssociation(project));
     }
 
 }

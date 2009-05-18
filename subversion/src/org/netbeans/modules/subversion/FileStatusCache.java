@@ -123,7 +123,7 @@ public class FileStatusCache {
     private Subversion                  svn;
 
     private RequestProcessor rp = new RequestProcessor("Subversion - file status refresh", 1); // NOI18N    
-    private Set<File> filesToRefresh = new HashSet<File>();
+    private final Set<File> filesToRefresh = new HashSet<File>();
     private RequestProcessor.Task refreshTask;
     
     FileStatusCache() {
@@ -316,17 +316,24 @@ public class FileStatusCache {
      * @param files files to be refreshed
      * @param recursively if true all children are also refreshed
      */
-    public void refreshAsync(boolean recursively, File... files) {
-        synchronized(filesToRefresh) {
-            for (File file : files) {                
-                if(recursively) {
-                    filesToRefresh.addAll(SvnUtils.listRecursively(file));
-                } else {
-                    filesToRefresh.add(file);    
-                }
-            }                
+    public void refreshAsync(final boolean recursively, final File... files) {
+        if (files.length == 0) {
+            return;
         }
-        refreshTask.schedule(200);
+        rp.post(new Runnable() {
+            public void run() {
+                synchronized (filesToRefresh) {
+                    for (File file : files) {
+                        if (recursively) {
+                            filesToRefresh.addAll(SvnUtils.listRecursively(file));
+                        } else {
+                            filesToRefresh.add(file);
+                        }
+                    }
+                }
+                refreshTask.schedule(200);
+            }
+        });
     }
 
     /**

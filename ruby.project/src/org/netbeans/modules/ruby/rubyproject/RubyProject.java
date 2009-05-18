@@ -52,6 +52,7 @@ import org.netbeans.modules.ruby.rubyproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.ruby.rubyproject.queries.RubyProjectEncodingQueryImpl;
 import org.netbeans.modules.ruby.rubyproject.ui.RubyLogicalViewProvider;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyCompositePanelProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
@@ -111,7 +112,7 @@ public final class RubyProject extends RubyBaseProject {
             new RecommendedTemplatesImpl (this.updateHelper),
             this, // never cast an externally obtained Project to RubyProject - use lookup instead
             new RubyProjectOperations(this),
-            new RubyConfigurationProvider(this),
+            new RubyConfigurationProvider(this, RubyCompositePanelProvider.RUN),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),            

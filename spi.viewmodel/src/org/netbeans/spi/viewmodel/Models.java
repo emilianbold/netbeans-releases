@@ -144,7 +144,7 @@ public final class Models {
         final CompoundModel compoundModel
     ) {
         if (!(view instanceof OutlineTable)) {
-            throw new IllegalArgumentException("Expecting an instance of "+OutlineTable.class.getName()+", which can be obtained from Models.createView().");
+            throw new IllegalArgumentException("Expecting an instance of "+OutlineTable.class.getName()+", which can be obtained from Models.createView(). view = "+view);
         }
         if (verbose)
             System.out.println (compoundModel);

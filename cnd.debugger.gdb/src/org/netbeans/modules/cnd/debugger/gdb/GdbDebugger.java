@@ -1429,10 +1429,10 @@ public class GdbDebugger implements PropertyChangeListener {
                 killcmd.add(signal.toString());
 
                 killcmd.add(Long.toString(pid));
-                NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, killcmd.get(0),false);
                 String[] args = killcmd.subList(1, killcmd.size()).toArray(new String[killcmd.size()-1]);
-                // setArguments returns new builder instance, so it is necessary to reassign it...
-                npb = npb.setArguments(args);
+                NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+                npb.setExecutable(killcmd.get(0)).setArguments(args);
+                
                 try {
                     npb.call();
                 } catch (Exception ex) {

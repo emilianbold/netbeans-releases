@@ -24,8 +24,8 @@
         <ol>
             <li>Right-click the project node in the Projects window and choose New &gt; Other to open the New File wizard.</li>
             <li>In the New File wizard, select Hibernate Mapping Files and POJOs from Database from the Hibernate category.</li>
-            <li>Specify the Folder where you want to save the generated <tt>hibernate.reveng</tt> reverse engineering file. Click Next.</li>
-            <li>Select the Configuration File (<tt>hibernate.cfg.xml</tt>) from the drop down list.
+            <li>Select the Configuration File (<tt>hibernate.cfg.xml</tt>) and 
+                Reverse Engineering File (<tt>hibernate.reveng</tt>) from the dropdown lists.
                 <ul class="note">
                     <li>The configuration file contains the database connection details.
                     If a connection to the database is not open you may be prompted to 
@@ -34,11 +34,8 @@
                 </ul>
             </li>
             
-            <li>Select any tables in the Available Tables pane and click the Add to move the tables to the Selected Tables pane. 
-                Any tables related to the tables you select are automatically added to the list in the Selected Tables pane. 
-                The IDE will generate Hibernate mapping files and POJOs for each table listed in the Selected Tables pane.</li>
-            <li>Click Next.</li>
-            <li>Specify any options for the generated files.</li>
+            
+            <li>Specify any General Settings options for the generated files.</li>
             <li>Select Domain Code to generate the POJOs.</li> 
             <li>Select Hibernate XML Mappings to generate the mapping files.</li>
             <li>Select an existing package from the Package drop down list or type the name of a new package.</li>
@@ -57,6 +54,7 @@
         <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="hibernate_cfg.html">Creating the Hibernate Configuration File</a> </dd>
+            <dd><a href="hibernate_reveng.html">Creating a Hibernate Reverse Engineering File</a> </dd>
             <dd><a href="hibernate_cfgedit.html">Editing the Hibernate Configuration File</a> </dd>
             <dd><a href="hibernate_mapping.html">Creating Hibernate Mapping Files</a> </dd>
             <dd><a href="hibernate_addsupport.html">Adding Hibernate Support to a Project</a></dd>

@@ -266,6 +266,7 @@ public class StaticAccess extends AbstractHint {
 
             if (path == null) {
                 Logger.getLogger("org.netbeans.modules.java.hints").log(Level.INFO, "Cannot resolve target.");
+                return;
             }
 
             Element element = type.resolveElement(copy);

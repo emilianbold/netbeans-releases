@@ -54,6 +54,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.nio.CharBuffer;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.NestingKind;
 import javax.swing.text.BadLocationException;
@@ -88,12 +90,14 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
     private String text;
     private TokenHierarchy<?> tokens;
     private final JavaFileFilterImplementation filter;
+    private static Logger log = Logger.getLogger(SourceFileObject.class.getName());
     
     public static SourceFileObject create (final FileObject file, final FileObject root) {        
         try {
             return new SourceFileObject (file, root, null, false);
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            if (log.isLoggable(Level.SEVERE))
+                log.log(Level.SEVERE, ioe.getMessage(), ioe);
             return null;
         }        
     }
@@ -203,8 +207,9 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
                       try {
                             builder.append(doc.getText(0, doc.getLength()));
                         } catch (BadLocationException e) {
-                            ErrorManager.getDefault().notify(e);
-                        }  
+                          if (log.isLoggable(Level.SEVERE))
+                              log.log(Level.SEVERE, e.getMessage(), e);
+                      }  
                     }
                 });
                 return new StringReader (builder.toString());
@@ -242,8 +247,9 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
                       try {
                             builder.append(doc.getText(0, doc.getLength()));
                         } catch (BadLocationException e) {
-                            ErrorManager.getDefault().notify(e);
-                        }  
+                          if (log.isLoggable(Level.SEVERE))
+                              log.log(Level.SEVERE, e.getMessage(), e);
+                      }  
                     }
                 });
                 return new ByteArrayInputStream (builder.toString().getBytes());
@@ -290,7 +296,8 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
             try {            
                 this.uri = URI.create(this.file.getURL().toExternalForm());
             } catch (FileStateInvalidException e) {
-                ErrorManager.getDefault().notify(e);                
+                if (log.isLoggable(Level.SEVERE))
+                    log.log(Level.SEVERE, e.getMessage(), e);
             }
         }
         return this.uri;
@@ -431,7 +438,8 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
                     try {
                         _text[0] = doc.getText(0, doc.getLength());
                     } catch (BadLocationException e) {
-                        ErrorManager.getDefault().notify(e);
+                        if (log.isLoggable(Level.SEVERE))
+                            log.log(Level.SEVERE, e.getMessage(), e);
                     }
                 }
             });
@@ -555,11 +563,13 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
                                 //todo: use new String(data,0,pos,FileEncodingQuery.getEncoding(file)) on JDK 6.0
                                 doc.insertString(0,new String(data,0,pos,FileEncodingQuery.getEncoding(file).name()),null);
                             } catch (BadLocationException e) {
-                                ErrorManager.getDefault().notify(e);
+                                if (log.isLoggable(Level.SEVERE))
+                                    log.log(Level.SEVERE, e.getMessage(), e);
                             }
                             catch (UnsupportedEncodingException ee) {
-                                ErrorManager.getDefault().notify (ee);
-                        }
+                                if (log.isLoggable(Level.SEVERE))
+                                    log.log(Level.SEVERE, ee.getMessage(), ee);
+                            }
                         }
                     });
             } finally {

@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.completion.csm.CsmContext;
 import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
+import org.netbeans.modules.cnd.debugger.gdb.models.AbstractVariable;
 import org.netbeans.modules.cnd.debugger.gdb.models.GdbLocalVariable;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -97,8 +98,8 @@ public class CallStackFrame {
     private final String address;
     private final String from;
     
-    private Variable[] cachedLocalVariables = null;
-    private Variable[] cachedAutos = null;
+    private AbstractVariable[] cachedLocalVariables = null;
+    private AbstractVariable[] cachedAutos = null;
 
     private Collection<GdbVariable> arguments = null;
     private StyledDocument document = null;
@@ -255,7 +256,7 @@ public class CallStackFrame {
      *
      * @return local variables
      */
-    public Variable[] getLocalVariables() {
+    public AbstractVariable[] getLocalVariables() {
         assert !(Thread.currentThread().getName().equals("GdbReaderRP"));
         assert !(SwingUtilities.isEventDispatchThread()); 
 
@@ -263,7 +264,7 @@ public class CallStackFrame {
             List<GdbVariable> list = debugger.getLocalVariables();
             int n = list.size();
 
-            Variable[] locals = new Variable[n];
+            AbstractVariable[] locals = new AbstractVariable[n];
             for (int i = 0; i < n; i++) {
                 locals[i] = new GdbLocalVariable(debugger, list.get(i));
             }
@@ -274,7 +275,7 @@ public class CallStackFrame {
         }
     }
 
-    public Variable[] getAutos() {
+    public AbstractVariable[] getAutos() {
         if (cachedAutos == null) {
             if (getDocument() == null) {
                 return null;
@@ -329,7 +330,7 @@ public class CallStackFrame {
                         }
                     });
                 }
-                cachedAutos = new Variable[autos.size()];
+                cachedAutos = new AbstractVariable[autos.size()];
                 int i = 0;
                 for (String name : autos) {
                     cachedAutos[i++] = new GdbLocalVariable(debugger, name);
