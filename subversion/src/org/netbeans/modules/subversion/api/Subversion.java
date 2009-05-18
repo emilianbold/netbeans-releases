@@ -83,6 +83,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 public class Subversion {
 
     private static final String RELATIVE_PATH_ROOT = "/";               //NOI18N
+    public static final String CLIENT_UNAVAILABLE_ERROR_MESSAGE = "SVN client unavailable"; //NOI18N
 
     /**
      * Displays a dialog for selection of one or more Subversion repository
@@ -93,10 +94,11 @@ public class Subversion {
      * @return  relative paths of the selected folders,
      *          or {@code null} if the user cancelled the selection
      * @throws  java.net.MalformedURLException  if the given URL is invalid
+     * @throws  IOException  some error, e.g. unavailable client
      */
     public static String[] selectRepositoryFolders(String dialogTitle,
                                                    String repositoryUrl)
-                throws MalformedURLException {
+                throws MalformedURLException, IOException {
         return selectRepositoryFolders(dialogTitle, repositoryUrl, null, null);
     }
 
@@ -111,16 +113,21 @@ public class Subversion {
      * @return  relative paths of the selected folders,
      *          or {@code null} if the user cancelled the selection
      * @throws  java.net.MalformedURLException  if the given URL is invalid
+     * @throws  IOException  some error, e.g. unavailable client
      */
     public static String[] selectRepositoryFolders(String dialogTitle,
                                                    String repositoryUrl,
                                                    String username,
                                                    String password)
-                throws MalformedURLException {
+                throws MalformedURLException, IOException {
 
         RepositoryConnection conn = new RepositoryConnection(repositoryUrl);
         SVNUrl svnUrl = conn.getSvnUrl();
         SVNRevision svnRevision = conn.getSvnRevision();
+
+        if (!getSubversion().checkClientAvailable()) {
+            throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
+        }
 
         RepositoryFile repositoryFile = new RepositoryFile(svnUrl, svnRevision);
         Browser browser = new Browser(dialogTitle,
@@ -207,16 +214,14 @@ public class Subversion {
      * @param  localFolder  local folder to store the checked-out files to
      * @param  scanForNewProjects scans the created working copy for netbenas projects
      *                            and presents a dialog to open them eventually
-     * @return  {@code true} if the checkout was successful,
-     *          {@code false} otherwise
      */
-    public static boolean checkoutRepositoryFolder(String repositoryUrl,
+    public static void checkoutRepositoryFolder(String repositoryUrl,
                                                    String[] relativePaths,
                                                    File localFolder,
                                                    boolean scanForNewProjects)
-            throws MalformedURLException {
+            throws MalformedURLException, IOException {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
-        return checkoutRepositoryFolder(repositoryUrl,
+        checkoutRepositoryFolder(repositoryUrl,
                                         relativePaths,
                                         localFolder,
                                         null,
@@ -240,18 +245,16 @@ public class Subversion {
      *         folders name will be created in the local folder
      * @param  scanForNewProjects scans the created working copy for netbenas projects
      *                            and presents a dialog to open them eventually
-     *
-     * @return  {@code true} if the checkout was successful,
-     *          {@code false} otherwise
+     * @throws IOException when an error occurrs
      */
-    public static boolean checkoutRepositoryFolder(String repositoryUrl,
+    public static void checkoutRepositoryFolder(String repositoryUrl,
                                                    String[] relativePaths,
                                                    File localFolder,
                                                    boolean atLocalFolderLevel,
                                                    boolean scanForNewProjects)
-            throws MalformedURLException {
+            throws MalformedURLException, IOException {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
-        return checkoutRepositoryFolder(repositoryUrl,
+        checkoutRepositoryFolder(repositoryUrl,
                                         relativePaths,
                                         localFolder,
                                         null,
@@ -273,16 +276,15 @@ public class Subversion {
      * @param  password  password for access to the given repository
      * @param  scanForNewProjects scans the created working copy for netbenas projects
      *                            and presents a dialog to open them eventually
-     * @return  {@code true} if the checkout was successful,
-     *          {@code false} otherwise
+     * @throws IOException when an error occurrs
      */
-    public static boolean checkoutRepositoryFolder(String repositoryUrl,
+    public static void checkoutRepositoryFolder(String repositoryUrl,
                                                    String[] repoRelativePaths,
                                                    File localFolder,
                                                    String username,
                                                    String password,
-                                                   boolean scanForNewProjects) throws MalformedURLException {
-        return checkoutRepositoryFolder(
+                                                   boolean scanForNewProjects) throws MalformedURLException, IOException {
+        checkoutRepositoryFolder(
                 repositoryUrl,
                 repoRelativePaths,
                 localFolder,
@@ -309,17 +311,16 @@ public class Subversion {
      *         folders name will be created in the local folder
      * @param  scanForNewProjects scans the created working copy for netbenas projects
      *                            and presents a dialog to open them eventually
-     * @return  {@code true} if the checkout was successful,
-     *          {@code false} otherwise
+     * @throws IOException when an error occurrs
      */
-    public static boolean checkoutRepositoryFolder(String repositoryUrl,
+    public static void checkoutRepositoryFolder(String repositoryUrl,
                                                    String[] repoRelativePaths,
                                                    File localFolder,
                                                    String username,
                                                    String password,
                                                    boolean atLocalFolderLevel,
                                                    boolean scanForNewProjects)
-            throws MalformedURLException {
+            throws MalformedURLException, IOException {
 
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
 
@@ -330,7 +331,7 @@ public class Subversion {
 
         SvnClient client = getClient(svnUrl, username, password);
         if(client == null) {
-            return false;
+            throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
         }
 
         RepositoryFile[] repositoryFiles;
@@ -367,8 +368,6 @@ public class Subversion {
             SvnUtils.refreshParents(localFolder);
             getSubversion().getStatusCache().refreshRecursively(localFolder);
         }
-        
-        return true;
     }
 
     /**
@@ -379,7 +378,7 @@ public class Subversion {
      * @param password
      * @param message
      * @throws java.net.MalformedURLException
-     * @throws java.io.IOException
+     * @throws IOException when an error occurrs
      */
     public static void mkdir(String url, String user, String password, String message) throws MalformedURLException, IOException {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
@@ -387,6 +386,9 @@ public class Subversion {
         SVNUrl svnUrl = new SVNUrl(url);
 
         SvnClient client = getClient(svnUrl, user, password);
+        if (client == null) {
+            throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
+        }
         try {
             client.mkdir(svnUrl, true, message);
         } catch (SVNClientException ex) {
@@ -414,8 +416,9 @@ public class Subversion {
      *
      * @param root
      * @param message
+     * @throws IOException when an error occurrs
      */
-    public static void commit(final File[] roots, final String user, final String password, final String message) {
+    public static void commit(final File[] roots, final String user, final String password, final String message) throws IOException {
         FileStatusCache cache = getSubversion().getStatusCache();
         File[] files = cache.listFiles(roots, FileInformation.STATUS_LOCAL_CHANGE);
 
@@ -435,6 +438,9 @@ public class Subversion {
 
         try {
             final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
+            if (!getSubversion().checkClientAvailable()) {
+                throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
+            }
             RequestProcessor rp = getSubversion().getRequestProcessor(repositoryUrl);
             SvnProgressSupport support = new SvnProgressSupport() {
                 public void perform() {
@@ -514,7 +520,7 @@ public class Subversion {
      * <ul>
      * <li>protocol is svn</li>
      * <li>protocol is svn+</li>
-     * <li>invoked 'svn info' returns valid data</li>
+     * <li>svn client is available and invoked 'svn info' returns valid data</li>
      * </ul>
      * Note that this may not be 100% successful for private projects requiring authentication.
      */
@@ -569,9 +575,13 @@ public class Subversion {
      * Opens standard checkout wizard
      * @param url repository url to checkout
      * @throws java.net.MalformedURLException in case the url is invalid
+     * @throws IOException when an error occurrs
      */
-    public static void openCheckoutWizard (final String url) throws MalformedURLException {
+    public static void openCheckoutWizard (final String url) throws MalformedURLException, IOException {
         addRecentUrl(url);
+        if (!getSubversion().checkClientAvailable()) {
+            throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
+        }
         SystemAction.get(CheckoutAction.class).performAction();
     }
 
