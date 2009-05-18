@@ -129,6 +129,9 @@ public class CndFileVisibilityQuery  implements VisibilityQueryImplementation2, 
                 if (pat.length() > 0) {
                     pat.append('|');
                 }
+                if (s.indexOf('+') >= 0) {
+                    s = s.replace("+", "\\+");
+                }
                 pat.append(s);
             }
             String ignoredFiles = ".*\\.(" + pat.toString() + ")$"; //NOI18N;
