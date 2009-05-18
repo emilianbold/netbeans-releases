@@ -392,6 +392,11 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
     
     private static StringBuilder getCapitalizedName(VariableElement field) {        
         StringBuilder name = new StringBuilder(stripPrefix(field.getSimpleName().toString()));
+
+        //Beans naming convention, #165241
+        if (name.length() > 1 && Character.isUpperCase(name.charAt(1))) {
+            return name;
+        }
         
         name.setCharAt(0, Character.toUpperCase(name.charAt(0)));
         return name;

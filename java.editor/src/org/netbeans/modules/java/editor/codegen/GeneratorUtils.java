@@ -549,6 +549,12 @@ public class GeneratorUtils {
         StringBuilder sb = new StringBuilder(cs);
         while(sb.length() > 1 && sb.charAt(0) == '_') //NOI18N
             sb.deleteCharAt(0);
+        
+        //Beans naming convention, #165241
+        if (sb.length() > 1 && Character.isUpperCase(sb.charAt(1))) {
+            return sb;
+        }
+
         if (sb.length() > 0)
             sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
         return sb;
