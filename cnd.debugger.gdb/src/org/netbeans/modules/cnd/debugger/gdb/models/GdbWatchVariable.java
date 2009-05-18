@@ -111,12 +111,13 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
                 pname.equals(Watch.PROP_EXPRESSION)) {
                     if (pname.equals(Watch.PROP_EXPRESSION)) {
                         tinfo = null;
-                        emptyFields();
                     }
+                    emptyFields();
                     requestType = true;
                     requestValue = true;
                     requestResolved = true;
                     expandedWatch = null;
+                    notifyValueChanged(value, null);
         } else if (GdbDebugger.PROP_VALUE_CHANGED.equals(pname)) {
             onValueChange(ev);
         }
@@ -161,7 +162,6 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     public String getValue() {
         if (requestValue) {
             value = getDebugger().evaluate(getExpanded());
-            setModifiedValue(value);
             requestValue = false;
         }
         return super.getValue();
