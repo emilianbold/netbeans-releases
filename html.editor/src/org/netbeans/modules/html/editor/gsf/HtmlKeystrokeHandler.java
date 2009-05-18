@@ -197,41 +197,43 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
             Token token = ts.token();
 
             if(token.id() == HTMLTokenId.TEXT) {
-                int from = ts.offset();
-                int to = from + token.text().length();
-
-                //properly compute end offset of joined tokens
-                List<Token> tokenParts = token.joinedParts();
-                if(tokenParts != null) {
-                    //get last part token
-                    Token last = tokenParts.get(tokenParts.size() - 1);
-                    to = last.offset(hierarchy) + last.length();
-                }
-
-                //first add the range of trimmed text, then the whole text range
                 CharSequence text = token.text();
-                int trimmed_from = from;
-                for(int i = 0; i < text.length(); i++) {
-                    char ch = text.charAt(i);
-                    if(!Character.isWhitespace(ch)) {
-                        trimmed_from = trimmed_from + i;
-                        break;
-                    }
-                }
-                int trimmed_to = to;
-                for(int i = text.length() - 1; i >= 0 ; i--) {
-                    char ch = text.charAt(i);
-                    if(!Character.isWhitespace(ch)) {
-                        trimmed_to = to - ((text.length() - 1) - i);
-                        break;
-                    }
-                }
+                if(text.toString().trim().length() > 0) { //filter only whitespace tokens
+                    int from = ts.offset();
+                    int to = from + token.text().length();
 
-                if(trimmed_from != from || trimmed_to != to) {
-                    ranges.add(new OffsetRange(trimmed_from, trimmed_to));
-                }
+                    //properly compute end offset of joined tokens
+                    List<Token> tokenParts = token.joinedParts();
+                    if(tokenParts != null) {
+                        //get last part token
+                        Token last = tokenParts.get(tokenParts.size() - 1);
+                        to = last.offset(hierarchy) + last.length();
+                    }
 
-                ranges.add(new OffsetRange(from, to));
+                    //first add the range of trimmed text, then the whole text range
+                    int trimmed_from = from;
+                    for(int i = 0; i < text.length(); i++) {
+                        char ch = text.charAt(i);
+                        if(!Character.isWhitespace(ch)) {
+                            trimmed_from = trimmed_from + i;
+                            break;
+                        }
+                    }
+                    int trimmed_to = to;
+                    for(int i = text.length() - 1; i >= 0 ; i--) {
+                        char ch = text.charAt(i);
+                        if(!Character.isWhitespace(ch)) {
+                            trimmed_to = to - ((text.length() - 1) - i);
+                            break;
+                        }
+                    }
+
+                    if(trimmed_from != from || trimmed_to != to) {
+                        ranges.add(new OffsetRange(trimmed_from, trimmed_to));
+                    }
+
+                    ranges.add(new OffsetRange(from, to));
+                }
             }
         }
 
@@ -247,7 +249,7 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
                     int from = snapshot.getOriginalOffset(node.startOffset());
                     int to = snapshot.getOriginalOffset(node.endOffset());
 
-                    if(from == -1 || to == -1) {
+                    if(from == -1 || to == -1 || from == to) {
                         continue;
                     }
 
@@ -260,12 +262,6 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
             }
         }
 
-        OffsetRange wholeDocument = new OffsetRange(0, info.getSnapshot().getSource().getDocument(true).getLength());
-        //add the whole document range if the latst element doesn't equal to it
-        if(ranges.size() == 0 || !ranges.get(ranges.size() - 1).equals(wholeDocument)) {
-            ranges.add(wholeDocument);
-        }
-        
         return ranges;
     }
 
