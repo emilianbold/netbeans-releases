@@ -77,7 +77,7 @@ public class PackagingNewLinkPanel extends javax.swing.JPanel {
         linkTextField.getDocument().addDocumentListener(documentListener);
     }
     
-    public String getName() {
+    public String getLinkName() {
         return nameTextField.getText();
     }
     
