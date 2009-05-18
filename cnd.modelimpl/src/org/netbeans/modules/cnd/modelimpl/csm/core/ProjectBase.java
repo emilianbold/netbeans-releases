@@ -1174,7 +1174,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * @return true if it's first time of file including
      *          false if file was included before
      */
-    public final FileImpl onFileIncluded(ProjectBase base, CharSequence file, APTPreprocHandler preprocHandler, int mode, boolean triggerParsingActivity) throws IOException {
+    public final FileImpl onFileIncluded(ProjectBase base, CharSequence file, APTPreprocHandler preprocHandler, APTMacroMap.State postIncludeState, int mode, boolean triggerParsingActivity) throws IOException {
         boolean updateFileContainer = false;
         try {
             disposeLock.readLock().lock();
@@ -1182,7 +1182,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 return null;
             }
             FileImpl csmFile = findFile(new File(file.toString()), true, FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
-            
+            if (postIncludeState != null) {
+                // we have post include state => no need to spend time in include walkers
+                return csmFile;
+            }
             APTPreprocHandler.State newState = preprocHandler.getState();
             APTPreprocHandler.State cachedOut = null;
             if (mode == ProjectBase.GATHERING_TOKENS && !APTHandlersSupport.extractIncludeStack(newState).isEmpty()) {

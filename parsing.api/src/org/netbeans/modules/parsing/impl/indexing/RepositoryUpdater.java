@@ -136,7 +136,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
     public void start(boolean force) {
         boolean schedule = false;
-        boolean clogUpTheLoop = false;
+//        boolean clogUpTheLoop = false;
 
         synchronized (this) {
             if (state == State.CREATED) {
@@ -150,19 +150,19 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 if (force) {
                     // No need for TheClog when the InitialRootsWork is giong to be scheduled
                     schedule = true;
-                } else {
-                    clogUpTheLoop = true;
+//                } else {
+//                    clogUpTheLoop = true;
                 }
             }
         }
 
         if (schedule) {
             scheduleWork(null, false);
-        } else if (clogUpTheLoop) {
-            // The whole point of this is to block TaskProcessor right after the
-            // IDE starts until all projects are opened. It's a feeble attempt to
-            // improve situation described in #165170.
-            getWorker().schedule(new TheClog(), false);
+//        } else if (clogUpTheLoop) {
+//            // The whole point of this is to block TaskProcessor right after the
+//            // IDE starts until all projects are opened. It's a feeble attempt to
+//            // improve situation described in #165170.
+//            getWorker().schedule(new TheClog(), false);
         }
     }
 
@@ -1874,40 +1874,40 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
     } // End of InitialRootsWork class
 
-    private static final class TheClog extends Work {
-
-        private static final long MRPROPPER = 60000; // one minute
-        private static final boolean inTests = System.getProperty("netbeans.buildnumber") == null; //NOI18N
-        private final AtomicBoolean cancelledByInitialWork = new AtomicBoolean(false);
-
-        public TheClog() {
-            super(false, false, false);
-        }
-
-        protected @Override boolean getDone() {
-            if (!inTests) {
-                final long tm = System.currentTimeMillis();
-                for( ; !cancelledByInitialWork.get() && System.currentTimeMillis() - tm < MRPROPPER; ) {
-                    try {
-                        Thread.sleep(321);
-                    } catch (InterruptedException ex) {
-                        // ignore, but stop waiting
-                        break;
-                    }
-                    LOGGER.log(Level.FINE, "TheClog has been successfully clogging for {0} ms", (System.currentTimeMillis() - tm)); //NOI18N
-                }
-            }
-            return true;
-        }
-
-        protected @Override boolean isCancelledBy(Work newWork) {
-//            assert newWork instanceof InitialRootsWork : "Expecting InitialRootsWork: " + newWork; //NOI18N
-            LOGGER.log(Level.FINE, "TheClog cancelled by {0}", newWork); //NOI18N
-            cancelledByInitialWork.set(true);
-            return true;
-        }
-
-    } // End of TheClog class
+//    private static final class TheClog extends Work {
+//
+//        private static final long MRPROPPER = 60000; // one minute
+//        private static final boolean inTests = System.getProperty("netbeans.buildnumber") == null; //NOI18N
+//        private final AtomicBoolean cancelledByInitialWork = new AtomicBoolean(false);
+//
+//        public TheClog() {
+//            super(false, false, false);
+//        }
+//
+//        protected @Override boolean getDone() {
+//            if (!inTests) {
+//                final long tm = System.currentTimeMillis();
+//                for( ; !cancelledByInitialWork.get() && System.currentTimeMillis() - tm < MRPROPPER; ) {
+//                    try {
+//                        Thread.sleep(321);
+//                    } catch (InterruptedException ex) {
+//                        // ignore, but stop waiting
+//                        break;
+//                    }
+//                    LOGGER.log(Level.FINE, "TheClog has been successfully clogging for {0} ms", (System.currentTimeMillis() - tm)); //NOI18N
+//                }
+//            }
+//            return true;
+//        }
+//
+//        protected @Override boolean isCancelledBy(Work newWork) {
+////            assert newWork instanceof InitialRootsWork : "Expecting InitialRootsWork: " + newWork; //NOI18N
+//            LOGGER.log(Level.FINE, "TheClog cancelled by {0}", newWork); //NOI18N
+//            cancelledByInitialWork.set(true);
+//            return true;
+//        }
+//
+//    } // End of TheClog class
 
     private static final class Task extends ParserResultTask {
 

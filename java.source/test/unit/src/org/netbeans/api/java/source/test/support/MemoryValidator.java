@@ -48,6 +48,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -99,7 +102,8 @@ public class MemoryValidator extends NbTestCase {
         
         return result;
     }
-    
+
+    private static Logger log = Logger.getLogger(MemoryValidator.class.getName());
     protected @Override void runTest() throws Throwable {
         delegate.runBare();
         
@@ -126,7 +130,9 @@ public class MemoryValidator extends NbTestCase {
                 } catch  (ThreadDeath t) {
                     throw t;
                 } catch (Throwable t) {
-                    ErrorManager.getDefault().notify(t);
+                    if (log.isLoggable(Level.SEVERE))
+                        log.log(Level.SEVERE, t.getMessage(), t);
+//                    ErrorManager.getDefault().notify(t);
                 }
                 
                 if (allFileObjects != null) {

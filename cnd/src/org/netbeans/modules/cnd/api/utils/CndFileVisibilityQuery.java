@@ -137,7 +137,7 @@ public class CndFileVisibilityQuery  implements VisibilityQueryImplementation2, 
                     pat.append('|');
                 }
                 if (s.indexOf('+') >= 0) {
-                    s = s.replace("+", "\\+");
+                    s = s.replace("+", "\\+"); // NOI18N
                 }
                 pat.append(s);
             }
