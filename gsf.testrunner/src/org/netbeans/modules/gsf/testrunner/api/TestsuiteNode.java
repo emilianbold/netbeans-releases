@@ -71,6 +71,7 @@ public class TestsuiteNode extends AbstractNode {
     static final boolean DISPLAY_TOOLTIPS = Boolean.valueOf(System.getProperty("testrunner.display.tooltips", "true"));//NOI18N
 
     protected String suiteName;
+    protected TestSuite suite;
     protected Report report;
     protected boolean filtered;
 
@@ -295,7 +296,15 @@ public class TestsuiteNode extends AbstractNode {
         result = html ? result + "_HTML" : result; //NOI18N
         return NbBundle.getMessage(TestsuiteNode.class, result);
     }
-    
+
+    void setSuite(TestSuite suite){
+        this.suite = suite;
+    }
+
+    public TestSuite getSuite(){
+        return suite;
+    }
+
     /**
      */
     void setFiltered(final boolean filtered) {
