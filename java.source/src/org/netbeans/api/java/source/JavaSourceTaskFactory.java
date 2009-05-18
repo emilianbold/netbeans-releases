@@ -207,7 +207,8 @@ public abstract class JavaSourceTaskFactory {
             } catch (FileObjects.InvalidFileException ie) {
                 LOG.info("JavaSource.addPhaseCompletionTask called on deleted file");       //NOI18N
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                if (LOG.isLoggable(Level.SEVERE))
+                    LOG.log(Level.SEVERE, ex.getMessage(), ex);
             }
         }
     }
