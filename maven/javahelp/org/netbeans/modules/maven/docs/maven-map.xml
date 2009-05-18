@@ -43,6 +43,7 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
     <mapID target="maven_project" url="maven-newproj.html"/>
     <mapID target="maven_build" url="maven-building.html"/>
     <mapID target="maven_dependencies" url="maven-dependencies.html"/>
+    <mapID target="maven_artifacts" url="maven-artifacts.html"/>
     <mapID target="maven_repositories" url="maven-repositories.html"/>
     <mapID target="maven_pom" url="maven-pom.html"/>
 
