@@ -72,7 +72,7 @@ import org.openide.util.Utilities;
  */
 public abstract class AbstractVariable implements LocalVariable {
 
-    public static final String PROP_VALUE = "var_value";
+    public static final String PROP_VALUE = "var_value"; // NOI18N
 
     private final GdbDebugger debugger;
     protected String value = null;
