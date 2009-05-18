@@ -107,22 +107,24 @@ InstanceContent.Convertor<ServiceReference, Object> {
 
     public void bundleChanged(BundleEvent ev) {
         String loc = ev.getBundle().getLocation();
+        LOG.log(Level.FINER, "bundleChanged {0}", ev);
         final String pref = "netigso://"; // NOI18N
         if (ev.getType() == BundleEvent.RESOLVED && loc != null && loc.startsWith(pref)) {
             String cnb = loc.substring(pref.length());
             for (ModuleInfo mi : all) {
                 if (cnb.equals(mi.getCodeNameBase())) {
-                    join(ev.getBundle(), mi);
+                join(ev.getBundle(), mi);
                     return;
-                }
             }
-            LOG.warning("No join for " + cnb);
         }
+            LOG.warning("No join for " + cnb);
+    }
     }
 
     void register(Module m) {
+        LOG.log(Level.FINER, "register module {0}", m.getCodeNameBase());
         all.add(m);
-        }
+    }
 
 
     /** Injects classloader of mi to Felix's bundle.

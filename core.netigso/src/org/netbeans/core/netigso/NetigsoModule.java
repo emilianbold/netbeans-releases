@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
 import org.netbeans.Events;
 import org.netbeans.InvalidException;
 import org.netbeans.Module;
@@ -102,6 +103,7 @@ final class NetigsoModule extends Module {
 
     @Override
     protected void classLoaderUp(Set<Module> parents) throws IOException {
+        NetigsoActivator.LOG.log(Level.FINE, "classLoaderUp {0}, state: {1}", new Object[] { getCodeNameBase(), bundle.getState() }); // NOI18N
         if (bundle.getState() != Bundle.INSTALLED) {
             return;
         }
@@ -116,6 +118,7 @@ final class NetigsoModule extends Module {
 
     @Override
     protected void classLoaderDown() {
+        NetigsoActivator.LOG.log(Level.FINE, "classLoaderDown {0}", getCodeNameBase()); // NOI18N
         assert bundle.getState() == Bundle.ACTIVE;
         try {
             bundle.stop();
@@ -127,6 +130,9 @@ final class NetigsoModule extends Module {
 
     @Override
     public ClassLoader getClassLoader() throws IllegalArgumentException {
+        if (loader == null) {
+            throw new IllegalArgumentException("No classloader for " + getCodeNameBase()); // NOI18N
+        }
         return loader;
     }
 
