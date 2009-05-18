@@ -896,6 +896,11 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                             // not visible
                             continue;
                         }
+
+                        if (CndFileVisibilityQuery.getDefault().isIgnored(child)){
+                            continue;
+                        }
+
                         // Add file to the view
                         Item item = new Item(child.getAbsolutePath());
                         Folder.insertItemElementInList(collection2, item);

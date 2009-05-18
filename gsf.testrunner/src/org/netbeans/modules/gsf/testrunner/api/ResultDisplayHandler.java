@@ -231,9 +231,23 @@ final class ResultDisplayHandler {
                 return;
             }
         }
+        displayInDispatchThread(prepareMethod("displaySuiteRunning", String.class), suiteName);      //NOI18N
+    }
 
-        displayInDispatchThread("displaySuiteRunning", suiteName);      //NOI18N
-
+    /**
+     *
+     * @param  suite  name of the running suite
+     */
+    public void displaySuiteRunning(TestSuite suite) {
+        synchronized (this) {
+            assert runningSuite == null;
+            suite = (suite != null) ? suite : TestSuite.ANONYMOUS_TEST_SUITE;
+            if (treePanel == null) {
+                runningSuite = suite.getName();
+                return;
+            }
+        }
+        displayInDispatchThread(prepareMethod("displaySuiteRunning", TestSuite.class), suite);      //NOI18N
     }
 
     /**
@@ -250,7 +264,7 @@ final class ResultDisplayHandler {
             assert runningSuite == null;
         }
 
-        displayInDispatchThread("displayReport", report);               //NOI18N
+        displayInDispatchThread(prepareMethod("displayReport", Report.class), report);               //NOI18N
 
     }
 
@@ -267,7 +281,7 @@ final class ResultDisplayHandler {
             }
         }
 
-        displayInDispatchThread("displayMsg", msg);                     //NOI18N
+        displayInDispatchThread(prepareMethod("displayMsg", String.class), msg);                     //NOI18N
 
     }
 
@@ -285,11 +299,11 @@ final class ResultDisplayHandler {
             }
         }
 
-        displayInDispatchThread("displayMsgSessionFinished", msg);        //NOI18N
+        displayInDispatchThread(prepareMethod("displayMsgSessionFinished", String.class), msg);        //NOI18N
 
     }
     /** */
-    private Map<String, Method> methodsMap;
+    private Map<String, Method> methodsMap = new HashMap<String, Method>();
 
     /**
      * Calls a given display-method of class {@code ResutlPanelTree}
@@ -298,21 +312,9 @@ final class ResultDisplayHandler {
      * @param  methodName  name of the {@code ResultPanelTree} method
      * @param  param  argument to be passed to the method
      */
-    private void displayInDispatchThread(final String methodName,
-            final Object param) {
-        assert methodName != null;
+    private void displayInDispatchThread(final Method method, final Object param) {
+        assert method != null;
         
-        Method method = null;
-        synchronized (this) {
-            assert treePanel != null;
-
-            method = prepareMethod(methodName);
-            if (method == null) {
-                LOGGER.log(Level.WARNING, "No such method: " + methodName);
-                return;
-            }
-        }
-
         final Method finalMethod = method;
         
         EventQueue.invokeLater(new Runnable() {
@@ -320,7 +322,7 @@ final class ResultDisplayHandler {
             public void run() {
                 try {
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "Invoking: " + methodName + " with param: " + param);
+                        LOGGER.log(Level.FINE, "Invoking: " + method.getName() + " with param: " + param);
                     }
                     finalMethod.invoke(treePanel, new Object[]{param});
                 } catch (InvocationTargetException ex) {
@@ -334,35 +336,17 @@ final class ResultDisplayHandler {
 
     /**
      */
-    private Method prepareMethod(final String methodName) {
-        Method method;
+    private synchronized Method prepareMethod(final String methodName, final Class paramType) {
+        Method method = methodsMap.get(methodName + "_" + paramType.getName()); //NOI18N
 
-        if (methodsMap == null) {
-            methodsMap = new HashMap<String, Method>(4);
-            method = null;
-        } else {
-            method = methodsMap.get(methodName);
-        }
-
-        if ((method == null) && !methodsMap.containsKey(methodName)) {
-            final Class paramType;
-            if (methodName.equals("displayReport")) {                   //NOI18N
-
-                paramType = Report.class;
-            } else {
-                assert methodName.equals("displayMsg") //NOI18N
-                        || methodName.equals("displayMsgSessionFinished")//NOI18N
-                        || methodName.equals("displaySuiteRunning");     //NOI18N
-
-                paramType = String.class;
-            }
+        if (method == null) {
             try {
                 method = ResultPanelTree.class.getDeclaredMethod(methodName, new Class[]{paramType});
             } catch (Exception ex) {
                 method = null;
                 ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
             }
-            methodsMap.put(methodName, method);
+            methodsMap.put(methodName + "_" + paramType.getName(), method); //NOI18N
         }
 
         return method;

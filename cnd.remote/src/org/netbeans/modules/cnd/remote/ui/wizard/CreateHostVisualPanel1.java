@@ -139,7 +139,7 @@ import org.openide.util.NbBundle;
 
         textHostname.setText(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel1.class, "CreateHostVisualPanel1.textHostname.text")); // NOI18N
 
-        jLabel2.setLabelFor(textHostname);
+        jLabel2.setLabelFor(tableHostsList);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel1.class, "CreateHostVisualPanel1.jLabel2.text")); // NOI18N
 
         tableHostsList.setModel(tableModel);
@@ -168,14 +168,14 @@ import org.openide.util.NbBundle;
             .add(layout.createSequentialGroup()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(textHostname, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 55, Short.MAX_VALUE)
+                .add(textHostname, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 45, Short.MAX_VALUE)
                 .add(jLabel3)
                 .add(4, 4, 4)
                 .add(textPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 46, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
             .add(layout.createSequentialGroup()
                 .add(jLabel2)
-                .addContainerGap(421, Short.MAX_VALUE))
+                .addContainerGap(402, Short.MAX_VALUE))
             .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
             .add(pbarStatusPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
         );
@@ -190,7 +190,7 @@ import org.openide.util.NbBundle;
                 .add(18, 18, 18)
                 .add(jLabel2)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
                 .add(18, 18, 18)
                 .add(pbarStatusPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 13, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );

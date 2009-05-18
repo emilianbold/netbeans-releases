@@ -49,18 +49,12 @@ import org.openide.filesystems.FileObject;
  * @author answer
  */
 class JUnitTestcase extends Testcase{
-    private JUnitTestSuite testSuite;
     private FileObject classFO = null;
 
     public JUnitTestcase(String name, String type, TestSession session) {
         super(name, type, session);
-        testSuite = (JUnitTestSuite)session.getCurrentSuite();
     }
-
-    public JUnitTestSuite getTestSuite() {
-        return testSuite;
-    }
-
+    
     public FileObject getClassFileObject(){
         FileLocator fileLocator = getSession().getFileLocator();
         if ((classFO == null) && (fileLocator != null) && (getClassName() != null)){

@@ -109,6 +109,34 @@ final class RootNodeChildren extends Children.Keys<TestsuiteNode> {
         assert (runningSuiteNode != null) == live;
     }
 
+    /**
+     * Displays a node with a message about a test suite running.
+     *
+     * @param  suite  running test suite,
+     *                    or {@code ANONYMOUS_TEST_SUITE} for anonymous suites
+     * @see  ResultDisplayHandler#ANONYMOUS_TEST_SUITE
+     */
+    void displaySuiteRunning(final TestSuite suite) {
+
+        /*
+         * Called from the EventDispatch thread.
+         */
+
+        assert EventQueue.isDispatchThread();
+
+        runningSuiteName = suite.getName();
+
+        if (live) {
+            runningSuiteNode = session.getNodeFactory().createTestSuiteNode(suite.getName(), filtered);
+            runningSuiteNode.setSuite(suite);
+            suiteNodes.add(runningSuiteNode);
+            addNotify();
+        }
+
+        assert runningSuiteName != null;
+        assert (runningSuiteNode != null) == live;
+    }
+
     Collection<Report> getReports(){
         return reports;
     }

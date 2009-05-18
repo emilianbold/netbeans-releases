@@ -225,7 +225,7 @@ public class TextValueCompleter implements DocumentListener {
                     completionListModel.add(entryindex,
                             completion);
                 }
-                entryindex++;
+                    entryindex++;
             } else {
                 completionListModel.removeElement(completion);
             }

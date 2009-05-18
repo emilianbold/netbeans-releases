@@ -198,7 +198,7 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
                         getValueAt(row, 0);
                 publicPkgsTable.setValueAt(Boolean.valueOf(!b.booleanValue()),
                         row, 0);
-                checkForm();
+                checkValidity();
             }
         };
         publicPkgsTable.addMouseListener(new MouseAdapter() {
@@ -248,7 +248,7 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
             updateAppendImpl();
         } else if (ModuleProperties.PROPERTIES_REFRESHED == pName) {
             refresh();
-            checkForm();
+            checkValidity();
         }
     }
     
@@ -558,7 +558,7 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
             friendsList.setSelectedIndex(0);
         }
         friendsList.requestFocus();
-        checkForm();
+        checkValidity();
     }//GEN-LAST:event_removeFriend
     
     private void addFriend(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addFriend
@@ -594,10 +594,10 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
             String newFriendCNB = addFriend.getFriendCNB();
             getFriendModel().addFriend(newFriendCNB);
             friendsList.setSelectedValue(newFriendCNB, true);
+            checkValidity();
         }
         d.dispose();
         friendsList.requestFocus();
-        checkForm();
     }//GEN-LAST:event_addFriend
 
 private void tokensValueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tokensValueActionPerformed
