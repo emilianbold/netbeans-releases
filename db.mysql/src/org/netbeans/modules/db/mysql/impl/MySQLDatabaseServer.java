@@ -391,12 +391,13 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
                             return;
                         }
 
-                        if (connProcessor.getConnection() == null) {
+                        Connection conn = connProcessor.getConnection();
+
+                        if (conn == null) {
                             setDatabases(dblist);
                             return;
                         }
 
-                        Connection conn = connProcessor.getConnection();
                         PreparedStatement ps = conn.prepareStatement(GET_DATABASES_SQL);
                         ResultSet rs = ps.executeQuery();
 
