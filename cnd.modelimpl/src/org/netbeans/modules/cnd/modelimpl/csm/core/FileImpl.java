@@ -393,6 +393,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 this.fileBuffer.removeChangeListener(fileBufferChangeListener);
             }
             this.fileBuffer = fileBuffer;
+//            if (traceFile(getAbsolutePath())) {
+//                new Exception("setBuffer: " + fileBuffer).printStackTrace(System.err);
+//            }
             // we do not need listener for non-document based buffer
             // all state invalidations are made through:
             //  - external file change event
@@ -400,10 +403,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             if (fileBuffer != null && !fileBuffer.isFileBased()) {
                 if (state != State.INITIAL) {
                     if (reportParse || logState || TraceFlags.DEBUG) {
-                        System.err.printf("#setBuffer changing to MODIFIED %s is %s with current state %s\n", getAbsolutePath(), fileType, state); // NOI18N
+                        System.err.printf("#setBuffer changing to MODIFIED %s is %s with current state %s %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
                     }
                     state = State.MODIFIED;
-                    _markModifiedIfBeingParsed();
+                    postMarkedAsModified();
                 }
                 this.fileBuffer.addChangeListener(fileBufferChangeListener);
             }
@@ -411,7 +414,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     /** must be called only changeStateLock */
-    private void _markModifiedIfBeingParsed() {
+    private void postMarkedAsModified() {
+        tsRef.clear();
+        aptCaches.clear();
         if (parsingState == ParsingState.BEING_PARSED) {
             parsingState = ParsingState.MODIFIED_WHILE_BEING_PARSED;
         }
@@ -440,7 +445,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 }
                 if (reportParse || logState || TraceFlags.DEBUG) {
                     if (traceFile(getAbsolutePath())) {
-                        System.err.printf("#ensureParsed %s is %s, has %d handlers, state %s dummy=%s\n", getAbsolutePath(), fileType, handlers.size(), curState, wasDummy); // NOI18N
+                        System.err.printf("#ensureParsed %s is %s, has %d handlers, state %s %s dummy=%s\n", getAbsolutePath(), fileType, handlers.size(), curState, parsingState, wasDummy); // NOI18N
                         int i = 0;
                         for (APTPreprocHandler aPTPreprocHandler : handlers) {
                             logParse("EnsureParsed handler " + (i++), aPTPreprocHandler); // NOI18N
@@ -457,7 +462,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                     case INITIAL:
                     case PARTIAL:
                         if (TraceFlags.TIMING_PARSE_PER_FILE_FLAT && curState == State.PARSED) {
-                            System.err.printf("additional parse with PARSED state for %s\n", getAbsolutePath()); // NOI18N
+                            System.err.printf("additional parse with PARSED state " + parsingState + "for %s\n", getAbsolutePath()); // NOI18N
                         }
                         time = System.currentTimeMillis();
                         try {
@@ -573,10 +578,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                         System.err.printf("VALIDATED %s\n\t lastModified=%d\n\t   lastParsed=%d\n", getAbsolutePath(), lastModified, lastParsed);
                     }
                     if (reportParse || logState || TraceFlags.DEBUG) {
-                        System.err.printf("#validate changing to MODIFIED %s is %s with current state %s\n", getAbsolutePath(), fileType, state); // NOI18N
+                        System.err.printf("#validate changing to MODIFIED %s is %s with current state %s %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
                     }
                     state = State.MODIFIED;
-                    _markModifiedIfBeingParsed();
+                    postMarkedAsModified();
                     return false;
                 }
             }
@@ -587,15 +592,17 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public final void markReparseNeeded(boolean invalidateCache) {
         synchronized (changeStateLock) {
+//            if (traceFile(getAbsolutePath())) {
+//                new Exception("markReparseNeeded: inval cache:" + invalidateCache + " " + getAbsolutePath()).printStackTrace(System.err);
+//            }
             if (state != State.INITIAL) {
                 if (reportParse || logState || TraceFlags.DEBUG) {
-                    System.err.printf("#markReparseNeeded changing to MODIFIED %s is %s with current state %s\n", getAbsolutePath(), fileType, state); // NOI18N
+                    System.err.printf("#markReparseNeeded changing to MODIFIED %s is %s with current state %s, %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
                 }
                 state = State.MODIFIED;
-                _markModifiedIfBeingParsed();
+                postMarkedAsModified();
             }
             if (invalidateCache) {
-                tsRef.clear();
                 APTDriver.getInstance().invalidateAPT(this.getBuffer());
             }
         }
@@ -603,8 +610,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public final void markMoreParseNeeded() {
         synchronized (changeStateLock) {
+//            if (traceFile(getAbsolutePath())) {
+//                new Exception("markMoreParseNeeded " + getAbsolutePath()).printStackTrace(System.err);
+//            }
             if (reportParse || logState || TraceFlags.DEBUG) {
-                System.err.printf("#markMoreParseNeeded %s is %s with current state %s\n", getAbsolutePath(), fileType, state); // NOI18N
+                System.err.printf("#markMoreParseNeeded %s is %s with current state %s, %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
             }
             switch (state) {
                 case PARSED:
@@ -1878,7 +1888,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     /*package-local*/ void clearStateCache() {
+        tsRef.clear();
+        aptCaches.clear();
         stateCache.clearStateCache();
+        APTDriver.getInstance().invalidateAPT(this.getBuffer());
     }
 
     public static class NameKey implements Comparable<NameKey> {
