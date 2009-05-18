@@ -107,6 +107,7 @@ final class NetigsoModule extends Module {
         switch (bundle.getState()) {
             case Bundle.INSTALLED: break;
             case Bundle.ACTIVE: break;
+            case Bundle.RESOLVED: break;
             default: return;
         }
         try {
