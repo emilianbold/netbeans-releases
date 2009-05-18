@@ -123,6 +123,7 @@ public class BugzillaIssue extends Issue {
      * Field was changed since the issue was seen the last time
      */
     static final int FIELD_STATUS_MODIFIED = 4;
+    private Map<String, String> seenAtributes;
 
     enum IssueField {
         SUMMARY(BugzillaAttribute.SHORT_DESC.getKey(), "LBL_SUMMARY"),
@@ -323,6 +324,11 @@ public class BugzillaIssue extends Issue {
 
     @Override
     public void setSeen(boolean seen) throws IOException {
+        if(seen) {
+            seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
+        } else {
+            seenAtributes = null;
+        }
         super.setSeen(seen);
     }
 
@@ -580,9 +586,9 @@ public class BugzillaIssue extends Issue {
      * @return a status value
      */
     int getFieldStatus(IssueField f) {
-        if(!wasSeen()) {
-            return FIELD_STATUS_IRELEVANT;
-        }
+//        if(!wasSeen()) {
+//            return FIELD_STATUS_IRELEVANT;
+//        }
         Map<String, String> a = getSeenAttributes();
         String seenValue = a != null ? a.get(f.key) : null;
         if(seenValue == null) {
@@ -803,6 +809,7 @@ public class BugzillaIssue extends Issue {
             // a new issue was created -> refresh all queries
             repository.refreshAllQueries();
         }
+        seenAtributes = null;
         return true;
     }
 
@@ -830,9 +837,11 @@ public class BugzillaIssue extends Issue {
 
 
     private Map<String, String> getSeenAttributes() {
-        Map<String, String> seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
         if(seenAtributes == null) {
-            seenAtributes = new HashMap<String, String>();
+            seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
+            if(seenAtributes == null) {
+                seenAtributes = new HashMap<String, String>();
+            }
         }
         return seenAtributes;
     }
