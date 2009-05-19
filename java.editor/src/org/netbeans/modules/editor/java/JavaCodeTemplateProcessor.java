@@ -587,14 +587,19 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 if (tree == null)
                     return null;
                 tu.attributeTree(stmt, scope);
+                TypeMirror tm = null;
                 if (tree.getLeaf().getKind() == Tree.Kind.ASSIGNMENT) {
                     AssignmentTree as = (AssignmentTree)tree.getLeaf();
                     TreePath type = new TreePath(tree, left ? as.getVariable() : as.getExpression());
-                    return cInfo.getTrees().getTypeMirror(type);
+                    tm = cInfo.getTrees().getTypeMirror(type);
+                } else {
+                    VariableTree vd = (VariableTree)tree.getLeaf();
+                    TreePath type = new TreePath(tree, left ? vd.getType() : vd.getInitializer());
+                    tm = cInfo.getTrees().getTypeMirror(type);
                 }
-                VariableTree vd = (VariableTree)tree.getLeaf();
-                TreePath type = new TreePath(tree, left ? vd.getType() : vd.getInitializer());
-                return cInfo.getTrees().getTypeMirror(type);
+                if (tm != null && tm.getKind() == TypeKind.ERROR)
+                    tm = cInfo.getTrees().getOriginalType((ErrorType)tm);
+                return tm;
             }
         } catch (Exception e) {
         }
@@ -643,7 +648,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     return null;
                 if (right.getKind() == TypeKind.ERROR)
                     right = cInfo.getTrees().getOriginalType((ErrorType)right);
-                if (cInfo.getTypes().isAssignable(right, left))
+                if (cInfo.getTypes().isAssignable(right, left) || !cInfo.getTypeUtilities().isCastable(right, left))
                     return null;
                 return left;
             }
