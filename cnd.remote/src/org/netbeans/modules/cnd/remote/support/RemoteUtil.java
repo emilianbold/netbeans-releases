@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,43 +34,59 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.remote.support;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- * Unit tests which doesn't involve establishing remote connection
- *
- * @author Sergey Grinev
+ * Misc. utiliy finctions
+ * @author Vladimir Kvashin
  */
-public class AutarkicRemoteTestCase extends BaseTestCase {
+public class RemoteUtil {
 
-    public AutarkicRemoteTestCase(String name) {
-        super(name);
-    }
+    private static final Map<ExecutionEnvironment, String> homeDirs = new LinkedHashMap<ExecutionEnvironment, String>();
 
-    private static final String cshLine = "setenv envTestKey \"envTestValue\";setenv envTestKey2 \"envTestValue2\";";
-    private static final String cshLine2 = "setenv envTestKey2 \"envTestValue2\";setenv envTestKey \"envTestValue\";";
-    private static final String bashLine = "export envTestKey=\"envTestValue\";export envTestKey2=\"envTestValue2\";";
-    private static final String bashLine2 = "export envTestKey2=\"envTestValue2\";export envTestKey=\"envTestValue\";";
+    private RemoteUtil() {}
 
-    public void testShellUtils() throws Exception {
-        Map<String, String> env = new HashMap<String, String>();
-        env.put("envTestKey", "envTestValue");
-        env.put("envTestKey2", "envTestValue2");
-        String line = ShellUtils.prepareExportString(true, env);
-        assert cshLine.equals(line) || cshLine2.equals(line);
-        String line2 = ShellUtils.prepareExportString(false, env);
-        assert bashLine.equals(line2) || bashLine2.equals(line2);
-        String[] env2 = {"envTestKey=envTestValue","envTestKey2=envTestValue2"};
-        String line3= ShellUtils.prepareExportString(true, env2);
-        assert cshLine.equals(line3) || cshLine2.equals(line3);
-        String line4 = ShellUtils.prepareExportString(false, env2);
-        assert bashLine.equals(line4) || bashLine2.equals(line4);
+    /** 
+     * Returns home directory for the given host
+     * NB: this is a LONG RUNNING method - never call from UI thread
+     */
+    public static String getHomeDirectory(ExecutionEnvironment execEnv) {
+        CndUtils.assertNonUiThread();
+        String dir = null;
+        // it isn't worth doing smart synchronization here
+        synchronized(homeDirs) {
+            // we cache nulls as well
+            if (homeDirs.containsKey(execEnv)) {
+                return homeDirs.get(execEnv);
+            }
+        }
+        try { // FIXUP: remove this try/catch as soon as in NPE in execution is fixed
+            if (Boolean.getBoolean("cnd.emulate.null.home.dir")) { // to emulate returning null //NOI18N
+                return null;
+            }
+            RemoteCommandSupport rcs = new RemoteCommandSupport(execEnv, "echo ${HOME}"); //NOI18N
+            if (rcs.run() == 0) {
+                String s = rcs.getOutput().trim();
+                if (HostInfoProvider.fileExists(execEnv, s)) {
+                    dir = s;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        synchronized(homeDirs) {
+            // we cache nulls as well
+            homeDirs.put(execEnv, dir);            
+        }
+        return dir;
     }
 }
