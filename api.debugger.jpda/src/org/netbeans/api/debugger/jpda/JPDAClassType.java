@@ -68,6 +68,7 @@ public interface JPDAClassType extends VariableType {
     /**
      * Returns the class object variable, that corresponds to this type in the target VM.
      * @return the class object variable.
+     * @throws UnsupportedOperationException when not supported by target VM.
      */
     ClassVariable classObject();
     

@@ -66,17 +66,22 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListModel;
 import javax.swing.text.JTextComponent;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.internal.jira.core.JiraRepositoryConnector;
 import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
 import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.internal.jira.core.model.Version;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -103,6 +108,8 @@ public class IssuePanel extends javax.swing.JPanel {
         remainingEstimateField.setBackground(getBackground());
         timeSpentField.setBackground(getBackground());
         resolutionField.setBackground(getBackground());
+        projectField.setBackground(getBackground());
+        statusField.setBackground(getBackground());
         BugtrackingUtil.fixFocusTraversalKeys(environmentArea);
         BugtrackingUtil.fixFocusTraversalKeys(addCommentArea);
         BugtrackingUtil.issue163946Hack(componentScrollPane);
@@ -250,66 +257,116 @@ public class IssuePanel extends javax.swing.JPanel {
         if (skipReload) {
             return;
         }
-        ResourceBundle bundle = NbBundle.getBundle(IssuePanel.class);
+        boolean isNew = issue.getTaskData().isNew();
+        headerLabel.setVisible(!isNew);
+        createdLabel.setVisible(!isNew);
+        createdField.setVisible(!isNew);
+        updatedLabel.setVisible(!isNew);
+        updatedField.setVisible(!isNew);
+        separator.setVisible(!isNew);
+        commentsPanel.setVisible(!isNew);
+        attachmentLabel.setVisible(!isNew);
+        attachmentsPanel.setVisible(!isNew);
+        resolutionCombo.setVisible(!isNew);
+        resolutionField.setVisible(!isNew);
+        originalEstimateLabel.setVisible(!isNew);
+        originalEstimateField.setVisible(!isNew);
+        originalEstimatePanel.setVisible(!isNew);
+        remainingEstimateLabel.setVisible(!isNew);
+        remainingEstimateField.setVisible(!isNew);
+        remainingEstimatePanel.setVisible(!isNew);
+        timeSpentLabel.setVisible(!isNew);
+        timeSpentField.setVisible(!isNew);
+        timeSpentPanel.setVisible(!isNew);
+        org.openide.awt.Mnemonics.setLocalizedText(addCommentLabel, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.description" : "IssuePanel.addCommentLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
+        if (isNew != (projectCombo.getParent() != null)) {
+            GroupLayout layout = (GroupLayout)getLayout();
+            layout.replace(isNew ? projectField : projectCombo, isNew ? projectCombo : projectField);
+        }
+        if (isNew != (statusField.getParent() != null)) {
+            GroupLayout layout = (GroupLayout)getLayout();
+            layout.replace(isNew ? statusCombo : statusField, isNew ? statusField : statusCombo);
+        }
+        if (isNew != (actionPanel.getParent() == null)) {
+            GroupLayout layout = (GroupLayout)getLayout();
+            layout.replace(isNew ? actionPanel : dummyActionPanel, isNew ? dummyActionPanel : actionPanel);
+        }
+        if (isNew != (cancelButton.getParent() == null)) {
+            GroupLayout layout = (GroupLayout)getLayout();
+            layout.replace(isNew ? cancelButton : dummyCancelButton, isNew ? dummyCancelButton : cancelButton);
+        }
         JiraConfiguration config = issue.getRepository().getConfiguration();
-        String projectId = issue.getFieldValue(NbJiraIssue.IssueField.PROJECT);
-        // Header label
-        String headerFormat = bundle.getString("IssuePanel.headerLabel.format"); // NOI18N
-        String headerTxt = MessageFormat.format(headerFormat, issue.getKey(), issue.getSummary());
-        headerLabel.setText(headerTxt);
-        // Created field
-        String createdFormat = bundle.getString("IssuePanel.createdField.format"); // NOI18N
-        String reporter = config.getUser(issue.getFieldValue(NbJiraIssue.IssueField.REPORTER)).getFullName();
-        String creation = dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.CREATION), true);
-        String createdTxt = MessageFormat.format(createdFormat, creation, reporter);
-        createdField.setText(createdTxt);
-        reloadField(projectCombo, config.getProjectById(projectId), NbJiraIssue.IssueField.PROJECT);
-        reloadField(issueTypeCombo, config.getIssueTypeById(issue.getFieldValue(NbJiraIssue.IssueField.TYPE)), NbJiraIssue.IssueField.TYPE);
-        initStatusCombo(config.getStatusById(issue.getFieldValue(NbJiraIssue.IssueField.STATUS)));
-        reloadField(summaryField, issue.getFieldValue(NbJiraIssue.IssueField.SUMMARY), NbJiraIssue.IssueField.SUMMARY);
-        reloadField(priorityCombo, config.getPriorityById(issue.getFieldValue(NbJiraIssue.IssueField.PRIORITY)), NbJiraIssue.IssueField.PRIORITY);
-        List<String> componentIds = issue.getFieldValues(NbJiraIssue.IssueField.COMPONENT);
-        reloadField(componentList, componentsByIds(projectId, componentIds), NbJiraIssue.IssueField.COMPONENT);
-        List<String> affectsVersionIds = issue.getFieldValues(NbJiraIssue.IssueField.AFFECTSVERSIONS);
-        reloadField(affectsVersionList, versionsByIds(projectId, affectsVersionIds),NbJiraIssue.IssueField.AFFECTSVERSIONS);
-        List<String> fixVersionIds = issue.getFieldValues(NbJiraIssue.IssueField.FIXVERSIONS);
-        reloadField(fixVersionList, versionsByIds(projectId, fixVersionIds), NbJiraIssue.IssueField.FIXVERSIONS);
-        Resolution resolution = config.getResolutionById(issue.getFieldValue(NbJiraIssue.IssueField.RESOLUTION));
-        reloadField(resolutionField, (resolution==null) ? "" : resolution.getName(), NbJiraIssue.IssueField.RESOLUTION); // NOI18N
-        reloadField(statusCombo, config.getStatusById(issue.getFieldValue(NbJiraIssue.IssueField.STATUS)), NbJiraIssue.IssueField.STATUS);
-        reloadField(assigneeField, config.getUser(issue.getFieldValue(NbJiraIssue.IssueField.ASSIGNEE)).getFullName(), NbJiraIssue.IssueField.ASSIGNEE);
-        reloadField(environmentArea, issue.getFieldValue(NbJiraIssue.IssueField.ENVIRONMENT), NbJiraIssue.IssueField.ENVIRONMENT);
-        reloadField(updatedField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.MODIFICATION), true), NbJiraIssue.IssueField.MODIFICATION);
-        reloadField(dueField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.DUE), false), NbJiraIssue.IssueField.DUE);
+        if (isNew) {
+            projectCombo.setSelectedIndex(0); // Preselect the project
+            reloadField(issueTypeCombo, config.getIssueTypeById(issue.getFieldValue(NbJiraIssue.IssueField.TYPE)), NbJiraIssue.IssueField.TYPE);
+            reloadField(priorityCombo, config.getPriorityById(issue.getFieldValue(NbJiraIssue.IssueField.PRIORITY)), NbJiraIssue.IssueField.PRIORITY);
+            statusField.setText(STATUS_OPEN);
+        } else {
+            ResourceBundle bundle = NbBundle.getBundle(IssuePanel.class);
+            // Header label
+            String headerFormat = bundle.getString("IssuePanel.headerLabel.format"); // NOI18N
+            String headerTxt = MessageFormat.format(headerFormat, issue.getKey(), issue.getSummary());
+            headerLabel.setText(headerTxt);
+            // Created field
+            String createdFormat = bundle.getString("IssuePanel.createdField.format"); // NOI18N
+            String reporter = config.getUser(issue.getFieldValue(NbJiraIssue.IssueField.REPORTER)).getFullName();
+            String creation = dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.CREATION), true);
+            String createdTxt = MessageFormat.format(createdFormat, creation, reporter);
+            createdField.setText(createdTxt);
+            String projectId = issue.getFieldValue(NbJiraIssue.IssueField.PROJECT);
+            Project project = config.getProjectById(projectId);
+            reloadField(projectCombo, project, NbJiraIssue.IssueField.PROJECT);
+            reloadField(projectField, project.getName(), NbJiraIssue.IssueField.PROJECT);
+            reloadField(issueTypeCombo, config.getIssueTypeById(issue.getFieldValue(NbJiraIssue.IssueField.TYPE)), NbJiraIssue.IssueField.TYPE);
+            initStatusCombo(config.getStatusById(issue.getFieldValue(NbJiraIssue.IssueField.STATUS)));
+            reloadField(summaryField, issue.getFieldValue(NbJiraIssue.IssueField.SUMMARY), NbJiraIssue.IssueField.SUMMARY);
+            reloadField(priorityCombo, config.getPriorityById(issue.getFieldValue(NbJiraIssue.IssueField.PRIORITY)), NbJiraIssue.IssueField.PRIORITY);
+            List<String> componentIds = issue.getFieldValues(NbJiraIssue.IssueField.COMPONENT);
+            reloadField(componentList, componentsByIds(projectId, componentIds), NbJiraIssue.IssueField.COMPONENT);
+            List<String> affectsVersionIds = issue.getFieldValues(NbJiraIssue.IssueField.AFFECTSVERSIONS);
+            reloadField(affectsVersionList, versionsByIds(projectId, affectsVersionIds),NbJiraIssue.IssueField.AFFECTSVERSIONS);
+            List<String> fixVersionIds = issue.getFieldValues(NbJiraIssue.IssueField.FIXVERSIONS);
+            reloadField(fixVersionList, versionsByIds(projectId, fixVersionIds), NbJiraIssue.IssueField.FIXVERSIONS);
+            Resolution resolution = config.getResolutionById(issue.getFieldValue(NbJiraIssue.IssueField.RESOLUTION));
+            reloadField(resolutionField, (resolution==null) ? "" : resolution.getName(), NbJiraIssue.IssueField.RESOLUTION); // NOI18N
+            reloadField(statusCombo, config.getStatusById(issue.getFieldValue(NbJiraIssue.IssueField.STATUS)), NbJiraIssue.IssueField.STATUS);
+            reloadField(assigneeField, config.getUser(issue.getFieldValue(NbJiraIssue.IssueField.ASSIGNEE)).getFullName(), NbJiraIssue.IssueField.ASSIGNEE);
+            reloadField(environmentArea, issue.getFieldValue(NbJiraIssue.IssueField.ENVIRONMENT), NbJiraIssue.IssueField.ENVIRONMENT);
+            reloadField(updatedField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.MODIFICATION), true), NbJiraIssue.IssueField.MODIFICATION);
+            reloadField(dueField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.DUE), false), NbJiraIssue.IssueField.DUE);
 
-        // Work-log
-        String originalEstimateTxt = issue.getFieldValue(NbJiraIssue.IssueField.INITIAL_ESTIMATE);
-        int originalEstimate = toInt(originalEstimateTxt);
-        int remainintEstimate = toInt(issue.getFieldValue(NbJiraIssue.IssueField.ESTIMATE));
-        int timeSpent = toInt(issue.getFieldValue(NbJiraIssue.IssueField.ACTUAL));
-        if ((originalEstimate == 0) && (remainintEstimate + timeSpent > 0)) {
-            // originalEstimate is sometimes 0 (incorrectly)
-            originalEstimate = remainintEstimate + timeSpent;
+            // Work-log
+            String originalEstimateTxt = issue.getFieldValue(NbJiraIssue.IssueField.INITIAL_ESTIMATE);
+            int originalEstimate = toInt(originalEstimateTxt);
+            int remainintEstimate = toInt(issue.getFieldValue(NbJiraIssue.IssueField.ESTIMATE));
+            int timeSpent = toInt(issue.getFieldValue(NbJiraIssue.IssueField.ACTUAL));
+            if ((originalEstimate == 0) && (remainintEstimate + timeSpent > 0)) {
+                // originalEstimate is sometimes 0 (incorrectly)
+                originalEstimate = remainintEstimate + timeSpent;
+            }
+            reloadField(originalEstimateField, workBySeconds(originalEstimate, false), NbJiraIssue.IssueField.INITIAL_ESTIMATE);
+            reloadField(remainingEstimateField, workBySeconds(remainintEstimate, true), NbJiraIssue.IssueField.ESTIMATE);
+            reloadField(timeSpentField, workBySeconds(timeSpent, false), NbJiraIssue.IssueField.ACTUAL);
+            int scale = Math.max(originalEstimate, timeSpent);
+            setupWorkLogPanel(originalEstimatePanel, ORIGINAL_ESTIMATE_COLOR, Color.lightGray, originalEstimate, scale-originalEstimate);
+            setupWorkLogPanel(remainingEstimatePanel, Color.lightGray, REMAINING_ESTIMATE_COLOR, timeSpent, scale-timeSpent);
+            setupWorkLogPanel(timeSpentPanel, TIME_SPENT_COLOR, Color.lightGray, timeSpent, scale-timeSpent);
+
+            // Comments
+            commentsPanel.setIssue(issue);
+            BugtrackingUtil.keepFocusedComponentVisible(commentsPanel);
+            if (force) {
+                addCommentArea.setText(""); // NOI18N
+            }
+
+            // Attachments
+            attachmentsPanel.setIssue(issue);
+            BugtrackingUtil.keepFocusedComponentVisible(attachmentsPanel);
         }
-        reloadField(originalEstimateField, workBySeconds(originalEstimate, false), NbJiraIssue.IssueField.INITIAL_ESTIMATE);
-        reloadField(remainingEstimateField, workBySeconds(remainintEstimate, true), NbJiraIssue.IssueField.ESTIMATE);
-        reloadField(timeSpentField, workBySeconds(timeSpent, false), NbJiraIssue.IssueField.ACTUAL);
-        int scale = Math.max(originalEstimate, timeSpent);
-        setupWorkLogPanel(originalEstimatePanel, ORIGINAL_ESTIMATE_COLOR, Color.lightGray, originalEstimate, scale-originalEstimate);
-        setupWorkLogPanel(remainingEstimatePanel, Color.lightGray, REMAINING_ESTIMATE_COLOR, timeSpent, scale-timeSpent);
-        setupWorkLogPanel(timeSpentPanel, TIME_SPENT_COLOR, Color.lightGray, timeSpent, scale-timeSpent);
-
-        // Comments
-        commentsPanel.setIssue(issue);
-        BugtrackingUtil.keepFocusedComponentVisible(commentsPanel);
-        if (force) {
-            addCommentArea.setText(""); // NOI18N
-        }
-
-        // Attachments
-        attachmentsPanel.setIssue(issue);
-        BugtrackingUtil.keepFocusedComponentVisible(attachmentsPanel);
     }
+    private JComponent dummyCancelButton = new JLabel();
+    private JComponent dummyActionPanel = new JLabel();
 
     private void reloadField(JComponent fieldComponent, Object fieldValue, NbJiraIssue.IssueField field) {
         if (fieldComponent instanceof JComboBox) {
@@ -567,6 +624,8 @@ public class IssuePanel extends javax.swing.JPanel {
     private void initComponents() {
 
         resolutionField = new javax.swing.JTextField();
+        projectField = new javax.swing.JTextField();
+        statusField = new javax.swing.JTextField();
         headerLabel = new javax.swing.JLabel();
         projectLabel = new javax.swing.JLabel();
         projectCombo = new javax.swing.JComboBox();
@@ -631,6 +690,12 @@ public class IssuePanel extends javax.swing.JPanel {
 
         resolutionField.setEditable(false);
         resolutionField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
+        projectField.setEditable(false);
+        projectField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
+        statusField.setEditable(false);
+        statusField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
 
@@ -988,7 +1053,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(subtaskLabel)
                     .add(dummySubtaskPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(19, 19, 19)
+                .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(summaryLabel)
                     .add(summaryField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -1042,6 +1107,18 @@ public class IssuePanel extends javax.swing.JPanel {
         }
         affectsVersionList.setModel(versionModel);
         fixVersionList.setModel(versionModel);
+
+        TaskData data = issue.getTaskData();
+        if (data.isNew()) {
+            issue.setFieldValue(NbJiraIssue.IssueField.PROJECT, project.getId());
+            JiraRepositoryConnector connector = Jira.getInstance().getRepositoryConnector();
+            try {
+                connector.getTaskDataHandler().initializeTaskData(issue.getRepository().getTaskRepository(), data, connector.getTaskMapping(data), new NullProgressMonitor());
+                reloadForm(false);
+            } catch (CoreException cex) {
+                cex.printStackTrace();
+            }
+        }
     }//GEN-LAST:event_projectComboActionPerformed
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
@@ -1076,6 +1153,7 @@ public class IssuePanel extends javax.swing.JPanel {
         storeFieldValue(NbJiraIssue.IssueField.ENVIRONMENT, environmentArea);
         String submitMessage;
         if (isNew) {
+            storeFieldValue(NbJiraIssue.IssueField.DESCRIPTION, addCommentArea);
             submitMessage = NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitNewMessage"); // NOI18N
         } else {
             String submitMessageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitMessage"); // NOI18N
@@ -1179,6 +1257,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JComboBox priorityCombo;
     private javax.swing.JLabel priorityLabel;
     private javax.swing.JComboBox projectCombo;
+    private javax.swing.JTextField projectField;
     private javax.swing.JLabel projectLabel;
     private org.netbeans.modules.bugtracking.util.LinkButton refreshButton;
     private javax.swing.JTextField remainingEstimateField;
@@ -1190,6 +1269,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private org.netbeans.modules.bugtracking.util.LinkButton resolveIssueButton;
     private javax.swing.JSeparator separator;
     private javax.swing.JComboBox statusCombo;
+    private javax.swing.JTextField statusField;
     private javax.swing.JLabel statusLabel;
     private javax.swing.JButton submitButton;
     private javax.swing.JLabel subtaskLabel;

@@ -45,7 +45,6 @@ import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.util.NbPreferences;
 
@@ -101,27 +100,6 @@ public class JiraConfig {
         return getPreferences().getBoolean(QUERY_AUTO_REFRESH + queryName, false);
     }
 
-    public void putQuery(JiraRepository repository, JiraQuery query) {
-//        getPreferences().put(getQueryKey(repository.getDisplayName(), query.getDisplayName()), query.getUrlParameters() + DELIMITER + query.getLastRefresh());
-    }
-
-    public void removeQuery(JiraRepository repository, JiraQuery query) {
-//        getPreferences().remove(getQueryKey(repository.getDisplayName(), query.getDisplayName()));
-    }
-
-    public JiraQuery getQuery(JiraRepository repository, String queryName) {
-//        String value = getStoredQuery(repository, queryName);
-//        if(value == null) {
-//            return null;
-//        }
-//        String[] values = value.split(DELIMITER);
-//        assert values.length == 2;
-//        String urlParams = values[0];
-//        long lastRefresh = Long.parseLong(values[1]);
-//        return new JiraQuery(queryName, repository, urlParams, lastRefresh);
-        throw new UnsupportedOperationException();
-    }
-
     public String getUrlParams(JiraRepository repository, String queryName) {
 //        String value = getStoredQuery(repository, queryName);
 //        if(value == null) {
@@ -131,10 +109,6 @@ public class JiraConfig {
 //        assert values.length == 2;
 //        return values[0];
         throw new UnsupportedOperationException();
-    }
-
-    public String[] getQueries(String repoName) {        
-        return getKeysWithPrefix(QUERY_NAME + repoName + DELIMITER);
     }
 
     public void putRepository(String repoName, JiraRepository repository) {
@@ -194,10 +168,6 @@ public class JiraConfig {
             }
         }
         return ret.toArray(new String[ret.size()]);
-    }
-
-    private String getQueryKey(String repositoryName, String queryName) {
-        return QUERY_NAME + repositoryName + DELIMITER + queryName;
     }
 //
 //    private String getStoredQuery(JiraRepository repository, String queryName) {

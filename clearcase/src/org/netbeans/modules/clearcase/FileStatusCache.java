@@ -563,7 +563,7 @@ public class FileStatusCache {
             for (File file : files) {
                 File parent = file.getParentFile();
                 if (recursivelly && file.isDirectory()) {
-                    refreshRecursively(file, fireEvents);
+                    refreshRecursively(file, fireEvents, this, cache);
                 } else {
                     if (!parents.contains(parent)) {
                         // refresh the file, all its siblings and the parent (dir)
@@ -576,32 +576,33 @@ public class FileStatusCache {
             }
         }
         
-        /**
-         * Refreshes recursively all files in the given directory.
-         * @param dir
-         */
-        private void refreshRecursively(File dir, boolean fireEvents) {        
-            File[] dirFiles = dir.listFiles();
-            if(dirFiles == null || dirFiles.length == 0) {
+    }
+
+    /**
+     * Refreshes recursively all files in the given directory.
+     * @param dir
+     */
+    public static void refreshRecursively(File dir, boolean fireEvents, ProgressSupport support, FileStatusCache cache) {
+        File[] dirFiles = dir.listFiles();
+        if(dirFiles == null || dirFiles.length == 0) {
+            return;
+        }
+        boolean kidsRefreshed = false;
+        for(File file : dirFiles) {
+            if(support != null && support.isCanceled()) {
                 return;
             }
-            boolean kidsRefreshed = false; 
-            for(File file : dirFiles) {
-                if(isCanceled()) {
-                    return;
-                }
-                if(!kidsRefreshed) {
-                    // refresh the file, all its siblings and the parent (dir)
-                    cache.refresh(file, fireEvents); 
-                    // files parent directory (dir) and all it's children are refreshed
-                    // so skip for the next child
-                    kidsRefreshed = true;                
-                } 
-                if (file.isDirectory()) {
-                    refreshRecursively(file, fireEvents);
-                }
+            if(!kidsRefreshed) {
+                // refresh the file, all its siblings and the parent (dir)
+                cache.refresh(file, fireEvents);
+                // files parent directory (dir) and all it's children are refreshed
+                // so skip for the next child
+                kidsRefreshed = true;
             }
-        }                
-    }    
+            if (file.isDirectory()) {
+                refreshRecursively(file, fireEvents, support, cache);
+            }
+        }
+    }
     
 }

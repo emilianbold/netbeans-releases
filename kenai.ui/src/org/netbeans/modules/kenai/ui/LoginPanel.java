@@ -64,7 +64,7 @@ public class LoginPanel extends javax.swing.JPanel {
             Exceptions.printStackTrace(ex);
         }
         try {
-            registerUrl = new URL("https://kenai.com/people/new");
+            registerUrl = new URL("https://kenai.com/people/signup");
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
