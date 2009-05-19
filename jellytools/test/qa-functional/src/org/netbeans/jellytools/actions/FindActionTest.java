@@ -43,11 +43,11 @@ package org.netbeans.jellytools.actions;
 import java.io.IOException;
 import junit.framework.Test;
 import junit.textui.TestRunner;
-//import org.netbeans.jellytools.FindInFilesOperator;
+import org.netbeans.jellytools.FindInFilesOperator;
+import org.netbeans.jellytools.JavaProjectsTabOperator;
 import org.netbeans.jellytools.JellyTestCase;
-//import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-//import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
 /** Test org.netbeans.jellytools.actions.FindAction
  *
@@ -55,7 +55,14 @@ import org.netbeans.jellytools.nodes.Node;
  * @author Jiri.Skrivanek@sun.com
  */
 public class FindActionTest extends JellyTestCase {
-    
+
+    private static final String[] tests = new String[] {
+        "testPerformPopup",
+        "testPerformMenu",
+        "testPerformAPI",
+        "testPerformShortcut"
+    };
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
@@ -66,15 +73,8 @@ public class FindActionTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new FindActionTest("testPerformPopup"));
-        suite.addTest(new FindActionTest("testPerformMenu"));
-        suite.addTest(new FindActionTest("testPerformAPI"));
-        suite.addTest(new FindActionTest("testPerformShortcut"));
-        return suite;
-         */
-        return createModuleTest(FindActionTest.class);
+        
+        return createModuleTest(FindActionTest.class, tests);
     }
 
     @Override
@@ -91,32 +91,32 @@ public class FindActionTest extends JellyTestCase {
     
     /** Test performPopup */
     public void testPerformPopup() {
-    /*    Node node = new JavaProjectsTabOperator().getProjectRootNode("SampleProject"); // NOI18N
+        Node node = new JavaProjectsTabOperator().getProjectRootNode("SampleProject"); // NOI18N
         new FindAction().performPopup(node);
-        new FindInFilesOperator().close();*/
+        new FindInFilesOperator().close();
     }
     
     /** Test performMenu */
     public void testPerformMenu() {
-        /*Node node = new Node(new SourcePackagesNode("SampleProject"), "sample1"); // NOI18N
+        Node node = new Node(new SourcePackagesNode("SampleProject"), "sample1"); // NOI18N
         new FindAction().performMenu(node);
-        new FindInFilesOperator().close();*/
+        new FindInFilesOperator().close();
     }
     
     /** Test performAPI */
-    public void testPerformAPI() {/*
+    public void testPerformAPI() {
         new FindAction().performAPI();
-        new FindInFilesOperator().close();*/
+        new FindInFilesOperator().close();
     }
     
     /** Test performShortcut */
     public void testPerformShortcut() {
-        /*new FindAction().performShortcut();
+        new FindAction().performShortcut();
         new FindInFilesOperator().close();
         // On some linux it may happen autorepeat is activated and it 
         // opens dialog multiple times. So, we need to close all modal dialogs.
         // See issue http://www.netbeans.org/issues/show_bug.cgi?id=56672.
-        closeAllModal();*/
+        closeAllModal();
     }
     
 }
