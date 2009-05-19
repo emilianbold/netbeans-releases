@@ -1637,8 +1637,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                     if (TRACE_SCHUDULE_PARSING) {
                         System.err.printf("scheduleParsing: enqueue %s in states %s, %s\n", getAbsolutePath(), state, parsingState); // NOI18N
                     }
-                    ParserQueue.instance().add(this, Collections.singleton(DUMMY_STATE),
+                    boolean added = ParserQueue.instance().add(this, Collections.singleton(DUMMY_STATE),
                             ParserQueue.Position.HEAD, false, ParserQueue.FileAction.NOTHING);
+                    if (!added) {
+                        return;
+                    }
                 }
                 if (wait) {
                     if (TRACE_SCHUDULE_PARSING) {
