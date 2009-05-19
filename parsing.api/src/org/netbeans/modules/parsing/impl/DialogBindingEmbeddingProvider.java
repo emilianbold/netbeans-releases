@@ -41,10 +41,10 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
-import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.openide.filesystems.FileObject;
@@ -61,29 +61,39 @@ public final class DialogBindingEmbeddingProvider extends EmbeddingProvider {
         try {
             LanguagePath path = LanguagePath.get(MimeLookup.getLookup(snapshot.getMimeType()).lookup(Language.class));
             InputAttributes attributes = (InputAttributes) doc.getProperty(InputAttributes.class);
-            FileObject fileObject = (FileObject) attributes.getValue(path, "dialogBinding.fileObject"); //NOI18N
             int offset = (Integer)attributes.getValue(path, "dialogBinding.offset"); //NOI18N
             int length = (Integer)attributes.getValue(path, "dialogBinding.length"); //NOI18N
-            String mimeType = fileObject.getMIMEType();
-            InputStream inputStream = fileObject.getInputStream();
-            try {
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, FileEncodingQuery.getEncoding(fileObject)));
-                CharBuffer charBuffer = CharBuffer.allocate(4096);
-                StringBuilder sb = new StringBuilder();
-                int i = bufferedReader.read(charBuffer);
-                while (i > 0) {
-                    charBuffer.flip();
-                    sb.append(charBuffer);
-                    charBuffer.clear();
-                    i = bufferedReader.read(charBuffer);
-                }
+            Document d = (Document) attributes.getValue(path, "dialogBinding.document"); //NOI18N
+            if (d != null) {
+                String mimeType = NbEditorUtilities.getMimeType(d);
                 ArrayList<Embedding> ret = new ArrayList<Embedding>(3);
-                ret.add(snapshot.create(sb.subSequence(0, offset), mimeType));
+                ret.add(snapshot.create(d.getText(0, offset), mimeType));
                 ret.add(snapshot.create(0, snapshot.getText().length(), mimeType));
-                ret.add(snapshot.create(sb.subSequence(offset + length, sb.length()), mimeType));
+                ret.add(snapshot.create(d.getText(offset + length, d.getLength() - offset - length), mimeType));
                 return Collections.singletonList(Embedding.create(ret));
-            } finally {
-                inputStream.close();
+            } else {
+                FileObject fileObject = (FileObject) attributes.getValue(path, "dialogBinding.fileObject"); //NOI18N
+                String mimeType = fileObject.getMIMEType();
+                InputStream inputStream = fileObject.getInputStream();
+                try {
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, FileEncodingQuery.getEncoding(fileObject)));
+                    CharBuffer charBuffer = CharBuffer.allocate(4096);
+                    StringBuilder sb = new StringBuilder();
+                    int i = bufferedReader.read(charBuffer);
+                    while (i > 0) {
+                        charBuffer.flip();
+                        sb.append(charBuffer);
+                        charBuffer.clear();
+                        i = bufferedReader.read(charBuffer);
+                    }
+                    ArrayList<Embedding> ret = new ArrayList<Embedding>(3);
+                    ret.add(snapshot.create(sb.subSequence(0, offset), mimeType));
+                    ret.add(snapshot.create(0, snapshot.getText().length(), mimeType));
+                    ret.add(snapshot.create(sb.subSequence(offset + length, sb.length()), mimeType));
+                    return Collections.singletonList(Embedding.create(ret));
+                } finally {
+                    inputStream.close();
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

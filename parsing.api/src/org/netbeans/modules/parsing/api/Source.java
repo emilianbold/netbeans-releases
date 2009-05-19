@@ -182,7 +182,12 @@ public final class Source {
                     if ("text/x-dialog-binding".equals(mimeType)) { //NOI18N
                         InputAttributes attributes = (InputAttributes) document.getProperty(InputAttributes.class);
                         LanguagePath path = LanguagePath.get(MimeLookup.getLookup(mimeType).lookup(Language.class));
-                        fileObject = (FileObject) attributes.getValue(path, "dialogBinding.fileObject"); //NOI18N
+                        Document doc = (Document) attributes.getValue(path, "dialogBinding.document"); //NOI18N
+                        if (doc != null) {
+                            fileObject = NbEditorUtilities.getFileObject(doc);
+                        } else {
+                            fileObject = (FileObject) attributes.getValue(path, "dialogBinding.fileObject"); //NOI18N
+                        }
                     }
                     source = new Source(mimeType, document, fileObject);
                 }

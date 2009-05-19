@@ -30,6 +30,7 @@ package org.netbeans.modules.editor.lib2;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
@@ -77,10 +78,18 @@ public enum DialogBindingTokenId implements TokenId {
         protected LanguageEmbedding<?> embedding(Token<DialogBindingTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             if (inputAttributes == null)
                 return null;
-            FileObject fo = (FileObject)inputAttributes.getValue(languagePath, "dialogBinding.fileObject"); //NOI18N
-            if (fo == null)
+            String mimeType = null;
+            Document doc = (Document) inputAttributes.getValue(languagePath, "dialogBinding.document"); //NOI18N
+            if (doc != null) {
+                mimeType = (String)doc.getProperty("mimeType"); //NOI18N
+            } else {
+                FileObject fo = (FileObject)inputAttributes.getValue(languagePath, "dialogBinding.fileObject"); //NOI18N
+                if (fo != null)
+                    mimeType = fo.getMIMEType();
+            }
+            if (mimeType == null)
                 return null;
-            Language<?> l = MimeLookup.getLookup(fo.getMIMEType()).lookup(Language.class);
+            Language<?> l = MimeLookup.getLookup(mimeType).lookup(Language.class);
             return l != null ? LanguageEmbedding.create(l, 0, 0) : null;
         }
 

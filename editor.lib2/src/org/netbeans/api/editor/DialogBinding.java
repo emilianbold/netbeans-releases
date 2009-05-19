@@ -55,12 +55,30 @@ public final class DialogBinding {
         Parameters.notNull("component", component); //NOI18N
         if (!fileObject.isValid() || !fileObject.isData())
             return;
+        bind(component, null, fileObject, offset, length, fileObject.getMIMEType());
+    }
+
+    /**
+     * Bind given component and given document together.
+     * @param document to bind
+     * @param offset position at which content of the component will be virtually placed
+     * @param length how many characters replace from the original document
+     * @param component component to bind
+     */
+    public static void bindComponentToDocument(final Document document, int offset, int length, final JTextComponent component) {
+        Parameters.notNull("document", document); //NOI18N
+        Parameters.notNull("component", component); //NOI18N
+        bind(component, document, null, offset, length, (String)document.getProperty("mimeType")); //NOI18N
+    }
+
+    private static void bind(final JTextComponent component, final Document document, final FileObject fileObject, int offset, int length, final String mimeType) {
         if (component instanceof JEditorPane)
-            ((JEditorPane)component).setEditorKit(MimeLookup.getLookup(fileObject.getMIMEType()).lookup(EditorKit.class));
+            ((JEditorPane) component).setEditorKit(MimeLookup.getLookup(mimeType).lookup(EditorKit.class));
         Document doc = component.getDocument();
         doc.putProperty("mimeType", "text/x-dialog-binding"); //NOI18N
         InputAttributes inputAttributes = new InputAttributes();
         Language language = MimeLookup.getLookup("text/x-dialog-binding").lookup(Language.class); //NOI18N
+        inputAttributes.setValue(language, "dialogBinding.document", document, true); //NOI18N
         inputAttributes.setValue(language, "dialogBinding.fileObject", fileObject, true); //NOI18N
         inputAttributes.setValue(language, "dialogBinding.offset", offset, true); //NOI18N
         inputAttributes.setValue(language, "dialogBinding.length", length, true); //NOI18N
