@@ -50,6 +50,7 @@ import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 import org.netbeans.modules.subversion.TestKit;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -109,6 +110,8 @@ public class SearchHistoryTest extends NbTestCase {
                 try {
                     Subversion.showFileHistory(file, 1);
                     fail("AWT test failed");
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 } catch (AssertionError err) {
                     
                 }
