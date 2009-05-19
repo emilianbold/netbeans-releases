@@ -133,7 +133,7 @@ final class ParsingProgress {
             }
             try {
                 if (TRACE) {
-                    handle.progress(file.getName().toString()+" ("+curWorkedUnits+" of "+(maxWorkUnits + addedAfterStartParsing)+")", allWork); // NOI18N
+                    handle.progress("("+curWorkedUnits+" of "+(maxWorkUnits + addedAfterStartParsing)+") "+file.getName().toString(), allWork); // NOI18N
                 } else  {
                     handle.progress(file.getName().toString(), allWork);
                 }
