@@ -63,7 +63,7 @@ final class ParsingProgress {
     private static final int ALL_WORK_INT = 10000;
     private boolean started = false;
     private boolean determinate = false;
-    private static final boolean TRACE = false;
+    private static final boolean TRACE = true;
     
     /**  
      * Delay amount of miliseconds 
