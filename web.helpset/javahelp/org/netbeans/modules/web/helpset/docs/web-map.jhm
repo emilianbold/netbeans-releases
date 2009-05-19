@@ -22,7 +22,7 @@
 	<mapID target="about_taglib" url="web/create/tag/about/about_taglib.html"/>
 	<mapID target="about_tld" url="web/create/tag/tld/about_tld.html"/>
 	<mapID target="about_webapp_configure" url="web/configure/about_webapp_configure.html"/>
-	<!--<mapID target="about_webapps" url="web/about/about_webapps.html"/>-->
+	<mapID target="about_webapps" url="web/about/about_webapps.html"/>
 	<mapID target="applet_create" url="web/create/applet/applet_create.html"/>
 	<mapID target="applet_run" url="web/create/applet/applet_run.html"/>
 	<mapID target="applet_security" url="web/create/applet/applet_security.html"/>
@@ -145,13 +145,12 @@
 	<mapID target="taghandler_edit" url="web/create/tag/taghandler/taghandler_edit.html"/>
 	<mapID target="tld_create" url="web/create/tag/tld/tld_create.html"/>
 	<mapID target="tld_edit" url="web/create/tag/tld/tld_edit.html"/>
-    <!--
-	<mapID target="webapps_idesupport" url="web/about/webapps_idesupport.html"/>
+        <mapID target="webapps_idesupport" url="web/about/webapps_idesupport.html"/>
 	<mapID target="webapps_process" url="web/about/webapps_process.html"/>
 	<mapID target="webapps_process_top" url="web/about/webapps_process.html#top"/>
 	<mapID target="webapps_quickref" url="web/about/webapps_quickref.html"/>
 	<mapID target="webapps_techsupport" url="web/about/webapps_techsupport.html"/>
-    -->
+    
 	<mapID target="org.netbeans.modules.web.wizards.ServletIterator.servlet" url="web/csh/servletwiz/PanelConfigureServlet.html"/>
 	<mapID target="org.netbeans.modules.web.wizards.DeployDataPanel.servlet" url="web/csh/servletwiz/PanelConfigureServletDeploy.html"/>
 	<mapID target="org.netbeans.modules.html.editor.HtmlKit" url="web/create/jsp/about_jsp_edit.html"/>
