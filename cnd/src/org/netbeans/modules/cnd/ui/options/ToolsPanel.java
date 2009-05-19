@@ -1638,18 +1638,18 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             StringBuilder versions = new StringBuilder();
 
             versions.append("\n"); // NOI18N
-            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.CCompiler), tfCPath) + "\n"); // NOI18N
+            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.CCompiler), tfCPath)).append("\n"); // NOI18N
             handle.progress(1);
-            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.CCCompiler), tfCppPath) + "\n"); // NOI18N
+            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.CCCompiler), tfCppPath)).append("\n"); // NOI18N
             handle.progress(2);
-            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.FortranCompiler), tfFortranPath) + "\n"); // NOI18N
+            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.FortranCompiler), tfFortranPath)).append("\n"); // NOI18N
             handle.progress(3);
-            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.Assembler), tfAsPath) + "\n"); // NOI18N
+            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.Assembler), tfAsPath)).append("\n"); // NOI18N
             handle.progress(4);
-            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.MakeTool), tfMakePath) + "\n"); // NOI18N
+            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.MakeTool), tfMakePath)).append("\n"); // NOI18N
             if (gdbEnabled) {
                 handle.progress(5);
-                versions.append(getToolVersion(currentCompilerSet.findTool(Tool.DebuggerTool), tfGdbPath) + "\n"); // NOI18N
+                versions.append(getToolVersion(currentCompilerSet.findTool(Tool.DebuggerTool), tfGdbPath)).append("\n"); // NOI18N
             }
             handle.finish();
 
