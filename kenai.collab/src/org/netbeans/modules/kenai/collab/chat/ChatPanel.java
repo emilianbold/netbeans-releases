@@ -49,6 +49,7 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.MissingResourceException;
+import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTMLDocument;
@@ -291,6 +292,14 @@ public class ChatPanel extends javax.swing.JPanel {
                 return;
             }
         try {
+            if (!KenaiConnection.getDefault().isConnected()) {
+                try {
+                    KenaiConnection.getDefault().reconnect();
+                } catch (XMPPException xMPPException) {
+                    JOptionPane.showMessageDialog(this, xMPPException.getMessage());
+                    return;
+                }
+            }
             muc.sendMessage(outbox.getText().trim());
         } catch (XMPPException ex) {
             Exceptions.printStackTrace(ex);

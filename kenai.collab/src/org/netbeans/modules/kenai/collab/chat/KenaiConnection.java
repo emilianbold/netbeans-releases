@@ -184,6 +184,11 @@ public class KenaiConnection implements PropertyChangeListener {
         connection.addPacketListener(new PacketL(), new MessageTypeFilter(Type.chat));
     }
 
+    public void reconnect() throws XMPPException {
+        connection.connect();
+    }
+
+
     private class PacketL implements PacketListener {
         public void processPacket(Packet packet) {
             final Message msg = (Message) packet;
