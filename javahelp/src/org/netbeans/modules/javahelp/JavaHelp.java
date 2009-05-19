@@ -938,6 +938,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
     private void adjust(JHelp jh) {
         JEditorPane contentViewer = (JEditorPane) getContentViewer(jh);
         adjustFontSize(contentViewer);
+        HyperlinkEventProcessor.addTo(contentViewer); // Issue #57005
     }
 
     private void adjustFontSize(JEditorPane contentViewer) {
@@ -975,7 +976,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
                      // expected JH Content Viewer
     }
 
-    private static boolean isContentViewer(Component c) {
+    static boolean isContentViewer(Component c) {
         // TODO: need to find a criterion to recognize the JH Content Viewer,
         // i.e. an instance of
         // javax.help.plaf.basic.BasicContentViewerUI$JHEditorPane .

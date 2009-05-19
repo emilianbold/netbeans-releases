@@ -343,6 +343,11 @@ made subject to such option by the copyright holder.
                         <file name="cldc-init" url="buildscript/cldc-init">
                             <attr name="position" intvalue="300"/>
                         </file>
+                        <!-- Java ME SDK beginning -->
+                        <file name="cdc-hi-init" url="buildscript/cdc-hi-init">
+                            <attr name="position" intvalue="1000"/>
+                        </file>
+                        <!-- Java ME SDK end -->
                     </folder>
                     <file name="init" url="buildscript/init">
                         <attr name="position" intvalue="400"/>
@@ -371,8 +376,16 @@ made subject to such option by the copyright holder.
                     <file name="obfuscate" url="buildscript/obfuscate">
                         <attr name="position" intvalue="1000"/>
                     </file>
+                    <!-- Java ME SDK beginning -->
+                    <folder name="preverify-subtargets">
+                        <attr name="position" intvalue="1110"/>
+                        <file name="lwuit-build" url="buildscript/lwuit-build">
+                            <attr name="position" intvalue="100"/>
+                        </file>
+                    </folder>
+                    <!-- Java ME SDK end -->
                     <file name="preverify" url="buildscript/preverify">
-                        <attr name="position" intvalue="1100"/>
+                        <attr name="position" intvalue="1150"/>
                     </file>
                     <folder name="jar-subtargets">
                         <attr name="position" intvalue="1200"/>
@@ -388,6 +401,11 @@ made subject to such option by the copyright holder.
                         <file name="do-extra-libs" url="buildscript/do-extra-libs">
                             <attr name="position" intvalue="400"/>
                         </file>
+                        <!-- Java ME SDK beginning -->
+                        <file name="jad-jsr211-properties" url="buildscript/jad-jsr211-properties">
+                            <attr name="position" intvalue="550"/>
+                        </file>
+                        <!-- Java ME SDK end -->
                         <file name="do-jar" url="buildscript/do-jar">
                             <attr name="position" intvalue="700"/>
                         </file>                        
@@ -424,6 +442,17 @@ made subject to such option by the copyright holder.
                         <file name="cldc-run" url="buildscript/cldc-run">
                             <attr name="position" intvalue="100"/>
                         </file>
+                        <!-- Java ME SDK beginning -->
+                        <file name="open-netmon" url="buildscript/open-netmon">
+                            <attr name="position" intvalue="0"/>
+                        </file>
+                        <file name="cdc-hi-run" url="buildscript/cdc-hi-run">
+                            <attr name="position" intvalue="1000"/>
+                        </file>
+                        <file name="open-profiler" url="buildscript/open-profiler">
+                            <attr name="position" intvalue="1200"/>
+                        </file>
+                        <!-- Java ME SDK end -->
                     </folder>
                     <file name="run" url="buildscript/run">
                         <attr name="position" intvalue="1800"/>
@@ -440,6 +469,11 @@ made subject to such option by the copyright holder.
                     <file name="debug" url="buildscript/debug">
                         <attr name="position" intvalue="2100"/>
                     </file>
+                    <!-- Java ME SDK beginning -->
+                    <file name="debug-run-base" url="buildscript/debug-run-base">
+                        <attr name="position" intvalue="2150"/>
+                    </file>
+                    <!-- Java ME SDK end -->
                     <file name="javadoc" url="buildscript/javadoc">
                         <attr name="position" intvalue="2200"/>
                     </file>

@@ -1,0 +1,14 @@
+<xsl:comment>open-netmon</xsl:comment>
+
+    <target name="netmon.check">
+        <condition property="netmon.allowed">
+            <and>
+                <not> <isset property="bdj-platform.trigger"/></not>
+                <isset property="netbeans.home"/>
+                <isset property="is.mesdk_netmon"/>
+            </and>
+        </condition>
+    </target>
+    <target name="open-netmon" description="Open network monitor" depends="netmon.check" if="netmon.allowed">
+        <opennetmon device="${{platform.device}}"/>
+    </target>

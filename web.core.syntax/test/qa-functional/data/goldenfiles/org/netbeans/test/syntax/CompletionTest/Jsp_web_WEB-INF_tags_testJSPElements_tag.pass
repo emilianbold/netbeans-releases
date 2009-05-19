@@ -4,6 +4,7 @@
 < jsp:declaration >
 < jsp:directive.attribute / >
 < jsp:directive.include / >
+< jsp:directive.page / >
 < jsp:directive.tag / >
 < jsp:directive.variable / >
 < jsp:doBody / >

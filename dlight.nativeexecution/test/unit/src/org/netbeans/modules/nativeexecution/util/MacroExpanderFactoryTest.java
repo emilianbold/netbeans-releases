@@ -45,9 +45,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
@@ -85,7 +83,7 @@ public class MacroExpanderFactoryTest extends NativeExecutionTest {
     }
 
     @Override
-    public void tearDown() throws Exception  {
+    public void tearDown() throws Exception {
         super.tearDown();
     }
 
@@ -118,9 +116,11 @@ public class MacroExpanderFactoryTest extends NativeExecutionTest {
 //    @Test
     public void testPath() {
         ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew(System.getProperty("user.name"), "localhost"); // NOI18N
-        NativeProcessBuilder npb = new NativeProcessBuilder(
-                execEnv, "/bin/env",false).addEnvironmentVariable( // NOI18N
-                "PATH", "/firstPath:$PATH:${ZZZ}_${platform}").addEnvironmentVariable("PATH", "$PATH:/secondPath").addEnvironmentVariable("XXX", "It WORKS!"); // NOI18N
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+        npb.setExecutable("/bin/env"); // NOI18N
+        npb.addEnvironmentVariable("PATH", "/firstPath:$PATH:${ZZZ}_${platform}"); // NOI18N
+        npb.addEnvironmentVariable("PATH", "$PATH:/secondPath"); // NOI18N
+        npb.addEnvironmentVariable("XXX", "It WORKS!"); // NOI18N
 
         StringWriter result = new StringWriter();
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL).outProcessorFactory(new InputRedirectorFactory(result));

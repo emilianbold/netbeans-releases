@@ -204,7 +204,8 @@ public class MonitorsUpdateService {
                             restarted = true;
 
                             int currThreads = threadsStatistic.getThreadsCount();
-                            double currTime = stat.getDuration();
+                            Double ctime = stat.getDuration();
+                            double currTime = (ctime == null) ? 0 : ctime.doubleValue();
                             double currLocks;
 
                             if (linuxMode) {

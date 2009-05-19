@@ -494,7 +494,7 @@ public final class ParserQueue {
             data = getProjectData(project, true);
             if (data.filesBeingParsed.contains(file)) {
                 if (TraceFlags.TRACE_PARSER_QUEUE) {
-                    System.err.println("beeing parsed by another thread " + file); // NOI18N
+                    System.err.println(Thread.currentThread().getName() + ": beeing parsed by another thread " + file); // NOI18N
                 }
             } else {
                 if (removeFoundEntryFromQueue) {
