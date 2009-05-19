@@ -78,7 +78,7 @@ public class ConnectionGenerator implements CodeGenerator {
 
     public void invoke() {
         DatabaseConnection dbconn = DatabaseConnectionSupport.selectDatabaseConnection(true, true);
-        if (dbconn.getPassword() == null) {
+        if (dbconn != null && dbconn.getPassword() == null) {
             dbconn = null;
         }
         if (dbconn == null) {

@@ -343,8 +343,8 @@ final class Erprint {
             lineBuffer.setLength(0);
 
             while (true) {
-                char c;
-                c = (char) pis.read();
+                int c;
+                c = pis.read();
 
                 if (c < 0) {
                     break;
@@ -354,7 +354,7 @@ final class Erprint {
                     resultBuffer.add(lineBuffer.toString());
                     lineBuffer.setLength(0);
                 } else {
-                    lineBuffer.append(c);
+                    lineBuffer.append((char)c);
                 }
 
                 if (prompt[promptPos] == c) {
@@ -383,7 +383,7 @@ final class Erprint {
             int currPos = 0;
             int pos1 = 0;
             int pos2 = 0;
-            char c;
+            int c;
             char[] parray = new char[256];
             char[] result = null;
 
@@ -396,13 +396,13 @@ final class Erprint {
                 post(""); // NOI18N
 
                 while (true) {
-                    c = (char) out.read();
+                    c = out.read();
 
                     if (c < 0) {
                         break;
                     }
 
-                    parray[++currPos] = c;
+                    parray[++currPos] = (char)c;
 
                     if (parray[pos1] == parray[currPos]) {
                         if (pos2 == 0) {

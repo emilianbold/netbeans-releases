@@ -153,6 +153,11 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         }
     }
 
+    @Override
+    protected boolean hasIncludeActionSideEffects() {
+        return needMacroAndIncludes();
+    }
+
     protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt, APTMacroMap.State postIncludeState) throws IOException {
         try {
             return inclFileOwner.onFileIncluded(getStartProject(), inclPath, getPreprocHandler(), postIncludeState, mode, isTriggerParsingActivity());

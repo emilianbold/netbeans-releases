@@ -87,9 +87,13 @@ public class UploadCommand extends RemoteCommand implements Displayable {
         };
     }
 
-    private void invokeActionImpl(Lookup context) {
+    void invokeActionImpl(Lookup context) {
         FileObject[] selectedFiles = CommandUtils.filesForContextOrSelectedNodes(context);
-        assert selectedFiles.length > 0 : "At least one node must be selected for Upload action";
+        // #161202
+        if (selectedFiles.length == 0) {
+            // one selects project node e.g.
+            return;
+        }
 
         uploadFiles(selectedFiles, (FileObject[]) null);
     }

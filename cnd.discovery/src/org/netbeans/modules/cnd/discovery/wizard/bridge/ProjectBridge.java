@@ -54,9 +54,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.api.compilers.ToolchainManager;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
@@ -206,7 +204,6 @@ public class ProjectBridge {
             path = path.replace('/', File.separatorChar);
         }
         path = IpeUtils.toRelativePath(makeConfigurationDescriptor.getBaseDir(), path);
-        path = FilePathAdaptor.mapToRemote(path);
         path = cutLocalRelative(path);
         path = FilePathAdaptor.normalize(path);
         return path;

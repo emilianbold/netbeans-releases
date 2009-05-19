@@ -65,7 +65,7 @@ import org.tigris.subversion.svnclientadapter.SVNStatusKind;
  */
 public class StatusAction  extends ContextAction {
     
-    private static final int enabledForStatus = FileInformation.STATUS_MANAGED;  
+    private static final int enabledForStatus = FileInformation.STATUS_MANAGED;
     
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_ShowChanges"; // NOI18N
@@ -107,35 +107,12 @@ public class StatusAction  extends ContextAction {
                 SvnClientExceptionHandler.notifyException(ex, true, true);
                 return;
             }
-
             Subversion.getInstance().getStatusCache().refreshCached(context);
             File[] roots = context.getRootFiles();
             for (int i = 0; i < roots.length; i++) {
-                if(support.isCanceled()) {
+                executeStatus(roots[i], client, support);
+                if (support.isCanceled()) {
                     return;
-                }
-                File root = roots[i];
-                ISVNStatus[] statuses = client.getStatus(root, true, false, true);  // cache refires events
-                if(support.isCanceled()) {
-                    return;
-                }
-
-                FileStatusCache cache = Subversion.getInstance().getStatusCache();
-                for (int s = 0; s < statuses.length; s++) {
-                    if(support.isCanceled()) {
-                        return;
-                    }
-                    ISVNStatus status = statuses[s];                    
-                    File file = status.getFile();                    
-                    if(file.isDirectory() && status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
-                        // could have been created externally and the cache ignores by designe 
-                        // a newly created folders children. 
-                        // As this is the place were such files should be recognized,
-                        // we will force the refresh recursivelly. 
-                        cache.refreshRecursively(file);
-                    } else {
-                        cache.refresh(file, status);
-                    }                    
                 }
             }
         } catch (SVNClientException ex) {
@@ -143,6 +120,33 @@ public class StatusAction  extends ContextAction {
                 support.annotate(ex);
             } else {
                 Subversion.LOG.log(Level.INFO, "Action canceled", ex);
+            }
+        }
+    }
+
+    public static void executeStatus(File root, SvnClient client, SvnProgressSupport support) throws SVNClientException {
+        if (support != null && support.isCanceled()) {
+            return;
+        }
+        ISVNStatus[] statuses = client.getStatus(root, true, false, true); // cache refires events
+        if (support != null && support.isCanceled()) {
+            return;
+        }
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        for (int s = 0; s < statuses.length; s++) {
+            if (support != null && support.isCanceled()) {
+                return;
+            }
+            ISVNStatus status = statuses[s];
+            File file = status.getFile();
+            if (file.isDirectory() && status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
+                // could have been created externally and the cache ignores by designe
+                // a newly created folders children.
+                // As this is the place were such files should be recognized,
+                // we will force the refresh recursivelly.
+                cache.refreshRecursively(file);
+            } else {
+                cache.refresh(file, status);
             }
         }
     }

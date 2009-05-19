@@ -120,7 +120,7 @@ public class MergeAction extends ContextAction {
             ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
                 public void perform() {
                     for (File root : roots) {
-                        performMerge(merge, repositoryRoot, root, this);
+                        performMerge(merge, repositoryRoot, root, this, roots.length > 1);
                     }
                 }
             };
@@ -135,8 +135,9 @@ public class MergeAction extends ContextAction {
      * @param repositoryRoot
      * @param file
      * @param support
+     * @param partOfMultiFile 
      */
-    private void performMerge(Merge merge, RepositoryFile repositoryRoot, File file, SvnProgressSupport support) {
+    private void performMerge(Merge merge, RepositoryFile repositoryRoot, File file, SvnProgressSupport support, boolean partOfMultiFile) {
         File[][] split = Utils.splitFlatOthers(new File[] {file} );
         boolean recursive;
         // there can be only 1 root file
@@ -159,11 +160,17 @@ public class MergeAction extends ContextAction {
                 return;
             }
             
-            SVNUrl endUrl = merge.getMergeEndRepositoryFile().replaceLastSegment(file.getName(), 0).getFileUrl();
+            SVNUrl endUrl = merge.getMergeEndRepositoryFile().getFileUrl();
             SVNRevision endRevision = merge.getMergeEndRevision();
 
             final RepositoryFile mergeStartRepositoryFile = merge.getMergeStartRepositoryFile();
-            SVNUrl startUrl = mergeStartRepositoryFile != null ? mergeStartRepositoryFile.replaceLastSegment(file.getName(), 0).getFileUrl() : null;
+            SVNUrl startUrl = mergeStartRepositoryFile != null ? mergeStartRepositoryFile.getFileUrl() : null;
+            if (file.isFile() && partOfMultiFile) {
+                // change the filename ONLY for multi-file data objects, not for folders
+                endUrl = merge.getMergeEndRepositoryFile().replaceLastSegment(file.getName(), 0).getFileUrl();
+                startUrl = mergeStartRepositoryFile != null ? mergeStartRepositoryFile.replaceLastSegment(file.getName(), 0).getFileUrl() : null;
+            }
+            
             SVNRevision startRevision;
             if(startUrl != null) {                
                 startRevision = merge.getMergeStartRevision();
