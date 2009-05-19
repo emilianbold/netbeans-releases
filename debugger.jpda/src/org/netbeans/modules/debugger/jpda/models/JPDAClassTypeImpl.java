@@ -71,6 +71,7 @@ import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
@@ -115,6 +116,8 @@ public class JPDAClassTypeImpl implements JPDAClassType {
             co = null;
         } catch (VMDisconnectedExceptionWrapper ex) {
             co = null;
+        } catch (UnsupportedOperationExceptionWrapper ex) {
+            co = null; // J2ME does not support this.
         }
         return new ClassVariableImpl(debugger, co, "");
     }
