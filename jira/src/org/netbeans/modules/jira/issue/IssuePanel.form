@@ -22,6 +22,16 @@
         </Property>
       </Properties>
     </Component>
+    <Component class="javax.swing.JTextField" name="statusField">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+          </Border>
+        </Property>
+      </Properties>
+    </Component>
   </NonVisualComponents>
   <Properties>
     <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
@@ -137,7 +147,7 @@
                           <Component id="attachmentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="subtaskLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="environmentScrollPane" max="32767" attributes="0"/>
                           <Component id="summaryField" alignment="0" max="32767" attributes="0"/>
@@ -247,7 +257,7 @@
                   <Component id="subtaskLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="dummySubtaskPanel" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="19" max="-2" attributes="0"/>
+              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="summaryLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="summaryField" alignment="3" min="-2" max="-2" attributes="0"/>
