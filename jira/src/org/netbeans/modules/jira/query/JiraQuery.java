@@ -300,6 +300,14 @@ public class JiraQuery extends Query {
         return ret.toArray(new Issue[ret.size()]);
     }
 
+    /**
+     * Returns the filter
+     * @return an instance of FilterDefinition set in UI
+     */
+    public FilterDefinition getFilterDefinition () {
+        return getController().getFilterDefinition();
+    }
+    
     boolean wasRun() {
         return !firstRun;
     }
