@@ -65,14 +65,6 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
         super(env);
     }
 
-//    private String substituteCommand(String script) {
-//        // The PATH stuff makes in much less likely to get a non-standard chmod...
-//        String cmd = ShellUtils.prepareExportString(new String[] {"PATH=/bin:/usr/bin:$PATH"})+ "(chmod 755 " + script + ") && " + script; // NOI18N
-//        log.finest("RemoteScriptSupport runs: " + cmd);
-//        return ShellUtils.wrapCommand(executionEnvironment, cmd);
-//    }
-
-
     private static int emulateFailure = Integer.getInteger("cnd.remote.failure", 0); // NOI18N
 
     public void runScript() {
