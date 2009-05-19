@@ -52,11 +52,8 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     static private MakeOptions instance = null;
     
     // Default make options
-    static final String MAKE_OPTIONS = "makeOptions"; // NOI18N
+    public static final String MAKE_OPTIONS = "makeOptions"; // NOI18N
     static private String defaultMakeOptions = ""; // NOI18N
-    
-    // Platform
-    static final String PLATFORM = "platform"; // NOI18N
     
     // Default Path mode
     public static final int PATH_REL_OR_ABS = 0;
@@ -67,16 +64,19 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
         getString("TXT_AlwaysRelative"),
         getString("TXT_AlwaysAbsolute"),
     };
-    static final String PATH_MODE = "pathMode"; // NOI18N
+    public static final String PATH_MODE = "pathMode"; // NOI18N
     
     // Dependency checking
-    static final String DEPENDENCY_CHECKING = "dependencyChecking"; // NOI18N
+    public static final String DEPENDENCY_CHECKING = "dependencyChecking"; // NOI18N
     
     // Save
-    static final String SAVE = "save";  // NOI18N
+    public static final String SAVE = "save";  // NOI18N
     
     // Reuse
-    static final String REUSE = "reuse";  // NOI18N
+    public static final String REUSE = "reuse";  // NOI18N
+
+    // Display binary files
+    public static final String VIEW_BINARY_FILES = "viewBinaryFiles"; // NOI18N
     
     // packaging Defaults
     static final String DEF_EXE_PERM = "defexeperm"; // NOI18N
@@ -121,17 +121,6 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
             firePropertyChange(MAKE_OPTIONS, oldValue, value);
     }
     
-    // Platform
-//    public int getPlatform() {
-//        return getPreferences().getInt(PLATFORM, Platform.getDefaultPlatform());
-//        }
-//    public void setPlatform(int value) {
-//        int oldValue = getPlatform();
-//        getPreferences().putInt(PLATFORM, value);
-//        if (oldValue != value)
-//            firePropertyChange(PLATFORM, "" + oldValue, "" + value); // NOI18N
-//    }
-    
     // Path Mode
     public int getPathMode() {
         return getPreferences().getInt(PATH_MODE, PATH_REL);
@@ -152,6 +141,17 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
         getPreferences().putBoolean(DEPENDENCY_CHECKING, dependencyChecking);
         if (oldValue != dependencyChecking)
             firePropertyChange(DEPENDENCY_CHECKING, Boolean.valueOf(oldValue), Boolean.valueOf(dependencyChecking));
+    }
+
+    // Display binary files
+    public boolean getViewBinaryFiles() {
+        return getPreferences().getBoolean(VIEW_BINARY_FILES, false);
+    }
+    public void setViewBinaryFiles(boolean viewBinaryFiles) {
+        boolean oldValue = getViewBinaryFiles();
+        getPreferences().putBoolean(VIEW_BINARY_FILES, viewBinaryFiles);
+        if (oldValue != viewBinaryFiles)
+            firePropertyChange(VIEW_BINARY_FILES, Boolean.valueOf(oldValue), Boolean.valueOf(viewBinaryFiles));
     }
     
     // Save
