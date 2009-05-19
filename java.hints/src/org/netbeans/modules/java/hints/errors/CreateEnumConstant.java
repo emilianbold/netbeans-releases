@@ -43,10 +43,13 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.lang.model.element.Modifier;
@@ -133,10 +136,17 @@ class CreateEnumConstant implements Fix {
                 ModifiersTree modds = make.Modifiers(mods, Collections.<AnnotationTree>emptyList());
                 VariableTree var = make.Variable(modds, name, make.Type(proposedType), null);
 
-                ArrayList<Tree> newMembers = new ArrayList<Tree>();
-                newMembers.addAll(oldEnumTree.getMembers());
-                newMembers.add(var);
+                List<? extends Tree> members = oldEnumTree.getMembers();
+                ArrayList<Tree> newMembers = new ArrayList<Tree>(members);
+                int pos = 0;
+                for (Iterator<? extends Tree> it = members.iterator(); it.hasNext();) {
+                    Tree t = it.next();
+                    if (t.getKind() == Kind.VARIABLE) {
+                        pos = members.indexOf(t);
+                    }
+                }
 
+                newMembers.add(pos+1, var);
                 ClassTree enumm = make.Enum(oldEnumTree.getModifiers(), oldEnumTree.getSimpleName(), oldEnumTree.getImplementsClause(), newMembers);
 //                ClassTree decl = GeneratorUtilities.get(working).insertClassMember(targetTree, var);
                 working.rewrite(targetTree, enumm);
