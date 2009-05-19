@@ -99,7 +99,7 @@ public class ApiTest extends NbTestCase {
         return Level.FINE;
     }
     
-    public void testCheckout() throws MalformedURLException, SVNClientException {
+    public void testCheckout() throws MalformedURLException, SVNClientException, IOException {
         FileUtils.deleteRecursively(workDir);
         // XXX use onw repo
         TestKit.mkdirs(repoDir, "folder1");
@@ -141,7 +141,7 @@ public class ApiTest extends NbTestCase {
 
     }
 
-    public void testCheckoutLocalLevel() throws MalformedURLException, SVNClientException {
+    public void testCheckoutLocalLevel() throws MalformedURLException, SVNClientException, IOException {
         FileUtils.deleteRecursively(workDir);
         TestKit.mkdirs(repoDir, "testCheckoutLocalLevelfolder1/folder2/folder3");
         String url = TestUtilities.formatFileURL(repoDir) + "/testCheckoutLocalLevelfolder1/folder2";
@@ -239,7 +239,7 @@ public class ApiTest extends NbTestCase {
         assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("https://peterp.czech.sun.com:440/svnsecure"));
     }
 
-    public void testOpenCheckoutWizard () throws MalformedURLException {
+    public void testOpenCheckoutWizard () throws MalformedURLException, IOException {
         SvnModuleConfig.getDefault().getPreferences().put(CheckoutStep.CHECKOUT_DIRECTORY, getWorkDirPath());
         org.netbeans.modules.subversion.api.Subversion.openCheckoutWizard("https://kenai.com/svn/motorbikediary~source-code-repository");
     }
