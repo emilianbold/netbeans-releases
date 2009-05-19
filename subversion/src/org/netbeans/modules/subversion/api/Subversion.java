@@ -324,15 +324,16 @@ public class Subversion {
 
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
 
+        if (!getSubversion().checkClientAvailable()) {
+            throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
+        }
+
         RepositoryConnection conn = new RepositoryConnection(repositoryUrl);
 
         SVNUrl svnUrl = conn.getSvnUrl();
         SVNRevision svnRevision = conn.getSvnRevision();
 
         SvnClient client = getClient(svnUrl, username, password);
-        if(client == null) {
-            throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
-        }
 
         RepositoryFile[] repositoryFiles;
         if(repoRelativePaths.length == 0 || (repoRelativePaths.length == 1 && repoRelativePaths[0].trim().equals(""))) {
@@ -419,6 +420,10 @@ public class Subversion {
      * @throws IOException when an error occurrs
      */
     public static void commit(final File[] roots, final String user, final String password, final String message) throws IOException {
+        if (!getSubversion().checkClientAvailable()) {
+            throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
+        }
+        
         FileStatusCache cache = getSubversion().getStatusCache();
         File[] files = cache.listFiles(roots, FileInformation.STATUS_LOCAL_CHANGE);
 
@@ -438,9 +443,6 @@ public class Subversion {
 
         try {
             final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
-            if (!getSubversion().checkClientAvailable()) {
-                throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
-            }
             RequestProcessor rp = getSubversion().getRequestProcessor(repositoryUrl);
             SvnProgressSupport support = new SvnProgressSupport() {
                 public void perform() {
