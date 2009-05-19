@@ -49,8 +49,11 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.MissingResourceException;
+import java.util.Random;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
@@ -63,6 +66,7 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.packet.DelayInformation;
+import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -89,8 +93,8 @@ public class ChatPanel extends javax.swing.JPanel {
         styleSheet.addRule(bodyRule);
         styleSheet.addRule(".buddy {color: black; font-weight: bold;}"); // NOI18N
         styleSheet.addRule(".time {color: lightgrey;"); // NOI18N
-        styleSheet.addRule(".message {color: lightgrey;"); // NOI18N
-        styleSheet.addRule(".date {color: #FF9933;"); // NOI18N
+        styleSheet.addRule(".message {color: lightgrey; padding: 3px;"); // NOI18N
+        styleSheet.addRule(".date {color: #cc9922; padding: 7px 0;"); // NOI18N
 
 
 //        users.setCellRenderer(new BuddyListCellRenderer());
@@ -102,6 +106,14 @@ public class ChatPanel extends javax.swing.JPanel {
         KenaiConnection.getDefault().join(chat,new ChatListener());
         //KenaiConnection.getDefault().join(chat);
         inbox.setBackground(Color.WHITE);
+        inbox.addHyperlinkListener(new HyperlinkListener() {
+
+            public void hyperlinkUpdate(HyperlinkEvent e) {
+                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    URLDisplayer.getDefault().showURL(e.getURL());
+                }
+            }
+        });
         outbox.setBackground(Color.WHITE);
         splitter.setResizeWeight(0.9);
         refreshOnlineStatus();
@@ -116,6 +128,11 @@ public class ChatPanel extends javax.swing.JPanel {
 
     private String removeTags(String body) {
         return body.replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\n", "<br>"); // NOI18N
+    }
+
+    private String replaceLinks(String removeTags) {
+        // This regexp works quite nice, should be OK in most cases (does not handle [.,?!] in the end of the URL)
+        return removeTags.replaceAll("(http|https|ftp)://([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,4}(/[^ ]*)*", "<a href=\"$0\">$0</a>"); //NOI18N
     }
 
 //    void setUpPrivateMessages() {
@@ -291,21 +308,21 @@ public class ChatPanel extends javax.swing.JPanel {
                 }
                 return;
             }
-        try {
-            if (!KenaiConnection.getDefault().isConnected()) {
-                try {
-                    KenaiConnection.getDefault().reconnect();
-                } catch (XMPPException xMPPException) {
-                    JOptionPane.showMessageDialog(this, xMPPException.getMessage());
-                    return;
+            try {
+                if (!KenaiConnection.getDefault().isConnected()) {
+                    try {
+                        KenaiConnection.getDefault().reconnect();
+                    } catch (XMPPException xMPPException) {
+                        JOptionPane.showMessageDialog(this, xMPPException.getMessage());
+                        return;
+                    }
                 }
+                muc.sendMessage(outbox.getText().trim());
+            } catch (XMPPException ex) {
+                Exceptions.printStackTrace(ex);
             }
-            muc.sendMessage(outbox.getText().trim());
-        } catch (XMPPException ex) {
-            Exceptions.printStackTrace(ex);
+            outbox.setText("");
         }
-        outbox.setText("");
-    }                                          
     }//GEN-LAST:event_keyTyped
 
 
@@ -321,22 +338,39 @@ public class ChatPanel extends javax.swing.JPanel {
 
 
     private Date lastDatePrinted;
+    private Date lastMessageDate;
+    private String lastNickPrinted = null;
 
     protected void insertMessage(Message message) {
         try {
             HTMLDocument doc = (HTMLDocument) inbox.getStyledDocument();
             final Date timestamp = getTimestamp(message);
+            String fromRes = StringUtils.parseResource(message.getFrom());
+            Random random = new Random(fromRes.hashCode());
+            float randNum = random.nextFloat();
+            Color headerColor = Color.getHSBColor(randNum, 0.1F, 0.95F );
+            Color messageColor = Color.getHSBColor(randNum, 0.05F, 1.0F );
+            boolean printheader = ((lastNickPrinted != null)?(!lastNickPrinted.equals(fromRes)):true); //Nickname is different from the last one, or...
+            printheader |= (lastMessageDate != null && timestamp != null)?(timestamp.getTime() > lastMessageDate.getTime() + 120000):true;
+            lastNickPrinted = fromRes;
+            lastMessageDate = timestamp;
             if (!isSameDate(lastDatePrinted,timestamp)) {
                 lastDatePrinted = timestamp;
+                printheader = true;
                 String d = "<table border=\"0\" borderwith=\"0\" width=\"100%\"><tbody><tr><td class=\"date\" align=\"left\">" + // NOI18N
                     (isToday(timestamp)?NbBundle.getMessage(ChatPanel.class, "LBL_Today"):DateFormat.getDateInstance().format(timestamp)) + "</td><td class=\"date\" align=\"right\">" + // NOI18N
                     DateFormat.getTimeInstance(DateFormat.SHORT).format(timestamp) + "</td></tr></tbody></table>"; // NOI18N
                 editorKit.insertHTML(doc, doc.getLength(), d, 0, 0, null);
             }
-            String text = "<table border=\"0\" borderwith=\"0\" width=\"100%\"><tbody><tr><td class=\"buddy\" align=\"left\">"+ // NOI18N
-                    StringUtils.parseResource(message.getFrom()) + "</td><td class=\"time\" align=\"right\">" + // NOI18N
-                    DateFormat.getTimeInstance(DateFormat.SHORT).format(getTimestamp(message)) + "</td></tr></tbody></table>" + // NOI18N
-                    "<div class=\"message\">" + removeTags(message.getBody()) + "</div>"; // NOI18N
+            String text = "";
+            if (printheader) {
+                text += "<table border=\"0\" borderwith=\"0\" width=\"100%\" style=\"background-color: rgb(" + headerColor.getRed() + "," + headerColor.getGreen() + "," + headerColor.getBlue() + //NOI18N
+                    ")\"><tbody><tr><td class=\"buddy\" align=\"left\">"+ // NOI18N
+                    fromRes + "</td><td class=\"time\" align=\"right\">" + // NOI18N
+                    DateFormat.getTimeInstance(DateFormat.SHORT).format(getTimestamp(message)) + "</td></tr></tbody></table>"; // NOI18N
+            }
+            text += "<div class=\"message\" style=\"background-color: rgb(" + messageColor.getRed() + "," + messageColor.getGreen() + "," + messageColor.getBlue() + //NOI18N
+                    ")\">" + replaceLinks(removeTags(message.getBody())) + "</div>"; // NOI18N
 
             editorKit.insertHTML(doc, doc.getLength(), text, 0, 0, null);
         } catch (IOException ex) {
