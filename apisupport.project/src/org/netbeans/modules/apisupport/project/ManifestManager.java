@@ -268,8 +268,8 @@ public final class ManifestManager {
             String pp = attr.getValue(BUNDLE_EXPORT_PACKAGE);
             if (pp != null) {
                 List<PackageExport> arr = new ArrayList<PackageExport>();
-                for (String p : pp.split(",")) {
-                    arr.add(new PackageExport(p.trim(), false));
+                for (String p : pp.replaceAll("\"[^\"]*\"", "").split(",")) {
+                    arr.add(new PackageExport(p.replaceAll(";.*$", "").trim(), false));
                 }
                 publicPackages = arr.toArray(new PackageExport[0]);
             }
