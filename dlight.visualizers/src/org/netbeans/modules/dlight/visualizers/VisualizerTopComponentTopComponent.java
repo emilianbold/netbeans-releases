@@ -105,8 +105,10 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
     @Override
     protected void componentActivated() {
         super.componentActivated();
-        viewComponent.requestFocus();
-        viewComponent.requestFocusInWindow();
+        if (viewComponent != null){
+            viewComponent.requestFocus();
+            viewComponent.requestFocusInWindow();
+        }
     }
 
 
