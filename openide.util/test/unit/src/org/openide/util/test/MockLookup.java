@@ -129,7 +129,7 @@ public class MockLookup extends ProxyLookup {
         Lookup projects = Lookups.forPath("Services");
         Collection<?> initialize = projects.lookupAll(Object.class);
         //System.err.println("all: " + initialize);
-        setLookup(Lookups.fixed(instances), Lookups.metaInfServices(l), projects, Lookups.singleton(l));
+        setLookup(Lookups.fixed(instances), Lookups.metaInfServices(l), Lookups.singleton(l), projects);
     }
 
 }
