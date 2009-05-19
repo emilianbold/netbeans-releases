@@ -67,6 +67,7 @@ class OQLLexer implements Lexer<OQLTokenId> {
         IN_FROM,
         IN_WHERE,
         IN_CLASSNAME,
+        IN_CLASSID,
         PLAIN_JS,
         FROM,
         FROM_INSTANCEOF,
@@ -81,6 +82,7 @@ class OQLLexer implements Lexer<OQLTokenId> {
                                 tokenFactory;
     private State               state = State.INIT;
     final private Pattern       classPattern = Pattern.compile("(\\[*)[a-z]+(?:[a-z 0-9]*)(?:[\\. \\$][a-z 0-9]+)*(\\[\\])*", Pattern.CASE_INSENSITIVE); // NOI18N
+    final private Pattern       classIdPattern = Pattern.compile("(0X)?([0-9 a-f A-F]+)");
 
 
     OQLLexer (LexerRestartInfo<OQLTokenId> info) {
@@ -229,9 +231,14 @@ class OQLLexer implements Lexer<OQLTokenId> {
                 case IN_CLASSNAME: {
                     if (Character.isWhitespace(actChar)) {
                         String lastToken = input.readText().toString().toUpperCase();
-                        Matcher matcher = classPattern.matcher(lastToken.trim());
-                        if (matcher.matches()) {
-                            if ((isEmpty(matcher.group(1)) ? 0 : 1) + (isEmpty(matcher.group(2)) ? 0 : 1) > 1) {
+                        Matcher idMatcher = classIdPattern.matcher(lastToken.trim());
+                        if (idMatcher.matches()) {
+                            state = State.CLASS_ALIAS;
+                            return tokenFactory.createToken(OQLTokenId.CLAZZ);
+                        }
+                        Matcher nameMatcher = classPattern.matcher(lastToken.trim());
+                        if (nameMatcher.matches()) {
+                            if ((isEmpty(nameMatcher.group(1)) ? 0 : 1) + (isEmpty(nameMatcher.group(2)) ? 0 : 1) > 1) {
                                 return tokenFactory.createToken(OQLTokenId.CLAZZ_E);
 //                                input.backup(input.readLength());
                             }
