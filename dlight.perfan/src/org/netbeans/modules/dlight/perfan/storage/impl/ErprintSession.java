@@ -39,7 +39,6 @@
 package org.netbeans.modules.dlight.perfan.storage.impl;
 
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
@@ -94,13 +93,16 @@ public class ErprintSession {
         if (er_print == null || restart) {
             stop_er_print();
             er_print = new Erprint(npb, id);
-        }
 
-        try {
             er_print.addLock();
             applyFilters();
-        } catch (IllegalStateException ex) {
-            throw new InterruptedIOException();
+        } else {
+            try {
+                er_print.addLock();
+            } catch (IllegalStateException ex) {
+                // OK... it is termineted. so don't add lock
+                // TODO: review
+            }
         }
 
         return er_print;
