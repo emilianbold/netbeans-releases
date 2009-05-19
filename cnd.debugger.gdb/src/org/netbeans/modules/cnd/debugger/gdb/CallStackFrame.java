@@ -50,6 +50,7 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
@@ -312,7 +313,24 @@ public class CallStackFrame {
                                 if (span[0] <= reference.getStartOffset() && reference.getEndOffset() <= span[1]) {
                                     CsmObject referencedObject = reference.getReferencedObject();
                                     if (CsmKindUtilities.isVariable(referencedObject)) {
-                                        autos.add(reference.getText().toString());
+                                        StringBuilder sb = new StringBuilder(reference.getText());
+                                        if (context.size() > 1) {
+                                            outer: for (int i = context.size()-1; i >= 0; i--) {
+                                                CppTokenId token = context.getToken(i);
+                                                switch (token) {
+                                                    case DOT:
+                                                    case ARROW:
+                                                    case SCOPE:
+                                                        break;
+                                                    default: break outer;
+                                                }
+                                                if (i > 0) {
+                                                    sb.insert(0, token.fixedText());
+                                                    sb.insert(0, context.getReference(i-1).getText());
+                                                }
+                                            }
+                                        }
+                                        autos.add(sb.toString());
                                     } else if (enableMacros && CsmKindUtilities.isMacro(referencedObject)) {
                                         String txt = reference.getText().toString();
                                         int[] macroExpansionSpan = CsmMacroExpansion.getMacroExpansionSpan(document, reference.getStartOffset(), false);

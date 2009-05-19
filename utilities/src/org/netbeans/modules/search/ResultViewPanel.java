@@ -43,6 +43,8 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.EventQueue;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -65,6 +67,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
@@ -168,7 +171,7 @@ class ResultViewPanel extends JPanel{
     private SearchTask task;
 
     public ResultViewPanel(SearchTask task) {
-        setLayout(new BorderLayout(0, 5));
+        setLayout(new GridBagLayout());
         arrowUpdater = new ArrowStatusUpdater(this);
 
         this.task = task;
@@ -227,6 +230,9 @@ class ResultViewPanel extends JPanel{
             }
         });
 
+        // Toolbar separator
+        JSeparator toolbarSeparator = new JSeparator();
+        toolbarSeparator.setOrientation(SwingConstants.VERTICAL);
 
         //Buttons panel
         btnShowDetails.addActionListener(new ActionListener(){
@@ -276,10 +282,53 @@ class ResultViewPanel extends JPanel{
         buttonsPanel.add(btnModifySearch);
         buttonsPanel.add(btnStop);
 
-        //add panels to container
-        add(toolBar, BorderLayout.WEST);
-        add(resultsPanel, BorderLayout.CENTER);
-        add(buttonsPanel, BorderLayout.SOUTH);
+        // Buttons panel separator
+        JSeparator buttonsPanelSeparator = new JSeparator();
+        buttonsPanelSeparator.setOrientation(SwingConstants.HORIZONTAL);
+
+
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
+        add(toolBar, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
+        add(toolbarSeparator, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(resultsPanel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        add(buttonsPanelSeparator, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.ipady = 7;
+        add(buttonsPanel, gridBagConstraints);
 
         //issue #46261 - "Search Results window must be opaque under GTK"
         setOpaque(true);

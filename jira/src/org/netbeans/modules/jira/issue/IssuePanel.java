@@ -102,6 +102,7 @@ public class IssuePanel extends javax.swing.JPanel {
         originalEstimateField.setBackground(getBackground());
         remainingEstimateField.setBackground(getBackground());
         timeSpentField.setBackground(getBackground());
+        resolutionField.setBackground(getBackground());
         BugtrackingUtil.fixFocusTraversalKeys(environmentArea);
         BugtrackingUtil.fixFocusTraversalKeys(addCommentArea);
         BugtrackingUtil.issue163946Hack(componentScrollPane);
@@ -120,7 +121,6 @@ public class IssuePanel extends javax.swing.JPanel {
         initRenderers();
         initProjectCombo();
         initPriorityCombo();
-        initStatusCombo();
         initResolutionCombo();
         initHeaderLabel();
         initCommentsPanel();
@@ -215,9 +215,10 @@ public class IssuePanel extends javax.swing.JPanel {
         priorityCombo.setModel(model);
     }
 
-    private void initStatusCombo() {
-        JiraStatus[] status = issue.getRepository().getConfiguration().getStatuses();
-        DefaultComboBoxModel model = new DefaultComboBoxModel(status);
+    private void initStatusCombo(JiraStatus status) {
+        List<JiraStatus> statusList = allowedStatusTransitions(status);
+        JiraStatus[] statuses = statusList.toArray(new JiraStatus[statusList.size()]);
+        DefaultComboBoxModel model = new DefaultComboBoxModel(statuses);
         statusCombo.setModel(model);
     }
 
@@ -262,22 +263,24 @@ public class IssuePanel extends javax.swing.JPanel {
         String creation = dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.CREATION), true);
         String createdTxt = MessageFormat.format(createdFormat, creation, reporter);
         createdField.setText(createdTxt);
-        reloadField(projectCombo, config.getProjectById(projectId));
-        reloadField(issueTypeCombo, config.getIssueTypeById(issue.getFieldValue(NbJiraIssue.IssueField.TYPE)));
-        reloadField(summaryField, issue.getFieldValue(NbJiraIssue.IssueField.SUMMARY));
-        reloadField(priorityCombo, config.getPriorityById(issue.getFieldValue(NbJiraIssue.IssueField.PRIORITY)));
+        reloadField(projectCombo, config.getProjectById(projectId), NbJiraIssue.IssueField.PROJECT);
+        reloadField(issueTypeCombo, config.getIssueTypeById(issue.getFieldValue(NbJiraIssue.IssueField.TYPE)), NbJiraIssue.IssueField.TYPE);
+        initStatusCombo(config.getStatusById(issue.getFieldValue(NbJiraIssue.IssueField.STATUS)));
+        reloadField(summaryField, issue.getFieldValue(NbJiraIssue.IssueField.SUMMARY), NbJiraIssue.IssueField.SUMMARY);
+        reloadField(priorityCombo, config.getPriorityById(issue.getFieldValue(NbJiraIssue.IssueField.PRIORITY)), NbJiraIssue.IssueField.PRIORITY);
         List<String> componentIds = issue.getFieldValues(NbJiraIssue.IssueField.COMPONENT);
-        reloadField(componentList, componentsByIds(projectId, componentIds));
+        reloadField(componentList, componentsByIds(projectId, componentIds), NbJiraIssue.IssueField.COMPONENT);
         List<String> affectsVersionIds = issue.getFieldValues(NbJiraIssue.IssueField.AFFECTSVERSIONS);
-        reloadField(affectsVersionList, versionsByIds(projectId, affectsVersionIds));
+        reloadField(affectsVersionList, versionsByIds(projectId, affectsVersionIds),NbJiraIssue.IssueField.AFFECTSVERSIONS);
         List<String> fixVersionIds = issue.getFieldValues(NbJiraIssue.IssueField.FIXVERSIONS);
-        reloadField(fixVersionList, versionsByIds(projectId, fixVersionIds));
-        reloadField(statusCombo, config.getStatusById(issue.getFieldValue(NbJiraIssue.IssueField.STATUS)));
-        reloadField(resolutionCombo, config.getResolutionById(issue.getFieldValue(NbJiraIssue.IssueField.RESOLUTION)));
-        reloadField(assigneeField, config.getUser(issue.getFieldValue(NbJiraIssue.IssueField.ASSIGNEE)).getFullName());
-        reloadField(environmentArea, issue.getFieldValue(NbJiraIssue.IssueField.ENVIRONMENT));
-        reloadField(updatedField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.MODIFICATION), true));
-        reloadField(dueField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.DUE), false));
+        reloadField(fixVersionList, versionsByIds(projectId, fixVersionIds), NbJiraIssue.IssueField.FIXVERSIONS);
+        Resolution resolution = config.getResolutionById(issue.getFieldValue(NbJiraIssue.IssueField.RESOLUTION));
+        reloadField(resolutionField, (resolution==null) ? "" : resolution.getName(), NbJiraIssue.IssueField.RESOLUTION); // NOI18N
+        reloadField(statusCombo, config.getStatusById(issue.getFieldValue(NbJiraIssue.IssueField.STATUS)), NbJiraIssue.IssueField.STATUS);
+        reloadField(assigneeField, config.getUser(issue.getFieldValue(NbJiraIssue.IssueField.ASSIGNEE)).getFullName(), NbJiraIssue.IssueField.ASSIGNEE);
+        reloadField(environmentArea, issue.getFieldValue(NbJiraIssue.IssueField.ENVIRONMENT), NbJiraIssue.IssueField.ENVIRONMENT);
+        reloadField(updatedField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.MODIFICATION), true), NbJiraIssue.IssueField.MODIFICATION);
+        reloadField(dueField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.DUE), false), NbJiraIssue.IssueField.DUE);
 
         // Work-log
         String originalEstimateTxt = issue.getFieldValue(NbJiraIssue.IssueField.INITIAL_ESTIMATE);
@@ -288,9 +291,9 @@ public class IssuePanel extends javax.swing.JPanel {
             // originalEstimate is sometimes 0 (incorrectly)
             originalEstimate = remainintEstimate + timeSpent;
         }
-        reloadField(originalEstimateField, workBySeconds(originalEstimate, false));
-        reloadField(remainingEstimateField, workBySeconds(remainintEstimate, true));
-        reloadField(timeSpentField, workBySeconds(timeSpent, false));
+        reloadField(originalEstimateField, workBySeconds(originalEstimate, false), NbJiraIssue.IssueField.INITIAL_ESTIMATE);
+        reloadField(remainingEstimateField, workBySeconds(remainintEstimate, true), NbJiraIssue.IssueField.ESTIMATE);
+        reloadField(timeSpentField, workBySeconds(timeSpent, false), NbJiraIssue.IssueField.ACTUAL);
         int scale = Math.max(originalEstimate, timeSpent);
         setupWorkLogPanel(originalEstimatePanel, ORIGINAL_ESTIMATE_COLOR, Color.lightGray, originalEstimate, scale-originalEstimate);
         setupWorkLogPanel(remainingEstimatePanel, Color.lightGray, REMAINING_ESTIMATE_COLOR, timeSpent, scale-timeSpent);
@@ -308,7 +311,7 @@ public class IssuePanel extends javax.swing.JPanel {
         BugtrackingUtil.keepFocusedComponentVisible(attachmentsPanel);
     }
 
-    private void reloadField(JComponent fieldComponent, Object fieldValue) {
+    private void reloadField(JComponent fieldComponent, Object fieldValue, NbJiraIssue.IssueField field) {
         if (fieldComponent instanceof JComboBox) {
             ((JComboBox)fieldComponent).setSelectedItem(fieldValue);
         } else if (fieldComponent instanceof JTextComponent) {
@@ -325,6 +328,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 }
             }
         }
+        initialValues.put(field, fieldValue);
     }
 
     private void storeFieldValue(NbJiraIssue.IssueField field, JComboBox combo) {
@@ -376,6 +380,33 @@ public class IssuePanel extends javax.swing.JPanel {
         }
         if (issue.getTaskData().isNew() || !identical) {
             issue.setFieldValues(field, values);
+        }
+    }
+
+    private void storeStatusAndResolution() {
+        Object statusValue = initialValues.get(NbJiraIssue.IssueField.STATUS);
+        Object selectedValue = statusCombo.getSelectedItem();
+        if (!(statusValue instanceof JiraStatus) || (!(selectedValue instanceof JiraStatus))) {
+            return; // should not happen
+        }
+        JiraStatus initialStatus = (JiraStatus)statusValue;
+        JiraStatus selectedStatus = (JiraStatus)selectedValue;
+        if (initialStatus.equals(selectedStatus)) {
+            return; // no change
+        }
+        String statusName = selectedStatus.getName();
+        if (statusName.equals(STATUS_OPEN)) {
+            issue.stopProgress();
+        } else if (statusName.equals(STATUS_IN_PROGRESS)) {
+            issue.startProgress();
+        } else if (statusName.equals(STATUS_REOPENED)) {
+            issue.reopen(null);
+        } else if (statusName.equals(STATUS_RESOLVED)) {
+            Resolution resolution = (Resolution)resolutionCombo.getSelectedItem();
+            issue.resolve(resolution, null);
+        } else if (statusName.equals(STATUS_CLOSED)) {
+            Resolution resolution = (Resolution)resolutionCombo.getSelectedItem();
+            issue.close(resolution, null);
         }
     }
 
@@ -493,6 +524,39 @@ public class IssuePanel extends javax.swing.JPanel {
         // PENDING
     }
 
+    // This is ugly, but I don't see a better way if we want to have a status combo
+    private static final String STATUS_OPEN = "Open"; // NOI18N
+    private static final String STATUS_IN_PROGRESS = "In Progress"; // NOI18N
+    private static final String STATUS_REOPENED = "Reopened"; // NOI18N
+    private static final String STATUS_RESOLVED = "Resolved"; // NOI18N
+    private static final String STATUS_CLOSED = "Closed"; // NOI18N
+    private List<JiraStatus> allowedStatusTransitions(JiraStatus status) {
+        String statusName = status.getName();
+        List<String> allowedNames = new ArrayList<String>(3);
+        allowedNames.add(statusName);
+        if (STATUS_OPEN.equals(statusName) || STATUS_REOPENED.equals(statusName)) {
+            allowedNames.add(STATUS_IN_PROGRESS);
+            allowedNames.add(STATUS_RESOLVED);
+            allowedNames.add(STATUS_CLOSED);
+        } else if (STATUS_IN_PROGRESS.equals(statusName)) {
+            allowedNames.add(STATUS_OPEN);
+            allowedNames.add(STATUS_RESOLVED);
+            allowedNames.add(STATUS_CLOSED);
+        } else if (STATUS_RESOLVED.equals(statusName)) {
+            allowedNames.add(STATUS_REOPENED);
+            allowedNames.add(STATUS_CLOSED);
+        } else if (STATUS_CLOSED.equals(statusName)) {
+            allowedNames.add(STATUS_REOPENED);
+        }
+        List<JiraStatus> allowedStatuses = new ArrayList<JiraStatus>(allowedNames.size());
+        for (JiraStatus s : issue.getRepository().getConfiguration().getStatuses()) {
+            if (allowedNames.contains(s.getName())) {
+                allowedStatuses.add(s);
+            }
+        }
+        return allowedStatuses;
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -502,6 +566,7 @@ public class IssuePanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        resolutionField = new javax.swing.JTextField();
         headerLabel = new javax.swing.JLabel();
         projectLabel = new javax.swing.JLabel();
         projectCombo = new javax.swing.JComboBox();
@@ -564,6 +629,9 @@ public class IssuePanel extends javax.swing.JPanel {
         remainingEstimatePanel = new javax.swing.JPanel();
         timeSpentPanel = new javax.swing.JPanel();
 
+        resolutionField.setEditable(false);
+        resolutionField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
         setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
 
         projectLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.projectLabel.text")); // NOI18N
@@ -577,6 +645,12 @@ public class IssuePanel extends javax.swing.JPanel {
         issueTypeLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.issueTypeLabel.text")); // NOI18N
 
         statusLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.statusLabel.text")); // NOI18N
+
+        statusCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                statusComboActionPerformed(evt);
+            }
+        });
 
         resolutionLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolutionLabel.text")); // NOI18N
 
@@ -759,22 +833,16 @@ public class IssuePanel extends javax.swing.JPanel {
                             .add(priorityCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(layout.createSequentialGroup()
-                                        .add(projectCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .add(18, 18, 18)
-                                        .add(createdLabel))
-                                    .add(layout.createSequentialGroup()
-                                        .add(issueTypeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .add(18, 18, 18)
-                                        .add(updatedLabel))
-                                    .add(layout.createSequentialGroup()
-                                        .add(statusCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .add(18, 18, 18)
-                                        .add(dueLabel))
-                                    .add(layout.createSequentialGroup()
-                                        .add(resolutionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .add(18, 18, 18)
-                                        .add(assigneeLabel)))
+                                    .add(projectCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(issueTypeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(statusCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(resolutionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .add(18, 18, 18)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(createdLabel)
+                                    .add(updatedLabel)
+                                    .add(dueLabel)
+                                    .add(assigneeLabel))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(assigneeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -997,10 +1065,9 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
         boolean isNew = issue.getTaskData().isNew();
+        storeStatusAndResolution();
         storeFieldValue(NbJiraIssue.IssueField.PROJECT, projectCombo);
         storeFieldValue(NbJiraIssue.IssueField.TYPE, issueTypeCombo);
-        storeFieldValue(NbJiraIssue.IssueField.STATUS, statusCombo);
-        storeFieldValue(NbJiraIssue.IssueField.RESOLUTION, resolutionCombo);
         storeFieldValue(NbJiraIssue.IssueField.PRIORITY, priorityCombo);
         storeFieldValue(NbJiraIssue.IssueField.COMPONENT, componentList);
         storeFieldValue(NbJiraIssue.IssueField.AFFECTSVERSIONS, affectsVersionList);
@@ -1047,6 +1114,28 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         });
     }//GEN-LAST:event_submitButtonActionPerformed
+
+    private void statusComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_statusComboActionPerformed
+        Object selection = statusCombo.getSelectedItem();
+        if (!(selection instanceof JiraStatus)) {
+            return;
+        }
+        String selectedStatus = ((JiraStatus)selection).getName();
+        Object ir = initialValues.get(NbJiraIssue.IssueField.RESOLUTION);
+        boolean initiallyWithResolution = (ir != null) && (ir.toString().trim().length() > 0);
+        boolean nowWithResolution = STATUS_CLOSED.equals(selectedStatus) || STATUS_RESOLVED.equals(selectedStatus);
+        boolean showCombo = !initiallyWithResolution && nowWithResolution;
+        boolean showField = initiallyWithResolution && nowWithResolution;
+        GroupLayout layout = (GroupLayout)getLayout();
+        if (showCombo && (resolutionCombo.getParent() == null)) {
+            layout.replace(resolutionField, resolutionCombo);
+        }
+        if (showField && (resolutionField.getParent() == null)) {
+            layout.replace(resolutionCombo, resolutionField);
+        }
+        resolutionCombo.setVisible(nowWithResolution);
+        resolutionField.setVisible(nowWithResolution);
+    }//GEN-LAST:event_statusComboActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private org.netbeans.modules.bugtracking.util.LinkButton acceptIssueButton;
@@ -1096,6 +1185,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel remainingEstimateLabel;
     private javax.swing.JPanel remainingEstimatePanel;
     private javax.swing.JComboBox resolutionCombo;
+    private javax.swing.JTextField resolutionField;
     private javax.swing.JLabel resolutionLabel;
     private org.netbeans.modules.bugtracking.util.LinkButton resolveIssueButton;
     private javax.swing.JSeparator separator;
