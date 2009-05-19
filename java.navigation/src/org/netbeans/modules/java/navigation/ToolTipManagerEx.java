@@ -460,13 +460,13 @@ final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener
 		bounds.y = loc.y;
 		bounds.width = tip.getWidth();
 		bounds.height = tip.getHeight();
-		
-		if (location.x >= bounds.x && location.x < (bounds.x + bounds.width) &&
-		    location.y >= bounds.y && location.y < (bounds.y + bounds.height)) {
-		    shouldHide = false;
-		} else {
+// issue #158925, no need to preserve window if mouse entered in.
+//		if (location.x >= bounds.x && location.x < (bounds.x + bounds.width) &&
+//		    location.y >= bounds.y && location.y < (bounds.y + bounds.height)) {
+//		    shouldHide = false;
+//		} else {
 		    shouldHide = true;
-		}
+//		}
 	    }
         } 
         

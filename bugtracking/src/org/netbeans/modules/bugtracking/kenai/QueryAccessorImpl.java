@@ -43,32 +43,24 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.kenai.FakeJiraSupport.FakeJiraQueryHandle;
+import org.netbeans.modules.bugtracking.kenai.FakeJiraSupport.FakeJiraQueryResultHandle;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.api.KenaiFeature;
-import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.api.KenaiService;
+import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
 import org.netbeans.modules.kenai.ui.spi.QueryHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
-import org.openide.awt.HtmlBrowser;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -84,12 +76,17 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
 
     public QueryAccessorImpl() {
         Kenai.getDefault().addPropertyChangeListener(this);
+        Dashboard.getDefault().addPropertyChangeListener(this);
     }
 
     @Override
     public List<QueryHandle> getQueries(ProjectHandle project) {
         Repository repo = KenaiRepositories.getInstance().getRepository(project);
         if(repo == null) {
+            FakeJiraSupport jira = FakeJiraSupport.get(project);
+            if(jira != null) {
+                return jira.getQueries();
+            }
             // XXX log this inconvenience
             return Collections.emptyList();
         }
@@ -103,7 +100,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
             } 
         }
         
-        List<QueryHandle> queries = getQueryHandles(repo, true);
+        List<QueryHandle> queries = getQueryHandles(repo, project, true);
 
         ProjectHandleListener pl;
         synchronized(projectListeners) {
@@ -121,24 +118,27 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         return Collections.unmodifiableList(queries);
     }
 
-    private List<QueryHandle> getQueryHandles(Repository repo, boolean newQueriesNeedRefresh) {
+    private List<QueryHandle> getQueryHandles(Repository repo, ProjectHandle project, boolean newQueriesNeedRefresh) {
         Query[] queries = repo.getQueries();
         if(queries == null || queries.length == 0) {
             // XXX is this possible - at least preset queries
             return Collections.emptyList();
         }
-        
-        Map<String, QueryHandle> m = queryHandles.get(repo.getUrl());
-        if(m == null) {
-            m = new HashMap<String, QueryHandle>();
-            queryHandles.put(repo.getUrl(), m);
-        } else {
-            // remove all which aren't in the returned query list
-            List<String> l = new ArrayList<String>();
-            for (Query q : queries) {
-                l.add(q.getDisplayName());
+
+        Map<String, QueryHandle> m;
+        synchronized(queryHandles) {
+            m = queryHandles.get(project.getId());
+            if(m == null) {
+                m = new HashMap<String, QueryHandle>();
+                queryHandles.put(project.getId(), m);
+            } else {
+                // remove all which aren't in the returned query list
+                List<String> l = new ArrayList<String>();
+                for (Query q : queries) {
+                    l.add(q.getDisplayName());
+                }
+                m.keySet().retainAll(l);
             }
-            m.keySet().retainAll(l);
         }
 
         List<QueryHandle> ret = new ArrayList<QueryHandle>();
@@ -160,6 +160,9 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
             QueryHandleImpl qh = (QueryHandleImpl) query;
             qh.refreshIfNeeded();
             return Collections.unmodifiableList(qh.getQueryResults());
+        } else if(query instanceof FakeJiraQueryHandle) {
+            FakeJiraQueryHandle jqh = (FakeJiraQueryHandle) query;
+            return jqh.getQueryResults();
         } else {
             return Collections.emptyList();
         }
@@ -170,7 +173,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         final Repository repo = KenaiRepositories.getInstance().getRepository(project);
         if(repo == null) {
             // XXX dummy jira impl to open the jira page in a browser
-            FakeJiraSupport jira = FakeJiraSupport.create(project);
+            FakeJiraSupport jira = FakeJiraSupport.get(project);
             if(jira != null) {
                 return jira.getOpenProjectListener();
             }
@@ -192,7 +195,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         final Repository repo = KenaiRepositories.getInstance().getRepository(project);
         if(repo == null) {
             // XXX dummy jira impl to open the jira page in a browser
-            FakeJiraSupport jira = FakeJiraSupport.create(project);
+            FakeJiraSupport jira = FakeJiraSupport.get(project);
             if(jira != null) {
                 return jira.getCreateIssueListener();
             }
@@ -211,7 +214,9 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
 
     @Override
     public ActionListener getOpenQueryResultAction(QueryResultHandle result) {
-        if(result instanceof QueryResultHandle) {
+        if(result instanceof QueryResultHandleImpl ||
+           result instanceof FakeJiraQueryResultHandle)
+        {
             return (ActionListener) result;
         } else {
             return null;
@@ -220,7 +225,9 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
 
     @Override
     public ActionListener getDefaultAction(QueryHandle query) {
-        if(query instanceof QueryHandleImpl) {
+        if(query instanceof QueryHandleImpl ||
+           query instanceof FakeJiraQueryHandle)
+        {
             return (ActionListener) query;
         } else {
             return null;
@@ -232,7 +239,17 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(Kenai.PROP_LOGIN) && evt.getNewValue() == null) {
+        if(evt.getPropertyName().equals(Dashboard.PROP_REFRESH_REQUEST)) {
+            synchronized(projectListeners) {
+                projectListeners.clear();
+            }
+            synchronized(kenaiRepoListeners) {
+                kenaiRepoListeners.clear();
+            }
+            synchronized(queryHandles) {
+                queryHandles.clear();
+            }
+        } else if(evt.getPropertyName().equals(Kenai.PROP_LOGIN) && evt.getNewValue() == null) {
             ProjectHandleListener[] pls;
             synchronized(projectListeners) {
                 pls = projectListeners.values().toArray(new ProjectHandleListener[projectListeners.values().size()]);
@@ -266,85 +283,6 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         }
     }
 
-    private static class FakeJiraSupport {
-        private static final String JIRA_SUBSTRING ="kenai.com/jira/"; // NOI18N
-        private String projectUrl;
-        private String createIssueUrl;
-
-        private FakeJiraSupport(String projectUrl, String createIssueUrl) {
-            this.projectUrl = projectUrl;
-            this.createIssueUrl = createIssueUrl;
-        }
-
-        static FakeJiraSupport create(ProjectHandle handle) {
-            KenaiProject project = KenaiRepositories.getKenaiProject(handle);
-            if(project == null) {
-                return null;
-            }
-            String url = null;
-            String issueUrl = null;
-            try {
-                KenaiFeature[] features = project.getFeatures(KenaiService.Type.ISSUES);
-                url = null;
-                issueUrl = null;
-                for (KenaiFeature f : features) {
-                    if (!KenaiService.Names.JIRA.equals(f.getService())) { 
-                        return null;
-                    }
-                    url = f.getLocation();
-                    break;
-                }
-            } catch (KenaiException kenaiException) {
-                Exceptions.printStackTrace(kenaiException);
-            }
-            if(url == null) {
-                return null;
-            }
-            int idx = url.indexOf(JIRA_SUBSTRING);
-            if(idx > -1) {
-                issueUrl =
-                        url.substring(0, idx + JIRA_SUBSTRING.length()) +
-                        "secure/CreateIssue!default.jspa?pname=" + // NOI18N
-                        project.getName();
-
-            }
-            return new FakeJiraSupport(url, issueUrl);
-        }
-
-        ActionListener getCreateIssueListener() {
-            return getJiraListener(createIssueUrl);
-        }
-
-        ActionListener getOpenProjectListener() {
-            return getJiraListener(projectUrl);
-        }
-
-        private ActionListener getJiraListener(String urlString) {
-            final URL url;
-            try {
-                url = new URL(urlString);
-            } catch (MalformedURLException ex) {
-                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-                return null;
-            }
-            return new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
-                        public void run() {
-                            HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
-                            if (displayer != null) {
-                                displayer.showURL (url);
-                            } else {
-                                // XXX nice error message?
-                                BugtrackingManager.LOG.warning("No URLDisplayer found.");             // NOI18N
-                            }
-                        }
-                    });
-                }
-            };
-        }
-    }
-
     private class KenaiRepositoryListener implements PropertyChangeListener {
         private final ProjectHandle ph;
         private Repository repo;
@@ -356,7 +294,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
 
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
-                fireQueriesChanged(ph, getQueryHandles(repo, false));
+                fireQueriesChanged(ph, getQueryHandles(repo, ph, false));
             }
         }
     }

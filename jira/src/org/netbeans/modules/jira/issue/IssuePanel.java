@@ -45,11 +45,16 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -70,6 +75,7 @@ import org.eclipse.mylyn.internal.jira.core.model.Version;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.openide.util.NbBundle;
@@ -86,7 +92,8 @@ public class IssuePanel extends javax.swing.JPanel {
     private NbJiraIssue issue;
     private CommentsPanel commentsPanel;
     private AttachmentsPanel attachmentsPanel;
-    private boolean submitting;
+    private boolean skipReload;
+    private Map<NbJiraIssue.IssueField,Object> initialValues = new HashMap<NbJiraIssue.IssueField,Object>();
 
     public IssuePanel() {
         initComponents();
@@ -106,6 +113,9 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     void setIssue(NbJiraIssue issue) {
+        if (this.issue == null) {
+            attachIssueListener(issue);
+        }
         this.issue = issue;
         initRenderers();
         initProjectCombo();
@@ -236,6 +246,9 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     private void reloadForm(boolean force) {
+        if (skipReload) {
+            return;
+        }
         ResourceBundle bundle = NbBundle.getBundle(IssuePanel.class);
         JiraConfiguration config = issue.getRepository().getConfiguration();
         String projectId = issue.getFieldValue(NbJiraIssue.IssueField.PROJECT);
@@ -286,6 +299,9 @@ public class IssuePanel extends javax.swing.JPanel {
         // Comments
         commentsPanel.setIssue(issue);
         BugtrackingUtil.keepFocusedComponentVisible(commentsPanel);
+        if (force) {
+            addCommentArea.setText(""); // NOI18N
+        }
 
         // Attachments
         attachmentsPanel.setIssue(issue);
@@ -308,6 +324,58 @@ public class IssuePanel extends javax.swing.JPanel {
                     }
                 }
             }
+        }
+    }
+
+    private void storeFieldValue(NbJiraIssue.IssueField field, JComboBox combo) {
+        Object value = combo.getSelectedItem();
+        if (value != null) {
+            String key;
+            switch (field) {
+                case PROJECT: key = ((Project)value).getId(); break;
+                case TYPE: key = ((IssueType)value).getId(); break;
+                case STATUS: key = ((JiraStatus)value).getId(); break;
+                case RESOLUTION: key = ((Resolution)value).getId(); break;
+                case PRIORITY: key = ((Priority)value).getId(); break;
+                default: throw new UnsupportedOperationException();
+            }
+            storeFieldValue(field, key);
+        }
+    }
+
+    private void storeFieldValue(NbJiraIssue.IssueField field, JList combo) {
+        Object[] values = combo.getSelectedValues();
+        List<String> keys = new ArrayList<String>(values.length);
+        for (int i=0; i<values.length; i++) {
+            switch (field) {
+                case COMPONENT: keys.add(((org.eclipse.mylyn.internal.jira.core.model.Component)values[i]).getId()); break;
+                case AFFECTSVERSIONS: keys.add(((Version)values[i]).getId()); break;
+                case FIXVERSIONS: keys.add(((Version)values[i]).getId()); break;
+                default: throw new UnsupportedOperationException();
+            }
+        }
+        storeFieldValue(field, keys);
+    }
+
+    private void storeFieldValue(NbJiraIssue.IssueField field, JTextComponent textComponent) {
+        storeFieldValue(field, textComponent.getText());
+    }
+
+    private void storeFieldValue(NbJiraIssue.IssueField field, String value) {
+        if (issue.getTaskData().isNew() || !value.equals(initialValues.get(field))) {
+            issue.setFieldValue(field, value);
+        }
+    }
+
+    private void storeFieldValue(NbJiraIssue.IssueField field, List<String> values) {
+        Object initValue = initialValues.get(field);
+        boolean identical = false;
+        if (initValue instanceof List) {
+            List initValues = (List)initValue;
+            identical = values.containsAll(initValues) && initValues.containsAll(values);
+        }
+        if (issue.getTaskData().isNew() || !identical) {
+            issue.setFieldValues(field, values);
         }
     }
 
@@ -398,9 +466,6 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     void reloadFormInAWT(final boolean force) {
-        if (submitting) {
-            return;
-        }
         if (EventQueue.isDispatchThread()) {
             reloadForm(force);
         } else {
@@ -410,6 +475,22 @@ public class IssuePanel extends javax.swing.JPanel {
                 }
             });
         }
+    }
+
+    private void attachIssueListener(NbJiraIssue issue) {
+        issue.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName())) {
+                    reloadFormInAWT(false);
+                } else if (Issue.EVENT_ISSUE_SEEN_CHANGED.equals(evt.getPropertyName())) {
+                    updateFieldStatuses();
+                }
+            }
+        });
+    }
+
+    private void updateFieldStatuses() {
+        // PENDING
     }
 
     /** This method is called from within the constructor to
@@ -578,6 +659,11 @@ public class IssuePanel extends javax.swing.JPanel {
         addCommentScrollPane.setViewportView(addCommentArea);
 
         submitButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitButton.text")); // NOI18N
+        submitButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                submitButtonActionPerformed(evt);
+            }
+        });
 
         cancelButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.cancelButton.text")); // NOI18N
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
@@ -908,6 +994,59 @@ public class IssuePanel extends javax.swing.JPanel {
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         reloadForm(true);
     }//GEN-LAST:event_cancelButtonActionPerformed
+
+    private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
+        boolean isNew = issue.getTaskData().isNew();
+        storeFieldValue(NbJiraIssue.IssueField.PROJECT, projectCombo);
+        storeFieldValue(NbJiraIssue.IssueField.TYPE, issueTypeCombo);
+        storeFieldValue(NbJiraIssue.IssueField.STATUS, statusCombo);
+        storeFieldValue(NbJiraIssue.IssueField.RESOLUTION, resolutionCombo);
+        storeFieldValue(NbJiraIssue.IssueField.PRIORITY, priorityCombo);
+        storeFieldValue(NbJiraIssue.IssueField.COMPONENT, componentList);
+        storeFieldValue(NbJiraIssue.IssueField.AFFECTSVERSIONS, affectsVersionList);
+        storeFieldValue(NbJiraIssue.IssueField.FIXVERSIONS, fixVersionList);
+        storeFieldValue(NbJiraIssue.IssueField.SUMMARY, summaryField);
+        storeFieldValue(NbJiraIssue.IssueField.ENVIRONMENT, environmentArea);
+        String submitMessage;
+        if (isNew) {
+            submitMessage = NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitNewMessage"); // NOI18N
+        } else {
+            String submitMessageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitMessage"); // NOI18N
+            submitMessage = MessageFormat.format(submitMessageFormat, issue.getKey());
+        }
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(submitMessage);
+        handle.start();
+        handle.switchToIndeterminate();
+        skipReload = true;
+        if (!isNew && !"".equals(addCommentArea.getText().trim())) { // NOI18N
+            issue.addComment(addCommentArea.getText());
+        }
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                boolean ret = false;
+                try {
+                    ret = issue.submitAndRefresh();
+                    for (File attachment : attachmentsPanel.getNewAttachments()) {
+                        if (attachment.exists()) {
+                            issue.addAttachment(attachment, null, null);
+                        } else {
+                            // PENDING notify user
+                        }
+                    }
+                } finally {
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            skipReload = false;
+                        }
+                    });
+                    handle.finish();
+                    if(ret) {
+                        reloadFormInAWT(true);
+                    }
+                }
+            }
+        });
+    }//GEN-LAST:event_submitButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private org.netbeans.modules.bugtracking.util.LinkButton acceptIssueButton;

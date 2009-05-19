@@ -121,7 +121,7 @@ public class HostInfoImpl implements HostInfo {
             String tmpBase = System.getProperty("java.io.tmpdir"); // NOI18N
 
             if (Utilities.isWindows()) {
-                tmpBase = WindowsSupport.getInstance().normalizePath(tmpBase);
+                tmpBase = WindowsSupport.getInstance().convertToShellPath(tmpBase);
             }
 
             pb.environment().put("TMPBASE", tmpBase); // NOI18N
@@ -134,7 +134,7 @@ public class HostInfoImpl implements HostInfo {
             // So this case sould be handled.
 
             // We safely can do this in the same thread (in this exact case)
-            List<String> errorLines = new ArrayList();
+            List<String> errorLines = new ArrayList<String>();
             InputStream err = hostinfoProcess.getErrorStream();
 
             if (err != null) {

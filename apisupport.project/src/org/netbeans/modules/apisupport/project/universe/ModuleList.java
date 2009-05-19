@@ -1123,11 +1123,15 @@ public final class ModuleList {
     }
     
     /**
-     * Refresh cached module list for the given suite. If there is not such a
+     * Refresh cached module list for the given root dir.
+     *
+     * Root dir is suite dir for suites and suite components,
+     * project dir for standalone modules and NB root dir
+     * for NB.org modules. If there is not such a
      * cached list yet, the method is just no-op.
      */
-    public static void refreshSuiteModuleList(File suiteDir) {
-        sourceLists.remove(suiteDir);
+    public static void refreshModuleListForRoot(File rootDir) {
+        sourceLists.remove(rootDir);
         // XXX knownEntries ?
     }
 

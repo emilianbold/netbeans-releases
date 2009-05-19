@@ -41,13 +41,12 @@
 
 package org.netbeans.modules.apisupport.refactoring;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.StringTokenizer;
-import java.util.regex.Pattern;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -62,7 +61,6 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -75,7 +73,9 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
     
     /** This one is important creature - makes sure that cycles between plugins won't appear */
     private static ThreadLocal semafor = new ThreadLocal();
-    
+
+    private Logger LOG = Logger.getLogger(NbSafeDeleteRefactoringPlugin.class.getName());
+
     /**
      * Creates a new instance of NbRenameRefactoringPlugin
      */
@@ -125,8 +125,7 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
             if (infoholder.isConstructor) {
                 checkConstructorLayer(infoholder, handle.getFileObject(), refactoringElements);
             }
-            
-            err.log("Gonna return problem: " + problem);
+            LOG.log(Level.INFO, "Gonna return problem: " + problem);    // NOI18N
             return problem;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -219,27 +218,27 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
                 manifest.write(stream);
             } catch (FileNotFoundException ex) {
                 //TODO
-                err.notify(ex);
+                LOG.log(Level.WARNING, "Exception during refactoring", ex);    // NOI18N
             } catch (IOException exc) {
                 //TODO
-                err.notify(exc);
+                LOG.log(Level.WARNING, "Exception during refactoring", exc);    // NOI18N
             } catch (IllegalArgumentException exc) {
                 // #161903: thrown from removeSection/Attribute means entry is probably already deleted,
-                // can be ignored here
-                err.notify(exc);
+                // just log here
+                LOG.log(Level.INFO, "IllegalArgumentException thrown from removeSection/Attribute, entry probably already deleted");    // NOI18N
             } finally {
                 if (instream != null) {
                     try {
                         instream.close();
                     } catch (IOException ex) {
-                        err.notify(ex);
+                        LOG.log(Level.WARNING, "Exception during refactoring", ex);    // NOI18N
                     }
                 }
                 if (stream != null) {
                     try {
                         stream.close();
                     } catch (IOException ex) {
-                        err.notify(ex);
+                        LOG.log(Level.WARNING, "Exception during refactoring", ex);    // NOI18N
                     }
                 }
                 if (lock != null) {

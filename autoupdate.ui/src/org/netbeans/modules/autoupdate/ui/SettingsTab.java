@@ -238,7 +238,7 @@ public class SettingsTab extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lUpdateCenters, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.lUpdateCenters.text")); // NOI18N
 
         spTab.setBorder(null);
-        spTab.setDividerLocation(370);
+        spTab.setDividerLocation(Integer.parseInt(NbBundle.getMessage (SettingsTab.class, "SettingsTab_Splitter_DefaultDividerLocation")));
         spTab.setResizeWeight(0.5);
         spTab.setOneTouchExpandable(true);
 
@@ -285,7 +285,7 @@ public class SettingsTab extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(addButton)
-                            .add(spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 785, Short.MAX_VALUE))
+                            .add(spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 789, Short.MAX_VALUE))
                         .add(1, 1, 1))
                     .add(layout.createSequentialGroup()
                         .add(12, 12, 12)
@@ -297,11 +297,11 @@ public class SettingsTab extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(lGeneral)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparatorAdvanced, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 734, Short.MAX_VALUE))
+                        .add(jSeparatorAdvanced, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 738, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(lConnection)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparatorConnection, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE))
+                        .add(jSeparatorConnection, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE))
                     .add(lUpdateCenters))
                 .addContainerGap())
         );

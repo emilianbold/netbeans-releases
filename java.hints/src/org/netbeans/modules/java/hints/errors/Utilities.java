@@ -196,7 +196,10 @@ public class Utilities {
             }
             ExecutableElement iteratorMethod = (ExecutableElement) iterableElement.getEnclosedElements().get(0);
             ExecutableType iteratorMethodType = (ExecutableType) info.getTypes().asMemberOf(declaredType, iteratorMethod);
-            designedType = ((DeclaredType) iteratorMethodType.getReturnType()).getTypeArguments().get(0);
+            List<? extends TypeMirror> typeArguments = ((DeclaredType) iteratorMethodType.getReturnType()).getTypeArguments();
+            if (!typeArguments.isEmpty()) {
+                designedType = typeArguments.get(0);
+            }
         } else if (iterableType.getKind() == TypeKind.ARRAY) {
             designedType = ((ArrayType) iterableType).getComponentType();
         }
@@ -410,6 +413,12 @@ public class Utilities {
             }
             
             return info.getTypes().getDeclaredType((TypeElement) dt.asElement(), typeArguments.toArray(new TypeMirror[0]));
+        }
+
+        if (tm.getKind() == TypeKind.ARRAY) {
+            ArrayType at = (ArrayType) tm;
+
+            return info.getTypes().getArrayType(resolveCapturedTypeInt(info, at.getComponentType()));
         }
         
         return tm;

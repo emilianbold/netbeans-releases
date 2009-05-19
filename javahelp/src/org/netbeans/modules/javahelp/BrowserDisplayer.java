@@ -47,17 +47,15 @@ import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Insets;
-import java.awt.Rectangle;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.UIManager;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingConstants;
-import javax.swing.plaf.basic.BasicButtonUI;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.StyleSheet;
@@ -68,6 +66,8 @@ import javax.swing.text.View;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import javax.swing.JPopupMenu;
+import org.netbeans.modules.javahelp.CopyLinkLocationAction.LinkOwner;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbBundle;
 
@@ -111,7 +111,8 @@ import org.openide.util.NbBundle;
  *
  * @author Marek Slama
  */
-public class BrowserDisplayer extends JButton implements ActionListener, ViewAwareComponent {
+public class BrowserDisplayer extends JButton 
+        implements ActionListener, ViewAwareComponent, LinkOwner {
     private View myView;
     private SimpleAttributeSet textAttribs;
     private HTMLDocument doc;
@@ -122,38 +123,49 @@ public class BrowserDisplayer extends JButton implements ActionListener, ViewAwa
 
     private Cursor origCursor;
 
+    private JPopupMenu popupMenu;
+
     /**
      * Create a secondaryviewer. By default the viewer creates a button with
      * the text of ">"
      */
     public BrowserDisplayer() {
-	super();
-	setMargin(new Insets(0,0,0,0));
-	createLinkLabel();
-	addActionListener(this);
-	origCursor = getCursor();
-        getAccessibleContext().setAccessibleDescription
-        (NbBundle.getMessage(BrowserDisplayer.class,"ACSD_Label"));
-	addMouseListener(new MouseListener() {
-	    public void mouseClicked(MouseEvent e) {
-	    }
+    	super();
+        setMargin(new Insets(0,0,0,0));
+        createLinkLabel();
+        addActionListener(this);
+        origCursor = getCursor();
+        getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(BrowserDisplayer.class,"ACSD_Label"));
+        this.popupMenu =
+                HyperlinkEventProcessor.getPopupMenu(
+                                              new CopyLinkLocationAction(this));
+        addMouseListener(new MouseListener() {
+            public void mouseClicked(MouseEvent e) {
+                setToolTipText(null);
+                if (Utils.isMouseRightClick(e)) {
+                    Utils.showPopupMenu(e, popupMenu, BrowserDisplayer.this);
+                }
+            }
 
-	    public void mouseEntered(MouseEvent e) {
-		setCursor(handCursor);
-	    }
+            public void mouseEntered(MouseEvent e) {
+                setCursor(handCursor);
+                setToolTipText(getContent());
+            }
 
-	    public void mouseExited(MouseEvent e) {
-		setCursor(origCursor);
-	    }
+            public void mouseExited(MouseEvent e) {
+                setCursor(origCursor);
+                setToolTipText(null);
+            }
 
-	    public void mousePressed(MouseEvent e) {
-	    }
+            public void mousePressed(MouseEvent e) {
+            }
 
-	    public void mouseReleased(MouseEvent e) {
-	    }
-	});
+            public void mouseReleased(MouseEvent e) {
+            }
+        });
     }
-    
+
     /**
      * Sets data optained from the View
      */
@@ -537,6 +549,18 @@ public class BrowserDisplayer extends JButton implements ActionListener, ViewAwa
             return;
         }
         HtmlBrowser.URLDisplayer.getDefault().showURL(link);
+    }
+
+    public String getURLExternalForm() {
+        return getContent();
+    }
+
+    public Clipboard getClipboard() {
+        return this.getToolkit().getSystemClipboard();
+    }
+
+    public void lostOwnership(Clipboard clipboard, Transferable contents) {
+        // do nothing
     }
 
 }

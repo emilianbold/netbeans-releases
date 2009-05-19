@@ -78,13 +78,16 @@ public final class ResultBar extends JComponent implements ActionListener{
     private static final Color NOT_COVERED_DARK = new Color(180, 50, 50);
     private static final Color COVERED_LIGHT = new Color(160, 255, 160);
     private static final Color COVERED_DARK = new Color(30, 180, 30);
+    private static final Color NO_TESTS_LIGHT = new Color(200, 200, 200);
+    private static final Color NO_TESTS_DARK = new Color(110, 110, 110);
     private boolean emphasize;
     private boolean selected;
     /** Passed tests percentage:  0.0f <= x <= 100f */
-    private float passedPercentage;
+    private float passedPercentage = 0.0f;
 
     private Timer timer = new Timer(100, this);
     private int phase = 1;
+    private boolean passedReported = false;
 
     public ResultBar() {
         updateUI();
@@ -106,6 +109,7 @@ public final class ResultBar extends JComponent implements ActionListener{
 
     public void setPassedPercentage(float passedPercentage) {
         this.passedPercentage = passedPercentage;
+        this.passedReported = true;
         repaint();
     }
 
@@ -189,57 +193,70 @@ public final class ResultBar extends JComponent implements ActionListener{
         Color notCoveredDark = NOT_COVERED_DARK;
         Color coveredLight = COVERED_LIGHT;
         Color coveredDark = COVERED_DARK;
+        Color noTestsLight = NO_TESTS_LIGHT;
+        Color noTestsDark = NO_TESTS_DARK;
         if (emphasize) {
             coveredDark = coveredDark.darker();
+            notCoveredDark = notCoveredDark.darker();
+            noTestsDark = noTestsDark.darker();
         } else if (selected) {
             coveredLight = coveredLight.brighter();
             coveredDark = coveredDark.darker();
-        }
-        if (emphasize) {
-            notCoveredDark = notCoveredDark.darker();
-        } else if (selected) {
             notCoveredLight = notCoveredLight.brighter();
             notCoveredDark = notCoveredDark.darker();
+            noTestsLight = noTestsLight.brighter();
+            noTestsDark = noTestsDark.darker();
         }
 
-        g2.setPaint(new GradientPaint(0, phase, notCoveredLight, 0, phase + height/2, notCoveredDark, true));
-        g2.fillRect(amountFull, 1, width - 1, height);
-/*
-        g2.setPaint(new GradientPaint(0, 0, notCoveredLight,
-                0, height / 2, notCoveredDark));
-        g2.fillRect(amountFull, 1, width - 1, height / 2);
+        if (passedReported){
+            g2.setPaint(new GradientPaint(0, phase, notCoveredLight, 0, phase + height/2, notCoveredDark, true));
+            g2.fillRect(amountFull, 1, width - 1, height);
+    /*
+            g2.setPaint(new GradientPaint(0, 0, notCoveredLight,
+                    0, height / 2, notCoveredDark));
+            g2.fillRect(amountFull, 1, width - 1, height / 2);
 
-        g2.setPaint(new GradientPaint(0, height / 2, notCoveredDark,
-                0, 2 * height, notCoveredLight));
-        g2.fillRect(amountFull, height / 2, width - 1, height / 2);
-*/
-        g2.setColor(getForeground());
+            g2.setPaint(new GradientPaint(0, height / 2, notCoveredDark,
+                    0, 2 * height, notCoveredLight));
+            g2.fillRect(amountFull, height / 2, width - 1, height / 2);
+    */
+            g2.setColor(getForeground());
 
-        g2.setPaint(new GradientPaint(0, phase, coveredLight, 0, phase + height/2, coveredDark, true));
-        g2.fillRect(1, 1, amountFull, height);
+            g2.setPaint(new GradientPaint(0, phase, coveredLight, 0, phase + height/2, coveredDark, true));
+            g2.fillRect(1, 1, amountFull, height);
 
-/*
-        g2.setPaint(new GradientPaint(0, 0, coveredLight,
-                0, height / 2, coveredDark));
-        g2.fillRect(1, 1, amountFull, height / 2);
+    /*
+            g2.setPaint(new GradientPaint(0, 0, coveredLight,
+                    0, height / 2, coveredDark));
+            g2.fillRect(1, 1, amountFull, height / 2);
 
-        g2.setPaint(new GradientPaint(0, height / 2, coveredDark,
-                0, 2 * height, coveredLight));
-        g2.fillRect(1, height / 2, amountFull, height / 2);
-*/
-        Rectangle oldClip = g2.getClipBounds();
-        if (passedPercentage > 0.0f) {
-            g2.setColor(coveredDark);
-            g2.clipRect(0, 0, amountFull + 1, height);
-            g2.drawRect(0, 0, width - 1, height - 1);
-        }
-        if (passedPercentage < 100.0f) {
-            g2.setColor(notCoveredDark);
+            g2.setPaint(new GradientPaint(0, height / 2, coveredDark,
+                    0, 2 * height, coveredLight));
+            g2.fillRect(1, height / 2, amountFull, height / 2);
+    */
+            Rectangle oldClip = g2.getClipBounds();
+            if (passedPercentage > 0.0f) {
+                g2.setColor(coveredDark);
+                g2.clipRect(0, 0, amountFull + 1, height);
+                g2.drawRect(0, 0, width - 1, height - 1);
+            }
+            if (passedPercentage < 100.0f) {
+                g2.setColor(notCoveredDark);
+                g2.setClip(oldClip);
+                g2.clipRect(amountFull, 0, width, height);
+                g2.drawRect(0, 0, width - 1, height - 1);
+            }
             g2.setClip(oldClip);
-            g2.clipRect(amountFull, 0, width, height);
+        } else {
+            g2.setPaint(new GradientPaint(0, phase, noTestsLight, 0, phase + height/2, noTestsDark, true));
+            g2.fillRect(0, 1, width - 1, height);
+            Rectangle oldClip = g2.getClipBounds();
+            g2.setColor(noTestsDark);
+            g2.setClip(oldClip);
+            g2.clipRect(0, 0, width, height);
             g2.drawRect(0, 0, width - 1, height - 1);
+            g2.setClip(oldClip);
         }
-        g2.setClip(oldClip);
 
         g2.setFont(getFont());
         paintDropShadowText(g2, barRectWidth, barRectHeight);

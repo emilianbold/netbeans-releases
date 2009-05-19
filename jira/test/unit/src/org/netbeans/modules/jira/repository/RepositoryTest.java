@@ -40,6 +40,8 @@
 package org.netbeans.modules.jira.repository;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,6 +49,7 @@ import java.util.List;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.jira.core.JiraCorePlugin;
+import org.eclipse.mylyn.internal.jira.core.service.JiraClientData;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.netbeans.junit.NbTestCase;
@@ -170,6 +173,29 @@ public class RepositoryTest extends NbTestCase {
 //        assertEquals("somari", i.getSummary());
 //    }
 
+    public void testConfigurationData () throws NoSuchFieldException, NoSuchMethodException {
+        Class configurationDataClass = JiraConfiguration.ConfigurationData.class;
+        Field[] declaredFields = JiraClientData.class.getDeclaredFields();
+        for (Field f : declaredFields) {
+            if (Modifier.isPrivate(f.getModifiers())) {
+                continue;
+            }
+            Field confDataField = configurationDataClass.getDeclaredField(f.getName());
+            assertNotNull(confDataField);
+            compareModifiers(f.getModifiers(), confDataField.getModifiers());
+        }
+
+        Method[] declaredMethods = JiraClientData.class.getDeclaredMethods();
+        for (Method m : declaredMethods) {
+            if (Modifier.isPrivate(m.getModifiers())) {
+                continue;
+            }
+            Method confDataMethod = configurationDataClass.getDeclaredMethod(m.getName());
+            assertNotNull(confDataMethod);
+            compareModifiers(m.getModifiers(), confDataMethod.getModifiers());
+        }
+    }
+
     public void testSimpleSearch() throws MalformedURLException, CoreException, JiraException {
         long ts = System.currentTimeMillis();
         String summary1 = "somary";
@@ -248,5 +274,17 @@ public class RepositoryTest extends NbTestCase {
         panel.urlField.setText("");
         panel.userField.setText("");
         panel.psswdField.setText("");
+    }
+
+    private void compareModifiers (int expected, int actual) {
+        // public => public
+        assertTrue(!Modifier.isPublic(expected) || Modifier.isPublic(actual));
+        // protected => protected | public
+        assertTrue(!Modifier.isProtected(expected) || Modifier.isPublic(actual) || Modifier.isProtected(actual));
+        // package-private => public | package-private
+        assertFalse(!(Modifier.isPrivate(expected) || Modifier.isProtected(expected) || Modifier.isPublic(expected))
+                && (Modifier.isPrivate(actual) || Modifier.isProtected(actual)));
+        // static must remain static and vice-versa
+        assertEquals(Modifier.isStatic(expected), Modifier.isStatic(actual));
     }
 }

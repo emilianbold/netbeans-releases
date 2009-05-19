@@ -71,15 +71,15 @@ public final class HostInfoUtils {
         if (hostinfo == null) {
             stream.println("HostInfo is NULL"); // NOI18N
         } else {
-            stream.println("Hostname      : "  + hostinfo.getHostname()); // NOI18N
-            stream.println("OS Family     : "  + hostinfo.getOSFamily()); // NOI18N
-            stream.println("OS            : "  + hostinfo.getOS().getName()); // NOI18N
-            stream.println("OS Version    : "  + hostinfo.getOS().getVersion()); // NOI18N
-            stream.println("OS Bitness    : "  + hostinfo.getOS().getBitness()); // NOI18N
-            stream.println("CPU Family    : "  + hostinfo.getCpuFamily()); // NOI18N
-            stream.println("CPU #         : "  + hostinfo.getCpuNum()); // NOI18N
-            stream.println("shell to use  : "  + hostinfo.getShell()); // NOI18N
-            stream.println("tmpdir to use : "  + hostinfo.getTempDir()); // NOI18N
+            stream.println("Hostname      : " + hostinfo.getHostname()); // NOI18N
+            stream.println("OS Family     : " + hostinfo.getOSFamily()); // NOI18N
+            stream.println("OS            : " + hostinfo.getOS().getName()); // NOI18N
+            stream.println("OS Version    : " + hostinfo.getOS().getVersion()); // NOI18N
+            stream.println("OS Bitness    : " + hostinfo.getOS().getBitness()); // NOI18N
+            stream.println("CPU Family    : " + hostinfo.getCpuFamily()); // NOI18N
+            stream.println("CPU #         : " + hostinfo.getCpuNum()); // NOI18N
+            stream.println("shell to use  : " + hostinfo.getShell()); // NOI18N
+            stream.println("tmpdir to use : " + hostinfo.getTempDir()); // NOI18N
         }
         stream.println("------------"); // NOI18N
     }
@@ -139,8 +139,8 @@ public final class HostInfoUtils {
                 throw new ConnectException();
             }
 
-            NativeProcessBuilder npb = new NativeProcessBuilder(
-                    execEnv, "test").setArguments("-e", fname); // NOI18N
+            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+            npb.setExecutable("test").setArguments("-e", fname); // NOI18N
 
             try {
                 fileExists = npb.call().waitFor() == 0;
@@ -177,9 +177,12 @@ public final class HostInfoUtils {
             List<String> sp = new ArrayList<String>(searchPaths);
 
             if (searchInUserPaths) {
-                npb = new NativeProcessBuilder(execEnv, shell).setArguments("-c", "echo $PATH"); // NOI18N
+                npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+                npb.setExecutable(shell).setArguments("-c", "echo $PATH"); // NOI18N
+
                 p = npb.call();
                 p.waitFor();
+
                 br = new BufferedReader(new InputStreamReader(p.getInputStream()));
                 line = br.readLine();
 
@@ -197,9 +200,12 @@ public final class HostInfoUtils {
                 }
             }
 
-            npb = new NativeProcessBuilder(execEnv, shell).setArguments("-c", cmd.toString()); // NOI18N
+            npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+            npb.setExecutable(shell).setArguments("-c", cmd.toString()); // NOI18N
+
             p = npb.call();
             p.waitFor();
+
             br = new BufferedReader(new InputStreamReader(p.getInputStream()));
             line = br.readLine();
 

@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.spi.impl;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
@@ -51,6 +52,7 @@ import org.netbeans.modules.dlight.spi.support.TimerIDPConfiguration;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 
 public final class TimerTicker
@@ -66,7 +68,7 @@ public final class TimerTicker
 
     static {
         tableMetadata = new DataTableMetadata(TimerIDPConfiguration.TIME_ID,
-            Arrays.asList(TimerIDPConfiguration.TIME_INFO));
+            Arrays.asList(TimerIDPConfiguration.TIME_INFO), null);
     }
 
     TimerTicker(TimerIDPConfiguration configuration) {
@@ -145,5 +147,9 @@ public final class TimerTicker
     @Override
     public String getName() {
         return "Timer"; //NOI18N
+    }
+
+    public void dataFiltersChanged(List<DataFilter> newSet) {
+
     }
 }

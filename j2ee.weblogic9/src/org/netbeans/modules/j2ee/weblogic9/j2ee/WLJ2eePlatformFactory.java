@@ -49,6 +49,7 @@ import java.util.logging.Logger;
 
 import javax.enterprise.deploy.spi.*;
 
+import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.openide.*;
 import org.openide.filesystems.*;
 import org.openide.modules.InstalledFileLocator;
@@ -61,6 +62,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 
 import org.netbeans.modules.j2ee.weblogic9.*;
+import org.openide.util.lookup.Lookups;
 
 /**
  * A sub-class of the J2eePlatformFactory that is set up to return the 
@@ -247,6 +249,14 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             
             return platformRoot;
         }
+
+        @Override
+        public Lookup getLookup() {
+        Lookup baseLookup = Lookups.fixed(new File(getPlatformRoot()));
+        return LookupProviderSupport.createCompositeLookup(baseLookup, "J2EE/DeploymentPlugins/WebLogic/Lookup"); //NOI18N
+        }
+
+
     }
     
 }

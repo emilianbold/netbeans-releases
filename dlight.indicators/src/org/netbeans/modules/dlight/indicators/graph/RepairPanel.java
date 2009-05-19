@@ -93,6 +93,7 @@ public class RepairPanel extends JPanel {
         if (button != null) {
             button.setEnabled(enabled);
         }
+        repaint();
     }
 
     @Override

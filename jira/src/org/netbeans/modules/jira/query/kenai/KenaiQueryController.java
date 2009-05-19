@@ -66,13 +66,10 @@ public class KenaiQueryController extends QueryController
 
     @Override
     public FilterDefinition getFilterDefinition() {
-        return this.filter;
-    }
-
-    @Override
-    public void populate(FilterDefinition filterDefinition) {
-        super.populate(filterDefinition);
-        disableProduct(projectName);
+        if(predefinedQuery) {
+            return this.filter;
+        }
+        return super.getFilterDefinition();
     }
 
     @Override
@@ -84,6 +81,7 @@ public class KenaiQueryController extends QueryController
             panel.modifyButton.setEnabled(false);
             panel.removeButton.setEnabled(false);
         }
+        super.disableProject();
     }
 
     @Override

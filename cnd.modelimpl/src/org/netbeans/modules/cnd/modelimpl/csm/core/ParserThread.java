@@ -97,7 +97,7 @@ public final class ParserThread implements Runnable {
                     Thread currentThread = Thread.currentThread();
                     String oldThreadName = currentThread.getName();
                     FileImpl file = entry.getFile();
-                    currentThread.setName("Parsing "+file.getAbsolutePath()); // NOI18N
+                    currentThread.setName(oldThreadName + ": Parsing "+file.getAbsolutePath()); // NOI18N
                     if (TraceFlags.TRACE_PARSER_QUEUE) {
                         trace("parsing started: " + entry.toString(TraceFlags.TRACE_PARSER_QUEUE_DETAILS)); // NOI18N
                     }

@@ -45,6 +45,9 @@ import javax.management.StandardMBean;
 import org.apache.lucene.index.IndexWriter;
 import org.openide.ErrorManager;
 
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
 /**
  *
  * @author Tomas Zezula
@@ -84,13 +87,15 @@ public class LuceneIndexMBeanImpl extends StandardMBean implements LuceneIndexMB
     public void setMaxBufferedDocs (int nd) {
         this.maxBufferedDocs = nd;
     }
-    
+
+    private static Logger log = Logger.getLogger(LuceneIndexMBeanImpl.class.getName());
     public static synchronized LuceneIndexMBeanImpl getDefault () {
         if (instance == null) {
             try {
                 instance = new LuceneIndexMBeanImpl ();            
             } catch (NotCompliantMBeanException e) {
-                ErrorManager.getDefault().notify(e);                
+                if (log.isLoggable(Level.SEVERE))
+                    log.log(Level.SEVERE, e.getMessage(), e);
             }
         }
         return instance;

@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.impl;
 
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.spi.impl.TableDataProvider;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -51,18 +52,15 @@ import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.openide.util.Exceptions;
 
-
 /**
  * Implements default SQLTableDataProvider for {@link org.netbeans.modules.dlight.core.storage.model.SQLDataStorage}
  */
 public class SQLTableDataProvider implements TableDataProvider {
 
-  private SQLDataStorage storage;
+    private SQLDataStorage storage;
 
-  public SQLTableDataProvider() {
-  }
-
-  
+    public SQLTableDataProvider() {
+    }
 
 //  public String getID() {
 //    return "TableDataProvider";
@@ -84,17 +82,16 @@ public class SQLTableDataProvider implements TableDataProvider {
 //  public List<DataStorageType> getSupportedDataStorageTypes() {
 //    return Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
 //  }
-
-   /**
-   * Attaches DataProvider to the <param>storage</param>.
-   * All data requested by {@link org.netbeans.modules.dlight.core.visualizer.model.Visualizer} will
-   * be extracted from this storage. This method is invoked at the time Visualizer
-   * need to be displayed. See {@link org.netbeans.modules.dlight.core.model.DLightManager#openVisualizer(org.netbeans.modules.dlight.core.model.DLightTool, java.lang.String, org.netbeans.modules.dlight.core.visualizer.model.VisualizerConfiguration) } for more detailes
-   * @param storage {@link org.netbeans.modules.dlight.core.storage.model.DataStorage}
-   */
-  public final void attachTo(DataStorage storage) {
-    this.storage = (SQLDataStorage) storage;
-  }
+    /**
+     * Attaches DataProvider to the <param>storage</param>.
+     * All data requested by {@link org.netbeans.modules.dlight.core.visualizer.model.Visualizer} will
+     * be extracted from this storage. This method is invoked at the time Visualizer
+     * need to be displayed. See {@link org.netbeans.modules.dlight.core.model.DLightManager#openVisualizer(org.netbeans.modules.dlight.core.model.DLightTool, java.lang.String, org.netbeans.modules.dlight.core.visualizer.model.VisualizerConfiguration) } for more detailes
+     * @param storage {@link org.netbeans.modules.dlight.core.storage.model.DataStorage}
+     */
+    public final void attachTo(DataStorage storage) {
+        this.storage = (SQLDataStorage) storage;
+    }
 
 //  /**
 //   * Returns new instance of SQLTableDataProvider
@@ -103,43 +100,44 @@ public class SQLTableDataProvider implements TableDataProvider {
 //  public DataProvider newInstance() {
 //    return new SQLTableDataProvider();
 //  }
-
-  /**
-   * Returns table view to visualize
-   * @param tableMetadata table description to get data from
-   * @return list of {@link org.netbeans.modules.dlight.core.storage.model.DataRow}
-   */
-  public List<DataRow> queryData(DataTableMetadata tableMetadata) {
-    List<Column> columns = tableMetadata.getColumns();
-    List<DataRow> result = new ArrayList<DataRow>();
-    if (tableMetadata == null){
-        return null;
-    }
-    try {
-      ResultSet rs = storage.select(tableMetadata.getName(), columns, tableMetadata.getViewStatement());
-      if (rs == null) {
-        return Collections.emptyList();
-      }
-      List<String> colnames = new ArrayList<String>();
-      for (Column c : columns) {
-        colnames.add(c.getColumnName());
-      }
-      while (rs.next()) {
-        ArrayList<Object> data = new ArrayList<Object>();
-        for (Column c : columns) {
-          data.add(rs.getObject(c.getColumnName()));
+    /**
+     * Returns table view to visualize
+     * @param tableMetadata table description to get data from
+     * @return list of {@link org.netbeans.modules.dlight.core.storage.model.DataRow}
+     */
+    public List<DataRow> queryData(DataTableMetadata tableMetadata) {
+        List<Column> columns = tableMetadata.getColumns();
+        List<DataRow> result = new ArrayList<DataRow>();
+        if (tableMetadata == null) {
+            return null;
         }
-        DataRow dataRow = new DataRow(colnames, data);
-        result.add(dataRow);
-      }
+        try {
+            ResultSet rs = storage.select(tableMetadata.getName(), columns, tableMetadata.getViewStatement());
+            if (rs == null) {
+                return Collections.emptyList();
+            }
+            List<String> colnames = new ArrayList<String>();
+            for (Column c : columns) {
+                colnames.add(c.getColumnName());
+            }
+            while (rs.next()) {
+                ArrayList<Object> data = new ArrayList<Object>();
+                for (Column c : columns) {
+                    data.add(rs.getObject(c.getColumnName()));
+                }
+                DataRow dataRow = new DataRow(colnames, data);
+                result.add(dataRow);
+            }
 
-    } catch (SQLException ex) {
-      Exceptions.printStackTrace(ex);
+        } catch (SQLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return result;
     }
-    return result;
-  }
 
     public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
-        
+    }
+
+    public void dataFiltersChanged(List<DataFilter> newSet) {
     }
 }

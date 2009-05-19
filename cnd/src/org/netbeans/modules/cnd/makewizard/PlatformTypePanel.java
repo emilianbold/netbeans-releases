@@ -258,6 +258,7 @@ public class PlatformTypePanel extends MakefileWizardPanel {
 
 
     /** Create the widgets if not initialized. Also set the RadioButtons */
+    @Override
     public void addNotify() {
 	if (!initialized) {
 	    create();
@@ -275,7 +276,7 @@ public class PlatformTypePanel extends MakefileWizardPanel {
 	    } else if (osname.startsWith("windows")) { // NOI18N
 		getMakefileData().setToolset(MakefileData.GNU_TOOLSET_TYPE);
 		getMakefileData().setMakefileOS(MakefileData.WINDOWS_OS_TYPE);
-	    } else if (osname.startsWith("mac")) { // NOI18N
+	    } else if (osname.startsWith("mac") || osname.startsWith("darwin")) { // NOI18N
 		getMakefileData().setToolset(MakefileData.GNU_TOOLSET_TYPE);
 		getMakefileData().setMakefileOS(MakefileData.MACOSX_OS_TYPE);
 	    } else {
@@ -305,6 +306,7 @@ public class PlatformTypePanel extends MakefileWizardPanel {
     }
 
 
+    @Override
     public void removeNotify() {
 	super.removeNotify();
 	if (sunCollectionRadioButton.isSelected()) {

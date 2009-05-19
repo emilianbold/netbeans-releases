@@ -583,7 +583,11 @@ class OccurenceBuilder {
                 if (!elems.isEmpty()) {
                     OccurenceImpl occurenceImpl = new OccurenceImpl(elems, nodeInfo.getRange(), fileScope);
                     if (!methods.isEmpty()) {
-                        occurenceImpl.setGotoDeclaratin(ModelUtils.getFirst(methods));
+                        final MethodScope meth = ModelUtils.getFirst(methods);
+                        assert meth != null;
+                        if (ModelUtils.nameKindMatch(meth.getTypeScope().getName(), QuerySupport.Kind.EXACT, queryName)) {
+                            occurenceImpl.setGotoDeclaratin(meth);
+                        }
                     }
                     fileScope.addOccurence(occurenceImpl);
                 }

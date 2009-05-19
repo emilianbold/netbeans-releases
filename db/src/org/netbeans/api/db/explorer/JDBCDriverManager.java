@@ -44,16 +44,16 @@ package org.netbeans.api.db.explorer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.db.explorer.action.AddDriverAction;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.WeakSet;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -71,7 +71,7 @@ public final class JDBCDriverManager {
     /**
      * The list of listeners.
      */
-    private WeakSet<JDBCDriverListener> listeners = new WeakSet<JDBCDriverListener> ();
+    private Set<JDBCDriverListener> listeners = new HashSet<JDBCDriverListener> ();
     
     /**
      * 
@@ -231,8 +231,7 @@ public final class JDBCDriverManager {
             listenersCopy = new ArrayList<JDBCDriverListener>(listeners);
         }
         
-        for (Iterator i= listenersCopy.iterator(); i.hasNext();) {
-            JDBCDriverListener listener = (JDBCDriverListener)i.next();
+        for (JDBCDriverListener listener : listenersCopy) {
             listener.driversChanged();
         }
     }

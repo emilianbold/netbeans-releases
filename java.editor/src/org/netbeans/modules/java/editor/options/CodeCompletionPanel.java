@@ -42,6 +42,7 @@
 package org.netbeans.modules.java.editor.options;
 
 import java.awt.Component;
+import java.awt.event.KeyEvent;
 import java.util.prefs.Preferences;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
@@ -510,7 +511,7 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
     private void javaCompletionExcluderDialogTextFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_javaCompletionExcluderDialogTextFieldKeyTyped
         char c = evt.getKeyChar();
         // could use javax.lang.model.SourceVersion.isIdentifier if we had Java 6
-        if (c != ' ' && c != ',' && c != '*' && !String.valueOf(c).matches(JAVA_FQN_REGEX)) { //NOI18N
+        if (c != ' ' && c != ',' && c != '*' && !String.valueOf(c).matches(JAVA_FQN_REGEX) && c != KeyEvent.VK_BACK_SPACE) {
             getToolkit().beep();
             evt.consume();
         }

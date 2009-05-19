@@ -84,16 +84,6 @@ fi
 if [ -z "$BUILD_JTB" ] ; then
     #do not build Java Tools Bundle installers by default
     BUILD_JTB=0
-
-elif [ 1 -eq "$BUILD_JTB" ] ; then
-    if [ -z "$SJSAS_IMAGE_HOSTNAME_WINDOWS" ] || 
-       [ -z "$SJSAS_IMAGE_HOSTNAME_LINUX" ] || 
-       [ -z "$SJSAS_IMAGE_HOSTNAME_SOLARIS_X86" ] || 
-       [ -z "$SJSAS_IMAGE_HOSTNAME_SOLARIS_SPARC" ] || 
-       [ -z "$SJSAS_IMAGE_HOSTNAME_MACOSX" ] ; then
-        echo "Host names used in AppServer installation images should be defined"
-        exit 1;
-    fi 
 fi
 
 if [ -z "$BUILD_MYSQL" ] ; then
@@ -221,11 +211,6 @@ run() {
             \"-Djarsigner.alias=${JARSIGNER_ALIAS}\" \
             \"-Djarsigner.storepass=${JARSIGNER_STOREPASS}\" \
             \"-Dpack200.enabled=${USE_PACK200}\" \
-            \"-Dsjsas.image.token.hostname.windows=${SJSAS_IMAGE_HOSTNAME_WINDOWS}\" \
-            \"-Dsjsas.image.token.hostname.linux=${SJSAS_IMAGE_HOSTNAME_LINUX}\" \
-            \"-Dsjsas.image.token.hostname.solaris-x86=${SJSAS_IMAGE_HOSTNAME_SOLARIS_X86}\" \
-            \"-Dsjsas.image.token.hostname.solaris-sparc=${SJSAS_IMAGE_HOSTNAME_SOLARIS_SPARC}\" \
-            \"-Dsjsas.image.token.hostname.macosx=${SJSAS_IMAGE_HOSTNAME_MACOSX}\" \
 	    \"-Dmakedmg.remote.port=${MAKEDMG_MACOSX_SYSTEM_PORT}\" \
 	    \"-Dmakedmg.remote.host=${MAKEDMG_MACOSX_SYSTEM_HOST}\" \
 	    \"-Dmakedmg.remote.user=${MAKEDMG_MACOSX_SYSTEM_USER}\" \

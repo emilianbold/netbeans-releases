@@ -231,11 +231,11 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
             ExecutionDescriptor descr = new ExecutionDescriptor();
             descr = descr.controllable(true).frontWindow(true);
 
-            NativeProcessBuilder pb = new NativeProcessBuilder(execEnv, cmd);
-            pb = pb.setArguments(args);
-            pb = pb.addNativeProcessListener(NativeExecutableTarget.this);
-            pb = pb.setWorkingDirectory(workingDirectory);
-            pb = pb.addEnvironmentVariables(envs);
+            NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv);
+            pb.setExecutable(cmd).setArguments(args);
+            pb.addNativeProcessListener(NativeExecutableTarget.this);
+            pb.setWorkingDirectory(workingDirectory);
+            pb.addEnvironmentVariables(envs);
 
             // Setup external terminal ...
             if (execEnv.isLocal() && externalTerminal != null) {
