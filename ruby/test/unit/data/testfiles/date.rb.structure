@@ -2,8 +2,8 @@ Date:CLASS:[]:ESCAPED{Date}:
   +:METHOD:[PUBLIC]:ESCAPED{+}(PARAMETERS{ESCAPED{n}}):
   -:METHOD:[PUBLIC]:ESCAPED{-}(PARAMETERS{ESCAPED{x}}):
   <<:METHOD:[PUBLIC]:ESCAPED{<<}(PARAMETERS{ESCAPED{n}}):
-  <=>:METHOD:[PUBLIC]:ESCAPED{<=>}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{NilClass}</font>:
-  ===:METHOD:[PUBLIC]:ESCAPED{===}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{FalseClass}</font>:
+  <=>:METHOD:[PUBLIC]:ESCAPED{<=>}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{Integer, NilClass}</font>:
+  ===:METHOD:[PUBLIC]:ESCAPED{===}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
   >>:METHOD:[PUBLIC]:ESCAPED{>>}(PARAMETERS{ESCAPED{n}}):
   ABBR_DAYNAMES:CONSTANT:[]:ESCAPED{ABBR_DAYNAMES}<font color='#777777'> : ESCAPED{Array}</font>:
   ABBR_MONTHNAMES:CONSTANT:[]:ESCAPED{ABBR_MONTHNAMES}<font color='#777777'> : ESCAPED{Array}</font>:
@@ -55,7 +55,7 @@ Date:CLASS:[]:ESCAPED{Date}:
   julian_leap?:METHOD:[PUBLIC, STATIC]:ESCAPED{julian_leap?}(PARAMETERS{ESCAPED{y}}):
   ld:METHOD:[PUBLIC]:ESCAPED{ld}:
   ld_to_jd:METHOD:[PUBLIC, STATIC]:ESCAPED{ld_to_jd}(PARAMETERS{ESCAPED{ld}}):
-  leap?:METHOD:[PUBLIC]:ESCAPED{leap?}:
+  leap?:METHOD:[PUBLIC]:ESCAPED{leap?}<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
   mday:METHOD:[PUBLIC]:ESCAPED{mday}:
   min:METHOD:[PRIVATE]:ESCAPED{min}:
   mjd:METHOD:[PUBLIC]:ESCAPED{mjd}:
@@ -65,14 +65,14 @@ Date:CLASS:[]:ESCAPED{Date}:
   new_start:METHOD:[PUBLIC]:ESCAPED{new_start}(PARAMETERS{ESCAPED{sg}}):
   new_with_hash:METHOD:[PUBLIC, STATIC]:ESCAPED{new_with_hash}(PARAMETERS{ESCAPED{elem}, ESCAPED{sg}}):
   ns?:METHOD:[PUBLIC, STATIC]:ESCAPED{ns?}(PARAMETERS{ESCAPED{jd}, ESCAPED{sg}}):
-  ns?:METHOD:[PUBLIC]:ESCAPED{ns?}:
+  ns?:METHOD:[PUBLIC]:ESCAPED{ns?}<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
   of:FIELD:[]:ESCAPED{of}:
   offset:METHOD:[PRIVATE]:ESCAPED{offset}:
   ordinal:METHOD:[STATIC, PRIVATE]:ESCAPED{ordinal}(PARAMETERS{ESCAPED{y}, ESCAPED{d}, ESCAPED{sg}}):
   ordinal:METHOD:[PRIVATE]:ESCAPED{ordinal}:
   ordinal_to_jd:METHOD:[PUBLIC, STATIC]:ESCAPED{ordinal_to_jd}(PARAMETERS{ESCAPED{y}, ESCAPED{d}, ESCAPED{sg}}):
   os?:METHOD:[PUBLIC, STATIC]:ESCAPED{os?}(PARAMETERS{ESCAPED{jd}, ESCAPED{sg}}):
-  os?:METHOD:[PUBLIC]:ESCAPED{os?}:
+  os?:METHOD:[PUBLIC]:ESCAPED{os?}<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
   parse:METHOD:[PUBLIC, STATIC]:ESCAPED{parse}(PARAMETERS{ESCAPED{str}, ESCAPED{comp}, ESCAPED{sg}}):
   sec:METHOD:[PRIVATE]:ESCAPED{sec}:
   sec_fraction:METHOD:[PRIVATE]:ESCAPED{sec_fraction}:

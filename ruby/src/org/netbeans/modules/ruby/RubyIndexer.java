@@ -433,18 +433,18 @@ public class RubyIndexer extends EmbeddingIndexer {
             List<?extends AstElement> structure = ar.getElements();
 
             // Rails special case
+            // fall through to do normal indexing as well, these special cases
+            // are needed for rails < 2.3.2, normal indexing handles 2.3.2 classes.
             if (fileName.startsWith("acti")) { // NOI18N
                 if ("action_controller.rb".equals(fileName)) { // NOI18N
                     // Locate "ActionController::Base.class_eval do"
                     // and take those include statements and stick them into ActionController::Base
                     handleRailsBase("ActionController"); // NOI18N
-                    return;
                 } else if ("active_record.rb".equals(fileName)) { // NOI18N
                     handleRailsBase("ActiveRecord"); // NOI18N
 //                    handleRailsClass("ActiveRecord", "ActiveRecord" + "::Migration", "Migration", "migration");
                     // HACK
                     handleMigrations();
-                    return;
                 } else if ("action_mailer.rb".equals(fileName)) { // NOI18N
                     handleRailsBase("ActionMailer"); // NOI18N
                     return;
@@ -454,7 +454,6 @@ public class RubyIndexer extends EmbeddingIndexer {
                     // HACK
                     handleActionViewHelpers();
 
-                    return;
                 //} else if ("action_web_service.rb".equals(fileName)) { // NOI18N
                     // Uh oh - we have two different kinds of class eval here - one for ActionWebService, one for ActionController!
                     // Gotta make this shiznit smarter!
@@ -463,7 +462,6 @@ public class RubyIndexer extends EmbeddingIndexer {
                 }
             } else if (fileName.equals("assertions.rb") && url.endsWith("lib/action_controller/assertions.rb")) { // NOI18N
                 handleRailsClass("Test::Unit", "Test::Unit::TestCase", "TestCase", "TestCase"); // NOI18N
-                return;
             } else if (fileName.equals("schema_definitions.rb")) {
                 handleSchemaDefinitions();
                 // Fall through - also do normal indexing on the file

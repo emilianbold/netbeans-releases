@@ -77,6 +77,13 @@ import org.openide.util.RequestProcessor;
  * @author  Tor Norbye
  */
 public class PluginPanel extends javax.swing.JPanel {
+    static final String MSG_WAIT = NbBundle.getMessage(PluginPanel.class, "PleaseWait");
+    static final String MSG_NO_NETWORK = NbBundle.getMessage(PluginPanel.class, "NoNetwork");
+    static final String MSG_FETCHING_LOCAL_REPOS = NbBundle.getMessage(PluginPanel.class, "FetchingLocalRepos");
+    static final String MSG_FETCHING_REMOTE_REPOS = NbBundle.getMessage(PluginPanel.class, "FetchingRemoteRepos");
+    static final String MSG_FETCHING_LOCAL_PLUGINS = NbBundle.getMessage(PluginPanel.class, "FetchingLocalPlugins");
+    static final String MSG_FETCHING_REMOTE_PLUGINS = NbBundle.getMessage(PluginPanel.class, "FetchingRemotePlugins");
+
     private final PluginManager pluginManager;
     
     private List<Plugin> installedPlugins;
@@ -511,7 +518,6 @@ public class PluginPanel extends javax.swing.JPanel {
         assert SwingUtilities.isEventDispatchThread();
 
         // Bring up a selection list
-        String wait = getWaitMsg();
         RepositorySelectionPanel panel = new RepositorySelectionPanel();
         final JList list = panel.getList();
         list.getAccessibleContext().setAccessibleName(
@@ -538,18 +544,31 @@ public class PluginPanel extends javax.swing.JPanel {
 
         if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
             Object[] urls = list.getSelectedValues();
-            if (urls != null && urls.length > 0 && !wait.equals(urls[0])) {
-                String[] reps = new String[urls.length];
+            if (urls != null && urls.length > 0) {
+                List<String> reps = new ArrayList<String>(urls.length);
                 for (int i = 0; i < urls.length; i++) {
-                    reps[i] = urls[i].toString();
+                    if (!isMsg(urls[i])) {
+                        reps.add(urls[i].toString());
+                    }
                 }
-                pluginManager.addRepositories(reps, this, null, true, new RepositoryListRefresher(repositoryList, true));
-                newModified = true;
-                repositoriesModified = true;
+                if (!reps.isEmpty()) {
+                    pluginManager.addRepositories(reps.toArray(new String[reps.size()]), this, null, true, new RepositoryListRefresher(repositoryList, true));
+                    newModified = true;
+                    repositoriesModified = true;
+                }
             }
 
         }
     }//GEN-LAST:event_discoverButtonActionPerformed
+
+    private boolean isMsg(Object object) {
+        return MSG_WAIT.equals(object)
+                || MSG_NO_NETWORK.equals(object)
+                || MSG_FETCHING_LOCAL_REPOS.equals(object)
+                || MSG_FETCHING_REMOTE_REPOS.equals(object)
+                || MSG_FETCHING_LOCAL_PLUGINS.equals(object)
+                || MSG_FETCHING_REMOTE_PLUGINS.equals(object);
+    }
 
     private void searchNewTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchNewTextActionPerformed
         refreshPluginList(getPluginFilter(false), false, newList, false);
@@ -569,11 +588,10 @@ public class PluginPanel extends javax.swing.JPanel {
         int[] indices = repositoryList.getSelectedIndices();
         List<String> repositories = new ArrayList<String>();
         if (indices != null) {
-            String wait = getWaitMsg();
             for (int index : indices) {
                 assert index >= 0;
                 String o = repositoryList.getModel().getElementAt(index).toString();
-                if (!wait.equals(o)) {
+                if (!MSG_WAIT.equals(o)) {
                     repositories.add(o);
                 }
             }
@@ -739,10 +757,6 @@ public class PluginPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_installedPanelComponentShown
 
-    private String getWaitMsg() {
-        return NbBundle.getMessage(PluginPanel.class, "PleaseWait");
-    }
-
     /** Refresh the list of displayed plugins. If refresh is true, refresh the list from the plugin manager, otherwise just refilter list */
     private void refreshPluginList(final String filter, final boolean refresh, final JList list, final boolean local) {        
         assert SwingUtilities.isEventDispatchThread();
@@ -817,7 +831,7 @@ public class PluginPanel extends javax.swing.JPanel {
                     if (refresh && plugins.size() == 0) {
                         // TODO - don't do this when I'm showing a cached list!!!
                         if (!local) { // having nothing is not unusual - it's how you start out
-                            model.addElement(NbBundle.getMessage(PluginPanel.class, "NoNetwork"));
+                            model.addElement(MSG_NO_NETWORK);
                         }
                         for (String line : lines) {
                             model.addElement("<html><span color=\"red\">" + line + "</span></html>"); // NOI18N
@@ -856,7 +870,7 @@ public class PluginPanel extends javax.swing.JPanel {
         if (refresh ||  (local && installedPlugins == null) || (!local && newPlugins == null)) {
             if (showRefreshMessage) {
                 DefaultListModel model = new DefaultListModel();
-                model.addElement(NbBundle.getMessage(PluginPanel.class, local ? "FetchingLocalPlugins" : "FetchingRemotePlugins"));
+                model.addElement(local ? MSG_FETCHING_LOCAL_PLUGINS : MSG_FETCHING_REMOTE_PLUGINS);
                 list.setModel(model);
             }
             RequestProcessor.getDefault().post(runner, 50);
@@ -915,7 +929,7 @@ public class PluginPanel extends javax.swing.JPanel {
                     }
                     if (refresh && repositories.size() == 0) {
                         // TODO - don't do this when I'm showing a cached list!!!
-                        model.addElement(NbBundle.getMessage(PluginPanel.class, "NoNetwork"));
+                        model.addElement(MSG_NO_NETWORK);
                         for (String line : lines) {
                             model.addElement("<html><span color=\"red\">" + line + "</span></html>"); // NOI18N
                         }
@@ -939,7 +953,7 @@ public class PluginPanel extends javax.swing.JPanel {
         
         if (refresh || (local && activeRepositories == null) || !local) {
             DefaultListModel model = new DefaultListModel();
-            model.addElement(NbBundle.getMessage(PluginPanel.class, local ? "FetchingLocalRepos" : "FetchingRemoteRepos"));
+            model.addElement(local ? MSG_FETCHING_LOCAL_REPOS : MSG_FETCHING_REMOTE_REPOS);
             list.setModel(model);
             RequestProcessor.getDefault().post(runner, 50);
         } else {
