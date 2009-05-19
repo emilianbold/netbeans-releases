@@ -99,4 +99,13 @@ public interface CoverageProvider {
      * Get a summary of all the coverage data in the given project, one per measured file.
      */
     List<FileCoverageSummary> getResults();
+    
+    /**
+     * Gets the name of action that the Test All button in the code coverage bar
+     * should invoke. May return <code>null</code>, in which case  if the default 
+     * test action will be used.
+     * 
+     * @return the name of test action or <code>null</code>.
+     */
+    String getTestAllAction();
 }

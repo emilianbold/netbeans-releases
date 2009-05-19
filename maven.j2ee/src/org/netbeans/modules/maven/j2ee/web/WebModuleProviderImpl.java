@@ -151,7 +151,6 @@ public class WebModuleProviderImpl extends J2eeModuleProvider implements WebModu
                             if (webBuildBase != null) {
                                 File base = FileUtil.toFile(webBuildBase);
                                 File dist = new File(base, "WEB-INF" + File.separator + "classes" + File.separator + path.replace("/", File.separator));
-                                System.out.println("setting dist path to=" + dist);
                                 return original.distributionPath(dist);
                             }
                         } catch (IOException ex) {

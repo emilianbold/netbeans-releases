@@ -445,7 +445,12 @@ final class Analyzer {
                 // ExceptionType of throws clause may contain TypeVariable see JLS 8.4.6
                 fqn = el.getSimpleName().toString();
             } else {
-                throw new IllegalStateException("Illegal kind: " + el.getKind()); // NOI18N
+                // skip processing of invalid throws declaration
+                Logger.getLogger(Analyzer.class.getName()).log(
+                        Level.FINE,
+                        "Illegal throw kind: {0} of {1} in {2}", // NOI18N
+                        new Object[] {el.getKind(), el, exec});
+                return;
             }
 
             boolean exists = tagNames.remove(fqn) != null;
