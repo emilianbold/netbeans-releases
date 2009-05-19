@@ -585,7 +585,7 @@ class OccurenceBuilder {
                     if (!methods.isEmpty()) {
                         final MethodScope meth = ModelUtils.getFirst(methods);
                         assert meth != null;
-                        if (ModelUtils.nameKindMatch(meth.getClassScope().getName(), QuerySupport.Kind.EXACT, queryName)) {
+                        if (ModelUtils.nameKindMatch(meth.getTypeScope().getName(), QuerySupport.Kind.EXACT, queryName)) {
                             occurenceImpl.setGotoDeclaratin(meth);
                         }
                     }

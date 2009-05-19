@@ -63,11 +63,11 @@ public class HtmlKeystrokeHandlerTest extends TestBase {
     }
 
     public void testEmptyFile() throws ParseException {
-        assertLogicalRanges("|", new int[][]{});
+        assertLogicalRanges("|", new int[][]{}); //no range
     }
 
     public void testWholeDocumentRange() throws ParseException {
-        assertLogicalRanges("   |   ", new int[][]{{0,6}});
+        assertLogicalRanges("   |   ", new int[][]{}); //no range
         //                   012 3456
     }
 
