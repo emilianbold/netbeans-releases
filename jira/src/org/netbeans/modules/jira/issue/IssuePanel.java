@@ -103,6 +103,7 @@ public class IssuePanel extends javax.swing.JPanel {
         remainingEstimateField.setBackground(getBackground());
         timeSpentField.setBackground(getBackground());
         resolutionField.setBackground(getBackground());
+        projectField.setBackground(getBackground());
         BugtrackingUtil.fixFocusTraversalKeys(environmentArea);
         BugtrackingUtil.fixFocusTraversalKeys(addCommentArea);
         BugtrackingUtil.issue163946Hack(componentScrollPane);
@@ -250,6 +251,7 @@ public class IssuePanel extends javax.swing.JPanel {
         if (skipReload) {
             return;
         }
+        boolean isNew = issue.getTaskData().isNew();
         ResourceBundle bundle = NbBundle.getBundle(IssuePanel.class);
         JiraConfiguration config = issue.getRepository().getConfiguration();
         String projectId = issue.getFieldValue(NbJiraIssue.IssueField.PROJECT);
@@ -263,7 +265,13 @@ public class IssuePanel extends javax.swing.JPanel {
         String creation = dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.CREATION), true);
         String createdTxt = MessageFormat.format(createdFormat, creation, reporter);
         createdField.setText(createdTxt);
-        reloadField(projectCombo, config.getProjectById(projectId), NbJiraIssue.IssueField.PROJECT);
+        Project project = config.getProjectById(projectId);
+        reloadField(projectField, project.getName(), NbJiraIssue.IssueField.PROJECT);
+        reloadField(projectCombo, project, NbJiraIssue.IssueField.PROJECT);
+        if (isNew != (projectCombo.getParent() != null)) {
+            GroupLayout layout = (GroupLayout)getLayout();
+            layout.replace(isNew ? projectField : projectCombo, isNew ? projectCombo : projectField);
+        }
         reloadField(issueTypeCombo, config.getIssueTypeById(issue.getFieldValue(NbJiraIssue.IssueField.TYPE)), NbJiraIssue.IssueField.TYPE);
         initStatusCombo(config.getStatusById(issue.getFieldValue(NbJiraIssue.IssueField.STATUS)));
         reloadField(summaryField, issue.getFieldValue(NbJiraIssue.IssueField.SUMMARY), NbJiraIssue.IssueField.SUMMARY);
@@ -567,6 +575,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private void initComponents() {
 
         resolutionField = new javax.swing.JTextField();
+        projectField = new javax.swing.JTextField();
         headerLabel = new javax.swing.JLabel();
         projectLabel = new javax.swing.JLabel();
         projectCombo = new javax.swing.JComboBox();
@@ -631,6 +640,9 @@ public class IssuePanel extends javax.swing.JPanel {
 
         resolutionField.setEditable(false);
         resolutionField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
+        projectField.setEditable(false);
+        projectField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
 
@@ -1179,6 +1191,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JComboBox priorityCombo;
     private javax.swing.JLabel priorityLabel;
     private javax.swing.JComboBox projectCombo;
+    private javax.swing.JTextField projectField;
     private javax.swing.JLabel projectLabel;
     private org.netbeans.modules.bugtracking.util.LinkButton refreshButton;
     private javax.swing.JTextField remainingEstimateField;
