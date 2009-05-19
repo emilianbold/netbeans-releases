@@ -135,8 +135,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     }
 
     public void start(boolean force) {
-        boolean schedule = false;
-//        boolean clogUpTheLoop = false;
+        Work work = null;
 
         synchronized (this) {
             if (state == State.CREATED) {
@@ -148,21 +147,13 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 EditorRegistry.addPropertyChangeListener(this);
 
                 if (force) {
-                    // No need for TheClog when the InitialRootsWork is giong to be scheduled
-                    schedule = true;
-//                } else {
-//                    clogUpTheLoop = true;
+                    work = new InitialRootsWork(scannedRoots2Dependencies, scannedBinaries, false);
                 }
             }
         }
 
-        if (schedule) {
-            scheduleWork(null, false);
-//        } else if (clogUpTheLoop) {
-//            // The whole point of this is to block TaskProcessor right after the
-//            // IDE starts until all projects are opened. It's a feeble attempt to
-//            // improve situation described in #165170.
-//            getWorker().schedule(new TheClog(), false);
+        if (work != null) {
+            scheduleWork(work, false);
         }
     }
 
@@ -598,8 +589,15 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
             }
 
-            for(FileListWork job : jobs.values()) {
-                scheduleWork(job, false);
+            if (jobs.isEmpty()) {
+                // either all documents are up-to-date or we can't find owning source roots,
+                // which may happen right after start when no roots have been scanned yet,
+                // try forcing the initial scan in order to block TaskProcessor (#165170)
+                scheduleWork(null, false);
+            } else {
+                for(FileListWork job : jobs.values()) {
+                    scheduleWork(job, false);
+                }
             }
         }
     }
@@ -728,13 +726,12 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         synchronized (this) {
             if (state == State.STARTED) {
                 state = State.INITIAL_SCAN_RUNNING;
-                scheduleExtraWork = true;
+                scheduleExtraWork = !(work instanceof InitialRootsWork);
             }
         }
 
         if (scheduleExtraWork) {
-            boolean waitForProjects = work != null;  // else forced (eg. from tests) so don't wait for projects
-            getWorker().schedule(new InitialRootsWork(scannedRoots2Dependencies, scannedBinaries, waitForProjects), false);
+            getWorker().schedule(new InitialRootsWork(scannedRoots2Dependencies, scannedBinaries, true), false);
 
             if (work instanceof RootsWork) {
                 // if the work is the initial RootsWork it's superseeded
@@ -1191,7 +1188,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 progressHandle.start();
             }
             try {
-                finished.set(getDone());
+                finished.compareAndSet(false, getDone());
             } catch (Throwable t) {
                 LOGGER.log(Level.WARNING, null, t);
                 
@@ -1226,6 +1223,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             if (isCancelledBy(newWork)) {
                 LOGGER.log(Level.FINE, "{0} cancelled by {1}", new Object [] { this, newWork }); //NOI18N
                 cancelled.set(true);
+                finished.set(true); // work cancelled by other work is by default finished
             }
         }
 
@@ -1487,102 +1485,84 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         public @Override boolean getDone() {
-                updateProgress(NbBundle.getMessage(RepositoryUpdater.class, "MSG_ProjectDependencies")); //NOI18N
-                if (depCtx == null) {
-                    depCtx = new DependenciesContext(scannedRoots2Dependencies, scannedBinaries, useInitialState);
-                    final List<URL> newRoots = new LinkedList<URL>();
-                    newRoots.addAll(PathRegistry.getDefault().getSources());
-                    newRoots.addAll(PathRegistry.getDefault().getLibraries());
+            if (isCancelled()) {
+                return false;
+            }
 
-                    depCtx.newBinariesToScan.addAll(PathRegistry.getDefault().getBinaryLibraries());
-                    for (Iterator<URL> it = depCtx.newBinariesToScan.iterator(); it.hasNext(); ) {
-                        if (depCtx.oldBinaries.remove(it.next())) {
-                            it.remove();
-                        }
+            updateProgress(NbBundle.getMessage(RepositoryUpdater.class, "MSG_ProjectDependencies")); //NOI18N
+            if (depCtx == null) {
+                depCtx = new DependenciesContext(scannedRoots2Dependencies, scannedBinaries, useInitialState);
+                final List<URL> newRoots = new LinkedList<URL>();
+                newRoots.addAll(PathRegistry.getDefault().getSources());
+                newRoots.addAll(PathRegistry.getDefault().getLibraries());
+
+                depCtx.newBinariesToScan.addAll(PathRegistry.getDefault().getBinaryLibraries());
+                for (Iterator<URL> it = depCtx.newBinariesToScan.iterator(); it.hasNext(); ) {
+                    if (depCtx.oldBinaries.remove(it.next())) {
+                        it.remove();
                     }
-                    newRoots.addAll(PathRegistry.getDefault().getUnknownRoots());
-
-                    Set<String> libraryIds = PathRecognizerRegistry.getDefault().getLibraryIds();
-                    Set<String> binaryLibraryIds = PathRecognizerRegistry.getDefault().getBinaryLibraryIds();
-                    LOGGER.log(Level.FINE, "LibraryIds: {0}", libraryIds);
-                    LOGGER.log(Level.FINE, "BinaryLibraryIds: {0}", binaryLibraryIds);
-                    for (URL url : newRoots) {
-                        findDependencies(url, depCtx, libraryIds, binaryLibraryIds);
-                    }
-
-                    try {
-                        depCtx.newRootsToScan.addAll(org.openide.util.Utilities.topologicalSort(depCtx.newRoots2Deps.keySet(), depCtx.newRoots2Deps));
-                    } catch (final TopologicalSortException tse) {
-                        LOGGER.log(Level.SEVERE, "Cycles detected in classpath roots dependencies", tse); //NOI18N
-                        return true;
-                    }
-                    Collections.reverse(depCtx.newRootsToScan);
-
-                    if (!useInitialState) {
-                        // check for differencies from the initialState
-                        final Map<URL,List<URL>> removed = new HashMap<URL,List<URL>>();
-                        final Map<URL,List<URL>> addedOrChanged = new HashMap<URL,List<URL>>();
-                        diff(depCtx.initialRoots2Deps, depCtx.newRoots2Deps, addedOrChanged, removed);
-
-                        depCtx.oldRoots.clear();
-                        depCtx.oldRoots.addAll(removed.keySet());
-                        depCtx.newRootsToScan.retainAll(addedOrChanged.keySet());
-                    }
-                } else {
-                    depCtx.newRootsToScan.removeAll(depCtx.scannedRoots);
-                    depCtx.scannedRoots.clear();
-                    depCtx.newBinariesToScan.removeAll(depCtx.scannedBinaries);
-                    depCtx.scannedBinaries.clear();
                 }
-                
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine("Running " + this + " on \n" + depCtx.toString()); //NOI18N
+                newRoots.addAll(PathRegistry.getDefault().getUnknownRoots());
+
+                Set<String> libraryIds = PathRecognizerRegistry.getDefault().getLibraryIds();
+                Set<String> binaryLibraryIds = PathRecognizerRegistry.getDefault().getBinaryLibraryIds();
+                LOGGER.log(Level.FINE, "LibraryIds: {0}", libraryIds);
+                LOGGER.log(Level.FINE, "BinaryLibraryIds: {0}", binaryLibraryIds);
+                for (URL url : newRoots) {
+                    findDependencies(url, depCtx, libraryIds, binaryLibraryIds);
                 }
 
-                boolean finished = scanBinaries(depCtx);
-                if (finished) {
-                    finished = scanSources(depCtx);
+                try {
+                    depCtx.newRootsToScan.addAll(org.openide.util.Utilities.topologicalSort(depCtx.newRoots2Deps.keySet(), depCtx.newRoots2Deps));
+                } catch (final TopologicalSortException tse) {
+                    LOGGER.log(Level.SEVERE, "Cycles detected in classpath roots dependencies", tse); //NOI18N
+                    return true;
                 }
+                Collections.reverse(depCtx.newRootsToScan);
 
-                for(URL root : depCtx.scannedRoots) {
-                    List<URL> deps = depCtx.newRoots2Deps.get(root);
-                    scannedRoots2Dependencies.put(root, deps);
+                if (!useInitialState) {
+                    // check for differencies from the initialState
+                    final Map<URL,List<URL>> removed = new HashMap<URL,List<URL>>();
+                    final Map<URL,List<URL>> addedOrChanged = new HashMap<URL,List<URL>>();
+                    diff(depCtx.initialRoots2Deps, depCtx.newRoots2Deps, addedOrChanged, removed);
+
+                    depCtx.oldRoots.clear();
+                    depCtx.oldRoots.addAll(removed.keySet());
+                    depCtx.newRootsToScan.retainAll(addedOrChanged.keySet());
                 }
-                scannedRoots2Dependencies.keySet().removeAll(depCtx.oldRoots);
+            } else {
+                depCtx.newRootsToScan.removeAll(depCtx.scannedRoots);
+                depCtx.scannedRoots.clear();
+                depCtx.newBinariesToScan.removeAll(depCtx.scannedBinaries);
+                depCtx.scannedBinaries.clear();
+            }
 
-//                depCtx.newRoots2Deps.keySet().retainAll(depCtx.scannedRoots);
-//                scannedRoots2Dependencies.putAll(depCtx.newRoots2Deps);
-//                scannedRoots2Dependencies.keySet().removeAll(depCtx.oldRoots);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Running " + this + " on \n" + depCtx.toString()); //NOI18N
+            }
 
-                scannedBinaries.addAll(depCtx.scannedBinaries);
-                scannedBinaries.removeAll(depCtx.oldBinaries);
+            boolean finished = scanBinaries(depCtx);
+            if (finished) {
+                finished = scanSources(depCtx);
+            }
 
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine(this + " " + (isCancelled() ? "cancelled" : "finished") + ": {"); //NOI18N
-                    LOGGER.fine("  scannedRoots2Dependencies=" + scannedRoots2Dependencies); //NOI18N
-                    LOGGER.fine("  scannedBinaries=" + scannedBinaries); //NOI18N
-                    LOGGER.fine("} ===="); //NOI18N
-                }
+            for(URL root : depCtx.scannedRoots) {
+                List<URL> deps = depCtx.newRoots2Deps.get(root);
+                scannedRoots2Dependencies.put(root, deps);
+            }
+            scannedRoots2Dependencies.keySet().removeAll(depCtx.oldRoots);
 
-                return finished;
+            scannedBinaries.addAll(depCtx.scannedBinaries);
+            scannedBinaries.removeAll(depCtx.oldBinaries);
 
-//            if (refreshAll) {
-//                final DependenciesContext ctx = new DependenciesContext(scannedRoots2Dependencies, scannedBinaries, true);
-//                final Map<URL,List<URL>> depGraph = new HashMap<URL,List<URL>>(scannedRoots2Dependencies);
-//
-//                ctx.newBinariesToScan.addAll(ctx.scannedBinaries);
-//                scanBinaries(ctx);
-//
-//                try {
-//                    ctx.newRootsToScan.addAll(org.openide.util.Utilities.topologicalSort(depGraph.keySet(), depGraph));
-//                    Collections.reverse(ctx.newRootsToScan);
-//                    scanSources(ctx);
-//                } catch (final TopologicalSortException tse) {
-//                    LOGGER.log(Level.SEVERE, "Cycles detected in classpath roots dependencies", tse); //NOI18N
-//                    return;
-//                }
-//            }
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(this + " " + (isCancelled() ? "cancelled" : "finished") + ": {"); //NOI18N
+                LOGGER.fine("  scannedRoots2Dependencies=" + scannedRoots2Dependencies); //NOI18N
+                LOGGER.fine("  scannedBinaries=" + scannedBinaries); //NOI18N
+                LOGGER.fine("} ===="); //NOI18N
+            }
 
+            return finished;
         }
 
         protected @Override boolean isCancelledBy(Work newWork) {
@@ -1874,41 +1854,6 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
     } // End of InitialRootsWork class
 
-//    private static final class TheClog extends Work {
-//
-//        private static final long MRPROPPER = 60000; // one minute
-//        private static final boolean inTests = System.getProperty("netbeans.buildnumber") == null; //NOI18N
-//        private final AtomicBoolean cancelledByInitialWork = new AtomicBoolean(false);
-//
-//        public TheClog() {
-//            super(false, false, false);
-//        }
-//
-//        protected @Override boolean getDone() {
-//            if (!inTests) {
-//                final long tm = System.currentTimeMillis();
-//                for( ; !cancelledByInitialWork.get() && System.currentTimeMillis() - tm < MRPROPPER; ) {
-//                    try {
-//                        Thread.sleep(321);
-//                    } catch (InterruptedException ex) {
-//                        // ignore, but stop waiting
-//                        break;
-//                    }
-//                    LOGGER.log(Level.FINE, "TheClog has been successfully clogging for {0} ms", (System.currentTimeMillis() - tm)); //NOI18N
-//                }
-//            }
-//            return true;
-//        }
-//
-//        protected @Override boolean isCancelledBy(Work newWork) {
-////            assert newWork instanceof InitialRootsWork : "Expecting InitialRootsWork: " + newWork; //NOI18N
-//            LOGGER.log(Level.FINE, "TheClog cancelled by {0}", newWork); //NOI18N
-//            cancelledByInitialWork.set(true);
-//            return true;
-//        }
-//
-//    } // End of TheClog class
-
     private static final class Task extends ParserResultTask {
 
         // -------------------------------------------------------------------
@@ -2104,6 +2049,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         @Override
         public void cancel() {
+            recordCaller();
+            
             if (notInterruptible) {
                 // ignore the request
                 return;
@@ -2116,8 +2063,6 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     if (cancelledWork != null) {
                         cancelledWork.setCancelled(true);
                     }
-                    
-                    recordCaller();
                 }
             }
         }
