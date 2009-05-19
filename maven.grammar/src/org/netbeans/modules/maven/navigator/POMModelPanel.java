@@ -220,7 +220,13 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                 if (panes != null && panes.length > 0) {
                     // editor already opened, so just select
                     JTextComponent component = panes[0];
-                    component.setCaretPosition(pos);
+                    try {
+                        component.setCaretPosition(pos);
+                    } catch (IllegalArgumentException iae) {
+                        //#165408
+                        // swallow if the position is out of bounds,
+                        // the model and document was not properly synced yet
+                    }
                     TopComponent tc = NbEditorUtilities.getOuterTopComponent(component);
                     if (!tc.isVisible()) {
                         tc.requestVisible();
@@ -233,7 +239,13 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                         panes = ec.getOpenedPanes();
                         if (panes != null && panes.length > 0) {
                             JTextComponent component = panes[0];
-                            component.setCaretPosition(pos);
+                            try {
+                                component.setCaretPosition(pos);
+                            } catch (IllegalArgumentException iae) {
+                                //#165408
+                                // swallow if the position is out of bounds,
+                                // the model and document was not properly synced yet
+                            }
                         }
                     } catch (IOException ioe) {
                     }
