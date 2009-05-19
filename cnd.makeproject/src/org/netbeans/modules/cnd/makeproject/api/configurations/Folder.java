@@ -68,6 +68,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakSet;
 
 public class Folder implements FileChangeListener, ChangeListener {
 
@@ -78,7 +79,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     private String displayName;
     private final Folder parent;
     private ArrayList<Object> items = null; // Folder or Item
-    private final Set<ChangeListener> changeListenerList = new HashSet<ChangeListener>(1);
+    private final Set<ChangeListener> changeListenerList = new WeakSet<ChangeListener>(1);
     private final boolean projectFiles;
     private String id = null;
     private String root;
