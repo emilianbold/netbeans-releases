@@ -865,10 +865,11 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             if (varComments != null) {
                 for (PhpDocTypeTagInfo phpDocTypeTagInfo : varComments) {
                     VariableScope varScope = getVariableScope(phpDocTypeTagInfo.getRange().getStart());
-                    VariableNameImpl varInstance = (VariableNameImpl) ModelUtils.getFirst(ModelUtils.filter(varScope.getDeclaredVariables(), name));
-                    if (varInstance == null) {
-                        if (varScope instanceof Scope) {
-                            Scope scp = (Scope) varScope;
+                    VariableNameImpl varInstance = null;
+                    if (varScope instanceof Scope) {
+                        Scope scp = (Scope) varScope;
+                        varInstance = (VariableNameImpl) ModelUtils.getFirst(ModelUtils.filter(varScope.getDeclaredVariables(), name));
+                        if (varInstance == null) {
                             varInstance = new VariableNameImpl(scp, name, scp.getFile(), phpDocTypeTagInfo.getRange(), scp instanceof FileScopeImpl);
                         }
                     }
