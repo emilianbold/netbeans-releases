@@ -110,7 +110,7 @@ public final class CndFileUtils {
         if (normalized == null) {
             // small optimization for true case sensitive OSs
             boolean caseSensitive = isSystemCaseSensitive();
-            if (!caseSensitive || (path.contains("..") || path.contains("./") || path.contains(".\\"))) { // NOI18N
+            if (!caseSensitive || (path.endsWith("/.") || path.endsWith("\\.") || path.contains("..") || path.contains("./") || path.contains(".\\"))) { // NOI18N
                 normalized = FileUtil.normalizeFile(new File(path)).getAbsolutePath();
             } else {
                 normalized = path;
