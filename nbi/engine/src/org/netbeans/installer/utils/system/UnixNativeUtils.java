@@ -578,6 +578,7 @@ public class UnixNativeUtils extends NativeUtils {
                     FileUtils.mkdirs(appsMenu.getParentFile());
                     boolean created = appsMenu.createNewFile();
                     if(created) {
+                        SystemUtils.sleep(50);
                         FileUtils.deleteFile(appsMenu);
                     }
                 } catch (IOException e) {
