@@ -64,6 +64,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JTextField;
+import javax.swing.ListModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -791,27 +792,66 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(fd == null) {
             return;
         }
+        // lists
         ProjectFilter pf = fd.getProjectFilter();
         if(pf != null) {
-            Project[] projects = pf.getProjects();
-            if(projects != null) {
-                List<Integer> toSelect = new ArrayList<Integer>();
-                DefaultListModel model = (DefaultListModel) panel.projectList.getModel();
-                for (Project p : projects) {
-                    int idx = model.indexOf(p);
-                    if(idx > -1) {
-                        toSelect.add(idx);
-                    }
-                }
-                int[] idx = new int[toSelect.size()];
-                for (int i = 0; i < idx.length; i++) {
-                    idx[i] = toSelect.get(i);
-                }
-                panel.projectList.setSelectedIndices(idx);
-            }
+            setSelected(panel.projectList, pf.getProjects());
         }
+        IssueTypeFilter itf = fd.getIssueTypeFilter();
+        if(itf != null) {
+            setSelected(panel.typeList, itf.getIsueTypes());
+        }
+        StatusFilter sf = fd.getStatusFilter();
+        if(sf != null) {
+            setSelected(panel.statusList, sf.getStatuses());
+        }
+        ResolutionFilter rf = fd.getResolutionFilter();
+        if(rf != null) {
+            setSelected(panel.resolutionList, rf.getResolutions());
+        }
+        PriorityFilter prf = fd.getPriorityFilter();
+        if(prf != null) {
+            setSelected(panel.priorityList, prf.getPriorities());
+        }
+        // find by text
+        ContentFilter cf = fd.getContentFilter();
+        if (cf != null) {
+            panel.queryTextField.setText(cf.getQueryString());
+            panel.summaryCheckBox.setSelected(cf.isSearchingSummary());
+            panel.descriptionCheckBox.setSelected(cf.isSearchingDescription());
+            panel.commentsCheckBox.setSelected(cf.isSearchingComments());
+            panel.environmentCheckBox.setSelected(cf.isSearchingEnvironment());
+        }
+        // user filters
+        UserFilter uf = fd.getReportedByFilter();
+        if (uf != null) {
+            reporterUserSearch.setFilter(uf);
+        }
+        uf = fd.getAssignedToFilter();
+        if (uf != null) {
+            assigneeUserSearch.setFilter(uf);
+        }
+        // find by last change
         // XXX finish me
        
+    }
+
+    private void setSelected (JList list, Object[] selectedItems) {
+        if(selectedItems != null) {
+            List<Integer> toSelect = new ArrayList<Integer>();
+            DefaultListModel model = (DefaultListModel) list.getModel();
+            for (Object p : selectedItems) {
+                int idx = model.indexOf(p);
+                if (idx > -1) {
+                    toSelect.add(idx);
+                }
+            }
+            int[] idx = new int[toSelect.size()];
+            for (int i = 0; i < idx.length; i++) {
+                idx[i] = toSelect.get(i);
+            }
+            list.setSelectedIndices(idx);
+        }
     }
 
     private void onReloadAttributes() {
@@ -935,6 +975,16 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
             return ((UserSearchItem)item).getFilter(this);
         }
+        public void setFilter (UserFilter filter) {
+            ListModel model = combo.getModel();
+            for (int i = 0; i < model.getSize(); ++i) {
+                UserSearchItem usItem = (UserSearchItem) model.getElementAt(i);
+                if (usItem.reconstructFrom(filter, this)) {
+                    combo.setSelectedItem(usItem);
+                    break;
+                }
+            }
+        }
     }
 
     abstract class UserSearchItem  {
@@ -947,6 +997,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
         public String getDisplayName() {
             return displayName;
         }
+        /**
+         * Reconstructs itself from the given filter if is owner of the filter
+         * @param filter
+         * @return true if is owner of the filter and successfully reconstructed
+         */
+        protected abstract boolean reconstructFrom (UserFilter filter, UserSearch us);
     }
 
     private class AnyUserSearch extends UserSearchItem {
@@ -960,6 +1016,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
         @Override
         public void selected(UserSearch us) {
             us.disable();
+        }
+        @Override
+        protected boolean reconstructFrom(UserFilter filter, UserSearch us) {
+            return false;
         }
     }
 
@@ -976,6 +1036,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
         public void selected(UserSearch us) {
             us.disable();
         }
+        @Override
+        protected boolean reconstructFrom(UserFilter filter, UserSearch us) {
+            return filter instanceof NobodyFilter;
+        }
     }
     private class CurrentUserSearch extends UserSearchItem {
         private UserFilter filter = new CurrentUserFilter();
@@ -990,6 +1054,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
         public void selected(UserSearch us) {
             us.disable();
         }
+        @Override
+        protected boolean reconstructFrom(UserFilter filter, UserSearch us) {
+            return filter instanceof CurrentUserFilter;
+        }
     }
     private class SpecificUserSearch extends UserSearchItem {
         public SpecificUserSearch() {
@@ -1003,6 +1071,15 @@ public class QueryController extends BugtrackingController implements DocumentLi
         public void selected(UserSearch us) {
             us.enable();
         }
+        @Override
+        protected boolean reconstructFrom(UserFilter filter, UserSearch us) {
+            boolean retval = false;
+            if (filter instanceof SpecificUserFilter) {
+                us.savedText = ((SpecificUserFilter) filter).getUser();
+                retval = true;
+            }
+            return retval;
+        }
     }
     private class SpecificGroupSearch extends UserSearchItem {
         public SpecificGroupSearch() {
@@ -1015,6 +1092,15 @@ public class QueryController extends BugtrackingController implements DocumentLi
         @Override
         public void selected(UserSearch us) {
             us.enable();
+        }
+        @Override
+        protected boolean reconstructFrom(UserFilter filter, UserSearch us) {
+            boolean retval = false;
+            if (filter instanceof UserInGroupFilter) {
+                us.savedText = ((UserInGroupFilter) filter).getGroup();
+                retval = true;
+            }
+            return retval;
         }
     }
 
