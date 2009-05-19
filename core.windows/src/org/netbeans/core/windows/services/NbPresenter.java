@@ -1025,6 +1025,13 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
     }
     
     public void propertyChange(final java.beans.PropertyChangeEvent evt) {
+        if( !SwingUtilities.isEventDispatchThread() ) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    propertyChange(evt);
+                }
+            });
+        }
         boolean update = false;
         
         if (DialogDescriptor.PROP_OPTIONS.equals(evt.getPropertyName())) {
