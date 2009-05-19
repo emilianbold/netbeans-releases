@@ -65,6 +65,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -1627,6 +1628,8 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     }// </editor-fold>//GEN-END:initComponents
 
 private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btVersionsActionPerformed
+    btVersions.setEnabled(false);
+
     RequestProcessor.getDefault().post(new Runnable() {
         public void run() {
             ProgressHandle handle = ProgressHandleFactory.createHandle(getString("LBL_VersionInfo_Progress")); // NOI18N
@@ -1653,6 +1656,12 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             NotifyDescriptor nd = new NotifyDescriptor.Message(versions.toString());
             nd.setTitle(getString("LBL_VersionInfo_Title")); // NOI18N
             DialogDisplayer.getDefault().notify(nd);
+
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    btVersions.setEnabled(true);
+                }
+            });
         }
     });
 }//GEN-LAST:event_btVersionsActionPerformed
