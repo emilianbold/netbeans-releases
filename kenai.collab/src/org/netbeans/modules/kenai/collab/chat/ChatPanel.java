@@ -114,7 +114,7 @@ public class ChatPanel extends javax.swing.JPanel {
     }
 
     private String removeTags(String body) {
-        return body.replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
+        return body.replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\n", "<br>"); // NOI18N
     }
 
 //    void setUpPrivateMessages() {
@@ -282,6 +282,14 @@ public class ChatPanel extends javax.swing.JPanel {
 
     private void keyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_keyTyped
         if (evt.getKeyChar() == '\n') {
+            if (evt.isAltDown()) {
+                try {
+                    outbox.getStyledDocument().insertString(outbox.getStyledDocument().getLength(), "\n", null); //NOI18N
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                return;
+            }
         try {
             muc.sendMessage(outbox.getText().trim());
         } catch (XMPPException ex) {
