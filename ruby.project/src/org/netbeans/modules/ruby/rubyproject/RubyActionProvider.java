@@ -608,7 +608,15 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
             return;
             
         }
-        
+
+        if (COMMAND_RSPEC_ALL.equals(command)) {
+            TestRunner testRunner = Util.getTestRunner(TestRunner.TestType.RSPEC);
+            if (testRunner != null) {
+                testRunner.getInstance().runAllTests(project, false);
+            }
+            return;
+        }
+
         if (COMMAND_IRB_CONSOLE.equals(command)) {
             openIrbConsole(context);
             return;
