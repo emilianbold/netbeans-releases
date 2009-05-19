@@ -123,4 +123,10 @@
     <folder name="WarmUp">
         <file name="org-netbeans-modules-kenai-ui-KenaiLoginTask.instance"/>
     </folder>
+    <folder name="Shortcuts">
+        <file name="D-8.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-kenai-ui-KenaiAction.instance"/>
+        </file>
+    </folder>
+
 </filesystem>

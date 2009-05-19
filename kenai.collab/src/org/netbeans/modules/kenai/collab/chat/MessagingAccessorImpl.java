@@ -43,6 +43,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -71,7 +72,10 @@ public class MessagingAccessorImpl extends MessagingAccessor {
                         KenaiFeature[] f;
                         f = prj.getFeatures(KenaiService.Type.CHAT);
                         if (f.length == 1) {
-                            kc.getChat(f[0]);
+                            MultiUserChat chat = kc.getChat(f[0]);
+                            if (chat==null || !chat.isJoined()) {
+                                throw new RuntimeException();
+                            }
                         }
                     }
                 }
