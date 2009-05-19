@@ -1,0 +1,23 @@
+ <xsl:comment>lwuit-build</xsl:comment>
+ 
+    <import file="lwuit.xml" optional="true"/>
+ 
+    <target name="-lwuit-check">
+        <condition property="lwuit.allowed">
+            <and>
+                <available file="nbproject/lwuit.xml"/>
+                <isset property="is.mesdk_lwuit"/>
+            </and>
+        </condition>
+    </target>
+ 
+ 
+    <target name="-pre-lwuit-build" depends="-lwuit-check" if="lwuit.allowed"/>
+ 
+    <target name="-lwuit-build" depends="-lwuit-check" if="lwuit.allowed">
+        <antcall target="lwuit_build"/>
+    </target>
+ 
+    <target name="-post-lwuit-build" depends="-lwuit-check" if="lwuit.allowed"/>
+ 
+    <target name="lwuit-build" depends="-lwuit-check,-pre-lwuit-build, -lwuit-build, -post-lwuit-build" if="lwuit.allowed"/>
