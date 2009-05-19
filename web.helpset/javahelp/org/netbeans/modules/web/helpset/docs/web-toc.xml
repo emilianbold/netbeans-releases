@@ -4,20 +4,26 @@
 
 <toc version="2.0">
     <tocitem text="Web Applications" expand="false">
-       <tocitem text="About Web Applications">
+        <tocitem text="About Web Applications">
             <tocitem text="About Web Applications" target="about_webapps" />
             <tocitem text="Working with Web Applications" target="webapps_process" />
             <tocitem text="Web Application Tasks: Quick Reference" target="webapps_quickref" />
             <tocitem text="About the IDE's Web Development Support" target="webapps_idesupport" />
             <tocitem text="About the IDE's Technology Version Support" target="webapps_techsupport" />
-       </tocitem>
-       <tocitem text="Creating Web Applications">
+        </tocitem>
+        <tocitem text="Creating Web Applications">
             <tocitem text="About Creating Web Applications" target="about_create_webapps" />
+<<<<<<< local
             <tocitem text="Creating a Web Application Project" target="create_webapps_proj" />
             
             
        </tocitem>
        <tocitem text="Creating and Editing Web Components">
+=======
+       
+        </tocitem>
+        <tocitem text="Creating and Editing Web Components">
+>>>>>>> other
             <tocitem text="About Creating Web Components" target="about_create_webcomps" />
             <tocitem text="JSP and HTML Files">
                 <tocitem text="About Creating and Editing JSP, HTML, and Tag Files" target="about_jsp_edit" />
@@ -137,5 +143,5 @@
                 <tocitem text="Adding Hibernate Support to a Project" target="framework_hibernate_addsupport" />
             </tocitem>
         </tocitem>
-        </tocitem>
-  </toc>
+    </tocitem>
+</toc>

@@ -118,10 +118,11 @@ public abstract class APTAbstractWalker extends APTWalker {
             Object lock = cacheEntry.getIncludeLock(aptInclude);
             synchronized (lock) {
                 APTMacroMap.State postIncludeState = cacheEntry.getPostIncludeMacroState(aptInclude);
-                boolean canUsePostIncludeState = include(resolvedPath, aptInclude, postIncludeState);
-                if (canUsePostIncludeState && postIncludeState != null) {
+                if (postIncludeState != null && !hasIncludeActionSideEffects()) {
                     getPreprocHandler().getMacroMap().setState(postIncludeState);
-                } else {
+                    return;
+                }
+                if (include(resolvedPath, aptInclude, postIncludeState)) {
                     postIncludeState = getPreprocHandler().getMacroMap().getState();
                     cacheEntry.setPostIncludeMacroState(aptInclude, postIncludeState);
                 }
@@ -132,14 +133,15 @@ public abstract class APTAbstractWalker extends APTWalker {
     }
 
     /**
-     *
+     * 
      * @param resolvedPath
      * @param aptInclude
-     * @param hasCachedPostIncludeState inform that parent walker has cached information about visit of this include directive
-     * @return true if cached information have to be used after this method call
+     * @param postIncludeState cached information about visit of this include directive
+     * @return true if need to cache post include state
      */
     abstract protected boolean include(ResolvedPath resolvedPath, APTInclude aptInclude, APTMacroMap.State postIncludeState);
-   
+    abstract protected boolean hasIncludeActionSideEffects();
+
     protected void onDefine(APT apt) {
         APTDefine define = (APTDefine)apt;
         if (define.isValid()) {

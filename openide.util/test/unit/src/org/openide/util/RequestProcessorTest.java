@@ -163,6 +163,16 @@ public class RequestProcessorTest extends NbTestCase {
         assertGC("runnable should be collected", wr);
     }
 
+    public void testStackOverFlowInRunnable() throws Exception {
+        Runnable r = new Runnable() {public void run() { throw new StackOverflowError(); }};
+
+        CharSequence msgs = Log.enable("org.openide.util", Level.SEVERE);
+        new RequestProcessor(getName()).post(r).waitFinished();
+        if (msgs.toString().contains("fillInStackTrace")) {
+            fail("There shall be no fillInStackTrace:\n" + msgs);
+        }
+    }
+
     /* This might be issue as well, but taking into account the typical lifecycle
         of a RP and its size, I won't invest in fixing this now. 
      *//*

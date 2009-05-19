@@ -45,7 +45,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.Action;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
@@ -180,7 +179,6 @@ public class LazyNodeTest extends NbTestCase {
         }
     }
 
-    @RandomlyFails // #165223
     public void testFindChild() throws Exception {
         Map<String,Object> m = new HashMap<String,Object>();
         m.put("original", new AbstractNode(Children.create(new ChildFactory<String>() {

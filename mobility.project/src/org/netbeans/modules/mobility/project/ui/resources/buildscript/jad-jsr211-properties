@@ -1,0 +1,15 @@
+<xsl:comment>jad-jsr211-properties</xsl:comment>
+
+    <target name="jad-jsr211-properties.check">
+        <condition property="jad-jsr211-properties.allowed">
+            <and>
+                <isset property="cldc-platform.trigger"/>
+                <isset property="netbeans.home"/>
+                <isset property="is.mesdk_jsr211"/>
+            </and>
+        </condition>
+    </target>
+
+    <target name="jad-jsr211-properties" description="Updates JAD and manifest with JSR211 properties." depends="jad-jsr211-properties.check" if="jad-jsr211-properties.allowed">
+        <jadjsr211properties jadfile="${{dist.dir}}/${{dist.jad}}" manifestfile="${{build.dir}}/${{manifest.file}}"/>
+    </target>

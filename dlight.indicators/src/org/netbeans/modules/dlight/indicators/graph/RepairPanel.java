@@ -71,6 +71,8 @@ public class RepairPanel extends JPanel {
         } else {
             label.setToolTipText(text);
         }
+        Dimension d = label.getPreferredSize();
+        label.setMaximumSize(new Dimension(d.width + 2, d.height));
         add(label);
         add(Box.createVerticalStrut(MARGIN));
         if (!status.isKnown()) {
@@ -96,14 +98,14 @@ public class RepairPanel extends JPanel {
         repaint();
     }
 
-    @Override
-    public void doLayout() {
-        Dimension size = new Dimension(getWidth(), Math.min(
-                getHeight() - (button == null ? 0 : button.getPreferredSize().height) - MARGIN, label.getMinimumSize().height));
-        label.setMaximumSize(size);
-        label.setPreferredSize(size);
-        super.doLayout();
-    }
+//    @Override
+//    public void doLayout() {
+//        Dimension size = new Dimension(getWidth(), Math.min(
+//                getHeight() - (button == null ? 0 : button.getPreferredSize().height) - MARGIN, label.getMinimumSize().height));
+//        label.setMaximumSize(size);
+//        label.setPreferredSize(size);
+//        super.doLayout();
+//    }
 
     private static String getMessage(String name, Object... args) {
         return NbBundle.getMessage(RepairPanel.class, name, args);

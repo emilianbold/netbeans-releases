@@ -41,15 +41,28 @@
 
 package org.netbeans.modules.junit.output;
 
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.Trees;
+import java.io.IOException;
+import java.util.List;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.swing.Action;
 import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.junit.wizards.Utils;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import static javax.lang.model.util.ElementFilter.*;
 
 /**
  *
@@ -65,7 +78,73 @@ final class OutputUtils {
     static void openTestsuite(TestsuiteNode node) {
         TestSuite suite = node.getSuite();
         if ((suite != null) && (suite instanceof JUnitTestSuite)){
-            Utils.openFile(((JUnitTestSuite)suite).getSuiteFO(), 1);
+            final FileObject fo = ((JUnitTestSuite)suite).getSuiteFO();
+            if (fo != null){
+                final long[] line = new long[]{0};
+                JavaSource javaSource = JavaSource.forFileObject(fo);
+                if (javaSource != null) {
+                    try {
+                        javaSource.runUserActionTask(new Task<CompilationController>() {
+                                public void run(CompilationController compilationController) throws Exception {
+                                    compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
+                                    Trees trees = compilationController.getTrees();
+                                    CompilationUnitTree compilationUnitTree = compilationController.getCompilationUnit();
+                                    List<?extends Tree> typeDecls = compilationUnitTree.getTypeDecls();
+                                    for (Tree tree : typeDecls) {
+                                        Element element = trees.getElement(trees.getPath(compilationUnitTree, tree));
+                                        if (element != null && element.getKind() == ElementKind.CLASS && element.getSimpleName().contentEquals(fo.getName())){
+                                            long pos = trees.getSourcePositions().getStartPosition(compilationUnitTree, tree);
+                                            line[0] = compilationUnitTree.getLineMap().getLineNumber(pos);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }, true);
+
+                    } catch (IOException ioe) {
+                        ErrorManager.getDefault().notify(ioe);
+                    }
+                }
+                Utils.openFile(fo, (int)line[0]);
+            }
+        }
+    }
+
+    static void openTestMethod(final JUnitTestMethodNode node) {
+        final FileObject fo = node.getTestcase().getClassFileObject();
+        if (fo != null){
+            final long[] line = new long[]{0};
+            JavaSource javaSource = JavaSource.forFileObject(fo);
+            if (javaSource != null) {
+                try {
+                    javaSource.runUserActionTask(new Task<CompilationController>() {
+                            public void run(CompilationController compilationController) throws Exception {
+                                compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
+                                Trees trees = compilationController.getTrees();
+                                CompilationUnitTree compilationUnitTree = compilationController.getCompilationUnit();
+                                List<?extends Tree> typeDecls = compilationUnitTree.getTypeDecls();
+                                for (Tree tree : typeDecls) {
+                                    Element element = trees.getElement(trees.getPath(compilationUnitTree, tree));
+                                    if (element != null && element.getKind() == ElementKind.CLASS && element.getSimpleName().contentEquals(fo.getName())){
+                                        List<? extends ExecutableElement> methodElements = methodsIn(element.getEnclosedElements());
+                                        for(Element child: methodElements){
+                                            if (child.getSimpleName().contentEquals(node.getTestcase().getName())){
+                                                long pos = trees.getSourcePositions().getStartPosition(compilationUnitTree, trees.getTree(child));
+                                                line[0] = compilationUnitTree.getLineMap().getLineNumber(pos);
+                                                break;
+                                            }
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                        }, true);
+
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault().notify(ioe);
+                }
+            }
+            Utils.openFile(fo, (int)line[0]);
         }
     }
 
