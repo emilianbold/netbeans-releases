@@ -493,8 +493,9 @@ public class SunStudioDataCollector
             if (isAttachable()) {
                 // i.e. should start separate process
                 AttachableTarget at = (AttachableTarget) config.target;
-                NativeProcessBuilder npb = new NativeProcessBuilder(config.execEnv, cmd,false);
-                npb = npb.setArguments("-P", "" + at.getPID(), "-o", config.experimentDirectory); // NOI18N
+                NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(config.execEnv);
+                npb.setExecutable(cmd);
+                npb.setArguments("-P", "" + at.getPID(), "-o", config.experimentDirectory); // NOI18N
 
                 ExecutionDescriptor descr = new ExecutionDescriptor();
                 descr = descr.errProcessorFactory(new StdErrRedirectorFactory());

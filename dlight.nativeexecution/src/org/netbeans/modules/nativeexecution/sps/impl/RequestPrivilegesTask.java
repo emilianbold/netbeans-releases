@@ -68,10 +68,8 @@ public final class RequestPrivilegesTask implements Computable<RequestPrivileges
             ph.start();
 
             // An attempt to grant privileges using pfexec
-            NativeProcessBuilder npb = new NativeProcessBuilder(
-                    args.support.getExecEnv(), "/bin/pfexec",false); // NOI18N
-
-            npb = npb.setArguments("/bin/ppriv", "-s", // NOI18N
+            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(args.support.getExecEnv());
+            npb.setExecutable("/bin/pfexec").setArguments("/bin/ppriv", "-s", // NOI18N
                     "I+" + args.privilegesString, args.support.getPID()); // NOI18N
 
             ppriv = npb.call();

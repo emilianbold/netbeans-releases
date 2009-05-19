@@ -95,7 +95,7 @@
     <property name="glassfish.v3.subdir"       value="glassfishv3-prelude"/>
     
     <!-- Open ESB Properties-->    
-    <property name="openesb.install.dir" value="${glassfish.install.dir}/addons"/>
+    <property name="openesb.install.dir" value="${sjsas.install.dir}/addons"/>
     <property name="openesb.version" value="v2"/>
     <property name="openesb_location" value="${openesb_builds_host}/kits/ojc/openesb_as9_ur2/latest/installers/jbi_components_installer.jar"/>
     <!--property name="openesb_core_source" value="${openesb_builds_host}/kits/openesb/main/latest/CORE/jbi-core-installer.jar"/-->                  

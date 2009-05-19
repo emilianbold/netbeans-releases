@@ -41,9 +41,10 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.models;
 
-import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -69,7 +70,9 @@ import org.openide.util.Utilities;
  *
  * @author Nik Molchanov (copied from Jan Jancura's JPDA implementation)
  */
-public abstract class AbstractVariable implements LocalVariable, Customizer {
+public abstract class AbstractVariable implements LocalVariable {
+
+    public static final String PROP_VALUE = "var_value"; // NOI18N
 
     private final GdbDebugger debugger;
     protected String value = null;
@@ -77,7 +80,7 @@ public abstract class AbstractVariable implements LocalVariable, Customizer {
     protected TypeInfo tinfo = null;
     private static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
 
-    private Set<PropertyChangeListener> listeners = new HashSet<PropertyChangeListener>();
+    private final Set<PropertyChangeListener> listeners = Collections.synchronizedSet(new HashSet<PropertyChangeListener>());
 
     public AbstractVariable(GdbDebugger debugger, String value) {
         assert !Thread.currentThread().getName().equals("GdbReaderRP"); // NOI18N
@@ -241,7 +244,9 @@ public abstract class AbstractVariable implements LocalVariable, Customizer {
                     // is displayed, the AbstractVariable will be created from the GdbVariable.
                     // For that case, we need to update the GdbVariable!
                     getDebugger().updateGdbVariable(parent.getName(), parent.value);
-                    getDebugger().fireLocalsRefresh(parent);
+
+                    // No need to file this, locals update should be handled through getDebugger().variableChanged(parent);
+                    //getDebugger().fireLocalsRefresh(parent);
                 }
                 getDebugger().variableChanged(this);
             }
@@ -254,6 +259,7 @@ public abstract class AbstractVariable implements LocalVariable, Customizer {
     }
 
     public synchronized void setModifiedValue(String value) {
+        String oldVal = this.value;
         this.value = value;
         if (fields.size() > 0) {
             emptyFields();
@@ -261,6 +267,19 @@ public abstract class AbstractVariable implements LocalVariable, Customizer {
             if (value.length() > 0) {
                 expandChildren();
             }
+        }
+        notifyValueChanged(oldVal, value);
+    }
+
+    protected void notifyValueChanged(String oldVal, String newVal) {
+        // refresh tree
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, PROP_VALUE, oldVal, newVal);
+        List<PropertyChangeListener> ls;
+        synchronized (listeners) {
+            ls = new ArrayList<PropertyChangeListener>(listeners);
+        }
+        for (PropertyChangeListener l : ls) {
+            l.propertyChange(evt);
         }
     }
 
@@ -354,9 +373,6 @@ public abstract class AbstractVariable implements LocalVariable, Customizer {
             value = null;
         }
         return value;
-    }
-
-    public void setObject(Object bean) {
     }
 
    /**
@@ -462,16 +478,18 @@ public abstract class AbstractVariable implements LocalVariable, Customizer {
         return fields.toArray(new Field[fields.size()]);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        return o instanceof AbstractVariable &&
-                    getFullName(true).equals(((AbstractVariable) o).getFullName(true));
-    }
-
-    @Override
-    public int hashCode() {
-        return getFullName(true).hashCode();
-    }
+    // We can NOT use names for equals
+    // otherwise trees mixes instances when updating
+//    @Override
+//    public boolean equals(Object o) {
+//        return o instanceof AbstractVariable &&
+//                    getFullName(true).equals(((AbstractVariable) o).getFullName(true));
+//    }
+//
+//    @Override
+//    public int hashCode() {
+//        return getFullName(true).hashCode();
+//    }
 
     protected final GdbDebugger getDebugger() {
         return debugger;
@@ -850,7 +868,7 @@ public abstract class AbstractVariable implements LocalVariable, Customizer {
         assert GdbDebugger.PROP_VALUE_CHANGED.equals(evt.getPropertyName());
         assert evt.getNewValue() instanceof AbstractVariable;
         AbstractVariable av = (AbstractVariable) evt.getNewValue();
-        if (av.getFullName().equals(getFullName())) {
+        if (av != this && av.getFullName().equals(getFullName())) {
             if (av instanceof AbstractField) {
                 final AbstractVariable ancestor = ((AbstractField) this).getAncestor();
                 RequestProcessor.getDefault().post(new Runnable() {
