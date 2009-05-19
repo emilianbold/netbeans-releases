@@ -49,6 +49,7 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.MissingResourceException;
+import java.util.Random;
 import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
@@ -91,8 +92,8 @@ public class ChatPanel extends javax.swing.JPanel {
         styleSheet.addRule(bodyRule);
         styleSheet.addRule(".buddy {color: black; font-weight: bold;}"); // NOI18N
         styleSheet.addRule(".time {color: lightgrey;"); // NOI18N
-        styleSheet.addRule(".message {color: lightgrey;"); // NOI18N
-        styleSheet.addRule(".date {color: #FF9933;"); // NOI18N
+        styleSheet.addRule(".message {color: lightgrey; padding: 3px;"); // NOI18N
+        styleSheet.addRule(".date {color: #cc9922; padding: 7px 0;"); // NOI18N
 
 
 //        users.setCellRenderer(new BuddyListCellRenderer());
@@ -328,26 +329,31 @@ public class ChatPanel extends javax.swing.JPanel {
             HTMLDocument doc = (HTMLDocument) inbox.getStyledDocument();
             final Date timestamp = getTimestamp(message);
             String fromRes = StringUtils.parseResource(message.getFrom());
-            boolean yourmessage = (muc.getNickname().equals(fromRes));
+            Random random = new Random(fromRes.hashCode());
+            float randNum = random.nextFloat();
+            Color headerColor = Color.getHSBColor(randNum, 0.1F, 0.95F );
+            Color messageColor = Color.getHSBColor(randNum, 0.05F, 1.0F );
             boolean printheader = ((lastNickPrinted != null)?(!lastNickPrinted.equals(fromRes)):true); //Nickname is different from the last one, or...
             printheader |= (lastMessageDate != null && timestamp != null)?(timestamp.getTime() > lastMessageDate.getTime() + 120000):true;
             lastNickPrinted = fromRes;
             lastMessageDate = timestamp;
             if (!isSameDate(lastDatePrinted,timestamp)) {
                 lastDatePrinted = timestamp;
+                printheader = true;
                 String d = "<table border=\"0\" borderwith=\"0\" width=\"100%\"><tbody><tr><td class=\"date\" align=\"left\">" + // NOI18N
                     (isToday(timestamp)?NbBundle.getMessage(ChatPanel.class, "LBL_Today"):DateFormat.getDateInstance().format(timestamp)) + "</td><td class=\"date\" align=\"right\">" + // NOI18N
                     DateFormat.getTimeInstance(DateFormat.SHORT).format(timestamp) + "</td></tr></tbody></table>"; // NOI18N
                 editorKit.insertHTML(doc, doc.getLength(), d, 0, 0, null);
             }
             String text = "";
-            if (printheader || !isSameDate(lastDatePrinted,timestamp)) {
-                text += "<table border=\"0\" borderwith=\"0\" width=\"100%\" style=\"background-color: #" + (yourmessage?"ddffdd":"ffdddd") + //NOI18N
-                    "\"><tbody><tr><td class=\"buddy\" align=\"left\">"+ // NOI18N
+            if (printheader) {
+                text += "<table border=\"0\" borderwith=\"0\" width=\"100%\" style=\"background-color: rgb(" + headerColor.getRed() + "," + headerColor.getGreen() + "," + headerColor.getBlue() + //NOI18N
+                    ")\"><tbody><tr><td class=\"buddy\" align=\"left\">"+ // NOI18N
                     fromRes + "</td><td class=\"time\" align=\"right\">" + // NOI18N
                     DateFormat.getTimeInstance(DateFormat.SHORT).format(getTimestamp(message)) + "</td></tr></tbody></table>"; // NOI18N
             }
-            text += "<div class=\"message\">" + replaceLinks(removeTags(message.getBody())) + "</div>"; // NOI18N
+            text += "<div class=\"message\" style=\"background-color: rgb(" + messageColor.getRed() + "," + messageColor.getGreen() + "," + messageColor.getBlue() + //NOI18N
+                    ")\">" + replaceLinks(removeTags(message.getBody())) + "</div>"; // NOI18N
 
             editorKit.insertHTML(doc, doc.getLength(), text, 0, 0, null);
         } catch (IOException ex) {
