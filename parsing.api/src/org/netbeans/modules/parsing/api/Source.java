@@ -368,7 +368,10 @@ public final class Source {
             new int[][] {new int[] {0, 0}}
         );
     }
-    
+
+    public @Override String toString() {
+        return super.toString() + "[mimeType=" + mimeType + ", fileObject=" + fileObject + ", document=" + document; //NOI18N
+    }
     
     // ------------------------------------------------------------------------
     // private implementation
