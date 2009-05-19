@@ -276,8 +276,8 @@ public final class ManifestManager {
         }
         return new ManifestManager(
                 codenamebase, null,
+                just3dots(attr.getValue(BUNDLE_VERSION)),
                 attr.getValue(BUNDLE_VERSION),
-                attr.getValue(OPENIDE_MODULE_IMPLEMENTATION_VERSION),
                 null, // provides
                 null, // requires
                 null, // needs
@@ -290,6 +290,26 @@ public final class ManifestManager {
                 false, // deprecated,
                 null, // autoUpdateShowInClient != null ? Boolean.valueOf(autoUpdateShowInClient) : null,
                 attr.getValue(OPENIDE_MODULE_MODULE_DEPENDENCIES));
+    }
+
+    private static String just3dots(String v) {
+        if (v == null) {
+            return null;
+        }
+        String[] segments = v.split("\\.");
+        final int max = 3;
+        int[] version = new int[segments.length > max ? max : segments.length];
+        for (int i = 0; i < version.length; i++) {
+            version[i] = Integer.parseInt(segments[i]);
+        }
+        StringBuilder sb = new StringBuilder();
+        String conditionalDot = "";
+        for (int i = 0; i < version.length; i++) {
+            sb.append(conditionalDot);
+            sb.append(version[i]);
+            conditionalDot = ".";
+        }
+        return sb.toString();
     }
     
     /**

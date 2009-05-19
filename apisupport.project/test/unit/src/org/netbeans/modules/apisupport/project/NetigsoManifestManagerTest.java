@@ -64,7 +64,7 @@ public class NetigsoManifestManagerTest extends TestBase {
         super.setUp();
     }
     
-    public void testFriends() throws Exception {
+    public void testBundle1() throws Exception {
         File manifest = new File(getWorkDir(), "testManifest.mf");
         String mfContent = "Manifest-Version: 1.0\n" +
                 "Ant-Version: Apache Ant 1.6.5\n" +
@@ -79,6 +79,33 @@ public class NetigsoManifestManagerTest extends TestBase {
         ManifestManager mm = ManifestManager.getInstance(manifest, true);
         assertEquals("cnb", "org.netbeans.modules.sendopts", mm.getCodeNameBase());
         assertEquals("version", "1.9", mm.getSpecificationVersion());
+        assertEquals("layer", "org/netbeans/modules/sendopts/layer.xml", mm.getLayer());
+        assertEquals("Three packages", 3, mm.getPublicPackages().length);
+        assertEquals("a", mm.getPublicPackages()[0].getPackage());
+        assertEquals("b", mm.getPublicPackages()[1].getPackage());
+        assertEquals("c", mm.getPublicPackages()[2].getPackage());
+        assertFalse("not recursivea", mm.getPublicPackages()[0].isRecursive());
+        assertFalse("not recursiveb", mm.getPublicPackages()[1].isRecursive());
+        assertFalse("not recursivec", mm.getPublicPackages()[2].isRecursive());
+    }
+
+
+    public void testVersionIsConcatenated() throws Exception {
+        File manifest = new File(getWorkDir(), "testManifest.mf");
+        String mfContent = "Manifest-Version: 1.0\n" +
+                "Ant-Version: Apache Ant 1.6.5\n" +
+                "Created-By: 1.4.2_10-b03 (Sun Microsystems Inc.)\n" +
+                "Bundle-SymbolicName: org.netbeans.modules.sendopts\n" +
+                "OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/sendopts/Bundle.properties\n" +
+                "Bundle-Version: 1.9.7.Prelude\n" +
+                "Export-Package: a, b, c\n" +
+                "Bundle-RequireExecutionEnvironment: J2SE-1.3\n" +
+                "OpenIDE-Module-Layer: org/netbeans/modules/sendopts/layer.xml\n";
+        dump(manifest, mfContent);
+        ManifestManager mm = ManifestManager.getInstance(manifest, true);
+        assertEquals("cnb", "org.netbeans.modules.sendopts", mm.getCodeNameBase());
+        assertEquals("version", "1.9.7", mm.getSpecificationVersion());
+        assertEquals("version prelude taken as build version", "1.9.7.Prelude", mm.getImplementationVersion());
         assertEquals("layer", "org/netbeans/modules/sendopts/layer.xml", mm.getLayer());
         assertEquals("Three packages", 3, mm.getPublicPackages().length);
         assertEquals("a", mm.getPublicPackages()[0].getPackage());
