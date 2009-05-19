@@ -52,6 +52,7 @@ import org.netbeans.modules.maven.indexer.spi.ArchetypeQueries;
 import org.netbeans.modules.maven.indexer.spi.BaseQueries;
 import org.netbeans.modules.maven.indexer.spi.ChecksumQueries;
 import org.netbeans.modules.maven.indexer.spi.ClassesQuery;
+import org.netbeans.modules.maven.indexer.spi.ContextLoadedQuery;
 import org.netbeans.modules.maven.indexer.spi.DependencyInfoQueries;
 import org.netbeans.modules.maven.indexer.spi.GenericFindQuery;
 import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
@@ -351,7 +352,21 @@ public final class RepositoryQueries {
         }
         return toRet;
     }
-    
+
+    public static List<RepositoryInfo> getLoadedContexts() {
+        Collection<List<RepositoryInfo>> all = splitReposByType(null);
+        List<RepositoryInfo> toRet = new ArrayList<RepositoryInfo>();
+        for (List<RepositoryInfo> rps : all) {
+            RepositoryIndexerImplementation impl = RepositoryIndexer.findImplementation(rps.get(0));
+            if (impl != null) {
+                ContextLoadedQuery clq = impl.getCapabilityLookup().lookup(ContextLoadedQuery.class);
+                if (clq != null) {
+                    toRet.addAll(clq.getLoaded(rps));
+                }
+            }
+        }
+        return toRet;
+    }
 
     /**
      * 

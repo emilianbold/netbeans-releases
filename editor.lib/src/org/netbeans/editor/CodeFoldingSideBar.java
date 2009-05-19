@@ -124,6 +124,11 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
             attribs = null;
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
+                    //EMI: This is needed as maybe the DEFAULT_COLORING is changed, the font is different
+                    // and while getMarkSize() is used in paint() and will make the artifacts bigger,
+                    // the component itself will be the same size and it must be changed.
+                    // See http://www.netbeans.org/issues/show_bug.cgi?id=153316
+                    updatePreferredSize();
                     CodeFoldingSideBar.this.repaint();
                 }
             });

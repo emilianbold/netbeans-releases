@@ -78,7 +78,7 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
-    private SourcesHelper sourcesHelper;
+    private boolean dirty;
     private Sources delegate;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -92,7 +92,7 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
         this.sourceRoots.addPropertyChangeListener(this);
         this.testRoots.addPropertyChangeListener(this);        
         this.evaluator.addPropertyChangeListener(this);
-        initSources(); // have to register external build roots eagerly
+        delegate = initSources(); // have to register external build roots eagerly
     }
 
     /**
@@ -107,9 +107,11 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
             public SourceGroup[] run() {
                 Sources _delegate;
                 synchronized (J2SESources.this) {
-                    if (delegate == null) {                    
+                    if (dirty) {
+                        delegate.removeChangeListener(J2SESources.this);
                         delegate = initSources();
                         delegate.addChangeListener(J2SESources.this);
+                        dirty = false;
                     }
                     _delegate = delegate;
                 }
@@ -151,16 +153,16 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
     }
     
     private Sources initSources() {
-        this.sourcesHelper = new SourcesHelper(project, helper, evaluator);   //Safe to pass APH        
-        register(sourceRoots);
-        register(testRoots);
-        this.sourcesHelper.addNonSourceRoot(BUILD_DIR_PROP);
-        this.sourcesHelper.addNonSourceRoot(DIST_DIR_PROP);
+        SourcesHelper sourcesHelper = new SourcesHelper(project, helper, evaluator);   //Safe to pass APH
+        register(sourcesHelper, sourceRoots);
+        register(sourcesHelper, testRoots);
+        sourcesHelper.addNonSourceRoot(BUILD_DIR_PROP);
+        sourcesHelper.addNonSourceRoot(DIST_DIR_PROP);
         sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT, false);
-        return this.sourcesHelper.createSources();
+        return sourcesHelper.createSources();
     }
 
-    private void register(SourceRoots roots) {
+    private void register(SourcesHelper sourcesHelper, SourceRoots roots) {
         String[] propNames = roots.getRootProperties();
         String[] rootNames = roots.getRootNames();
         for (int i = 0; i < propNames.length; i++) {
@@ -184,10 +186,7 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
 
     private void fireChange() {
         synchronized (this) {
-            if (delegate != null) {
-                delegate.removeChangeListener(this);
-                delegate = null;
-            }
+            dirty = true;
         }
         changeSupport.fireChange();
     }

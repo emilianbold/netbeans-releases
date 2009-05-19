@@ -49,6 +49,8 @@ import java.lang.management.MemoryType;
 import java.lang.management.MemoryUsage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import javax.management.ListenerNotFoundException;
 import javax.management.Notification;
 import javax.management.NotificationEmitter;
@@ -62,6 +64,7 @@ import org.openide.ErrorManager;
 public class LowMemoryNotifier {
     
     private static final float DEFAULT_HEAP_LIMIT = 0.9f;
+    private static Logger log = Logger.getLogger(LowMemoryNotifier.class.getName());
     
     private static LowMemoryNotifier instance;
     
@@ -160,7 +163,8 @@ public class LowMemoryNotifier {
             MemoryMXBean mbean = ManagementFactory.getMemoryMXBean();
             ((NotificationEmitter)mbean).removeNotificationListener(this.notificationListener);
         } catch (ListenerNotFoundException e) {
-            ErrorManager.getDefault().notify(e);
+            if (log.isLoggable(Level.SEVERE))
+                log.log(Level.SEVERE, e.getMessage(), e);
         }
         pool.setUsageThreshold(0);
     }

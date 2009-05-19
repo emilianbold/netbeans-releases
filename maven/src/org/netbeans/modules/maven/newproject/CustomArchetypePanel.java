@@ -38,8 +38,9 @@
  */
 package org.netbeans.modules.maven.newproject;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.TextValueCompleter;
@@ -61,8 +62,8 @@ public class CustomArchetypePanel extends javax.swing.JPanel {
     }
     
     /*Return repo urls's*/
-    private List<String> getRepoIds() {
-        List<String> repos = new ArrayList<String>();
+    private Set<String> getRepoIds() {
+        Set<String> repos = new TreeSet<String>();
         
         List<RepositoryInfo> ris = RepositoryPreferences.getInstance().getRepositoryInfos();
         for (RepositoryInfo ri : ris) {
@@ -70,7 +71,6 @@ public class CustomArchetypePanel extends javax.swing.JPanel {
                 repos.add(ri.getRepositoryUrl());
             }
         }
-
         return repos;
 
     }

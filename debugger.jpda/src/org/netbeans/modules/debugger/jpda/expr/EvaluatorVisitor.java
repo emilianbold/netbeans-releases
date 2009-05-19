@@ -658,7 +658,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             return getTypeName(tv.getUpperBound());
         }
         if (type.getKind() == TypeKind.DECLARED) {
-            return ((DeclaredType) type).asElement().toString();
+            return ElementUtilities.getBinaryName((TypeElement) ((DeclaredType) type).asElement());
         }
         return type.toString();
     }

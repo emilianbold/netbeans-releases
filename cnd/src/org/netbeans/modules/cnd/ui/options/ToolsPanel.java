@@ -224,7 +224,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
             cbFortranRequired.setEnabled(false);
             cbAsRequired.setEnabled(false);
         }
-        csm = cacheManager.getCompilerSetManagerCopy(execEnv);
+        csm = cacheManager.getCompilerSetManagerCopy(execEnv, true);
 
         gdbEnabled = !IpeUtils.isDbxguiEnabled();
 

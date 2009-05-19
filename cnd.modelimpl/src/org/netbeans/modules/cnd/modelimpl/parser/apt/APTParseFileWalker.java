@@ -153,9 +153,9 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         }
     }
 
-    protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt) throws IOException {
+    protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt, APTMacroMap.State postIncludeState) throws IOException {
         try {
-            return inclFileOwner.onFileIncluded(getStartProject(), inclPath, getPreprocHandler(), mode, isTriggerParsingActivity());
+            return inclFileOwner.onFileIncluded(getStartProject(), inclPath, getPreprocHandler(), postIncludeState, mode, isTriggerParsingActivity());
         } catch (NullPointerException ex) {
             APTUtils.LOG.log(Level.SEVERE, "NPE when processing file", ex);// NOI18N
             DiagnosticExceptoins.register(ex);
