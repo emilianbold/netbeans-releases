@@ -254,7 +254,7 @@ public class LogHyperLinkSupport {
                 errAnnot = new ErrorAnnotation(errorMsg);
                 errAnnot.attach(errorLine);
                 errAnnot.moveToFront();
-                errorLine.show(Line.ShowOpenType.NONE, Line.ShowVisibilityType.NONE);
+                errorLine.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
             }
         }
 
