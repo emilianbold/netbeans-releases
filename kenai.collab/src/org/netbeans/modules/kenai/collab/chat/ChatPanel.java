@@ -50,6 +50,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.MissingResourceException;
 import javax.swing.UIManager;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
@@ -62,6 +64,7 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.packet.DelayInformation;
+import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -101,6 +104,14 @@ public class ChatPanel extends javax.swing.JPanel {
         KenaiConnection.getDefault().join(chat,new ChatListener());
         //KenaiConnection.getDefault().join(chat);
         inbox.setBackground(Color.WHITE);
+        inbox.addHyperlinkListener(new HyperlinkListener() {
+
+            public void hyperlinkUpdate(HyperlinkEvent e) {
+                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    URLDisplayer.getDefault().showURL(e.getURL());
+                }
+            }
+        });
         outbox.setBackground(Color.WHITE);
         splitter.setResizeWeight(0.9);
         refreshOnlineStatus();
@@ -115,6 +126,11 @@ public class ChatPanel extends javax.swing.JPanel {
 
     private String removeTags(String body) {
         return body.replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
+    }
+
+    private String replaceLinks(String removeTags) {
+        // This regexp works quite nice, should be OK in most cases (does not handle [.,?!] in the end of the URL)
+        return removeTags.replaceAll("(http|https|ftp)://([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,4}(/[^ ]*)*", "<a href=\"$0\">$0</a>"); //NOI18N
     }
 
 //    void setUpPrivateMessages() {
@@ -304,11 +320,19 @@ public class ChatPanel extends javax.swing.JPanel {
 
 
     private Date lastDatePrinted;
+    private Date lastMessageDate;
+    private String lastNickPrinted = null;
 
     protected void insertMessage(Message message) {
         try {
             HTMLDocument doc = (HTMLDocument) inbox.getStyledDocument();
             final Date timestamp = getTimestamp(message);
+            String fromRes = StringUtils.parseResource(message.getFrom());
+            boolean yourmessage = (muc.getNickname().equals(fromRes));
+            boolean printheader = ((lastNickPrinted != null)?(!lastNickPrinted.equals(fromRes)):true); //Nickname is different from the last one, or...
+            printheader |= (lastMessageDate != null && timestamp != null)?(timestamp.getTime() > lastMessageDate.getTime() + 120000):true;
+            lastNickPrinted = fromRes;
+            lastMessageDate = timestamp;
             if (!isSameDate(lastDatePrinted,timestamp)) {
                 lastDatePrinted = timestamp;
                 String d = "<table border=\"0\" borderwith=\"0\" width=\"100%\"><tbody><tr><td class=\"date\" align=\"left\">" + // NOI18N
@@ -316,10 +340,14 @@ public class ChatPanel extends javax.swing.JPanel {
                     DateFormat.getTimeInstance(DateFormat.SHORT).format(timestamp) + "</td></tr></tbody></table>"; // NOI18N
                 editorKit.insertHTML(doc, doc.getLength(), d, 0, 0, null);
             }
-            String text = "<table border=\"0\" borderwith=\"0\" width=\"100%\"><tbody><tr><td class=\"buddy\" align=\"left\">"+ // NOI18N
-                    StringUtils.parseResource(message.getFrom()) + "</td><td class=\"time\" align=\"right\">" + // NOI18N
-                    DateFormat.getTimeInstance(DateFormat.SHORT).format(getTimestamp(message)) + "</td></tr></tbody></table>" + // NOI18N
-                    "<div class=\"message\">" + removeTags(message.getBody()) + "</div>"; // NOI18N
+            String text = "";
+            if (printheader || !isSameDate(lastDatePrinted,timestamp)) {
+                text += "<table border=\"0\" borderwith=\"0\" width=\"100%\" style=\"background-color: #" + (yourmessage?"ddffdd":"ffdddd") + //NOI18N
+                    "\"><tbody><tr><td class=\"buddy\" align=\"left\">"+ // NOI18N
+                    fromRes + "</td><td class=\"time\" align=\"right\">" + // NOI18N
+                    DateFormat.getTimeInstance(DateFormat.SHORT).format(getTimestamp(message)) + "</td></tr></tbody></table>"; // NOI18N
+            }
+            text += "<div class=\"message\">" + replaceLinks(removeTags(message.getBody())) + "</div>"; // NOI18N
 
             editorKit.insertHTML(doc, doc.getLength(), text, 0, 0, null);
         } catch (IOException ex) {
