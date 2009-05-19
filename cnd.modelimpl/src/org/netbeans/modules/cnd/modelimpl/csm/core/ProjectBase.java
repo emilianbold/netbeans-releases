@@ -716,7 +716,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             projectRoots.addSources(headers);
             projectRoots.addSources(excluded);
             createProjectFilesIfNeed(sources, true, removedFiles, validator);
-            if (RepositoryUtils.getRepositoryErrorCount(this) == 0){
+            if (status != Status.Validating  || RepositoryUtils.getRepositoryErrorCount(this) == 0){
                 createProjectFilesIfNeed(headers, false, removedFiles, validator);
             }
             if (status == Status.Validating && RepositoryUtils.getRepositoryErrorCount(this) > 0){
