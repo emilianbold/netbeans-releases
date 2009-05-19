@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject;
 
 import java.beans.PropertyChangeEvent;
@@ -49,176 +48,188 @@ import org.openide.util.NbPreferences;
 import org.openide.util.SharedClassObject;
 
 public class MakeOptions extends SharedClassObject implements PropertyChangeListener {
+
     static private MakeOptions instance = null;
-    
     // Default make options
     public static final String MAKE_OPTIONS = "makeOptions"; // NOI18N
     static private String defaultMakeOptions = ""; // NOI18N
-    
     // Default Path mode
     public static final int PATH_REL_OR_ABS = 0;
     public static final int PATH_REL = 1;
     public static final int PATH_ABS = 2;
-    public static final String[] PathModeNames = new String[] {
+    public static final String[] PathModeNames = new String[]{
         getString("TXT_Auto"),
         getString("TXT_AlwaysRelative"),
-        getString("TXT_AlwaysAbsolute"),
-    };
+        getString("TXT_AlwaysAbsolute"),};
     public static final String PATH_MODE = "pathMode"; // NOI18N
-    
     // Dependency checking
     public static final String DEPENDENCY_CHECKING = "dependencyChecking"; // NOI18N
-    
     // Save
     public static final String SAVE = "save";  // NOI18N
-    
     // Reuse
     public static final String REUSE = "reuse";  // NOI18N
 
     // Display binary files
     public static final String VIEW_BINARY_FILES = "viewBinaryFiles"; // NOI18N
-    
     // packaging Defaults
     static final String DEF_EXE_PERM = "defexeperm"; // NOI18N
     static final String DEF_FILE_PERM = "deffileperm"; // NOI18N
     static final String DEF_OWNER = "defowner"; // NOI18N
     static final String DEF_GROUP = "defgroup"; // NOI18N
-
     static final String PREF_APP_LANGUAGE = "prefAppLanguage"; // NOI18N // Prefered language when creating new Application projects
-    
+
     static public MakeOptions getInstance() {
         if (instance == null) {
             instance = SharedClassObject.findObject(MakeOptions.class, true);
         }
         return instance;
     }
-    
+
     public static void setDefaultMakeOptions(String makeOptions) {
         defaultMakeOptions = makeOptions;
     }
-    
+
     public static String getDefaultMakeOptions() {
         return defaultMakeOptions;
-    }    
-    
+    }
+
     public MakeOptions() {
         super();
         addPropertyChangeListener(this);
     }
-    
+
     private Preferences getPreferences() {
         return NbPreferences.forModule(MakeOptions.class);
     }
-    
+
     // Make Options
     public String getMakeOptions() {
         return getPreferences().get(MAKE_OPTIONS, getDefaultMakeOptions());
-        }
+    }
+
     public void setMakeOptions(String value) {
         String oldValue = getMakeOptions();
         getPreferences().put(MAKE_OPTIONS, value);
-        if (!oldValue.equals(value))
+        if (!oldValue.equals(value)) {
             firePropertyChange(MAKE_OPTIONS, oldValue, value);
+        }
     }
-    
+
     // Path Mode
     public int getPathMode() {
         return getPreferences().getInt(PATH_MODE, PATH_REL);
     }
+
     public void setPathMode(int pathMode) {
         int oldValue = getPathMode();
         getPreferences().putInt(PATH_MODE, pathMode);
-        if (oldValue != pathMode)
+        if (oldValue != pathMode) {
             firePropertyChange(PATH_MODE, Integer.valueOf(oldValue), Integer.valueOf(pathMode));
+        }
     }
-    
+
     // Dependency Checking
     public boolean getDepencyChecking() {
         return getPreferences().getBoolean(DEPENDENCY_CHECKING, true);
     }
+
     public void setDepencyChecking(boolean dependencyChecking) {
         boolean oldValue = getDepencyChecking();
         getPreferences().putBoolean(DEPENDENCY_CHECKING, dependencyChecking);
-        if (oldValue != dependencyChecking)
+        if (oldValue != dependencyChecking) {
             firePropertyChange(DEPENDENCY_CHECKING, Boolean.valueOf(oldValue), Boolean.valueOf(dependencyChecking));
+        }
     }
 
     // Display binary files
     public boolean getViewBinaryFiles() {
         return getPreferences().getBoolean(VIEW_BINARY_FILES, false);
     }
+
     public void setViewBinaryFiles(boolean viewBinaryFiles) {
         boolean oldValue = getViewBinaryFiles();
         getPreferences().putBoolean(VIEW_BINARY_FILES, viewBinaryFiles);
-        if (oldValue != viewBinaryFiles)
+        if (oldValue != viewBinaryFiles) {
             firePropertyChange(VIEW_BINARY_FILES, Boolean.valueOf(oldValue), Boolean.valueOf(viewBinaryFiles));
+        }
     }
-    
+
     // Save
     public boolean getSave() {
         return getPreferences().getBoolean(SAVE, true);
     }
+
     public void setSave(boolean save) {
         boolean oldValue = getSave();
         getPreferences().putBoolean(SAVE, save);
-        if (oldValue != save)
+        if (oldValue != save) {
             firePropertyChange(SAVE, Boolean.valueOf(oldValue), Boolean.valueOf(save));
+        }
     }
-    
+
     // Reuse
     public boolean getReuse() {
         return getPreferences().getBoolean(REUSE, true);
     }
+
     public void setReuse(boolean reuse) {
         boolean oldValue = getReuse();
         getPreferences().putBoolean(REUSE, reuse);
-        if (oldValue != reuse)
+        if (oldValue != reuse) {
             firePropertyChange(REUSE, Boolean.valueOf(oldValue), Boolean.valueOf(reuse));
+        }
     }
-    
-    
+
     // Def Exe Perm
     public String getDefExePerm() {
         return getPreferences().get(DEF_EXE_PERM, "755"); // NOI18N
     }
+
     public void setDefExePerm(String value) {
         String oldValue = getDefExePerm();
         getPreferences().put(DEF_EXE_PERM, value);
-        if (!oldValue.equals(value))
+        if (!oldValue.equals(value)) {
             firePropertyChange(DEF_EXE_PERM, oldValue, value);
+        }
     }
-    
+
     // Def File Perm
     public String getDefFilePerm() {
         return getPreferences().get(DEF_FILE_PERM, "644"); // NOI18N
     }
+
     public void setDefFilePerm(String value) {
         String oldValue = getDefFilePerm();
         getPreferences().put(DEF_FILE_PERM, value);
-        if (!oldValue.equals(value))
+        if (!oldValue.equals(value)) {
             firePropertyChange(DEF_FILE_PERM, oldValue, value);
+        }
     }
-    
+
     // Def Owner Perm
     public String getDefOwner() {
         return getPreferences().get(DEF_OWNER, "root"); // NOI18N
     }
+
     public void setDefOwner(String value) {
         String oldValue = getDefOwner();
         getPreferences().put(DEF_OWNER, value);
-        if (!oldValue.equals(value))
+        if (!oldValue.equals(value)) {
             firePropertyChange(DEF_OWNER, oldValue, value);
+        }
     }
-    
+
     // Def Group Perm
     public String getDefGroup() {
         return getPreferences().get(DEF_GROUP, "bin"); // NOI18N
     }
+
     public void setDefGroup(String value) {
         String oldValue = getDefGroup();
         getPreferences().put(DEF_GROUP, value);
-        if (!oldValue.equals(value))
+        if (!oldValue.equals(value)) {
             firePropertyChange(DEF_GROUP, oldValue, value);
+        }
     }
 
 
@@ -226,20 +237,21 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     public String getPrefApplicationLanguage() {
         return getPreferences().get(PREF_APP_LANGUAGE, "C++"); // NOI18N
     }
+
     public void setPrefApplicationLanguage(String value) {
         String oldValue = getPrefApplicationLanguage();
         getPreferences().put(PREF_APP_LANGUAGE, value);
-        if (!oldValue.equals(value))
+        if (!oldValue.equals(value)) {
             firePropertyChange(PREF_APP_LANGUAGE, oldValue, value);
+        }
     }
-    
+
     public void propertyChange(PropertyChangeEvent pce) {
     }
-    
+
     /** Look up i18n strings here */
     private static String getString(String s) {
         return NbBundle.getMessage(MakeOptions.class, s);
     }
-
 }
 

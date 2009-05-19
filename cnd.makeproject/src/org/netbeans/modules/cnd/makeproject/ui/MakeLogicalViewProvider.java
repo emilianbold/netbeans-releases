@@ -571,6 +571,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
         class VisualUpdater implements Runnable {
+
             public void run() {
                 fireIconChange();
                 fireOpenedIconChange();
@@ -910,7 +911,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                             continue;
                         }
 
-                        if (!MakeOptions.getInstance().getViewBinaryFiles() && CndFileVisibilityQuery.getDefault().isIgnored(child)){
+                        if (!MakeOptions.getInstance().getViewBinaryFiles() && CndFileVisibilityQuery.getDefault().isIgnored(child)) {
                             continue;
                         }
 
@@ -972,7 +973,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             this.folder = folder;
             setForceAnnotation(true);
             updateAnnotationFiles();
-            }
+        }
 
         private void updateAnnotationFiles() {
             RequestProcessor.getDefault().post(new UpdateAnnotationFilesTHread(this));
@@ -999,8 +1000,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             }
         }
 
-
         class VisualUpdater implements Runnable {
+
             public void run() {
                 fireIconChange();
                 fireOpenedIconChange();
@@ -1009,6 +1010,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         /*
          * Something in the folder has changed
          **/
+
         public void stateChanged(ChangeEvent e) {
             updateAnnotationFiles();
             EventQueue.invokeLater(new VisualUpdater()); // IZ 151257
@@ -1634,8 +1636,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             List<Action> newActions = new ArrayList<Action>();
             if (getItem().getFolder() == null) {
                 return oldActions;
-            }
-            else if (getItem().getFolder().isDiskFolder()) {
+            } else if (getItem().getFolder().isDiskFolder()) {
                 for (int i = 0; i < oldActions.length; i++) {
                     if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.OpenAction) {
                         newActions.add(oldActions[i]);
@@ -1719,6 +1720,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
         class VisualUpdater implements Runnable {
+
             public void run() {
                 fireIconChange();
                 fireOpenedIconChange();

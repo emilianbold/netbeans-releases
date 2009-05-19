@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui.options;
 
 import java.awt.Color;
@@ -57,14 +56,12 @@ import org.openide.util.NbBundle;
  * Replaces the old project system options panel.
  */
 public class ProjectOptionsPanel extends JPanel {
-    
+
     private boolean changed;
     private boolean listen = false;
-    
     private ArrayList<PropertyChangeListener> propertyChangeListeners = new ArrayList<PropertyChangeListener>();
-    
     private DocumentListener documentListener;
-    
+
     /** Creates new form ProjectOptionsPanel */
     public ProjectOptionsPanel() {
         initComponents();
@@ -77,35 +74,35 @@ public class ProjectOptionsPanel extends JPanel {
         makeOptionsTextField.getAccessibleContext().setAccessibleDescription(getString("MAKE_OPTIONS_AD"));
         filePathTxt.getAccessibleContext().setAccessibleDescription(getString("FILE_PATH_TXT_AD"));
         filePathTxt.getAccessibleContext().setAccessibleName(getString("FILE_PATH_TXT_AN"));
-        
-        
+
+
         documentListener = new DocumentListener() {
+
             public void insertUpdate(DocumentEvent e) {
                 validateFields();
             }
-            
+
             public void removeUpdate(DocumentEvent e) {
                 validateFields();
             }
-            
+
             public void changedUpdate(DocumentEvent e) {
                 validateFields();
             }
         };
-        
+
         makeOptionsTextField.getDocument().addDocumentListener(documentListener);
         setName("TAB_ProjectsTab"); // NOI18N (used as a pattern...)
-        
-        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
-            setOpaque( false );
-        }
-        else {
+
+        if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
+            setOpaque(false);
+        } else {
             Color c = getBackground();
             Color cc = new Color(c.getRed(), c.getGreen(), c.getBlue());
-           filePathTxt.setBackground(cc);
+            filePathTxt.setBackground(cc);
         }
     }
-    
+
     public void update() {
         listen = false;
         MakeOptions makeOptions = MakeOptions.getInstance();
@@ -119,30 +116,30 @@ public class ProjectOptionsPanel extends JPanel {
         saveCheckBox.setSelected(makeOptions.getSave());
         reuseCheckBox.setSelected(makeOptions.getReuse());
         viewBinaryFilesCheckBox.setSelected(makeOptions.getViewBinaryFiles());
-        
+
         listen = true;
         changed = false;
     }
-    
+
     /** Apply changes */
     public void applyChanges() {
         MakeOptions makeOptions = MakeOptions.getInstance();
-        
+
         makeOptions.setDepencyChecking(dependencyCheckingCheckBox.isSelected());
         makeOptions.setMakeOptions(makeOptionsTextField.getText());
         makeOptions.setPathMode(filePathcomboBox.getSelectedIndex());
         makeOptions.setSave(saveCheckBox.isSelected());
         makeOptions.setReuse(reuseCheckBox.isSelected());
         makeOptions.setViewBinaryFiles(viewBinaryFilesCheckBox.isSelected());
-        
+
         changed = false;
     }
-    
+
     /** What to do if user cancels the dialog (nothing) */
     public void cancel() {
         changed = false;
     }
-    
+
     /**
      * Lets NB know if the data in the panel is valid and OK should be enabled
      * 
@@ -151,7 +148,7 @@ public class ProjectOptionsPanel extends JPanel {
     public boolean dataValid() {
         return true;
     }
-    
+
     /**
      * Lets caller know if any data has been changed.
      * 
@@ -160,12 +157,12 @@ public class ProjectOptionsPanel extends JPanel {
     public boolean isChanged() {
         return changed;
     }
-    
+
     private void validateFields() {
         PropertyChangeEvent pce = new PropertyChangeEvent(this, OptionsPanelController.PROP_VALID, this, this);
         firePropertyChange(pce);
     }
-    
+
     public void firePropertyChange(PropertyChangeEvent evt) {
         ArrayList<PropertyChangeListener> newList = new ArrayList<PropertyChangeListener>();
         newList.addAll(propertyChangeListeners);
@@ -173,11 +170,11 @@ public class ProjectOptionsPanel extends JPanel {
             listener.propertyChange(evt);
         }
     }
-    
+
     private static String getString(String key) {
         return NbBundle.getMessage(ProjectOptionsPanel.class, key);
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -333,7 +330,7 @@ public class ProjectOptionsPanel extends JPanel {
 
     private void dependencyCheckingCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dependencyCheckingCheckBoxActionPerformed
 // TODO add your handling code here:
-        
+
         PropertyChangeEvent pce = new PropertyChangeEvent(this, OptionsPanelController.PROP_VALID, this, this);
         firePropertyChange(pce);
 //        pce = new PropertyChangeEvent(this, "buran" + OptionsPanelController.PROP_VALID, this, this);
@@ -344,8 +341,6 @@ public class ProjectOptionsPanel extends JPanel {
         PropertyChangeEvent pce = new PropertyChangeEvent(this, OptionsPanelController.PROP_VALID, this, this);
         firePropertyChange(pce);
     }//GEN-LAST:event_viewBinaryFilesCheckBoxActionPerformed
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox dependencyCheckingCheckBox;
     private javax.swing.JLabel filePathLabel;
@@ -359,5 +354,4 @@ public class ProjectOptionsPanel extends JPanel {
     private javax.swing.JCheckBox saveCheckBox;
     private javax.swing.JCheckBox viewBinaryFilesCheckBox;
     // End of variables declaration//GEN-END:variables
-    
 }

@@ -38,10 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui.options;
-
-
 
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
@@ -55,28 +52,28 @@ public final class ProjectOptionsPanelController extends OptionsPanelController 
 
     public void update() {
         panel.update();
-}
+    }
 
     public void applyChanges() {
         panel.applyChanges();
     }
-    
+
     public void cancel() {
         panel.cancel();
     }
-    
+
     public boolean isValid() {
         return panel.dataValid();
     }
-    
+
     public boolean isChanged() {
         return panel.isChanged();
     }
-    
+
     public HelpCtx getHelpCtx() {
         return new HelpCtx("netbeans.optionsDialog.advanced.formEditor"); // NOI18N
     }
-    
+
     public JComponent getComponent(Lookup masterLookup) {
         return panel;
     }
