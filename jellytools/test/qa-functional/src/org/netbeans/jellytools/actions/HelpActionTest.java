@@ -98,8 +98,7 @@ public class HelpActionTest extends JellyTestCase {
     
     /** Test Help popup menu item on a property sheet. */
     public void testPerformPopupOnPropertySheet() {
-        OptionsOperator oo = OptionsOperator.invoke();
-        oo.switchToClassicView();
+        OptionsOperator oo = OptionsOperator.invoke();        
         // select root
         PropertySheetOperator pso = oo.getPropertySheet("");
         try {

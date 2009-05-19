@@ -40,7 +40,11 @@
  */
 package org.netbeans.jellytools;
 
+import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
+import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.junit.NbTest;
 
 /** Test PluginsOperator.
@@ -98,10 +102,23 @@ public class PluginsOperatorTest extends JellyTestCase {
     }
     private static PluginsOperator pluginsOper;
     
-    private static final String TEST_PLUGIN = "Clearcase"; //NOI18N
+    private static final String TEST_PLUGIN = "Archiver"; //NOI18N
 
     /** Test of invoke method. */
-    public void testInvoke() {
+    public void testInvoke() throws InterruptedException {
+
+        //Make sure the menu has time to load
+        new Action(Bundle.getStringTrimmed(
+            "org.netbeans.core.ui.resources.Bundle", "Menu/Tools"), null).performMenu();
+
+        Thread.sleep(1000);
+        
+
+        new Action(Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle",
+                "Menu/BuildProject"), null).performMenu();
+
+        Thread.sleep(1000);
+
         pluginsOper = PluginsOperator.invoke();
     }
 
@@ -123,8 +140,9 @@ public class PluginsOperatorTest extends JellyTestCase {
      * - wait for "NetBeans IDE Installer" dialog
      * - click Cancel
      */
-    public void testUninstall() {
-        pluginsOper.selectInstalled();
+    public void testUninstall() throws Exception{
+        pluginsOper.cbShowDetails().setSelected(true);
+
         pluginsOper.selectPlugins(new String[]{
             "Java",
             TEST_PLUGIN
@@ -141,7 +159,7 @@ public class PluginsOperatorTest extends JellyTestCase {
      * - click Cancel
      */
     public void testDeactivate() {
-        pluginsOper.selectInstalled();
+        pluginsOper.cbShowDetails().setSelected(true);
         pluginsOper.selectPlugin(TEST_PLUGIN);
         pluginsOper.deactivate();
         pluginsOper.installer().cancel();

@@ -96,13 +96,6 @@ public class OptionsOperator extends NbDialogOperator {
     private static final long BEFORE_EDITING_TIMEOUT = 2000;
 
     private static int DEFINE_HERE = 0;
-
-    private static final String CLASSIC_VIEW_LABEL = Bundle.getStringTrimmed(
-                                                        "org.netbeans.modules.options.Bundle",
-                                                        "CTL_Classic");
-    private static final String MODERN_VIEW_LABEL = Bundle.getStringTrimmed(
-                                                        "org.netbeans.modules.options.Bundle",
-                                                        "CTL_Modern");
     
     /**
      * Waits for the Options window opened
@@ -138,22 +131,6 @@ public class OptionsOperator extends NbDialogOperator {
     }
 
     //subcomponents
-
-    /** Returns operator of "Classic View" button.
-     * @return  JButtonOperator instance of "Classic View" button
-     */
-    public JButtonOperator btClassicView() {
-        // we cannot cache oeprator because everytime a new dialog is created
-        return new JButtonOperator(this, CLASSIC_VIEW_LABEL);
-    }
-
-    /** Returns operator of "Modern View" button.
-     * @return  JButtonOperator instance of "Modern View" button
-     */
-    public JButtonOperator btModernView() {
-        // we cannot cache oeprator because everytime a new dialog is created
-        return new JButtonOperator(this, MODERN_VIEW_LABEL);
-    }
 
     /** Getter for table containing property list and
      * property definition levels.
@@ -357,16 +334,6 @@ public class OptionsOperator extends NbDialogOperator {
                                                  rect.y + rect.height/2,
                                                  1);
     }
-
-    // Modern view Options
-    
-    /** Switch to classic view of options. */
-    public void switchToClassicView() {
-        if(JButtonOperator.findJButton((Container)this.getSource(), CLASSIC_VIEW_LABEL, true, true) != null) {
-            btClassicView().push();
-        }
-        sourceInternal = new OptionsOperator().getSource();
-    }
     
     private Component sourceInternal;
     
@@ -378,15 +345,6 @@ public class OptionsOperator extends NbDialogOperator {
             sourceInternal = super.getSource();
         }
         return sourceInternal;
-    }
-    
-
-    /** Switch to modern view of options. */
-    public void switchToModernView() {
-        if(JButtonOperator.findJButton((Container)this.getSource(), MODERN_VIEW_LABEL, true, true) != null) {
-            btModernView().push();
-        }
-        sourceInternal = new OptionsOperator().getSource();
     }
     
     /** Selects a category with given name.
