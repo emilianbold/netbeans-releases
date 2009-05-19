@@ -78,45 +78,74 @@ final class OutputUtils {
     static void openTestsuite(TestsuiteNode node) {
         TestSuite suite = node.getSuite();
         if ((suite != null) && (suite instanceof JUnitTestSuite)){
-            Utils.openFile(((JUnitTestSuite)suite).getSuiteFO(), 1);
+            final FileObject fo = ((JUnitTestSuite)suite).getSuiteFO();
+            if (fo != null){
+                final long[] line = new long[]{0};
+                JavaSource javaSource = JavaSource.forFileObject(fo);
+                if (javaSource != null) {
+                    try {
+                        javaSource.runUserActionTask(new Task<CompilationController>() {
+                                public void run(CompilationController compilationController) throws Exception {
+                                    compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
+                                    Trees trees = compilationController.getTrees();
+                                    CompilationUnitTree compilationUnitTree = compilationController.getCompilationUnit();
+                                    List<?extends Tree> typeDecls = compilationUnitTree.getTypeDecls();
+                                    for (Tree tree : typeDecls) {
+                                        Element element = trees.getElement(trees.getPath(compilationUnitTree, tree));
+                                        if (element != null && element.getKind() == ElementKind.CLASS && element.getSimpleName().contentEquals(fo.getName())){
+                                            long pos = trees.getSourcePositions().getStartPosition(compilationUnitTree, tree);
+                                            line[0] = compilationUnitTree.getLineMap().getLineNumber(pos);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }, true);
+
+                    } catch (IOException ioe) {
+                        ErrorManager.getDefault().notify(ioe);
+                    }
+                }
+                Utils.openFile(fo, (int)line[0]);
+            }
         }
     }
 
     static void openTestMethod(final JUnitTestMethodNode node) {
         final FileObject fo = node.getTestcase().getClassFileObject();
-        final long[] line = new long[]{0};
-        JavaSource javaSource = JavaSource.forFileObject(fo);
-        if (javaSource != null) {
-            try {
-                javaSource.runUserActionTask(new Task<CompilationController>() {
-                        public void run(CompilationController compilationController) throws Exception {
-                            compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
-                            Trees trees = compilationController.getTrees();
-                            CompilationUnitTree compilationUnitTree = compilationController.getCompilationUnit();
-                            List<?extends Tree> typeDecls = compilationUnitTree.getTypeDecls();
-                            for (Tree tree : typeDecls) {
-                                Element element = trees.getElement(trees.getPath(compilationUnitTree, tree));
-                                if (element != null && element.getKind() == ElementKind.CLASS && element.getSimpleName().contentEquals(fo.getName())){
-                                    List<? extends ExecutableElement> methodElements = methodsIn(element.getEnclosedElements());
-                                    for(Element child: methodElements){
-                                        if (child.getSimpleName().contentEquals(node.getTestcase().getName())){
-                                            long pos = trees.getSourcePositions().getStartPosition(compilationUnitTree, trees.getTree(child));
-                                            line[0] = compilationUnitTree.getLineMap().getLineNumber(pos);
-                                            break;
+        if (fo != null){
+            final long[] line = new long[]{0};
+            JavaSource javaSource = JavaSource.forFileObject(fo);
+            if (javaSource != null) {
+                try {
+                    javaSource.runUserActionTask(new Task<CompilationController>() {
+                            public void run(CompilationController compilationController) throws Exception {
+                                compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
+                                Trees trees = compilationController.getTrees();
+                                CompilationUnitTree compilationUnitTree = compilationController.getCompilationUnit();
+                                List<?extends Tree> typeDecls = compilationUnitTree.getTypeDecls();
+                                for (Tree tree : typeDecls) {
+                                    Element element = trees.getElement(trees.getPath(compilationUnitTree, tree));
+                                    if (element != null && element.getKind() == ElementKind.CLASS && element.getSimpleName().contentEquals(fo.getName())){
+                                        List<? extends ExecutableElement> methodElements = methodsIn(element.getEnclosedElements());
+                                        for(Element child: methodElements){
+                                            if (child.getSimpleName().contentEquals(node.getTestcase().getName())){
+                                                long pos = trees.getSourcePositions().getStartPosition(compilationUnitTree, trees.getTree(child));
+                                                line[0] = compilationUnitTree.getLineMap().getLineNumber(pos);
+                                                break;
+                                            }
                                         }
+                                        break;
                                     }
-                                    break;
                                 }
                             }
-                        }
-                    }, true);
+                        }, true);
 
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault().notify(ioe);
+                }
             }
+            Utils.openFile(fo, (int)line[0]);
         }
-
-        Utils.openFile(fo, (int)line[0]);
     }
 
     static void openCallstackFrame(Node node, String frameInfo) {
