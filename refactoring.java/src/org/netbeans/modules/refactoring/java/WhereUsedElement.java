@@ -111,6 +111,18 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         int end;
         boolean anonClassNameBug128074 = false;
         TreeUtilities treeUtils = compiler.getTreeUtilities();
+
+        if (t.getKind() == Tree.Kind.IDENTIFIER
+                && "super".contentEquals(((IdentifierTree) t).getName()) // NOI18N
+                && treeUtils.isSynthetic(tree)) {
+            // in case of synthetic constructor call find real constructor or class declaration
+            tree = getEnclosingTree(tree);
+            if (treeUtils.isSynthetic(tree)) {
+                tree = getEnclosingTree(tree.getParentPath());
+            }
+            t = tree.getLeaf();
+        }
+
         if (t.getKind() == Tree.Kind.CLASS) {
             int[] pos = treeUtils.findNameSpan((ClassTree)t);
             if (pos == null) {
