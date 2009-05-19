@@ -61,6 +61,7 @@ public class HyperlinkerTest extends NbTestCase {
         assertEquals("http://nowhere.net/", String.valueOf(logger.findHyperlink("http://nowhere.net/")));
         assertEquals("null", String.valueOf(logger.findHyperlink("see http://nowhere.net/ for more")));
         assertEquals("pom.xml:4:-1:stupid error", String.valueOf(logger.findHyperlink("/hudson/workspace/myprj/pom.xml:5: stupid error"))); // slave WS
+        assertEquals("myprj/src/X.java:-1:-1:uncompilable", String.valueOf(logger.findHyperlink("[javac] /w/jobs/myprj/workspace/myprj/src/X.java: warning: uncompilable")));
     }
 
 }
