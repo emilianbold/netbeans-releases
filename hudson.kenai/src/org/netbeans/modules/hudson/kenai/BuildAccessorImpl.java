@@ -78,10 +78,6 @@ public class BuildAccessorImpl extends BuildAccessor {
             if (prj != null) {
                 for (KenaiFeature feature : prj.getFeatures(Type.HUDSON)) {
                     String server = feature.getWebLocation().toString();
-                    { // XXX just for testing until real service works
-                        LOG.warning("Ignoring reported server location " + server + " in favor of http://localhost:8080/");
-                        server = "http://localhost:8080/";
-                    }
                     // XXX maybe remove these transient instances when the Kenai projects go away somehow?
                     servers.add(HudsonManager.addInstance(id, server, 5, false));
                 }
