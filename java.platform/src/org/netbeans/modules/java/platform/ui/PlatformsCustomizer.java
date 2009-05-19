@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -110,6 +111,9 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
             }
             else {
                 selectPlatform (nodes[0]);
+                Dialog dialog = (Dialog) SwingUtilities.getAncestorOfClass (Dialog.class, this);
+                if (dialog != null)
+                    dialog.pack ();
             }
         }
     }
@@ -164,7 +168,6 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         messageArea = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
 
-        setPreferredSize(new java.awt.Dimension(750, 450));
         setLayout(new java.awt.GridBagLayout());
 
         jLabel4.setText(org.openide.util.NbBundle.getMessage(PlatformsCustomizer.class, "TXT_PlatformsHint")); // NOI18N
@@ -174,8 +177,6 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(jLabel4, gridBagConstraints);
-
-        platforms.setPreferredSize(new java.awt.Dimension(200, 334));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -451,7 +452,6 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel messageArea;
     private javax.swing.JTextField platformHome;
     private javax.swing.JTextField platformName;
@@ -470,6 +470,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
             this.tree.setEditable(false);
             this.tree.setShowsRootHandles(false);
             this.setBorder(UIManager.getBorder("Nb.ScrollPane.border")); // NOI18N
+            setPreferredSize(new java.awt.Dimension(200, 334));
         }
         
     }

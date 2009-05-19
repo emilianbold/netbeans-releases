@@ -80,7 +80,6 @@ class CompiledSourceForBinaryQueryImpl implements SourceForBinaryQueryImplementa
         assert helper != null;
         assert evaluator != null;
         assert srcRoots != null;
-        assert testRoots != null;
         assert binaryProperties != null && binaryProperties.length > 0;
         assert testBinaryProperties != null && testBinaryProperties.length > 0;
 
