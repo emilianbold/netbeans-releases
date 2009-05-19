@@ -1231,7 +1231,6 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
                         File movedFileFile = FileUtil.toFile(movedFileFO);
                         String itemPath = movedFileFile.getPath();
-                        itemPath = FilePathAdaptor.mapToRemote(itemPath);
                         itemPath = IpeUtils.toRelativePath(toFolder.getConfigurationDescriptor().getBaseDir(), itemPath);
                         itemPath = FilePathAdaptor.normalize(itemPath);
                         Item movedItem = toFolder.findItemByPath(itemPath);
@@ -1292,7 +1291,6 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
                             File copiedFileFile = FileUtil.toFile(copiedFileObject);
                             String itemPath = copiedFileFile.getPath();
-                            itemPath = FilePathAdaptor.mapToRemote(itemPath);
                             itemPath = IpeUtils.toRelativePath(toFolder.getConfigurationDescriptor().getBaseDir(), itemPath);
                             itemPath = FilePathAdaptor.normalize(itemPath);
                             Item copiedItemItem = toFolder.findItemByPath(itemPath);

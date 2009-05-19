@@ -175,7 +175,6 @@ public class MakeTemplateListener implements OperationListener {
             } else {
                 itemPath = ioFile.getPath();
             }
-            itemPath = FilePathAdaptor.mapToRemote(itemPath);
             itemPath = FilePathAdaptor.normalize(itemPath);
             Item item = new Item(itemPath);
 
