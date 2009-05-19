@@ -37,39 +37,22 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui;
+package org.netbeans.modules.hudson.spi;
 
-import org.netbeans.modules.kenai.ui.spi.UIUtils;
-import org.openide.util.Exceptions;
-import org.openide.util.lookup.ServiceProvider;
+import java.net.URL;
 
 /**
- *
- * @author Jan Becicka
+ * Service for supplying an ACEGI-style username and password to authorize a user.
  */
-@ServiceProvider(service=Runnable.class, path="WarmUp")
-public class KenaiLoginTask implements Runnable {
+public interface AcegiAuthorizer {
 
-    public static boolean isFinished = false;
-    public static final Object monitor = new Object();
-    @SuppressWarnings("deprecation")
-    public void run() {
-        synchronized (monitor) {
-            UIUtils.tryLogin();
-            isFinished = true;
-            monitor.notify();
-        }
-    }
+    /**
+     * Possibly ask to authorize a user for a Hudson server.
+     * This method may open a dialog, consult a foreign authentication service, etc.
+     * A standard {@link ConnectionAuthenticator} will log in using a session cookie.
+     * @param home the root URL of the Hudson server
+     * @return a pair of username and password, or null if no authentication is available
+     */
+    String[] authorize(URL home);
 
-    public static void waitStartupFinished() {
-        synchronized (monitor) {
-            if (!isFinished) {
-                try {
-                    monitor.wait();
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }
-    }
 }
