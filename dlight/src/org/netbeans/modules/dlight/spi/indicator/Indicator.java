@@ -38,7 +38,12 @@
  */
 package org.netbeans.modules.dlight.spi.indicator;
 
+import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
@@ -48,8 +53,15 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
+import javax.swing.JRootPane;
+import javax.swing.KeyStroke;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
@@ -103,6 +115,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         this.visualizerConfiguraitons = IndicatorConfigurationAccessor.getDefault().getVisualizerConfigurations(configuration);
         this.position = IndicatorConfigurationAccessor.getDefault().getIndicatorPosition(configuration);
         tickerListener = new TickerListener() {
+
             public void tick() {
                 Indicator.this.tick();
             }
@@ -110,9 +123,20 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
 
     }
 
+    //public abstract Action[]  getActions();
+    public final Action getDefaultAction() {
+        AbstractAction action = new AbstractAction(toolName) {
+
+            public void actionPerformed(ActionEvent e) {
+                notifyListeners();
+            }
+        };
+        return action;
+    }
+
     protected abstract void repairNeeded(boolean needed);
 
-    private void setRepairActionProviderFor(IndicatorRepairActionProvider repairActionProvider){
+    private void setRepairActionProviderFor(IndicatorRepairActionProvider repairActionProvider) {
         this.indicatorRepairActionProvider = repairActionProvider;
         indicatorRepairActionProvider.addChangeListener(this);
         repairNeeded(true);
@@ -122,16 +146,16 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         return position;
     }
 
-    protected final IndicatorRepairActionProvider getRepairActionProvider(){
+    protected final IndicatorRepairActionProvider getRepairActionProvider() {
         return indicatorRepairActionProvider;
     }
 
     public void stateChanged(ChangeEvent e) {
-        if (indicatorRepairActionProvider == null || e.getSource() != indicatorRepairActionProvider){
+        if (indicatorRepairActionProvider == null || e.getSource() != indicatorRepairActionProvider) {
             return;
         }
         boolean needRepair = indicatorRepairActionProvider.needRepair() || !indicatorRepairActionProvider.getValidationStatus().isValid();
-        if (!needRepair){
+        if (!needRepair) {
             indicatorRepairActionProvider.removeChangeListener(this);
         }
         repairNeeded(needRepair);
@@ -173,25 +197,67 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
 
     private void initMouseListener() {
         final JComponent component = getComponent();
+        if (component == null) {
+            return;
+        }
         component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         component.setBorder(BorderFactory.createEmptyBorder(PADDING, PADDING, PADDING, PADDING));
         component.addMouseListener(new MouseAdapter() {
 
             @Override
             public void mouseEntered(MouseEvent e) {
+                if (component == null) {
+                    return;
+                }
                 component.setBorder(BorderFactory.createEtchedBorder());
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
+                if (component == null) {
+                    return;
+                }
                 component.setBorder(BorderFactory.createEmptyBorder(PADDING, PADDING, PADDING, PADDING));
             }
 
             @Override
             public void mouseClicked(MouseEvent e) {
+                component.requestFocus();
                 notifyListeners();
             }
         });
+        final Color c = component.getBackground();
+        final Color selectionColor = c == null ? (UIManager.getColor("Panel.background") == null ? c : UIManager.getColor("Panel.background").darker() ) :  c.darker();//UIManager.getColor("TextField.selectionBackground");
+        component.addFocusListener(new FocusListener() {
+
+            public void focusGained(FocusEvent e) {
+                if (component == null) {
+                    return;
+                }
+                component.setBorder(BorderFactory.createEtchedBorder());
+                component.setBackground(selectionColor);
+                InputMap iMap = component.getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+                iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "enter");//NOI18N
+
+                ActionMap aMap = component.getRootPane().getActionMap();
+                aMap.put("enter", new AbstractAction() {//NOI18N
+
+                    public void actionPerformed(ActionEvent e) {
+                        notifyListeners();
+                    }
+                });
+            }
+
+            public void focusLost(FocusEvent e) {
+                if (component == null) {
+                    return;
+                }
+                component.setBorder(BorderFactory.createEmptyBorder(PADDING, PADDING, PADDING, PADDING));
+                component.setBackground(c);
+
+            }
+        });
+    //and add input map
     }
 
     void setToolName(String toolName) {
@@ -308,5 +374,4 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
             indicator.setRepairActionProviderFor(repairActionProvider);
         }
     }
-
 }

@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.visualizers;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
@@ -63,6 +64,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JToolBar;
+import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -117,8 +119,10 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private final FunctionsListViewVisualizerConfiguration configuration;
     private final TableCellRenderer outlineNodePropertyDefault;
     private final VisualizersSupport visSupport;
-    private FunctionCallChildren currentChildren;
+    private Children.Keys<FunctionCall> currentChildren;
     private ExecutorService sourcePrefetchExecutor;
+    private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
+    private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); // NOI18N
 
     public FunctionsListViewVisualizer(FunctionsListDataProvider dataProvider, FunctionsListViewVisualizerConfiguration configuration) {
         visSupport = new VisualizersSupport(new VisualizerImplSessionStateListener());
@@ -156,6 +160,9 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
         }
         outlineView.setProperties(result.toArray(new Property[0]));
+         if( isMacLaf ) {
+            buttonsToolbar.setBackground(macBackground);
+        }
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
 
     }
@@ -231,9 +238,16 @@ public class FunctionsListViewVisualizer extends JPanel implements
                 synchronized (uiLock) {
                     setContent(isEmptyConent);
                     if (!isEmptyConent) {
-                        currentChildren = new FunctionCallChildren(list);
-                        explorerManager.setRootContext(new AbstractNode(currentChildren));
-                        setNonEmptyContent();
+                        final Children.Keys<FunctionCall> children = new FunctionCallChildren(list);
+                        currentChildren = children;
+                        if (!Children.MUTEX.isReadAccess()) {
+                            Children.MUTEX.writeAccess(new Runnable() {
+                                public void run() {
+                                    explorerManager.setRootContext(new AbstractNode(children));
+                                    setNonEmptyContent();
+                                }
+                            });
+                        }
                     }
                 }
             }
@@ -492,6 +506,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
             this.functionCallNode = funcCallNode;
 
             sourcePrefetchExecutor.submit(new Runnable() {
+
                 public void run() {
                     getSource();
                 }
@@ -501,6 +516,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
         public synchronized void actionPerformed(ActionEvent e) {
             if (goToSourceTask == null || goToSourceTask.isDone()) {
                 goToSourceTask = DLightExecutorService.submit(new Callable<Boolean>() {
+
                     public Boolean call() {
                         return goToSource();
                     }
@@ -553,8 +569,8 @@ public class FunctionsListViewVisualizer extends JPanel implements
             PropertyEditor editor = PropertyEditorManager.findEditor(metadata.getColumnByName(functionDatatableDescription.getNameColumn()).getColumnClass());
             FunctionCallNode node = null;
             synchronized (FunctionsListViewVisualizer.this.uiLock) {
-                if (currentChildren != null){
-                    Node[] nodes  =  currentChildren.getNodes();
+                if (currentChildren != null) {
+                    Node[] nodes = currentChildren.getNodes();
                     if (row >= 0 && row < nodes.length) {
                         node = (FunctionCallNode) nodes[row];
                     }

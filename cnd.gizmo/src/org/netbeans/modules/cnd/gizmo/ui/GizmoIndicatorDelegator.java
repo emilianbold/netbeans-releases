@@ -4,7 +4,10 @@
  */
 package org.netbeans.modules.cnd.gizmo.ui;
 
+import java.awt.event.ActionEvent;
 import java.util.List;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import org.netbeans.modules.cnd.gizmo.GizmoServiceInfo;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
@@ -13,13 +16,14 @@ import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.TopComponent;
 
 /**
  *
  * @author mt154047
  */
 @ServiceProvider(service = IndicatorComponentDelegator.class, position = 10)
-public final class GizmoIndicatorDelegator implements IndicatorComponentDelegator {
+public final class GizmoIndicatorDelegator implements IndicatorComponentDelegator, GizmoIndicatorsTopComponentActionsProvider {
 
     public void activeSessionChanged(DLightSession oldSession, final DLightSession newSession) {
         if (oldSession == newSession) {
@@ -96,6 +100,7 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
         String projectFolder = getProjectFolder(newSession);
         //get all opened
         GizmoIndicatorsTopComponent topComponent = GizmoIndicatorsTopComponent.findInstance();
+        topComponent.setActionsProvider(this);
         if (GizmoIndicatorTopComponentRegsitry.getRegistry().getOpened().isEmpty()) {
             return topComponent;
         }
@@ -106,6 +111,10 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
         }
         for (GizmoIndicatorsTopComponent tc : GizmoIndicatorTopComponentRegsitry.getRegistry().getOpened()) {
             DLightSession tcSession = tc.getSession();
+            if (tcSession == null && newSession != null){
+                tc.setActionsProvider(this);
+                return tc;
+            }
             if (!isCurrentPlatformSupported && !GizmoServiceInfo.isPlatformSupported(getPlatform(tcSession))) {
                 //can return even if it is different project as both platfortms are not supported and the same message will be displayed
                 return tc;
@@ -122,7 +131,9 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
                 }
             }
         }
-        return GizmoIndicatorsTopComponent.newInstance();
+        GizmoIndicatorsTopComponent result = GizmoIndicatorsTopComponent.newInstance();
+        result.setActionsProvider(this);
+        return result;
     }
 
     public void sessionStateChanged(final DLightSession session, SessionState oldState, SessionState newState) {
@@ -147,5 +158,31 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
     }
 
     public void sessionRemoved(DLightSession removedSession) {
+    }
+
+    public Action[] getActions(TopComponent source) {
+        GizmoIndicatorTopComponentRegsitry registry = GizmoIndicatorTopComponentRegsitry.getRegistry();
+        if (registry.getOpened() == null || registry.getOpened().size() == 0){
+            return null;
+        }
+
+        if (registry.getOpened().size() == 1 && registry.getOpened().contains(source)){
+            return null;
+        }
+        Action[] result = new Action[registry.getOpened().size() -1 ];
+        int i = 0;
+        for (final GizmoIndicatorsTopComponent tc : registry.getOpened()){
+            if (tc == source){
+                i++;
+                continue;
+            }
+            result[i] = new AbstractAction(tc.getDisplayName()) {
+                public void actionPerformed(ActionEvent e) {
+                    tc.requestActive();
+                }
+            };
+             i++;
+        }
+        return result;
     }
 }
