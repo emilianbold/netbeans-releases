@@ -175,7 +175,7 @@ import org.openide.util.NbBundle;
             });
             UIThread.invoke(new Runnable() {
                 public void run() {
-                    panel.getPanel().setEnabled(false);
+                    //panel.getPanel().setEnabled(false);
                     panel.getPanel().setOverlay(repairPanel);
                 }
             });

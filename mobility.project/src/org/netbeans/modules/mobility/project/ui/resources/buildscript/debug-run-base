@@ -1,0 +1,30 @@
+<target name="debug-run-base" depends="cldc-debug-run,cdc-hi-debug-run"/>
+
+    <target name="-pre-cldc-debug-run" if="cldc-platform.trigger"/>
+    <target name="-cldc-debug-run" depends="init,jar" if="cldc-platform.trigger">
+        <echo> Starting emulator with port number ${active.debug.port} </echo>
+        <exec executable="${{platform.home}}/bin/emulator">
+          <arg value="-Xdescriptor:${{basedir}}/${{dist.dir}}/${{dist.jad}}"/>
+          <arg value="-Xdevice:${{platform.device}}"/>
+          <arg value="-Xdebug"/>
+          <arg value="-Xrunjdwp:transport=dt_socket,address=${{active.debug.port}},server=y,suspend=y"/>
+        </exec>
+    </target>
+    <target name="-post-cldc-debug-run" if="cldc-platform.trigger"/>
+    <target name="cldc-debug-run" if="cldc-platform.trigger" depends="-pre-cldc-debug-run, -cldc-debug-run, -post-cldc-debug-run"/>
+
+    <target name="-pre-cdc-hi-debug-run" if="cdc-hi-platform.trigger"/>
+    <target name="-cdc-hi-debug-run" depends="init,jar" if="cdc-hi-platform.trigger">
+        <echo> Starting emulator with port number ${active.debug.port} </echo>
+        <exec executable="${{platform.home}}/bin/emulator">
+          <arg value="-cp"/>
+          <arg value="${{basedir}}/${{dist.dir}}/${{dist.jar}}"/>
+          <arg value="-Xdevice:${{platform.device}}"/>
+          <arg value="-Xmain:${{main.class}}"/>
+          <arg value="-Xdebug"/>
+          <arg value="-Xrunjdwp:transport=dt_socket,address=${{active.debug.port}},server=y,suspend=y"/>
+        </exec>
+    </target>
+    <target name="-post-cdc-hi-debug-run" if="cdc-hi-platform.trigger"/>
+    <target name="cdc-hi-debug-run" if="cdc-hi-platform.trigger" depends="-pre-cdc-hi-debug-run, -cdc-hi-debug-run, -post-cdc-hi-debug-run"/>
+	

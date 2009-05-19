@@ -467,13 +467,13 @@ public class ProjectActionSupport {
             }
             // Check existence of executable
             if (!IpeUtils.isPathAbsolute(executable) && (executable.startsWith(".") || executable.indexOf(File.separatorChar) > 0)) { // NOI18N
-                //executable is relative to project root - convert to absolute and check. Should be safe (?).
+                //executable is relative to run directory - convert to absolute and check. Should be safe (?).
                 String runDir = pae.getProfile().getRunDir();
-                if (runDir == null || runDir.length() == 0 || IpeUtils.isPathAbsolute(runDir)) {
+                if (runDir == null || runDir.length() == 0) {
                     executable = IpeUtils.toAbsolutePath(pae.getConfiguration().getBaseDir(), executable);
-                }
-                else {
-                    executable = IpeUtils.toAbsolutePath(pae.getConfiguration().getBaseDir() + "/" + runDir, executable); // NOI18N
+                } else {
+                    runDir = IpeUtils.toAbsolutePath(pae.getConfiguration().getBaseDir(), runDir);
+                    executable = IpeUtils.toAbsolutePath(runDir, executable);
                 }
                 executable = FilePathAdaptor.normalize(executable);
             }

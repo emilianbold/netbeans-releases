@@ -58,6 +58,7 @@ import org.netbeans.modules.subversion.SvnFileNode;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.hooks.spi.SvnHook;
 import org.netbeans.modules.subversion.ui.browser.Browser;
@@ -82,6 +83,8 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  */
 public class Subversion {
 
+
+    private static final String WORKINGDIR_KEY_PREFIX = "working.dir."; //NOI18N
     private static final String RELATIVE_PATH_ROOT = "/";               //NOI18N
     public static final String CLIENT_UNAVAILABLE_ERROR_MESSAGE = "SVN client unavailable"; //NOI18N
 
@@ -121,13 +124,14 @@ public class Subversion {
                                                    String password)
                 throws MalformedURLException, IOException {
 
+        if (!getSubversion().checkClientAvailable()) {
+            org.netbeans.modules.subversion.Subversion.LOG.log(Level.WARNING, "Subversion client is unavailable");
+            throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
+        }
+        
         RepositoryConnection conn = new RepositoryConnection(repositoryUrl);
         SVNUrl svnUrl = conn.getSvnUrl();
         SVNRevision svnRevision = conn.getSvnRevision();
-
-        if (!getSubversion().checkClientAvailable()) {
-            throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
-        }
 
         RepositoryFile repositoryFile = new RepositoryFile(svnUrl, svnRevision);
         Browser browser = new Browser(dialogTitle,
@@ -144,62 +148,8 @@ public class Subversion {
             return null;
         }
 
-
         String[] relativePaths = makeRelativePaths(repositoryFile, selectedFiles);
         return relativePaths;
-    }
-
-    private static org.netbeans.modules.subversion.Subversion getSubversion() {
-        return org.netbeans.modules.subversion.Subversion.getInstance();
-    }
-
-    private static String[] makeRelativePaths(RepositoryFile repositoryFile,
-                                              RepositoryFile[] selectedFiles) {
-        String[] result = new String[selectedFiles.length];
-
-        String[] repoPathSegments = repositoryFile.getPathSegments();
-
-        for (int i = 0; i < selectedFiles.length; i++) {
-            RepositoryFile selectedFile = selectedFiles[i];
-            result[i] = makeRelativePath(repoPathSegments, selectedFile.getPathSegments());
-        }
-        return result;
-    }
-
-    private static String makeRelativePath(String[] repoPathSegments,
-                                           String[] selectedPathSegments) {
-        assert isPrefixOf(repoPathSegments, selectedPathSegments);
-        int delta = selectedPathSegments.length - repoPathSegments.length;
-
-        if (delta == 0) {
-            return "/";     //root of the repository selected           //NOI18N
-        }
-
-        if (delta == 1) {
-            return selectedPathSegments[selectedPathSegments.length - 1];
-        }
-
-        StringBuilder buf = new StringBuilder(120);
-        int startIndex = repoPathSegments.length;
-        int endIndex = selectedPathSegments.length;
-        buf.append(selectedPathSegments[startIndex++]);
-        for (int i = startIndex; i < endIndex; i++) {
-            buf.append('/');
-            buf.append(selectedPathSegments[i]);
-        }
-        return buf.toString();
-    }
-
-    private static boolean isPrefixOf(String[] prefix, String[] path) {
-        if (prefix.length > path.length) {
-            return false;
-        }
-        for (int i = 0; i < prefix.length; i++) {
-            if (!path[i].equals(prefix[i])) {
-                return false;
-            }
-        }
-        return true;
     }
 
     /**
@@ -233,7 +183,7 @@ public class Subversion {
     /**
      * Checks out a given folder from a given Subversion repository. The method blocks
      * until the whole chcekout is done. Do not call in AWT.
-     * 
+     *
      * @param  repositoryUrl  URL of the Subversion repository
      * @param  relativePaths  relative paths denoting folder the folder in the
      *                       repository that is to be checked-out; to specify
@@ -297,7 +247,7 @@ public class Subversion {
     /**
      * Checks out a given folder from a given Subversion repository. The method blocks
      * until the whole chcekout is done. Do not call in AWT.
-     * 
+     *
      * @param  repositoryUrl  URL of the Subversion repository
      * @param  relativePaths  relative paths denoting folder the folder in the
      *                       repository that is to be checked-out; to specify
@@ -324,15 +274,17 @@ public class Subversion {
 
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
 
+        if (!getSubversion().checkClientAvailable()) {
+            org.netbeans.modules.subversion.Subversion.LOG.log(Level.WARNING, "Subversion client is unavailable");
+            throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
+        }
+
         RepositoryConnection conn = new RepositoryConnection(repositoryUrl);
 
         SVNUrl svnUrl = conn.getSvnUrl();
         SVNRevision svnRevision = conn.getSvnRevision();
 
         SvnClient client = getClient(svnUrl, username, password);
-        if(client == null) {
-            throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
-        }
 
         RepositoryFile[] repositoryFiles;
         if(repoRelativePaths.length == 0 || (repoRelativePaths.length == 1 && repoRelativePaths[0].trim().equals(""))) {
@@ -381,14 +333,16 @@ public class Subversion {
      * @throws IOException when an error occurrs
      */
     public static void mkdir(String url, String user, String password, String message) throws MalformedURLException, IOException {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in  awt!";
+
+        if (!getSubversion().checkClientAvailable()) {
+            org.netbeans.modules.subversion.Subversion.LOG.log(Level.WARNING, "Subversion client is unavailable");
+            throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
+        }
 
         SVNUrl svnUrl = new SVNUrl(url);
 
         SvnClient client = getClient(svnUrl, user, password);
-        if (client == null) {
-            throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
-        }
         try {
             client.mkdir(svnUrl, true, message);
         } catch (SVNClientException ex) {
@@ -408,7 +362,7 @@ public class Subversion {
         new SVNUrl(url); // check url format
 
         RepositoryConnection rc = new RepositoryConnection(url);
-        SvnModuleConfig.getDefault().insertRecentUrl(rc);        
+        SvnModuleConfig.getDefault().insertRecentUrl(rc);
     }
 
     /**
@@ -419,6 +373,11 @@ public class Subversion {
      * @throws IOException when an error occurrs
      */
     public static void commit(final File[] roots, final String user, final String password, final String message) throws IOException {
+        if (!getSubversion().checkClientAvailable()) {
+            org.netbeans.modules.subversion.Subversion.LOG.log(Level.WARNING, "Subversion client is unavailable");
+            throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
+        }
+
         FileStatusCache cache = getSubversion().getStatusCache();
         File[] files = cache.listFiles(roots, FileInformation.STATUS_LOCAL_CHANGE);
 
@@ -428,7 +387,7 @@ public class Subversion {
 
         SvnFileNode[] nodes = new SvnFileNode[files.length];
         for (int i = 0; i < files.length; i++) {
-            nodes[i] = new SvnFileNode(files[i]);            
+            nodes[i] = new SvnFileNode(files[i]);
         }
         CommitOptions[] commitOptions = SvnUtils.createDefaultCommitOptions(nodes, false);
         final Map<SvnFileNode, CommitOptions> commitFiles = new HashMap<SvnFileNode, CommitOptions>(nodes.length);
@@ -438,9 +397,6 @@ public class Subversion {
 
         try {
             final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
-            if (!getSubversion().checkClientAvailable()) {
-                throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
-            }
             RequestProcessor rp = getSubversion().getRequestProcessor(repositoryUrl);
             SvnProgressSupport support = new SvnProgressSupport() {
                 public void perform() {
@@ -461,18 +417,6 @@ public class Subversion {
         }
     }
 
-    private static final String WORKINGDIR_KEY_PREFIX = "working.dir."; //NOI18N
-
-    /**
-     * Stores working directory for specified remote root
-     * into NetBeans preferences.
-     * These are later used in kenai.ui module
-     */
-    private static void storeWorkingDir(URL remoteUrl, URL localFolder) {
-        Preferences prf = NbPreferences.forModule(Subversion.class);
-        prf.put(WORKINGDIR_KEY_PREFIX + remoteUrl, localFolder.toString());
-    }
-
     /**
      * Opens search history panel with a specific DiffResultsView, which does not moves accross differences but initially fixes on the given line.
      * Right panel shows current local changes if the file, left panel shows revisions in the file's repository.
@@ -482,9 +426,9 @@ public class Subversion {
      * @param lineNumber requested line number to fix on
      * @return true if suplpied arguments are valid and the search panel is opened, otherwise false
      */
-    public static boolean showFileHistory (final File file, final int lineNumber) {
-        assert !EventQueue.isDispatchThread();
-        
+    public static boolean showFileHistory (final File file, final int lineNumber) throws IOException {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in  awt!";
+
         if (!file.exists()) {
             org.netbeans.modules.subversion.Subversion.LOG.log(Level.WARNING, "Trying to show history for non-existent file {0}", file.getAbsolutePath());
             return false;
@@ -498,9 +442,10 @@ public class Subversion {
             return false;
         }
         if(!getSubversion().checkClientAvailable()) {
-            org.netbeans.modules.subversion.Subversion.LOG.log(Level.INFO, "Subversion client is unavailable");
-            return false;
+            org.netbeans.modules.subversion.Subversion.LOG.log(Level.WARNING, "Subversion client is unavailable");
+            throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
         }
+
         /**
          * Open in AWT
          */
@@ -526,8 +471,14 @@ public class Subversion {
      */
     public static boolean isRepository (final String url) {
         boolean retval = false;
-        if(!getSubversion().checkClientAvailable()) {
-            return retval;
+        try {
+            // do not call getSubversion().checkClientAvailable() at this point.
+            // The tested url may be from another vcs and we don't want to open a
+            // dialog with an error just becasue svn is not installed.
+            SvnClientFactory.checkClientAvailable();
+        } catch (SVNClientException ex) {
+            org.netbeans.modules.subversion.Subversion.LOG.log(Level.INFO, "svn client not available");
+            return false;
         }
         RepositoryConnection conn = new RepositoryConnection(url);
         SVNUrl svnUrl = null;
@@ -580,9 +531,73 @@ public class Subversion {
     public static void openCheckoutWizard (final String url) throws MalformedURLException, IOException {
         addRecentUrl(url);
         if (!getSubversion().checkClientAvailable()) {
+            org.netbeans.modules.subversion.Subversion.LOG.log(Level.INFO, "Subversion client is unavailable");
             throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
         }
         SystemAction.get(CheckoutAction.class).performAction();
+    }
+
+    private static org.netbeans.modules.subversion.Subversion getSubversion() {
+        return org.netbeans.modules.subversion.Subversion.getInstance();
+    }
+
+    private static String[] makeRelativePaths(RepositoryFile repositoryFile,
+                                              RepositoryFile[] selectedFiles) {
+        String[] result = new String[selectedFiles.length];
+
+        String[] repoPathSegments = repositoryFile.getPathSegments();
+
+        for (int i = 0; i < selectedFiles.length; i++) {
+            RepositoryFile selectedFile = selectedFiles[i];
+            result[i] = makeRelativePath(repoPathSegments, selectedFile.getPathSegments());
+        }
+        return result;
+    }
+
+    private static String makeRelativePath(String[] repoPathSegments,
+                                           String[] selectedPathSegments) {
+        assert isPrefixOf(repoPathSegments, selectedPathSegments);
+        int delta = selectedPathSegments.length - repoPathSegments.length;
+
+        if (delta == 0) {
+            return "/";     //root of the repository selected           //NOI18N
+        }
+
+        if (delta == 1) {
+            return selectedPathSegments[selectedPathSegments.length - 1];
+        }
+
+        StringBuilder buf = new StringBuilder(120);
+        int startIndex = repoPathSegments.length;
+        int endIndex = selectedPathSegments.length;
+        buf.append(selectedPathSegments[startIndex++]);
+        for (int i = startIndex; i < endIndex; i++) {
+            buf.append('/');
+            buf.append(selectedPathSegments[i]);
+        }
+        return buf.toString();
+    }
+
+    private static boolean isPrefixOf(String[] prefix, String[] path) {
+        if (prefix.length > path.length) {
+            return false;
+        }
+        for (int i = 0; i < prefix.length; i++) {
+            if (!path[i].equals(prefix[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Stores working directory for specified remote root
+     * into NetBeans preferences.
+     * These are later used in kenai.ui module
+     */
+    private static void storeWorkingDir(URL remoteUrl, URL localFolder) {
+        Preferences prf = NbPreferences.forModule(Subversion.class);
+        prf.put(WORKINGDIR_KEY_PREFIX + remoteUrl, localFolder.toString());
     }
 
     private static String polishRelativePath(String path) {
@@ -632,11 +647,7 @@ public class Subversion {
         return (buf != null) ? buf.toString() : str;
     }
 
-    private static SvnClient getClient(SVNUrl url, String username, String password) {
-        if(!getSubversion().checkClientAvailable()) {
-            return null;
-        }
-        
+    private static SvnClient getClient(SVNUrl url, String username, String password) {       
         try {
             if(username != null) {
                 password = password != null ? password : "";                    // NOI18N

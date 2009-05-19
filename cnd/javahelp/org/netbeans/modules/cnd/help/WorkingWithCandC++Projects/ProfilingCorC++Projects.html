@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--
+Copyright &copy; 2008 Sun Microsystems, Inc. All rights reserved.
+Use is subject to license terms.
+ -->
+<html>
+  <head>
+    <meta content="text/html; charset=MacRoman" http-equiv="Content-Type">
+    <link rel="StyleSheet" type="text/css" href="/org/netbeans/modules/usersguide/ide.css">
+    <meta content="Helen" name="generator">
+    <title>Using Profile Tools</title>
+  </head>
+  <body>
+    <h2>
+       Profiling C and C++&nbsp;Projects
+    </h2>
+    <p>
+       <a href="#seealso"><small>See Also</small></a><small>&nbsp;</small>
+    </p>
+    <p>
+       You can examine the behavior of your running project with the CPU Usage, Memory Usage, and
+      Thread Usage tools. The profiling tools run automatically whenever you run your C or C++
+      project.
+    </p>
+    <p>
+       The profiling information is provided by either DTrace or Sun Studio data collectors, and
+      the underlying operating system. You can change the profiling data provider in the Project
+      Properties dialog's Profile category.
+    </p>
+    <p>
+       If you are running the project on a Solaris system (either as the local host, or as a remote
+      development host), you can click the indicator graphs to get more detailed information. A new
+      tab is displayed showing information about the usage of CPU, memory leaks, and thread
+      synchronization of the program's individual functions.
+    </p>
+    <p>
+       If you are running the project on a Linux system as a local host or remote development host,
+      you can get the detailed information only if you have installed Sun Studio tools on the Linux
+      system. You must select Sun Studio as the data provider in your project properties.
+    </p>
+    <p>
+       If you are running the project on a Windows or Mac OS X system, you cannot get the detailed
+      information because Sun Studio tools are not available for these platforms, and DTrace is
+      fully supported only on Solaris platforms.
+    </p>
+    <h3>
+       Disabling Profile Tools
+    </h3>
+    <p>
+       You can disable the Profile tools in the project's properties so that the profiling does not
+      automatically occur when you run the project. You can also disable one or more specific usage
+      monitors in the project's properties. For example, if you only want the CPU usage monitor to
+      display, you can enable Profile on Run, and deselect the Memory Usage and Thread Usage
+      indicators.
+    </p>
+    <table>
+      <tr>
+        <th colspan="2" align="left">
+          <a name="seealso">See also</a> 
+        </th>
+      </tr>
+      <tr>
+        <td width="23">
+          &nbsp;
+        </td>
+        <td>
+          <a href="ConfiguringBuildTools.html">Configuring Build Tools</a><br>
+           <a href="ProjectPropsProfile.html">C/C++ Project Properties Dialog Box: Profile</a> 
+        </td>
+      </tr>
+    </table>
+    <hr>
+    <p>
+       <a href="../credits.html"><small>Legal Notices</small></a>
+    </p>
+    <table border="0" cellpadding="20">
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

@@ -380,7 +380,11 @@ public class KenaiREST extends KenaiImpl {
             throw new KenaiException(ResourceBundle.getBundle("org.netbeans.modules.kenai.Bundle").getString("LBL_AuthenticationFailed"), resp.getDataAsString());
         }
         try {
-            return (String) ((HashMap) PojsonLoad.create().toCollections(resp.getDataAsString())).get("username");
+            String shortName = (String) ((HashMap) PojsonLoad.create().toCollections(resp.getDataAsString())).get("username");
+            if (shortName==null || shortName.length()==0) {
+                throw new KenaiException(ResourceBundle.getBundle("org.netbeans.modules.kenai.Bundle").getString("LBL_AuthenticationFailed"));
+            }
+            return shortName;
         } catch (IOException ex) {
             throw new KenaiException(ex);
         }

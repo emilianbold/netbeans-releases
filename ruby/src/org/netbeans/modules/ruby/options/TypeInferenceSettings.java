@@ -64,7 +64,7 @@ public final class TypeInferenceSettings {
         return NbPreferences.forModule(TypeInferenceSettings.class);
     }
 
-    void setMethodTypeInference(boolean enabled) {
+    public void setMethodTypeInference(boolean enabled) {
         getPreferences().putBoolean(METHODS, enabled);
     }
 
@@ -72,7 +72,7 @@ public final class TypeInferenceSettings {
         return getPreferences().getBoolean(METHODS, false);
     }
 
-    void setRdocTypeInference(boolean enabled) {
+    public void setRdocTypeInference(boolean enabled) {
         getPreferences().putBoolean(RDOC, enabled);
     }
 
