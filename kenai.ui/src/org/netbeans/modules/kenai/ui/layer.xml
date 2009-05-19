@@ -120,7 +120,4 @@
             </folder>
         </folder>
     </folder>
-    <folder name="WarmUp">
-        <file name="org-netbeans-modules-kenai-ui-KenaiLoginTask.instance"/>
-    </folder>
 </filesystem>
