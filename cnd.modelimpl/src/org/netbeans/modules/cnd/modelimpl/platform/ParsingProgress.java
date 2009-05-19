@@ -63,7 +63,7 @@ final class ParsingProgress {
     private static final int ALL_WORK_INT = 10000;
     private boolean started = false;
     private boolean determinate = false;
-    private static final boolean TRACE = false;
+    private static final boolean TRACE = true;
     
     /**  
      * Delay amount of miliseconds 
@@ -133,7 +133,7 @@ final class ParsingProgress {
             }
             try {
                 if (TRACE) {
-                    handle.progress(file.getName().toString()+" ("+curWorkedUnits+" of "+(maxWorkUnits + addedAfterStartParsing)+")", allWork); // NOI18N
+                    handle.progress("("+curWorkedUnits+" of "+(maxWorkUnits + addedAfterStartParsing)+") "+file.getName().toString(), allWork); // NOI18N
                 } else  {
                     handle.progress(file.getName().toString(), allWork);
                 }
