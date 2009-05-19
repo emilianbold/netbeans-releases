@@ -362,6 +362,9 @@ public class ServerFileDistributor extends ServerProgress {
                 FileObject checkFile = null;
                 if (altDistPath != null) {
                     checkFile = FileUtil.toFileObject(FileUtil.normalizeFile(altDistPath));
+                    if (checkFile == null && file != null) { //#165045
+                        checkFile = FileUtil.createData(altDistPath);
+                    }
                 } else {
                     checkFile = file;
                 }
