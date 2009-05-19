@@ -922,29 +922,42 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
-    private ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> aptCaches = new ConcurrentHashMap<APTIncludeHandler.State, APTFileCacheEntry>();
+    private Reference<ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>> aptCaches = new SoftReference<ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>(null);
+    private final Object aptCachesLock = new Object();
+    private ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> getAPTCache(boolean clean) {
+        synchronized (aptCachesLock) {
+            ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> out = aptCaches.get();
+            if (out == null || clean) {
+                out = new ConcurrentHashMap<APTIncludeHandler.State, APTFileCacheEntry>();
+                aptCaches = new SoftReference<ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>(out);
+            }
+            return out;
+        }
+    }
+
     public final APTFileCacheEntry getAPTCacheEntry(APTPreprocHandler preprocHandler) {
         if (!TraceFlags.APT_FILE_CACHE_ENTRY) {
             return null;
         }
         APTIncludeHandler.State key = preprocHandler.getIncludeHandler().getState();
-        APTFileCacheEntry out = aptCaches.get(key);
+        ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> cache = getAPTCache(false);
+        APTFileCacheEntry out = cache.get(key);
         if (out == null) {
             out = new APTFileCacheEntry(getAbsolutePath());
         } else {
-            int i = 0;
+            if (false && traceFile(getAbsolutePath())) {
+                System.err.printf("APT CACHE for %s\nsize %d, key: %s\ncache state:%s\n", getAbsolutePath(), cache.size(), key, "");
+            }
         }
         assert out != null;
         return out;
     }
 
-    /*package*/final void setAPTCacheEntry(APTPreprocHandler preprocHandler, APTFileCacheEntry cache, boolean cleanOthers) {
-        if (TraceFlags.APT_FILE_CACHE_ENTRY && cache != null) {
+    /*package*/final void setAPTCacheEntry(APTPreprocHandler preprocHandler, APTFileCacheEntry entry, boolean cleanOthers) {
+        if (TraceFlags.APT_FILE_CACHE_ENTRY && entry != null) {
+            ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> cache = getAPTCache(cleanOthers);
             APTIncludeHandler.State key = preprocHandler.getIncludeHandler().getState();
-            if (cleanOthers) {
-                aptCaches.clear();
-            }
-            aptCaches.put(key, cache);
+            cache.put(key, entry);
         }
     }
     
