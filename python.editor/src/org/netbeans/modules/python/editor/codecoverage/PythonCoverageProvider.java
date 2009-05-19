@@ -686,6 +686,10 @@ public final class PythonCoverageProvider implements CoverageProvider {
         return execution;
     }
 
+    public String getTestAllAction() {
+        return null;
+    }
+
     // Remove stacktrace lines that refer to frames in the wrapper scripts
     private static class HideCoverageFramesConvertor implements LineConvertor {
         boolean lastWasCulled = false;

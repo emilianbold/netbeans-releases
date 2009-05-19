@@ -40,8 +40,12 @@
  */
 package org.netbeans.modules.vmd.api.model.presenters.actions;
 
+import java.util.List;
 import org.netbeans.modules.vmd.api.model.Debug;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.Presenter;
+import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
 
 /**
  * This presenters specifies delete ability.
@@ -54,7 +58,7 @@ public abstract class DeletePresenter extends Presenter {
      * Returns whether the related component could be deleted.
      * @return the deletable state
      */
-    DeletableState canDelete () {
+    DeletableState canDelete() {
         return DeletableState.ALLOWED;
     }
 
@@ -62,7 +66,7 @@ public abstract class DeletePresenter extends Presenter {
      * Returns whether the related component could be listed in the delete dialog.
      * @return true, if could be listed; false, if it should be deleted silently
      */
-    boolean isSilent () {
+    boolean isSilent() {
         return false;
     }
 
@@ -71,19 +75,21 @@ public abstract class DeletePresenter extends Presenter {
      * You should also invoke deletion of related components that cannot live without this component.
      * For deletion invocation, use <code>DeletePresenter.invokeDeletion</code> method.
      */
-    protected abstract void delete ();
+    protected abstract void delete();
 
     /**
      * Creates a DeletePresentet that disallows to list the component in the confirm-deletion dialog.
      * @return the delete presenter
      */
-    public static Presenter createSilentDeletionPresenter () {
-        return new DeletePresenter () {
+    public static Presenter createSilentDeletionPresenter() {
+        return new DeletePresenter() {
+
             @Override
-            boolean isSilent () {
+            boolean isSilent() {
                 return true;
             }
-            protected void delete () {
+
+            protected void delete() {
             }
         };
     }
@@ -92,18 +98,17 @@ public abstract class DeletePresenter extends Presenter {
      * Creates a DeletePresenter that disallows to delete related component.
      * @return the delete presenter
      */
-    public static Presenter createIndeliblePresenter () {
-        return new DeletePresenter () {
+    public static Presenter createIndeliblePresenter() {
+        return new DeletePresenter() {
 
             @Override
-            DeletableState canDelete () {
+            DeletableState canDelete() {
                 return DeletableState.DISALLOWED;
             }
 
-            protected void delete () {
-                throw Debug.illegalState ();
+            protected void delete() {
+                throw Debug.illegalState();
             }
-
         };
     }
 
@@ -112,17 +117,54 @@ public abstract class DeletePresenter extends Presenter {
      * The component could be deleted by indirect deletion still.
      * @return the delete presenter
      */
-    public static Presenter createUserIndeliblePresenter () {
+    public static Presenter createUserIndeliblePresenter() {
         return new DeletePresenter() {
 
             @Override
-            DeletableState canDelete () {
+            DeletableState canDelete() {
                 return DeletableState.DISALLOWED_FOR_USER_ONLY;
             }
 
-            protected void delete () {
+            protected void delete() {
+            }
+        };
+    }
+
+    public static Presenter createRemoveComponentReferences() {
+        return new DeletePresenter() {
+
+            @Override
+            DeletableState canDelete() {
+                return DeletableState.ALLOWED;
             }
 
+            protected void delete() {
+                DesignComponent root = getComponent().getDocument().getRootComponent();
+                search(root);
+
+            }
+
+            private void search(DesignComponent root) {
+                for (DesignComponent component : root.getComponents()) {
+                    if (component.getComponents() != null) {
+                        search(component);
+                    }
+                    removeReferences(component);
+                }
+            }
+
+            private void removeReferences(DesignComponent component) {
+                List<PropertyDescriptor> descriptors = component.getComponentDescriptor().getDeclaredPropertyDescriptors();
+                if (descriptors == null) {
+                    return;
+                }
+                for (PropertyDescriptor descriptor : descriptors) {
+                    PropertyValue value = component.readProperty(descriptor.getName());
+                    if (value.getComponent() != null && value.getComponent() == getComponent()) {
+                        component.writeProperty(descriptor.getName(), PropertyValue.createNull());
+                    }
+                }
+            }
         };
     }
 
@@ -146,5 +188,4 @@ public abstract class DeletePresenter extends Presenter {
 //            }
 //        };
 //    }
-
 }
