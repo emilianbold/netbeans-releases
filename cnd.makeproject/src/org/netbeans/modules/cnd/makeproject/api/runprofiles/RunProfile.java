@@ -165,7 +165,18 @@ public class RunProfile implements ConfigurationAuxObject {
         terminalType = new IntConfiguration(null, 0, setTerminalTypeNames(), null);
         clearChanged();
     }
-    
+
+    private String escapeDir(String dir) {
+        if (dir != null) {
+            dir = dir.trim();
+            String quote = "\""; //NOI18N
+            if (!dir.startsWith(quote)) { //NOI18N
+                dir = quote + dir + quote; //NOI18N
+            }
+        }
+        return  dir;
+    }
+
     private String getDorunScript() {
         File file = InstalledFileLocator.getDefault().locate("bin/dorun.sh", null, false); // NOI18N
         if (file != null && file.exists()) {
@@ -220,11 +231,11 @@ public class RunProfile implements ConfigurationAuxObject {
                 name = getString("TerminalType_KDE"); // NOI18N
                 list.add(name); 
                 termPaths.put(name, termPath);
-                termOptions.put(name, "--workdir " + baseDir + " -e \"" + dorun + // NOI18N
+                termOptions.put(name, "--workdir " + escapeDir(baseDir) + " -e \"" + dorun + // NOI18N
                         "\" -p \"" + getString("LBL_RunPrompt") + "\" -f \"{0}\" {1} {2}"); // NOI18N
                 if (termPaths.get(def) == null) {
                     termPaths.put(def, termPath);
-                    termOptions.put(def, "--workdir " + baseDir + " -e \"" + dorun + // NOI18N
+                    termOptions.put(def, "--workdir " + escapeDir(baseDir) + " -e \"" + dorun + // NOI18N
                         "\" -p \"" + getString("LBL_RunPrompt") + "\" -f \"{0}\" {1} {2}"); // NOI18N
                 }
             }

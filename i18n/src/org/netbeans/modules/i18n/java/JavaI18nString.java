@@ -76,6 +76,16 @@ public class JavaI18nString extends I18nString {
         this.arguments = copy.arguments.clone();
     }
     
+    @Override
+    public void become(I18nString i18nString) {
+        super.become(i18nString);        
+        if(i18nString instanceof JavaI18nString) {
+            JavaI18nString peer = (JavaI18nString) i18nString;
+            this.setArguments(peer.arguments);    
+        }        
+    }   
+    
+    @Deprecated
     public void become(JavaI18nString i18nString) {
         super.become(i18nString);        
         

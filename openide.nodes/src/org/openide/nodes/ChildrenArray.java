@@ -41,6 +41,7 @@
 package org.openide.nodes;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -151,7 +152,12 @@ final class ChildrenArray extends NodeAdapter {
 
         if (nodes == null) {
             assert !hasToExist : "Cannot find nodes for " + info + " in " + map;
-            nodes = info.entry.nodes(null);
+            try {
+                nodes = info.entry.nodes(null);
+            } catch (RuntimeException ex) {
+                NodeOp.warning(ex);
+                nodes = Collections.<Node>emptyList();
+            }
             info.length = nodes.size();
             map.put(info, nodes);
             if (IS_LOG) {

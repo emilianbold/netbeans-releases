@@ -170,10 +170,12 @@ public final class KenaiProject {
     private static Pattern repositoryPattern = Pattern.compile("(https|http)://(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)");
 
     /**
-     * Returns KenaiProject for given repository uri. Current implementation does not work for external repositories
-     * @param uri
-     * @return instance of KenaiProject or null
-     * @throws org.netbeans.modules.kenai.api.KenaiException
+     * Looks up a project by repository location.
+     * The current implementation does not work for external repositories.
+     * @param uri location of repository; for example SVN HTTP URL;
+     *            typically gotten from {@code ProvidedExtensions.RemoteLocation} file attribute of project directory
+     * @return Kenai project associated with that repository, or null
+     * @throws KenaiException if the project cannot be loaded
      */
     public static KenaiProject forRepository(String uri) throws KenaiException {
         Matcher m = repositoryPattern.matcher(uri);

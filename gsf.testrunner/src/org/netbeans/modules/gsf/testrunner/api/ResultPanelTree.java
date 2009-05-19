@@ -180,6 +180,21 @@ final class ResultPanelTree extends JPanel
     }
 
     /**
+     * Displays a message about a running suite.
+     *
+     * @param  suite  running suite,
+     *                    or {@code ANONYMOUS_TEST_SUITE} for anonymous suites
+     * @see  ResultDisplayHandler#ANONYMOUS_TEST_SUITE
+     */
+    void displaySuiteRunning(final TestSuite suite) {
+        assert EventQueue.isDispatchThread();
+
+        /* Called from the EventDispatch thread */
+
+        rootNode.displaySuiteRunning(suite);
+    }
+
+    /**
      */
     void displayReport(final Report report) {
         assert EventQueue.isDispatchThread();
