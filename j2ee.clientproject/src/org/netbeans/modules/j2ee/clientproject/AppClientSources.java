@@ -76,7 +76,7 @@ public class AppClientSources implements Sources, PropertyChangeListener, Change
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
-    private SourcesHelper sourcesHelper;
+    private boolean dirty;
     private Sources delegate;
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
 
@@ -90,7 +90,7 @@ public class AppClientSources implements Sources, PropertyChangeListener, Change
         this.sourceRoots.addPropertyChangeListener(this);
         this.testRoots.addPropertyChangeListener(this);        
         this.evaluator.addPropertyChangeListener(this);
-        initSources(); // have to register external build roots eagerly
+        delegate = initSources(); // have to register external build roots eagerly
     }
 
     /**
@@ -105,9 +105,11 @@ public class AppClientSources implements Sources, PropertyChangeListener, Change
             public SourceGroup[] run() {
                 Sources _delegate;
                 synchronized (AppClientSources.this) {
-                    if (delegate == null) {                    
+                    if (dirty) {
+                        delegate.removeChangeListener(AppClientSources.this);
                         delegate = initSources();
                         delegate.addChangeListener(AppClientSources.this);
+                        dirty = false;
                     }
                     _delegate = delegate;
                 }
@@ -117,9 +119,9 @@ public class AppClientSources implements Sources, PropertyChangeListener, Change
     }
 
     private Sources initSources() {        
-        sourcesHelper = new SourcesHelper(project, helper, evaluator);
-        register(sourceRoots);
-        register(testRoots);
+        SourcesHelper sourcesHelper = new SourcesHelper(project, helper, evaluator);
+        register(sourcesHelper, sourceRoots);
+        register(sourcesHelper, testRoots);
         
         // Configuration Files
         String configFilesLabel = org.openide.util.NbBundle.getMessage(AppClientLogicalViewProvider.class, "LBL_Node_ConfFiles"); //NOI18N
@@ -132,7 +134,7 @@ public class AppClientSources implements Sources, PropertyChangeListener, Change
         return sourcesHelper.createSources();
     }
 
-    private void register(SourceRoots roots) {
+    private void register(SourcesHelper sourcesHelper, SourceRoots roots) {
         String[] propNames = roots.getRootProperties();
         String[] rootNames = roots.getRootNames();
         for (int i = 0; i < propNames.length; i++) {
@@ -161,10 +163,7 @@ public class AppClientSources implements Sources, PropertyChangeListener, Change
     private void fireChange() {
         ChangeListener[] _listeners;
         synchronized (this) {
-            if (delegate != null) {
-                delegate.removeChangeListener(this);
-                delegate = null;
-            }
+            dirty = true;
         }
         synchronized (listeners) {
             if (listeners.isEmpty()) {
