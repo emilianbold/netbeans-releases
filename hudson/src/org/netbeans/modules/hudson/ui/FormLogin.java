@@ -39,20 +39,11 @@
 
 package org.netbeans.modules.hudson.ui;
 
-import java.io.IOException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
-import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
-import org.netbeans.modules.hudson.spi.ConnectionAuthenticator;
+import org.netbeans.modules.hudson.spi.AcegiAuthorizer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -61,51 +52,30 @@ import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Implements authentication based on Hudson's standard login form.
- * {@code main/core/src/main/resources/hudson/model/Hudson/login.jelly} shows the style.
- * Assumes the Hudson instance is set up to use ACEGI-based security, not "legacy" container auth.
- * Keeps username in preferences and authenticates only when requested.
+ * Form-based login impl which keeps username in preferences and authenticates only when requested.
  */
-public class FormLoginConnectionAuthenticator extends JPanel {
-
-    private static final Logger LOGGER = Logger.getLogger(FormLoginConnectionAuthenticator.class.getName());
+public class FormLogin extends JPanel {
 
     private static Preferences loginPrefs() {
-        return NbPreferences.forModule(FormLoginConnectionAuthenticator.class).node("authentication"); // NOI18N
+        return NbPreferences.forModule(FormLogin.class).node("authentication"); // NOI18N
     }
 
-    /**
-     * Session cookies set by home.
-     * {@link java.net.CookieManager} in JDK 6 would be a bit easier.
-     */
-    private static final Map<URL,String[]> COOKIES = new HashMap<URL,String[]>();
-
-    private FormLoginConnectionAuthenticator() {
+    private FormLogin() {
         initComponents();
     }
 
-    @ServiceProvider(service=ConnectionAuthenticator.class, position=100)
-    public static class AuthImpl implements ConnectionAuthenticator {
+    @ServiceProvider(service=AcegiAuthorizer.class, position=1000)
+    public static class AuthImpl implements AcegiAuthorizer {
 
-        public void prepareRequest(URLConnection conn, URL home) {
-            if (COOKIES.containsKey(home)) {
-                for (String cookie : COOKIES.get(home)) {
-                    String cookieBare = cookie.replaceFirst(";.*", ""); // NOI18N
-                    LOGGER.log(Level.FINER, "Setting cookie {0} for {1}", new Object[] {cookieBare, conn.getURL()});
-                    conn.setRequestProperty("Cookie", cookieBare); // NOI18N
-                }
-            }
-        }
-
-        public URLConnection forbidden(URLConnection conn, URL home) {
-            FormLoginConnectionAuthenticator panel = new FormLoginConnectionAuthenticator();
+        public String[] authorize(URL home) {
+            FormLogin panel = new FormLogin();
             String server = HudsonManagerImpl.simplifyServerLocation(home.toString(), true);
             String username = loginPrefs().get(server, null);
             if (username != null) {
                 panel.userField.setText(username);
             }
             panel.locationField.setText(home.toString());
-            DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(FormLoginConnectionAuthenticator.class, "FormLoginConnectionAuthenticator.log_in"));
+            DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(FormLogin.class, "FormLogin.log_in"));
             if (DialogDisplayer.getDefault().notify(dd) != NotifyDescriptor.OK_OPTION) {
                 return null;
             }
@@ -113,24 +83,7 @@ public class FormLoginConnectionAuthenticator extends JPanel {
             loginPrefs().put(server, username);
             String password = new String(panel.passField.getPassword());
             panel.passField.setText("");
-            try {
-                Map<String,List<String>> responseHeaders = new HashMap<String,List<String>>();
-                new ConnectionBuilder().url(new URL(home, "j_acegi_security_check")). // NOI18N
-                        postData(("j_username=" + URLEncoder.encode(username, "UTF-8") + "&j_password=" + // NOI18N
-                                  URLEncoder.encode(password, "UTF-8")).getBytes("UTF-8")). // NOI18N
-                        collectResponseHeaders(responseHeaders).connection();
-                List<String> cookies = responseHeaders.get("Set-Cookie"); // NOI18N
-                if (cookies == null) {
-                    LOGGER.log(Level.FINE, "No cookies set from authentication to {0}", home);
-                    return null;
-                }
-                LOGGER.log(Level.FINE, "Authenticated to {0}: {1}", new Object[] {home, cookies});
-                COOKIES.put(home, cookies.toArray(new String[0]));
-                return conn.getURL().openConnection();
-            } catch (IOException x) {
-                LOGGER.log(Level.FINE, null, x);
-            }
-            return null;
+            return new String[] {username, password};
         }
     }
 
@@ -144,13 +97,13 @@ public class FormLoginConnectionAuthenticator extends JPanel {
         passLabel = new javax.swing.JLabel();
         passField = new javax.swing.JPasswordField();
 
-        org.openide.awt.Mnemonics.setLocalizedText(locationLabel, org.openide.util.NbBundle.getMessage(FormLoginConnectionAuthenticator.class, "FormLoginConnectionAuthenticator.locationLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(locationLabel, org.openide.util.NbBundle.getMessage(FormLogin.class, "FormLogin.locationLabel.text")); // NOI18N
 
         locationField.setEditable(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(userLabel, org.openide.util.NbBundle.getMessage(FormLoginConnectionAuthenticator.class, "FormLoginConnectionAuthenticator.userLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(userLabel, org.openide.util.NbBundle.getMessage(FormLogin.class, "FormLogin.userLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(passLabel, org.openide.util.NbBundle.getMessage(FormLoginConnectionAuthenticator.class, "FormLoginConnectionAuthenticator.passLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(passLabel, org.openide.util.NbBundle.getMessage(FormLogin.class, "FormLogin.passLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

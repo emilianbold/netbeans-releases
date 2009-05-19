@@ -37,39 +37,29 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui;
+package org.netbeans.modules.hudson.kenai;
 
-import org.netbeans.modules.kenai.ui.spi.UIUtils;
-import org.openide.util.Exceptions;
+import java.net.PasswordAuthentication;
+import java.net.URL;
+import org.netbeans.modules.hudson.spi.AcegiAuthorizer;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
- * @author Jan Becicka
+ * Logs in user on kenai.com automatically.
  */
-@ServiceProvider(service=Runnable.class, path="WarmUp")
-public class KenaiLoginTask implements Runnable {
+@ServiceProvider(service=AcegiAuthorizer.class, position=100)
+public class KenaiAuthentication implements AcegiAuthorizer {
 
-    public static boolean isFinished = false;
-    public static final Object monitor = new Object();
-    @SuppressWarnings("deprecation")
-    public void run() {
-        synchronized (monitor) {
-            UIUtils.tryLogin();
-            isFinished = true;
-            monitor.notify();
-        }
-    }
-
-    public static void waitStartupFinished() {
-        synchronized (monitor) {
-            if (!isFinished) {
-                try {
-                    monitor.wait();
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+    public String[] authorize(URL home) {
+        if (home.toString().matches("https?://(test)?kenai\\.com/hudson/[^/]+/")) { // NOI18N
+            // could use UIUtils.tryLogin(), but this seems to get called automatically anyway
+            PasswordAuthentication auth = Kenai.getDefault().getPasswordAuthentication();
+            if (auth != null) {
+                return new String[] {auth.getUserName(), new String(auth.getPassword())};
             }
         }
+        return null;
     }
+
 }
