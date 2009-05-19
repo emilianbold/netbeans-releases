@@ -44,6 +44,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,6 +69,7 @@ public class HgHookImpl extends HgHook {
     private HookPanel panel;
     private final String name;
     private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.HgHook");   // NOI18N
+    private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");    // NOI18N
 
     public HgHookImpl() {
         this.name = NbBundle.getMessage(HgHookImpl.class, "LBL_VCSHook");       // NOI18N
@@ -170,7 +172,11 @@ public class HgHookImpl extends HgHook {
             formatString = formatString.replaceAll("\\{message\\}",   "\\{3\\}");           // NOI18N
 
             msg = new MessageFormat(formatString).format(
-                    new Object[] {changeset, author, date, message},
+                    new Object[] {
+                        changeset,
+                        author,
+                        date != null ? CC_DATE_FORMAT.format(date) : "",        // NOI18N
+                        message},
                     new StringBuffer(),
                     null).toString();
 
