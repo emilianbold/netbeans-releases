@@ -78,7 +78,6 @@ public final class ConnectionManager {
 
     // Instance of the ConnectionManager
     private final static ConnectionManager instance;
-    private final static Object sessionsLock = new String(ConnectionManager.class.getName());
     // Map that contains all connected sessions;
     private final HashMap<ExecutionEnvironment, Session> sessions;
 
@@ -141,29 +140,40 @@ public final class ConnectionManager {
     AtomicInteger idx = new AtomicInteger();
 
     private Session getSession(final ExecutionEnvironment env, boolean restoreLostConnection) {
-        synchronized (sessionsLock) {
-            Session session = sessions.get(env);
+        int attemptsLeft = 2;
+        Session session = null;
 
-            if (session != null && !session.isConnected() && restoreLostConnection) {
-                // Session is not null and at the same time is not connected...
-                // This means that it was connected before and RemoteUserInfoProvider
-                // holds required user info already...
-                // do reconnect ...
+        synchronized (sessions) {
+            while (attemptsLeft-- > 0) {
 
-                synchronized (jsch) {
-                    session.disconnect();
+                if (Thread.currentThread().isInterrupted()) {
+                    // do not clear interrupted flag
+                    return null;
                 }
 
-                try {
-                    doConnect(env, RemoteUserInfoProvider.getUserInfo(env, false));
-                } catch (IOException ex) {
-                    log.log(Level.FINEST, Thread.currentThread() +
-                            " : ConnectionManager.getSession()", ex); // NOI18N
+                session = sessions.get(env);
+
+                if (session == null || session.isConnected()) {
+                    break;
+                }
+
+                if (restoreLostConnection) {
+                    // Session is not null and at the same time is not connected...
+                    // This means that it was connected before and RemoteUserInfoProvider
+                    // holds required user info already...
+                    // do reconnect ...
+
                     session = null;
-                } catch (CancellationException ex) {
-                    log.log(Level.FINEST, Thread.currentThread() +
-                            " : ConnectionManager.getSession()", ex); // NOI18N
-                    session = null;
+
+                    try {
+                        doConnect(env, RemoteUserInfoProvider.getUserInfo(env, false));
+                    } catch (IOException ex) {
+                        log.log(Level.FINEST, Thread.currentThread() +
+                                " : ConnectionManager.getSession()", ex); // NOI18N
+                    } catch (CancellationException ex) {
+                        log.log(Level.FINEST, Thread.currentThread() +
+                                " : ConnectionManager.getSession()", ex); // NOI18N
+                    }
                 }
             }
 
@@ -337,7 +347,7 @@ public final class ConnectionManager {
             }
 
             if (session != null) {
-                synchronized (sessionsLock) {
+                synchronized (sessions) {
                     sessions.put(env, session);
                 }
 
@@ -378,7 +388,7 @@ public final class ConnectionManager {
             return true;
         }
 
-        synchronized (sessionsLock) {
+        synchronized (sessions) {
             if (sessions.containsKey(execEnv)) {
                 return sessions.get(execEnv).isConnected();
             }
