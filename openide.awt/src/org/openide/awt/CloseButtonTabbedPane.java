@@ -129,6 +129,9 @@ final class CloseButtonTabbedPane extends JTabbedPane {
     @Override
     public Component add (Component c) {
         Component result = super.add(c);
+        if (isNoCloseButton(c)) {
+            return result;
+        }
         // #75317 - don't try to set the title if LF (such as Substance LF)
         // is adding some custom UI components into tabbed pane
         if (!(c instanceof UIResource)) {
@@ -143,6 +146,12 @@ final class CloseButtonTabbedPane extends JTabbedPane {
 
     @Override
     public void setTitleAt(int idx, String title) {
+        Component c = findTabAt(idx);
+        //if NO_CLOSE_BUTTON -> just call super
+        if (isNoCloseButton(c)) {
+            super.setTitleAt(idx, title);
+        }
+
         String nue = title.indexOf("</html>") != -1 ? //NOI18N
             Utilities.replaceString(title, "</html>", "&nbsp;&nbsp;</html>") //NOI18N
             : title + "  ";
@@ -168,7 +177,22 @@ final class CloseButtonTabbedPane extends JTabbedPane {
         return null;
     }
 
+    private boolean isNoCloseButton(Component c) {
+        if (c!=null && c instanceof JComponent) {
+            Object prop = ((JComponent) c).getClientProperty(TabbedPaneFactory.NO_CLOSE_BUTTON);
+            if (prop!=null && prop instanceof Boolean && (Boolean) prop) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private Rectangle getCloseButtonBoundsAt(int i) {
+        Component c = findTabAt(i);
+        //if NO_CLOSE_BUTTON -> return null
+        if (isNoCloseButton(c)) {
+            return null;
+        }
         Rectangle b = getBoundsAt(i);
         if (b == null)
             return null;
@@ -189,6 +213,9 @@ final class CloseButtonTabbedPane extends JTabbedPane {
                 b.y -= 2;
             } else if( isWindowsXPLaF() || isWindowsLaF() || isAquaLaF() ) {
                 b.x -= 2;
+            } else if( isGTKLaF() && i == getSelectedIndex() ) {
+                b.x -= 1;
+                b.y -= 2;
             }
             if( i == getTabCount()-1 ) {
                 if( isMetalLaF() )
@@ -228,6 +255,10 @@ final class CloseButtonTabbedPane extends JTabbedPane {
     private boolean isMetalLaF () {
         String lfID = UIManager.getLookAndFeel().getID();
         return "Metal".equals( lfID ); //NOI18N
+    }
+
+    private boolean isGTKLaF () {
+        return "GTK".equals( UIManager.getLookAndFeel().getID() ); //NOI18N
     }
     
     @Override

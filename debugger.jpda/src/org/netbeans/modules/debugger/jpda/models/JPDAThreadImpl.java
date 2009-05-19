@@ -923,6 +923,21 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         }
     }
     
+    public void waitUntilMethodInvokeDone(long timeout) throws InterruptedException {
+        if (!accessLock.readLock().tryLock(timeout, TimeUnit.MILLISECONDS)) {
+            return ;
+        }
+        try {
+            while (methodInvoking) {
+                synchronized (this) {
+                    this.wait(timeout);
+                }
+            }
+        } finally {
+            accessLock.readLock().unlock();
+        }
+    }
+
     public void disableMethodInvokeUntilResumed() {
         accessLock.writeLock().lock();
         methodInvokingDisabledUntilResumed = true;
@@ -1012,7 +1027,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             try {
                 if (!isSuspended()) return null;
                 try {
-                    if ("DestroyJavaVM".equals(ThreadReferenceWrapper.name(threadReference))) {
+                    if ("DestroyJavaVM".equals(threadName)) {
                         // See defect #6474293
                         return null;
                     }
@@ -1449,7 +1464,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     private void submitCheckForMonitorEntered(ObjectReference waitingMonitor) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, IllegalThreadStateExceptionWrapper {
         try {
             ThreadReferenceWrapper.suspend(threadReference);
-            logger.fine("submitCheckForMonitorEntered(): suspending "+ThreadReferenceWrapper.name(threadReference));
+            logger.fine("submitCheckForMonitorEntered(): suspending "+threadName);
             ObjectReference monitor = ThreadReferenceWrapper.currentContendedMonitor(threadReference);
             if (monitor == null) return ;
             Location loc = StackFrameWrapper.location(ThreadReferenceWrapper.frame(threadReference, 0));
@@ -1464,7 +1479,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         } catch (InvalidStackFrameExceptionWrapper isex) {
             Exceptions.printStackTrace(isex);
         } finally {
-            logger.fine("submitCheckForMonitorEntered(): resuming "+ThreadReferenceWrapper.name(threadReference));
+            logger.fine("submitCheckForMonitorEntered(): resuming "+threadName);
             ThreadReferenceWrapper.resume(threadReference);
         }
     }

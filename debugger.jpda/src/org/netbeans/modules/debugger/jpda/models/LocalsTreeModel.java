@@ -99,7 +99,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
     
     private JPDADebuggerImpl    debugger;
     private Listener            listener;
-    private List<ModelListener> listeners = new ArrayList<ModelListener>();
+    private final List<ModelListener> listeners = new ArrayList<ModelListener>();
     private PropertyChangeListener[] varListeners;
     //private Map                 cachedLocals = new WeakHashMap();
     private Map<Value, ArrayChildrenNode> cachedArrayChildren = new WeakHashMap<Value, ArrayChildrenNode>();
@@ -403,7 +403,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         }
     }
     
-    void fireTreeChanged () {
+    private void fireTreeChanged () {
         List<ModelListener> ls;
         synchronized (listeners) {
             ls = new ArrayList<ModelListener>(listeners);
@@ -621,10 +621,10 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
     private void updateVarListeners(Object[] vars) {
         varListeners = new PropertyChangeListener[vars.length];
         for (int i = 0; i < vars.length; i++) {
-            final Object var = vars[i];
+            Object var = vars[i];
             PropertyChangeListener l = new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    fireNodeChanged(var);
+                    fireNodeChanged(evt.getSource());
                 }
             };
             varListeners[i] = l; // Hold it so that it does not get lost, till the array is updated.
@@ -798,6 +798,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         }
         
         /** Overriden equals so that the nodes are not re-created when not necessary. */
+        @Override
         public boolean equals(Object obj) {
             if (!(obj instanceof ArrayChildrenNode)) return false;
             ArrayChildrenNode achn = (ArrayChildrenNode) obj;
@@ -806,10 +807,12 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                    achn.length == this.length;
         }
         
+        @Override
         public int hashCode() {
             return var.hashCode() + from + length;
         }
         
+        @Override
         public String toString() {
             int num0 = maxIndexLog - ArrayFieldVariable.log10(from);
             String froms;

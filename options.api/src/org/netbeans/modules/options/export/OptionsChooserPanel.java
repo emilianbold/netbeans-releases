@@ -222,7 +222,7 @@ public final class OptionsChooserPanel extends JPanel {
             public void run() {
                 OptionsExportModel model = getOptionsExportModel();
                 LOGGER.fine("Loading started: " + getOptionsExportModel());  //NOI18N
-                final Outline outline = getOutline();
+                final TreeModel treeModel = createOptionsTreeModel();
                 LOGGER.fine("Loading finished: " + getOptionsExportModel());  //NOI18N
                 // change UI only if model not changed in between
                 if (model == getOptionsExportModel()) {
@@ -230,7 +230,7 @@ public final class OptionsChooserPanel extends JPanel {
 
                         public void run() {
                             LOGGER.fine("Changing options.");
-                            scrollPaneOptions.setViewportView(outline);
+                            scrollPaneOptions.setViewportView(getOutline(treeModel));
                             dialogDescriptor.setValid(isPanelValid());
                         }
                     });
@@ -241,10 +241,10 @@ public final class OptionsChooserPanel extends JPanel {
     }
 
     /** Returns outline view for displaying options for export/import. */
-    private Outline getOutline() {
+    private Outline getOutline(TreeModel treeModel) {
         Outline outline = new Outline();
         outline.setModel(DefaultOutlineModel.createOutlineModel(
-                createOptionsTreeModel(),
+                treeModel,
                 new OptionsRowModel(),
                 true,
                 NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.outline.header.tree")));

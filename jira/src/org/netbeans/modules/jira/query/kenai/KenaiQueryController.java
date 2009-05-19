@@ -55,17 +55,21 @@ public class KenaiQueryController extends QueryController
 {
     private String projectName; // XXX don't need this - already set in filterDef
     private boolean predefinedQuery;
+    private FilterDefinition filter;
 
     public KenaiQueryController(JiraRepository repository, JiraQuery query, JiraFilter jf, String projectName, boolean predefinedQuery) {
         super(repository, query, jf);
         this.projectName = projectName;
         this.predefinedQuery = predefinedQuery;
+        this.filter = (FilterDefinition) jf;
     }
 
     @Override
-    public void populate(FilterDefinition filterDefinition) {
-        super.populate(filterDefinition);
-        disableProduct(projectName);
+    public FilterDefinition getFilterDefinition() {
+        if(predefinedQuery) {
+            return this.filter;
+        }
+        return super.getFilterDefinition();
     }
 
     @Override
@@ -77,6 +81,7 @@ public class KenaiQueryController extends QueryController
             panel.modifyButton.setEnabled(false);
             panel.removeButton.setEnabled(false);
         }
+        super.disableProject();
     }
 
     @Override

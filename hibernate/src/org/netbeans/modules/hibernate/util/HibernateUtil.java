@@ -45,10 +45,17 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Enumeration;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.PatternSyntaxException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
@@ -59,6 +66,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.BinaryForSourceQuery.Result;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -77,10 +85,13 @@ import org.netbeans.modules.hibernate.wizards.support.DBSchemaTableProvider;
 import org.netbeans.modules.hibernate.wizards.support.EmptyTableProvider;
 import org.netbeans.modules.hibernate.wizards.support.Table;
 import org.netbeans.modules.hibernate.wizards.support.TableProvider;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -93,6 +104,8 @@ import org.openide.util.Mutex;
  * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
 public class HibernateUtil {
+    private static final String REGEXP_XML_FILE = ".+\\.xml"; // NOI18N
+    private static final String REGEXP_CFG_XML_FILE = ".+\\.cfg\\.xml"; // NOI18N
 
     private static Logger logger = Logger.getLogger(HibernateUtil.class.getName());
 
@@ -197,20 +210,7 @@ public class HibernateUtil {
      * @return list of HibernateConfiguration FileObjects or an empty list of none found.
      */
     public static List<FileObject> getAllHibernateConfigFileObjects(Project project) {
-        List<FileObject> configFiles = new ArrayList<FileObject>();
-        SourceGroup[] javaSourceGroup = getSourceGroups(project);
-
-        for (SourceGroup sourceGroup : javaSourceGroup) {
-            FileObject root = sourceGroup.getRootFolder();
-            Enumeration<? extends FileObject> enumeration = root.getChildren(true);
-            while (enumeration.hasMoreElements()) {
-                FileObject fo = enumeration.nextElement();
-                if (fo.getNameExt() != null && fo.getMIMEType().equals(HibernateCfgDataLoader.REQUIRED_MIME)) {
-                    configFiles.add(fo);
-                }
-            }
-        }
-        return configFiles;
+        return searchSourceFiles(project, REGEXP_XML_FILE, HibernateCfgDataLoader.REQUIRED_MIME);
     }
 
     /**
@@ -220,20 +220,7 @@ public class HibernateUtil {
      * @return list of HibernateConfiguration FileObjects or an empty list of none found.
      */
     public static List<FileObject> getDefaultHibernateConfigFileObjects(Project project) {
-        List<FileObject> configFiles = new ArrayList<FileObject>();
-        SourceGroup[] javaSourceGroup = getSourceGroups(project);
-
-        for (SourceGroup sourceGroup : javaSourceGroup) {
-            FileObject root = sourceGroup.getRootFolder();
-            Enumeration<? extends FileObject> enumeration = root.getChildren(false);
-            while (enumeration.hasMoreElements()) {
-                FileObject fo = enumeration.nextElement();
-                if (fo.getNameExt() != null && fo.getNameExt().contains("cfg.xml")) {
-                    configFiles.add(fo);
-                }
-            }
-        }
-        return configFiles;
+        return searchSourceFiles(project, REGEXP_CFG_XML_FILE, null);
     }
 
     /**
@@ -244,19 +231,7 @@ public class HibernateUtil {
      * @return list of FileObjects of actual mapping files.
      */
     public static List<FileObject> getAllHibernateMappingFileObjects(Project project) {
-        List<FileObject> mappingFiles = new ArrayList<FileObject>();
-        SourceGroup[] javaSourceGroup = getSourceGroups(project);
-        for (SourceGroup sourceGroup : javaSourceGroup) {
-            FileObject root = sourceGroup.getRootFolder();
-            Enumeration<? extends FileObject> enumeration = root.getChildren(true);
-            while (enumeration.hasMoreElements()) {
-                FileObject fo = enumeration.nextElement();
-                if (fo.getNameExt() != null && fo.getMIMEType().equals(HibernateMappingDataLoader.REQUIRED_MIME)) {
-                    mappingFiles.add(fo);
-                }
-            }
-        }
-        return mappingFiles;
+        return searchSourceFiles(project, REGEXP_XML_FILE, HibernateMappingDataLoader.REQUIRED_MIME);
     }
 
     private static FileObject createBuildFolder(File buildFile) {
@@ -271,15 +246,33 @@ public class HibernateUtil {
         return buildFO;
     }
 
+    /**
+     * @return {@link JavaProjectConstants#SOURCES_TYPE_RESOURCES} if exists, {@link JavaProjectConstants#SOURCES_TYPE_JAVA} otherwise.
+     */
     public static SourceGroup[] getSourceGroups(Project project) {
         Sources projectSources = ProjectUtils.getSources(project);
-        SourceGroup[] javaSourceGroup = projectSources.getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_RESOURCES);
-        if (javaSourceGroup == null || javaSourceGroup.length == 0) {
-            javaSourceGroup = projectSources.getSourceGroups(
-                    JavaProjectConstants.SOURCES_TYPE_JAVA);
+        // first, try to get resources
+        SourceGroup[] resources = projectSources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+        if (resources.length > 0) {
+            return resources;
         }
-        return javaSourceGroup;
+        // try to create it
+        SourceGroup resourcesSourceGroup = SourceGroupModifier.createSourceGroup(
+            project, JavaProjectConstants.SOURCES_TYPE_RESOURCES, JavaProjectConstants.SOURCES_HINT_MAIN);
+        if (resourcesSourceGroup != null) {
+            return new SourceGroup[] {resourcesSourceGroup};
+        }
+        // fallback to java sources
+        return projectSources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+    }
+
+    /**
+     * Get the 1st source group.
+     * @see #getSourceGroups(Project)
+     */
+    public static SourceGroup getFirstSourceGroup(Project project) {
+        // well, we should always get some sources
+        return getSourceGroups(project)[0];
     }
 
     /**
@@ -431,17 +424,18 @@ public class HibernateUtil {
      * @return list of relative paths of actual mapping files.
      */
     public static List<String> getAllHibernateMappingsRelativeToSourcePath(Project project) {
-        List<String> mappingFiles = new ArrayList<String>();
-        SourceGroup[] javaSourceGroup = getSourceGroups(project);
+        List<FileObject> files = searchSourceFiles(project, REGEXP_XML_FILE, HibernateMappingDataLoader.REQUIRED_MIME);
+        List<String> mappingFiles = new ArrayList<String>(files.size());
 
-        for (SourceGroup sourceGroup : javaSourceGroup) {
-            FileObject root = sourceGroup.getRootFolder();
-            Enumeration<? extends FileObject> enumeration = root.getChildren(true);
-            while (enumeration.hasMoreElements()) {
-                FileObject fo = enumeration.nextElement();
-                if (fo.getNameExt() != null && fo.getMIMEType().equals(HibernateMappingDataLoader.REQUIRED_MIME)) {
-                    mappingFiles.add(
-                            getRelativeSourcePath(fo, root));
+        SourceGroup[] javaSourceGroup = getSourceGroups(project);
+        for (FileObject fo : files) {
+            for (SourceGroup sourceGroup : javaSourceGroup) {
+                FileObject root = sourceGroup.getRootFolder();
+                String relativePath = FileUtil.getRelativePath(root, fo);
+                if (relativePath != null) {
+                    assert relativePath.length() > 0;
+                    mappingFiles.add(relativePath);
+                    break;
                 }
             }
         }
@@ -449,32 +443,7 @@ public class HibernateUtil {
     }
 
     public static List<FileObject> getAllHibernateReverseEnggFileObjects(Project project) {
-        List<FileObject> reverseEnggFiles = new ArrayList<FileObject>();
-        Sources projectSources = ProjectUtils.getSources(project);
-        // src/main/resources does not need to exist
-        SourceGroup resourcesSourceGroup = SourceGroupModifier.createSourceGroup(project, JavaProjectConstants.SOURCES_TYPE_RESOURCES, JavaProjectConstants.SOURCES_HINT_MAIN);
-        if (resourcesSourceGroup != null) {
-            addFileObjects(reverseEnggFiles, new SourceGroup[] {resourcesSourceGroup}, HibernateRevengDataLoader.REQUIRED_MIME);
-        }
-        if (reverseEnggFiles.isEmpty()) {
-            // possible fallback
-            addFileObjects(reverseEnggFiles, projectSources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA), HibernateRevengDataLoader.REQUIRED_MIME);
-        }
-
-        return reverseEnggFiles;
-    }
-
-    private static void addFileObjects(List<FileObject> files, SourceGroup[] sourceGroups, String mimeType) {
-        for (SourceGroup sourceGroup : sourceGroups) {
-            FileObject root = sourceGroup.getRootFolder();
-            Enumeration<? extends FileObject> enumeration = root.getChildren(true);
-            while (enumeration.hasMoreElements()) {
-                FileObject fo = enumeration.nextElement();
-                if (mimeType.equals(FileUtil.getMIMEType(fo, mimeType))) {
-                    files.add(fo);
-                }
-            }
-        }
+        return searchSourceFiles(project, REGEXP_XML_FILE, HibernateRevengDataLoader.REQUIRED_MIME);
     }
 
     /**
@@ -649,5 +618,109 @@ public class HibernateUtil {
             return null;
         }
         return getDBConnection(hibernateConfiguration).getJDBCConnection();
+    }
+
+    public static List<SourceGroup> getJavaSourceGroups(Project project) {
+        assert project != null;
+        SourceGroup[] sourceGroups = getSourceGroups(project);
+        Set<SourceGroup> testGroups = getTestSourceGroups(sourceGroups);
+        List<SourceGroup> result = new ArrayList<SourceGroup>();
+        for (SourceGroup sourceGroup : sourceGroups) {
+            if (!testGroups.contains(sourceGroup)) {
+                result.add(sourceGroup);
+            }
+        }
+        return result;
+    }
+
+    private static Set<SourceGroup> getTestSourceGroups(SourceGroup[] sourceGroups) {
+        Map<FileObject, SourceGroup> foldersToSourceGroupsMap = createFoldersToSourceGroupsMap(sourceGroups);
+        Set<SourceGroup> testGroups = new HashSet<SourceGroup>();
+        for (SourceGroup sourceGroup : sourceGroups) {
+            testGroups.addAll(getTestTargets(sourceGroup, foldersToSourceGroupsMap));
+        }
+        return testGroups;
+    }
+
+    private static Map<FileObject, SourceGroup> createFoldersToSourceGroupsMap(final SourceGroup[] sourceGroups) {
+        if (sourceGroups.length == 0) {
+            return Collections.emptyMap();
+        }
+        Map<FileObject, SourceGroup> result = new HashMap<FileObject, SourceGroup>(2 * sourceGroups.length);
+        for (SourceGroup sourceGroup : sourceGroups) {
+            result.put(sourceGroup.getRootFolder(), sourceGroup);
+        }
+        return result;
+    }
+
+    private static List<SourceGroup> getTestTargets(SourceGroup sourceGroup, Map<FileObject, SourceGroup> foldersToSourceGroupsMap) {
+        final URL[] rootURLs = UnitTestForSourceQuery.findUnitTests(sourceGroup.getRootFolder());
+        if (rootURLs.length == 0) {
+            return Collections.emptyList();
+        }
+        List<FileObject> sourceRoots = getFileObjects(rootURLs);
+        List<SourceGroup> result = new ArrayList<SourceGroup>(sourceRoots.size());
+        for (FileObject sourceRoot : sourceRoots) {
+            SourceGroup srcGroup = foldersToSourceGroupsMap.get(sourceRoot);
+            if (srcGroup != null) {
+                result.add(srcGroup);
+            }
+        }
+        return result;
+    }
+
+    private static List<FileObject> getFileObjects(URL[] urls) {
+        List<FileObject> result = new ArrayList<FileObject>(urls.length);
+        for (URL url : urls) {
+            FileObject sourceRoot = URLMapper.findFileObject(url);
+            if (sourceRoot != null) {
+                result.add(sourceRoot);
+            } else {
+                Exceptions.printStackTrace(new IllegalStateException("No FileObject found for the following URL: " + url));
+            }
+        }
+        return result;
+    }
+
+    /**
+     * @see org.netbeans.modules.jumpto.file.FileSearchAction.Worker#getFileNames(String text)
+     */
+    private static List<FileObject> searchSourceFiles(Project project, String regExp, String mimeType) {
+        // search index is enough because config files have to be underneath source folders
+        List<FileObject> files = new LinkedList<FileObject>();
+
+        Collection<? extends FileObject> roots = createFoldersToSourceGroupsMap(getSourceGroups(project)).keySet();
+        try {
+            QuerySupport q = QuerySupport.forRoots(
+                    "org-netbeans-modules-jumpto-file-FileIndexer", // org.netbeans.modules.jumpto.file.FileIndexer.ID
+                    1,                                              // org.netbeans.modules.jumpto.file.FileIndexer.VERSION
+                    roots.toArray(new FileObject [roots.size()]));
+            Collection<? extends IndexResult> results = q.query(
+                    "ci-file-name",                                 // org.netbeans.modules.jumpto.file.FileIndexer.FIELD_CASE_INSENSITIVE_NAME
+                    regExp,
+                    QuerySupport.Kind.CASE_INSENSITIVE_REGEXP);
+            for (IndexResult r : results) {
+                FileObject file = r.getFile();
+                if (file == null || !file.isValid()) {
+                    // the file has been deleted in the meantime
+                    continue;
+                }
+                if (mimeType == null
+                        || mimeType.equals(FileUtil.getMIMEType(file, mimeType))) {
+                    files.add(file);
+                }
+            }
+        } catch (PatternSyntaxException pse) {
+            assert false;
+            return Collections.<FileObject>emptyList();
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, null, ioe);
+            return Collections.<FileObject>emptyList();
+        }
+
+        // possible improvement (or fix ;)
+        //  if scan is in progress (IndexingManager.isIndexing()) then it would be possible to traverse filesystem (but see issue #158261)
+
+        return files;
     }
 }

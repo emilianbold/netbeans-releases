@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -241,11 +242,16 @@ public class OutputWindowWriter extends Writer {
                 if (fileName.startsWith("/cygdrive/")) { // NOI18N
                     fileName = fileName.substring("/cygdrive/".length()); // NOI18N
                     fileName = "" + fileName.charAt(0) + ':' + fileName.substring(1); // NOI18N
-                    fileName = fileName.replace('/', '\\');
+                } else if (fileName.length() > 3 && fileName.charAt(0) == '/' && fileName.charAt(2) == '/') {// NOI18N
+                    fileName = "" + fileName.charAt(1) + ':' + fileName.substring(2);// NOI18N
                 }
+                if (fileName.startsWith("/") || fileName.startsWith(".")) {// NOI18N
+                    return null;
+                }
+                fileName = fileName.replace('/', '\\');// NOI18N
             }
-            fileName = HostInfoProvider.getMapper(execEnv).getLocalPath(fileName);
-            File file = FileUtil.normalizeFile(new File(fileName));
+            fileName = HostInfoProvider.getMapper(execEnv).getLocalPath(fileName,true);
+            File file = CndFileUtils.normalizeFile(new File(fileName));
             return FileUtil.toFileObject(file);
         }
 
@@ -273,11 +279,11 @@ public class OutputWindowWriter extends Writer {
                         if (cCompiler != null) {
                             String includePrefix = cCompiler.getIncludeFilePathPrefix();
                             File file = new File(includePrefix + absPath1);
-                            if (!file.exists() && absPath2 != null) {
+                            if (!CndFileUtils.exists(file) && absPath2 != null) {
                                 file = new File(includePrefix + absPath2);
                             }
-                            if (file.exists()) {
-                                FileObject fo = FileUtil.toFileObject( FileUtil.normalizeFile(file));
+                            if (CndFileUtils.exists(file)) {
+                                FileObject fo = FileUtil.toFileObject( CndFileUtils.normalizeFile(file));
                                 return fo;
                             }
                         }
@@ -339,7 +345,7 @@ public class OutputWindowWriter extends Writer {
                 try {                
                     String file = m.group( 1 );
                     Integer lineNumber = Integer.valueOf( m.group( 2 ));
-                    FileObject fo = FileUtil.toFileObject( FileUtil.normalizeFile( new File( FileUtil.toFile( relativeTo ), file )));
+                    FileObject fo = FileUtil.toFileObject( CndFileUtils.normalizeFile( new File( FileUtil.toFile( relativeTo ), file )));
                     
                     if( fo == null ) {
                         return false;
@@ -643,7 +649,10 @@ public class OutputWindowWriter extends Writer {
         
         public boolean handleLine(OutputWriter delegate, String line, Matcher m) throws IOException {
             if (m.pattern() == SUN_DIRECTORY_ENTER) {
-                relativeTo = resolveFile(m.group(1));
+                FileObject myObj = resolveFile(m.group(1));
+                if (myObj != null) {
+                    relativeTo = myObj;
+                }
                 return false;
             }
             if (    m.pattern() == SUN_ERROR_SCANNER_CPP_ERROR

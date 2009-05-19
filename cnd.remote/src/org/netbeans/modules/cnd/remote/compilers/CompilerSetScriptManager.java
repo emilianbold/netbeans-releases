@@ -46,7 +46,6 @@ import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.remote.support.RemoteConnectionSupport;
-import org.netbeans.modules.cnd.remote.support.ShellUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 
@@ -81,7 +80,8 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
             try {
                 //String cmd = "(chmod 755 " + SCRIPT + ") && " + SCRIPT;
                 String cmd = SCRIPT;
-                NativeProcessBuilder pb = new NativeProcessBuilder(executionEnvironment, cmd);
+                NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
+                pb.setCommandLine(cmd);
                 Process process = pb.call();
                 InputStream is = process.getInputStream();
                 in = new BufferedReader(new InputStreamReader(is));

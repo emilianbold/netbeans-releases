@@ -54,7 +54,7 @@ import java.io.ByteArrayOutputStream;
  */
 class Scrambler {
 
-    private static final char [] characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toCharArray();
+    private static final char [] characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toCharArray(); // NOI18N
 
     /**
      * The mapping array
@@ -384,12 +384,12 @@ class Scrambler {
             sb.append(characters[(d >> 18) & 0x3F]);
             sb.append(characters[(d >> 12) & 0x3F]);
             sb.append(characters[(d >> 6) & 0x3F]);
-            sb.append("=");
+            sb.append("="); // NOI18N
         } else if (i == length - 1) {
             int d = (((int) data[i]) & 0xFF) << 16;
             sb.append(characters[(d >> 18) & 0x3F]);
             sb.append(characters[(d >> 12) & 0x3F]);
-            sb.append("==");
+            sb.append("=="); // NOI18N
         }
         return sb.toString();
     }
@@ -431,7 +431,7 @@ class Scrambler {
             case '=':
                 return 0;
             default:
-                throw new RuntimeException("Base64: unexpected code: " + c);
+                throw new RuntimeException("Base64: unexpected code: " + c); // NOI18N
         }
     }
 }

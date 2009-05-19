@@ -46,6 +46,7 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
@@ -58,6 +59,7 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
@@ -68,7 +70,9 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
@@ -363,6 +367,8 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         boolean loginSuccess = UIUtils.showLogin();
         if (loginSuccess) {
             refreshUsername();
+            KenaiTopComponent.findInstance().open();
+            KenaiTopComponent.findInstance().requestActive();
         } else {
             // login failed, do nothing
         }
@@ -376,7 +382,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         
         KenaiSearchPanel browsePanel = new KenaiSearchPanel(KenaiSearchPanel.PanelType.BROWSE, false);
         String title = NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
-                "GetSourcesFromKenaiPanel.BrowseKenaiProjectsTitle");
+                "GetSourcesFromKenaiPanel.BrowseKenaiProjectsTitle"); // NOI18N
         DialogDescriptor dialogDesc = new KenaiDialogDescriptor(browsePanel, title, true, null);
 
         Object option = DialogDisplayer.getDefault().notify(dialogDesc);
@@ -413,7 +419,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         String svnFolders[] = null;
         if (featureItem != null) {
             String title = NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
-                    "GetSourcesFromKenaiPanel.SelectRepositoryFolderTitle");
+                    "GetSourcesFromKenaiPanel.SelectRepositoryFolderTitle"); // NOI18N
             String repoUrl = featureItem.feature.getLocation();
             try {
                 if (passwdAuth != null) {
@@ -424,6 +430,12 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                 }
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
+            } catch (IOException io) {
+                if (Subversion.CLIENT_UNAVAILABLE_ERROR_MESSAGE.equals(io.getMessage())) {
+                    // DO SOMETHING, svn client is unavailable
+                } else {
+                    Exceptions.printStackTrace(io);
+                }
             }
         }
         if (svnFolders != null) {
@@ -488,7 +500,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                                                 KenaiService.Names.SUBVERSION.equals(feature.getService())) {
                                                 KenaiFeatureListItem item = new KenaiFeatureListItem(project, feature);
                                                 addElement(item);
-                                                if (prjAndFeature != null && 
+                                                if (prjAndFeature != null &&
                                                     prjAndFeature.projectName.equals(project.getName()) &&
                                                     prjAndFeature.feature.equals(feature)) {
                                                     setSelectedItem(item);
@@ -554,20 +566,20 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
     private void updatePanelUI() {
         KenaiFeatureListItem featureItem = (KenaiFeatureListItem) kenaiRepoComboBox.getSelectedItem();
         if (featureItem != null) {
-            String serviceName = featureItem.feature.getService(); // XXX service or name
+            String serviceName = featureItem.feature.getService();
             String repositoryText = NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
-                    "GetSourcesFromKenaiPanel.RepositoryLabel");
+                    "GetSourcesFromKenaiPanel.RepositoryLabel"); // NOI18N
             if (KenaiService.Names.SUBVERSION.equals(serviceName)) {
                 enableFolderToGetUI(true);
                 localFolderDescLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
-                        "GetSourcesFromKenaiPanel.localFolderDescLabel.svnText"));
-                projectPreviewLabel.setText("(" + featureItem.project.getDisplayName() +
+                        "GetSourcesFromKenaiPanel.localFolderDescLabel.svnText")); // NOI18N
+                projectPreviewLabel.setText("(" + featureItem.project.getDisplayName() + // NOI18N
                         "; Subversion " + repositoryText + ")"); // NOI18N
             } else if (KenaiService.Names.MERCURIAL.equals(serviceName)) {
                 enableFolderToGetUI(false);
                 localFolderDescLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
-                        "GetSourcesFromKenaiPanel.localFolderDescLabel.hgText"));
-                projectPreviewLabel.setText("(" + featureItem.project.getDisplayName() +
+                        "GetSourcesFromKenaiPanel.localFolderDescLabel.hgText")); // NOI18N
+                projectPreviewLabel.setText("(" + featureItem.project.getDisplayName() + // NOI18N
                         "; Mercurial " + repositoryText + ")"); // NOI18N
             } else {
                 enableFolderToGetUI(false);
@@ -620,7 +632,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
             usernameLabel.setEnabled(true);
         } else {
             usernameLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
-                    "GetFromKenaiPanel.notLoggedIn"));
+                    "GetFromKenaiPanel.notLoggedIn")); // NOI18N
             usernameLabel.setForeground(Color.BLACK);
             usernameLabel.setEnabled(false);
         }

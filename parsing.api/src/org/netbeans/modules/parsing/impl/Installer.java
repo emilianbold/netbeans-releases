@@ -15,19 +15,15 @@ import org.openide.windows.WindowManager;
  */
 public class Installer extends ModuleInstall {
 
-    private static final RequestProcessor RP = new RequestProcessor(Installer.class.getName(), 1);
-
-
-
     @Override
     public void restored () {
         super.restored();
-        Schedulers.init ();
         WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
             public void run () {
-                RP.post(new Runnable() {
+                RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         RepositoryUpdater.getDefault().start(false);
+                        Schedulers.init();
                     }
                 });
             }

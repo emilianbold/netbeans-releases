@@ -40,48 +40,34 @@
 package org.openide.nodes;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
 import javax.swing.Action;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
-import static org.junit.Assert.*;
 
 /**
- *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class LazyNodeTest {
+public class LazyNodeTest extends NbTestCase {
 
-    public LazyNodeTest() {
+    public LazyNodeTest(String n) {
+        super(n);
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
+    @Override
+    protected Level logLevel() {
+        return Level.ALL;
     }
 
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
-    @Test
     public void testCreateOriginalAfterNodeExpansion() {
         doCreateOriginal(true, false);
     }
 
-    @Test
     public void testCreateOriginalAfterGetActions() {
         doCreateOriginal(false, false);
         doCreateOriginal(false, true);
@@ -151,11 +137,11 @@ public class LazyNodeTest {
         assertEquals("Real Node for Test", instance.getShortDescription());
     }
 
-    private static class CntHashMap extends HashMap<Object,Object> {
-        private final Object keyToWatch;
+    private static class CntHashMap extends HashMap<String,Object> {
+        private final String keyToWatch;
         int cnt;
 
-        public CntHashMap(Object keyToWatch) {
+        public CntHashMap(String keyToWatch) {
             this.keyToWatch = keyToWatch;
         }
 
@@ -164,9 +150,8 @@ public class LazyNodeTest {
             if (keyToWatch.equals(key)) {
                 cnt++;
             }
-            return super.get(key);
+            return super.get((String) key);
         }
-
 
     }
 
@@ -194,4 +179,27 @@ public class LazyNodeTest {
             return "A3";
         }
     }
+
+    @RandomlyFails // #165223
+    public void testFindChild() throws Exception {
+        Map<String,Object> m = new HashMap<String,Object>();
+        m.put("original", new AbstractNode(Children.create(new ChildFactory<String>() {
+            protected boolean createKeys(List<String> toPopulate) {
+                toPopulate.add("one");
+                toPopulate.add("two");
+                toPopulate.add("three");
+                return true;
+            }
+            protected @Override Node createNodeForKey(String key) {
+                Node n = new AbstractNode(Children.LEAF);
+                n.setName(key);
+                return n;
+            }
+        }, true)));
+        Node lazy = NodeOp.factory(m);
+        Node kid = NodeOp.findChild(lazy, "two");
+        assertNotNull(kid);
+        assertEquals("two", kid.getName());
+    }
+
 }

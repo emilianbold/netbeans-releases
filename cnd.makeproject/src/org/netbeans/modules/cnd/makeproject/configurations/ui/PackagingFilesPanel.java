@@ -169,7 +169,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
             addObjectAction(new PackagerFileElement(
                     FileType.SOFTLINK,
                     packagingNewEntryPanel.getLink(),
-                    packagingNewEntryPanel.getName(),
+                    packagingNewEntryPanel.getLinkName(),
                     "", // packagingFilesOuterPanel.getFilePermTextField().getText(),
                     packagingFilesOuterPanel.getOwnerTextField().getText(),
                     packagingFilesOuterPanel.getGroupTextField().getText()));

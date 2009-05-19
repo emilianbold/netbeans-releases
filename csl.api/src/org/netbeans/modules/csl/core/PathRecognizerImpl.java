@@ -83,9 +83,9 @@ public final class PathRecognizerImpl extends PathRecognizer {
         if (libraryPathIds == null) {
             collectInfo();
         }
-        Set<String> bpids = libraryPathIds;
-        assert bpids != null;
-        return bpids;
+        Set<String> lpids = libraryPathIds;
+        assert lpids != null;
+        return lpids;
     }
 
     @Override
@@ -144,7 +144,7 @@ public final class PathRecognizerImpl extends PathRecognizer {
                 collectedLpids.addAll(lpids);
             }
 
-            Set<String> blpids = l.getLibraryPathIds();
+            Set<String> blpids = l.getBinaryLibraryPathIds();
             if (blpids != null && !blpids.isEmpty()) {
                 LOG.fine("Language: " + l.getMimeType() + " adds blpids: " + blpids); //NOI18N
                 collectedBlpids.addAll(blpids);

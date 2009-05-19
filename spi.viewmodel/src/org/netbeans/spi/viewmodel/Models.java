@@ -144,7 +144,7 @@ public final class Models {
         final CompoundModel compoundModel
     ) {
         if (!(view instanceof OutlineTable)) {
-            throw new IllegalArgumentException("Expecting an instance of "+OutlineTable.class.getName()+", which can be obtained from Models.createView().");
+            throw new IllegalArgumentException("Expecting an instance of "+OutlineTable.class.getName()+", which can be obtained from Models.createView(). view = "+view);
         }
         if (verbose)
             System.out.println (compoundModel);
@@ -549,6 +549,7 @@ public final class Models {
             this.multiselectionType = multiselectionType;
         }
         
+        @Override
         public boolean isEnabled () {
             boolean any = multiselectionType == MULTISELECTION_TYPE_ANY;
             Node[] ns = TopComponent.getRegistry ().getActivatedNodes ();
@@ -612,10 +613,12 @@ public final class Models {
             }
         }
         
+        @Override
         public int hashCode () {
             return displayName.hashCode ();
         }
         
+        @Override
         public boolean equals (Object o) {
             return (o instanceof ActionSupport) && 
                 displayName.equals (((ActionSupport) o).displayName);
@@ -661,7 +664,7 @@ public final class Models {
         private TreeModel model;
         private TreeModelFilter filter;
         
-        private Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
+        private final Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
 
         
         /**
@@ -766,6 +769,7 @@ public final class Models {
             }
         }
         
+        @Override
         public String toString () {
             return super.toString () + "\n" + toString ("    ");
         }
@@ -812,7 +816,7 @@ public final class Models {
         private CheckNodeModel cmodel;
         private CheckNodeModelFilter cfilter;
 
-        private Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
+        private final Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
 
 
         /**
@@ -908,6 +912,7 @@ public final class Models {
             }
         }
         
+        @Override
         public String toString () {
             return super.toString () + "\n" + toString ("    ");
         }
@@ -1077,7 +1082,7 @@ public final class Models {
         private TableModel model;
         private TableModelFilter filter;
 
-        private Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
+        private final Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
 
 
         /**
@@ -1183,6 +1188,7 @@ public final class Models {
             }
         }
         
+        @Override
         public String toString () {
             return super.toString () + "\n" + toString ("    ");
         }
@@ -1362,6 +1368,7 @@ public final class Models {
                 models [i].removeModelListener (l);
         }
 
+        @Override
         public String toString () {
             return super.toString () + "\n" + toString ("    ");
         }
@@ -1434,6 +1441,7 @@ public final class Models {
             return filter.getActions (model, node);
         }
 
+        @Override
         public String toString () {
             return super.toString () + "\n" + toString ("    ");
         }
@@ -1455,7 +1463,7 @@ public final class Models {
         private TreeExpansionModel expansionModel;
         private TreeExpansionModelFilter expansionFilter;
         
-        private Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
+        private final Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
         
         CompoundTreeExpansionModel(TreeExpansionModel expansionModel, TreeExpansionModelFilter expansionFilter) {
             this.expansionModel = expansionModel;
@@ -1684,6 +1692,7 @@ public final class Models {
                 models [i].removeModelListener (l);
         }
 
+        @Override
         public String toString () {
             return super.toString () + "\n" + toString ("    ");
         }
@@ -1795,6 +1804,7 @@ public final class Models {
             }
         }    
 
+        @Override
         public String toString () {
             return super.toString () + "\n" + toString ("    ");
         }
@@ -2031,6 +2041,7 @@ public final class Models {
                 models [i].removeModelListener (l);
         }
 
+        @Override
         public String toString () {
             return toString ("    ");
         }
@@ -2948,6 +2959,7 @@ public final class Models {
             throw new UnknownTypeException (node);
         }
 
+        @Override
         public String toString () {
             return super.toString () + "\n" + toString ("    ");
         }
@@ -3369,6 +3381,7 @@ public final class Models {
             }
         }
 
+        @Override
         public String toString () {
             return super.toString () + 
                    "\n  TreeModel = " + treeModel +

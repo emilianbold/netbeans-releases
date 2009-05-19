@@ -42,8 +42,12 @@ package org.netbeans.modules.cnd.remote.ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.FocusTraversalPolicy;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -56,6 +60,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractCellEditor;
 import javax.swing.Action;
@@ -71,6 +76,8 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
@@ -95,6 +102,12 @@ import org.openide.util.RequestProcessor;
  */
 public class EditPathMapDialog extends JPanel implements ActionListener {
 
+    private static final String ACTION_INLINE_EDITOR = "invokeInlineEditor";  //NOI18N
+    private static final String ACTION_ESCAPE_TABLE = "escapeTable";  //NOI18N
+    private static final String ACTION_ALT_H = "firstComponemt";  //NOI18N
+    private static final String ACTION_TAB_IN_CELL = "tabInCell";  //NOI18N
+    private static final String ACTION_SHIFT_TAB_IN_CELL = "shiftTabInCell";  //NOI18N
+
     public static boolean showMe(ServerRecord host, List<ServerRecord> hostList) {
         return showMe(host, null, hostList);
     }
@@ -102,7 +115,8 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     public static boolean showMe(ExecutionEnvironment execEnv, String pathToValidate) {
         return showMe(ServerList.get(execEnv), pathToValidate);
     }
-    public static boolean showMe(ServerRecord host, String pathToValidate) {
+    
+    private static boolean showMe(ServerRecord host, String pathToValidate) {
         return showMe(host, pathToValidate, ServerList.getRecords());
     }
 
@@ -155,11 +169,11 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                 return out;
             }
         });
+
         addTableActions();
 
-        tblPathMappings.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
-        tblPathMappings.getTableHeader().setPreferredSize(new Dimension(0, 20));
         cbHostsList.setSelectedItem(currentHost);
+        initTable();
 
         String explanationText;
         if (pathToValidate != null) {
@@ -176,6 +190,37 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         }
 
         initTableModel(currentHost);
+    }
+
+    private void initTable(){
+        tblPathMappings.getTableHeader().setPreferredSize(new Dimension(0, 20));
+        tblPathMappings.getTableHeader().setFocusable(false);
+        tblPathMappings.getTableHeader().setEnabled(false);
+        //initRenderer();
+        //tblPathMappings.getSelectionModel().addListSelectionListener(getListener1());
+        tblPathMappings.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        //tableModel.addTableModelListener(getListener2());
+        tblPathMappings.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), ACTION_INLINE_EDITOR); //NOI18N
+        tblPathMappings.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), ACTION_INLINE_EDITOR); //NOI18N
+        tblPathMappings.getActionMap().put(ACTION_INLINE_EDITOR, getEditAction()); //NOI18N
+        tblPathMappings.setSurrendersFocusOnKeystroke(true);
+        tblPathMappings.setCellSelectionEnabled(false);
+        tblPathMappings.setRowSelectionAllowed(true);
+        tblPathMappings.putClientProperty("JTable.autoStartsEdit", Boolean.FALSE); //NOI18N
+        tblPathMappings.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); //NOI18N
+        tblPathMappings.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), ACTION_ESCAPE_TABLE);
+        tblPathMappings.getActionMap().put(ACTION_ESCAPE_TABLE, new AbstractAction(){
+            public void actionPerformed(ActionEvent e) {
+                EditPathMapDialog.this.btnOK.requestFocus();
+            }
+        });
+        tblPathMappings.getInputMap().put(KeyStroke.getKeyStroke(ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("EPMD_Hostname").charAt(0),
+                                          KeyEvent.ALT_MASK), ACTION_ALT_H);
+        tblPathMappings.getActionMap().put(ACTION_ALT_H, new AbstractAction(){
+            public void actionPerformed(ActionEvent e) {
+                EditPathMapDialog.this.cbHostsList.requestFocus();
+            }
+        });
     }
 
     private static RemotePathMap getRemotePathMap(ExecutionEnvironment host) {
@@ -342,6 +387,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         jScrollPane3 = new javax.swing.JScrollPane();
         txtError = new javax.swing.JTextArea();
         jPanel1 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
 
         lblHostName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("EPMD_Hostname").charAt(0));
         lblHostName.setLabelFor(cbHostsList);
@@ -363,12 +409,15 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
 
             }
         ));
+        tblPathMappings.getTableHeader().setResizingAllowed(false);
         tblPathMappings.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(tblPathMappings);
         tblPathMappings.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMD_MappingsTable_AN")); // NOI18N
         tblPathMappings.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMD_MappingsTable_AD")); // NOI18N
 
         jScrollPane2.setBorder(null);
+        jScrollPane2.setEnabled(false);
+        jScrollPane2.setFocusable(false);
 
         txtExplanation.setBackground(getBackground());
         txtExplanation.setColumns(20);
@@ -382,6 +431,8 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         jScrollPane2.setViewportView(txtExplanation);
 
         jScrollPane3.setBorder(null);
+        jScrollPane3.setEnabled(false);
+        jScrollPane3.setFocusable(false);
 
         txtError.setBackground(getBackground());
         txtError.setColumns(20);
@@ -394,21 +445,25 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
 
         jPanel1.setLayout(new java.awt.BorderLayout());
 
+        jLabel1.setLabelFor(tblPathMappings);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMD_MappingsTable_AN")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
+                    .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(lblHostName)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(cbHostsList, 0, 391, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE))
+                        .add(cbHostsList, 0, 393, Short.MAX_VALUE))
+                    .add(jLabel1))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -420,8 +475,10 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                     .add(cbHostsList, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 61, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(5, 5, 5)
+                .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 97, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 99, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -442,6 +499,7 @@ private void cbHostsListItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FI
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cbHostsList;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
@@ -553,11 +611,30 @@ private void cbHostsListItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FI
             
             tfPath.setBorder(BorderFactory.createEmptyBorder());//  getInsets() setInsets(new Insets(0, 0, 0, 0));
             //btnBrowse.setMaximumSize(btnBrowse.getMinimumSize());
-            btnBrowse.setBorder(BorderFactory.createLineBorder(Color.gray));
+            //btnBrowse.setBorder(BorderFactory.createLineBorder(Color.gray));
+            btnBrowse.setPreferredSize(new java.awt.Dimension(20, btnBrowse.getMinimumSize().height));
 
             panel.add(tfPath, BorderLayout.CENTER);
             panel.add(btnBrowse, BorderLayout.EAST);
             btnBrowse.addActionListener(this);
+            tfPath.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), ACTION_TAB_IN_CELL);
+            tfPath.getActionMap().put(ACTION_TAB_IN_CELL, new AbstractAction(){
+                public void actionPerformed(ActionEvent e) {
+                    tfPath.setSelectionStart(0);
+                    tfPath.setSelectionEnd(0);
+                    btnBrowse.requestFocus();
+                    btnBrowse.setSelected(true);
+                }
+            });
+            btnBrowse.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, KeyEvent.SHIFT_MASK), ACTION_SHIFT_TAB_IN_CELL);
+            btnBrowse.getActionMap().put(ACTION_SHIFT_TAB_IN_CELL, new AbstractAction(){
+                public void actionPerformed(ActionEvent e) {
+                    tfPath.setSelectionStart(0);
+                    tfPath.setSelectionEnd(tfPath.getText().length());
+                    btnBrowse.setSelected(false);
+                    tfPath.requestFocus();
+                }
+            });
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -584,4 +661,35 @@ private void cbHostsListItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FI
         }
     }
 
+    private Action editAction;
+    private Action getEditAction() {
+        if (editAction == null) {
+            editAction = new EditAction();
+        }
+        return editAction;
+    }
+
+    private static void autoEdit(JTable tab) {
+        if (tab.editCellAt(tab.getSelectedRow(), tab.getSelectedColumn(), null) &&
+                tab.getEditorComponent() != null) {
+            if (tab.getSelectedColumn() == 0) {
+                JPanel panel = (JPanel) tab.getEditorComponent();
+                JTextField field = (JTextField) panel.getComponent(0);
+                field.setCaretPosition(field.getText().length());
+                field.requestFocusInWindow();
+                field.selectAll();
+            } else {
+                JTextField field = (JTextField) tab.getEditorComponent();
+                field.setCaretPosition(field.getText().length());
+                field.requestFocusInWindow();
+                field.selectAll();
+            }
+        }
+    }
+
+    private static class EditAction extends AbstractAction {
+        public void actionPerformed(ActionEvent ae) {
+            autoEdit((JTable) ae.getSource());
+        }
+    }
 }

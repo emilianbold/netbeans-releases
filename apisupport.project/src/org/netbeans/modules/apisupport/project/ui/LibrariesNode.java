@@ -438,7 +438,7 @@ final class LibrariesNode extends AbstractNode {
             try {
                 SuiteProvider sp = project.getLookup().lookup(SuiteProvider.class);
                 if (sp != null) {
-                    ModuleList.refreshSuiteModuleList(sp.getSuiteDirectory());
+                    ModuleList.refreshModuleListForRoot(sp.getSuiteDirectory());
                 }
                 ModuleDependency dep = pxm.getModuleDependency(codeNameBase);
 

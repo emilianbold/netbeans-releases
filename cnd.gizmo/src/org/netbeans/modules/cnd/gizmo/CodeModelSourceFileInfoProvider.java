@@ -61,28 +61,28 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = SourceFileInfoProvider.class)
 public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProvider {
 
-    public SourceFileInfo fileName(String functionName, long offset, Map<String, String> serviceInfo) throws SourceFileInfoCannotBeProvided {
+    public SourceFileInfo fileName(String functionName, long offset, Map<String, String> serviceInfo) {
         try {
             //get project current name
             String projectFolderName = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_FOLDER);
             if (projectFolderName == null) {
-                throw new SourceFileInfoCannotBeProvided();
+                return null;
             }
             Project prj = ProjectManager.getDefault().findProject(FileUtil.toFileObject(new File(projectFolderName)));
             if (prj.getLookup().lookup(NativeProject.class) == null) {
-                throw new SourceFileInfoCannotBeProvided();
+                return null;
             }
             CsmProject csmProject = CsmModelAccessor.getModel().getProject(prj);
             if (csmProject == null) {
-                throw new SourceFileInfoCannotBeProvided();
+                return null;
             }
             String name = functionName.indexOf("(") != -1 ? functionName.substring(0, functionName.indexOf("(")) : functionName; // NOI18N
-            CsmFunctionDefinition csmFunctionDefinition = getFirstDefinition(csmProject, name);
-            if (csmFunctionDefinition == null){
-                throw new SourceFileInfoCannotBeProvided();
+            CsmFunction function = getFunction(csmProject, name);
+            if (function == null){
+                return null;
             }
-            String sourceFile =    csmFunctionDefinition.getContainingFile().getAbsolutePath().toString();
-            int startOffset = csmFunctionDefinition.getStartOffset();
+            String sourceFile =    function.getContainingFile().getAbsolutePath().toString();
+            int startOffset = function.getStartOffset();
             return new SourceFileInfo(sourceFile, startOffset);//) + offset);
 //            CsmDeclaration csmDeclaration = csmProject.findDeclaration(functionName);
 //            if (csmDeclaration == null) {
@@ -103,28 +103,30 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
 //            }
 //            return new SourceFileInfoProvider.SourceFileInfo(((CsmOffsetable) csmDeclaration).getContainingFile().getAbsolutePath().toString(), ((CsmOffsetable) csmDeclaration).getStartOffset());
         } catch (IOException ex) {
-            throw new SourceFileInfoCannotBeProvided();
+            return null;
         } catch (IllegalArgumentException ex) {
-            throw new SourceFileInfoCannotBeProvided();
+            return null;
         }
     }
 
 
-    static CsmFunctionDefinition getFirstDefinition(CsmProject project, CharSequence qualifiedName) {
-
+    private static CsmFunction getFunction(CsmProject project, CharSequence qualifiedName) {
        Iterator<CsmFunction> iter = CsmSelect.getFunctions(project, qualifiedName);
+       CsmFunction declaration = null;
        while (iter.hasNext()) {
-           CsmFunction foo = iter.next();
-           if (CsmKindUtilities.isFunctionDefinition(foo)) {
-               return (CsmFunctionDefinition) foo;
-           } else {
-               CsmFunctionDefinition def = foo.getDefinition();
-               if (def != null) {
-                   return def;
+           CsmFunction function = iter.next();
+           if (CsmKindUtilities.isFunctionDefinition(function)) {
+               return function;
+           } else { // declaration
+               CsmFunctionDefinition definition = function.getDefinition();
+               if (definition != null) {
+                   return definition;
+               } else {
+                   declaration = function;
                }
            }
        }
-       return null;
+       return declaration;
    }
 
 }

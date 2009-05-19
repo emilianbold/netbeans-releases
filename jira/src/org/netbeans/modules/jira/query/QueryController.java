@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.jira.query;
 
-import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -50,30 +49,44 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.logging.Level;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.ListModel;
+import javax.swing.JList;
+import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
+import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
+import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
+import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ContentFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.CurrentUserFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
+import org.eclipse.mylyn.internal.jira.core.model.filter.IssueTypeFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.NobodyFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.PriorityFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.ResolutionFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.SpecificUserFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.StatusFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.UserFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.UserInGroupFilter;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -88,9 +101,6 @@ import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
-import org.netbeans.modules.jira.query.QueryParameter.ListParameter;
-import org.netbeans.modules.jira.query.QueryParameter.ParameterValue;
-import org.netbeans.modules.jira.query.QueryParameter.TextFieldParameter;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
@@ -110,23 +120,6 @@ import org.openide.util.RequestProcessor.Task;
 public class QueryController extends BugtrackingController implements DocumentListener, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
     protected QueryPanel panel;
 
-    private static final String CHANGED_NOW = "Now";                            // NOI18N
-
-//    private final ComboParameter summaryParameter;
-//    private final ComboParameter commentsParameter;
-//    private final ComboParameter keywordsParameter;
-//    private final ComboParameter peopleParameter;
-    private final ListParameter productParameter;
-//    private final ListParameter componentParameter;
-//    private final ListParameter versionParameter;
-//    private final ListParameter statusParameter;
-//    private final ListParameter resolutionParameter;
-//    private final ListParameter priorityParameter;
-//    private final ListParameter changedFieldsParameter;
-//    private final ListParameter severityParameter;
-
-    private final Map<String, QueryParameter> parameters;
-    
     private RequestProcessor rp = new RequestProcessor("Jira query", 1, true);  // NOI18N
     private Task task;
 
@@ -147,7 +140,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.filterComboBox.addItemListener(this);
         panel.searchButton.addActionListener(this);
         panel.refreshCheckBox.addActionListener(this);
-//        panel.keywordsButton.addActionListener(this);
         panel.saveChangesButton.addActionListener(this);
         panel.cancelChangesButton.addActionListener(this);
         panel.gotoIssueButton.addActionListener(this);
@@ -157,57 +149,24 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.modifyButton.addActionListener(this);
         panel.seenButton.addActionListener(this);
         panel.removeButton.addActionListener(this);
-//        panel.changedFromTextField.addFocusListener(this);
+        panel.reloadAttributesButton.addActionListener(this);
+        panel.reporterTextField.addFocusListener(this);
+        panel.assigneeTextField.addFocusListener(this);
 
         panel.idTextField.addActionListener(this);
         panel.projectList.addKeyListener(this);
-        panel.componentList.addKeyListener(this);
-//        panel.versionList.addKeyListener(this);
-//        panel.statusList.addKeyListener(this);
-//        panel.resolutionList.addKeyListener(this);
-//        panel.severityList.addKeyListener(this);
-//        panel.priorityList.addKeyListener(this);
-//        panel.changedList.addKeyListener(this);
-
+        panel.typeList.addKeyListener(this);
+        panel.statusList.addKeyListener(this);
+        panel.resolutionList.addKeyListener(this);
+        panel.priorityList.addKeyListener(this);
         panel.queryTextField.addActionListener(this);
-//        panel.commentTextField.addActionListener(this);
-//        panel.keywordsTextField.addActionListener(this);
-//        panel.peopleTextField.addActionListener(this);
-//        panel.changedFromTextField.addActionListener(this);
-//        panel.changedToTextField.addActionListener(this);
-//        panel.changedToTextField.addActionListener(this);
-
-        // setup parameters
-        parameters = new LinkedHashMap<String, QueryParameter>();
-//        summaryParameter = createQueryParameter(ComboParameter.class, panel.summaryComboBox, "short_desc_type");    // NOI18N
-//        commentsParameter = createQueryParameter(ComboParameter.class, panel.commentComboBox, "long_desc_type");    // NOI18N
-//        keywordsParameter = createQueryParameter(ComboParameter.class, panel.keywordsComboBox, "keywords_type");    // NOI18N
-//        peopleParameter = createQueryParameter(ComboParameter.class, panel.peopleComboBox, "emailtype1");           // NOI18N
-        productParameter = createQueryParameter(ListParameter.class, panel.projectList, "product");                 // NOI18N
-//        componentParameter = createQueryParameter(ListParameter.class, panel.componentList, "component");           // NOI18N
-//        versionParameter = createQueryParameter(ListParameter.class, panel.versionList, "version");                 // NOI18N
-//        statusParameter = createQueryParameter(ListParameter.class, panel.statusList, "bug_status");                // NOI18N
-//        resolutionParameter = createQueryParameter(ListParameter.class, panel.resolutionList, "resolution");        // NOI18N
-//        priorityParameter = createQueryParameter(ListParameter.class, panel.priorityList, "priority");              // NOI18N
-//        changedFieldsParameter = createQueryParameter(ListParameter.class, panel.changedList, "chfield");           // NOI18N
-//        severityParameter = createQueryParameter(ListParameter.class, panel.severityList, "bug_severity");          // NOI18N
-        
-        createQueryParameter(TextFieldParameter.class, panel.queryTextField, "short_desc");                       // NOI18N
-//        createQueryParameter(TextFieldParameter.class, panel.commentTextField, "long_desc");                        // NOI18N
-//        createQueryParameter(TextFieldParameter.class, panel.keywordsTextField, "keywords");                        // NOI18N
-//        createQueryParameter(TextFieldParameter.class, panel.peopleTextField, "email1");                            // NOI18N
-//        createQueryParameter(CheckBoxParameter.class, panel.bugAssigneeCheckBox, "emailassigned_to1");              // NOI18N
-//        createQueryParameter(CheckBoxParameter.class, panel.reporterCheckBox, "emailreporter1");                    // NOI18N
-//        createQueryParameter(CheckBoxParameter.class, panel.ccCheckBox, "emailcc1");                                // NOI18N
-//        createQueryParameter(CheckBoxParameter.class, panel.commenterCheckBox, "emaillongdesc1");                   // NOI18N
-//        createQueryParameter(TextFieldParameter.class, panel.changedFromTextField, "chfieldfrom");                  // NOI18N
-//        createQueryParameter(TextFieldParameter.class, panel.changedToTextField, "chfieldto");                      // NOI18N
-//        createQueryParameter(TextFieldParameter.class, panel.newValueTextField, "chfieldvalue");                    // NOI18N
+        panel.assigneeTextField.addActionListener(this);
+        panel.reporterTextField.addActionListener(this);
 
         if(query.isSaved()) {
             setAsSaved();
         }
-        postPopulate((FilterDefinition) jiraFilter);
+        postPopulate((FilterDefinition) jiraFilter, false);
     }
 
     @Override
@@ -216,10 +175,30 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(autoRefresh) {
             scheduleForRefresh();
         }
-        if(query.isSaved() && !query.wasRun()) {
-            onRefresh();
+        if(query.isSaved()) {
+            setIssueCount(query.getSize()); // XXX this probably won't work
+                                            // if the query is alredy open and
+                                            // a refresh is invoked on kenai
+            if(!query.wasRun()) {
+                onRefresh();
+            }
         }
     }
+
+    private void setIssueCount(final int count) {
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                panel.tableSummaryLabel.setText(
+                        NbBundle.getMessage(
+                            QueryController.class,
+                            NbBundle.getMessage(QueryController.class, "LBL_MATCHINGISSUES"),                           // NOI18N
+                            new Object[] { count }
+                        )
+                );
+            }
+        });
+    }
+
 
     @Override
     public void closed() {
@@ -236,18 +215,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(query.isSaved()) {
             repository.scheduleForRefresh(query);
         }
-    }
-
-    private <T extends QueryParameter> T createQueryParameter(Class<T> clazz, Component c, String parameter) {
-        try {
-            Constructor<T> constructor = clazz.getConstructor(c.getClass(), String.class);
-            T t = constructor.newInstance(c, parameter);
-            parameters.put(parameter, t);
-            return t;
-        } catch (Exception ex) {
-            Jira.LOG.log(Level.SEVERE, parameter, ex);
-        }
-        return null;
     }
 
     @Override
@@ -284,29 +251,52 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     panel.environmentCheckBox.isSelected()));
         }
 
-        // project
-        Project[] projects = getProjects();
-        if(projects.length > 0) {
-            fd.setProjectFilter(new ProjectFilter(getProjects()));
+        List<Project> projects = getValues(panel.projectList);
+        if(projects.size() > 0) {
+            fd.setProjectFilter(new ProjectFilter(projects.toArray(new Project[projects.size()])));
+        }
+        List<IssueType> types = getValues(panel.typeList);
+        if(types.size() > 0) {
+            fd.setIssueTypeFilter(new IssueTypeFilter(types.toArray(new IssueType[types.size()])));
+        }
+        List<JiraStatus> statuses = getValues(panel.statusList);
+        if(statuses.size() > 0) {
+            fd.setStatusFilter(new StatusFilter(statuses.toArray(new JiraStatus[statuses.size()])));
+        }
+        List<Resolution> resolutions = getValues(panel.resolutionList);
+        if(resolutions.size() > 0) {
+            fd.setResolutionFilter(new ResolutionFilter(resolutions.toArray(new Resolution[resolutions.size()])));
+        }
+        List<Priority> priorities = getValues(panel.priorityList);
+        if(priorities.size() > 0) {
+            fd.setPriorityFilter(new PriorityFilter(priorities.toArray(new Priority[priorities.size()])));
         }
 
+        UserFilter userFilter = reporterUserSearch.getFilter();
+        if(userFilter != null) {
+            fd.setReportedByFilter(userFilter);
+        }
+        userFilter = assigneeUserSearch.getFilter();
+        if(userFilter != null) {
+            fd.setAssignedToFilter(userFilter);
+        }
 
         return fd;
     }
 
-    private Project[] getProjects() {
-        Object[] values = panel.projectList.getSelectedValues();
+    private <T> List<T> getValues(JList list) {
+        Object[] values = list.getSelectedValues();
         if(values == null || values.length == 0) {
-            return new Project[0];
+            return Collections.emptyList();
         }
-        Project[] projects = new Project[values.length];
-        for (int i = 0; i < projects.length; i++) {
-            projects[i] = (Project) values[i];
+        List<T> l = new ArrayList<T>(values.length);
+        for (Object o : values) {
+            l.add((T) o);
         }
-        return projects;
+        return l;
     }
 
-    private void postPopulate(final FilterDefinition filterDefinition) {
+    private void postPopulate(final FilterDefinition filterDefinition, final boolean forceRefresh) {
         enableFields(false);
 
         final Task[] t = new Task[1];
@@ -326,6 +316,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
             public void run() {
                 handle.start();
                 try {
+                    if(forceRefresh) {
+                        repository.refreshConfiguration();
+                    }
                     populate(filterDefinition);
                 } finally {
                     enableFields(true);
@@ -336,6 +329,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
         });
     }
 
+    private UserSearch reporterUserSearch;
+    private UserSearch assigneeUserSearch;
     public void populate(final FilterDefinition filterDefinition) {
         if(Jira.LOG.isLoggable(Level.FINE)) {
             Jira.LOG.fine("Starting populate query controller" + (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
@@ -349,36 +344,20 @@ public class QueryController extends BugtrackingController implements DocumentLi
                         // XXX nice errro msg?
                         return;
                     }
+                    
+                    populateList(panel.projectList, jc.getProjects());
+                    populateList(panel.typeList, jc.getIssueTypes());
+                    populateList(panel.statusList, jc.getStatuses());
+                    populateList(panel.resolutionList, jc.getResolutions());
+                    populateList(panel.priorityList, jc.getPriorities());
+                    reporterUserSearch = new UserSearch(panel.reporterComboBox, panel.reporterTextField, "No Reporter");
+                    assigneeUserSearch = new UserSearch(panel.assigneeComboBox, panel.assigneeTextField, "Unassigned");
 
-                    Project[] projects = jc.getProjects();
-
-                    DefaultListModel model = new DefaultListModel();
-                    for (Project project : projects) {
-                        model.addElement(project);
-                    }
-                    panel.projectList.setModel(model);
-
-//                    productParameter.setParameterValues(toParameterValues(bc.getProducts()));
-//                    if (panel.productList.getModel().getSize() > 0) {
-//                        panel.productList.setSelectedIndex(0);
-//                        populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
-//                    }
-//                    severityParameter.setParameterValues(toParameterValues(bc.getSeverities()));
-//                    statusParameter.setParameterValues(toParameterValues(bc.getStatusValues()));
-//                    resolutionParameter.setParameterValues(toParameterValues(bc.getResolutions()));
-//                    priorityParameter.setParameterValues(toParameterValues(bc.getPriorities()));
-//                    changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
-//                    summaryParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
-//                    commentsParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
-//                    keywordsParameter.setParameterValues(QueryParameter.PV_KEYWORDS_VALUES);
-//                    peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
-//                    panel.changedToTextField.setText(CHANGED_NOW);
-//
                     if(filterDefinition != null && filterDefinition instanceof FilterDefinition) {
                         setFilterDefinition(filterDefinition);
                     }
-//
-//                    panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
+
+                    panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
 //
 //                    if(query.isSaved()) {
 //                        final boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
@@ -418,6 +397,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 //                        panel.refreshCheckBox.setSelected(autoRefresh);
 //                    }
                 }
+
             };
             repository.getExecutor().execute(cmd);
         } finally {
@@ -427,20 +407,24 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
+    private void populateList(JList list, Object[] values) {
+        DefaultListModel model = new DefaultListModel();
+        for (Object v : values) {
+            model.addElement(v);
+        }
+        list.setModel(model);
+    }
+
     protected void enableFields(boolean bl) {
         // set all non parameter fields
-        panel.enableFields(bl);
-        // set the parameter fields
-        for (Map.Entry<String, QueryParameter> e : parameters.entrySet()) {
-            QueryParameter pv = parameters.get(e.getKey());
-            pv.setEnabled(bl);
-        }
+        panel.enableFields(bl);        
     }
 
-    protected void disableProduct(String product) { // XXX whatever field
-        productParameter.setAlwaysDisabled(true);
+    public void disableProject() {
+        panel.projectList.setEnabled(false);
+        panel.projectLabel.setEnabled(false);
     }
-
+    
     public void insertUpdate(DocumentEvent e) {
         fireDataChanged();
     }
@@ -460,10 +444,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
-    public void valueChanged(ListSelectionEvent e) {
-        if(e.getSource() == panel.projectList) {
-            onProductChanged(e);
-        }
+    public void valueChanged(ListSelectionEvent e) {        
         fireDataChanged();            // XXX do we need this ???
     }
 
@@ -485,8 +466,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
             onSearch();
         } else if (e.getSource() == panel.gotoIssueButton) {
             onGotoIssue();
-//        } else if (e.getSource() == panel.keywordsButton) {
-//            onKeywords();
         } else if (e.getSource() == panel.searchButton) {
             onSearch();
         } else if (e.getSource() == panel.saveChangesButton) {
@@ -509,18 +488,16 @@ public class QueryController extends BugtrackingController implements DocumentLi
             onRemove();
         } else if (e.getSource() == panel.refreshCheckBox) {
             onAutoRefresh();
+        } else if (e.getSource() == panel.reloadAttributesButton) {
+            onReloadAttributes();
         } else if (e.getSource() == panel.idTextField) {
             if(!panel.idTextField.getText().trim().equals("")) {                // NOI18N
                 onGotoIssue();
             }
         } else if (e.getSource() == panel.idTextField ||
-                   e.getSource() == panel.queryTextField /*||
-                   e.getSource() == panel.commentTextField ||
-                   e.getSource() == panel.keywordsTextField ||
-                   e.getSource() == panel.peopleTextField ||
-                   e.getSource() == panel.changedFromTextField ||
-                   e.getSource() == panel.newValueTextField ||
-                   e.getSource() == panel.changedToTextField*/)
+                   e.getSource() == panel.queryTextField ||
+                   e.getSource() == panel.reporterTextField ||
+                   e.getSource() == panel.assigneeTextField )
         {
             onSearch();
         }
@@ -539,12 +516,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
             return;
         }
         if(e.getSource() == panel.projectList ||
-           e.getSource() == panel.componentList /*||
-           e.getSource() == panel.versionList ||
+           e.getSource() == panel.typeList ||
            e.getSource() == panel.statusList ||
            e.getSource() == panel.resolutionList ||
-           e.getSource() == panel.priorityList ||
-           e.getSource() == panel.changedList*/)
+           e.getSource() == panel.priorityList)
         {
             onSearch();
         }
@@ -605,10 +580,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
         repository.saveQuery(query);
         query.setSaved(true); // XXX
         setAsSaved();
-        if (firstTime) {
-            onSearch();
-        } else {
-            onRefresh();
+        if(!query.wasRun()) {
+            if (firstTime) {
+                onSearch();
+            } else {
+                onRefresh();
+            }
         }
     }
 
@@ -697,34 +674,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
         });
     }
 
-    private void onProductChanged(ListSelectionEvent e) {
-//        Object[] values =  panel.projectList.getSelectedValues();
-//        String[] products = null;
-//        if(values != null) {
-//            products = new String[values.length];
-//            for (int i = 0; i < values.length; i++) {
-//                products[i] = ((ParameterValue) values[i]).getValue();
-//            }
-//        }
-//        populateProductDetails(products);
-    }
-
-    private void onKeywords() {
-//        String keywords = JiraUtil.getKeywords(NbBundle.getMessage(QueryController.class, "LBL_SelectKeywords"), panel.keywordsTextField.getText(), repository); // NOI18N
-//        if(keywords != null) {
-//            panel.keywordsTextField.setText(keywords);
-//        }
-    }
-
     private void onSearch() {
         if(searchTask == null) {
             searchTask = new QueryTask() {
                 public void executeQuery() {
                     try {
-//                        String lastChageFrom = panel.changedFromTextField.getText().trim();
-//                        if(lastChageFrom != null && !lastChageFrom.equals("")) {    // NOI18N
-//                            JiraConfig.getInstance().setLastChangeFrom(lastChageFrom);
-//                        }
                         refreshIntern(false);
                     } finally {
                         
@@ -761,14 +715,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void refreshIntern(boolean autoRefresh) {
-//        if (panel.urlPanel.isVisible()) {
-//        XXX get rid of this
-//            // XXX check url format etc...
-//            // XXX what if there is a different host in queries repository as in the url?
-//            query.refresh(panel.urlTextField.getText(), autoRefresh);
-//        } else {
-            query.refresh(getFilterDefinition(), autoRefresh);
-//        }
+        query.refresh(getFilterDefinition(), autoRefresh);
     }
 
     private void post(Runnable r) {
@@ -840,54 +787,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
         query.remove();
     }
 
-    private void populateProductDetails(String... products) {
-//        JiraConfiguration bc = repository.getConfiguration();
-//        if(bc == null) {
-//            // XXX nice errro msg?
-//            return;
-//        }
-//        if(products == null || products.length == 0) {
-//            products = new String[] {null};
-//        }
-//
-//        List<String> newComponents = new ArrayList<String>();
-//        List<String> newVersions = new ArrayList<String>();
-//        for (String p : products) {
-//            List<String> productComponents = bc.getComponents(p);
-//            for (String c : productComponents) {
-//                if(!newComponents.contains(c)) {
-//                    newComponents.add(c);
-//                }
-//            }
-//            List<String> productVersions = bc.getVersions(p);
-//            for (String c : productVersions) {
-//                if(!newVersions.contains(c)) {
-//                    newVersions.add(c);
-//                }
-//            }
-//        }
-//
-//        componentParameter.setParameterValues(toParameterValues(newComponents));
-//        versionParameter.setParameterValues(toParameterValues(newVersions));
-    }
-
-    private List<ParameterValue> toParameterValues(Project[] projects) {
-        // XXX hack!!!
-        List<ParameterValue> ret = new ArrayList<ParameterValue>(projects.length);
-        for (Project p : projects) {
-            ret.add(new ParameterValue(p.getName(), p.getId()));
-        }
-        return ret;
-    }
-
-    private List<ParameterValue> toParameterValues(List<String> values) {
-        List<ParameterValue> ret = new ArrayList<ParameterValue>(values.size());
-        for (String v : values) {
-            ret.add(new ParameterValue(v, v));
-        }
-        return ret;
-    }
-
     private void setFilterDefinition(FilterDefinition fd) {
         if(fd == null) {
             return;
@@ -912,35 +811,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         }
         // XXX finish me
-        
-//        String[] params = urlParameters.split("&"); // NOI18N
-//        if(params == null || params.length == 0) return;
-//        Map<String, List<ParameterValue>> normalizedParams = new HashMap<String, List<ParameterValue>>();
-//        for (String p : params) {
-//            int idx = p.indexOf("="); // NOI18N
-//            if(idx > -1) {
-//                String parameter = p.substring(0, idx);
-//                String value = p.substring(idx + 1, p.length());
-//
-//                ParameterValue pv = new ParameterValue(value, value);
-//                List<ParameterValue> values = normalizedParams.get(parameter);
-//                if(values == null) {
-//                    values = new ArrayList<ParameterValue>();
-//                    normalizedParams.put(parameter, values);
-//                }
-//                values.add(pv);
-//            } else {
-//                // XXX warning!!
-//            }
-//        }
-//
-//        for (Map.Entry<String, List<ParameterValue>> e : normalizedParams.entrySet()) {
-//            QueryParameter pv = parameters.get(e.getKey());
-//            if(pv != null) {
-//                List<ParameterValue> pvs = e.getValue();
-//                pv.setValues(pvs.toArray(new ParameterValue[pvs.size()]));
-//            }
-//        }
+       
+    }
+
+    private void onReloadAttributes() {
+        postPopulate(getFilterDefinition(), true);
     }
 
     private abstract class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
@@ -1012,19 +887,136 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         public void finished() { }
 
-        private void setIssueCount(final int count) {
-            EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    panel.tableSummaryLabel.setText(
-                            NbBundle.getMessage(
-                                QueryController.class,
-                                NbBundle.getMessage(QueryController.class, "LBL_MATCHINGISSUES"),                           // NOI18N
-                                new Object[] { count }
-                            )
-                    );
-                }
-            });
+    }
+
+    private class UserSearch implements ItemListener{
+        private String savedText;
+        private final JTextField txt;
+        private final JComboBox combo;
+        public UserSearch(JComboBox combo, JTextField txt, String nobodyDisplayName) {
+            this.txt = txt;
+            this.combo = combo;
+            combo.addItemListener(this);
+
+            DefaultComboBoxModel model = new DefaultComboBoxModel();
+            AnyUserSearch anyUser = new AnyUserSearch();
+            model.addElement(anyUser);
+            model.addElement(new NobodySearch(nobodyDisplayName));
+            model.addElement(new CurrentUserSearch());
+            model.addElement(new SpecificUserSearch());
+            model.addElement(new SpecificGroupSearch());
+            combo.setModel(model);
+            ((UserSearchItem)combo.getSelectedItem()).selected(this);
+
+        }
+        public void itemStateChanged(ItemEvent e) {
+            if(e.getStateChange() == ItemEvent.SELECTED) {
+                ((UserSearchItem)e.getItem()).selected(this);
+            }
+        }
+        void disable() {
+            if(!txt.getText().equals("")) {
+                savedText = txt.getText();
+            }
+            txt.setText("");
+            txt.setEnabled(false);
+        }
+        void enable() {
+            txt.setText(savedText);
+            txt.setEnabled(true);
+        }
+        public JTextField getTextField() {
+            return txt;
+        }
+        public UserFilter getFilter() {
+            Object item = combo.getSelectedItem();
+            if(item == null) {
+                return null;
+            }
+            return ((UserSearchItem)item).getFilter(this);
         }
     }
+
+    abstract class UserSearchItem  {
+        private final String displayName;
+        public UserSearchItem(String displayName) {
+            this.displayName = displayName;
+        }
+        public abstract UserFilter getFilter(UserSearch us);
+        public abstract void selected(UserSearch us);
+        public String getDisplayName() {
+            return displayName;
+        }
+    }
+
+    private class AnyUserSearch extends UserSearchItem {
+        public AnyUserSearch() {
+            super("Any User");
+        }
+        @Override
+        public UserFilter getFilter(UserSearch us) {
+            return null;
+        }
+        @Override
+        public void selected(UserSearch us) {
+            us.disable();
+        }
+    }
+
+    private class NobodySearch extends UserSearchItem {
+        private UserFilter filter = new NobodyFilter();
+        public NobodySearch(String displayName) {
+            super(displayName);
+        }
+        @Override
+        public UserFilter getFilter(UserSearch us) {
+            return filter;
+        }
+        @Override
+        public void selected(UserSearch us) {
+            us.disable();
+        }
+    }
+    private class CurrentUserSearch extends UserSearchItem {
+        private UserFilter filter = new CurrentUserFilter();
+        public CurrentUserSearch() {
+            super("Current User");
+        }        
+        @Override
+        public UserFilter getFilter(UserSearch us) {
+            return filter;
+        }
+        @Override
+        public void selected(UserSearch us) {
+            us.disable();
+        }
+    }
+    private class SpecificUserSearch extends UserSearchItem {
+        public SpecificUserSearch() {
+            super("Specify User");
+        }
+        @Override
+        public UserFilter getFilter(UserSearch us) {
+            return new SpecificUserFilter(us.getTextField().getText());
+        }
+        @Override
+        public void selected(UserSearch us) {
+            us.enable();
+        }
+    }
+    private class SpecificGroupSearch extends UserSearchItem {
+        public SpecificGroupSearch() {
+            super("Specify Group");
+        }
+        @Override
+        public UserFilter getFilter(UserSearch us) {
+            return new UserInGroupFilter(us.getTextField().getText());
+        }
+        @Override
+        public void selected(UserSearch us) {
+            us.enable();
+        }
+    }
+
 
 }

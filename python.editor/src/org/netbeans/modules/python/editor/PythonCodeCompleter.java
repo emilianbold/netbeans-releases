@@ -1253,7 +1253,7 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
             if ((type != null) && (type.length() > 0)) {
                 if ("self".equals(lhs)) { // NOI18N
                     type = fqn;
-                    skipPrivate = true;
+                    skipPrivate = false;
 //                } else if ("super".equals(lhs)) { // NOI18N
 //                    skipPrivate = true;
 //

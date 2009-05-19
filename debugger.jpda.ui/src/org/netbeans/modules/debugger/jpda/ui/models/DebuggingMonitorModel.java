@@ -61,7 +61,6 @@ import java.util.prefs.Preferences;
 import javax.swing.Action;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.Field;
-import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -108,7 +107,7 @@ NodeActionsProviderFilter, TableModel, Constants {
     private final Collection modelListeners = new HashSet();
     private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
     private PreferenceChangeListener prefListener;
-    private Set<JPDAThread> threadsAskedForMonitors = new WeakSet<JPDAThread>();
+    private final Set<JPDAThread> threadsAskedForMonitors = new WeakSet<JPDAThread>();
     private final Set<CallStackFrame> framesAskedForMonitors = new WeakSet<CallStackFrame>();
     private JPDADebugger debugger;
     
@@ -388,11 +387,11 @@ NodeActionsProviderFilter, TableModel, Constants {
         return model.getDisplayName (o);
     }
     
-    private Map shortDescriptionMap = new HashMap();
+    private final Map shortDescriptionMap = new HashMap();
     
     public String getShortDescription (final NodeModel model, final Object o) throws 
     UnknownTypeException {
-        
+
         synchronized (shortDescriptionMap) {
             Object shortDescription = shortDescriptionMap.remove(o);
             if (shortDescription instanceof String) {

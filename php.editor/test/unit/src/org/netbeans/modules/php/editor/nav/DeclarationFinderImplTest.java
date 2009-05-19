@@ -124,8 +124,8 @@ public class DeclarationFinderImplTest extends TestBase {
     public void testGotoConstructTest2() throws Exception {
         String ifaceTest = prepareTestFile(
                 "testfiles/gotoConstrTest.php",
-                "public function __construct() {//MyClassConstr",
-                "public ^function __construct() {//MyClassConstr",
+                "class MyClassConstr2 extends MyClassConstr  {}//MyClassConstr2",
+                "class ^MyClassConstr2 extends MyClassConstr  {}//MyClassConstr2",
                 "$b = new MyClassConstr2();",
                 "$b = new MyCla|ssConstr2();"
                 );

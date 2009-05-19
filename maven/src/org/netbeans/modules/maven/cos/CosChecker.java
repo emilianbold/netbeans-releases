@@ -189,6 +189,8 @@ public class CosChecker implements PrerequisitesChecker {
         return true;
     }
 
+    private static final String[] DEFAULT_INCLUDES = {"**/**"};
+
     private boolean checkResource(Resource r, FileObject outputDir, long stamp) {
         String dir = r.getDirectory();
         File dirFile = FileUtil.normalizeFile(new File(dir));
@@ -197,14 +199,20 @@ public class CosChecker implements PrerequisitesChecker {
             List<File> toCopy = new ArrayList<File>();
             DirectoryScanner ds = new DirectoryScanner();
             ds.setBasedir(dirFile);
-            ds.addDefaultExcludes();
             //includes/excludes
             @SuppressWarnings("unchecked")
             String[] incls = (String[]) r.getIncludes().toArray(new String[0]);
-            ds.setIncludes(incls);
+            if (incls != null && incls.length > 0) {
+                ds.setIncludes(incls);
+            } else {
+                ds.setIncludes(DEFAULT_INCLUDES);
+            }
             @SuppressWarnings("unchecked")
             String[] excls = (String[]) r.getExcludes().toArray(new String[0]);
-            ds.setExcludes(excls);
+            if (excls != null && excls.length > 0) {
+                ds.setExcludes(excls);
+            }
+            ds.addDefaultExcludes();
             ds.scan();
             String[] inclds = ds.getIncludedFiles();
 //            System.out.println("found=" + inclds.length);
@@ -235,21 +243,17 @@ public class CosChecker implements PrerequisitesChecker {
   //                      System.out.println("relpath=" + relPath);
                         FileObject fo = outputDir.getFileObject(relPath);
                         if (fo == null) {
-                            File outFileDir = FileUtil.normalizeFile(new File(FileUtil.toFile(outputDir), relPath).getParentFile());
-                            if (outFileDir.mkdirs()) {
-                                FileUtil.refreshFor(outFileDir);
-                                FileObject parentDir = FileUtil.toFileObject(outFileDir);
-                                try {
-                                    fo = parentDir.createData(file.getName());
-                                } catch (IOException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            } else {
-                                //#162180
+                            File outFile = FileUtil.normalizeFile(new File(FileUtil.toFile(outputDir), relPath));
+                            try {
+                                fo = FileUtil.createData(outFile);
+                            } catch (IOException ex) {
+                                //#162180, #164748
                                 //well, just skip the resource with some logging..
-                                Logger.getLogger(CosChecker.class.getName()).log(Level.INFO, "Cannot create folder " + outFileDir + ", skipping copying of resource for Compile on Save."); //NOI18N
-                                continue;
+                                Logger.getLogger(CosChecker.class.getName()).log(Level.INFO, "Cannot create file " + file + ", skipping copying of resource for Compile on Save.", ex); //NOI18N
                             }
+                        }
+                        if (fo == null) {
+                            continue;
                         }
                         FileObject sourceFO = FileUtil.toFileObject(file);
                         InputStream in = null;

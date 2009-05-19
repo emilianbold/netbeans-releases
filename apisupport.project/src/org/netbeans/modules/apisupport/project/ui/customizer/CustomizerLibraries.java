@@ -48,6 +48,8 @@ import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -146,18 +148,20 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         });
     }
 
-    private DependencyListModel newModel;
-
+    private Logger LOG = Logger.getLogger(CustomizerLibraries.class.getName());
+    
     private void runDependenciesListModelRefresh() {
         dependencyList.setModel(CustomizerComponentFactory.createListWaitModel());
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 // generate fresh dependencies list
-                newModel = getProperties().getDependenciesListModel();
+                final DependencyListModel newModel = getProperties().getDependenciesListModel();
+                LOG.log(Level.FINER, "DependenciesListModel generated");
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
+                        LOG.log(Level.FINER, "DependenciesListModel invokeLater entered");
                         dependencyList.setModel(newModel);
-                        newModel = null;
+                        LOG.log(Level.FINER, "DependenciesListModel model set");
                         updateEnabled();
                     }
                 });
@@ -450,7 +454,8 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         NbModuleProject project = UIUtil.runLibraryWrapperWizard(getProperties().getProject());
         if (project != null) {
             try {
-                getProperties().libraryWrapperAdded();
+                // presuambly we do not need to reset anything else
+                getProperties().resetUniverseDependencies();
                 ModuleDependency dep = new ModuleDependency(
                         getProperties().getModuleList().getEntry(project.getCodeNameBase()));
                 getDepListModel().addDependency(dep);

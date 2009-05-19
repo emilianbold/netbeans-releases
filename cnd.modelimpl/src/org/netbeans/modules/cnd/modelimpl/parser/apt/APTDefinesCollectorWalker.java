@@ -49,11 +49,11 @@ import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTUndefine;
+import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
-//import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
 /**
  *
@@ -64,19 +64,19 @@ public class APTDefinesCollectorWalker extends APTSelfWalker {
     private final Map<CharSequence, MacroInfo> macroRefMap;
     private final CharSequence includePath;
 
-    protected APTDefinesCollectorWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler) {
-        this(apt, csmFile, preprocHandler, new HashMap<CharSequence, MacroInfo>(), null);
+    protected APTDefinesCollectorWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
+        this(apt, csmFile, preprocHandler, new HashMap<CharSequence, MacroInfo>(), null, cacheEntry);
     }
 
-    private APTDefinesCollectorWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler, Map<CharSequence, MacroInfo> macroRefMap, CharSequence includePath) {
-        super(apt, csmFile, preprocHandler);
+    private APTDefinesCollectorWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler, Map<CharSequence, MacroInfo> macroRefMap, CharSequence includePath, APTFileCacheEntry cacheEntry) {
+        super(apt, csmFile, preprocHandler, cacheEntry);
         this.macroRefMap = macroRefMap;
         this.includePath = includePath;
     }
 
     @Override
     protected APTWalker createIncludeWalker(APTFile apt, APTSelfWalker parent, CharSequence includePath) {
-        return new APTDefinesCollectorWalker(apt, parent.csmFile, ((APTDefinesCollectorWalker) parent).getPreprocHandler(), macroRefMap, includePath);
+        return new APTDefinesCollectorWalker(apt, parent.csmFile, ((APTDefinesCollectorWalker) parent).getPreprocHandler(), macroRefMap, includePath, null);
     }
 
     @Override

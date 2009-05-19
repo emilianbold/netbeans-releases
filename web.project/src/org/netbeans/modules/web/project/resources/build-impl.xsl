@@ -129,14 +129,16 @@ introduced by support for multiple source roots. -jglick
                         </pathconvert>
                         <basename property="libraries.{position()}.basename" file="${{libraries.{position()}.path}}" suffix=".properties"/>
                         <touch file="${{libraries.{position()}.dir}}/${{libraries.{position()}.basename}}-private.properties"/> <!-- has to exist, yuck -->
-                        <loadproperties srcfile="${{libraries.{position()}.dir}}/${{libraries.{position()}.basename}}-private.properties">
+                        <loadproperties srcfile="${{libraries.{position()}.dir}}/${{libraries.{position()}.basename}}-private.properties" encoding="ISO-8859-1">
                             <filterchain>
                                 <replacestring from="$${{base}}" to="${{libraries.{position()}.dir}}"/>
+                                <escapeunicode/>
                             </filterchain>
                         </loadproperties>
-                        <loadproperties srcfile="${{libraries.{position()}.path}}">
+                        <loadproperties srcfile="${{libraries.{position()}.path}}" encoding="ISO-8859-1">
                             <filterchain>
                                 <replacestring from="$${{base}}" to="${{libraries.{position()}.dir}}"/>
+                                <escapeunicode/>
                             </filterchain>
                         </loadproperties>
                     </xsl:for-each>

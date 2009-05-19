@@ -93,9 +93,10 @@ public abstract class KenaiImpl {
      *
      * @param username
      * @param password
+     * @return users short name
      * @throws org.netbeans.modules.kenai.api.KenaiException if credentials are not valid or some other error occurrs
      */
-    public abstract void verify(String username, char[] password) throws KenaiException;
+    public abstract String verify(String username, char[] password) throws KenaiException;
 
     /**
      *

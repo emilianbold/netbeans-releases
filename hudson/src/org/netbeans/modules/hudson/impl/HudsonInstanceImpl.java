@@ -154,7 +154,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     }
 
     public boolean isPersisted() {
-        return !(properties instanceof ProjectHIP);
+        return properties.isPersisted();
     }
 
     public void makePersistent() {

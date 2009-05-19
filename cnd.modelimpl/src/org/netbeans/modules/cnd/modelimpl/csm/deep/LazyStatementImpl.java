@@ -105,7 +105,6 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
             return false;
         } else {
             AST resolvedAst = resolveLazyStatement(stream);
-            file.releaseTokenStream(stream);
             renderStatements(resolvedAst, list);
             return true;
         }

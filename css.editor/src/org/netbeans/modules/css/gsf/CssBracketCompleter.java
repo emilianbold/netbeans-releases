@@ -280,19 +280,19 @@ public class CssBracketCompleter implements KeystrokeHandler {
 
                     OffsetRange last = ranges.isEmpty() ? null : ranges.get(ranges.size() - 1);
                     //skip duplicated ranges
-                    if (last == null || !(last.getStart() == from && last.getEnd() == to)) {
+                    if (last == null || ((last.getEnd() - last.getStart()) < (to - from))) {
                         ranges.add(new OffsetRange(from, to));
                     }
                 } while ((node = (SimpleNode) node.jjtGetParent()) != null);
             }
         }
 
-        //the bottom most element represents the whole parse tree, replace it by the document
-        //range since they doesn't need to be the same
-        if (!ranges.isEmpty()) {
-            ranges.set(ranges.size() - 1, new OffsetRange(0,
-                    info.getSnapshot().getSource().getDocument(true).getLength()));
-        }
+//        //the bottom most element represents the whole parse tree, replace it by the document
+//        //range since they doesn't need to be the same
+//        if (!ranges.isEmpty()) {
+//            ranges.set(ranges.size() - 1, new OffsetRange(0,
+//                    info.getSnapshot().getSource().getDocument(true).getLength()));
+//        }
 
         return ranges;
     }

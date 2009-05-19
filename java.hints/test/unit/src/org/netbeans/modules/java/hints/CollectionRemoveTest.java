@@ -178,6 +178,39 @@ public class CollectionRemoveTest extends TreeRuleTestBase {
                             "0:106-0:119:verifier:SCIT: java.util.Collection.contains, int, String");
     }
 
+    public void testExtendsWildcard() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;" +
+                            "public class Test {" +
+                            "    private void test () {" +
+                            "        java.util.List<? extends String> l = null;" +
+                            "        l.con|tains(\"\");" +
+                            "    }" +
+                            "}");
+    }
+
+    public void testSuperWildcard() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;" +
+                            "public class Test {" +
+                            "    private void test () {" +
+                            "        java.util.List<? super String> l = null;" +
+                            "        l.con|tains(\"\");" +
+                            "    }" +
+                            "}");
+    }
+    
+    public void testWildcard() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;" +
+                            "public class Test {" +
+                            "    private void test () {" +
+                            "        java.util.List<?> l = null;" +
+                            "        l.con|tains(\"\");" +
+                            "    }" +
+                            "}");
+    }
+
     @Override
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath tp) {
         while (tp != null) {

@@ -55,6 +55,7 @@ import org.netbeans.modules.welcome.content.Utils;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.actions.CallableSystemAction;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -65,30 +66,48 @@ class PluginsPanel extends JPanel implements Constants {
     public PluginsPanel() {
         super( new GridBagLayout() );
         setOpaque(false);
+        InstallConfig ic = InstallConfig.getDefault();
 
-        LinkButton b = new LinkButton(BundleSupport.getLabel("ActivateFeatures"), true, Utils.getColor(COLOR_HEADER1) ) {//NOI18N
+        if( ic.isAllPacksInstalled() ) {
+            if( ic.somePacksDisabled() ) {
+                addActivateFeatures( 0, BundleSupport.getLabel("ActivateFeaturesFullIDE"), BundleSupport.getLabel("ActivateFeaturesDescrFullIDE"));
+                addInstallPlugins(2, BundleSupport.getLabel("InstallPluginsFullIDE"), BundleSupport.getLabel("InstallPluginsDescrFullIDE"));
+            } else {
+                addInstallPlugins(0, BundleSupport.getLabel("InstallPluginsFullIDE"), BundleSupport.getLabel("InstallPluginsDescrFullIDE"));
+            }
+        } else if( ic.isJavaFXInstalled() ) {
+            addInstallPlugins(0, BundleSupport.getLabel("InstallPluginsJavaFX"), BundleSupport.getLabel("InstallPluginsDescrJavaFX"));
+        } else {
+            addInstallPlugins(0, BundleSupport.getLabel("InstallPlugins"), BundleSupport.getLabel("InstallPluginsDescr"));
+        }
+        
+//        add( new JLabel(), new GridBagConstraints(0, 4, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0,0,0,0), 0, 0));
+    }
+
+    private void addActivateFeatures( int row, String label, String description ) {
+        LinkButton b = new LinkButton(label, true, Utils.getColor(COLOR_HEADER1) ) {
 
             public void actionPerformed(ActionEvent e) {
                 new ShowPluginManagerAction("installed").actionPerformed(e); //NOI18N
             }
         };
         b.setFont(GET_STARTED_FONT);
-        add( b, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0,5,5,5), 0, 0));
-        JLabel lbl = new JLabel(BundleSupport.getLabel("ActivateFeaturesDescr")); //NOI18N
-        add( lbl, new GridBagConstraints(0, 1, 1, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5,5+23,5,5), 0, 0));
+        add( b, new GridBagConstraints(0, row, 1, 1, 0.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0,5,5,5), 0, 0));
+        JLabel lbl = new JLabel(description);
+        add( lbl, new GridBagConstraints(0, row+1, 1, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5,5+23,5,5), 0, 0));
+    }
 
-        b = new LinkButton(BundleSupport.getLabel("InstallPlugins"), true, Utils.getColor(COLOR_HEADER2)) { //NOI18N
+    private void addInstallPlugins( int row, String label, String description ) {
+        LinkButton b = new LinkButton(label, true, Utils.getColor(COLOR_HEADER2)) {
 
             public void actionPerformed(ActionEvent e) {
                 new ShowPluginManagerAction("available").actionPerformed(e); //NOI18N
             }
         };
         b.setFont(GET_STARTED_FONT);
-        add( b, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5+10,5,5,5), 0, 0));
-        lbl = new JLabel(BundleSupport.getLabel("InstallPluginsDescr")); //NOI18N
-        add( lbl, new GridBagConstraints(0, 3, 1, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5,5+23,5,5), 0, 0));
-        
-//        add( new JLabel(), new GridBagConstraints(0, 4, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0,0,0,0), 0, 0));
+        add( b, new GridBagConstraints(0, row, 1, 1, 0.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5+10,5,5,5), 0, 0));
+        JLabel lbl = new JLabel(description);
+        add( lbl, new GridBagConstraints(0, row+1, 1, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5,5+23,5,5), 0, 0));
     }
 
     private static class ShowPluginManagerAction extends AbstractAction {
@@ -101,8 +120,7 @@ class PluginsPanel extends JPanel implements Constants {
         public void actionPerformed(ActionEvent e) {
             try {
                 ClassLoader cl = Lookup.getDefault ().lookup (ClassLoader.class);
-                Class<CallableSystemAction> clz = (Class<CallableSystemAction>)cl.loadClass("org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction");
-                CallableSystemAction a = CallableSystemAction.findObject(clz, true);
+                CallableSystemAction a = SystemAction.get(cl.loadClass("org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction").asSubclass(CallableSystemAction.class));
                 a.putValue("InitialTab", initialTab); // NOI18N
                 a.performAction ();
             } catch (Exception ex) {

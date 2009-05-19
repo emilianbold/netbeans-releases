@@ -59,6 +59,7 @@ import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -90,17 +91,25 @@ public class CallStackNodeModel implements NodeModel {
         } else
         if (o instanceof CallStackFrame) {
             CallStackFrame sf = (CallStackFrame) o;
-            CallStackFrame ccsf = debugger.getCurrentCallStackFrame ();
-            if ( (ccsf != null) && 
-                 (ccsf.equals (sf)) 
-            ) 
+            boolean isCurrent;
+            try {
+                isCurrent = (Boolean) sf.getClass().getMethod("isCurrent").invoke(sf);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+                isCurrent = false;
+            }
+            // Do not call JDI in AWT
+            //CallStackFrame ccsf = debugger.getCurrentCallStackFrame ();
+            if (isCurrent) {
                 return BoldVariablesTableModelFilterFirst.toHTML (
                     getCSFName (session, sf, false),
                     true,
                     false,
                     null
                 );
-            return getCSFName (session, sf, false);
+            } else {
+                return getCSFName (session, sf, false);
+            }
         } else if ("No current thread" == o) {
             return NbBundle.getMessage(CallStackNodeModel.class, "NoCurrentThread");
         } else if ("Thread is running" == o) {

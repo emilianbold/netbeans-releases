@@ -559,10 +559,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
         repository.saveQuery(query);
         query.setSaved(true); // XXX
         setAsSaved();
-        if (firstTime) {
-            onSearch();
-        } else {
-            onRefresh();
+        if(!query.wasRun()) {
+            if (firstTime) {
+                onSearch();
+            } else {
+                onRefresh();
+            }
         }
     }
 
@@ -870,7 +872,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         for (Map.Entry<String, List<ParameterValue>> e : normalizedParams.entrySet()) {
             QueryParameter pv = parameters.get(e.getKey());
             if(pv != null) {
-                List<ParameterValue> pvs = e.getValue();    
+                List<ParameterValue> pvs = e.getValue();
                 pv.setValues(pvs.toArray(new ParameterValue[pvs.size()]));
             }
         }
@@ -879,19 +881,17 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private void setIssueCount(final int count) {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
-                panel.tableSummaryLabel.setText(
-                        NbBundle.getMessage(
-                            QueryController.class,
-                            NbBundle.getMessage(QueryController.class, "LBL_MATCHINGISSUES"),                           // NOI18N
-                            new Object[] { count }
-                        )
-                );
+                String msg =
+                    count == 1 ?
+                        NbBundle.getMessage(QueryController.class, "LBL_MatchingIssue", new Object[] {count}) : // NOI18N
+                        NbBundle.getMessage(QueryController.class, "LBL_MatchingIssues", new Object[] {count}); // NOI18N
+                panel.tableSummaryLabel.setText(msg);
             }
         });
     }
 
     boolean isUrlDefined() {
-        return panel.urlTextField.isVisible();
+        return panel.urlPanel.isVisible();
     }
 
     private abstract class QueryTask implements Runnable, Cancellable, QueryNotifyListener {

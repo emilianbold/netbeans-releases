@@ -76,15 +76,8 @@ public class QuickSearchPopup extends javax.swing.JPanel
     /* Rect to store repetitive bounds computation */
     private Rectangle popupBounds = new Rectangle();
 
-    /** coalesce times varying according to lenght of input text for searching */
-    private static final int[] COALESCE_TIMES = new int[] {
-        150, // time to wait before running search when input text has 0 characters
-        400, // ...when input text has 1 character
-        300, // ...2 characters
-        200// ...3 and more characters
-    };
-
     private Timer updateTimer;
+    private static final int COALESCE_TIME = 600;
 
     /** text to search for */
     private String searchedText;
@@ -143,12 +136,11 @@ public class QuickSearchPopup extends javax.swing.JPanel
         this.searchedText = text;
 
         if (updateTimer == null) {
-            updateTimer = new Timer(200, this);
+            updateTimer = new Timer(COALESCE_TIME, this);
         }
 
         if (!updateTimer.isRunning()) {
-            // first change in possible flurry, start timer with proper delay
-            updateTimer.setDelay(COALESCE_TIMES [ Math.min(text.length(), 3) ]);
+            // first change in possible flurry, start timer
             updateTimer.start();
         } else {
             // text change came too fast, let's wait until user calms down :)

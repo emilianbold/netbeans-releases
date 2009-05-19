@@ -85,16 +85,17 @@ public class CssAnalyser {
                         if (!CssGSFParser.containsGeneratedCode(propertyName) && !isVendorSpecificProperty(propertyName) && property == null) {
                             //unknown property - report
                             String msg = NbBundle.getMessage(CssAnalyser.class, UNKNOWN_PROPERTY, propertyName);
-                            Error error =
-                                    DefaultError.createDefaultError(UNKNOWN_PROPERTY,
-                                    msg,
-                                    msg,
-                                    snapshot.getSource().getFileObject(),
-                                    propertyNode.startOffset(),
+                            Error error = makeError(propertyNode.startOffset(),
                                     propertyNode.endOffset(),
+                                    snapshot,
+                                    UNKNOWN_PROPERTY,
+                                    msg,
+                                    msg,
                                     false /* not line error */,
                                     Severity.WARNING);
-                            errors.add(error);
+                            if(error != null) {
+                                errors.add(error);
+                            }
                         }
 
                         //check value
@@ -118,16 +119,17 @@ public class CssAnalyser {
                                         errorMsg = NbBundle.getMessage(CssAnalyser.class, INVALID_PROPERTY_VALUE, unexpectedToken);
                                     }
 
-                                    Error error =
-                                            DefaultError.createDefaultError(INVALID_PROPERTY_VALUE,
-                                            errorMsg,
-                                            errorMsg,
-                                            snapshot.getSource().getFileObject(),
-                                            valueNode.startOffset(),
+                                    Error error = makeError(valueNode.startOffset(),
                                             valueNode.endOffset(),
+                                            snapshot,
+                                            INVALID_PROPERTY_VALUE,
+                                            errorMsg,
+                                            errorMsg,
                                             false /* not line error */,
                                             Severity.WARNING);
-                                    errors.add(error);
+                                    if(error != null) {
+                                        errors.add(error);
+                                    }
                                 }
                             }
                         }
@@ -135,15 +137,18 @@ public class CssAnalyser {
                     }
 
                 } else if(node.kind() == CssParserTreeConstants.JJTERROR_SKIP_TO_WHITESPACE && node.image().length() > 0) {
-                    Error error =
-                            new DefaultError(INVALID_CONTENT,
-                            INVALID_CONTENT_MSG,
-                            INVALID_CONTENT_MSG,
-                            snapshot.getSource().getFileObject(),
-                            node.startOffset(), 
+                    Error error = makeError(
+                            node.startOffset(),
                             node.endOffset(),
+                            snapshot,
+                            INVALID_CONTENT,
+                            INVALID_CONTENT_MSG,
+                            INVALID_CONTENT_MSG,
+                            true,
                             Severity.ERROR);
-                    errors.add(error);
+                    if(error != null) {
+                        errors.add(error);
+                    }
                 }
             }
         };
@@ -152,6 +157,30 @@ public class CssAnalyser {
             SimpleNodeUtil.visitChildren(node, visitor);
         }
         return errors;
+    }
+
+    private static Error makeError(int astFrom, int astTo, Snapshot snapshot, String key, String displayName, String description, boolean lineError, Severity severity) {
+        assert astFrom <= astTo;
+
+        int from = snapshot.getOriginalOffset(astFrom);
+        int to = snapshot.getOriginalOffset(astTo);
+
+        if (from == -1 || to == -1) {
+            //error in virtual content, we cannot map back to the document :-(
+            return null;
+        }
+
+        assert from <= to;
+
+        return DefaultError.createDefaultError(key,
+                            displayName,
+                            description,
+                            snapshot.getSource().getFileObject(),
+                            from,
+                            to,
+                            lineError,
+                            severity);
+
     }
 
     public static boolean isVendorSpecificProperty(String propertyName) {

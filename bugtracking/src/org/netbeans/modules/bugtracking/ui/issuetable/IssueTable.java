@@ -100,6 +100,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
     private TableSorter     sorter;
 
     private int seenColumnIdx = -1;
+    private int recentChangesColumnIdx = -1;
     private Query query;
 
     private Filter filter;
@@ -177,13 +178,28 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
     void setDefaultColumnSizes() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                ColumnDescriptor[] descs = query.getColumnDescriptors();
+                for (int i = 0; i < descs.length; i++) {
+                    ColumnDescriptor desc = descs[i];
+                    int w = desc.getWidth();
+                    if(w > 0) {                        
+                        table.getColumnModel().getColumn(i).setMinWidth(10);
+                        table.getColumnModel().getColumn(i).setMaxWidth(10000);
+                        table.getColumnModel().getColumn(i).setPreferredWidth(w);
+                    }
+                }
+
                 if(query.isSaved()) {
+                    table.getColumnModel().getColumn(recentChangesColumnIdx).setMaxWidth(10000);
+                    table.getColumnModel().getColumn(recentChangesColumnIdx).setMinWidth(10);
+                    table.getColumnModel().getColumn(recentChangesColumnIdx).setPreferredWidth(BugtrackingUtil.getColumnWidthInPixels(25, table));
+
                     table.getColumnModel().getColumn(seenColumnIdx).setMaxWidth(28);
                     table.getColumnModel().getColumn(seenColumnIdx).setPreferredWidth(28);
                 }
             }
         });
-    }
+    }    
 
     public void ancestorAdded(AncestorEvent event) {
         setDefaultColumnSizes();
@@ -230,6 +246,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
         if(query.isSaved()) {
             properties.add(new RecentChangesDescriptor());
             properties.add(new SeenDescriptor());
+            recentChangesColumnIdx = i;
             seenColumnIdx = i + 1;
         }
 
@@ -367,6 +384,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
                         format = issueObsoleteFormat;
                         if(isSelected) {
                             background = obsoleteHighlightColor;
+                            foreground = Color.WHITE;
                         } else {
                             background = row % 2 != 0 ? unevenLineColor : Color.WHITE;
                         }
@@ -377,10 +395,12 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
                                 case Issue.ISSUE_STATUS_NEW :
                                     format = issueNewFormat;
                                     background = newHighlightColor;
+                                    foreground = Color.WHITE;
                                     break;
                                 case Issue.ISSUE_STATUS_MODIFIED :
                                     format = issueModifiedFormat;
                                     background = modifiedHighlightColor;
+                                    foreground = Color.WHITE;
                                     break;
                             }
                         }
@@ -398,10 +418,10 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
             }
 
             if(isSelected) {
-                format = null;
-                if(issue != null && issue.wasSeen()) {
-                    foreground = Color.WHITE;
-                }
+                format = null; // XXX first it was set and now it's removed. simplify logic!
+//                if(issue != null && issue.wasSeen()) {
+//                    foreground = Color.WHITE;
+//                }
             } else {
                 background = row % 2 != 0 ? unevenLineColor : Color.WHITE;
                 foreground = defaultForegroundColor;

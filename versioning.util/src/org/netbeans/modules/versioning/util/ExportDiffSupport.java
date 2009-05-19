@@ -58,6 +58,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -121,7 +122,7 @@ public abstract class ExportDiffSupport {
             dd = getDialogDescriptor();
         } else {
             exportDiffProvider.setContext(files);
-            ExportDiffPanel edPanel = new ExportDiffPanel(exportDiffProvider.getComponent());
+            ExportDiffPanel edPanel = new ExportDiffPanel(exportDiffProvider.createComponent());
             edPanel.setOutputFileText(currentFilePath);
 
             exportDiffProvider.addPropertyChangeListener(new PropertyChangeListener() {
@@ -179,7 +180,7 @@ public abstract class ExportDiffSupport {
                 final File toFile = new File(panel.getOutputFileText());
                 Utils.createTask(new Runnable() {
                     public void run() {
-                        writeDiffFile(toFile);
+                        writeDiffFile(FileUtil.normalizeFile(toFile));
                     }
                 }).schedule(0);
             } else {
@@ -310,7 +311,7 @@ public abstract class ExportDiffSupport {
          * Return a visual component representing this ExportDiffProvider
          * @return
          */
-        public abstract JComponent getComponent();
+        public abstract JComponent createComponent();
 
         /**
          * Returns true if the user intput in this ExportDiffProvider-s

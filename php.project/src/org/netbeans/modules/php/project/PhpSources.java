@@ -61,7 +61,7 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
     private final SourceRoots testRoots;
     private final SourceRoots seleniumRoots;
 
-    private SourcesHelper sourcesHelper;
+    private boolean dirty;
     private Sources delegate;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -84,7 +84,7 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
         this.sourceRoots.addPropertyChangeListener(this);
         this.testRoots.addPropertyChangeListener(this);
         this.seleniumRoots.addPropertyChangeListener(this);
-        initSources(); // have to register external build roots eagerly
+        delegate = initSources(); // have to register external build roots eagerly
     }
 
     public SourceGroup[] getSourceGroups(final String type) {
@@ -92,9 +92,11 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
             public SourceGroup[] run() {
                 Sources _delegate;
                 synchronized (PhpSources.this) {
-                    if (delegate == null) {
+                    if (dirty) {
+                        delegate.removeChangeListener(PhpSources.this);
                         delegate = initSources();
                         delegate.addChangeListener(PhpSources.this);
+                        dirty = false;
                     }
                     _delegate = delegate;
                 }
@@ -112,15 +114,15 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
     }
 
     private Sources initSources() {
-        sourcesHelper = new SourcesHelper(project, helper, evaluator);   //Safe to pass APH
-        register(sourceRoots);
-        register(testRoots);
-        register(seleniumRoots);
+        SourcesHelper sourcesHelper = new SourcesHelper(project, helper, evaluator);   //Safe to pass APH
+        register(sourcesHelper, sourceRoots);
+        register(sourcesHelper, testRoots);
+        register(sourcesHelper, seleniumRoots);
         sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         return sourcesHelper.createSources();
     }
 
-    private void register(SourceRoots roots) {
+    private void register(SourcesHelper sourcesHelper, SourceRoots roots) {
         String[] propNames = roots.getRootProperties();
         String[] rootNames = roots.getRootNames();
         for (int i = 0; i < propNames.length; i++) {
@@ -134,10 +136,7 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
 
     private void fireChange() {
         synchronized (this) {
-            if (delegate != null) {
-                delegate.removeChangeListener(this);
-                delegate = null;
-            }
+            dirty = true;
         }
         changeSupport.fireChange();
     }

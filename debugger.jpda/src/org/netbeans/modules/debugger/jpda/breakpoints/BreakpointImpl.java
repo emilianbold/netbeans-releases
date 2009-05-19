@@ -42,6 +42,7 @@
 package org.netbeans.modules.debugger.jpda.breakpoints;
 
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
@@ -80,6 +81,7 @@ import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.PrimitiveValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
@@ -721,6 +723,13 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             frame,
             frameDepth
         );
+        /* Uncomment if evaluator returns a variable with disabled collection.
+           When not used any more, it's collection must be enabled again.
+        if (value instanceof ObjectReference) {
+            try {
+                ObjectReferenceWrapper.enableCollection((ObjectReference) value);
+            } catch (Exception ex) {}
+        }*/
         try {
             return PrimitiveValueWrapper.booleanValue((com.sun.jdi.BooleanValue) value);
         } catch (ClassCastException e) {

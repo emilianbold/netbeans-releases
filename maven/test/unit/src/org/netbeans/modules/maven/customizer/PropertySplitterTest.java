@@ -61,28 +61,28 @@ public class PropertySplitterTest extends TestCase {
     }
 
     public void testNextPair() {
-        PropertySplitter instance = new PropertySplitter("exec=\"test1\"");
+        PropertySplitter instance = new PropertySplitter("exec=\"tes t1\"");
         String result = instance.nextPair();
-        assertEquals("exec=test1", result);
-        instance = new PropertySplitter("exec=test1 exec2=test2");
+        assertEquals("exec=\"tes t1\"", result);
+        instance = new PropertySplitter("exec=tes t1\nexec2=te st2");
         result = instance.nextPair();
-        assertEquals("exec=test1", result);
+        assertEquals("exec=tes t1", result);
         result = instance.nextPair();
-        assertEquals("exec2=test2", result);
+        assertEquals("exec2=te st2", result);
         
         instance = new PropertySplitter("exec=\"test1 exec2=test2\"");
         result = instance.nextPair();
-        assertEquals("exec=test1 exec2=test2", result);
+        assertEquals("exec=\"test1 exec2=test2\"", result);
         //Issue MEVENIDE-600
         instance = new PropertySplitter("netbeans.jar.run.workdir=\"C:\\Documents and Settings\\Anuradha\\My Documents\\NetBeansProjects\\mavenproject4\"");
         result = instance.nextPair();
-        assertEquals("netbeans.jar.run.workdir=C:\\Documents and Settings\\Anuradha\\My Documents\\NetBeansProjects\\mavenproject4", result);
+        assertEquals("netbeans.jar.run.workdir=\"C:\\Documents and Settings\\Anuradha\\My Documents\\NetBeansProjects\\mavenproject4\"", result);
         
-        instance = new PropertySplitter("exec=\"test1 exec2=test2\" exec2=\"test3==test3\"");
+        instance = new PropertySplitter("exec=\"test1 exec2=test2\"\nexec2=\"test3==test3\"");
         result = instance.nextPair();
-        assertEquals("exec=test1 exec2=test2", result);
+        assertEquals("exec=\"test1 exec2=test2\"", result);
         result = instance.nextPair();
-        assertEquals("exec2=test3==test3", result);
+        assertEquals("exec2=\"test3==test3\"", result);
     }
 
 }

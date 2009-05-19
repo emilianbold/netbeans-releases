@@ -40,10 +40,15 @@ package org.netbeans.modules.dlight.perfan.storage.impl;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.perfan.spi.datafilter.CollectedObjectsFilter;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.perfan.spi.datafilter.SunStudioFiltersProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.openide.util.Exceptions;
 
 public class ErprintSession {
 
@@ -51,15 +56,38 @@ public class ErprintSession {
     private final int id;
     private final NativeProcessBuilder npb;
     private volatile Erprint er_print;
+    private final SunStudioFiltersProvider dataFiltersProvider;
 
-    public ErprintSession(ExecutionEnvironment execEnv, String sproHome, String experimentDirectory) {
+    public ErprintSession(ExecutionEnvironment execEnv, String sproHome, String experimentDirectory, SunStudioFiltersProvider dataFiltersProvider) {
         id = idCounter.incrementAndGet();
         String er_printCmd = sproHome + "/bin/er_print"; // NOI18N
-        NativeProcessBuilder erProcessBuilder = new NativeProcessBuilder(execEnv, er_printCmd);
-        erProcessBuilder = erProcessBuilder.setWorkingDirectory(experimentDirectory);
-        erProcessBuilder = erProcessBuilder.setArguments(experimentDirectory).unbufferOutput(true);
+        NativeProcessBuilder erProcessBuilder = NativeProcessBuilder.newProcessBuilder(execEnv);
+        erProcessBuilder.setExecutable(er_printCmd);
+        erProcessBuilder.setWorkingDirectory(experimentDirectory);
+        erProcessBuilder.setArguments(experimentDirectory).unbufferOutput(true);
+        this.dataFiltersProvider = dataFiltersProvider;
 
         npb = erProcessBuilder;
+    }
+
+    private void applyFilters() {
+        if (dataFiltersProvider == null) {
+            return;
+        }
+
+        final List<DataFilter> filters = dataFiltersProvider.getDataFilters();
+
+        synchronized (filters) {
+            for (DataFilter filter : filters) {
+                try {
+                    if (filter instanceof CollectedObjectsFilter) {
+                        er_print.selectObjects((CollectedObjectsFilter) filter);
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
     }
 
     private synchronized Erprint restartAndLock(boolean restart) throws IOException {
@@ -70,6 +98,7 @@ public class ErprintSession {
 
         try {
             er_print.addLock();
+            applyFilters();
         } catch (IllegalStateException ex) {
             throw new InterruptedIOException();
         }
@@ -105,7 +134,6 @@ public class ErprintSession {
             erp.releaseLock();
         }
     }
-
 
     public LeaksStatistics getExperimentLeaks(boolean restart) throws IOException {
         final Erprint erp = restartAndLock(restart);
