@@ -60,6 +60,11 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
      */
     private static final String ATTRIBUTE_REMOTE_LOCATION = "ProvidedExtensions.RemoteLocation";
 
+    /**
+     * A Runnable to refresh the file given in {@link #getAttribute()}.
+     */
+    private static final String ATTRIBUTE_REFRESH = "ProvidedExtensions.Refresh";
+
     private VersioningManager master;
 
     // === LIFECYCLE =======================================================================================
@@ -102,7 +107,8 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
 
     @Override
     public Object getAttribute(File file, String attrName) {
-        if(ATTRIBUTE_REMOTE_LOCATION.equals(attrName)) {
+        if(ATTRIBUTE_REMOTE_LOCATION.equals(attrName) ||
+           ATTRIBUTE_REFRESH.equals(attrName)) {
             return getInterceptor(file, file.isDirectory()).getAttribute(attrName);
         } else {
             return null;
@@ -347,7 +353,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
             return interceptor.isMutable(file);
         }
 
-        private String getAttribute(String attrName) {
+        private Object getAttribute(String attrName) {
             return interceptor.getAttribute(file, attrName);
         }
 
