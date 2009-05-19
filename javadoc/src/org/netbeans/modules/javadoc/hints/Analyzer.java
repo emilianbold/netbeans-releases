@@ -73,6 +73,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -460,9 +461,10 @@ final class Analyzer {
                 // missing @throws
                 try {
                     Position[] poss = createPositions(throwTree);
+                    String insertName = resolveThrowsName(el, fqn, throwTree);
                     ErrorDescription err = createErrorDescription(
                             NbBundle.getMessage(Analyzer.class, "MISSING_THROWS_DESC", fqn), // NOI18N
-                            Collections.<Fix>singletonList(AddTagFix.createAddThrowsTagFix(exec, throwTree.toString(), index, file, spec)),
+                            Collections.<Fix>singletonList(AddTagFix.createAddThrowsTagFix(exec, insertName, index, file, spec)),
                             poss);
                     addTagHint(errors, err);
                 } catch (BadLocationException ex) {
@@ -870,6 +872,17 @@ final class Analyzer {
             return true;
         }
         
+    }
+
+    /**
+     * computes name of throws clause to work around
+     * <a href="http://www.netbeans.org/issues/show_bug.cgi?id=160414">issue 160414</a>.
+     */
+    private String resolveThrowsName(Element el, String fqn, ExpressionTree throwTree) {
+        boolean nestedClass = ElementKind.CLASS == el.getKind()
+                && NestingKind.TOP_LEVEL != ((TypeElement) el).getNestingKind();
+        String insertName = nestedClass ? fqn : throwTree.toString();
+        return insertName;
     }
     
 }
