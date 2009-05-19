@@ -1205,7 +1205,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
             // gather macro map from all includes and fill preprocessor conditions state
             FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(csmFile.getAbsolutePath());
-            APTFileCacheEntry aptCacheEntry = csmFile.getIncludeCacheEntry(preprocHandler);
+            APTFileCacheEntry aptCacheEntry = csmFile.getAPTCacheEntry(preprocHandler);
             APTParseFileWalker walker = new APTParseFileWalker(base, aptLight, csmFile, preprocHandler, triggerParsingActivity, pcBuilder,aptCacheEntry);
             walker.visit();
             FilePreprocessorConditionState pcState = pcBuilder.build();
@@ -1291,7 +1291,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                                 }
                             }
                         }
-                        csmFile.setAptCacheEntry(preprocHandler, aptCacheEntry);
+                        csmFile.setAPTCacheEntry(preprocHandler, aptCacheEntry, clean);
                         entry.setStates(statesToKeep, new PreprocessorStatePair(newState, pcState));
                         ParserQueue.instance().add(csmFile, statesToParse, ParserQueue.Position.HEAD, clean,
                                 clean ? ParserQueue.FileAction.MARK_REPARSE : ParserQueue.FileAction.MARK_MORE_PARSE);
@@ -2179,7 +2179,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 // for testing remember restored file
                 long time = REMEMBER_RESTORED ? System.currentTimeMillis() : 0;
                 int stackSize = inclStack.size();
-                APTWalker walker = new APTRestorePreprocStateWalker(startProject, aptLight, csmFile, preprocHandler, inclStack, FileContainer.getFileKey(interestedFile, false).toString());
+                APTWalker walker = new APTRestorePreprocStateWalker(startProject, aptLight, csmFile, preprocHandler, inclStack, FileContainer.getFileKey(interestedFile, false).toString(), csmFile.getAPTCacheEntry(preprocHandler));
                 walker.visit();
                 if (preprocHandler.isValid()) {
                     if (REMEMBER_RESTORED) {
