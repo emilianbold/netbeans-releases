@@ -174,9 +174,9 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         );
         preferences.removePreferenceChangeListener(prefListener);
         final boolean haveModels = treeModels.size() > 0 || nodeModels.size() > 0 || tableModels.size() > 0;
-        if (tabbedPane == null) {
-            if (haveModels && view.getComponentCount() > 0) {
-                JComponent tree = (JComponent) view.getComponent(0);
+        if (haveModels && view.getComponentCount() > 0) {
+            JComponent tree = (JComponent) view.getComponent(0);
+            if (!(tree instanceof javax.swing.JTabbedPane)) {
                 Models.setModelsToView(tree, null);
             }
         }

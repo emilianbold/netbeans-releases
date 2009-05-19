@@ -140,7 +140,7 @@ public class RemoteServerSetup {
                         File file = InstalledFileLocator.getDefault().locate(LOCAL_SCRIPT_DIR + key, null, false);
                         if (file == null
                                 || !file.exists()
-                                || RemoteCopySupport.copyTo(executionEnvironment, file.getAbsolutePath(), REMOTE_SCRIPT_DIR)
+                                || !RemoteCopySupport.copyTo(executionEnvironment, file.getAbsolutePath(), REMOTE_SCRIPT_DIR)
                                 || RemoteCommandSupport.run(executionEnvironment, DOS2UNIX_CMD + key + ' ' + REMOTE_SCRIPT_DIR + key) != 0) { //NO18N
                             reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", //NO18N
                                     executionEnvironment.toString(), key);
@@ -162,7 +162,7 @@ public class RemoteServerSetup {
                         File file = InstalledFileLocator.getDefault().locate(loc, null, false);
                         if (file == null
                                 || !file.exists()
-                                || RemoteCopySupport.copyTo(executionEnvironment, file.getAbsolutePath(), REMOTE_LIB_DIR)) {
+                                || !RemoteCopySupport.copyTo(executionEnvironment, file.getAbsolutePath(), REMOTE_LIB_DIR)) {
                             reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", //NOI18N
                                     executionEnvironment.toString(), key);
                         }
@@ -179,14 +179,14 @@ public class RemoteServerSetup {
                     File file = InstalledFileLocator.getDefault().locate(loc, null, false);
                     if (file == null
                             || !file.exists()
-                            || RemoteCopySupport.copyTo(executionEnvironment, file.getAbsolutePath(), REMOTE_LIB_DIR)) {
+                            || !RemoteCopySupport.copyTo(executionEnvironment, file.getAbsolutePath(), REMOTE_LIB_DIR)) {
                         reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", executionEnvironment, path); //NOI18N
                     }
                 } else {
                     File file = InstalledFileLocator.getDefault().locate(LOCAL_SCRIPT_DIR + path, null, false);
                     if (file == null
                             || !file.exists()
-                            || RemoteCopySupport.copyTo(executionEnvironment, file.getAbsolutePath(), REMOTE_SCRIPT_DIR)
+                            || !RemoteCopySupport.copyTo(executionEnvironment, file.getAbsolutePath(), REMOTE_SCRIPT_DIR)
                             || RemoteCommandSupport.run(executionEnvironment, DOS2UNIX_CMD + path + ' ' + REMOTE_SCRIPT_DIR + path) != 0) { //NOI18N
                         reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", executionEnvironment.toString(), path); //NOI18N
                     }

@@ -41,18 +41,14 @@ package org.netbeans.modules.maven.runjar;
 import java.awt.Dialog;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.maven.MavenSourcesImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
@@ -63,14 +59,10 @@ import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.execute.ActionToGoalUtils;
 import org.netbeans.modules.maven.execute.UserActionGoalProvider;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.maven.api.execute.RunUtils;
-import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.maven.customizer.RunJarPanel;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
@@ -217,7 +209,7 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
                 }
             }
             //TODO we should definitely write to the mappings of active configuration here..
-            CustomizerProviderImpl.writeNbActionsModel(project.getProjectDirectory(), mapping, M2Configuration.getFileNameExt(M2Configuration.DEFAULT));
+            CustomizerProviderImpl.writeNbActionsModel(project, mapping, M2Configuration.getFileNameExt(M2Configuration.DEFAULT));
         } catch (Exception e) {
             Exceptions.attachMessage(e, "Cannot persist action configuration.");
             Exceptions.printStackTrace(e);
