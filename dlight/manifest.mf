@@ -4,4 +4,3 @@ OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/dlight/resources/Bundle.properties
 AutoUpdate-Show-In-Client: false
 OpenIDE-Module-Needs: org.netbeans.modules.dlight.api.impl.DLightToolkitManager, org.netbeans.modules.dlight.spi.collector.DataCollectorFactory, org.netbeans.modules.dlight.spi.indicator.IndicatorDataProviderFactory, org.netbeans.modules.dlight.spi.indicator.IndicatorFactory
-OpenIDE-Module-Provides: org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProviderFactory
