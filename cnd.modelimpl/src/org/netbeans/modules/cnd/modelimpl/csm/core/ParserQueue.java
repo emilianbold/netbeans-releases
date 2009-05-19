@@ -417,7 +417,7 @@ public final class ParserQueue {
                     }
                     if (position.compareTo(entry.getPosition()) < 0) {
                         queue.remove(entry);
-                        entry = new Entry(entry.getFile(), entry.getPreprocStates(), entry.getPosition(), serial.incrementAndGet());
+                        entry = new Entry(entry.getFile(), entry.getPreprocStates(), position, serial.incrementAndGet());
                         addEntry = true;
                     }
                 }
