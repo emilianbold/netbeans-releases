@@ -121,6 +121,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private final VisualizersSupport visSupport;
     private Children.Keys<FunctionCall> currentChildren;
     private ExecutorService sourcePrefetchExecutor;
+    private final String sourcePrefetchExecutorLock = new String("sourcePrefetchExecutorLock");
     private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
     private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); // NOI18N
 
@@ -223,13 +224,15 @@ public class FunctionsListViewVisualizer extends JPanel implements
         //    when the function list is reloaded
         // 2) We want regular GoToSourceActions
         //    not to be blocked by prefetch tasks
-        if (sourcePrefetchExecutor != null) {
-            sourcePrefetchExecutor.shutdownNow();
-            sourcePrefetchExecutor = null;
-        }
         final boolean isEmptyConent = list == null || list.isEmpty();
-        if (!isEmptyContent) {
-            sourcePrefetchExecutor = Executors.newFixedThreadPool(2);
+        synchronized(sourcePrefetchExecutorLock){
+            if (sourcePrefetchExecutor != null) {
+                sourcePrefetchExecutor.shutdownNow();
+                sourcePrefetchExecutor = null;
+            }
+            if (!isEmptyContent) {
+                sourcePrefetchExecutor = Executors.newFixedThreadPool(2);
+            }
         }
 
         UIThread.invoke(new Runnable() {
@@ -504,7 +507,11 @@ public class FunctionsListViewVisualizer extends JPanel implements
         public GoToSourceAction(FunctionCallNode funcCallNode) {
             super(NbBundle.getMessage(FunctionsListViewVisualizer.class, "GoToSourceActionName"));//NOI18N
             this.functionCallNode = funcCallNode;
-
+            synchronized(sourcePrefetchExecutorLock){
+                if (sourcePrefetchExecutor == null) {
+                    sourcePrefetchExecutor = Executors.newFixedThreadPool(2);
+                }
+            }
             sourcePrefetchExecutor.submit(new Runnable() {
 
                 public void run() {
