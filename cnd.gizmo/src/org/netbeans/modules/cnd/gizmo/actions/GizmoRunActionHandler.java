@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.cnd.gizmo.actions;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -108,15 +107,9 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
             runDirectory = mapper.getRemotePath(runDirectory, true);
         }
 
-        File executable = new File(pae.getExecutable());
-
-        if (!executable.isAbsolute()) {
-            executable = new File(runDirectory, executable.getPath());
-        }
-
         Map<String, String> envVars = createMap(pae.getProfile().getEnvironment().getenvAsPairs());
         NativeExecutableTargetConfiguration targetConf = new NativeExecutableTargetConfiguration(
-                executable.getAbsolutePath(),
+                pae.getExecutable(),
                 pae.getProfile().getArgsArray(),
                 envVars);
 
@@ -127,7 +120,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         targetConf.putInfo(ServiceInfoDataStorage.EXECUTION_ENV_KEY, ExecutionEnvironmentFactory.toUniqueID(execEnv));
         targetConf.putInfo(GizmoServiceInfo.PLATFORM, pae.getConfiguration().getDevelopmentHost().getBuildPlatformDisplayName());
         targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_FOLDER, FileUtil.toFile(pae.getProject().getProjectDirectory()).getAbsolutePath());//NOI18N
-        targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executable.getAbsolutePath());
+        targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, pae.getExecutable());
 
         targetConf.putInfo("sunstudio.datafilter.collectedobjects", System.getProperty("sunstudio.datafilter.collectedobjects", "")); // NOI18N
         targetConf.putInfo("sunstudio.hotspotfunctionsfilter", System.getProperty("sunstudio.hotspotfunctionsfilter", "")); //, "with-source-code-only")); // NOI18N
