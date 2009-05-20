@@ -150,13 +150,19 @@ class XMLResultItem implements CompletionItem {
                 String str = doc.getText(offset-1, 1);
                 if(str != null && str.equals("&")) {
                     offset--;
-                    len = 1;
+                    currentText = doc.getText(offset,
+                        (doc.getLength() - offset) < replacementLength ?
+                            (doc.getLength() - offset) : replacementLength) ;
                 }
                 //
-                String docFragment = doc.getText(offset, replacementLength);
-                len = getFirstDiffPosition(docFragment, replaceToText);
+                // Length correction here. See the issue #141320
+                len = getFirstDiffPosition(currentText, replaceToText);
                 //
-                if (len != 0 || len != replacementLength) {
+                // if the text is going to remove isn't the same as that is going
+                // to be inserted, then only move the caret position
+                if (len == replacementLength) {
+                    component.setCaretPosition(offset + len);
+                } else {
                     doc.remove( offset, len );
                     doc.insertString( offset, replaceToText, null);
                 }
