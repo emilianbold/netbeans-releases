@@ -586,7 +586,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
                 if (remove.getParameterTypes().length == 1) {
                     remove.invoke(src, new Object[]{ref.getImplementator()});
                 } else {
-                    remove.invoke(src, new Object[]{null, ref.getImplementator()});
+                    remove.invoke(src, new Object[]{"", ref.getImplementator()});
                 }
             } catch (Exception ex) { // from invoke(), should not happen
                 // #151415 - ignore exception from AbstractPreferences if node has been removed

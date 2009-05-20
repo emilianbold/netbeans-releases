@@ -74,6 +74,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.InputLine;
 import org.openide.awt.Mnemonics;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -403,9 +404,12 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
         // Don't use JEditorPane.getText(), because it goes through EditorKit.write()
         // and performs conversion as if the text was written to a file (eg. EOL
         // translations). See #130095 for details.
-        tableModel.setDescription(lastIndex, CharSequenceUtilities.toString(DocumentUtilities.getText(epDescription.getDocument())));
-        tableModel.setText(lastIndex, CharSequenceUtilities.toString(DocumentUtilities.getText(epExpandedText.getDocument())));
-
+        try {
+            tableModel.setDescription(lastIndex, CharSequenceUtilities.toString(DocumentUtilities.getText(epDescription.getDocument(), 0, epDescription.getDocument().getLength())));
+            tableModel.setText(lastIndex, CharSequenceUtilities.toString(DocumentUtilities.getText(epExpandedText.getDocument(), 0, epExpandedText.getDocument().getLength())));
+        } catch (BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
+        }
         firePropertyChange(OptionsPanelController.PROP_CHANGED, null, null);
     }
 

@@ -232,6 +232,14 @@ public final class ClasspathInfo {
             if ("text/x-dialog-binding".equals(mimeType)) { //NOI18N
                 InputAttributes attributes = (InputAttributes) doc.getProperty(InputAttributes.class);
                 LanguagePath path = LanguagePath.get(MimeLookup.getLookup(mimeType).lookup(Language.class));
+                Document d = (Document) attributes.getValue(path, "dialogBinding.document"); //NOI18N
+                if (d != null) {
+                    Object obj = d.getProperty(Document.StreamDescriptionProperty);
+                    if (obj instanceof DataObject) {
+                        DataObject dObj = (DataObject) obj;
+                        return create(dObj.getPrimaryFile());
+                    }
+                }
                 FileObject fileObject = (FileObject) attributes.getValue(path, "dialogBinding.fileObject"); //NOI18N
                 if (fileObject != null)
                     return create(fileObject);

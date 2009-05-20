@@ -472,10 +472,11 @@ final class TypeNameIdGenerator {
                     return "NullType";                                  //NOI18N
                 case EXECUTABLE:
                 case PACKAGE:
-                case TYPEVAR:
                 case WILDCARD:
                     assert false;
                     return null;
+                case TYPEVAR:
+                    return "GenericType";                               //NOI18N
                 default:    // including OTHER
                     return "UnknownType";                               //NOI18N
             }

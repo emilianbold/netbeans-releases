@@ -41,6 +41,7 @@ package org.netbeans.modules.javascript.editing;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.openide.modules.ModuleInstall;
+import org.openide.windows.WindowManager;
 
 /**
  * Manages a module's lifecycle. Remember that an installer is optional and
@@ -50,7 +51,11 @@ public class Installer extends ModuleInstall {
 
     @Override
     public void restored() {
-        GlobalPathRegistry.getDefault().register(JsClassPathProvider.BOOT_CP, new ClassPath[] { JsClassPathProvider.getBootClassPath() });
+        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+            public void run() {
+                GlobalPathRegistry.getDefault().register(JsClassPathProvider.BOOT_CP, new ClassPath[] { JsClassPathProvider.getBootClassPath() });
+            }
+        });
     }
 
     @Override
