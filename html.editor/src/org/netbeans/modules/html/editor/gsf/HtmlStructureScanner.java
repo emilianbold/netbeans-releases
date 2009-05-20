@@ -188,7 +188,20 @@ public class HtmlStructureScanner implements StructureScanner {
 
         @Override
         public String getHtml(HtmlFormatter formatter) {
-            return getName();
+            formatter.appendHtml(getName());
+
+            AstNode node = handle.node();
+            String idAttr = (String)node.getAttribute("id"); //NOI18N
+            String classAttr = (String)node.getAttribute("class"); //NOI18N
+
+            if(idAttr != null) {
+                formatter.appendHtml("&nbsp;<font color=808080>id=" + idAttr + "</font>"); //NOI18N
+            }
+            if(classAttr != null) {
+                formatter.appendHtml("&nbsp;<font color=808080>class=" + classAttr + "</font>"); //NOI18N
+            }
+            
+            return formatter.getText();
         }
 
         @Override
