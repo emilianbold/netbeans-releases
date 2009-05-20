@@ -320,7 +320,7 @@ public class InstancesView extends TopComponent {
         private void doStopCurrentDebugger() {
             DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
             if (de != null) {
-                de.getActionsManager().doAction(ActionsManager.ACTION_PAUSE);
+                de.getActionsManager().postAction(ActionsManager.ACTION_PAUSE);
             }
         }
 
