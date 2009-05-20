@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.html.editor.gsf;
 
 import java.util.Collections;
@@ -53,75 +52,89 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author marek
+ * @author mfukala@netbeans.org
  */
 public class HtmlElementHandle implements ElementHandle {
 
     private AstNode node;
     private FileObject fo;
-    
+
     HtmlElementHandle(AstNode node, FileObject fo) {
         this.node = node;
         this.fo = fo;
     }
-    
+
+    @Override
     public FileObject getFileObject() {
         return fo;
     }
 
+    @Override
     public String getMimeType() {
         return HtmlKit.HTML_MIME_TYPE;
     }
 
+    @Override
     public String getName() {
         return node.name();
     }
 
-    //XXX what's that????
+    @Override
     public String getIn() {
         return null;
     }
 
+    @Override
     public ElementKind getKind() {
         return ElementKind.TAG;
     }
 
+    @Override
     public Set<Modifier> getModifiers() {
         return Collections.emptySet();
     }
 
+    @Override
     public boolean signatureEquals(ElementHandle handle) {
-        if(!(handle instanceof HtmlElementHandle)) {
+        if (!(handle instanceof HtmlElementHandle)) {
             return false;
         }
-        
-        AstNode foreignNode = ((HtmlElementHandle)handle).node();
-        if(node == foreignNode) {
+
+        AstNode foreignNode = ((HtmlElementHandle) handle).node();
+        if (node == foreignNode) {
             return true;
         }
-        
+
         AstPath fnPath = foreignNode.path();
         AstPath path = node.path();
-        
+
         return path.equals(fnPath);
     }
 
-    public AstNode node() {
+    AstNode node() {
         return node;
     }
 
+    public int from() {
+        return node().getLogicalRange()[0];
+    }
+
+    public int to() {
+        return node().getLogicalRange()[1];
+    }
+
+    @Override
     public OffsetRange getOffsetRange(ParserResult result) {
-      ElementHandle object = HtmlGSFParser.resolveHandle(result, this);
+        ElementHandle object = HtmlGSFParser.resolveHandle(result, this);
         if (object instanceof HtmlElementHandle) {
-            AstNode n = ((HtmlElementHandle) object).node();
+            HtmlElementHandle heh = (HtmlElementHandle) object;
             return new OffsetRange(
-                    result.getSnapshot().getOriginalOffset(n.startOffset()),
-                    result.getSnapshot().getOriginalOffset(n.endOffset()));
+                    result.getSnapshot().getOriginalOffset(heh.from()),
+                    result.getSnapshot().getOriginalOffset(heh.to()));
 
         } else {
             throw new IllegalArgumentException("Foreign element: " + object + " of type " +
                     ((object != null) ? object.getClass().getName() : "null")); //NOI18N
         }
     }
-    
 }

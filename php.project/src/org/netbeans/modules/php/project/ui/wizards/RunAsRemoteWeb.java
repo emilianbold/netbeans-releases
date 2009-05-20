@@ -264,7 +264,11 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 return;
             }
         }
-        assert false : "Should not get here";
+        // #165549
+        if (model.getIndexOf(NO_REMOTE_CONFIGURATION) == -1) {
+            model.addElement(NO_REMOTE_CONFIGURATION);
+        }
+        remoteConnectionComboBox.setSelectedItem(NO_REMOTE_CONFIGURATION);
     }
 
     public String getUrl() {

@@ -1367,17 +1367,25 @@ public class WizardDescriptor extends DialogDescriptor {
     }
 
     private void updateButtonAccessibleDescription() {
+        assert SwingUtilities.isEventDispatchThread() : "Call only in AWT queue.";
         String stepName = ((contentData != null) && (contentSelectedIndex > 0) &&
             ((contentSelectedIndex - 1) < contentData.length)) ? contentData[contentSelectedIndex - 1] : ""; // NOI18N
-        previousButton.getAccessibleContext().setAccessibleDescription(
-            NbBundle.getMessage(WizardDescriptor.class, "ACSD_PREVIOUS", new Integer(contentSelectedIndex), stepName)
-        );
-
+        try {
+            previousButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(WizardDescriptor.class, "ACSD_PREVIOUS", new Integer(contentSelectedIndex), stepName)
+            );
+        } catch (IllegalArgumentException iae) {
+            err.log (Level.INFO, iae.getLocalizedMessage() + " while setting ACSD_PREVIOUS with params " + stepName + ", " + contentSelectedIndex, iae); // NOI18N
+        }
         stepName = ((contentData != null) && (contentSelectedIndex < (contentData.length - 1)) &&
             ((contentSelectedIndex + 1) >= 0)) ? contentData[contentSelectedIndex + 1] : ""; // NOI18N
-        nextButton.getAccessibleContext().setAccessibleDescription(
-            NbBundle.getMessage(WizardDescriptor.class, "ACSD_NEXT", new Integer(contentSelectedIndex + 2), stepName)
-        );
+        try {
+            nextButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(WizardDescriptor.class, "ACSD_NEXT", new Integer(contentSelectedIndex + 2), stepName)
+            );
+        } catch (IllegalArgumentException iae) {
+            err.log (Level.INFO, iae.getLocalizedMessage() + " while setting ACSD_NEXT with params " + stepName + ", " + (contentSelectedIndex + 2), iae); // NOI18N
+        }
     }
 
     private void lazyValidate(final WizardDescriptor.Panel panel, final Runnable onValidPerformer) {
