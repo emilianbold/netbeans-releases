@@ -42,6 +42,7 @@ package org.netbeans.modules.kenai.collab.chat;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
+import java.util.prefs.Preferences;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
@@ -55,17 +56,21 @@ import org.openide.awt.NotificationDisplayer.Priority;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
  * @author Jan Becicka
  */
 public class ChatNotifications {
+    public static final String NOTIFICATIONS_PREF = "chat.notifications.";
     
     private static ImageIcon NEWMSG = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/newmessage.png"));
     private static ChatNotifications instance;
 
     private HashMap<String, MessagingHandleImpl> groupMessages = new HashMap<String, MessagingHandleImpl>();
+    private Preferences preferences = NbPreferences.forModule(ChatNotifications.class);
+
     
     private ChatNotifications() {
     }
@@ -137,6 +142,16 @@ public class ChatNotifications {
         groupMessages.clear();
     }
 
+    boolean isEnabled(String name) {
+        assert name!=null;
+        return preferences.getBoolean(NOTIFICATIONS_PREF + name, true);
+    }
+
+    void setEnabled(String name, boolean b) {
+        assert name!=null;
+        preferences.putBoolean(NOTIFICATIONS_PREF + name, b);
+    }
+    
     private Icon getIcon() {
         return NEWMSG;
     }
