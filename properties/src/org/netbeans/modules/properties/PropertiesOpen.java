@@ -86,6 +86,7 @@ import org.openide.nodes.Node;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.nodes.Node.Cookie;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
@@ -122,7 +123,7 @@ public class PropertiesOpen extends CloneableOpenSupport
     HashMap<PropertiesDataObject,PropertyChangeListener> weakModifiedListeners;
 
     /** UndoRedo manager for this properties open support */
-    protected transient UndoRedo.Manager undoRedoManager;
+    protected transient UndoRedo undoRedoManager;
 
     /** This object is used for marking all undoable edits performed as one atomic undoable action. */
     transient Object atomicUndoRedoFlag;
@@ -189,6 +190,15 @@ public class PropertiesOpen extends CloneableOpenSupport
             }
             dataObject.addPropertyChangeListener(l);
             ((Environment)env).addListener(dataObject);
+            if (((Environment)env).isModified())
+                try {
+                   ((Environment) env).markModified(dataObject);
+                   if (dataObject.getCookie(SaveCookie.class) == null) {
+                       dataObject.getCookieSet0().add((Cookie) modifL);
+                   }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             PropertiesCloneableTopComponent topComp = (PropertiesCloneableTopComponent) allEditors.getArbitraryComponent();
             if (topComp != null) {
                 topComp.dataObjectAdded(dataObject);
@@ -342,11 +352,9 @@ public class PropertiesOpen extends CloneableOpenSupport
 
     /** Gets UndoRedo manager for this OpenSupport. */
     public UndoRedo getUndoRedo () {
-        if (undoRedoManager != null) {
-            return undoRedoManager;
-        } else {
-            return new CompoundUndoRedoManager(bundleStructure);
-        }
+        if (undoRedoManager == null)
+            undoRedoManager = new CompoundUndoRedoManager(bundleStructure);
+        return undoRedoManager;
     }
 
     /** Helper method. Closes documents. */
@@ -529,11 +537,15 @@ public class PropertiesOpen extends CloneableOpenSupport
         @Deprecated
         //TODO PENDING Called from super class need to preserve
         public CloneableOpenSupport findCloneableOpenSupport() {
-            return (CloneableOpenSupport) dataObject.getCookie(OpenCookie.class);
+            if (dataObject != null)
+                return (CloneableOpenSupport) dataObject.getCookie(OpenCookie.class);
+            return null;
         }
 
         public CloneableOpenSupport findCloneableOpenSupport(PropertiesDataObject dataObject) {
-            return (CloneableOpenSupport)dataObject.getCookie(OpenCookie.class);
+            if (dataObject != null)
+                return (CloneableOpenSupport)dataObject.getCookie(OpenCookie.class);
+            return null;
         }
 
         /** 
@@ -1032,10 +1044,15 @@ public class PropertiesOpen extends CloneableOpenSupport
                 weakNameUpdateListeners.put(dataObject, WeakListeners.propertyChange(nameUpdaterListener, dataObject));
             }
             dataObject.addPropertyChangeListener(weakNameUpdateListeners.get(dataObject));
-            updateDataObjects();
-            if (EventQueue.isDispatchThread()) {
-                updateName();
-            }
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    updateDataObjects();
+                    if (EventQueue.isDispatchThread()) {
+                        updateName();
+                        updateDisplayName();
+                    }
+                }
+            });
         }
 
         /**

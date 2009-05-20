@@ -51,6 +51,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorComboBox;
 
 import java.util.*;
+import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorComboBoxNoUserCode;
 import org.openide.util.NbBundle;
 
@@ -157,7 +158,9 @@ public final class FontCD extends ComponentDescriptor {
             // properties
             createPropertiesPresenter(),
             // code
-            createSetterPresenter()
+            createSetterPresenter(),
+            // delete
+            DeletePresenter.createRemoveComponentReferences()
         );
     }
 

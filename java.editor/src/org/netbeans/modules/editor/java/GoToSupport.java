@@ -422,9 +422,13 @@ public class GoToSupport {
     public static void goTo(final Document doc, final int offset, final boolean goToSource) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                performGoTo(doc, offset, goToSource, false, false);
+                goToImpl(doc, offset, goToSource);
             }
         });
+    }
+
+    static void goToImpl(final Document doc, final int offset, final boolean goToSource) {
+        performGoTo(doc, offset, goToSource, false, false);
     }
     
     public static void goToJavadoc(Document doc, int offset) {

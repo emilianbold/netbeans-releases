@@ -51,6 +51,8 @@ import java.util.*;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
+import org.netbeans.modules.subversion.ui.status.StatusAction;
+import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.Exceptions;
@@ -373,9 +375,22 @@ class FilesystemHandler extends VCSInterceptor {
     }
 
     @Override
-    public String getAttribute(File file, String attrName) {
+    public Object getAttribute(final File file, String attrName) {
         if("ProvidedExtensions.RemoteLocation".equals(attrName)) {
             return getRemoteRepository(file);
+        } else if("ProvidedExtensions.Refresh".equals(attrName)) {
+            return new Runnable() {
+                public void run() {
+                    try {
+                        SvnClient client = Subversion.getInstance().getClient(file);
+                        Subversion.getInstance().getStatusCache().refreshCached(new Context(file));
+                        StatusAction.executeStatus(file, client, null);
+                    } catch (SVNClientException ex) {
+                        SvnClientExceptionHandler.notifyException(ex, true, true);
+                        return;
+                    }
+                }
+            };
         } else {
             return super.getAttribute(file, attrName);
         }

@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.api.storage;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -54,19 +55,21 @@ import java.util.List;
  */
 public final class DataTableMetadata {
 
-    private String name;
-    private List<Column> columns = null;
-    private List<String> columnNames = null;
-    private List<DataTableMetadata> sourceTables;
-    private String statement;
+    private final String name;
+    private final List<Column> columns;
+    private final List<Column> indexedColumns;
+    private final List<String> columnNames;
+    private final List<DataTableMetadata> sourceTables;
+    private final String statement;
 
     /**
      * Creates new table description with the name <code>name</code> and using <code>columns</code> as table column descriptions
-     * @param name table name
-     * @param columns column names
+     * @param name  table name
+     * @param columns  table columns
+     * @param indexedColumns  columns to create indices for
      */
-    public DataTableMetadata(String name, List<Column> columns) {
-        this(name, columns, null, null);
+    public DataTableMetadata(String name, List<Column> columns, List<Column> indexedColumns) {
+        this(name, columns, indexedColumns, null, null);
     }
 
     /**
@@ -79,15 +82,19 @@ public final class DataTableMetadata {
      * @param sourceTables tables this VIEW is built on the base of
      */
     public DataTableMetadata(String name, List<Column> columns, String statement, List<DataTableMetadata> sourceTables) {
-        this.columns = columns;
+        this(name, columns, null, statement, sourceTables);
+    }
+
+    private DataTableMetadata(String name, List<Column> columns, List<Column> indexedColumns, String statement, List<DataTableMetadata> sourceTables) {
         this.name = name;
+        this.columns = columns;
+        this.indexedColumns = indexedColumns == null? Collections.<Column>emptyList() : indexedColumns;
         this.statement = statement;
         this.sourceTables = sourceTables;
-        columnNames = new ArrayList<String>();
+        columnNames = new ArrayList<String>(columns.size());
         for (Column c : columns) {
             columnNames.add(c.getColumnName());
         }
-
     }
 
     /**
@@ -120,6 +127,14 @@ public final class DataTableMetadata {
      */
     public List<Column> getColumns() {
         return columns;
+    }
+
+    /**
+     * Return indexed columns list
+     * @return indexed columns list, never <code>null</code>
+     */
+    public List<Column> getIndexedColumns() {
+        return indexedColumns;
     }
 
     /**

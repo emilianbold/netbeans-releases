@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.SwingUtilities;
+import org.apache.lucene.search.BooleanQuery;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
@@ -99,11 +100,19 @@ public class FindResultsPanel extends javax.swing.JPanel implements ExplorerMana
         RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
-                final List<NBVersionInfo> infos = RepositoryQueries.find(fields);
+                List<NBVersionInfo> infos = null;
+                try {
+                    infos = RepositoryQueries.find(fields);
+                } catch (BooleanQuery.TooManyClauses exc) {
+                    infos = Collections.<NBVersionInfo>emptyList();
+                }
+
+                final List<NBVersionInfo> finalInfos = infos;
+
                 SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
-                        manager.setRootContext(createRootNode(infos));
+                        manager.setRootContext(createRootNode(finalInfos));
                     }
                 });
             }

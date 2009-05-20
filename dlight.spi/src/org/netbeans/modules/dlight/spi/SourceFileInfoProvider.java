@@ -45,12 +45,8 @@ import java.util.Map;
  *
  */
 public interface SourceFileInfoProvider {
-  SourceFileInfo fileName(String functionName, long offset, Map<String, String> serviceInfo) throws SourceFileInfoCannotBeProvided;
 
-
-  public final class SourceFileInfoCannotBeProvided extends Exception{
-      
-  }
+  SourceFileInfo fileName(String functionName, long offset, Map<String, String> serviceInfo);
 
   public final class SourceFileInfo {
 
@@ -62,6 +58,7 @@ public interface SourceFileInfoProvider {
     /** Creates a new instance of SourceFileInfo
      * @param fileName
      * @param lineNumber
+     * @param column
      */
     public SourceFileInfo(String fileName, int lineNumber, int column) {
         this(fileName, lineNumber,  column, -1);
@@ -112,6 +109,11 @@ public interface SourceFileInfoProvider {
 
     public long getOffset() {
         return offset;
+    }
+
+    @Override
+    public String toString() {
+        return fileName + ':' + lineNumber + ':' + column;
     }
 
     static SourceFileInfo valueOf(String toParse) {

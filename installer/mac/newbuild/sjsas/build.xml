@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="sjsas" basedir="." default="build-pkg">
+
+
+    <property name="builddir" value="${basedir}/build"/>
+    <property name="appdir" value="${builddir}/app"/>
+    <property name="scriptsdir" value="${builddir}/scripts"/>
+    
+    <target name="clean"  depends="clean-getport">
+        <delete dir="${builddir}"/>
+    </target>
+
+    <target name="init">
+         <mkdir dir="${appdir}"/>
+         <mkdir dir="${scriptsdir}"/>
+    </target>
+    
+    <target name="get-bits">
+        <condition property="sjsas_bits_location" value="${sjsas_location_ml}" else="${sjsas_location}">
+            <istrue value="${mlbuild}"/>
+        </condition>  
+        <echo message="Downloading sjsas from ${sjsas_bits_location}" />
+        <get src="${sjsas_bits_location}" dest="./build/sjsas_image.zip" usetimestamp="true"/>
+    </target>
+    
+    <target name="unzip" depends="get-bits">
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="cd ${builddir} ; unzip sjsas_image.zip -d ${appdir}; rm ${builddir}/sjsas_image.zip"/>
+        </exec>
+        <delete file="${appdir}/Install_Application_Server_9PE_200812230456.log" failonerror="false"/>
+        <delete file="${appdir}/Sun_GlassFish_Enterprise_Server_install.A12230456" failonerror="false"/>
+        <delete file="${appdir}/Sun_GlassFish_Enterprise_Server_install.B12230456" failonerror="false"/>
+        <delete file="${appdir}/appserv_uninstall.class" failonerror="false"/>
+        <delete file="${appdir}/uninstall" failonerror="false"/>
+        <replaceregexp file="${appdir}/samples/common.properties"
+		match="admin.host=.*"
+		replace="admin.host=#HOST_NAME#"
+		byline="true"/>
+    </target>
+
+
+    <target name="build-getport">
+        <ant dir="${basedir}/../glassfish/getport" target="jar"/>
+    </target>
+
+    <target name="clean-getport">
+        <ant dir="${basedir}/../glassfish/getport" target="clean"/>
+        <delete file="${scriptsdir}/getport.jar"/>
+    </target>    
+    
+    <target name="build-pkg" depends="clean, init, unzip, build-getport">
+        <exec executable="sh" failonerror="yes" outputproperty="size">
+            <arg value="-c"/>
+            <arg value="du -sk build | sed 's/[\t]*build//' | xargs -I {}  expr {} + 22528"/>
+        </exec>        
+        <echo message="sizeof.sjsas=${size}${line.separator}" file="${basedir}/../build/sizes.pro" append="true"/>
+        <echo message="Executing pack200 in ${appdir}"/>
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value='sh ${basedir}/../pack200.sh ${appdir} ${VerifyFile.class.name} ${VerifyFile.classpath}'/>
+        </exec>
+
+        
+        <copy file="pkg/Info.plist" filtering="true" tofile="${builddir}/Info.plist">
+            <filterset>
+                <filter token="INSTALLDIR" value="${sjsas.install.dir}"/>
+                <filter token="APPVERSION" value="${sjsas.version}"/>
+            </filterset>
+        </copy>
+        
+        <copy file="../commonfiles/Description.plist" overwrite="true" filtering="true" tofile="${builddir}/Description.plist">
+            <filterset>
+                <filter token="TITLE" value="${sjsas-title}"/>
+            </filterset>
+        </copy>
+
+        <copy  todir="${scriptsdir}">
+            <fileset dir="${basedir}/pkg/scripts/"/>
+        </copy>
+        
+        <copy file="${basedir}/../commonfiles/unpack200.sh" tofile="${scriptsdir}/unpack200.sh"/>
+        <copy file="${basedir}/../commonfiles/get_current_jdk.sh" tofile="${scriptsdir}/get_current_jdk.sh"/>
+        <copy file="${basedir}/../netBeans/baseide/build/scripts/env.sh" tofile="${scriptsdir}/env.sh"/>
+        <copy file="${basedir}/../netBeans/baseide/build/scripts/servicetag.jar" tofile="${scriptsdir}/servicetag.jar"/>
+        <copy file="${basedir}/../netBeans/baseide/build/scripts/servicetag.sh" tofile="${scriptsdir}/servicetag.sh"/>
+        <copy file="${basedir}/../netBeans/baseide/build/scripts/addproduct_id.sh" tofile="${scriptsdir}/addproduct_id.sh"/>
+        <copy file="${basedir}/../netBeans/baseide/build/scripts/add_gf.sh" tofile="${scriptsdir}/add_gf.sh"/>
+        <copy file="${basedir}/../netBeans/baseide/build/scripts/perm.sh" tofile="${scriptsdir}/perm.sh"/>        
+        <copy file="${basedir}/../glassfish/getport/dist/getport.jar" tofile="${scriptsdir}/getport.jar"/>
+        <echo message="Building sjsas.pkg into ${basedir}/../build/sjsas.pkg"/>
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/sjsas.pkg -f ${appdir} -i ${builddir}/Info.plist -r ${scriptsdir} -d ${builddir}/Description.plist"/>
+        </exec>
+    </target>
+    
+</project>

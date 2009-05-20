@@ -83,9 +83,13 @@ public class HudsonInstanceProperties extends HashMap<String,String> {
     
     @Override
     public synchronized String remove(Object key) {
-        String o = super.remove(key);
+        String o = super.remove((String) key);
         pcs.firePropertyChange((String) key, o, null);
         return o;
+    }
+
+    public boolean isPersisted() {
+        return true;
     }
     
     public Sheet.Set getSheetSet() {

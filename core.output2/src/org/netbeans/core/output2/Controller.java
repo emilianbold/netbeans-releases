@@ -379,9 +379,8 @@ public class Controller {
             case IOEvent.CMD_CLOSE :
                 if (tab != null) {
                     ioContainer.remove(tab);
-                } else {
-                    io.dispose();
                 }
+                io.dispose();
                 break;
             case IOEvent.CMD_STREAM_CLOSED :
                 if (value) {

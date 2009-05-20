@@ -106,6 +106,8 @@ import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbPreferences;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 
 /**
@@ -673,10 +675,6 @@ public final class SearchBar extends JPanel {
         FindSupport.getFindSupport().setBlockSearchHighlight(0, 0);
         FindSupport.getFindSupport().incSearchReset();
         setVisible(false);
-
-        if (component.isEnabled()) {
-            component.requestFocusInWindow();
-        }
     }
 
     private void incrementalSearch() {

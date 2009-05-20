@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.dlight.spi.dataprovider;
 
+import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
 
@@ -51,7 +52,7 @@ import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
  *
  */
 
-public interface DataProvider extends VisualizerDataProvider{
+public interface DataProvider extends VisualizerDataProvider, DataFilterListener {
 
   /**
    * Attaches DataProvider to the>storage.

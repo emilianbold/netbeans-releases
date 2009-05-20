@@ -327,7 +327,7 @@ public class NativeExecutor implements Runnable {
     private void executionStarted() {
         if(showHeader) {
             String runDirToShow = execEnv.isLocal() ?
-                runDir : HostInfoProvider.getMapper(execEnv).getRemotePath(runDir);
+                runDir : HostInfoProvider.getMapper(execEnv).getRemotePath(runDir,true);
             
             String preText = MessageFormat.format(getString("PRETEXT"),
 		    exePlusArgsQuoted(executable, arguments), runDirToShow);

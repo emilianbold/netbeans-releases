@@ -126,13 +126,7 @@ public class JUnitTestMethodNode extends TestMethodNode{
 
     @Override
     public Action getPreferredAction() {
-        if (testcase.getTrouble() != null){
-            String[] st = testcase.getTrouble().getStackTrace();
-            if ((st != null) && (st.length > 0)){
-                return new JumpAction(this, st[st.length-1]);
-            }
-        }
-        return null;
+        return new JumpAction(this, null);
     }
 
     public JUnitTestcase getTestcase(){

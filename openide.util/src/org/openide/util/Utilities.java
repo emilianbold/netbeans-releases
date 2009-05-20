@@ -2927,13 +2927,13 @@ widthcheck:  {
 
         // First check for Mac because its part of the Unix_Mask
         if (isMac()) {
-            image = loadImage("org/openide/util/progress-cursor-mac.gif"); //NOI18N
+            image = ImageUtilities.loadImage("org/openide/util/progress-cursor-mac.gif"); //NOI18N
         } else if (isUnix()) {
-            image = loadImage("org/openide/util/progress-cursor-motif.gif"); //NOI18N
+            image = ImageUtilities.loadImage("org/openide/util/progress-cursor-motif.gif"); //NOI18N
         }
         // All other OS, including Windows, use Windows cursor
         else {
-            image = loadImage("org/openide/util/progress-cursor-win.gif"); //NOI18N
+            image = ImageUtilities.loadImage("org/openide/util/progress-cursor-win.gif"); //NOI18N
         }
 
         return createCustomCursor(component, image, "PROGRESS_CURSOR"); //NOI18N
@@ -2953,7 +2953,7 @@ widthcheck:  {
 
             // need to resize the icon
             Image empty = ImageUtilities.createBufferedImage(d.width, d.height);
-            i = Utilities.mergeImages(icon, empty, 0, 0);
+            i = ImageUtilities.mergeImages(icon, empty, 0, 0);
         }
 
         return t.createCustomCursor(i, new Point(1, 1), name);

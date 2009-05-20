@@ -224,8 +224,10 @@ public abstract class RubyRefactoringPlugin extends ProgressProviderAdapter impl
         private void visit(ResultIterator resultIterator) throws ParseException {
             if (resultIterator.getSnapshot().getMimeType().equals(RubyUtils.RUBY_MIME_TYPE)) {
                 ParserResult pr = AstUtilities.getParseResult(resultIterator.getParserResult());
-                Collection<ModificationResult> r = process(pr);
-                results.addAll(r);
+                if (pr != null) {
+                    Collection<ModificationResult> r = process(pr);
+                    results.addAll(r);
+                }
             }
 
             for (Embedding e : resultIterator.getEmbeddings()) {

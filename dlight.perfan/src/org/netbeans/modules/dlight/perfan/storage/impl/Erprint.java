@@ -43,12 +43,14 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.perfan.spi.datafilter.CollectedObjectsFilter;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
@@ -61,7 +63,7 @@ final class Erprint {
     private static final Pattern sortPattern = Pattern.compile(".* \\( (.*) \\)"); // NOI18N
     private static final Pattern choicePattern = Pattern.compile("^[ \t]+([0-9]+)\\) .* \\((.*)\\)"); // NOI18N
     private static final String choiceMarker = "Available name list:"; // NOI18N
-    private final Logger log = DLightLogger.getLogger(ErprintSession.class);
+    private final Logger log = DLightLogger.getLogger(Erprint.class);
     private final AtomicInteger locks = new AtomicInteger();
     private final NativeProcess process;
     private final InputStream out;
@@ -76,6 +78,13 @@ final class Erprint {
         process = npb.call();
         logPrefix = "er_print [" + process.getPID() + "]: "; // NOI18N
         addLock();
+
+        String logFlag = System.getProperty("nativeexecution.support.logger.er_print"); // NOI18N
+
+        if (logFlag == null) {
+            log.setLevel(Level.INFO);
+        }
+
         log.finest(logPrefix + "started"); // NOI18N
         out = process.getInputStream();
         in = process.getOutputStream();
@@ -207,8 +216,45 @@ final class Erprint {
 
     ThreadsStatistic getThreadsStatistics() throws IOException {
         exec("threads"); // NOI18N
-        String[] toParse = exec("thread_list");//NOI18N
+        String[] toParse = exec("thread_list"); // NOI18N
         return new ThreadsStatistic(toParse);
+    }
+
+    void selectObjects(CollectedObjectsFilter collectedObjectsFilter) throws IOException {
+        if (stopped || collectedObjectsFilter == null) {
+            return;
+        }
+
+        Pattern objs_pattern = Pattern.compile(".* <(.*)>.*"); // NOI18N
+        StringBuilder object_select = new StringBuilder();
+
+        synchronized (this) {
+            String[] objects = exec("object_list"); // NOI18N
+
+            Collection<String> selectedObjects = collectedObjectsFilter.selectedObjects();
+            Collection<String> hiddenObjects = collectedObjectsFilter.hiddenObjects();
+
+            hiddenObjects.add("libcollector.so"); // NOI18N
+            hiddenObjects.add("er_heap.so"); // NOI18N
+            hiddenObjects.add("er_sync.so"); // NOI18N
+            hiddenObjects.add("Unknown"); // NOI18N
+
+            for (String o : objects) {
+                Matcher m = objs_pattern.matcher(o);
+                if (m.matches()) {
+                    String object = m.group(1);
+                    if (selectedObjects.contains(object) ||
+                            !hiddenObjects.contains(object)) {
+                        object_select.append(object).append(","); // NOI18N
+                    }
+                }
+            }
+
+
+            if (object_select.length() != 0) {
+                exec("object_select " + object_select.toString()); // NOI18N
+            }
+        }
     }
 
     LeaksStatistics getExperimentLeaks() throws IOException {
@@ -223,6 +269,10 @@ final class Erprint {
 
     FunctionStatistic getFunctionStatistic(FunctionCall functionCall) throws IOException {
         synchronized (this) {
+            if (stopped) {
+                return new FunctionStatistic(new String[0]);
+            }
+
             String functionName = functionCall.getFunction().getName();
             String[] stat = exec("fsingle \"" + functionName + "\""); // NOI18N
 
@@ -259,18 +309,18 @@ final class Erprint {
 
     private String[] exec(String command) throws IOException {
         synchronized (this) {
+            if (stopped) {
+                return new String[0];
+            }
+
             long startTime = System.currentTimeMillis();
 
             try {
                 log.finest("> " + command + "'"); // NOI18N
                 post(command);
             } catch (IOException ex) {
-                Throwable cause = ex.getCause();
-                if (cause != null && cause instanceof InterruptedIOException) {
-                    throw (InterruptedIOException) cause;
-                } else {
-                    throw ex;
-                }
+                stop();
+                return new String[0];
             }
 
             String[] output = outProcessor.getOutput();
@@ -304,8 +354,8 @@ final class Erprint {
             lineBuffer.setLength(0);
 
             while (true) {
-                char c;
-                c = (char) pis.read();
+                int c;
+                c = pis.read();
 
                 if (c < 0) {
                     break;
@@ -315,7 +365,11 @@ final class Erprint {
                     resultBuffer.add(lineBuffer.toString());
                     lineBuffer.setLength(0);
                 } else {
-                    lineBuffer.append(c);
+                    lineBuffer.append((char) c);
+                }
+
+                if (promptPos == prompt.length) {
+                    break;
                 }
 
                 if (prompt[promptPos] == c) {
@@ -344,7 +398,7 @@ final class Erprint {
             int currPos = 0;
             int pos1 = 0;
             int pos2 = 0;
-            char c;
+            int c;
             char[] parray = new char[256];
             char[] result = null;
 
@@ -357,13 +411,13 @@ final class Erprint {
                 post(""); // NOI18N
 
                 while (true) {
-                    c = (char) out.read();
+                    c = out.read();
 
                     if (c < 0) {
                         break;
                     }
 
-                    parray[++currPos] = c;
+                    parray[++currPos] = (char) c;
 
                     if (parray[pos1] == parray[currPos]) {
                         if (pos2 == 0) {

@@ -1120,7 +1120,7 @@ class JavaCodeGenerator extends CodeGenerator {
      * 
      * @return the set of generated variables.
      */
-    private Set<String> regenerateVariables() {
+    Set<String> regenerateVariables() {
         if (!initialized || !canGenerate)
             return Collections.emptySet();
         
@@ -4083,7 +4083,7 @@ class JavaCodeGenerator extends CodeGenerator {
     // {{{ CodeProperty
     //
 
-    private class CodeProperty extends FormProperty {
+    class CodeProperty extends FormProperty {
         // using FormProperty to be able to disable change firing for temporary
         // changes in CodeCustomizer
         private String auxKey;

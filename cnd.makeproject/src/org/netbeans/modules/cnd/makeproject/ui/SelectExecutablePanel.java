@@ -182,11 +182,11 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
                 if (AllFileFilter.getInstance().accept(files[i])) {
                     continue;
                 }
-                if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
+                if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_WINDOWS) {
                     if (exeExecutableFileFilter.accept(files[i])) {
                         filesAdded.add(files[i].getPath());
                     }
-                } else if (conf.getPlatform().getValue() == Platform.PLATFORM_MACOSX) {
+                } else if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_MACOSX) {
                     if (machOExecutableFileFilter.accept(files[i])) {
                         filesAdded.add(files[i].getPath());
                     }
@@ -311,9 +311,9 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
             seed = System.getProperty("user.home"); // NOI18N
         }
         FileFilter[] filters;
-        if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
+        if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_WINDOWS) {
             filters = new FileFilter[]{PeExecutableFileFilter.getInstance()};
-        } else if (conf.getPlatform().getValue() == Platform.PLATFORM_MACOSX) {
+        } else if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_MACOSX) {
             filters = new FileFilter[]{MacOSXExecutableFileFilter.getInstance()};
         } else {
             filters = new FileFilter[]{ElfExecutableFileFilter.getInstance()};

@@ -353,8 +353,9 @@ public final class ParserQueue {
     /**
      * If file isn't yet enqueued, places it at the beginning of the queue,
      * otherwise moves it there
+     * @return true if file was added into queue
      */
-    public void add(FileImpl file, Collection<APTPreprocHandler.State> ppStates, Position position,
+    public boolean add(FileImpl file, Collection<APTPreprocHandler.State> ppStates, Position position,
             boolean clearPrevState, FileAction fileAction) {
 
         if (ppStates.isEmpty()) {
@@ -364,9 +365,10 @@ public final class ParserQueue {
         if (TraceFlags.TRACE_PARSER_QUEUE) {
             System.err.println("ParserQueue: add " + file.getAbsolutePath() + " as " + position); // NOI18N
         }
+        boolean newEntry = false;
         synchronized (lock) {
             if (state == State.OFF) {
-                return;
+                return false;
             }
             switch (fileAction) {
                 case MARK_MORE_PARSE:
@@ -383,7 +385,7 @@ public final class ParserQueue {
                 if (TraceFlags.TRACE_PARSER_QUEUE) {
                     System.err.println("ParserQueue: do not add parsing or parsed " + file.getAbsolutePath()); // NOI18N
                 }
-                return;
+                return false;
             }
             if (queue.isEmpty()) {
                 serial.set(0);
@@ -415,13 +417,14 @@ public final class ParserQueue {
                     }
                     if (position.compareTo(entry.getPosition()) < 0) {
                         queue.remove(entry);
-                        entry = new Entry(entry.getFile(), entry.getPreprocStates(), entry.getPosition(), serial.incrementAndGet());
+                        entry = new Entry(entry.getFile(), entry.getPreprocStates(), position, serial.incrementAndGet());
                         addEntry = true;
                     }
                 }
             } else {
                 assert (findEntry(file) == null) : "The queue should not contain the file " + traceState4File(file, files); // NOI18N
                 files.add(file);
+                newEntry = true;
             }
             if (entry == null) {
                 entry = new Entry(file, ppStates, position, serial.incrementAndGet());
@@ -436,6 +439,10 @@ public final class ParserQueue {
             lock.notifyAll();
         }
         ProgressSupport.instance().fireFileInvalidated(file);
+        if (newEntry) {
+            ProgressSupport.instance().fireFileAddedToParse(file);
+        }
+        return true;
     }
 
     public void waitReady() throws InterruptedException {
@@ -489,7 +496,7 @@ public final class ParserQueue {
             data = getProjectData(project, true);
             if (data.filesBeingParsed.contains(file)) {
                 if (TraceFlags.TRACE_PARSER_QUEUE) {
-                    System.err.println("beeing parsed by another thread " + file); // NOI18N
+                    System.err.println(Thread.currentThread().getName() + ": beeing parsed by another thread " + file); // NOI18N
                 }
             } else {
                 if (removeFoundEntryFromQueue) {

@@ -50,6 +50,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.TestBase;
@@ -58,6 +59,7 @@ import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  * @author Richard Michalsky
@@ -76,11 +78,28 @@ public class ClusterUtilsTest extends TestBase {
     public static void tearDownClass() throws Exception {
     }
 
+    /** a fake but valid-looking install dir; the default NB platform */
+    private File install;
+    /** the user dir */
+    private File user;
+
     @Before
-    public void setUp() {
+    @Override
+    public void setUp() throws IOException {
+        clearWorkDir();
+        MockLookup.setLayersAndInstances(getClass().getClassLoader());
+        NbPlatform.reset();
+        user = new File(getWorkDir(), "user");
+        user.mkdirs();
+        System.setProperty("netbeans.user", user.getAbsolutePath());
+        install = new File(getWorkDir(), "install");
+        TestBase.makePlatform(install);
+        // Now set up build.properties accordingly:
+        InstalledFileLocatorImpl.registerDestDir(install);
     }
 
     @After
+    @Override
     public void tearDown() {
     }
 
@@ -96,10 +115,8 @@ public class ClusterUtilsTest extends TestBase {
         assertTrue("Folder with \"config/Modules\" folder is a valid cluster", ClusterUtils.isValidCluster(f));
     }
 
-    // TODO C.P tests, this one fails, see BrokenPlatformReferenceTest how to setup user.properties.file
     @Test
     public void testGetClusterDirectory() throws IOException {
-        clearWorkDir();
         File suiteDir = new File(getWorkDir(), "suite");
         SuiteProjectGenerator.createSuiteProject(suiteDir, NbPlatform.PLATFORM_ID_DEFAULT, false);
         SuiteProject prj = (SuiteProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(suiteDir));
@@ -121,29 +138,30 @@ public class ClusterUtilsTest extends TestBase {
         assertEquals(new File(standaloneDir, "build/cluster"), ClusterUtils.getClusterDirectory(prj3).getAbsoluteFile());
     }
 
-    @Test
-    public void testEvaluateClusterPathEntry() {
-        System.out.println("evaluateClusterPathEntry");
-        String rawEntry = "";
-        File root = null;
-        PropertyEvaluator eval = null;
-        File nbPlatformRoot = null;
-        File expResult = null;
-        File result = ClusterUtils.evaluateClusterPathEntry(rawEntry, root, eval, nbPlatformRoot);
-        assertEquals(expResult, result);
-        fail("The test case is a prototype.");
-    }
-
-    @Test
-    public void testEvaluateClusterPath() {
-        System.out.println("evaluateClusterPath");
-        File root = null;
-        PropertyEvaluator eval = null;
-        File nbPlatformRoot = null;
-        Set<ClusterInfo> expResult = null;
-        Set<ClusterInfo> result = ClusterUtils.evaluateClusterPath(root, eval, nbPlatformRoot);
-        assertEquals(expResult, result);
-        fail("The test case is a prototype.");
-    }
+    // TODO C.P tests
+//    @Test
+//    public void testEvaluateClusterPathEntry() {
+//        System.out.println("evaluateClusterPathEntry");
+//        String rawEntry = "";
+//        File root = null;
+//        PropertyEvaluator eval = null;
+//        File nbPlatformRoot = null;
+//        File expResult = null;
+//        File result = ClusterUtils.evaluateClusterPathEntry(rawEntry, root, eval, nbPlatformRoot);
+//        assertEquals(expResult, result);
+//        fail("The test case is a prototype.");
+//    }
+//
+//    @Test
+//    public void testEvaluateClusterPath() {
+//        System.out.println("evaluateClusterPath");
+//        File root = null;
+//        PropertyEvaluator eval = null;
+//        File nbPlatformRoot = null;
+//        Set<ClusterInfo> expResult = null;
+//        Set<ClusterInfo> result = ClusterUtils.evaluateClusterPath(root, eval, nbPlatformRoot);
+//        assertEquals(expResult, result);
+//        fail("The test case is a prototype.");
+//    }
 
 }

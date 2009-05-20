@@ -164,7 +164,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 CompilerSet cs = conf.getCompilerSet().getCompilerSet();
                 if (cs != null) {
                     String csdirs = cs.getDirectory();
-                    String commands = cs.getCompilerFlavor().getCommandFolder(conf.getPlatform().getValue());
+                    String commands = cs.getCompilerFlavor().getCommandFolder(conf.getDevelopmentHost().getBuildPlatform());
                     if (commands != null && commands.length() > 0) {
                         // Also add msys to path. Thet's where sh, mkdir, ... are.
                         csdirs = csdirs + pi.pathSeparator() + commands;
@@ -188,7 +188,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             } else { // Build or Clean
                 String[] env1 = new String[env.length + 1];
                 String csdirs = conf.getCompilerSet().getCompilerSet().getDirectory();
-                String commands = conf.getCompilerSet().getCompilerSet().getCompilerFlavor().getCommandFolder(conf.getPlatform().getValue());
+                String commands = conf.getCompilerSet().getCompilerSet().getCompilerFlavor().getCommandFolder(conf.getDevelopmentHost().getBuildPlatform());
                     if (commands != null && commands.length()>0) {
                     // Also add msys to path. Thet's where sh, mkdir, ... are.
                     csdirs = csdirs + pi.pathSeparator() + commands;

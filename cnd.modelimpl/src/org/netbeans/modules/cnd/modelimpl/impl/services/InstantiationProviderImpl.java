@@ -358,16 +358,18 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                 } else {
                                     cls2 = tbsp.getClassifier();
                                 }
-                                if (cls2.getQualifiedName().toString().equals(paramsText.get(i).toString())) {
-                                    match += 2;
-                                }
-                                if (tbsp.isPointer() && // NOI18N
-                                        isPointer(paramsType.get(i), resolver)) {
-                                    match += 1;
-                                }
-                                if (tbsp.isReference() && // NOI18N
-                                        isReference(paramsType.get(i), resolver)) {
-                                    match += 1;
+                                if (cls2 != null) {
+                                    if (cls2.getQualifiedName().toString().equals(paramsText.get(i).toString())) {
+                                        match += 2;
+                                    }
+                                    if (tbsp.isPointer() && // NOI18N
+                                            isPointer(paramsType.get(i), resolver)) {
+                                        match += 1;
+                                    }
+                                    if (tbsp.isReference() && // NOI18N
+                                            isReference(paramsType.get(i), resolver)) {
+                                        match += 1;
+                                    }
                                 }
                             } else if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(specParam) &&
                                     CsmKindUtilities.isExpressionBasedSpecalizationParameter(param)) {

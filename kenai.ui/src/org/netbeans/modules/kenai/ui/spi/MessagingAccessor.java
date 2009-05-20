@@ -43,4 +43,11 @@ public abstract class MessagingAccessor {
      */
     public abstract ActionListener getCreateChatAction(ProjectHandle project);
 
+    /**
+     * Action, which retries connecting to server
+     * @param project
+     * @return
+     */
+    public abstract ActionListener getReconnectAction(ProjectHandle project);
+
 }

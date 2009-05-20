@@ -52,6 +52,7 @@ import org.netbeans.modules.maven.indexer.spi.ArchetypeQueries;
 import org.netbeans.modules.maven.indexer.spi.BaseQueries;
 import org.netbeans.modules.maven.indexer.spi.ChecksumQueries;
 import org.netbeans.modules.maven.indexer.spi.ClassesQuery;
+import org.netbeans.modules.maven.indexer.spi.ContextLoadedQuery;
 import org.netbeans.modules.maven.indexer.spi.DependencyInfoQueries;
 import org.netbeans.modules.maven.indexer.spi.GenericFindQuery;
 import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
@@ -250,7 +251,14 @@ public final class RepositoryQueries {
         return toRet;
     }
     
-    
+    /**
+     * @throws BooleanQuery.TooManyClauses This runtime exception can be thrown if given class name is too
+     * general and such search can't be executed as it would probably end with
+     * OutOfMemoryException. Callers should either assure that no such dangerous
+     * queries are constructed or catch BooleanQuery.TooManyClauses and act
+     * accordingly, for example by telling user that entered text for
+     * search is too general.
+     */
     public static List<NBVersionInfo> findVersionsByClass(final String className, RepositoryInfo... repos) {
         Collection<List<RepositoryInfo>> all = splitReposByType(repos);
         List<NBVersionInfo> toRet = new ArrayList<NBVersionInfo>();
@@ -322,6 +330,14 @@ public final class RepositoryQueries {
         return toRet;
     }
     
+    /**
+     * @throws BooleanQuery.TooManyClauses This runtime exception can be thrown if given query is too
+     * general and such search can't be executed as it would probably end with
+     * OutOfMemoryException. Callers should either assure that no such dangerous
+     * queries are constructed or catch BooleanQuery.TooManyClauses and act
+     * accordingly, for example by telling user that entered text for
+     * search is too general.
+     */
     public static List<NBVersionInfo> find(List<QueryField> fields, RepositoryInfo... repos) {
         Collection<List<RepositoryInfo>> all = splitReposByType(repos);
         List<NBVersionInfo> toRet = new ArrayList<NBVersionInfo>();
@@ -336,7 +352,21 @@ public final class RepositoryQueries {
         }
         return toRet;
     }
-    
+
+    public static List<RepositoryInfo> getLoadedContexts() {
+        Collection<List<RepositoryInfo>> all = splitReposByType(null);
+        List<RepositoryInfo> toRet = new ArrayList<RepositoryInfo>();
+        for (List<RepositoryInfo> rps : all) {
+            RepositoryIndexerImplementation impl = RepositoryIndexer.findImplementation(rps.get(0));
+            if (impl != null) {
+                ContextLoadedQuery clq = impl.getCapabilityLookup().lookup(ContextLoadedQuery.class);
+                if (clq != null) {
+                    toRet.addAll(clq.getLoaded(rps));
+                }
+            }
+        }
+        return toRet;
+    }
 
     /**
      * 

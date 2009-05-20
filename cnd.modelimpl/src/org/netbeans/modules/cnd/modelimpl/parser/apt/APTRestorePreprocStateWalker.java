@@ -46,9 +46,11 @@ import java.io.IOException;
 import java.util.Stack;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
+import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeInfo;
+import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -65,8 +67,8 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
     private final boolean searchInterestedFile;
     
     /** Creates a new instance of APTRestorePreprocStateWalker */
-    public APTRestorePreprocStateWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler, Stack<IncludeInfo> inclStack, String interestedFile) {
-        super(base, apt, file, preprocHandler);
+    public APTRestorePreprocStateWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler, Stack<IncludeInfo> inclStack, String interestedFile, APTFileCacheEntry cacheEntry) {
+        super(base, apt, file, preprocHandler, cacheEntry);
         this.searchInterestedFile = true;
         this.interestedFile = interestedFile;
         this.inclStack = inclStack;
@@ -76,15 +78,15 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
     }
     
     /** Creates a new instance of APTRestorePreprocStateWalker */
-    public APTRestorePreprocStateWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler) {
-        super(base, apt, file, preprocHandler);
+    public APTRestorePreprocStateWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
+        super(base, apt, file, preprocHandler, cacheEntry);
         this.searchInterestedFile = false;
         this.interestedFile = null;
         this.inclStack = null;
         this.stopDirective = null;
     }
     
-    protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt) throws IOException {
+    protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt, APTMacroMap.State postIncludeState) throws IOException {
         FileImpl csmFile = null;
         boolean foundDirective = false;
         if (searchInterestedFile) {
@@ -115,7 +117,8 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
                     // need to continue restoring in sub-#includes
                     APTFile aptLight = inclFileOwner.getAPTLight(csmFile);
                     if (aptLight != null) {
-                        APTWalker walker = new APTRestorePreprocStateWalker(getStartProject(), aptLight, csmFile, getPreprocHandler(), inclStack, interestedFile);
+                        APTPreprocHandler preprocHandler = getPreprocHandler();
+                        APTWalker walker = new APTRestorePreprocStateWalker(getStartProject(), aptLight, csmFile, preprocHandler, inclStack, interestedFile, csmFile.getAPTCacheEntry(preprocHandler));
                         walker.visit();
                     } else {
                         // expected #included file was deleted
@@ -126,7 +129,8 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
                 // usual gathering macro map without check on #include directives
                 APTFile aptLight = inclFileOwner.getAPTLight(csmFile);
                 if (aptLight != null) {
-                    APTWalker walker = new APTRestorePreprocStateWalker(getStartProject(), aptLight, csmFile, getPreprocHandler());
+                    APTPreprocHandler preprocHandler = getPreprocHandler();
+                    APTWalker walker = new APTRestorePreprocStateWalker(getStartProject(), aptLight, csmFile, preprocHandler, csmFile.getAPTCacheEntry(preprocHandler));
                     walker.visit();
                 } else {
                     // expected #included file was deleted
@@ -143,6 +147,11 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
             }
         }
         return csmFile;
+    }
+
+    @Override
+    protected boolean hasIncludeActionSideEffects() {
+        return searchInterestedFile;
     }
 
     @Override

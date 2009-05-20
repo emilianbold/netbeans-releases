@@ -815,7 +815,7 @@ public class RegistriesManagerImpl implements RegistriesManager {
                 for(int j=0;j<groupProducts.get(i).size();j++) {
                     uids.add(productUids.get(groupProducts.get(i).get(j)));
                 }
-                out.append("add_group_info(");
+                out.append("add_group_info(\n");
                 out.append("               \"" + StringUtils.asString(uids) + "\",\n");
                 out.append("               \"" + groupDisplayNames.get(i) + "\",\n");
                 out.append("               \"" + groupDescriptions.get(i) + "\");\n");

@@ -74,7 +74,8 @@ public class SourceForBinaryImplTest extends TestBase {
         doTestFindSourceRootForCompiledClasses("ant.freeform/src", "ant.freeform/build/classes");
         doTestFindSourceRootForCompiledClasses("ant.freeform/test/unit/src", "ant.freeform/build/test/unit/classes");
     }
-    
+
+    // TODO fails because o.n.m.a.p.queries.UpdateTrackingFileOwnerQuery does not scan extra-compilation-units, fix
     public void testExtraCompilationUnits() throws Exception {
         doTestFindSourceRootForCompiledClasses("o.apache.tools.ant.module/src-bridge", "o.apache.tools.ant.module/build/bridge-classes");
         // Have to load at least one module to get the scan going.

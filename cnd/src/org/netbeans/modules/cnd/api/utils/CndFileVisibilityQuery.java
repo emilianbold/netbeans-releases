@@ -59,6 +59,9 @@ public class CndFileVisibilityQuery  implements VisibilityQueryImplementation2, 
 
     private Pattern acceptedFilesPattern = null;
 
+    private static final String DEFAULT_IGNORE_BYNARY_PATTERN = ".*\\.(o|lo|la|Po|Plo)$"; // NOI18N
+    private Pattern ignoredFilesPattern = Pattern.compile(DEFAULT_IGNORE_BYNARY_PATTERN);
+
     /** Default instance for lookup. */
     private CndFileVisibilityQuery() {
         MIMEExtensions.get(MIMENames.C_MIME_TYPE).addChangeListener(this);
@@ -87,6 +90,10 @@ public class CndFileVisibilityQuery  implements VisibilityQueryImplementation2, 
     boolean isVisible(final String fileName) {
         Pattern pattern = getAcceptedFilesPattern();
         return (pattern != null) ? pattern.matcher(fileName).find() : true;
+    }
+
+    public boolean isIgnored(File file){
+        return ignoredFilesPattern.matcher(file.getName()).find();
     }
 
     /**
@@ -128,6 +135,9 @@ public class CndFileVisibilityQuery  implements VisibilityQueryImplementation2, 
             for (String s : acceptedFileExtensions) {
                 if (pat.length() > 0) {
                     pat.append('|');
+                }
+                if (s.indexOf('+') >= 0) {
+                    s = s.replace("+", "\\+"); // NOI18N
                 }
                 pat.append(s);
             }

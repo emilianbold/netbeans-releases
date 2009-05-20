@@ -42,6 +42,8 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -65,6 +67,7 @@ import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -318,12 +321,21 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
     }
 
     @Override
+    protected String getIcon(FunctionCallTreeTableNode node) {
+        return super.getIcon(node);
+    }
+
+
+
+    @Override
     protected void updateButtons() {
         if (TreeTableVisualizerConfigurationAccessor.getDefault().isTableView(getConfiguration())) {
             return;
         }
-        calls.setSelected(isCalls);
-        callers.setSelected(!isCalls);
+        if (calls != null){
+            calls.setSelected(isCalls);
+            callers.setSelected(!isCalls);
+        }
     }
 
     private FunctionMetric getMetricByID(String id) {
@@ -338,6 +350,11 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
     @Override
     public void addNotify() {
         super.addNotify();
+    }
+
+    @Override
+    public void refresh() {
+        super.refresh();
         updateButtons();
     }
 
@@ -377,18 +394,10 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
             }
 
             FunctionCall functionCall = ((FunctionCallTreeTableNode) nodeObject).getDeligator();
-
-            SourceFileInfo sourceFileInfo = null;
-
-            sourceFileInfo = dataProvider.getSourceFileInfo(functionCall);
-
-            if (sourceFileInfo == null) {// TODO: what should I do here if there is no source file info
-                return;
-            }
-
-            SourceSupportProvider sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
-            sourceSupportProvider.showSource(sourceFileInfo);
+            GoToSourceAction action = new GoToSourceAction(functionCall);
+            action.actionPerformed(null);
         }
+
 
         public Action[] getActions(Object node) throws UnknownTypeException {
             if (!(node instanceof DefaultMutableTreeNode)) {
@@ -406,18 +415,62 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
     private class GoToSourceAction extends AbstractAction {
 
         private final FunctionCall functionCall;
+        private final Future<SourceFileInfo> sourceFileInfoTask;
+        private boolean isEnabled = true;
+        private boolean gotTheInfo = false;
 
-        public GoToSourceAction(FunctionCall functionCall) {
+        public GoToSourceAction(FunctionCall funcCall) {
             super(NbBundle.getMessage(CallersCalleesVisualizer.class, "GoToSourceActionName"));//NOI18N
-            this.functionCall = functionCall;
+            this.functionCall = funcCall;
+            sourceFileInfoTask = DLightExecutorService.submit(new Callable<SourceFileInfo>() {
+
+                public SourceFileInfo call() {
+                    return dataProvider.getSourceFileInfo(functionCall);
+                }
+            }, "SourceFileInfo getting info from CallersCalees Visualizer"); // NOI18N
+            waitForSourceFileInfo();
+        }
+
+        private void waitForSourceFileInfo() {
+            DLightExecutorService.submit(new Runnable() {
+
+                public void run() {
+                    try {
+                        SourceFileInfo sourceFileInfo = sourceFileInfoTask.get();
+                        isEnabled = sourceFileInfo != null && sourceFileInfo.isSourceKnown();
+                    } catch (InterruptedException ex) {
+                        isEnabled = false;
+                    } catch (ExecutionException ex) {
+                        isEnabled = false;
+                    } finally {
+                        synchronized (GoToSourceAction.this) {
+                            gotTheInfo = true;
+                        }
+                        setEnabled(isEnabled);
+
+                    }
+
+                }
+            }, "Wait For the SourceFileInfo");//NOI18N
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return isEnabled;
         }
 
         public void actionPerformed(ActionEvent e) {
             DLightExecutorService.submit(new Runnable() {
 
                 public void run() {
-                    SourceFileInfo sourceFileInfo = dataProvider.getSourceFileInfo(functionCall);
-                    
+                    SourceFileInfo sourceFileInfo = null;
+                    try {
+                        sourceFileInfo = sourceFileInfoTask.get();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (ExecutionException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                     if (sourceFileInfo == null) {// TODO: what should I do here if there is no source file info
                         return;
                     }
@@ -425,8 +478,7 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
                     SourceSupportProvider sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
                     sourceSupportProvider.showSource(sourceFileInfo);
                 }
-            }, "GotoSource Handling"); // NOI18N
-        //System.out.println(sourceFileInfo == null ? " NO SOURCE FILE INFO FOUND" : sourceFileInfo.getFileName() + ":" + sourceFileInfo.getOffset() + ":" + sourceFileInfo.getLine());//NOI18N
+            }, "GoToSource from Callers Calees Visualizer"); // NOI18N
         }
     }
 }

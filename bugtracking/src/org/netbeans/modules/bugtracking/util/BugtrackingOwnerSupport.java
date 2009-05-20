@@ -342,7 +342,8 @@ public class BugtrackingOwnerSupport {
         if (files.length == 0) {
             return;
         }
-
+        
+        fileToRepo.clear();
         for (int i = 0; i < files.length; i++) {
             fileToRepo.put(files[i], repository);
         }
@@ -353,6 +354,7 @@ public class BugtrackingOwnerSupport {
     }
 
     public void setFirmAssociation(File file, Repository repository) {
+        fileToRepo.clear();
         fileToRepo.put(file, repository);
 
         FileToRepoMappingStorage.getInstance().setFirmAssociation(

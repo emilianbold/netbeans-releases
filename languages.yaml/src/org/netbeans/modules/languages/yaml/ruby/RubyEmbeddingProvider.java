@@ -149,7 +149,10 @@ public class RubyEmbeddingProvider extends EmbeddingProvider {
                     }
                 }
 
-                if (found) {
+                // avoid creating an embedding for the artificial '\n' at the end (which is now there
+                // as a result of the fix for #159502
+                // XXX: shouldn't this be handled e.g. in token hiearchy creation??
+                if (found && tokenSequence.index() < tokenSequence.tokenCount() - 1) {
                     embeddings.add(snapshot.create(sourceStart, i, RUBY_MIME_TYPE));
                     //buffer.append(text.substring(0, i));
                     text = text.substring(i);

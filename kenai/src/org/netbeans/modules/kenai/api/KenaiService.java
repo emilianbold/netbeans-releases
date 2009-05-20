@@ -102,6 +102,7 @@ public final class KenaiService {
         public static final String JIRA = "jira";
         public static final String EXTERNAL_ISSUES = "external_issues";
         public static final String XMPP_CHAT = "instant_messenger";
+        public static final String EXTERNAL_HUDSON = "external_hudson";
     }
 
     /**
@@ -116,6 +117,7 @@ public final class KenaiService {
         WIKI("wiki"),
         CHAT("instant_messenger"),
         DOWNLOADS("downloads"),
+        HUDSON("hudson"),
         PROJECTS("projects"),
         UNKNOWN("unknown");
         private String id;

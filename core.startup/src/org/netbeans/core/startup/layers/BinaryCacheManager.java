@@ -61,6 +61,15 @@ import org.openide.filesystems.FileUtil;
  * @author Petr Nejedly
  */
 final class BinaryCacheManager extends ParsingLayerCacheManager {
+    private final String cacheLocation;
+
+    BinaryCacheManager() {
+        this("all-layers.dat"); // NOI18N
+    }
+
+    BinaryCacheManager(String cacheLocation) {
+        this.cacheLocation = cacheLocation;
+    }
 
     @Override
     public FileSystem createEmptyFileSystem() throws IOException {
@@ -79,7 +88,7 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
 
     @Override
     public String cacheLocation() {
-        return "all-layers.dat"; // NOI18N
+        return cacheLocation;
     }
 
     protected boolean openURLs() {

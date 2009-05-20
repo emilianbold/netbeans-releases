@@ -48,7 +48,6 @@ import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
-import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.debugger.gdb.models.GdbWatchVariable;
 import org.netbeans.modules.cnd.debugger.gdb.models.ValuePresenter;
 import org.openide.cookies.EditorCookie;
@@ -133,8 +132,10 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
 
         String type = debugger.requestWhatis(expression);
         String value = debugger.evaluate(expression);
+
+        String res = ValuePresenter.getValue(type, value);
         
-        firePropertyChange(PROP_SHORT_DESCRIPTION, null, value);
+        firePropertyChange(PROP_SHORT_DESCRIPTION, null, res);
     }
 
     public String getAnnotationType () {
@@ -162,10 +163,25 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             int lineLen = lineElem.getEndOffset() - lineStartOffset;
             t = doc.getText(lineStartOffset, lineLen);
             int identStart = col;
-            while (identStart > 0 && (Character.isJavaIdentifierPart(t.charAt(identStart - 1)) ||
-                        (t.charAt (identStart - 1) == '.'))) {
-                identStart--;
+
+            // Scan for :: -> . and symbols
+            while (identStart > 0) {
+                char token = t.charAt(identStart - 1);
+                if (identStart > 1) {
+                    char prevToken = t.charAt(identStart - 2);
+                    if ((prevToken == '-' && token == '>') ||
+                        (prevToken == ':' && token == ':')) {
+                        identStart -= 2;
+                        continue;
+                    }
+                }
+                if (Character.isJavaIdentifierPart(token) || token == '.') {
+                    identStart--;
+                    continue;
+                }
+                break;
             }
+
             int identEnd = col;
             while (identEnd < lineLen && Character.isJavaIdentifierPart(t.charAt(identEnd))) {
                 identEnd++;

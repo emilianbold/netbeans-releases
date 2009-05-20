@@ -71,23 +71,19 @@ public class MessagingHandleImpl extends MessagingHandle {
 
 
     MessagingHandleImpl(String id) {
-        if (System.getProperty("kenai.com.url", "https://kenai.com").endsWith("testkenai.com")) {
-            this.id=id;
-            Kenai k = Kenai.getDefault();
-            try {
-                final KenaiProject prj = k.getProject(id);
-                if (k.getMyProjects().contains(prj)) {
-                    onlineCount = -2;
-                } else {
-                    onlineCount = -1;
-                }
-            } catch (KenaiException kenaiException) {
-                Exceptions.printStackTrace(kenaiException);
+        this.id = id;
+        Kenai k = Kenai.getDefault();
+        try {
+            final KenaiProject prj = k.getProject(id);
+            if (k.getMyProjects().contains(prj)) {
+                onlineCount = -2;
+            } else {
+                onlineCount = -1;
             }
-        } else {
-            onlineCount = -1;
+        } catch (KenaiException kenaiException) {
+            Exceptions.printStackTrace(kenaiException);
         }
-        lastMessage = lastMessageRead = new Date(Long.parseLong(prefs.get(id+LASTMESSAGEAT,"0"))); // NOI18N
+        lastMessage = lastMessageRead = new Date(Long.parseLong(prefs.get(id + LASTMESSAGEAT, "0"))); // NOI18N
     }
     /**
      * Get the value of messageCount

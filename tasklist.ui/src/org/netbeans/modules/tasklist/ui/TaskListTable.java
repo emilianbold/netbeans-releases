@@ -43,6 +43,7 @@ package org.netbeans.modules.tasklist.ui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Image;
@@ -601,8 +602,8 @@ class TaskListTable extends JTable {
         
         @Override
         public int getPreferredWidth() {
-            int modelIndex = this.getModelIndex();
-            if( isFoldingModel() && modelIndex == TaskListModel.COL_GROUP )
+            int idx = this.getModelIndex();
+            if( isFoldingModel() && idx == TaskListModel.COL_GROUP )
                 return getWidth();
             
             int totalWidth = getParent().getWidth();
@@ -619,6 +620,7 @@ class TaskListTable extends JTable {
     }
 
     private static class LeftDotRenderer extends DefaultTableCellRenderer {
+        @Override
         public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column ) {
                 
             super.getTableCellRendererComponent( table, value, isSelected, hasFocus, row, column );
@@ -654,6 +656,7 @@ class TaskListTable extends JTable {
     
 
     private static class TooltipRenderer extends DefaultTableCellRenderer {
+        @Override
         public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column ) {
                 
             super.getTableCellRendererComponent( table, value, isSelected, hasFocus, row, column );
@@ -682,9 +685,16 @@ class TaskListTable extends JTable {
         
         private static final String SORT_ASC_ICON = "org/netbeans/modules/tasklist/ui/resources/columnsSortedAsc.gif"; // NOI18N
         private static final String SORT_DESC_ICON = "org/netbeans/modules/tasklist/ui/resources/columnsSortedDesc.gif"; // NOI18N
+
+        private JLabel defaultRenderer;
         
         SortingHeaderRenderer( TableCellRenderer origRenderer ) {
             this.origRenderer = origRenderer;
+            if( isGTK() ) {
+                TableCellRenderer ren = new JTableHeader().getDefaultRenderer();
+                if( ren instanceof JLabel )
+                    defaultRenderer = (JLabel) ren;
+            }
         }
 
         /** Overrides superclass method. */
@@ -696,9 +706,16 @@ class TaskListTable extends JTable {
                 TaskListModel tlm = (TaskListModel)getModel();
                 if( column == tlm.getSortingColumnn() ) {
                     label.setIcon( getProperIcon( !tlm.isAscendingSort() ) );
-                    label.setHorizontalTextPosition( SwingConstants.LEFT );
+                    label.setHorizontalTextPosition( SwingConstants.LEADING );
                 } else {
                     label.setIcon( NO_ICON );
+                }
+                if( isGTK() && null != defaultRenderer ) {
+                    defaultRenderer.setText(label.getText());
+                    Dimension prefSize = defaultRenderer.getPreferredSize();
+                    if( prefSize.width > 1 && prefSize.height > 1 )
+                        label.setPreferredSize(prefSize);
+                    label.setText(" " + label.getText());
                 }
             }
 
@@ -745,6 +762,7 @@ class TaskListTable extends JTable {
             popup.show( TaskListTable.this, p.x, p.y );
         }
         
+        @Override
         public boolean isEnabled() {
             return TaskListTable.this.isFocusOwner();
         }

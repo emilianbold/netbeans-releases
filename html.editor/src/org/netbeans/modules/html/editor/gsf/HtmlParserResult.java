@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.html.editor.gsf;
@@ -82,10 +82,10 @@ public class HtmlParserResult extends ParserResult {
         root();
     }
 
-    /** @return a root node of the hierarchical parse tree of the document. 
+    /** @return a root node of the hierarchical parse tree of the document.
      * basically the tree structure is done by postprocessing the flat parse tree
      * you can get by calling elementsList() method.
-     * Use the flat parse tree results if you do not need the tree structure since 
+     * Use the flat parse tree results if you do not need the tree structure since
      * the postprocessing takes some time and is done lazily.
      */
     public synchronized AstNode root() {
@@ -153,33 +153,35 @@ public class HtmlParserResult extends ParserResult {
                 new AstNodeVisitor() {
 
                     public void visit(AstNode node) {
-                        if (node.type() == AstNode.NodeType.UNMATCHED_TAG) {
-                            AstNode unmatched = node.children().get(0);
-                            if (dtd() != null) {
-                                //check the unmatched tag according to the DTD
-                                Element element = dtd().getElement(node.name().toUpperCase(Locale.US));
-                                if (element != null) {
-                                    if (unmatched.type() == AstNode.NodeType.OPEN_TAG && element.hasOptionalEnd() /*||
-                                            unmatched.type() == AstNode.NodeType.ENDTAG && element.hasOptionalStart()*/) {
-                                        return;
-                                    }
-                                }
-                            }
-                            String msg = NbBundle.getMessage(this.getClass(), "MSG_Unmatched_Tag"); //NOI18N
-                            Error error =
-                                    DefaultError.createDefaultError("unmatched_tag",//NOI18N
-                                    msg,
-                                    msg,
-                                    getSnapshot().getSource().getFileObject(),
-                                    getSnapshot().getOriginalOffset(node.startOffset()),
-                                    getSnapshot().getOriginalOffset(node.endOffset()),
-                                    false /* not line error */,
-                                    Severity.WARNING); //NOI18N
-                            _errors.add(error);
 
-                        } else if (node.type() == AstNode.NodeType.TAG || 
+//                        if (node.type() == AstNode.NodeType.UNMATCHED_TAG) {
+//                            AstNode unmatched = node.children().get(0);
+//                            if (dtd() != null) {
+//                                //check the unmatched tag according to the DTD
+//                                Element element = dtd().getElement(node.name().toUpperCase(Locale.US));
+//                                if (element != null) {
+//                                    if (unmatched.type() == AstNode.NodeType.OPEN_TAG && element.hasOptionalEnd() /*||
+//                                            unmatched.type() == AstNode.NodeType.ENDTAG && element.hasOptionalStart()*/) {
+//                                        return;
+//                                    }
+//                                }
+//                            }
+//                            String msg = NbBundle.getMessage(this.getClass(), "MSG_Unmatched_Tag"); //NOI18N
+//                            Error error =
+//                                    DefaultError.createDefaultError("unmatched_tag",//NOI18N
+//                                    msg,
+//                                    msg,
+//                                    getSnapshot().getSource().getFileObject(),
+//                                    getSnapshot().getOriginalOffset(node.startOffset()),
+//                                    getSnapshot().getOriginalOffset(node.endOffset()),
+//                                    false /* not line error */,
+//                                    Severity.WARNING); //NOI18N
+//                            _errors.add(error);
+
+                        if (node.type() == AstNode.NodeType.TAG ||
                                 node.type() == AstNode.NodeType.OPEN_TAG ||
-                                node.type() == AstNode.NodeType.ENDTAG) {
+                                node.type() == AstNode.NodeType.ENDTAG ||
+                                node.type() == AstNode.NodeType.UNMATCHED_TAG) {
 
                             for(Description desc : node.getDescriptions()) {
                                 if(desc.getType() < Description.WARNING) {

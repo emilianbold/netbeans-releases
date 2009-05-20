@@ -89,6 +89,19 @@ public class ProgressSupport {
         }
     }
 
+    /*package-local*/ void fireFileAddedToParse(FileImpl file) {
+        if (TraceFlags.TRACE_PARSER_QUEUE || TraceFlags.TRACE_PARSER_PROGRESS) {
+            System.err.println("fireFileAddedToParse " + file.getAbsolutePath());
+        }
+        for (CsmProgressListener listener : getProgressListeners()) {
+            try { // have to do this to not allow a listener to crush code model threads
+                listener.fileAddedToParse(file);
+            } catch (Throwable e) {
+                DiagnosticExceptoins.register(e);
+            }
+        }
+    }
+
     /*package-local*/ void fireFileParsingStarted(FileImpl file) {
         if (TraceFlags.TRACE_PARSER_QUEUE || TraceFlags.TRACE_PARSER_PROGRESS) {
             System.err.println("fireFileParsingStarted " + file.getAbsolutePath());

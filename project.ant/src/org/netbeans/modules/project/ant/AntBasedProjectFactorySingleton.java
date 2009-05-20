@@ -336,8 +336,7 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
             sBuff.append(project.getClass().getName() + "\n"); // NOI18N
             sBuff.append("argument project: " + project + " => " + project.hashCode() + "\n"); // NOI18N
             sBuff.append("project2Helper keys: " + "\n"); // NOI18N
-            for (Iterator<Entry<Project, Reference<AntProjectHelper>>> entries = project2Helper.entrySet().iterator(); entries.hasNext(); ) {
-                Project prj = entries.next().getKey();
+            for (Project prj : project2Helper.keySet()) {
                 sBuff.append("    project: " + prj + " => " + prj.hashCode() + "\n"); // NOI18N
             }
             throw new ClassCastException(sBuff.toString());

@@ -55,6 +55,7 @@ public final class FileObjectIndexable implements IndexableImpl {
 
     private final FileObject root;
     private final FileObject file;
+    private String relativePath;
 
     public FileObjectIndexable (final FileObject root, final FileObject file) {
         Parameters.notNull("root", root); //NOI18N
@@ -72,9 +73,12 @@ public final class FileObjectIndexable implements IndexableImpl {
     }
 
     public String getRelativePath() {
-        String path = FileUtil.getRelativePath(root, file);
-        assert path != null : "File not under root: file=" + file + ", root" + root; //NOI18N
-        return path;
+        if (relativePath == null) {
+            String path = FileUtil.getRelativePath(root, file);
+            assert path != null : "File not under root: file=" + file + ", root" + root; //NOI18N
+            relativePath = path;
+        }
+        return relativePath;
     }
 
     public URL getURL() {

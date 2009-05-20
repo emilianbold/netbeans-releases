@@ -632,7 +632,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             if (e == null)
                 return false;
 
-            if (e.getKind() == ElementKind.METHOD) {
+            if (e.getKind() == ElementKind.METHOD && expr.getKind() == Kind.METHOD_INVOCATION) {
                 List<? extends ExpressionTree> arguments = ((MethodInvocationTree) expr).getArguments();
                 for (ExpressionTree et : arguments) {
                     Element element = info.getTrees().getElement(new TreePath(path, et));

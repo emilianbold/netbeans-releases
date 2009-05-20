@@ -60,8 +60,8 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
+import org.netbeans.modules.hudson.api.UI;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
-import org.netbeans.modules.hudson.ui.actions.CreateJob;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
 import org.netbeans.modules.hudson.ui.actions.PersistInstanceAction;
 import org.netbeans.modules.hudson.ui.actions.RemoveInstanceAction;
@@ -148,7 +148,7 @@ public class HudsonInstanceNode extends AbstractNode {
             actions.add(new ViewSwitcher());
             actions.add(null);
         }
-        actions.add(new CreateJob(instance));
+        actions.add(UI.createJobAction(instance));
         actions.add(null);
         actions.add(SystemAction.get(SynchronizeAction.class));
         actions.add(SystemAction.get(OpenUrlAction.class));

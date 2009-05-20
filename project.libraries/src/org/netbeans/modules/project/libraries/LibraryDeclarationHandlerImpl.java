@@ -44,12 +44,11 @@ package org.netbeans.modules.project.libraries;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
-import org.openide.ErrorManager;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -144,11 +143,12 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
         else {
             LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider(this.libraryType);
             if (provider == null) {
-                ErrorManager.getDefault().log (ErrorManager.WARNING, "LibraryDeclarationHandlerImpl: Cannot create library: "+this.libraryName+" of unknown type: " + this.libraryType);
+                LibrariesStorage.LOG.warning("LibraryDeclarationHandlerImpl: Cannot create library: "+this.libraryName+" of unknown type: " + this.libraryType);
                 return;
             }
             this.library = provider.createLibrary();
             update = false;
+            LibrariesStorage.LOG.log(Level.FINE, "LibraryDeclarationHandlerImpl library {0} type {1} found", new Object[] { this.libraryName, this.libraryType });
         }
         if (!update || !safeEquals(this.library.getLocalizingBundle(), localizingBundle)) {
             this.library.setLocalizingBundle (this.localizingBundle);

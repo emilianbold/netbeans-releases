@@ -688,7 +688,11 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     /** Helper method. 
      * @return whether there is an table view opened */
     public synchronized boolean hasOpenedTableComponent() {
-        return ((PropertiesDataObject)myEntry.getDataObject()).getOpenSupport().hasOpenedTableComponent();
+        PropertiesDataObject dataObject = (PropertiesDataObject) myEntry.getDataObject();
+        if (dataObject.getBundleStructureOrNull() == null || dataObject.getBundleStructure().getEntryCount()==0) {
+            return false;
+        }
+        return dataObject.getOpenSupport().hasOpenedTableComponent();
     }
     
     /**
@@ -1329,7 +1333,8 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         @Override
         public synchronized boolean addEdit(UndoableEdit anEdit) {
             stampFlags.put(anEdit, new StampFlag(System.currentTimeMillis(),
-                ((PropertiesDataObject)PropertiesEditorSupport.this.myEntry.getDataObject()).getOpenSupport().atomicUndoRedoFlag ));
+//                ((PropertiesDataObject)PropertiesEditorSupport.this.myEntry.getDataObject()).getOpenSupport().atomicUndoRedoFlag ));
+                PropertiesEditorSupport.this.myEntry.atomicUndoRedoFlag ));
             return super.addEdit(anEdit);
         }
         
@@ -1337,7 +1342,8 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         @Override
         public boolean replaceEdit(UndoableEdit anEdit) {
             stampFlags.put(anEdit, new StampFlag(System.currentTimeMillis(), 
-                ((PropertiesDataObject)PropertiesEditorSupport.this.myEntry.getDataObject()).getOpenSupport().atomicUndoRedoFlag ));
+//                ((PropertiesDataObject)PropertiesEditorSupport.this.myEntry.getDataObject()).getOpenSupport().atomicUndoRedoFlag ));
+                PropertiesEditorSupport.this.myEntry.atomicUndoRedoFlag ));
             return super.replaceEdit(anEdit);
         }
         

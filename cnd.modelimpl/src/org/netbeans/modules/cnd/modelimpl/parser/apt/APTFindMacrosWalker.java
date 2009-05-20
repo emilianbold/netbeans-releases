@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.apt.structure.APTIfndef;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
 import org.netbeans.modules.cnd.apt.structure.APTUndefine;
+import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
@@ -78,8 +79,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
-import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -92,8 +93,8 @@ import org.openide.filesystems.FileUtil;
 public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
     protected final Map<CharSequence, CsmFile> macro2file = new HashMap<CharSequence, CsmFile>();
 
-    public APTFindMacrosWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler) {
-        super(apt, csmFile, preprocHandler);
+    public APTFindMacrosWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
+        super(apt, csmFile, preprocHandler, null);
     }
 
     @Override
@@ -329,7 +330,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
                 File searchFile = new File(mi.includePath.toString());
                 ProjectBase targetPrj = ((ProjectBase) current.getProject()).findFileProject(searchFile.getAbsolutePath());
                 if (targetPrj == null) {
-                    searchFile = FileUtil.normalizeFile(searchFile);
+                    searchFile = CndFileUtils.normalizeFile(searchFile);
                     targetPrj = ((ProjectBase) current.getProject()).findFileProject(searchFile.getAbsolutePath());
                 }
                 if (targetPrj != null) {

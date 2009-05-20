@@ -41,59 +41,32 @@
 
 package org.netbeans.modules.cnd.makeproject.api.remote;
 
-import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
-public class FilePathAdaptor {
+public final class FilePathAdaptor {
+
+    private FilePathAdaptor() {
+    }
 
     public static String mapToRemote(String local) {
-        FilePathMapper conv = getConverting();
-        return conv.mapToRemote(local);
+        return local;
     }
 
     public static String mapToLocal(String remote) {
-        FilePathMapper conv = getConverting();
-        return conv.mapToLocal(remote);
+        return remote;
     }
 
     public static String normalize(String path) {
-        FilePathMapper conv = getConverting();
-        return conv.normalize(path);
+        return path.replaceAll("\\\\", "/"); // NOI18N
     }
     
     public static String naturalize(String path) {
-        FilePathMapper conv = getConverting();
-        return conv.naturalize(path);
-    }
-
-    private static FilePathMapper getConverting() {
-        FilePathMapper conv = Lookup.getDefault().lookup(FilePathMapper.class);
-        return conv == null ? FilePathMapperDefault.DEFAULT : conv;
-    }
-    
-    private static class FilePathMapperDefault implements FilePathMapper {
-        public final static FilePathMapper DEFAULT = new FilePathMapperDefault();
-        
-        public String mapToRemote(String local) {
-            return local;
-        }
-
-        public String mapToLocal(String remote) {
-            return remote;
-        }
-
-        public String normalize(String path) {
-            // Always use Unix file separators
+        if (Utilities.isUnix()) {
             return path.replaceAll("\\\\", "/"); // NOI18N
-        }
-        
-        public String naturalize(String path) {
-            if (Utilities.isUnix())
-                return path.replaceAll("\\\\", "/"); // NOI18N
-            else if (Utilities.isWindows())
-                return path.replaceAll("/", "\\\\"); // NOI18N
-            else
-                return path;
+        } else if (Utilities.isWindows()) {
+            return path.replaceAll("/", "\\\\"); // NOI18N
+        } else {
+            return path;
         }
     }
 }

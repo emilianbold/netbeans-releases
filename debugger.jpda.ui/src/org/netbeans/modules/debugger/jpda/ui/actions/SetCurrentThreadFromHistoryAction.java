@@ -108,7 +108,7 @@ public class SetCurrentThreadFromHistoryAction extends AbstractAction implements
         int releaseKey = KeyEvent.VK_ENTER;
         KeyboardPopupSwitcher.selectItem(
                 ThreadsHistoryAction.createSwitcherItems(threads),
-                releaseKey, triggerKey, true, false);
+                releaseKey, triggerKey, true, true);
     }
 
 }

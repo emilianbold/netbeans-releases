@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -82,16 +82,24 @@ public class Util {
     }
     
     public static JDBCDriver createDummyDriver() throws Exception {
-        JDBCDriver[] drivers = 
+        JDBCDriver[] drivers =
                 JDBCDriverManager.getDefault().getDrivers("org.bar.barDriver");
         if ( drivers.length > 0 ) {
             return drivers[0];
         }
-        
-        JDBCDriver driver = JDBCDriver.create("bar_driver", "Bar Driver", 
+
+        JDBCDriver driver = JDBCDriver.create("bar_driver", "Bar Driver",
                 "org.bar.BarDriver", new URL[]{ new URL("file://foo/path/foo.jar")});
         JDBCDriverManager.getDefault().addDriver(driver);
-                
+
+        return driver;
+    }
+
+    public static JDBCDriver createDummyDriverWithOtherJar() throws Exception {
+        JDBCDriver driver = JDBCDriver.create("bar_driver", "Bar Driver",
+                "org.bar.BarDriver2", new URL[]{ new URL("file://foo2/path/foo2.jar")});
+        JDBCDriverManager.getDefault().addDriver(driver);
+
         return driver;
     }
 }

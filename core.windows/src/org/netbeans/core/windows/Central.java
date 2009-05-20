@@ -1040,7 +1040,7 @@ final class Central implements ControllerHandler {
     }
     
    // remove the mode only if there's no other component in sliding modes that has this one as the previous mode.
-    private boolean doCheckSlidingModes(ModeImpl mode) {
+    boolean doCheckSlidingModes(ModeImpl mode) {
         ModeImpl slid = model.getSlidingMode(Constants.BOTTOM);
         if (slid != null) {
             TopComponent[] tcs = slid.getTopComponents();

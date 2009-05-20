@@ -41,12 +41,14 @@
 
 package org.netbeans.modules.hudson.api;
 
+import java.util.EventListener;
+
 /**
  * Hudson change listener
  *
  * @author Michal Mocnak
  */
-public interface HudsonChangeListener {
+public interface HudsonChangeListener extends EventListener {
 
     /**
      * Change of the state

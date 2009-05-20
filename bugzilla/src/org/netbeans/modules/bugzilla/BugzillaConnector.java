@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,18 +34,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.bugzilla;
 
+import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.bugtracking.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.bugzilla.issue.BugzillaIssueFinder;
 import org.netbeans.modules.bugzilla.kenai.KenaiSupportImpl;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -56,6 +59,7 @@ import org.openide.util.NbBundle;
 public class BugzillaConnector extends BugtrackingConnector {
 
     private KenaiSupport kenaiSupport;
+    private BugzillaIssueFinder issueFinder;
 
     public String getDisplayName() {
         return getConnectorName();
@@ -86,4 +90,13 @@ public class BugzillaConnector extends BugtrackingConnector {
     public static String getConnectorName() {
         return NbBundle.getMessage(BugzillaConnector.class, "LBL_ConnectorName");           // NOI18N
 }
+
+    @Override
+    public IssueFinder getIssueFinder() {
+        if (issueFinder == null) {
+            issueFinder = Lookup.getDefault().lookup(BugzillaIssueFinder.class);
+        }
+        return issueFinder;
+    }
+
 }

@@ -44,6 +44,7 @@ import java.awt.event.ActionEvent;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -83,6 +84,7 @@ public class ActionsSearchProvider implements SearchProvider {
      * and can be run meaningfully on current actions context.
      */
     public void evaluate(SearchRequest request, SearchResponse response) {
+        Map<Object, String> duplicateCheck = new HashMap<Object, String>();
         List<Object[]> possibleResults = new ArrayList<Object[]>(7);
         Map<ShortcutAction, Set<String>> curKeymap;
         // iterate over all found KeymapManagers
@@ -95,7 +97,7 @@ public class ActionsSearchProvider implements SearchProvider {
                     if (actInfo == null) {
                         continue;
                     }
-                    if (!doEvaluation(sa.getDisplayName(), request, actInfo, response, possibleResults)) {
+                    if (!doEvaluation(sa.getDisplayName(), request, actInfo, response, possibleResults, duplicateCheck)) {
                         return;
                     }
                 }
@@ -117,7 +119,8 @@ public class ActionsSearchProvider implements SearchProvider {
                     // skip action without proper name
                     continue;
                 }
-                if (!doEvaluation((String)name, request, actInfo, response, possibleResults)) {
+                String displayName = ((String) name).replaceFirst("&(?! )", "");  //NOI18N
+                if (!doEvaluation(displayName, request, actInfo, response, possibleResults, duplicateCheck)) {
                     return;
                 }
             }
@@ -125,14 +128,14 @@ public class ActionsSearchProvider implements SearchProvider {
 
         // add results stored above, actions that contain typed text, but not as prefix
         for (Object[] actInfo : possibleResults) {
-            if (!addAction(actInfo, response)) {
+            if (!addAction(actInfo, response, duplicateCheck)) {
                 return;
             }
         }
     }
     
 
-    private boolean addAction(Object[] actInfo, SearchResponse response) {
+    private boolean addAction(Object[] actInfo, SearchResponse response, Map<Object, String> duplicateCheck) {
         KeyStroke stroke = null;
         // obtaining shortcut, first try Keymaps
         Set<String> shortcuts = (Set<String>)actInfo[2];
@@ -163,19 +166,23 @@ public class ActionsSearchProvider implements SearchProvider {
         } else {
             Object name = action.getValue(Action.NAME);
             if (name instanceof String) {
-                displayName = (String)name;
+                displayName = ((String) name).replaceFirst("&(?! )", "");  //NOI18N
             }
         }
         
+        // #140580 - check for duplicate actions
+        if (duplicateCheck.put(action, displayName) != null) {
+            return true;
+        }
         return response.addResult(new ActionResult(action), displayName, null,
                 Collections.singletonList(stroke));
     }
 
     private boolean doEvaluation(String name, SearchRequest request,
-            Object[] actInfo, SearchResponse response, List<Object[]> possibleResults) {
+            Object[] actInfo, SearchResponse response, List<Object[]> possibleResults, Map<Object, String> duplicateCheck) {
         int index = name.toLowerCase().indexOf(request.getText().toLowerCase());
         if (index == 0) {
-            return addAction(actInfo, response);
+            return addAction(actInfo, response, duplicateCheck);
         } else if (index != -1) {
             // typed text is contained in action name, but not as prefix,
             // store such actions if there are not enough "prefix" actions

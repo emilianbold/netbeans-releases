@@ -54,7 +54,8 @@ import org.openide.util.Lookup;
  * <pre>
  * package my.module;
  * import org.netbeans.spi.whatever.Thing;
- * &#64;Service(Thing.class)
+ * import org.openide.util.lookup.ServiceProvider;
+ * &#64;ServiceProvider(service=Thing.class)
  * public class MyThing implements Thing {...}
  * </pre>
  * <p>would result in a resource file <code>META-INF/services/org.netbeans.spi.whatever.Thing</code>

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.options.advanced;
 
+import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -51,6 +52,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JComponent;
+import javax.swing.JScrollPane;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
@@ -223,6 +225,13 @@ public final class Model extends TabbedPanelModel {
     }
     
     HelpCtx getHelpCtx (JComponent panel) {
+        if (panel instanceof JScrollPane) {
+            // #158755, #165240 - get panel from scroll pane if needed
+            Component view = ((JScrollPane) panel).getViewport().getView();
+            if (view instanceof JComponent) {
+                panel = (JComponent) view;
+            }
+        }
         Iterator it = categoryToPanel.keySet ().iterator ();
         while (it.hasNext ()) {
             String category = (String) it.next ();

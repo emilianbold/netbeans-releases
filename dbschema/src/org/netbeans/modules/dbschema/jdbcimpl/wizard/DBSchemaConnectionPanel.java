@@ -166,7 +166,7 @@ public class DBSchemaConnectionPanel extends JPanel implements ListDataListener 
     private final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.dbschema.jdbcimpl.resources.Bundle"); //NOI18N
 
     public boolean isInputValid() {
-        return existingConnComboBox.getSelectedItem() instanceof DatabaseConnection;
+        return existingConnComboBox != null && existingConnComboBox.getSelectedItem() instanceof DatabaseConnection;
     }
 
     public void intervalAdded(final javax.swing.event.ListDataEvent p1) {

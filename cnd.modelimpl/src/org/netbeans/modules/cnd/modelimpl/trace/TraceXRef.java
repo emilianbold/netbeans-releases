@@ -415,7 +415,7 @@ public class TraceXRef extends TraceModel {
             XRefResultSet.ContextEntry entry = createLightWeightEntry(context, printErr, reportUnresolved);
             if (entry != null) {
                 bag.addEntry(XRefResultSet.ContextScope.UNRESOLVED, entry);
-                if (entry == XRefResultSet.ContextEntry.UNRESOLVED || entry == XRefResultSet.ContextEntry.UNRESOLVED_MACRO_BASED) {
+                if (entry == XRefResultSet.ContextEntry.UNRESOLVED || entry == XRefResultSet.ContextEntry.UNRESOLVED_MACRO_BASED || entry == XRefResultSet.ContextEntry.UNRESOLVED_BUILTIN_BASED) {
                     CharSequence text = ref.getText();
                     UnresolvedEntry unres = bag.getUnresolvedEntry(text);
                     if (unres == null) {
@@ -488,6 +488,9 @@ public class TraceXRef extends TraceModel {
             } else if (CsmFileReferences.isMacroBased(context)) {
                 entry = XRefResultSet.ContextEntry.UNRESOLVED_MACRO_BASED;
                 kind = "UNRESOLVED_MACRO_BASED"; //NOI18N
+            } else if (CsmFileReferences.isBuiltInBased(ref)) {
+                entry = XRefResultSet.ContextEntry.UNRESOLVED_BUILTIN_BASED;
+                kind = "UNRESOLVED_BUILTIN_BASED"; //NOI18N
             }
             if (reportUnresolved) {
                 try {
@@ -798,6 +801,7 @@ public class TraceXRef extends TraceModel {
         int numProjectProints = 0;
         int numUnresolvedPoints = 0;
         int numMacroBasedUnresolvedPoints = 0;
+        int numBuiltinBasedUnresolvedPoints = 0;
         int numTemplateBasedUnresolvedPoints = 0;
         for (XRefResultSet.ContextScope scope : sortedContextScopes) {
             Collection<XRefResultSet.ContextEntry> entries = bag.getEntries(scope);
@@ -809,16 +813,19 @@ public class TraceXRef extends TraceModel {
                     numMacroBasedUnresolvedPoints++;
                 } else if (contextEntry == ContextEntry.UNRESOLVED_TEMPLATE_BASED) {
                     numTemplateBasedUnresolvedPoints++;
+                } else if (contextEntry == ContextEntry.UNRESOLVED_BUILTIN_BASED) {
+                    numBuiltinBasedUnresolvedPoints++;
                 }
             }
         }
-        int allUnresolvedPoints = numUnresolvedPoints + numMacroBasedUnresolvedPoints;
+        int allUnresolvedPoints = numUnresolvedPoints + numMacroBasedUnresolvedPoints + numBuiltinBasedUnresolvedPoints;
         double unresolvedRatio = numProjectProints == 0 ? 0 : (100.0 * allUnresolvedPoints) / ((double) numProjectProints);
         double unresolvedMacroBasedRatio = numProjectProints == 0 ? 0 : (100.0 * numMacroBasedUnresolvedPoints) / ((double) numProjectProints);
+        double unresolvedBuiltinBasedRatio = numProjectProints == 0 ? 0 : (100.0 * numBuiltinBasedUnresolvedPoints) / ((double) numProjectProints);
         double unresolvedTemplateBasedRatio = numProjectProints == 0 ? 0 : (100.0 * numTemplateBasedUnresolvedPoints) / ((double) numProjectProints);
-        String unresolvedStatistics = String.format("Unresolved %d (%.2f%%) where MacroBased %d (%.2f%%) of %d checkpoints [TemplateBased warnings %d (%.2f%%)]", // NOI18N
+        String unresolvedStatistics = String.format("Unresolved %d (%.2f%%) where MacroBased %d (%.2f%%) of %d checkpoints [TemplateBased warnings %d (%.2f%%), Builtin %d (%.2f%%)]", // NOI18N
                 allUnresolvedPoints, unresolvedRatio, numMacroBasedUnresolvedPoints, unresolvedMacroBasedRatio,
-                numProjectProints, numTemplateBasedUnresolvedPoints, unresolvedTemplateBasedRatio); // NOI18N
+                numProjectProints, numTemplateBasedUnresolvedPoints, unresolvedTemplateBasedRatio, numBuiltinBasedUnresolvedPoints, unresolvedBuiltinBasedRatio); // NOI18N
         printOut.println(unresolvedStatistics);
         String performanceStatistics = String.format("Line count: %d, time %.0f ms, \nspeed %.2f lines/sec, %.2f refs/sec", bag.getLineCount(), bag.getTimeMs(), bag.getLinesPerSec(), (double)numProjectProints / bag.getTimeSec()); // NOI18N
         printOut.println(performanceStatistics);

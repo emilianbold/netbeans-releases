@@ -68,6 +68,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.ImageUtilities;
@@ -264,13 +265,34 @@ public class FileDescription {
             return caseSensitive ? s1.compareTo( s2 ) : s1.compareToIgnoreCase( s2 );
         }        
     }
-    
+
+    private static class RendererComponent extends JPanel {
+	private FileDescription fd;
+
+	void setDescription(FileDescription fd) {
+	    this.fd = fd;
+	    putClientProperty(TOOL_TIP_TEXT_KEY, null);
+	}
+
+	@Override
+	public String getToolTipText() {
+	    String text = (String) getClientProperty(TOOL_TIP_TEXT_KEY);
+	    if( text == null ) {
+                if( fd != null) {
+                    text = FileUtil.getFileDisplayName(fd.getFileObject());
+                }
+                putClientProperty(TOOL_TIP_TEXT_KEY, text);
+	    }
+	    return text;
+	}
+    }
+
     public static class Renderer extends DefaultListCellRenderer implements ChangeListener {
         
         public static Icon WAIT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/jumpto/resources/wait.gif", false); // NOI18N
         
         
-        private JPanel rendererComponent;
+        private RendererComponent rendererComponent;
         private JLabel jlName = new JLabel();
         private JLabel jlPath = new JLabel();
         private JLabel jlPrj = new JLabel();
@@ -299,7 +321,7 @@ public class FileDescription {
                 stateChanged(new ChangeEvent(container));
             }
             
-            rendererComponent = new JPanel();
+            rendererComponent = new RendererComponent();
             rendererComponent.setLayout(new BorderLayout());
             rendererComponent.add( jlName, BorderLayout.WEST );
             rendererComponent.add( jlPath, BorderLayout.CENTER);
@@ -394,7 +416,7 @@ public class FileDescription {
                         ( fd.prefered && colorPrefered ? bgColorGreener : bgColor ) : 
                         ( fd.prefered && colorPrefered ? bgColorDarkerGreener : bgColorDarker ) );
                 }
-                //rendererComponent.setToolTipText( FileUtil.getFileDisplayName(fd.getFileObject()));
+                rendererComponent.setDescription(fd);
             }
             else {
                 jlName.setText( "" ); // NOI18M

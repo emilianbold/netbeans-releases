@@ -89,20 +89,22 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
     public void run(ResultIterator resultIterator) throws Exception {
         ParserResult parameter = (ParserResult) resultIterator.getParserResult();
         BaseDocument document = (BaseDocument) parameter.getSnapshot().getSource().getDocument(false);
-        document.readLock();
+        if (document != null) {
+            document.readLock();
 
-        try {
-            context = CompletionContextFinder.findCompletionContext(parameter, caretOffset);
-            switch (context) {
-                case EXPRESSION:
-                    accept = true;
-                    break;
-                case CLASS_CONTEXT_KEYWORDS:
-                    accept = true;
-                    break;
+            try {
+                context = CompletionContextFinder.findCompletionContext(parameter, caretOffset);
+                switch (context) {
+                    case EXPRESSION:
+                        accept = true;
+                        break;
+                    case CLASS_CONTEXT_KEYWORDS:
+                        accept = true;
+                        break;
+                }
+            } finally {
+                document.readUnlock();
             }
-        } finally {
-            document.readUnlock();
         }
     }
 

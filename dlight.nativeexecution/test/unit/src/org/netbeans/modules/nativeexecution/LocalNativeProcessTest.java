@@ -45,9 +45,7 @@ import java.io.InterruptedIOException;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.modules.nativeexecution.ConcurrentTasksSupport.Counters;
@@ -64,6 +62,7 @@ import static org.junit.Assert.*;
  * @author ak119685
  */
 public class LocalNativeProcessTest extends NativeExecutionTest {
+
     ExecutionEnvironment execEnv;
 
     public LocalNativeProcessTest(String name) {
@@ -72,7 +71,6 @@ public class LocalNativeProcessTest extends NativeExecutionTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        
     }
 
     @AfterClass
@@ -111,6 +109,7 @@ public class LocalNativeProcessTest extends NativeExecutionTest {
         int count = 50;
 
         final TaskFactory infiniteTaskFactory = new TaskFactory() {
+
             public Runnable newTask() {
                 return new InfiniteTask(execEnv, counters, processQueue);
             }
@@ -132,11 +131,13 @@ public class LocalNativeProcessTest extends NativeExecutionTest {
         int count = 5;
 
         final TaskFactory shortTasksFactory = new TaskFactory() {
+
             public Runnable newTask() {
                 return new ShortTask(execEnv, counters, processQueue);
             }
         };
         final TaskFactory longTasksFactory = new TaskFactory() {
+
             public Runnable newTask() {
                 return new LongTask(execEnv, counters, processQueue);
             }
@@ -162,11 +163,14 @@ public class LocalNativeProcessTest extends NativeExecutionTest {
             final TaskFactory factory,
             final Counters counters,
             final BlockingQueue<NativeProcess> processQueue) throws Exception {
-        
+
         final TaskFactory killTaskFactory = new TaskFactory() {
+
             public Runnable newTask() {
                 return new Runnable() {
+
                     final Random r = new Random();
+
                     public void run() {
                         try {
                             Thread.sleep(r.nextInt(5000));
@@ -183,7 +187,7 @@ public class LocalNativeProcessTest extends NativeExecutionTest {
 
                             // Make sure process exists...
                             try {
-                                NativeProcessBuilder pb = new NativeProcessBuilder(execEnv, "/bin/kill").setArguments("-0", "" + pid); // NOI18N
+                                NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable("/bin/kill").setArguments("-0", "" + pid); // NOI18N
                                 int result = pb.call().waitFor();
                                 assertTrue(result == 0);
                             } catch (InterruptedException ex) {
@@ -195,11 +199,11 @@ public class LocalNativeProcessTest extends NativeExecutionTest {
 
                             System.out.println("Kill process " + pid); // NOI18N
                             p.destroy();
-                            
+
                             // Make sure process doesn't exist...
-                            
+
                             try {
-                                NativeProcessBuilder pb = new NativeProcessBuilder(execEnv, "/bin/kill").setArguments("-0", "" + pid); // NOI18N
+                                NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv).setCommandLine("/bin/kill -0 " + pid); // NOI18N
                                 int result = pb.call().waitFor();
                                 assertTrue(result != 0);
                             } catch (IOException ex) {
@@ -231,7 +235,7 @@ public class LocalNativeProcessTest extends NativeExecutionTest {
 
         startSupport.waitCompletion();
         killSupport.waitCompletion();
-        
+
     }
 
     private class ShortTask implements Runnable {
@@ -240,14 +244,14 @@ public class LocalNativeProcessTest extends NativeExecutionTest {
         private ExecutionEnvironment execEnv;
         private BlockingQueue<NativeProcess> pqueue;
 
-        public ShortTask(ExecutionEnvironment execEnv, Counters counters, BlockingQueue<NativeProcess>pqueue) {
+        public ShortTask(ExecutionEnvironment execEnv, Counters counters, BlockingQueue<NativeProcess> pqueue) {
             this.execEnv = execEnv;
             this.counters = counters;
             this.pqueue = pqueue;
         }
 
         public void run() {
-            NativeProcessBuilder npb = new NativeProcessBuilder("/bin/ls").setArguments("-d", "/tmp"); // NOI18N
+            NativeProcessBuilder npb = NativeProcessBuilder.newLocalProcessBuilder().setCommandLine("/bin/ls -d /tmp"); // NOI18N
             try {
                 NativeProcess p = npb.call();
                 pqueue.put(p);
@@ -277,14 +281,14 @@ public class LocalNativeProcessTest extends NativeExecutionTest {
         private ExecutionEnvironment execEnv;
         private BlockingQueue<NativeProcess> pqueue;
 
-        public LongTask(ExecutionEnvironment execEnv, Counters counters, BlockingQueue<NativeProcess>pqueue) {
+        public LongTask(ExecutionEnvironment execEnv, Counters counters, BlockingQueue<NativeProcess> pqueue) {
             this.execEnv = execEnv;
             this.counters = counters;
             this.pqueue = pqueue;
         }
 
         public void run() {
-            NativeProcessBuilder npb = new NativeProcessBuilder("sleep").setArguments("3"); // NOI18N
+            NativeProcessBuilder npb = NativeProcessBuilder.newLocalProcessBuilder().setCommandLine("sleep 3"); // NOI18N
             try {
                 NativeProcess p = npb.call();
                 pqueue.put(p);
@@ -311,14 +315,16 @@ public class LocalNativeProcessTest extends NativeExecutionTest {
         private final BlockingQueue<NativeProcess> pqueue;
         private final ExecutionEnvironment execEnv;
 
-        public InfiniteTask(ExecutionEnvironment execEnv, Counters counters, BlockingQueue<NativeProcess>pqueue) {
+        public InfiniteTask(ExecutionEnvironment execEnv, Counters counters, BlockingQueue<NativeProcess> pqueue) {
             this.execEnv = execEnv;
             this.counters = counters;
             this.pqueue = pqueue;
         }
 
         public void run() {
-            NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "read"); // NOI18N
+            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+            npb.setExecutable("read"); // NOI18N
+
             try {
                 NativeProcess p = npb.call();
                 pqueue.put(p);

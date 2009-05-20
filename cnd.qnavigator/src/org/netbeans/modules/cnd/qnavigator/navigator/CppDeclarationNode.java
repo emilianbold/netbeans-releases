@@ -326,6 +326,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         if (action != null){
             List<Action> list = new ArrayList<Action>();
             list.add(action);
+            list.add(RefactoringActionsFactory.renameAction());
             list.add(RefactoringActionsFactory.whereUsedAction());
             CsmObject obj = this.getCsmObject();
             if (CsmKindUtilities.isField(obj) || CsmKindUtilities.isClass(obj)) {

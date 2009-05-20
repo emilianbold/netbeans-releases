@@ -87,7 +87,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     private IntList errLines = null;
 
     /** last storage size (after dispose), in bytes */
-    private int lastStorageSize;
+    private int lastStorageSize = -1;
 
     AbstractLines() {
         if (Controller.LOG) Controller.log ("Creating a new AbstractLines");
@@ -170,7 +170,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
 
     int getByteSize() {
         synchronized (readLock()) {
-            if (lastStorageSize > 0) {
+            if (lastStorageSize >= 0) {
                 return lastStorageSize;
             }
             Storage storage = getStorage();

@@ -65,6 +65,19 @@ public class InterceptorTest extends AbstractHgTest {
         System.setProperty("netbeans.user", "/tmp/hgtest");
     }
 
+    public void testGetAttributeRefreh() throws HgException, IOException {
+        File folder = createFolder("folder");
+        File file = createFile(folder, "file");
+
+        commit(folder);
+        FileObject fo = FileUtil.toFileObject(file);
+        Runnable attr = (Runnable) fo.getAttribute("ProvidedExtensions.Refresh");
+        assertNotNull(attr);
+
+        attr.run();
+        // XXX check status
+    }
+
     public void testGetAttributeWrong() throws HgException, IOException {
         File folder = createFolder("folder");
         File file = createFile(folder, "file");

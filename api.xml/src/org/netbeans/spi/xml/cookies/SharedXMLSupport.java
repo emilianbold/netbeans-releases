@@ -46,6 +46,8 @@ import java.util.*;
 import java.security.ProtectionDomain;
 import java.security.CodeSource;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.swing.text.Document;
@@ -492,7 +494,9 @@ class SharedXMLSupport {
                 try {
                     javax.xml.transform.Source src = ((javax.xml.transform.URIResolver)res).resolve(ns, null);
                     if (src!=null) loc.add(ns+" "+src.getSystemId()); //NOI18N
-                } catch (Exception ex) {}
+                } catch (Exception x) {
+                    Logger.getLogger(SharedXMLSupport.class.getName()).log(Level.INFO, "Could not load schema for " + ns, x);
+                }
             }
         }
         String[] schemaLocations = new String[loc.size()];

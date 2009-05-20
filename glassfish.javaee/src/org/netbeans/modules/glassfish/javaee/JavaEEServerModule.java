@@ -106,7 +106,7 @@ public class JavaEEServerModule implements RemoveCookie, ProfilerCookie, Recogni
         return Collections.singleton(new Recognizer() {
             public OutputListener processLine(String text) {
                 OutputListener result = null;
-                if(text.length() > 0 && !" ".equals(text)) {
+                if(text.length() > 0 && text.length() < 500 && !" ".equals(text)) {
                     LogHyperLinkSupport.AppServerLogSupport.LineInfo lineInfo = 
                             logSupport.analyzeLine(text);
                     if(lineInfo != null && lineInfo.isError() && lineInfo.isAccessible()) {

@@ -612,6 +612,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         }
 
         public List<PathResourceImplementation> getResources() {
+            assert resources != null;
             return resources;
         }
 

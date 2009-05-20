@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.bugzilla.issue;
@@ -53,6 +53,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
+import javax.swing.JComponent;
+import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -69,6 +71,9 @@ import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.TextUtils;
+import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.openide.filesystems.FileUtil;
@@ -84,6 +89,7 @@ public class BugzillaIssue extends Issue {
     public static final String RESOLVE_FIXED = "FIXED";                         // NOI18N
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";               // NOI18N
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT);
+    private static final int SHORTENED_SUMMARY_LENGTH = 22;
 
     private TaskData data;
     private BugzillaRepository repository;
@@ -117,48 +123,53 @@ public class BugzillaIssue extends Issue {
      * Field was changed since the issue was seen the last time
      */
     static final int FIELD_STATUS_MODIFIED = 4;
+    private Map<String, String> seenAtributes;
 
     enum IssueField {
-        SUMMARY(BugzillaAttribute.SHORT_DESC.getKey()),
-        STATUS(TaskAttribute.STATUS),
-        PRIORITY(BugzillaAttribute.PRIORITY.getKey()),
-        RESOLUTION(TaskAttribute.RESOLUTION),
-        PRODUCT(BugzillaAttribute.PRODUCT.getKey()),
-        COMPONENT(BugzillaAttribute.COMPONENT.getKey()),
-        VERSION(BugzillaAttribute.VERSION.getKey()),
-        PLATFORM(BugzillaAttribute.REP_PLATFORM.getKey()),
-        OS(BugzillaAttribute.OP_SYS.getKey()),
-        MILESTONE(BugzillaAttribute.TARGET_MILESTONE.getKey()),
-        REPORTER(BugzillaAttribute.REPORTER.getKey()),
-        REPORTER_NAME(BugzillaAttribute.REPORTER_NAME.getKey()),
-        ASSIGNED_TO(BugzillaAttribute.ASSIGNED_TO.getKey()),
-        ASSIGNED_TO_NAME(BugzillaAttribute.ASSIGNED_TO_NAME.getKey()),
-        QA_CONTACT(BugzillaAttribute.QA_CONTACT.getKey()),
-        QA_CONTACT_NAME(BugzillaAttribute.QA_CONTACT_NAME.getKey()),
-        NEWCC(BugzillaAttribute.NEWCC.getKey()),
-        REMOVECC(BugzillaAttribute.REMOVECC.getKey()),
-        CC(BugzillaAttribute.CC.getKey()),
-        DEPENDS_ON(BugzillaAttribute.DEPENDSON.getKey()),
-        BLOCKS(BugzillaAttribute.BLOCKED.getKey()),
-        URL(BugzillaAttribute.BUG_FILE_LOC.getKey()),
-        KEYWORDS(BugzillaAttribute.KEYWORDS.getKey()),
-        SEVERITY(BugzillaAttribute.BUG_SEVERITY.getKey()),
-        DESCRIPTION(BugzillaAttribute.LONG_DESC.getKey()),
-        CREATION(TaskAttribute.DATE_CREATION),
-        MODIFICATION(TaskAttribute.DATE_MODIFICATION),
-        COMMENT_COUNT(TaskAttribute.TYPE_COMMENT, false),
-        ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, false);
+        SUMMARY(BugzillaAttribute.SHORT_DESC.getKey(), "LBL_SUMMARY"),
+        STATUS(TaskAttribute.STATUS, "LBL_STATUS"),
+        PRIORITY(BugzillaAttribute.PRIORITY.getKey(), "LBL_PRIORITY"),
+        RESOLUTION(TaskAttribute.RESOLUTION, "LBL_RESOLUTION"),
+        PRODUCT(BugzillaAttribute.PRODUCT.getKey(), "LBL_PRODUCT"),
+        COMPONENT(BugzillaAttribute.COMPONENT.getKey(), "LBL_COMPONENT"),
+        VERSION(BugzillaAttribute.VERSION.getKey(), "LBL_VERSION"),
+        PLATFORM(BugzillaAttribute.REP_PLATFORM.getKey(), "LBL_PLATFORM"),
+        OS(BugzillaAttribute.OP_SYS.getKey(), "LBL_OS"),
+        MILESTONE(BugzillaAttribute.TARGET_MILESTONE.getKey(), "LBL_MILESTONE"),
+        REPORTER(BugzillaAttribute.REPORTER.getKey(), "LBL_REPORTER"),
+        REPORTER_NAME(BugzillaAttribute.REPORTER_NAME.getKey(), "LBL_REPORTER_NAME"),
+        ASSIGNED_TO(BugzillaAttribute.ASSIGNED_TO.getKey(), "LBL_ASSIGNED_TO"),
+        ASSIGNED_TO_NAME(BugzillaAttribute.ASSIGNED_TO_NAME.getKey(), "LBL_ASSIGNED_TO_NAME"),
+        QA_CONTACT(BugzillaAttribute.QA_CONTACT.getKey(), "LBL_QA_CONTACT"),
+        QA_CONTACT_NAME(BugzillaAttribute.QA_CONTACT_NAME.getKey(), "LBL_QA_CONTACT_NAME"),
+        DEPENDS_ON(BugzillaAttribute.DEPENDSON.getKey(), "LBL_DEPENDS_ON"),
+        BLOCKS(BugzillaAttribute.BLOCKED.getKey(), "LBL_BLOCKS"),
+        URL(BugzillaAttribute.BUG_FILE_LOC.getKey(), "LBL_URL"),
+        KEYWORDS(BugzillaAttribute.KEYWORDS.getKey(), "LBL_KEYWORDS"),
+        SEVERITY(BugzillaAttribute.BUG_SEVERITY.getKey(), "LBL_SEVERITY"),
+        DESCRIPTION(BugzillaAttribute.LONG_DESC.getKey(), "LBL_DESCRIPTION"),
+        CREATION(TaskAttribute.DATE_CREATION, "LBL_CREATION"),
+        CC(BugzillaAttribute.CC.getKey(), "LBL_CC"),
+        MODIFICATION(TaskAttribute.DATE_MODIFICATION, null),
+        NEWCC(BugzillaAttribute.NEWCC.getKey(), null),
+        REMOVECC(BugzillaAttribute.REMOVECC.getKey(), null),
+        COMMENT_COUNT(TaskAttribute.TYPE_COMMENT, null, false),
+        ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, null, false);
 
         private final String key;
+        private final String displayNameKey;
         private boolean singleAttribute;
 
-        IssueField(String key) {
-            this(key, true);
+        IssueField(String key, String displayNameKey) {
+            this(key, displayNameKey, true);
         }
-        IssueField(String key, boolean singleAttribute) {
+
+        IssueField(String key, String displayNameKey, boolean singleAttribute) {
             this.key = key;
             this.singleAttribute = singleAttribute;
+            this.displayNameKey = displayNameKey;
         }
+
         public String getKey() {
             return key;
         }
@@ -168,14 +179,15 @@ public class BugzillaIssue extends Issue {
         public boolean isReadOnly() {
             return !singleAttribute;
         }
+
+        public String getDisplayName() {
+            assert displayNameKey != null; // shouldn't be called for a field with a null display name
+            return NbBundle.getMessage(BugzillaIssue.class, displayNameKey);
+        }
+
     }
 
     private Map<String, String> attributes;
-
-    /**
-     * Defines columns for a view table.
-     */
-    public static ColumnDescriptor[] DESCRIPTORS;
 
     public BugzillaIssue(TaskData data, BugzillaRepository repo) {
         super(repo);
@@ -203,35 +215,71 @@ public class BugzillaIssue extends Issue {
     }
 
     @Override
+    public String getShortenedDisplayName() {
+        if (data.isNew()) {
+            return getDisplayName();
+        }
+
+        String shortSummary = TextUtils.shortenText(getSummary(),
+                                                    2,    //try at least 2 words
+                                                    SHORTENED_SUMMARY_LENGTH);
+        return NbBundle.getMessage(BugzillaIssue.class,
+                                   "CTL_Issue",                         //NOI18N
+                                   new Object[] {getID(), shortSummary});
+    }
+
+    @Override
     public String getTooltip() {
         return getDisplayName();
     }
 
-    public static ColumnDescriptor[] getColumnDescriptors() {
-        if(DESCRIPTORS == null) {
-            ResourceBundle loc = NbBundle.getBundle(BugzillaIssue.class);
-            DESCRIPTORS = new ColumnDescriptor[] {
-                new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
-                                                  loc.getString("CTL_Issue_ID_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_ID_Desc")), // NOI18N
-                new ColumnDescriptor<String>(LABEL_NAME_SEVERITY, String.class,
-                                                  loc.getString("CTL_Issue_Severity_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Severity_Desc")), // NOI18N
-                new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
-                                                  loc.getString("CTL_Issue_Priority_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Priority_Desc")), // NOI18N
-                new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
-                                                  loc.getString("CTL_Issue_Status_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Status_Desc")), // NOI18N
-                new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
-                                                  loc.getString("CTL_Issue_Resolution_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Resolution_Desc")), // NOI18N
-                new ColumnDescriptor<String>(LABEL_NAME_SUMMARY, String.class,
-                                                  loc.getString("CTL_Issue_Summary_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Summary_Desc")) // NOI18N
-            };
+    public static ColumnDescriptor[] getColumnDescriptors(BugzillaRepository repository) {
+        ResourceBundle loc = NbBundle.getBundle(BugzillaIssue.class);
+        BugzillaConfiguration bc = repository.getConfiguration();
+        JTable t = new JTable();
+        return new ColumnDescriptor[] {
+            new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
+                                              loc.getString("CTL_Issue_ID_Title"),              // NOI18N
+                                              loc.getString("CTL_Issue_ID_Desc"),               // NOI18N
+                                              BugtrackingUtil.getColumnWidthInPixels(7, t)),
+            new ColumnDescriptor<String>(LABEL_NAME_SUMMARY, String.class,
+                                              loc.getString("CTL_Issue_Summary_Title"),         // NOI18N
+                                              loc.getString("CTL_Issue_Summary_Desc")),         // NOI18N
+            new ColumnDescriptor<String>(LABEL_NAME_SEVERITY, String.class,
+                                              loc.getString("CTL_Issue_Severity_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Severity_Desc"),         // NOI18N
+                                              getLongestWordWidth(
+                                                loc.getString("CTL_Issue_Severity_Title"),      // NOI18N
+                                                bc.getSeverities(), t)),
+            new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
+                                              loc.getString("CTL_Issue_Priority_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Priority_Desc"),         // NOI18N
+                                              getLongestWordWidth(
+                                                loc.getString("CTL_Issue_Priority_Title"),      // NOI18N
+                                                bc.getPriorities(), t)),
+            new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
+                                              loc.getString("CTL_Issue_Status_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_Status_Desc"),           // NOI18N
+                                              getLongestWordWidth(
+                                                loc.getString("CTL_Issue_Status_Title"),        // NOI18N
+                                                bc.getStatusValues(), t)),
+            new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
+                                              loc.getString("CTL_Issue_Resolution_Title"),      // NOI18N
+                                              loc.getString("CTL_Issue_Resolution_Desc"),       // NOI18N
+                                              getLongestWordWidth(
+                                                loc.getString("CTL_Issue_Resolution_Title"),    // NOI18N
+                                                bc.getResolutions(), t))
+        };
+    }
+
+    private static int getLongestWordWidth(String header, List<String> values, JComponent comp) {
+        int size = header.length();
+        for (String s : values) {
+            if(size < s.length()) {
+                size = s.length();
+            }
         }
-        return DESCRIPTORS;
+        return BugtrackingUtil.getColumnWidthInPixels(size, comp);
     }
 
     @Override
@@ -263,10 +311,6 @@ public class BugzillaIssue extends Issue {
             String value;
             for (IssueField field : IssueField.values()) {
                 switch(field) {
-                    case REPORTER_NAME:
-                    case QA_CONTACT_NAME:
-                    case ASSIGNED_TO_NAME:
-                        continue;
                     default:
                         value = getFieldValue(field);
                 }
@@ -280,6 +324,11 @@ public class BugzillaIssue extends Issue {
 
     @Override
     public void setSeen(boolean seen) throws IOException {
+        if(seen) {
+            seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
+        } else {
+            seenAtributes = null;
+        }
         super.setSeen(seen);
     }
 
@@ -296,6 +345,13 @@ public class BugzillaIssue extends Issue {
             Map<String, String> seenAtributes = getSeenAttributes();
             assert seenAtributes != null;
             for (IssueField f : IssueField.values()) {
+                switch(f) {
+                    case MODIFICATION :
+                    case REPORTER_NAME :
+                    case QA_CONTACT_NAME :
+                    case ASSIGNED_TO_NAME :
+                        continue;
+                }
                 String value = getFieldValue(f);
                 String seenValue = seenAtributes.get(f.key);
                 if(seenValue == null) {
@@ -306,7 +362,6 @@ public class BugzillaIssue extends Issue {
                 }
             }
             int changedCount = changedFields.size();
-            assert changedCount > 0 : "status MODIFIED yet zero changes found"; // NOI18N
             if(changedCount == 1) {
                 String ret = null;
                 for (IssueField changedField : changedFields) {
@@ -324,8 +379,22 @@ public class BugzillaIssue extends Issue {
                         case BLOCKS :
                             ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_DEPENDENCE_CHANGED_STATUS");
                             break;
+                        case COMMENT_COUNT :
+                            String value = getFieldValue(changedField);
+                            String seenValue = seenAtributes.get(changedField.key);
+                            int count = 0;
+                            try {
+                                count = Integer.parseInt(value) - Integer.parseInt(seenValue);
+                            } catch(NumberFormatException ex) {
+                                Bugzilla.LOG.log(Level.WARNING, ret, ex);
+                            }
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_COMMENTS_CHANGED", new Object[] {count});
+                            break;
+                        case ATTACHEMENT_COUNT :
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_ATTACHMENTS_CHANGED");
+                            break;
                         default :
-                            ret = changedField.name() +  NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGED_TO") + getFieldValue(changedField);
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGED_TO", new Object[] {changedField.getDisplayName(), getFieldValue(changedField)});
                     }
                 }
                 return ret;
@@ -334,47 +403,47 @@ public class BugzillaIssue extends Issue {
                 for (IssueField changedField : changedFields) {
                     switch(changedField) {
                         case SUMMARY :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_SUMMARY");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_SUMMARY", new Object[] {changedCount});
                             break;
                         case PRIORITY :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_PRIORITY");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_PRIORITY", new Object[] {changedCount});
                             break;
                         case SEVERITY :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_SEVERITY");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_SEVERITY", new Object[] {changedCount});
                             break;
                         case PRODUCT :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_PRODUCT");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_PRODUCT", new Object[] {changedCount});
                             break;
                         case COMPONENT :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_COMPONENT");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_COMPONENT", new Object[] {changedCount});
                             break;
                         case PLATFORM :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_PLATFORM");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_PLATFORM", new Object[] {changedCount});
                             break;
                         case VERSION :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_VERSION");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_VERSION", new Object[] {changedCount});
                             break;
                         case MILESTONE :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_MILESTONE");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_MILESTONE", new Object[] {changedCount});
                             break;
                         case KEYWORDS :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_KEYWORDS");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_KEYWORDS", new Object[] {changedCount});
                             break;
                         case URL :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_URL");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_URL", new Object[] {changedCount});
                             break;
                         case ASSIGNED_TO :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_ASSIGNEE");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_ASSIGNEE", new Object[] {changedCount});
                             break;
                         case QA_CONTACT :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_QA_CONTACT");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_QA_CONTACT", new Object[] {changedCount});
                             break;
                         case DEPENDS_ON :
                         case BLOCKS :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCLUSIVE_DEPENDENCE");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCLUSIVE_DEPENDENCE", new Object[] {changedCount});
                             break;
                         default :
-                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES");
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES", new Object[] {changedCount});
                     }
                     return ret;
                 }
@@ -517,9 +586,9 @@ public class BugzillaIssue extends Issue {
      * @return a status value
      */
     int getFieldStatus(IssueField f) {
-        if(!wasSeen()) {
-            return FIELD_STATUS_IRELEVANT;
-        }
+//        if(!wasSeen()) {
+//            return FIELD_STATUS_IRELEVANT;
+//        }
         Map<String, String> a = getSeenAttributes();
         String seenValue = a != null ? a.get(f.key) : null;
         if(seenValue == null) {
@@ -740,6 +809,7 @@ public class BugzillaIssue extends Issue {
             // a new issue was created -> refresh all queries
             repository.refreshAllQueries();
         }
+        seenAtributes = null;
         return true;
     }
 
@@ -767,9 +837,11 @@ public class BugzillaIssue extends Issue {
 
 
     private Map<String, String> getSeenAttributes() {
-        Map<String, String> seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
         if(seenAtributes == null) {
-            seenAtributes = new HashMap<String, String>();
+            seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
+            if(seenAtributes == null) {
+                seenAtributes = new HashMap<String, String>();
+            }
         }
         return seenAtributes;
     }

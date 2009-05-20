@@ -66,11 +66,11 @@ public class CndPathMapperProvider implements PathMapperProvider{
         }
 
         public String getRemotePath(String localPath) {
-            return pathMap.getRemotePath(localPath);
+            return pathMap.getRemotePath(localPath,true);
         }
 
         public String getLocalPath(String remotePath) {
-            return pathMap.getLocalPath(remotePath);
+            return pathMap.getLocalPath(remotePath,true);
         }
 
     }
