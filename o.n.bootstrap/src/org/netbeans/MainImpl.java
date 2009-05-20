@@ -152,7 +152,7 @@ final class MainImpl extends Object {
             StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
             while (tok.hasMoreTokens()) {
                 // passing false as last argument as we need to initialize openfile-cli.jar
-                build_cp(new File(tok.nextToken()), list, processedDirs, processedPaths);
+                build_cp(new File(tok.nextToken()).getAbsoluteFile(), list, processedDirs, processedPaths);
             }
         }
 
