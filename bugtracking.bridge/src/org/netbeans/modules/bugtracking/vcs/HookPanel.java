@@ -228,7 +228,7 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         org.openide.awt.Mnemonics.setLocalizedText(changeRevisionFormatButton, org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.changeRevisionFormatButton.text")); // NOI18N
 
         jLabel2.setForeground(javax.swing.UIManager.getDefaults().getColor("Button.disabledText"));
-        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.jLabel2.text")); // NOI18N
 
         issuePanel.setLayout(new java.awt.BorderLayout());
