@@ -41,7 +41,12 @@
 package org.netbeans.modules.kenai.collab.chat;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -50,7 +55,9 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.MissingResourceException;
 import java.util.Random;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
@@ -66,6 +73,8 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.packet.DelayInformation;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -117,7 +126,35 @@ public class ChatPanel extends javax.swing.JPanel {
         outbox.setBackground(Color.WHITE);
         splitter.setResizeWeight(0.9);
         refreshOnlineStatus();
+        NotificationsEnabledAction bubbleEnabled = new NotificationsEnabledAction();
+        inbox.addMouseListener(bubbleEnabled);
+        outbox.addMouseListener(bubbleEnabled);
 //        setUpPrivateMessages();
+    }
+
+    private class NotificationsEnabledAction extends MouseAdapter implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            JCheckBoxMenuItem m = (JCheckBoxMenuItem) e.getSource();
+            ChatNotifications.getDefault().setEnabled(getName(),m.getState());
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                try {
+                    JPopupMenu menu = new JPopupMenu();
+                    String name = Kenai.getDefault().getProject(getName()).getDisplayName();
+                    JCheckBoxMenuItem jCheckBoxMenuItem = new JCheckBoxMenuItem(
+                            NbBundle.getMessage(ChatPanel.class, "CTL_NotificationsFor", new Object[]{name}),
+                            ChatNotifications.getDefault().isEnabled(getName()));
+                    jCheckBoxMenuItem.addActionListener(this);
+                    menu.add(jCheckBoxMenuItem);
+                    menu.show((Component) e.getSource(), e.getX(), e.getY());
+                } catch (KenaiException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
     }
 
     @Override
