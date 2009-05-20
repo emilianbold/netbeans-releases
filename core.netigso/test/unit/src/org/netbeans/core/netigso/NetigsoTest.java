@@ -213,6 +213,32 @@ public class NetigsoTest extends SetupHid {
         }
     }
 
+    public void testNonNumericVersionNumberIsOK() throws Exception {
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
+        ModuleManager mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        Module m2 = null;
+        try {
+            String mfBar =
+                "Bundle-SymbolicName: org.bar\n" +
+                "Bundle-Version: 2.3.0.Prelude\n" +
+                "Export-Packages: org.bar.*\n" +
+                "some";
+
+            File j2 = changeManifest(new File(jars, "depends-on-simple-module.jar"), mfBar);
+            m2 = mgr.create(j2, null, false, false, false);
+            mgr.enable(m2);
+            assertEquals("2.3.0", m2.getSpecificationVersion().toString());
+            assertEquals("2.3.0.Prelude", m2.getImplementationVersion());
+        } finally {
+            if (m2 != null) {
+                mgr.disable(m2);
+            }
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+
     public void testOSGiCanDependOnNetBeans() throws Exception {
         MockModuleInstaller installer = new MockModuleInstaller();
         MockEvents ev = new MockEvents();
