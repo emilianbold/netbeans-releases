@@ -43,13 +43,12 @@ package org.netbeans.jellytools;
 import java.io.IOException;
 import java.util.Properties;
 import junit.textui.TestRunner;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.junit.NbTestSuite;
 
 /** Tests org.netbeans.jellytools.OptionsOperator. */
 public class OptionsOperatorTest extends JellyTestCase {
 
-  
-    private static Properties props;
 
     /** Use for internal test execution inside IDE
      * @param args command line arguments
@@ -86,12 +85,24 @@ public class OptionsOperatorTest extends JellyTestCase {
     private static OptionsOperator optionsOperator = null;
     
     /** Setup */
-    public void setUp() throws IOException {
-            props=new Properties();
-            props.load(OptionsOperatorTest.class.getClassLoader().getResourceAsStream("org/netbeans/jellytools/Bundle.properties"));
+    public void setUp() throws Exception {
+
         System.out.println("### "+getName()+" ###");   
         // opens Options window
         if(optionsOperator == null) {
+
+             //Make sure the menu has time to load
+            new Action(Bundle.getStringTrimmed(
+                "org.netbeans.core.ui.resources.Bundle", "Menu/Tools"), null).performMenu();
+
+            Thread.sleep(1000);
+
+
+            new Action(Bundle.getStringTrimmed(
+                "org.netbeans.core.ui.resources.Bundle", "Menu/GoTo"), null).performMenu();
+
+            Thread.sleep(1000);
+
             optionsOperator = OptionsOperator.invoke();
         }
     }

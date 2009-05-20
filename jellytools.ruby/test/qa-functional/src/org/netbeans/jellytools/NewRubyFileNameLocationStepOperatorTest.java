@@ -40,9 +40,13 @@
  */
 package org.netbeans.jellytools;
 
+import java.awt.Component;
 import java.io.IOException;
+import javax.swing.JPanel;
 import junit.framework.Test;
 import junit.textui.TestRunner;
+import org.netbeans.jellytools.MainWindowOperator.StatusTextTracer;
+import org.netbeans.jellytools.actions.Action;
 
 /**
  * Test of org.netbeans.jellytools.NewFileNameLocationStepOperator.
@@ -69,9 +73,10 @@ public class NewRubyFileNameLocationStepOperatorTest extends JellyTestCase {
         return createModuleTest(NewRubyFileNameLocationStepOperatorTest.class, tests);
     }
     
-    protected void setUp() throws IOException {
-        System.out.println("### "+getName()+" ###");
-        openDataProjects("SampleRubyProject");
+    protected void setUp() throws Exception {
+        System.out.println("### "+getName()+" ###");        
+        
+
     }
     
     /** Constructor required by JUnit.
@@ -82,10 +87,14 @@ public class NewRubyFileNameLocationStepOperatorTest extends JellyTestCase {
     }
 
     /** Test of invoke method. Opens New File wizard and waits for the dialog. */
-    public void testInvoke() {
-        
+    public void testInvoke() throws Exception {
+
+        openDataProjects("SampleRubyProject");
+
         NewFileWizardOperator wop = NewFileWizardOperator.invoke();
         wop.selectProject("SampleRubyProject"); //NOI18N
+
+        
         // Ruby
         String rubyLabel = "Ruby"; //TODO: find appropriate bundle and load messages from it
         // Ruby File
