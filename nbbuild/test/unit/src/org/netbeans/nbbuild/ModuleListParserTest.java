@@ -76,7 +76,7 @@ public class ModuleListParserTest extends NbTestCase {
     }
 
     protected @Override void setUp() throws Exception {
-        super.setUp();
+        clearWorkDir();
         String prop = System.getProperty("nb_all");
         assertNotNull("${nb_all} defined", prop);
         nball = new File(prop);
@@ -194,6 +194,14 @@ public class ModuleListParserTest extends NbTestCase {
     }
 
     public void testScanBinariesForOSGi() throws Exception {
+        doScanBinariesForOSGi("osgi", "netigso.test");
+    }
+
+    public void testScanBinariesForOSGiInModulesDir() throws Exception {
+        doScanBinariesForOSGi("modules", "netigso.test-repackaged");
+    }
+
+    private void doScanBinariesForOSGi(String whereTo, String cnb) throws Exception {
         Project fakeproj = new Project();
         fakeproj.addBuildListener(new BuildListener() {
             public void messageLogged(BuildEvent buildEvent) {
@@ -209,36 +217,37 @@ public class ModuleListParserTest extends NbTestCase {
             public void buildFinished(BuildEvent buildEvent) {}
         });
 
-        File osgiRepo = new File(getWorkDir(), "osgi");
+        File osgiRepo = new File(getWorkDir(), whereTo);
         osgiRepo.mkdirs();
         Manifest man = ModuleDependenciesTest.createManifest();
-        man.getMainAttributes().putValue("Bundle-SymbolicName", "netigso.test");
-        generateJar(new File(osgiRepo, "netigso-test.jar"), new String[0], man);
+        man.getMainAttributes().putValue("Bundle-SymbolicName", cnb);
+        String dashCnb = cnb.replace('.', '-');
+        generateJar(new File(osgiRepo, dashCnb + ".jar"), new String[0], man);
 
         CreateModuleXML cmxml = new CreateModuleXML();
         cmxml.setProject(fakeproj);
-        final File configDir = new File(new File(osgiRepo, "config"), "Modules");
+        final File configDir = new File(new File(getWorkDir(), "config"), "Modules");
         configDir.mkdirs();
         cmxml.setXmldir(configDir);
         FileSet fs = new FileSet();
-        fs.setDir(osgiRepo);
+        fs.setDir(getWorkDir());
         fs.setIncludes("**/*.jar");
         cmxml.addAutoload(fs);
         cmxml.execute();
 
         String[] arr = configDir.list();
         assertEquals("One file generated", 1, arr.length);
-        assertEquals("netigso-test.xml", arr[0]);
+        assertEquals(dashCnb + ".xml", arr[0]);
 
         Hashtable<String,String> properties = new Hashtable<String,String>();
         properties.put("cluster.path.final", filePath(nball, "nbbuild/netbeans/platform10")
-                + File.pathSeparator + osgiRepo);
+                + File.pathSeparator + getWorkDir());
         properties.put("basedir", filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite1/action-project"));
         properties.put("suite.dir", filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite1"));
         long start = System.currentTimeMillis();
         ModuleListParser p = new ModuleListParser(properties, ParseProjectXml.TYPE_SUITE, fakeproj);
         System.err.println("Scanned " + nball + " binaries in " + (System.currentTimeMillis() - start) + "msec");
-        ModuleListParser.Entry e = p.findByCodeNameBase("netigso.test");
+        ModuleListParser.Entry e = p.findByCodeNameBase(cnb);
         assertNotNull("found netigso module", e);
     }
     

@@ -847,10 +847,9 @@ final class ModuleListParser {
             }
             String moduleDependencies = attr.getValue("OpenIDE-Module-Module-Dependencies");
             Entry entry = new Entry(codenamebase, m, exts, dir, null, null, cluster.getName(), parseRuntimeDependencies(moduleDependencies), Collections.<String, String[]>emptyMap());
-            if (entries.containsKey(codenamebase)) {
-                throw new IOException("Duplicated module " + codenamebase + ": found in " + entries.get(codenamebase) + " and " + entry);
-            } else {
-                entries.put(codenamebase, entry);
+            Entry prev = entries.put(codenamebase, entry);
+            if (prev != null && !prev.equals(entry)) {
+                throw new IOException("Duplicated module " + codenamebase + ": found in " + prev + " and " + entry);
             }
         } finally {
             jf.close();
@@ -956,7 +955,62 @@ final class ModuleListParser {
         public @Override String toString() {
             return (sourceLocation != null ? sourceLocation : jar).getAbsolutePath();
         }
-        
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Entry other = (Entry) obj;
+            if ((this.cnb == null) ? (other.cnb != null) : !this.cnb.equals(other.cnb)) {
+                return false;
+            }
+            if (this.jar != other.jar && (this.jar == null || !this.jar.equals(other.jar))) {
+                return false;
+            }
+            if (!Arrays.deepEquals(this.classPathExtensions, other.classPathExtensions)) {
+                return false;
+            }
+            if (this.sourceLocation != other.sourceLocation && (this.sourceLocation == null || !this.sourceLocation.equals(other.sourceLocation))) {
+                return false;
+            }
+            if ((this.netbeansOrgPath == null) ? (other.netbeansOrgPath != null) : !this.netbeansOrgPath.equals(other.netbeansOrgPath)) {
+                return false;
+            }
+            if (!Arrays.deepEquals(this.buildPrerequisites, other.buildPrerequisites)) {
+                return false;
+            }
+            if ((this.clusterName == null) ? (other.clusterName != null) : !this.clusterName.equals(other.clusterName)) {
+                return false;
+            }
+            if (!Arrays.deepEquals(this.runtimeDependencies, other.runtimeDependencies)) {
+                return false;
+            }
+            if (this.testDependencies != other.testDependencies && (this.testDependencies == null || !this.testDependencies.equals(other.testDependencies))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 83 * hash + (this.cnb != null ? this.cnb.hashCode() : 0);
+            hash = 83 * hash + (this.jar != null ? this.jar.hashCode() : 0);
+            hash = 83 * hash + Arrays.deepHashCode(this.classPathExtensions);
+            hash = 83 * hash + (this.sourceLocation != null ? this.sourceLocation.hashCode() : 0);
+            hash = 83 * hash + (this.netbeansOrgPath != null ? this.netbeansOrgPath.hashCode() : 0);
+            hash = 83 * hash + Arrays.deepHashCode(this.buildPrerequisites);
+            hash = 83 * hash + (this.clusterName != null ? this.clusterName.hashCode() : 0);
+            hash = 83 * hash + Arrays.deepHashCode(this.runtimeDependencies);
+            hash = 83 * hash + (this.testDependencies != null ? this.testDependencies.hashCode() : 0);
+            return hash;
+        }
+
+
     }
 
 }
