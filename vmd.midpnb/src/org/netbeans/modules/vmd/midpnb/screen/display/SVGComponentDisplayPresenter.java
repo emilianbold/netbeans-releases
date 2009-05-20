@@ -44,10 +44,13 @@ import java.awt.Shape;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.mobility.svgcore.util.Util;
+import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
@@ -187,7 +190,7 @@ public class SVGComponentDisplayPresenter extends ScreenDisplayPresenter {
             try {
                 svgImage = Util.createSVGImage(file, true);
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                Logger.getLogger(this.getClass().getName()).log(Level.WARNING, null, ex);
             }
         }
         return svgImage;
