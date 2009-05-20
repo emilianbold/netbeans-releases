@@ -65,7 +65,7 @@ public interface ServerListImplementation {
     
     public abstract ServerRecord getDefaultRecord();
     
-    public abstract void clear();
+    public abstract void set(List<ServerRecord> records, int defaultIndex);
 
     public ServerRecord addServer(ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory, boolean asDefault, boolean connect);
 
