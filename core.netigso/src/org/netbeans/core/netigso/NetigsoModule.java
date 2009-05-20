@@ -77,6 +77,10 @@ final class NetigsoModule extends Module {
     @Override
     public SpecificationVersion getSpecificationVersion() {
         String version = (String) bundle.getHeaders().get("Bundle-Version"); // NOI18N
+        if (version == null) {
+            NetigsoActivator.LOG.warning("No Bundle-Version for " + bundle.getSymbolicName());
+            return new SpecificationVersion("0.0");
+        }
         int pos = -1;
         for (int i = 0; i < 3; i++) {
             pos = version.indexOf('.', pos + 1);
