@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -191,8 +192,8 @@ public class HtmlStructureScanner implements StructureScanner {
             formatter.appendHtml(getName());
 
             AstNode node = handle.node();
-            String idAttr = (String)node.getAttribute("id"); //NOI18N
-            String classAttr = (String)node.getAttribute("class"); //NOI18N
+            String idAttr = getAttributeValue(node, "id"); //NOI18N
+            String classAttr = getAttributeValue(node, "class"); //NOI18N
 
             if(idAttr != null) {
                 formatter.appendHtml("&nbsp;<font color=808080>id=" + idAttr + "</font>"); //NOI18N
@@ -202,6 +203,14 @@ public class HtmlStructureScanner implements StructureScanner {
             }
             
             return formatter.getText();
+        }
+
+        private String getAttributeValue(AstNode node, String key) {
+            String value = (String)node.getAttribute(key.toLowerCase(Locale.ENGLISH)); //try lowercase
+            if(value == null) {
+                value = (String)node.getAttribute(key.toUpperCase(Locale.ENGLISH)); //try uppercase
+            }
+            return value;
         }
 
         @Override
