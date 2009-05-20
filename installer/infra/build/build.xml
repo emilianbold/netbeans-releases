@@ -658,7 +658,7 @@ jarsigner.storepass=${jarsigner.storepass}
         <delete failonerror="false">
             <fileset dir="${nbi.cache.dir}/packaged">
                 <!-- glassfish-mod-sun -->
-                <exclude name="**/glassfish-mod-sun*3.0.0.${glassfish-mod-sun.milestone.number}.${glassfish-mod-sun.build.number}*"/>
+                <include name="**/glassfish-mod-sun*"/>
                 <exclude name="**/glassfish-mod-sun*3.0.0.${glassfish-mod-sun.milestone.number}.${glassfish-mod-sun.build.number}*"/>
                 <!-- server -->
                 <include name="**/${server-uid}*"/>
