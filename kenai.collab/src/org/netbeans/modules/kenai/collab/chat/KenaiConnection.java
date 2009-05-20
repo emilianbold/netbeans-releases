@@ -46,7 +46,6 @@ import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -55,7 +54,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.jivesoftware.smack.PacketListener;
-import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.MessageTypeFilter;
@@ -121,6 +119,10 @@ public class KenaiConnection implements PropertyChangeListener {
         listeners.remove(name);
     }
 
+    synchronized void tryJoinChat(MultiUserChat chat) throws XMPPException {
+        chat.join(getUserName());
+    }
+
     private MultiUserChat createChat(KenaiFeature prj) {
         MultiUserChat multiUserChat = new MultiUserChat(connection, getChatroomName(prj));
         chats.put(prj.getName(), multiUserChat);
@@ -184,8 +186,18 @@ public class KenaiConnection implements PropertyChangeListener {
         connection.addPacketListener(new PacketL(), new MessageTypeFilter(Type.chat));
     }
 
-    public synchronized void reconnect() throws XMPPException {
-        connection.connect();
+    public synchronized void reconnect(MultiUserChat muc) throws XMPPException {
+        if (!connection.isConnected()) {
+            connection.connect();
+        }
+        if (muc==null) {
+            for (MultiUserChat m:getChats()) {
+                if (!muc.isJoined())
+                    tryJoinChat(m);
+            }
+        } else if (!muc.isJoined())
+            tryJoinChat(muc);
+        isConnectionFailed=false;
     }
 
 
