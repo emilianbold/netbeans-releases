@@ -36,31 +36,31 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.editing;
 
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.openide.modules.ModuleInstall;
+package org.netbeans.modules.welcome.ui;
+
+import java.awt.event.ActionEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
- * Manages a module's lifecycle. Remember that an installer is optional and
- * often not needed at all.
+ * Opens Kenai dashboard window.
+ *
+ * @author S. Aubrecht
  */
-public class Installer extends ModuleInstall {
+public class KenaiAction extends AbstractAction {
 
-    @Override
-    public void restored() {
-        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
-            public void run() {
-                GlobalPathRegistry.getDefault().register(JsClassPathProvider.BOOT_CP, new ClassPath[] { JsClassPathProvider.getBootClassPath() });
-            }
-        });
+    public void actionPerformed(ActionEvent e) {
+        WindowManager wm = WindowManager.getDefault();
+        TopComponent tc = wm.findTopComponent("KenaiTopComponent"); //NOI18N
+        if( null != tc ) {
+            tc.open();
+            tc.requestActive();
+        } else {
+            Logger.getLogger(KenaiAction.class.getName()).log(Level.INFO, "Kenai window not found"); //NOI18N
+        }
     }
-
-    @Override
-    public void uninstalled() {
-        GlobalPathRegistry.getDefault().unregister(JsClassPathProvider.BOOT_CP, new ClassPath[] { JsClassPathProvider.getBootClassPath() });
-    }
-
 }
