@@ -37,14 +37,14 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="tfPort" min="-2" pref="54" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="tfUser" pref="328" max="32767" attributes="0"/>
-                          <Component id="tfName" alignment="0" pref="328" max="32767" attributes="0"/>
+                          <Component id="tfUser" pref="347" max="32767" attributes="0"/>
+                          <Component id="tfName" alignment="0" pref="347" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="lblSync" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="cbSync" pref="279" max="32767" attributes="0"/>
+                      <Component id="cbSync" pref="289" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -102,9 +102,6 @@
           <ResourceString bundle="org/netbeans/modules/cnd/remote/ui/Bundle.properties" key="HostPropertiesDialog.tfHost.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="tfHostActionPerformed"/>
-      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="lblPort">
       <Properties>
@@ -126,9 +123,6 @@
           <ResourceString bundle="org/netbeans/modules/cnd/remote/ui/Bundle.properties" key="HostPropertiesDialog.tfPort.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="tfPortActionPerformed"/>
-      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="lblUser">
       <Properties>
@@ -150,9 +144,6 @@
           <ResourceString bundle="org/netbeans/modules/cnd/remote/ui/Bundle.properties" key="HostPropertiesDialog.tfUser.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="tfUserActionPerformed"/>
-      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="lblName">
       <Properties>
@@ -173,9 +164,6 @@
           <ResourceString bundle="org/netbeans/modules/cnd/remote/ui/Bundle.properties" key="HostPropertiesDialog.tfName.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="tfNameActionPerformed"/>
-      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="lblSync">
       <Properties>

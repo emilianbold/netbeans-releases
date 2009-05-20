@@ -1643,7 +1643,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public void scheduleParsing(boolean wait) throws InterruptedException {
         synchronized (stateLock) {
             while (!isParsed()) {
-                String oldName = wait ? "" : Thread.currentThread().getName();
+                String oldName = wait ? Thread.currentThread().getName() : "";
                 try {
                     if (wait) {
                         StringBuilder name = new StringBuilder(oldName);

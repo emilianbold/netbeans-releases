@@ -82,6 +82,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     private final InputOutput io;
     private String[] args;
     private String cmd;
+    private boolean x11forwarding;
     private volatile Future<Integer> targetFutureResult;
     private volatile int pid = -1;
     private volatile Integer status = null;
@@ -127,6 +128,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
 
         this.templateArgs = argsCopy;
         this.io = configuration.getIO();
+        this.x11forwarding = configuration.getX11Forwarding();
     }
 
     public int getPID() {
@@ -236,6 +238,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
             pb.addNativeProcessListener(NativeExecutableTarget.this);
             pb.setWorkingDirectory(workingDirectory);
             pb.addEnvironmentVariables(envs);
+            pb.setX11Forwarding(x11forwarding);
 
             // Setup external terminal ...
             if (execEnv.isLocal() && externalTerminal != null) {
