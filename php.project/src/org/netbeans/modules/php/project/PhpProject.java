@@ -436,6 +436,12 @@ public class PhpProject implements Project {
 
     private final class PhpOpenedHook extends ProjectOpenedHook {
         protected void projectOpened() {
+            // #165494 - moved from projectClosed() to projectOpened()
+            // clear references to ensure that all the dirs are read again
+            sourcesDirectory = null;
+            testsDirectory = null;
+            seleniumDirectory = null;
+
             // #139159 - we need to hold sources FO to prevent gc
             getSourcesDirectory();
 
@@ -474,11 +480,6 @@ public class PhpProject implements Project {
             if (copySupport != null) {
                 copySupport.projectClosed(PhpProject.this);
             }
-
-            // clear reference so the next time the project is opened we can check it again
-            sourcesDirectory = null;
-            testsDirectory = null;
-            seleniumDirectory = null;
 
             try {
                 ProjectManager.getDefault().saveProject(PhpProject.this);

@@ -121,6 +121,9 @@ public class SyntaxTree {
                 //check tag attributes
                 openTagNode.addDescriptions(checkTagAttributes((SyntaxElement.Tag) tagElement, currentNodeDtdElement));
 
+                //add existing tag attributes
+                setTagAttributes(openTagNode, tagElement);
+
                 //check if the last open tag allows this tag as its content, do not do that for root node
                 if (lastNode != rootNode && !lastNode.reduce(currentNodeDtdElement)) {
                     //current node cannot be present inside its parent
@@ -435,6 +438,14 @@ public class SyntaxTree {
             }
         }
         return errmsgs;
+    }
+
+    private static void setTagAttributes(AstNode node, SyntaxElement.Tag tag) {
+        for(TagAttribute ta : tag.getAttributes()) {
+            if(ta != null) {
+                node.setAttribute(ta.getName(), ta.getValue());
+            }
+        }
     }
 
     private static String elementsToString(Collection<Element> elements) {
