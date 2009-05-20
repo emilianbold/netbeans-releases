@@ -1702,6 +1702,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         private boolean scanBinaries (final DependenciesContext ctx) {
             assert ctx != null;
+            long scannedRootsCnt = 0;
             long completeTime = 0;
             boolean finished = true;
 
@@ -1721,14 +1722,19 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 } finally {
                     final long time = System.currentTimeMillis() - tmStart;
                     completeTime += time;
+                    scannedRootsCnt++;
                     if (PERF_TEST) {
                         reportRootScan(binary, time);
                     }
-                    LOGGER.fine(String.format("Indexing of: %s took: %d ms", binary.toExternalForm(), time)); //NOI18N
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine(String.format("Indexing of: %s took: %d ms", binary.toExternalForm(), time)); //NOI18N
+                    }
                 }
             }
 
-            LOGGER.fine(String.format("Complete indexing of binary roots took: %d ms", completeTime)); //NOI18N
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(String.format("Complete indexing of %d binary roots took: %d ms", scannedRootsCnt, completeTime)); //NOI18N
+            }
             TEST_LOGGER.log(Level.FINEST, "scanBinary", ctx.newBinariesToScan);       //NOI18N
 
             return finished;
@@ -1736,6 +1742,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         private boolean scanSources  (final DependenciesContext ctx) {
             assert ctx != null;
+            long scannedRootsCnt = 0;
             long completeTime = 0;
             boolean finished = true;
 
@@ -1755,14 +1762,19 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 } finally {
                     final long time = System.currentTimeMillis() - tmStart;
                     completeTime += time;
+                    scannedRootsCnt++;
                     if (PERF_TEST) {
                         reportRootScan(source, time);
                     }
-                    LOGGER.fine(String.format("Indexing of: %s took: %d ms", source.toExternalForm(), time)); //NOI18N
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine(String.format("Indexing of: %s took: %d ms", source.toExternalForm(), time)); //NOI18N
+                    }
                 }
             }
 
-            LOGGER.fine(String.format("Complete indexing of source roots took: %d ms", completeTime)); //NOI18N
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(String.format("Complete indexing of %d source roots took: %d ms", scannedRootsCnt, completeTime)); //NOI18N
+            }
             TEST_LOGGER.log(Level.FINEST, "scanSources", ctx.newRootsToScan); //NOI18N
 
             return finished;
