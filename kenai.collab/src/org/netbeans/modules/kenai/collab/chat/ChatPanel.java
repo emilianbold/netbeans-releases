@@ -164,7 +164,10 @@ public class ChatPanel extends javax.swing.JPanel {
     }
 
     private String removeTags(String body) {
-        return body.replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\n", "<br>"); // NOI18N
+        String tmp = body;
+        tmp.replaceAll("\r\n", "\n");
+        tmp.replaceAll("\r", "\n");
+        return tmp.replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\n", "<br />"); // NOI18N
     }
 
     private String replaceLinks(String removeTags) {
@@ -336,10 +339,10 @@ public class ChatPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void keyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_keyTyped
-        if (evt.getKeyChar() == '\n') {
+        if (evt.getKeyChar() == '\n' || evt.getKeyChar() == '\r') {
             if (evt.isAltDown() || evt.isShiftDown() || evt.isControlDown()) {
                 try {
-                    outbox.getStyledDocument().insertString(outbox.getCaretPosition(), "\n", null); //NOI18N
+                    outbox.getStyledDocument().insertString(outbox.getCaretPosition(), "\r\n", null); //NOI18N
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }
