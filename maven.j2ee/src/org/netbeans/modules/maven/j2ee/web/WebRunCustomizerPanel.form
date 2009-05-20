@@ -29,7 +29,7 @@
                               <Component id="lblHint2" min="-2" max="-2" attributes="0"/>
                               <EmptySpace pref="222" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="txtRelativeUrl" pref="329" max="32767" attributes="0"/>
+                          <Component id="txtRelativeUrl" pref="360" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -40,9 +40,9 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="comServer" alignment="1" pref="331" max="32767" attributes="0"/>
-                          <Component id="txtJ2EEVersion" alignment="1" pref="331" max="32767" attributes="0"/>
-                          <Component id="txtContextPath" alignment="0" pref="331" max="32767" attributes="0"/>
+                          <Component id="comServer" alignment="1" pref="360" max="32767" attributes="0"/>
+                          <Component id="txtJ2EEVersion" alignment="1" pref="360" max="32767" attributes="0"/>
+                          <Component id="txtContextPath" alignment="0" pref="360" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>

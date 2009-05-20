@@ -59,6 +59,10 @@ class JdbcMySQlAdapter extends RailsDatabaseConfiguration {
 
     public void editConfig(RailsProject project) {
         Document databaseYml = RailsAdapters.getDatabaseYml(project.getProjectDirectory());
+        if (databaseYml == null) {
+            // probably a project with existing sources without database.yml
+            return;
+        }
         try {
             RailsAdapters.removeProperty(databaseYml, "socket:"); //NOI18N
         } catch (BadLocationException ex) {

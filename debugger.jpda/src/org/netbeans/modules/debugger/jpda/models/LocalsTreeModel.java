@@ -59,6 +59,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import org.netbeans.api.debugger.jpda.ClassVariable;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -72,6 +73,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
+import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
@@ -167,9 +169,15 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
             if (o instanceof JPDAClassType) {
                 JPDAClassType clazz = (JPDAClassType) o;
                 List staticFields = clazz.staticFields();
-                Object[] fields = new Object[1 + staticFields.size()];
-                fields[0] = clazz.classObject();
-                System.arraycopy(staticFields.toArray(), 0, fields, 1, staticFields.size());
+                Object[] fields;
+                try {
+                    ClassVariable clazzVar = clazz.classObject();
+                    fields = new Object[1 + staticFields.size()];
+                    fields[0] = clazzVar;
+                    System.arraycopy(staticFields.toArray(), 0, fields, 1, staticFields.size());
+                } catch (UnsupportedOperationException uex) {
+                    fields = staticFields.toArray();
+                }
                 return fields;
             } else
             if (o instanceof Operation) {

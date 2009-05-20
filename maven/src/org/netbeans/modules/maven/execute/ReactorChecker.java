@@ -42,9 +42,7 @@ package org.netbeans.modules.maven.execute;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
@@ -131,7 +129,7 @@ public class ReactorChecker implements PrerequisitesChecker {
                         mapping.addAction(m);
                     }
                     m.setBasedir(path);
-                    CustomizerProviderImpl.writeNbActionsModel(config.getProject().getProjectDirectory(), mapping, M2Configuration.getFileNameExt(M2Configuration.DEFAULT));
+                    CustomizerProviderImpl.writeNbActionsModel(config.getProject(), mapping, M2Configuration.getFileNameExt(M2Configuration.DEFAULT));
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (XmlPullParserException ex) {

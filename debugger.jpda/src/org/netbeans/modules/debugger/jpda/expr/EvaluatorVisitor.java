@@ -1593,6 +1593,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             ReferenceType refType = evaluationContext.getFrame().location().declaringType();
             JPDAClassType classType = evaluationContext.getDebugger().getClassType(refType);
             return ((JDIVariable) classType.classObject()).getJDIValue();
+            // UnsupportedOperationException is catched at TreeEvaluator.evaluate().
         }
 
         // return special variable
