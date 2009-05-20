@@ -349,9 +349,9 @@ public class ChatPanel extends javax.swing.JPanel {
                 return;
             }
             try {
-                if (!KenaiConnection.getDefault().isConnected()) {
+                if (!KenaiConnection.getDefault().isConnected() || !muc.isJoined()) {
                     try {
-                        KenaiConnection.getDefault().reconnect();
+                        KenaiConnection.getDefault().reconnect(muc);
                     } catch (XMPPException xMPPException) {
                         JOptionPane.showMessageDialog(this, xMPPException.getMessage());
                         return;
