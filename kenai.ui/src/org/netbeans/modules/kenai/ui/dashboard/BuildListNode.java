@@ -63,15 +63,17 @@ import org.openide.util.NbBundle;
  */
 public class BuildListNode extends SectionNode {
 
-    public BuildListNode( ProjectNode parent ) {
+    private final BuildAccessor accessor;
+
+    public BuildListNode(ProjectNode parent, BuildAccessor accessor) {
         super( NbBundle.getMessage(BuildListNode.class, "LBL_Builds"), parent,  //NOI18N
                 ProjectHandle.PROP_BUILD_LIST );
+        this.accessor = accessor;
     }
 
     @Override
     protected List<TreeListNode> createChildren() {
         ArrayList<TreeListNode> res = new ArrayList<TreeListNode>(20);
-        BuildAccessor accessor = BuildAccessor.getDefault();
         List<BuildHandle> builds = accessor.getBuilds(project);
         for( BuildHandle b : builds ) {
             res.add( new BuildNode( b, this ) );
