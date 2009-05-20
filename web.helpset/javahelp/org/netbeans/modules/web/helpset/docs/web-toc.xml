@@ -93,11 +93,11 @@
             <tocitem text="About Configuring Web Applications" target="about_webapp_configure" />
             <tocitem text="Configuring Web Application Deployment Descriptors" target="configure_webapp_dd" />
         </tocitem>
-        <tocitem text="Building Web Applications">
+       <!-- <tocitem text="Building Web Applications">
             <tocitem text="About Building Web Applications" target="about_build" />
             <tocitem text="Packaging a Resource in a WAR File" target="build_externalresources" />
             <tocitem text="Building a WAR File" target="build_warfile" />
-            <tocitem text="Removing a WAR File" target="build_remove" />
+            <tocitem text="Removing a WAR File" target="build_remove" /> -->
         </tocitem>
         <tocitem text="Deploying Web Applications">
             <tocitem text="About Deploying Web Applications" target="about_deploy" />
