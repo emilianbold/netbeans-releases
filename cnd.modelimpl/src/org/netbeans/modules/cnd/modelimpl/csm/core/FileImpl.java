@@ -835,7 +835,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         APTLanguageFilter languageFilter = getLanguageFilter(ppState);
         FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(getAbsolutePath());
-        APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler, false, pcBuilder, getIncludeCacheEntry(preprocHandler));
+        APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler, false, pcBuilder, getAPTCacheEntry(preprocHandler));
         tsCache.addNewPair(pcBuilder, walker.getTokenStream(false), languageFilter);
         return true;
     }    
@@ -922,26 +922,42 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
-    private ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> aptCaches = new ConcurrentHashMap<APTIncludeHandler.State, APTFileCacheEntry>();
-    public final APTFileCacheEntry getIncludeCacheEntry(APTPreprocHandler preprocHandler) {
+    private Reference<ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>> aptCaches = new SoftReference<ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>(null);
+    private final Object aptCachesLock = new Object();
+    private ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> getAPTCache(boolean clean) {
+        synchronized (aptCachesLock) {
+            ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> out = aptCaches.get();
+            if (out == null || clean) {
+                out = new ConcurrentHashMap<APTIncludeHandler.State, APTFileCacheEntry>();
+                aptCaches = new SoftReference<ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>(out);
+            }
+            return out;
+        }
+    }
+
+    public final APTFileCacheEntry getAPTCacheEntry(APTPreprocHandler preprocHandler) {
         if (!TraceFlags.APT_FILE_CACHE_ENTRY) {
             return null;
         }
         APTIncludeHandler.State key = preprocHandler.getIncludeHandler().getState();
-        APTFileCacheEntry out = aptCaches.get(key);
+        ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> cache = getAPTCache(false);
+        APTFileCacheEntry out = cache.get(key);
         if (out == null) {
             out = new APTFileCacheEntry(getAbsolutePath());
         } else {
-            int i = 0;
+            if (false && traceFile(getAbsolutePath())) {
+                System.err.printf("APT CACHE for %s\nsize %d, key: %s\ncache state:%s\n", getAbsolutePath(), cache.size(), key, "");
+            }
         }
         assert out != null;
         return out;
     }
 
-    /*package*/final void setAptCacheEntry(APTPreprocHandler preprocHandler, APTFileCacheEntry cache) {
-        if (TraceFlags.APT_FILE_CACHE_ENTRY && cache != null) {
+    /*package*/final void setAPTCacheEntry(APTPreprocHandler preprocHandler, APTFileCacheEntry entry, boolean cleanOthers) {
+        if (TraceFlags.APT_FILE_CACHE_ENTRY && entry != null) {
+            ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> cache = getAPTCache(cleanOthers);
             APTIncludeHandler.State key = preprocHandler.getIncludeHandler().getState();
-            aptCaches.put(key, cache);
+            cache.put(key, entry);
         }
     }
     
@@ -971,7 +987,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         try {
             APTFile aptFull = getFullAPT();
             if (aptFull != null) {
-                APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, false, null, getIncludeCacheEntry(preprocHandler));
+                APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, false, null, getAPTCacheEntry(preprocHandler));
                 CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter(ppState)), flags);
                 parser.setErrorDelegate(delegate);
                 parser.setLazyCompound(false);
@@ -1035,7 +1051,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
             // We gather conditional state here as well, because sources are not included anywhere
             FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(getAbsolutePath());
-            APTFileCacheEntry aptCacheEntry = getIncludeCacheEntry(preprocHandler);
+            APTFileCacheEntry aptCacheEntry = getAPTCacheEntry(preprocHandler);
             APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, true, pcBuilder,aptCacheEntry);
             walker.addMacroAndIncludes(true);
             if (TraceFlags.DEBUG) {
@@ -1057,7 +1073,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
             CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter(ppState)), flags);
             FilePreprocessorConditionState pcState = pcBuilder.build();
-            if(false)setAptCacheEntry(preprocHandler, aptCacheEntry);
+            if(false)setAPTCacheEntry(preprocHandler, aptCacheEntry, false);
             startProject.setParsedPCState(this, ppState, pcState);
             long time = (emptyAstStatictics) ? System.currentTimeMillis() : 0;
             try {
@@ -1637,8 +1653,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                     if (TRACE_SCHUDULE_PARSING) {
                         System.err.printf("scheduleParsing: enqueue %s in states %s, %s\n", getAbsolutePath(), state, parsingState); // NOI18N
                     }
-                    ParserQueue.instance().add(this, Collections.singleton(DUMMY_STATE),
+                    boolean added = ParserQueue.instance().add(this, Collections.singleton(DUMMY_STATE),
                             ParserQueue.Position.HEAD, false, ParserQueue.FileAction.NOTHING);
+                    if (!added) {
+                        return;
+                    }
                 }
                 if (wait) {
                     if (TRACE_SCHUDULE_PARSING) {

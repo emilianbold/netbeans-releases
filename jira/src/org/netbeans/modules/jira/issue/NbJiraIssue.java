@@ -375,7 +375,7 @@ public class NbJiraIssue extends Issue {
      * @throws org.eclipse.mylyn.internal.jira.core.service.JiraException
      * @throws java.lang.IllegalStateException if resolve operation is not permitted for this issue
      */
-    public void resolve(Resolution resolution, String comment) throws JiraException {
+    public void resolve(Resolution resolution, String comment) {
         if (Jira.LOG.isLoggable(Level.FINE)) {
             Jira.LOG.fine(getClass().getName() + ": resolve issue " + getKey() + ": " + resolution.getName());    //NOI18N
         }
@@ -445,7 +445,7 @@ public class NbJiraIssue extends Issue {
      * @throws org.eclipse.mylyn.internal.jira.core.service.JiraException
      * @throws java.lang.IllegalStateException if resolve operation is not permitted for this issue
      */
-    public void close(Resolution resolution, String comment) throws JiraException {
+    public void close(Resolution resolution, String comment) {
         if (Jira.LOG.isLoggable(Level.FINE)) {
             Jira.LOG.fine(getClass().getName() + ": close issue " + getKey() + ": " + resolution.getName());    //NOI18N
         }
@@ -480,7 +480,7 @@ public class NbJiraIssue extends Issue {
      * @throws org.eclipse.mylyn.internal.jira.core.service.JiraException
      * @throws java.lang.IllegalStateException if resolve operation is not permitted for this issue
      */
-    public void startProgress() throws JiraException {
+    public void startProgress() {
         if (Jira.LOG.isLoggable(Level.FINE)) {
             Jira.LOG.fine(getClass().getName() + ": starting issue " + getKey());    //NOI18N
         }
@@ -511,7 +511,7 @@ public class NbJiraIssue extends Issue {
      * @throws org.eclipse.mylyn.internal.jira.core.service.JiraException
      * @throws java.lang.IllegalStateException if resolve operation is not permitted for this issue
      */
-    public void stopProgress() throws JiraException {
+    public void stopProgress() {
         if (Jira.LOG.isLoggable(Level.FINE)) {
             Jira.LOG.fine(getClass().getName() + ": starting issue " + getKey());    //NOI18N
         }
@@ -636,11 +636,7 @@ public class NbJiraIssue extends Issue {
 
         // resolved attrs
         if(close) {
-            try {
-                resolve(JiraUtils.getResolutionByName(repository, FIXED), comment); // XXX constant, what about setting in options?
-            } catch (JiraException ex) {
-                Jira.LOG.log(Level.SEVERE, null, ex);
-            }
+            resolve(JiraUtils.getResolutionByName(repository, FIXED), comment); // XXX constant, what about setting in options?
         }
 
         JiraCommand submitCmd = new JiraCommand() {

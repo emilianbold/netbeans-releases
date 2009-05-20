@@ -1,0 +1,14 @@
+<xsl:comment>open-profiler</xsl:comment>
+
+    <target name="profiler.check">
+        <condition property="profiler.allowed">
+            <and>
+                <not> <isset property="bdj-platform.trigger"/></not>
+                <isset property="netbeans.home"/>
+                <isset property="is.mesdk_profiler"/>
+            </and>
+        </condition>
+    </target>
+    <target name="open-profiler" description="Open profiler snapshot" depends="profiler.check" if="profiler.allowed">
+        <openprofiler device="${{platform.device}}"/>
+    </target>

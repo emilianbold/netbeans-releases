@@ -63,10 +63,6 @@ public class KenaiHudsonBuildAssociation extends ProjectHudsonProvider {
                 if (p != null) {
                     for (KenaiFeature feature : p.getFeatures(Type.HUDSON)) {
                         String server = feature.getWebLocation().toString();
-                        { // XXX just for testing until real service works
-                            LOG.warning("Ignoring reported server location " + server + " in favor of http://localhost:8080/");
-                            server = "http://localhost:8080/";
-                        }
                         return Association.fromString(server);
                     }
                 }

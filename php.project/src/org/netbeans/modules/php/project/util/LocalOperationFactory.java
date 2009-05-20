@@ -153,6 +153,9 @@ final class LocalOperationFactory extends FileOperationFactory {
                 boolean sourceFileValid = isPairValid(cfgPair) && isSourceFileValid(cfgPair.first, source);
                 if (sourceFileValid) {
                     File target = getTarget(cfgPair, source);
+                    if (target != null && !target.exists()) {
+                        FileUtil.createFolder(target);
+                    }
                     if (target != null && target.exists() && target.list().length == 0) {
                         Enumeration<? extends FileObject> children = source.getChildren(true);
                         while (children.hasMoreElements()) {

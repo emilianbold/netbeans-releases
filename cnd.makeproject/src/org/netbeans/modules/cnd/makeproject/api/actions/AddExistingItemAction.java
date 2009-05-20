@@ -141,7 +141,6 @@ public class AddExistingItemAction extends NodeAction {
 		itemPath = IpeUtils.toRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
 	    else
 		itemPath = files[i].getPath();
-	    itemPath = FilePathAdaptor.mapToRemote(itemPath);
 	    itemPath = FilePathAdaptor.normalize(itemPath);
 	    if (((MakeConfigurationDescriptor)projectDescriptor).findProjectItemByPath(itemPath) != null) {
 		String errormsg = getString("AlreadyInProjectError", itemPath); // NOI18N

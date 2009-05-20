@@ -105,7 +105,7 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
             }
         }
         postInclude(apt, included);
-        return true;
+        return postIncludeState == null;
     }
     
     abstract protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt, APTMacroMap.State postIncludeState) throws IOException;

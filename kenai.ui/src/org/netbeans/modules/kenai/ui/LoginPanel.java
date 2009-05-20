@@ -64,7 +64,7 @@ public class LoginPanel extends javax.swing.JPanel {
             Exceptions.printStackTrace(ex);
         }
         try {
-            registerUrl = new URL("https://kenai.com/people/new");
+            registerUrl = new URL("https://kenai.com/people/signup");
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -177,7 +177,7 @@ public class LoginPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(lblKenaiLogoLeft)
                 .add(0, 0, 0)
-                .add(lblKenaiLogoCenter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
+                .add(lblKenaiLogoCenter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE)
                 .add(0, 0, 0)
                 .add(lblKenaiLogoRight))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
@@ -195,13 +195,13 @@ public class LoginPanel extends javax.swing.JPanel {
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(signUp))
                             .add(chkRememberMe)
-                            .add(password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE)
-                            .add(username, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE)
+                            .add(password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
+                            .add(username, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
                             .add(forgotPassword))))
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(progressBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
+                .add(progressBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 418, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(

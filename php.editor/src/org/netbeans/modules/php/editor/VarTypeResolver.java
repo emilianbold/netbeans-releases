@@ -384,11 +384,13 @@ public final class VarTypeResolver {
         if (dispType != null) {
             Variable field = fieldAccess.getField();
             String fldName = CodeUtils.extractVariableName(field);
-            if (fldName.startsWith("$")) {//NOI18N
-                fldName.substring(1);
+            if (fldName != null) {
+                if (fldName.startsWith("$")) {//NOI18N
+                    fldName.substring(1);
+                }
+                sb.append(dispType).append("::").append(fldName);
+                return sb.toString();
             }
-            sb.append(dispType).append("::").append(fldName);
-            return sb.toString();
         }
         return null;
     }

@@ -45,8 +45,6 @@ import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import java.awt.Image;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -210,7 +208,7 @@ public class JiraRepository extends Repository {
     }
 
     public void removeQuery(JiraQuery query) {
-        JiraConfig.getInstance().removeQuery(this, query);
+        Jira.getInstance().getStorageManager().removeQuery(this, query);
         getIssueCache().removeQuery(name);
         getQueriesIntern().remove(query);
         stopRefreshing(query);
@@ -218,22 +216,14 @@ public class JiraRepository extends Repository {
 
     public void saveQuery(JiraQuery query) {
         assert name != null;
-        JiraConfig.getInstance().putQuery(this, query); // XXX display name ????
+        Jira.getInstance().getStorageManager().putQuery(this, query);
         getQueriesIntern().add(query);
     }
 
     private Set<Query> getQueriesIntern() {
         if(queries == null) {
-            queries = new HashSet<Query>(10);
-            String[] qs = JiraConfig.getInstance().getQueries(name);
-            for (String queryName : qs) {
-                JiraQuery q = JiraConfig.getInstance().getQuery(this, queryName);
-                if(q != null ) {
-                    queries.add(q);
-                } else {
-                    Jira.LOG.warning("Couldn't find query with stored name " + queryName); // NOI18N
-                }
-            }
+            JiraStorageManager manager = Jira.getInstance().getStorageManager();
+            queries = manager.getQueries(this);
         }
         return queries;
     }

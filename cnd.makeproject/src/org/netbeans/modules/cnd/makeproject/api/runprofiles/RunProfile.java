@@ -762,7 +762,6 @@ public class RunProfile implements ConfigurationAuxObject {
         
         public void setValue(String v) {
             String path = IpeUtils.toAbsoluteOrRelativePath(getBaseDir(), v);
-            path = FilePathAdaptor.mapToRemote(path);
             path = FilePathAdaptor.normalize(path);
             setRunDir(path);
         }

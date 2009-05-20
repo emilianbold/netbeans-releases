@@ -85,7 +85,11 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
 
     void invokeActionImpl(Lookup context) {
         FileObject[] selectedFiles = CommandUtils.filesForContextOrSelectedNodes(context);
-        assert selectedFiles.length > 0 : "At least one node must be selected for Download action";
+        // #161202
+        if (selectedFiles.length == 0) {
+            // one selects project node e.g.
+            return;
+        }
 
         FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(getProject());
 

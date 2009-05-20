@@ -3,5 +3,5 @@ AutoUpdate-Show-In-Client: false
 OpenIDE-Module: org.netbeans.modules.dlight.management
 OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/dlight/management/resources/Bundle.properties
-OpenIDE-Module-Needs: org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider, org.netbeans.modules.dlight.spi.storage.DataStorageFactory, org.netbeans.modules.dlight.management.ui.spi.IndicatorComponentDelegator, org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProviderFactory, org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory, org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory
+OpenIDE-Module-Needs: org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider, org.netbeans.modules.dlight.spi.storage.DataStorageFactory, org.netbeans.modules.dlight.management.ui.spi.IndicatorComponentDelegator, org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory, org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory
 OpenIDE-Module-Provides: org.netbeans.modules.dlight.api.impl.DLightToolkitManager

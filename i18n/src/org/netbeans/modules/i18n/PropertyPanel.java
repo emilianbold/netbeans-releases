@@ -68,6 +68,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import static org.jdesktop.layout.GroupLayout.BASELINE;
@@ -165,6 +166,7 @@ public class PropertyPanel extends JPanel {
         updateKey();
         updateValue();
         updateComment();
+        warningLabel.setText("");
     }
 
     /** Updates selected item of <code>keyBundleCombo</code> UI.
@@ -511,13 +513,33 @@ public class PropertyPanel extends JPanel {
                     Exceptions.printStackTrace(ex);
                 }
             } else {
-               warningLabel.setText(
+                warningLabel.setText(
                        I18nUtil.getBundle().getString("LBL_InvalidBundle")  //NOI18N
                        + bundlePath);  //NOI18N
+                setEmptyResource();
             }
         } else {
             warningLabel.setText("");  //NOI18N
+            if ("".equals(resourceText.getText())) {
+                setEmptyResource();
+            }
         }
+    }
+
+    private void setEmptyResource() {
+        DataObject oldValue = i18nString.getSupport().getResourceHolder().getResource();
+        if (oldValue != null) {
+            SaveCookie save = oldValue.getCookie(SaveCookie.class);
+            if (save!=null) {
+                try {
+                    save.save();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        i18nString.getSupport().getResourceHolder().setResource(null);
+        firePropertyChange(PROP_RESOURCE, oldValue, null);
     }
 
     private void browseButtonActionPerformed(ActionEvent evt) {

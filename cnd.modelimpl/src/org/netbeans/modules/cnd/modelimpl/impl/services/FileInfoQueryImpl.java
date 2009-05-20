@@ -127,7 +127,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                         return Collections.<CsmOffsetable>emptyList();
                     } else if (handlers.size() == 1) {
                         APTPreprocHandler handler = handlers.iterator().next();
-                        APTFindUnusedBlocksWalker walker = new APTFindUnusedBlocksWalker(apt, fileImpl, handler, fileImpl.getIncludeCacheEntry(handler));
+                        APTFindUnusedBlocksWalker walker = new APTFindUnusedBlocksWalker(apt, fileImpl, handler, fileImpl.getAPTCacheEntry(handler));
                         walker.visit();
                         out = walker.getBlocks();
                     } else {
@@ -136,7 +136,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                         List<CsmOffsetable> result = new  ArrayList<CsmOffsetable>();
                         boolean first = true;
                         for (APTPreprocHandler handler : handlers) {
-                            APTFindUnusedBlocksWalker walker = new APTFindUnusedBlocksWalker(apt, fileImpl, handler, fileImpl.getIncludeCacheEntry(handler));
+                            APTFindUnusedBlocksWalker walker = new APTFindUnusedBlocksWalker(apt, fileImpl, handler, fileImpl.getAPTCacheEntry(handler));
                             walker.visit();
                             List<CsmOffsetable> blocks = walker.getBlocks();
                             if (first) {
@@ -229,14 +229,14 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                                 return Collections.<CsmReference>emptyList();
                             } else if (handlers.size() == 1) {
                                 APTPreprocHandler handler = handlers.iterator().next();
-                                APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, fileImpl.getIncludeCacheEntry(handler));
+                                APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, fileImpl.getAPTCacheEntry(handler));
                                 walker.getTokenStream();
                                 out = walker.getCollectedData();
                             } else {
                                 Comparator<CsmReference> comparator = new OffsetableComparator<CsmReference>();
                                 TreeSet<CsmReference> result = new TreeSet<CsmReference>(comparator);
                                 for (APTPreprocHandler handler : handlers) {
-                                    APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, fileImpl.getIncludeCacheEntry(handler));
+                                    APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, fileImpl.getAPTCacheEntry(handler));
                                     walker.getTokenStream();
                                     result.addAll(walker.getCollectedData());
                                 }

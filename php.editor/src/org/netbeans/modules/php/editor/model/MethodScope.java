@@ -46,7 +46,7 @@ public interface MethodScope extends FunctionScope, VariableScope, ClassMemberEl
     PhpModifiers getPhpModifiers();
     boolean isMagic();
     boolean isConstructor();
-    ClassScope getClassScope();
+    TypeScope getTypeScope();
     String getClassSkeleton();
     String getInterfaceSkeleton();
     //TODO:

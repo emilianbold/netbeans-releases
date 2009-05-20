@@ -218,7 +218,8 @@ public class MonitorsUpdateService {
                                     currLocks = sumMetrics(syncFunctions);
                                 }
                             } else {
-                                currLocks = stat.getULock();
+                                Double clocks = stat.getULock();
+                                currLocks = clocks == null ? 0 : clocks;
                             }
 
                             if (0.1 < currTime - prevTime) {

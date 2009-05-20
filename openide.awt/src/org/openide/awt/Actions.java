@@ -947,8 +947,11 @@ public class Actions extends Object {
         */
         @Override
         public void updateState(String changedProperty) {
+            if (this.button == null) {
+                this.button = (AbstractButton) this.comp;
+            }
             if ((changedProperty == null) || changedProperty.equals(SystemAction.PROP_ENABLED)) {
-                ((AbstractButton) this.comp).setEnabled(action.isEnabled());
+                button.setEnabled(action.isEnabled());
             }
 
             if ((changedProperty == null) || !changedProperty.equals(Action.ACCELERATOR_KEY)) {

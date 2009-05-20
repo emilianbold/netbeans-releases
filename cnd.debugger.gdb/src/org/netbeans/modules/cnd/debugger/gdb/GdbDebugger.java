@@ -379,10 +379,11 @@ public class GdbDebugger implements PropertyChangeListener {
                     // we need to switch to the first frame here
                     // for anonymous breakpoints to be set correctly, see IZ 139388
                     gdb.up_silently(1024);
+
+                    gdb.data_list_register_names("");
                     
                     setLoading();
                 }
-                gdb.data_list_register_names("");
             } else {
                 gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
 

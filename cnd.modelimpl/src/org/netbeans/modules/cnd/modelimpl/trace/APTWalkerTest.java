@@ -107,6 +107,11 @@ public class APTWalkerTest extends APTAbstractWalker {
                 getIncludeHandler().popInclude(); 
             }
         }
+        return postIncludeState == null;
+    }
+
+    @Override
+    protected boolean hasIncludeActionSideEffects() {
         return true;
     }
 }

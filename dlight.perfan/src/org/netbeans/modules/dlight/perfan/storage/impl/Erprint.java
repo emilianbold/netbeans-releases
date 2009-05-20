@@ -78,6 +78,13 @@ final class Erprint {
         process = npb.call();
         logPrefix = "er_print [" + process.getPID() + "]: "; // NOI18N
         addLock();
+
+        String logFlag = System.getProperty("nativeexecution.support.logger.er_print"); // NOI18N
+
+        if (logFlag == null) {
+            log.setLevel(Level.INFO);
+        }
+
         log.finest(logPrefix + "started"); // NOI18N
         out = process.getInputStream();
         in = process.getOutputStream();
@@ -214,7 +221,7 @@ final class Erprint {
     }
 
     void selectObjects(CollectedObjectsFilter collectedObjectsFilter) throws IOException {
-        if (collectedObjectsFilter == null) {
+        if (stopped || collectedObjectsFilter == null) {
             return;
         }
 
@@ -262,6 +269,10 @@ final class Erprint {
 
     FunctionStatistic getFunctionStatistic(FunctionCall functionCall) throws IOException {
         synchronized (this) {
+            if (stopped) {
+                return new FunctionStatistic(new String[0]);
+            }
+
             String functionName = functionCall.getFunction().getName();
             String[] stat = exec("fsingle \"" + functionName + "\""); // NOI18N
 
@@ -298,18 +309,18 @@ final class Erprint {
 
     private String[] exec(String command) throws IOException {
         synchronized (this) {
+            if (stopped) {
+                return new String[0];
+            }
+
             long startTime = System.currentTimeMillis();
 
             try {
                 log.finest("> " + command + "'"); // NOI18N
                 post(command);
             } catch (IOException ex) {
-                Throwable cause = ex.getCause();
-                if (cause != null && cause instanceof InterruptedIOException) {
-                    throw (InterruptedIOException) cause;
-                } else {
-                    throw ex;
-                }
+                stop();
+                return new String[0];
             }
 
             String[] output = outProcessor.getOutput();
@@ -343,8 +354,8 @@ final class Erprint {
             lineBuffer.setLength(0);
 
             while (true) {
-                char c;
-                c = (char) pis.read();
+                int c;
+                c = pis.read();
 
                 if (c < 0) {
                     break;
@@ -354,7 +365,11 @@ final class Erprint {
                     resultBuffer.add(lineBuffer.toString());
                     lineBuffer.setLength(0);
                 } else {
-                    lineBuffer.append(c);
+                    lineBuffer.append((char) c);
+                }
+
+                if (promptPos == prompt.length) {
+                    break;
                 }
 
                 if (prompt[promptPos] == c) {
@@ -383,7 +398,7 @@ final class Erprint {
             int currPos = 0;
             int pos1 = 0;
             int pos2 = 0;
-            char c;
+            int c;
             char[] parray = new char[256];
             char[] result = null;
 
@@ -396,13 +411,13 @@ final class Erprint {
                 post(""); // NOI18N
 
                 while (true) {
-                    c = (char) out.read();
+                    c = out.read();
 
                     if (c < 0) {
                         break;
                     }
 
-                    parray[++currPos] = c;
+                    parray[++currPos] = (char) c;
 
                     if (parray[pos1] == parray[currPos]) {
                         if (pos2 == 0) {

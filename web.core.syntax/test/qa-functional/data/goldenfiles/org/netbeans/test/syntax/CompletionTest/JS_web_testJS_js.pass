@@ -1,4 +1,8 @@
-[de|, debugger, debugger, 92]
+[y.cha|, String charCodeAt ( index ) : Number, y.charCodeAt(index), 150]
+String charAt ( index ) : String
+String charCodeAt ( index ) : Number
+End cursor position = 169
+[de|, debugger, debugger, 182]
 CSSMediaRule deleteRule ( Number index )
 CSSStyleSheet deleteRule ( Number index 
 CharacterData deleteData ( Number offset
@@ -11,7 +15,7 @@ Event detail
 HTMLInputElement defaultChecked : Boolea
 HTMLInputElement defaultValue : String
 HTMLObjectElement declare : Boolean
-HTMLOptionElement defaultSelected : Bool
+HTMLOptionElement defaultSelected : Boo
 HTMLScriptElement defer : Boolean
 HTMLTableElement deleteCaption () : void
 HTMLTableElement deleteRow ( Number inde
@@ -36,8 +40,8 @@ Window defaultStatus : String
 debugger
 default
 delete
-End cursor position = 101
-[va|, var, var, 114]
+End cursor position = 191
+[va|, var, var, 204]
 Array valueOf () : void
 Attr value : String
 Boolean valueOf () : void
@@ -55,8 +59,8 @@ Number valueOf () : Number
 Object valueOf () : void
 String valueOf () : String
 var
-End cursor position = 118
-[St|, Core JS String, String, 150]
+End cursor position = 208
+[St|, Core JS String, String, 240]
 Core JS String
 Core JS String
 Core JS String ( string )
@@ -72,20 +76,20 @@ DOM Stylesheet
 DOM Stylesheet
 FlashPlayer StopPlay ()
 static
-End cursor position = 157
-[my|, testJS.js myfunction () : void, myfunction(), 215]
+End cursor position = 247
+[my|, testJS.js myfunction () : void, myfunction(), 305]
 testJS.js myfunction () : void
 testJS.js myvariable
-End cursor position = 228
-[my|, testJS.js myvariable, myvariable, 269]
+End cursor position = 318
+[my|, testJS.js myvariable, myvariable, 359]
 testJS.js myfunction () : void
 testJS.js myvariable
-End cursor position = 280
-[Ra|, Core JS RangeError, RangeError, 313]
+End cursor position = 370
+[Ra|, Core JS RangeError, RangeError, 403]
 Core JS RangeError
 Core JS RangeError
 DOM Range
 DOM Range
 DOM RangeException
 DOM RangeException
-End cursor position = 324
+End cursor position = 414
