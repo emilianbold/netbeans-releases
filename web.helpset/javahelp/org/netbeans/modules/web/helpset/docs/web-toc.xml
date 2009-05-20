@@ -13,17 +13,14 @@
         </tocitem>
         <tocitem text="Creating Web Applications">
             <tocitem text="About Creating Web Applications" target="about_create_webapps" />
-<<<<<<< local
             <tocitem text="Creating a Web Application Project" target="create_webapps_proj" />
             
             
        </tocitem>
        <tocitem text="Creating and Editing Web Components">
-=======
        
         </tocitem>
         <tocitem text="Creating and Editing Web Components">
->>>>>>> other
             <tocitem text="About Creating Web Components" target="about_create_webcomps" />
             <tocitem text="JSP and HTML Files">
                 <tocitem text="About Creating and Editing JSP, HTML, and Tag Files" target="about_jsp_edit" />

@@ -129,7 +129,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private final BugzillaRepository repository;
     protected BugzillaQuery query;
 
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss, EEE MMM d yyyy"); // NOI18N
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // NOI18N
     private QueryTask searchTask;
     private QueryTask refreshTask;
 

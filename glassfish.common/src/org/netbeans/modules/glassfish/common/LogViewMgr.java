@@ -459,7 +459,7 @@ public class LogViewMgr {
             }
             // XXX sort of a hack to eliminate specific glassfish messages that
             // ought not to be printed at their current level (INFO vs FINE+).
-            if(!strictFilter && filter(line)) {
+            if(strictFilter && filter(line)) {
                 return;
             }
             // Track level, color, listener
@@ -581,8 +581,8 @@ public class LogViewMgr {
         return line.startsWith("INFO: Started bundle ")
                 || line.startsWith("INFO: Stopped bundle ")
                 || line.startsWith("INFO: ### ")
-//                || line.startsWith("felix.")
-//                || line.startsWith("log4j:")
+                || line.startsWith("felix.")
+                || line.startsWith("log4j:")
                 ;
     }
 
