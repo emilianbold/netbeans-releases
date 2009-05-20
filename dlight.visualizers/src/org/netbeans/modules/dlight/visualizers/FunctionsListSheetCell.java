@@ -29,6 +29,7 @@ import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.LineBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.JTableHeader;
@@ -248,7 +249,11 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
                         }
 
                 }
-        return new JLabel(value+ "", SwingConstants.RIGHT);
+        JLabel result = new JLabel(value+ "", SwingConstants.RIGHT);
+        if (hasFocus){
+            result.setBorder(new LineBorder(UIManager.getColor("Tree.selectionBorderColor"), 1));//NOI18N,
+        }
+        return result;
     }
 
     private FocusedPropertyPanel getRenderer(Property p, Node n, boolean hasFocus) {
