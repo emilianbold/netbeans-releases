@@ -167,7 +167,7 @@ public class ChatPanel extends javax.swing.JPanel {
         String tmp = body;
         tmp.replaceAll("\r\n", "\n");
         tmp.replaceAll("\r", "\n");
-        return tmp.replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\n", "<br />"); // NOI18N
+        return tmp.replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\n", "<br>"); // NOI18N
     }
 
     private String replaceLinks(String removeTags) {
