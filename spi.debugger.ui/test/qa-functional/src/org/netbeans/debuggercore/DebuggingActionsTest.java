@@ -50,6 +50,7 @@ import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.DebugProjectAction;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.modules.debugger.actions.DebugJavaFileAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
@@ -74,7 +75,8 @@ public class DebuggingActionsTest extends JellyTestCase{
             NbModuleSuite.createConfiguration(DebuggingActionsTest.class).addTest(
             "testStartDebugging",
             "testContinue",
-            "testStepOverExpression",
+            //TODO: Where is this test???
+           // "testStepOverExpression",
             "testPause").enableModules(".*").clusters(".*"));
     }
 
@@ -106,7 +108,7 @@ public class DebuggingActionsTest extends JellyTestCase{
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
             Utilities.toggleBreakpoint(eo, 80);
-            new DebugProjectAction().perform(projectNode);
+            new DebugJavaFileAction().perform(beanNode);
             //wait for breakpoint
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:80");
             assertTrue("Breakpoint annotation is not on line 80", Utilities.checkAnnotation(eo, 80, "Breakpoint"));
@@ -117,16 +119,6 @@ public class DebuggingActionsTest extends JellyTestCase{
         }
     }
 
- 
-
-
-
-
-
-
-
-
-
     public void testContinue() throws Throwable {
         try {Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
@@ -135,7 +127,7 @@ public class DebuggingActionsTest extends JellyTestCase{
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
             Utilities.toggleBreakpoint(eo, 80);
-            new DebugProjectAction().perform(projectNode);
+            new DebugJavaFileAction().perform(beanNode);
             //wait for breakpoint
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:80");
             Utilities.deleteAllBreakpoints();
@@ -160,7 +152,7 @@ public class DebuggingActionsTest extends JellyTestCase{
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
             Utilities.toggleBreakpoint(eo, 80);
-            new DebugProjectAction().perform(projectNode);
+            new DebugJavaFileAction().perform(beanNode);
             //wait for breakpoint
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:80");
             new ContinueAction().performMenu();
