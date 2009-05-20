@@ -471,13 +471,10 @@ public class Subversion {
      */
     public static boolean isRepository (final String url) {
         boolean retval = false;
-        try {
-            // do not call getSubversion().checkClientAvailable() at this point.
+        if (!isClientAvailable(false)) {
+            // isClientAvailable(false) -> do not show errorDialog at this point.
             // The tested url may be from another vcs and we don't want to open a
             // dialog with an error just becasue svn is not installed.
-            SvnClientFactory.checkClientAvailable();
-        } catch (SVNClientException ex) {
-            org.netbeans.modules.subversion.Subversion.LOG.log(Level.INFO, "svn client not available");
             return false;
         }
         RepositoryConnection conn = new RepositoryConnection(url);
@@ -535,6 +532,43 @@ public class Subversion {
             throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
         }
         SystemAction.get(CheckoutAction.class).performAction();
+    }
+
+    /**
+     * Checks if the svn client is available.
+     *
+     * @param showErrorDialog - if true and client not available an error dialog
+     *        is show and the user gets the option to download the bundled svn
+     *        client from the UC or to correctly setup the commandline client.
+     *        Note that an UC download might cause a NetBeans restart.
+     *
+     * @return if client available, otherwise false
+     */
+    public static boolean isClientAvailable(boolean showErrorDialog) {
+        if(!showErrorDialog) {
+            return isClientAvailable();
+        } else {
+            if(getSubversion().checkClientAvailable()) {
+                return true;
+            }
+            // the client wasn't available, but it could be the user has
+            // setup e.g. a correct path to the cli client -> check again!
+            return isClientAvailable();
+        }
+    }
+
+    /**
+     * Checks if client is available
+     * @return true if client available, otherwise false
+     */
+    private static boolean isClientAvailable() {
+        try {
+            SvnClientFactory.checkClientAvailable();
+        } catch (SVNClientException ex) {
+            org.netbeans.modules.subversion.Subversion.LOG.log(Level.INFO, "svn client not available");
+            return false;
+        }
+        return true;
     }
 
     private static org.netbeans.modules.subversion.Subversion getSubversion() {
