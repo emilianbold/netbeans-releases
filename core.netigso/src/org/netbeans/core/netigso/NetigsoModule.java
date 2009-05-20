@@ -77,7 +77,14 @@ final class NetigsoModule extends Module {
     @Override
     public SpecificationVersion getSpecificationVersion() {
         String version = (String) bundle.getHeaders().get("Bundle-Version"); // NOI18N
-        return new SpecificationVersion(version.replaceFirst("\\.[^0-9]*$", ""));
+        int pos = -1;
+        for (int i = 0; i < 3; i++) {
+            pos = version.indexOf('.', pos + 1);
+            if (pos == -1) {
+                return new SpecificationVersion(version);
+            }
+        }
+        return new SpecificationVersion(version.substring(0, pos));
     }
 
     @Override

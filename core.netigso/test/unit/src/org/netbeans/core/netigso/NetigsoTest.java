@@ -222,7 +222,7 @@ public class NetigsoTest extends SetupHid {
         try {
             String mfBar =
                 "Bundle-SymbolicName: org.bar\n" +
-                "Bundle-Version: 2.3.0.Prelude\n" +
+                "Bundle-Version: 2.3.0.Prelude-rel24\n" +
                 "Export-Packages: org.bar.*\n" +
                 "some";
 
@@ -230,7 +230,7 @@ public class NetigsoTest extends SetupHid {
             m2 = mgr.create(j2, null, false, false, false);
             mgr.enable(m2);
             assertEquals("2.3.0", m2.getSpecificationVersion().toString());
-            assertEquals("2.3.0.Prelude", m2.getImplementationVersion());
+            assertEquals("2.3.0.Prelude-rel24", m2.getImplementationVersion());
         } finally {
             if (m2 != null) {
                 mgr.disable(m2);
