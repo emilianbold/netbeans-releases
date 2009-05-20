@@ -42,13 +42,12 @@ package org.netbeans.modules.cnd.remote.sync;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.PrintWriter;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
@@ -127,7 +126,11 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
             synchronizeImpl(remoteDir);
             success = true;
         } catch (InterruptedException ex) {
-            logger.log(Level.FINE, null, ex);
+            // reporting does not make sense, just return false
+            logger.log(Level.FINEST, null, ex);
+        } catch (InterruptedIOException ex) {
+            // reporting does not make sense, just return false
+            logger.log(Level.FINEST, null, ex);
         } catch (ExecutionException ex) {
             logger.log(Level.FINE, null, ex);
         } catch (IOException ex) {
