@@ -41,15 +41,18 @@ package org.netbeans.modules.kenai.ui;
 
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.util.Exceptions;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Jan Becicka
  */
+@ServiceProvider(service=Runnable.class, path="WarmUp")
 public class KenaiLoginTask implements Runnable {
 
     public static boolean isFinished = false;
     public static final Object monitor = new Object();
+    @SuppressWarnings("deprecation")
     public void run() {
         synchronized (monitor) {
             UIUtils.tryLogin();

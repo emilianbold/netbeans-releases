@@ -371,6 +371,9 @@ public final class Models {
     
     private static <T> void revertOrder(List<T> filters) {
         int n = filters.size();
+        // [TODO] do not remove the following line, prevents null to be returned by filters.remove(i);
+        // needs deeper investigation why it can occure
+        filters.toString();
         for (int i = 0; i < n; ) {
             T filter = filters.remove(i);
             boolean first = filter.getClass ().getName ().endsWith ("First");
@@ -1230,8 +1233,8 @@ public final class Models {
 
         private static TreeModel[] convert (List<TreeModel> l) {
             TreeModel[] models = new TreeModel [l.size ()];
-            return l.toArray (models);
-        }
+                return l.toArray (models);
+            }
 
         /**
          * Creates new instance of DelegatingTreeModel for given array of 
