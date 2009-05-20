@@ -84,7 +84,7 @@ public final class TextComponentWriter extends PrintWriter {
             try {
                 SwingUtilities.invokeAndWait(r);
             } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
+                // it's normal! for example user could cancel dialog...
             } catch (InvocationTargetException ex) {
                 Exceptions.printStackTrace(ex);
             }
