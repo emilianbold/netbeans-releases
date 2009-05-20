@@ -109,21 +109,13 @@ public class HtmlStructureScanner implements StructureScanner {
                 if (node.type() == AstNode.NodeType.OPEN_TAG
                         || node.type() == AstNode.NodeType.COMMENT) {
                     try {
-                        int so, eo;
-                        if(node.type() == AstNode.NodeType.OPEN_TAG) {
-                            AstNode match = node.getMatchingTag();
-                            if(match == null) {
-                                return ;
-                            } else {
-                                so = node.startOffset();
-                                eo = match.endOffset();
-                            }
-                        } else {
-                            //comment
-                            so = documentPosition(node.startOffset(), info.getSnapshot());
-                            eo = documentPosition(node.endOffset(), info.getSnapshot());
-                        }
-
+                        int[] logicalRange = node.getLogicalRange();
+                        int from = logicalRange[0];
+                        int to = logicalRange[1];
+                        
+                        int so = documentPosition(from, info.getSnapshot());
+                        int eo = documentPosition(to, info.getSnapshot());
+                        
                         if (eo > doc.getLength()) {
                             eo = doc.getLength();
                             if (so > eo) {
@@ -271,11 +263,11 @@ public class HtmlStructureScanner implements StructureScanner {
         }
 
         public long getPosition() {
-            return HtmlStructureScanner.documentPosition(handle.node().startOffset(), snapshot);
+            return HtmlStructureScanner.documentPosition(handle.from(), snapshot);
         }
 
         public long getEndPosition() {
-            return HtmlStructureScanner.documentPosition(handle.node().endOffset(), snapshot);
+            return HtmlStructureScanner.documentPosition(handle.to(), snapshot);
         }
 
         @Override
