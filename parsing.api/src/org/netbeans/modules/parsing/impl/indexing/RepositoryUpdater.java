@@ -78,6 +78,9 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.editor.AtomicLockEvent;
+import org.netbeans.editor.AtomicLockListener;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.api.Embedding;
@@ -121,7 +124,7 @@ import org.openide.util.TopologicalSortException;
  *
  * @author Tomas Zezula
  */
-public final class RepositoryUpdater implements PathRegistryListener, FileChangeListener, PropertyChangeListener, DocumentListener {
+public final class RepositoryUpdater implements PathRegistryListener, FileChangeListener, PropertyChangeListener, DocumentListener, AtomicLockListener {
 
     // -----------------------------------------------------------------------
     // Public implementation
@@ -226,8 +229,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         FileObject root = URLMapper.findFileObject(rootUrl);
-        assert root != null : rootUrl + " can't be translated to FileObject"; //NOI18N
         if (root == null) {
+            LOGGER.info(rootUrl + " can't be translated to FileObject"); //NOI18N
             return;
         }
 
@@ -611,13 +614,95 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     }
 
     public void insertUpdate(DocumentEvent e) {
-        removeUpdate(e);
+        // these are not called for BaseDocuments
+        handleDocumentModification(e.getDocument());
     }
 
     public void removeUpdate(DocumentEvent e) {
+        // these are not called for BaseDocuments
+        handleDocumentModification(e.getDocument());
+    }
+
+    // -----------------------------------------------------------------------
+    // AtomicLockListener implementation
+    // -----------------------------------------------------------------------
+
+    public void atomicLock(AtomicLockEvent e) {
+    }
+
+    public void atomicUnlock(AtomicLockEvent e) {
+        // XXX: strictly speaking we should use DocumentListener to see whether
+        // the document has actually been modified
+        handleDocumentModification((Document) e.getSource());
+    }
+
+    // -----------------------------------------------------------------------
+    // Private implementation
+    // -----------------------------------------------------------------------
+
+    private static RepositoryUpdater instance;
+
+    private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
+    private static final Logger TEST_LOGGER = Logger.getLogger(RepositoryUpdater.class.getName() + ".tests"); //NOI18N
+    private static final boolean PERF_TEST = Boolean.getBoolean("perf.refactoring.test"); //NOI18N
+    private static final boolean noRootsScan = Boolean.getBoolean("netbeans.indexing.noRootsScan"); //NOI18N
+    private static final boolean notInterruptible = Boolean.getBoolean("netbeans.indexing.notInterruptible"); //NOI18N
+    private static final int FILE_LOCKS_DELAY = org.openide.util.Utilities.isWindows() ? 2000 : 1000;
+    private static final String PROP_LAST_SEEN_VERSION = RepositoryUpdater.class.getName() + "-last-seen-document-version"; //NOI18N
+    
+    private final Map<URL, List<URL>>scannedRoots2Dependencies = Collections.synchronizedMap(new HashMap<URL, List<URL>>());
+    private final Set<URL>scannedBinaries = Collections.synchronizedSet(new HashSet<URL>());
+    private final Set<URL>scannedUnknown = Collections.synchronizedSet(new HashSet<URL>());
+
+    private volatile State state = State.CREATED;
+    private volatile Task worker;
+
+    private volatile Reference<Document> activeDocumentRef = null;
+    private Lookup.Result<? extends IndexingActivityInterceptor> indexingActivityInterceptors = null;
+    private IndexingController controller;
+
+    private RepositoryUpdater () {
+        // no-op
+    }
+
+    private void handleActiveDocumentChange(Document deactivated, Document activated) {
+        Document activeDocument = activeDocumentRef == null ? null : activeDocumentRef.get();
+
+        if (deactivated != null && deactivated == activeDocument) {
+            if (activeDocument instanceof BaseDocument) {
+                ((BaseDocument) activeDocument).removeAtomicLockListener(this);
+            } else {
+                activeDocument.removeDocumentListener(this);
+            }
+            activeDocumentRef = null;
+            LOGGER.log(Level.FINE, "Unregistering active document listener: activeDocument={0}", activeDocument); //NOI18N
+        }
+
+        if (activated != null && activated != activeDocument) {
+            if (activeDocument != null) {
+                if (activeDocument instanceof BaseDocument) {
+                    ((BaseDocument) activeDocument).removeAtomicLockListener(this);
+                } else {
+                    activeDocument.removeDocumentListener(this);
+                }
+                LOGGER.log(Level.FINE, "Unregistering active document listener: activeDocument={0}", activeDocument); //NOI18N
+            }
+
+            activeDocument = activated;
+            activeDocumentRef = new WeakReference<Document>(activeDocument);
+            
+            if (activeDocument instanceof BaseDocument) {
+                ((BaseDocument) activeDocument).addAtomicLockListener(this);
+            } else {
+                activeDocument.addDocumentListener(this);
+            }
+            LOGGER.log(Level.FINE, "Registering active document listener: activeDocument={0}", activeDocument); //NOI18N
+        }
+    }
+
+    public void handleDocumentModification(Document document) {
         final Reference<Document> ref = activeDocumentRef;
         Document activeDocument = ref == null ? null : ref.get();
-        Document document = e.getDocument();
 
         FileObject f = NbEditorUtilities.getFileObject(document);
         if (f != null) {
@@ -663,58 +748,6 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     }
                 }
             }
-        }
-    }
-
-    // -----------------------------------------------------------------------
-    // Private implementation
-    // -----------------------------------------------------------------------
-
-    private static RepositoryUpdater instance;
-
-    private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
-    private static final Logger TEST_LOGGER = Logger.getLogger(RepositoryUpdater.class.getName() + ".tests"); //NOI18N
-    private static final boolean PERF_TEST = Boolean.getBoolean("perf.refactoring.test"); //NOI18N
-    private static final boolean noRootsScan = Boolean.getBoolean("netbeans.indexing.noRootsScan"); //NOI18N
-    private static final boolean notInterruptible = Boolean.getBoolean("netbeans.indexing.notInterruptible"); //NOI18N
-    private static final int FILE_LOCKS_DELAY = org.openide.util.Utilities.isWindows() ? 2000 : 1000;
-    private static final String PROP_LAST_SEEN_VERSION = RepositoryUpdater.class.getName() + "-last-seen-document-version"; //NOI18N
-    
-    private final Map<URL, List<URL>>scannedRoots2Dependencies = Collections.synchronizedMap(new HashMap<URL, List<URL>>());
-    private final Set<URL>scannedBinaries = Collections.synchronizedSet(new HashSet<URL>());
-    private final Set<URL>scannedUnknown = Collections.synchronizedSet(new HashSet<URL>());
-
-    private volatile State state = State.CREATED;
-    private volatile Task worker;
-
-    private volatile Reference<Document> activeDocumentRef = null;
-    private Lookup.Result<? extends IndexingActivityInterceptor> indexingActivityInterceptors = null;
-    private IndexingController controller;
-
-    private RepositoryUpdater () {
-        // no-op
-    }
-
-    private void handleActiveDocumentChange(Document deactivated, Document activated) {
-        Document activeDocument = activeDocumentRef == null ? null : activeDocumentRef.get();
-
-        if (deactivated != null && deactivated == activeDocument) {
-            activeDocument.removeDocumentListener(this);
-            activeDocumentRef = null;
-            LOGGER.log(Level.FINE, "Unregistering active document listener: activeDocument={0}", activeDocument); //NOI18N
-        }
-
-        if (activated != null && activated != activeDocument) {
-            if (activeDocument != null) {
-                activeDocument.removeDocumentListener(this);
-                LOGGER.log(Level.FINE, "Unregistering active document listener: activeDocument={0}", activeDocument); //NOI18N
-            }
-
-            activeDocument = activated;
-            activeDocumentRef = new WeakReference<Document>(activeDocument);
-            
-            activeDocument.addDocumentListener(this);
-            LOGGER.log(Level.FINE, "Registering active document listener: activeDocument={0}", activeDocument); //NOI18N
         }
     }
 
