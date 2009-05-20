@@ -266,51 +266,6 @@ public class LongHashMap<K> //extends AbstractMap<K>
     static <T> T unmaskNull(T key) {
         return (key == NULL_KEY ? null : key);
     }
-    /**
-     * Whether to prefer the old supplemental hash function, for
-     * compatibility with broken applications that rely on the
-     * internal hashing order.
-     *
-     * Set to true only by hotspot when invoked via
-     * -XX:+UseNewHashFunction or -XX:+AggressiveOpts
-     */
-    private static final boolean useNewHash;
-
-
-    static {
-        useNewHash = false;
-    }
-
-    private static int oldHash(int h) {
-        h += ~(h << 9);
-        h ^= (h >>> 14);
-        h += (h << 4);
-        h ^= (h >>> 10);
-        return h;
-    }
-
-    private static int newHash(int h) {
-        // This function ensures that hashCodes that differ only by
-        // constant multiples at each bit position have a bounded
-        // number of collisions (approximately 8 at default load factor).
-        h ^= (h >>> 20) ^ (h >>> 12);
-        return h ^ (h >>> 7) ^ (h >>> 4);
-    }
-
-    /**
-     * Applies a supplemental hash function to a given hashCode, which
-     * defends against poor quality hash functions.  This is critical
-     * because LongHashMap uses power-of-two length hash tables, that
-     * otherwise encounter collisions for hashCodes that do not differ
-     * in lower bits.
-     */
-    static int hash(int h) {
-        return useNewHash ? newHash(h) : oldHash(h);
-    }
-
-    static int hash(Object key) {
-        return hash(key.hashCode());
-    }
 
     /** 
      * Check for equality of non-null reference x and possibly-null y. 
@@ -361,12 +316,12 @@ public class LongHashMap<K> //extends AbstractMap<K>
         if (key == null) {
             return getForNullKey();
         }
-        int hash = hash(key.hashCode());
+        int hash = key.hashCode();
         for (Entry<K> e = table[indexFor(hash, table.length)];
                 e != null;
                 e = e.next) {
             Object k;
-            if (e.hash == hash && ((k = e.key) == key || key.equals(k))) {
+            if (e.key.hashCode() == hash && ((k = e.key) == key || key.equals(k))) {
                 return e.value;
             }
         }
@@ -374,7 +329,7 @@ public class LongHashMap<K> //extends AbstractMap<K>
     }
 
     private long getForNullKey() {
-        int hash = hash(NULL_KEY.hashCode());
+        int hash = NULL_KEY.hashCode();
         int i = indexFor(hash, table.length);
         Entry<K> e = table[i];
         while (true) {
@@ -398,11 +353,11 @@ public class LongHashMap<K> //extends AbstractMap<K>
      */
     public boolean containsKey(Object key) {
         Object k = maskNull(key);
-        int hash = hash(k.hashCode());
+        int hash = k.hashCode();
         int i = indexFor(hash, table.length);
         Entry e = table[i];
         while (e != null) {
-            if (e.hash == hash && eq(k, e.key)) {
+            if (e.key.hashCode() == hash && eq(k, e.key)) {
                 return true;
             }
             e = e.next;
@@ -417,10 +372,10 @@ public class LongHashMap<K> //extends AbstractMap<K>
      */
     public Entry<K> getEntry(Object key) {
         Object k = maskNull(key);
-        int hash = hash(k.hashCode());
+        int hash = k.hashCode();
         int i = indexFor(hash, table.length);
         Entry<K> e = table[i];
-        while (e != null && !(e.hash == hash && eq(k, e.key))) {
+        while (e != null && !(e.key.hashCode() == hash && eq(k, e.key))) {
             e = e.next;
         }
         return e;
@@ -442,11 +397,11 @@ public class LongHashMap<K> //extends AbstractMap<K>
         if (key == null) {
             return putForNullKey(value);
         }
-        int hash = hash(key.hashCode());
+        int hash = key.hashCode();
         int i = indexFor(hash, table.length);
         for (Entry<K> e = table[i]; e != null; e = e.next) {
             Object k;
-            if (e.hash == hash && ((k = e.key) == key || key.equals(k))) {
+            if (e.key.hashCode() == hash && ((k = e.key) == key || key.equals(k))) {
                 long oldValue = e.value;
                 e.value = value;
                 e.recordAccess(this);
@@ -455,12 +410,12 @@ public class LongHashMap<K> //extends AbstractMap<K>
         }
 
         modCount++;
-        addEntry(hash, key, value, i);
+        addEntry(key, value, i);
         return NO_VALUE;
     }
 
     private long putForNullKey(long value) {
-        int hash = hash(NULL_KEY.hashCode());
+        int hash = NULL_KEY.hashCode();
         int i = indexFor(hash, table.length);
 
         for (Entry<K> e = table[i]; e != null; e = e.next) {
@@ -475,7 +430,7 @@ public class LongHashMap<K> //extends AbstractMap<K>
         modCount++;
         @SuppressWarnings("unchecked")
         K nullKey = (K) NULL_KEY;
-        addEntry(hash, nullKey, value, i);
+        addEntry(nullKey, value, i);
         return NO_VALUE;
     }
 
@@ -544,7 +499,7 @@ public class LongHashMap<K> //extends AbstractMap<K>
                 src[j] = null;
                 do {
                     Entry<K> next = e.next;
-                    int i = indexFor(e.hash, newCapacity);
+                    int i = indexFor(e.key.hashCode(), newCapacity);
                     e.next = newTable[i];
                     newTable[i] = e;
                     e = next;
@@ -565,14 +520,14 @@ public class LongHashMap<K> //extends AbstractMap<K>
      */
     Entry<K> removeEntryForKey(Object key) {
         Object k = maskNull(key);
-        int hash = hash(k.hashCode());
+        int hash = k.hashCode();
         int i = indexFor(hash, table.length);
         Entry<K> prev = table[i];
         Entry<K> e = prev;
 
         while (e != null) {
             Entry<K> next = e.next;
-            if (e.hash == hash && eq(k, e.key)) {
+            if (e.key.hashCode() == hash && eq(k, e.key)) {
                 modCount++;
                 size--;
                 if (prev == e) {
@@ -600,14 +555,14 @@ public class LongHashMap<K> //extends AbstractMap<K>
         @SuppressWarnings("unchecked")
         LongHashMap.Entry<K> entry = (LongHashMap.Entry<K>) o;
         Object k = maskNull(entry.getKey());
-        int hash = hash(k.hashCode());
+        int hash = k.hashCode();
         int i = indexFor(hash, table.length);
         Entry<K> prev = table[i];
         Entry<K> e = prev;
 
         while (e != null) {
             Entry<K> next = e.next;
-            if (e.hash == hash && e.equals(entry)) {
+            if (e.key.hashCode() == hash && e.equals(entry)) {
                 modCount++;
                 size--;
                 if (prev == e) {
@@ -680,17 +635,15 @@ public class LongHashMap<K> //extends AbstractMap<K>
 
         final K key;
         long value;
-        final int hash;
         Entry<K> next;
 
         /**
          * Create new entry.
          */
-        Entry(int h, K k, long v, Entry<K> n) {
+        Entry(K k, long v, Entry<K> n) {
             value = v;
             next = n;
             key = k;
-            hash = h;
         }
 
         public K getKey() {
@@ -758,26 +711,12 @@ public class LongHashMap<K> //extends AbstractMap<K>
      *
      * Subclass overrides this to alter the behavior of put method.
      */
-    void addEntry(int hash, K key, long value, int bucketIndex) {
+    void addEntry(K key, long value, int bucketIndex) {
         Entry<K> e = table[bucketIndex];
-        table[bucketIndex] = new Entry<K>(hash, key, value, e);
+        table[bucketIndex] = new Entry<K>(key, value, e);
         if (size++ >= threshold) {
             resize(2 * table.length);
         }
-    }
-
-    /**
-     * Like addEntry except that this version is used when creating entries
-     * as part of Map construction or "pseudo-construction" (cloning,
-     * deserialization).  This version needn't worry about resizing the table.
-     *
-     * Subclass overrides this to alter the behavior of LongHashMap(Map),
-     * clone, and readObject.
-     */
-    void createEntry(int hash, K key, long value, int bucketIndex) {
-        Entry<K> e = table[bucketIndex];
-        table[bucketIndex] = new Entry<K>(hash, key, value, e);
-        size++;
     }
 
     private abstract class HashIterator<E> implements Iterator<E> {
