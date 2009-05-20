@@ -401,7 +401,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             //  - external file change event
             //  - or "end file edit" action in deep reparsing utils
             if (fileBuffer != null && !fileBuffer.isFileBased()) {
-                if (state != State.INITIAL) {
+                if (state != State.INITIAL || parsingState != ParsingState.NOT_BEING_PARSED) {
                     if (reportParse || logState || TraceFlags.DEBUG) {
                         System.err.printf("#setBuffer changing to MODIFIED %s is %s with current state %s %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
                     }
@@ -592,13 +592,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public final void markReparseNeeded(boolean invalidateCache) {
         synchronized (changeStateLock) {
-//            if (traceFile(getAbsolutePath())) {
-//                new Exception("markReparseNeeded: inval cache:" + invalidateCache + " " + getAbsolutePath()).printStackTrace(System.err);
-//            }
-            if (state != State.INITIAL) {
-                if (reportParse || logState || TraceFlags.DEBUG) {
-                    System.err.printf("#markReparseNeeded changing to MODIFIED %s is %s with current state %s, %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
-                }
+            if (reportParse || logState || TraceFlags.DEBUG) {
+                System.err.printf("#markReparseNeeded %s is %s with current state %s, %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
+            }
+            if (state != State.INITIAL || parsingState != ParsingState.NOT_BEING_PARSED) {
                 state = State.MODIFIED;
                 postMarkedAsModified();
             }
@@ -610,9 +607,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public final void markMoreParseNeeded() {
         synchronized (changeStateLock) {
-//            if (traceFile(getAbsolutePath())) {
-//                new Exception("markMoreParseNeeded " + getAbsolutePath()).printStackTrace(System.err);
-//            }
             if (reportParse || logState || TraceFlags.DEBUG) {
                 System.err.printf("#markMoreParseNeeded %s is %s with current state %s, %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
             }
