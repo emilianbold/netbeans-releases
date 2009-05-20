@@ -66,6 +66,10 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Property;
@@ -554,47 +558,36 @@ final class ModuleListParser {
                 }
                 for (int k = 0; k < jars.length; k++) {
                     File m = jars[k];
-                    if (!m.getName().endsWith(".jar")) {
+                    scanOneBinary(m, cluster, entries);
+                }
+            }
+
+            final File configDir = new File(new File(cluster, "config"), "Modules");
+            File[] configs = configDir.listFiles();
+            XPathExpression expr = null;
+            if (configs != null) {
+                for (File xml : configs) {
+                    // TODO, read location, scan
+                    final String fileName = xml.getName();
+                    if (!fileName.endsWith(".xml")) {
                         continue;
                     }
-                    JarFile jf = new JarFile(m);
+                    final String cnb = fileName.substring(0, fileName.length() - 4).replace('-', '.');
+                    if (entries.containsKey(cnb)) {
+                        continue;
+                    }
                     try {
-                        Attributes attr = jf.getManifest().getMainAttributes();
-                        String codename = attr.getValue("OpenIDE-Module");
-                        if (codename == null) {
-                            continue;
+                        if (expr == null) {
+                            expr = XPathFactory.newInstance().newXPath().compile("/module/param[@name='jar']");
                         }
-                        String codenamebase;
-                        int slash = codename.lastIndexOf('/');
-                        if (slash == -1) {
-                            codenamebase = codename;
-                        } else {
-                            codenamebase = codename.substring(0, slash);
+                        String res = expr.evaluate(new InputSource(xml.toURI().toString()));
+                        File jar = new File(cluster, res.replace('/', File.separatorChar));
+                        if (!jar.isFile()) {
+                            throw new BuildException("Cannot find module " + jar + " from " + xml);
                         }
-                        
-                        String cp = attr.getValue("Class-Path");
-                        File[] exts;
-                        if (cp == null) {
-                            exts = new File[0];
-                        } else {
-                            String[] pieces = cp.split(" +");
-                            exts = new File[pieces.length];
-                            for (int l = 0; l < pieces.length; l++) {
-                                exts[l] = new File(dir, pieces[l].replace('/', File.separatorChar));
-                            }
-                        }
-                        String moduleDependencies = attr.getValue("OpenIDE-Module-Module-Dependencies");
-                        
-                        
-                        Entry entry = new Entry(codenamebase, m, exts,dir, null, null, cluster.getName(),
-                                parseRuntimeDependencies(moduleDependencies), Collections.<String,String[]>emptyMap());
-                        if (entries.containsKey(codenamebase)) {
-                            throw new IOException("Duplicated module " + codenamebase + ": found in " + entries.get(codenamebase) + " and " + entry);
-                        } else {
-                            entries.put(codenamebase, entry);
-                        }
-                    } finally {
-                        jf.close();
+                        scanOneBinary(jar, cluster, entries);
+                    } catch (XPathExpressionException ex) {
+                        throw new BuildException(ex);
                     }
                 }
             }
@@ -820,6 +813,49 @@ final class ModuleListParser {
             }
         }
         return cnds.toArray(new String[cnds.size()]);
+    }
+
+    static boolean scanOneBinary(File m, File cluster, Map<String, Entry> entries) throws IOException {
+        if (!m.getName().endsWith(".jar")) {
+            return true;
+        }
+        JarFile jf = new JarFile(m);
+        File dir = m.getParentFile();
+        try {
+            Attributes attr = jf.getManifest().getMainAttributes();
+            String codename = JarWithModuleAttributes.extractCodeName(attr);
+            if (codename == null) {
+                return true;
+            }
+            String codenamebase;
+            int slash = codename.lastIndexOf('/');
+            if (slash == -1) {
+                codenamebase = codename;
+            } else {
+                codenamebase = codename.substring(0, slash);
+            }
+            String cp = attr.getValue("Class-Path");
+            File[] exts;
+            if (cp == null) {
+                exts = new File[0];
+            } else {
+                String[] pieces = cp.split(" +");
+                exts = new File[pieces.length];
+                for (int l = 0; l < pieces.length; l++) {
+                    exts[l] = new File(dir, pieces[l].replace('/', File.separatorChar));
+                }
+            }
+            String moduleDependencies = attr.getValue("OpenIDE-Module-Module-Dependencies");
+            Entry entry = new Entry(codenamebase, m, exts, dir, null, null, cluster.getName(), parseRuntimeDependencies(moduleDependencies), Collections.<String, String[]>emptyMap());
+            if (entries.containsKey(codenamebase)) {
+                throw new IOException("Duplicated module " + codenamebase + ": found in " + entries.get(codenamebase) + " and " + entry);
+            } else {
+                entries.put(codenamebase, entry);
+            }
+        } finally {
+            jf.close();
+        }
+        return false;
     }
     
     /**

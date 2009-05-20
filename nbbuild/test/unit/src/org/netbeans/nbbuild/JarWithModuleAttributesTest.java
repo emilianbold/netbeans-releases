@@ -41,12 +41,7 @@
 
 package org.netbeans.nbbuild;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.jar.JarOutputStream;
-import java.util.jar.Manifest;
 import junit.framework.AssertionFailedError;
 
 import org.netbeans.junit.*;
@@ -328,29 +323,6 @@ public class JarWithModuleAttributesTest extends NbTestCase {
 
     }
     
-    private final File createNewJarFile () throws IOException {
-        int i = 0;
-        for (;;) {
-            File f = new File (this.getWorkDir(), i++ + ".jar");
-            if (!f.exists ()) return f;
-        }
-    }
-    
-    protected final File generateJar (String[] content, Manifest manifest) throws IOException {
-        File f = createNewJarFile ();
-        
-        JarOutputStream os = new JarOutputStream (new FileOutputStream (f), manifest);
-        
-        for (int i = 0; i < content.length; i++) {
-            os.putNextEntry(new JarEntry (content[i]));
-            os.closeEntry();
-        }
-        os.closeEntry ();
-        os.close();
-        
-        return f;
-    }
-
     private static void assertVersionAtLeast(String limit, String value) {
         int[] segLimit = segments(limit);
         int[] segValue = segments(value);
