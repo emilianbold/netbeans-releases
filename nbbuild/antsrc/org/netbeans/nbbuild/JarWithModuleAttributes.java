@@ -79,6 +79,9 @@ public class JarWithModuleAttributes extends Jar {
 
 
     static String extractCodeName(Attributes attr) {
+        return extractCodeName(attr, null);
+    }
+    static String extractCodeName(Attributes attr, boolean[] osgi) {
         String codename = attr.getValue("OpenIDE-Module");
         if (codename != null) {
             return codename;
@@ -86,6 +89,9 @@ public class JarWithModuleAttributes extends Jar {
         codename = attr.getValue("Bundle-SymbolicName");
         if (codename == null) {
             return null;
+        }
+        if (osgi != null) {
+            osgi[0] = true;
         }
         int params = codename.indexOf(';');
         if (params >= 0) {
