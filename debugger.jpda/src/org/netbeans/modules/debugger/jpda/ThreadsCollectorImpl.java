@@ -60,7 +60,7 @@ public class ThreadsCollectorImpl extends ThreadsCollector {
     private JPDADebuggerImpl debugger;
     
     private PropertyChangeListener changesInThreadsListener;
-    private Map<JPDAThread, ThreadStateListener> threadStateListeners = new WeakHashMap<JPDAThread, ThreadStateListener>();
+    private final Map<JPDAThread, ThreadStateListener> threadStateListeners = new WeakHashMap<JPDAThread, ThreadStateListener>();
 
     public ThreadsCollectorImpl(JPDADebuggerImpl debugger) {
         this.debugger = debugger;
