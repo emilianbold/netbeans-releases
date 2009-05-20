@@ -44,244 +44,375 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import org.netbeans.editor.ext.html.dtd.DTD;
-import org.netbeans.editor.ext.html.dtd.DTD.ContentModel;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.editor.ext.html.parser.AstNode.Description;
 import org.netbeans.editor.ext.html.parser.SyntaxElement.TagAttribute;
 import org.openide.util.NbBundle;
 
 /**
+ * Planar parser result to AST convertor
  *
- * @author Tomasz.Slota@Sun.COM, mfukala@netbeans.org
+ * @author mfukala@netbeans.org
  */
 public class SyntaxTree {
 
     //error messages keys, used for unit testing
-    static final String UNEXPECTED_TAG_KEY = "unexpected_tag";
-    static final String UNRESOLVED_TAG_KEY = "unresolved_tag";
-    static final String UNKNOWN_TAG_KEY = "unknown_tag";
-    static final String UNKNOWN_ATTRIBUTE_KEY = "unknown_attribute";
-    static final String FORBIDDEN_END_TAG = "forbidded_endtag";
-    static final String UNMATCHED_TAG = "unmatched_tag";
-
-    static boolean DEBUG = false; //for unit testing
+    static final String UNEXPECTED_TAG_KEY = "unexpected_tag"; //NOI18N
+    static final String UNRESOLVED_TAG_KEY = "unresolved_tag"; //NOI18N
+    static final String UNKNOWN_TAG_KEY = "unknown_tag"; //NOI18N
+    static final String UNKNOWN_ATTRIBUTE_KEY = "unknown_attribute"; //NOI18N
+    static final String FORBIDDEN_END_TAG = "forbidded_endtag"; //NOI18N
+    static final String UNMATCHED_TAG = "unmatched_tag"; //NOI18N
+    static final String MISSING_REQUIRED_END_TAG = "missing_required_end_tag"; //NOI18N
 
     public static AstNode makeTree(List<SyntaxElement> elements, DTD dtd) {
         assert elements != null;
         assert dtd != null;
 
-        boolean isXHTML = org.netbeans.editor.ext.html.dtd.Utils.isXHTMLPublicId(dtd.getIdentifier());
-
         SyntaxElement last = elements.size() > 0 ? elements.get(elements.size() - 1) : null;
         int lastEndOffset = last == null ? 0 : last.offset() + last.length();
 
-        AstNode root = new AstNode("root", null, 0, lastEndOffset);
-        LinkedList<AstNode> nodeStack = new LinkedList<AstNode>();
-        nodeStack.add(root);
+        //create a root node, it can contain one or more child nodes
+        //normally just <html> node should be its child
+        AstNode rootNode = new AstNode("root", AstNode.NodeType.ROOT, 0, lastEndOffset); //NOI18N
+        LinkedList<AstNode> stack = new LinkedList<AstNode>();
+        stack.add(rootNode);
 
         for (SyntaxElement element : elements) {
-            if (element.type() == SyntaxElement.TYPE_TAG) {
+
+            if (element.type() == SyntaxElement.TYPE_TAG) { //open tag
                 assert element instanceof SyntaxElement.Tag;
-                // OPENING TAG
-                // create tag node, push it on stack
-                // add opening tag node
 
-                String tagName = ((SyntaxElement.Named) element).getName();
+                SyntaxElement.Tag tagElement = (SyntaxElement.Tag) element;
+                String tagName = tagElement.getName();
 
-                AstNode lastNode = null;
-                //find first dtd tag in the stack
-                for(int i = nodeStack.size() - 1; i >= 0; i--) {
-                    if(nodeStack.get(i).isDTDTag()) {
-                        lastNode = nodeStack.get(i);
-                        break;
+                AstNode lastNode = stack.getLast();
+
+                //try to find DTD element for the current node
+                Element currentNodeDtdElement = dtd.getElement(tagName);
+
+                if (currentNodeDtdElement == null) {
+                    //TODO: keep the unknown nodes in a separate tree under the
+                    //parser result so features like tag matching can work but
+                    //the pure HTML tree is not affected
+
+                    //no DTD tag, just mark as unknown and add it as a child of current stack's top node
+                    AstNode unknownTagNode = new AstNode(tagName, AstNode.NodeType.UNKNOWN_TAG,
+                            tagElement.offset(), tagElement.offset() + tagElement.length());
+
+                    //ignore namespaced tags, they won't be matched, but without errors
+                    if (!isIgnoredTagName(tagName)) {
+                        String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_TAG", //NOI18N
+                                new Object[]{tagName});
+                        unknownTagNode.addDescriptionToNode(UNKNOWN_TAG_KEY, errorMessage, AstNode.Description.WARNING);
                     }
+
+                    lastNode.addChild(unknownTagNode);
+
+                    continue; //process next syntax element
                 }
 
-                if (DEBUG) {
-                    System.out.println("--------------------------------");
-                    System.out.println("Processing tag " + tagName);
-                    System.out.println("Last open tag = " + (lastNode != null ? lastNode.name() : "<NONE>"));
-                }
 
-                Element currentNodeDtdElement = dtd.getElement(isXHTML ? tagName : tagName.toUpperCase(Locale.ENGLISH));
-                ContentModel contentModel = null;
-                Collection<String[]> errorMessages = new ArrayList<String[]>(2);
-                Collection<Description> unknownAttributeMessages = new ArrayList<Description>(2);
+                //create an AST node for current element
+                AstNode openTagNode = new AstNode(tagName, AstNode.NodeType.OPEN_TAG,
+                        tagElement.offset(), tagElement.offset() + tagElement.length(),
+                        currentNodeDtdElement, stack(stack));
 
-                //some error checks >>>
-                if (currentNodeDtdElement != null) {
-                    if (lastNode != null) {
-                        //check if the last open tag allows this tag as its content
-                        //if not, close the previous open tag by the end of this tag
-                        if (!lastNode.reduce(currentNodeDtdElement)) {
-                            //current node cannot be present inside its parent
+                //check tag attributes
+                openTagNode.addDescriptions(checkTagAttributes((SyntaxElement.Tag) tagElement, currentNodeDtdElement));
 
-                            if (!lastNode.isResolved()) {
-                                //the parent node is not resolved we cannot close it
-                                //some mandatory content unresolved, report error
-                                String expectedElements = elementsToString(lastNode.getAllPossibleElements());
-                                errorMessages.add(new String[]{UNEXPECTED_TAG_KEY, NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG",
-                                        new Object[]{currentNodeDtdElement.getName(), expectedElements})});
+                //check if the last open tag allows this tag as its content, do not do that for root node
+                if (lastNode != rootNode && !lastNode.reduce(currentNodeDtdElement)) {
+                    //current node cannot be present inside its parent
 
-                                if (DEBUG) {
-                                    System.out.println("NODE NOT RESOLVED! Missing " + expectedElements);
-                                }
+                    if (!lastNode.isResolved()) {
+                        //the parent node is not resolved we cannot close it
+                        //some mandatory content unresolved, report error
+                        String expectedElements = elementsToString(lastNode.getAllPossibleElements());
+                        openTagNode.addDescriptionToNode(UNEXPECTED_TAG_KEY, NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG", //NOI18N
+                                new Object[]{currentNodeDtdElement.getName(), expectedElements}), Description.ERROR);
+
+                    } else {
+                        //the parent node is resolved so can be possibly closed
+
+                        //check if the node we are going to close have required end tag
+                        //if so show an error
+                        Element lastDtdElement = dtd.getElement(lastNode.name());
+
+                        assert lastDtdElement != null; //only DTD based elements are put into the stack
+
+                        if (!lastDtdElement.hasOptionalEnd()) {
+                            //the last node has required end tag => report error
+                            Collection<Element> possibleElems = lastNode.getAllPossibleElements();
+                            if (possibleElems.isEmpty()) {
+                                openTagNode.addDescriptionToNode(UNEXPECTED_TAG_KEY, NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG_NO_EXPECTED_CONTENT", //NOI18N
+                                        new Object[]{currentNodeDtdElement.getName()}), Description.ERROR);
                             } else {
-                                //the parent node is resolved so can be possibly closed
+                                String expectedElements = elementsToString(possibleElems);
+                                openTagNode.addDescriptionToNode(UNEXPECTED_TAG_KEY, NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG", //NOI18N
+                                        new Object[]{currentNodeDtdElement.getName(), expectedElements}), Description.ERROR);
+                            }
+                        } else {
+                            //the last node has optional end tag, can be closed
 
-                                //check if the node we are going to close have required end tag
-                                //if so show an error
-                                Element lastDtdElement = dtd.getElement(isXHTML ? lastNode.name() : lastNode.name().toUpperCase(Locale.ENGLISH));
-                                if (lastDtdElement != null && !lastDtdElement.hasOptionalEnd()) {
-                                    //the last node need an end tag => error
-                                    Collection<Element> possibleElems = lastNode.getAllPossibleElements();
-                                    if (possibleElems.isEmpty()) {
-                                        errorMessages.add(new String[]{UNEXPECTED_TAG_KEY,NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG_NO_EXPECTED_CONTENT",
-                                                new Object[]{currentNodeDtdElement.getName()})});
-                                    } else {
-                                        String expectedElements = elementsToString(possibleElems);
-                                        errorMessages.add(new String[]{UNEXPECTED_TAG_KEY, NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG",
-                                                new Object[]{currentNodeDtdElement.getName(), expectedElements})});
-                                    }
+                            /* We need to try if the current element is resolved by one of the nodes in the stack
+                            because of the optional end tag of the last node
+                            sample:
+
+                            <html>
+                            <head>
+                            <title>
+                            </title>
+                            <body> -- current element, last element is head
+                            </body>
+                            </html>
+
+                            In the example above the last element == <head> with optional end
+                            so it can be closed by <body> start element
+
+                            In general we need to remove all elements from the top to down
+                            of the stack until one reduces the current element. If none of
+                            them does this mark current element as error.
+
+                             */
+
+                            
+                            int reduce_index = -1;
+                            for (int i = stack.size() - 1; i > 0; i--) {
+                                AstNode node = stack.get(i);
+                                //node can be possibly closed by this tag
+                                if (node.reduce(currentNodeDtdElement)) {
+                                    //this node reduces this current element
+                                    reduce_index = i;
+                                    break;
+                                }
+                            }
+
+                            if (reduce_index == -1) {
+                                //no reduce
+                                //workaround
+                                stack.remove(lastNode);
+                                lastNode.setLogicalEndOffset(openTagNode.startOffset());
+                                
+                                lastNode = stack.getLast();
+                                lastNode.addChild(openTagNode);
+
+
+                                //mark the error only if the parent node is not root
+                                if (lastNode != rootNode) {
+                                    //nothing reduces the current element, error
+                                    openTagNode.addDescriptionToNode(UNEXPECTED_TAG_KEY, NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG_NO_EXPECTED_CONTENT", //NOI18N
+                                            new Object[]{currentNodeDtdElement.getName()}), Description.ERROR);
                                 } else {
-                                    //the last node has optional end tag, can be closed
-
-                                    //close the previous node
-                                    lastNode.setEndOffset(element.offset());
-                                    nodeStack.remove(lastNode);
-
-//                                    //hmm, the last node didn't resolve this tag, lets try its parent
-//                                    AstNode parentNode = nodeStack.getLast();
-//                                    if (!parentNode.isResolved()) {
-//                                        //an attempt to reduce the current node within its parent
-//                                        parentNode.reduce(currentNodeDtdElement);
-//                                    }
-
-                                    if (DEBUG) {
-                                        System.out.println("Closing tag " + lastNode.name() + " by the end of this tag!");
-                                    }
+                                    stack.addLast(openTagNode);
                                 }
 
+                                continue; //!!!!!!!!!!!!
+                            } else {
+                                //remove all nodes from stack up to the reducing one if has optional ends
+                                //close all nodes up to the one which reduced the current element
+                                for (int i = stack.size() - 1; i > reduce_index; i--) {
+                                    AstNode node = stack.get(i);
+                                    if (hasOptionalEndTag(node)) {
+                                        node.setLogicalEndOffset(openTagNode.startOffset());
+                                        stack.remove(i);
+                                    } else {
+                                        break;
+                                    }
 
+                                }
+                                lastNode = stack.getLast(); //update lastnode to the new top
                             }
+
                         }
                     }
-
-                    //check tag attributes
-                    unknownAttributeMessages.addAll(checkTagAttributes((SyntaxElement.Tag) element, currentNodeDtdElement));
-
-                    //create DTD content for this node
-                    contentModel = currentNodeDtdElement.getContentModel();
                 }
 
-                //<<< end of error checks
 
-                int openingTagEndOffset = element.offset() + element.length();
-                AstNode newTagNode = new AstNode(tagName, AstNode.NodeType.TAG,
-                        element.offset(), openingTagEndOffset, contentModel);
-
-                nodeStack.getLast().addChild(newTagNode);
-                if (!(( (SyntaxElement.Tag) element).isEmpty() ||
-                        (currentNodeDtdElement != null && currentNodeDtdElement.isEmpty()))) {
-                    //the node is neeither empty by declaration nor by definition
-                    nodeStack.add(newTagNode);
+                //possible add the node to the nodes stack
+                if (!(tagElement.isEmpty() || currentNodeDtdElement.isEmpty())) {
+                    //the node is neither empty by declaration nor by definition
+                    stack.addLast(openTagNode);
                 }
 
-                AstNode openingTagNode = new AstNode(tagName, AstNode.NodeType.OPEN_TAG,
-                        element.offset(), openingTagEndOffset);
+                //add the node to its parent
+                lastNode.addChild(openTagNode);
 
-                openingTagNode.addDescriptionsToNode(errorMessages, Description.ERROR);
-                openingTagNode.addDescriptions(unknownAttributeMessages);
-
-                newTagNode.addChild(openingTagNode);
-            } else if (element.type() == SyntaxElement.TYPE_ENDTAG) {
-                // CLOSING TAG
-                // is it consistent with the last open tag? for now assuming 'yes'
-                // add closing tag node
-                // pop current node from the stack
+            } else if (element.type() == SyntaxElement.TYPE_ENDTAG) { //close tag
 
                 String tagName = ((SyntaxElement.Named) element).getName();
-                int lastMatchedTag = nodeStack.size() - 1;
 
-                while (!tagName.equals(nodeStack.get(lastMatchedTag).name()) && lastMatchedTag > 0) {
-                    lastMatchedTag--;
-                }
+                //test if DTD tag, if not do not try to match
+                Element dtdElement = dtd.getElement(tagName);
+                if (dtdElement == null) {
+                    //no DTD tag, just mark as unknown and add it as a child of current stack's top node
+                    AstNode unknownTagNode = new AstNode(tagName, AstNode.NodeType.UNKNOWN_TAG,
+                            element.offset(), element.offset() + element.length());
 
-                int closingTagEndOffset = element.offset() + element.length();
-
-                AstNode closingTag = new AstNode(tagName, AstNode.NodeType.ENDTAG,
-                        element.offset(), closingTagEndOffset);
-
-                if (tagName.equals(nodeStack.get(lastMatchedTag).name())) {
-                    int nodesToDelete = nodeStack.size() - lastMatchedTag - 1;
-                    removeNLastNodes(nodesToDelete, nodeStack);
-
-                    AstNode lastNode = nodeStack.getLast();
-
-                    lastNode.addChild(closingTag);
-                    lastNode.setEndOffset(closingTagEndOffset);
-
-                    //some error checks >>>
-                    if (lastNode.type() == AstNode.NodeType.TAG) {
-                        AstNode openTag = lastNode.children().get(0);
-                        assert openTag.type() == AstNode.NodeType.OPEN_TAG : "Unexpected tag type: " + openTag.type();
-
-                        Element dtdElement = dtd.getElement(isXHTML ? openTag.name() : openTag.name().toUpperCase(Locale.ENGLISH));
-                        //check if the tag content is resolved (only for html tags)
-                        if (dtdElement != null) {
-                            if (!lastNode.isResolved()) {
-                                //some mandatory content unresolved, report error to the open tag
-                                String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNRESOLVED_TAG",
-                                        new Object[]{elementsToString(lastNode.getAllPossibleElements())});
-
-                                openTag.addDescriptionToNode(UNRESOLVED_TAG_KEY, errorMessage, Description.ERROR);
-                            }
-
-                            //test if the tag is empty - if so the and tag is forbidden
-                            if (dtdElement.isEmpty()) {
-                                closingTag.addDescriptionToNode(FORBIDDEN_END_TAG, NbBundle.getMessage(SyntaxTree.class, "MSG_FORBIDDEN_ENDTAG"), Description.ERROR);
-                            }
-
-                        } else {
-                            //non-html tag, report error
-                            //but only if the tagname doesn't contain prefix e.g. <ui:composion> for facelets
-                            if (!openTag.name().contains(":")) {
-                                String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_TAG",
-                                        new Object[]{openTag.name()});
-                                openTag.addDescriptionToNode(UNKNOWN_TAG_KEY, errorMessage, Description.ERROR);
-                            }
-                        }
+                    //ignore namespaced tags, they won't be matched, but without errors
+                    if (!isIgnoredTagName(tagName)) {
+                        String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_TAG", //NOI18N
+                                new Object[]{tagName});
+                        unknownTagNode.addDescriptionToNode(UNKNOWN_TAG_KEY, errorMessage, AstNode.Description.WARNING);
                     }
 
-                    //<<< end of error checks
+                    stack.getLast().addChild(unknownTagNode);
 
-                    nodeStack.removeLast();
+                    continue; //process next syntax element
+
+                }
+
+                AstNode closeTagNode = new AstNode(tagName, AstNode.NodeType.ENDTAG,
+                        element.offset(), element.offset() + element.length(), dtdElement, stack(stack));
+
+                int matched_index = -1;
+                for (int i = stack.size() - 1; i >= 0; i--) {
+                    AstNode node = stack.get(i);
+                    if (tagName.equals(node.name())) {
+                        //found the matching open tag, maybe
+                        //check if the matching open tag has forbidden end tag
+                        if (hasForbiddedEndTag(node)) {
+                            //cannot match, report error
+                            closeTagNode.addDescriptionToNode(FORBIDDEN_END_TAG, NbBundle.getMessage(SyntaxTree.class, "MSG_FORBIDDEN_ENDTAG"), Description.ERROR); //NOI18N
+                        } else {
+                            //ok, match
+                            matched_index = i;
+                            break;
+                        }
+                    }
+                }
+
+                assert matched_index != 0; //never match root node, either -1 or > 0
+
+                if (matched_index > 0) {
+                    //something matched
+                    AstNode match = stack.get(matched_index);
+
+                    if (matched_index != stack.size() - 1) {
+                        //some tags are skipped, needs to be resolved
+
+                        //go through all the left stacked tags and try to
+                        //check if they can be closed or not
+                        for (int i = stack.size() - 1; i > matched_index; i--) {
+                            AstNode node = stack.get(i);
+
+                            if (!node.isResolved()) {
+                                //unresolved content
+                                String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNRESOLVED_TAG", //NOI18N
+                                        new Object[]{elementsToString(node.getAllPossibleElements())});
+                                node.addDescriptionToNode(UNRESOLVED_TAG_KEY, errorMessage, Description.ERROR);
+                            }
+
+                            if (!hasOptionalEndTag(node)) {
+                                //missing end tag
+                                String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_MISSING_REQUIRED_END_TAG"); //NOI18N
+                                node.addDescriptionToNode(MISSING_REQUIRED_END_TAG, errorMessage, Description.ERROR);
+                            }
+                        }
+
+                        //remove them ALL the left elements from the stack
+                        for (int i = stack.size() - 1; i > matched_index; i--) {
+                            AstNode node = stack.get(i);
+                            node.setLogicalEndOffset(closeTagNode.startOffset());
+                            stack.remove(i);
+                        }
+
+                    }
+
+                    //verify the matched tag:
+                    //check if the tag content is resolved (only for html tags)
+                    if (!match.isResolved()) {
+                        //some mandatory content unresolved, report error to the open tag
+                        String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNRESOLVED_TAG", //NOI18N
+                                new Object[]{elementsToString(match.getAllPossibleElements())});
+
+                        match.addDescriptionToNode(UNRESOLVED_TAG_KEY, errorMessage, Description.ERROR);
+
+                    }
+
+                    //add the node to the proper parent
+                    AstNode match_parent = stack.get(matched_index - 1);
+                    match_parent.addChild(closeTagNode);
+
+                    //wont' help GS at all, but should be ok
+                    match.setMatchingNode(closeTagNode);
+                    match.setLogicalEndOffset(closeTagNode.endOffset());
+                    closeTagNode.setMatchingNode(match);
+
+                    //remove the matched tag from stack
+                    stack.removeLast();
+
                 } else {
-                    // unmatched closing tag
-                    AstNode newTagNode = new AstNode(tagName, AstNode.NodeType.TAG,
-                            element.offset(), closingTagEndOffset);
+                    //no match, mark as unmatched is has required start tag
+                    if (!dtdElement.hasOptionalStart()) {
+                        String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNMATCHED_TAG"); //NOI18N
+                        closeTagNode.addDescriptionToNode(UNMATCHED_TAG, errorMessage, Description.WARNING);
+                    }
 
-                    String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNMATCHED_TAG");
-                    newTagNode.addDescriptionToNode(UNMATCHED_TAG, errorMessage, Description.WARNING);
-
-                    nodeStack.getLast().addChild(newTagNode);
-                    nodeStack.add(newTagNode);
-                    newTagNode.addChild(closingTag);
+                    //add it to the last node
+                    stack.getLast().addChild(closeTagNode);
                 }
 
             } else {
+                //rest of the syntax element types
+                //XXX do we need to have these in the AST???
+
                 // add a new AST node to the last node on the stack
                 AstNode.NodeType nodeType = intToNodeType(element.type());
 
                 AstNode node = new AstNode(null, nodeType, element.offset(),
                         element.offset() + element.length());
 
-                nodeStack.getLast().addChild(node);
+                stack.getLast().addChild(node);
             }
         }
 
-        removeNLastNodes(nodeStack.size() - 1, nodeStack);
-        return root;
+        //check the stack content and resolve left nodes
+        for (int i = stack.size() - 1; i > 0; i--) { // (i > 0) == do not process the very first (root) node
+            AstNode node = stack.get(i);
+
+            if (!hasOptionalEndTag(node)) {
+                //unclosed tag, mark
+                String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNMATCHED_TAG"); //NOI18N
+                node.addDescriptionToNode(UNMATCHED_TAG, errorMessage, Description.WARNING);
+            }
+
+            if (!node.isResolved()) {
+                //unresolved, mark
+                String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNRESOLVED_TAG", //NOI18N
+                        new Object[]{elementsToString(node.getAllPossibleElements())});
+
+                node.addDescriptionToNode(UNRESOLVED_TAG_KEY, errorMessage, Description.ERROR);
+            }
+        }
+
+        return rootNode;
+    }
+
+    private static List<String> stack(LinkedList<AstNode> stack) {
+        List<String> s = new ArrayList<String>();
+        for (AstNode node : stack) {
+            s.add(node.name());
+        }
+        return s;
+    }
+
+    private static boolean hasForbiddedEndTag(AstNode node) {
+        Element e = node.getDTDElement();
+        assert e != null;
+
+        return e.isEmpty();
+    }
+
+    private static boolean hasOptionalEndTag(AstNode node) {
+        Element e = node.getDTDElement();
+        assert e != null;
+
+        return e.hasOptionalEnd();
+    }
+
+    private static boolean isIgnoredTagName(String tagName) {
+        return tagName.contains(":"); //NOI18N
     }
 
     private static Collection<Description> checkTagAttributes(SyntaxElement.Tag element, Element dtdElement) {
@@ -292,7 +423,7 @@ public class SyntaxTree {
         for (TagAttribute ta : existingAttrs) {
             if (dtdElement.getAttribute(ta.getName().toLowerCase(Locale.ENGLISH)) == null) {
                 //unknown attribute
-                Description desc = Description.create(UNKNOWN_ATTRIBUTE_KEY, NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_ATTRIBUTE",
+                Description desc = Description.create(UNKNOWN_ATTRIBUTE_KEY, NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_ATTRIBUTE", //NOI18N
                         new Object[]{ta.getName(), element.getName()}), Description.WARNING, ta.getNameOffset(), ta.getNameOffset() + ta.getName().length());
 
                 errmsgs.add(desc);
@@ -304,48 +435,18 @@ public class SyntaxTree {
     private static String elementsToString(Collection<Element> elements) {
         StringBuffer b = new StringBuffer();
         for (Element e : elements) {
-            b.append('<');
+            b.append('<'); //NOI18N
             b.append(e.getName());
-            b.append('>');
-            b.append(", ");
+            b.append('>'); //NOI18N
+            b.append(", "); //NOI18N
         }
 
-        if(b.length() > 0) {
+        if (b.length() > 0) {
             //strip last delimiters
             b.delete(b.length() - 2, b.length());
         }
 
         return b.toString();
-    }
-
-    private static void removeNLastNodes(int nodesToDelete, LinkedList<AstNode> nodeStack) {
-        LinkedList<LinkedList<AstNode>> orphanMatrix = new LinkedList<LinkedList<AstNode>>();
-
-        for (int i = 0; i < nodesToDelete; i++) {
-            LinkedList<AstNode> orphans = new LinkedList<AstNode>();
-            AstNode lastInStack = nodeStack.getLast();
-            lastInStack.markUnmatched();
-
-            String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNMATCHED_TAG");
-            lastInStack.addDescriptionToNode(UNMATCHED_TAG, errorMessage, Description.WARNING);
-
-            for (AstNode child : lastInStack.children()) {
-                if (child.type() == AstNode.NodeType.TAG || child.type() == AstNode.NodeType.UNMATCHED_TAG) {
-                    orphans.add(child);
-                }
-            }
-
-            lastInStack.removeTagChildren();
-
-            nodeStack.removeLast();
-            orphanMatrix.addFirst(orphans);
-        }
-
-        for (LinkedList<AstNode> orphans : orphanMatrix) {
-            for (AstNode orphan : orphans) {
-                nodeStack.getLast().addChild(orphan);
-            }
-        }
     }
 
     private static AstNode.NodeType intToNodeType(int type) {
@@ -368,5 +469,4 @@ public class SyntaxTree {
 
         return null;
     }
-
 }
