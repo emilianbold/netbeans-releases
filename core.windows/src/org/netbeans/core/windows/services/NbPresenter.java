@@ -1031,6 +1031,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
                     propertyChange(evt);
                 }
             });
+            return;
         }
         boolean update = false;
         
