@@ -83,7 +83,13 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             UnbufferSupport.initUnbuffer(info, env);
 
             // Always prepend /bin and /usr/bin to PATH
-            env.put("PATH", "/bin:/usr/bin:$PATH"); // NOI18N
+            String path = env.get("PATH"); // NOI18N
+
+            if (isWindows) {
+                path = CommandLineHelper.getInstance(info.getExecutionEnvironment()).toShellPaths(path);
+            }
+
+            env.put("PATH", "/bin:/usr/bin:" + path); // NOI18N
 
             final ProcessBuilder pb = new ProcessBuilder(hostInfo.getShell(), "-s"); // NOI18N
 
