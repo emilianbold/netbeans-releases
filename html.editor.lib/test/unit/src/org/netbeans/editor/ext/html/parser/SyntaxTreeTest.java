@@ -38,10 +38,6 @@
  */
 package org.netbeans.editor.ext.html.parser;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -282,6 +278,10 @@ public class SyntaxTreeTest extends TestBase {
         String code = "<table><tr><td>r1c1<tr><td>r2c1</table>";
 
         assertAST(code);
+    }
+
+    public void testXhtmlNamespaceAttrs() throws Exception {
+        assertAST("<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:ui=\"http://java.sun.com/jsf/facelets\"><head><meta></meta><title></title></head><body></body></html>", Utils.XHTML_STRINCT_PUBLIC_ID);
     }
 
     public void testTagsMatching() throws Exception {
