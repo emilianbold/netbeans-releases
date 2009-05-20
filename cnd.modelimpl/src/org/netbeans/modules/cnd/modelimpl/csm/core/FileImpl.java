@@ -1647,8 +1647,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 try {
                     if (wait) {
                         StringBuilder name = new StringBuilder(oldName);
-                        name.append(": scheduleParsing ").append(getAbsolutePath());
-                        name.append(" in states ").append(state).append(", ").append(parsingState);
+                        name.append(": scheduleParsing ").append(getAbsolutePath()); // NOI18N
+                        name.append(" in states ").append(state).append(", ").append(parsingState); // NOI18N
                         Thread.currentThread().setName(name.toString());
                     }
                     if (!isParsingOrParsed()) {
