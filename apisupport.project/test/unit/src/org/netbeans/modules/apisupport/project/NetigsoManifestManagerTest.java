@@ -99,6 +99,8 @@ public class NetigsoManifestManagerTest extends TestBase {
                 "Bundle-SymbolicName: org.netbeans.modules.sendopts\n" +
                 "OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/sendopts/Bundle.properties\n" +
                 "Bundle-Version: 1.9.7.Prelude\n" +
+                "Import-Package: client.prefs;" +
+"version=\"3.0.0.Prelude\",admin.cli;version=\"3.5.0.Prelude\"\n" +
                 "Export-Package: javax.mail.search;uses:=\"javax.mail.internet,javax.mai" +
  "l\";version=\"1.4\",javax.mail.event;uses:=\"javax.mail\";version=\"1.4\",ja" +
  "vax.mail.util;uses:=\"javax.activation,javax.mail.internet\";version=\"1" +
@@ -110,12 +112,21 @@ public class NetigsoManifestManagerTest extends TestBase {
         assertEquals("cnb", "org.netbeans.modules.sendopts", mm.getCodeNameBase());
         assertEquals("version", "1.9.7", mm.getSpecificationVersion());
         assertEquals("version prelude taken as build version", "1.9.7.Prelude", mm.getImplementationVersion());
-        assertEquals("Three packages: " + Arrays.asList(mm.getPublicPackages()), 5, mm.getPublicPackages().length);
+        assertEquals("Five packages: " + Arrays.asList(mm.getPublicPackages()), 5, mm.getPublicPackages().length);
         assertEquals("javax.mail.search", mm.getPublicPackages()[0].getPackage());
         assertEquals("javax.mail.event", mm.getPublicPackages()[1].getPackage());
         assertEquals("javax.mail.util", mm.getPublicPackages()[2].getPackage());
         assertEquals("javax.mail.internet", mm.getPublicPackages()[3].getPackage());
         assertEquals("javax.mail", mm.getPublicPackages()[4].getPackage());
+        assertEquals("Five tokens: " + Arrays.asList(mm.getProvidedTokens()), 5, mm.getProvidedTokens().length);
+        assertEquals("javax.mail.search", mm.getProvidedTokens()[0]);
+        assertEquals("javax.mail.event", mm.getProvidedTokens()[1]);
+        assertEquals("javax.mail.util", mm.getProvidedTokens()[2]);
+        assertEquals("javax.mail.internet", mm.getProvidedTokens()[3]);
+        assertEquals("javax.mail", mm.getProvidedTokens()[4]);
+        assertEquals("Two required tokens: " + Arrays.asList(mm.getRequiredTokens()), 2, mm.getRequiredTokens().length);
+        assertEquals("client.prefs", mm.getRequiredTokens()[0]);
+        assertEquals("admin.cli", mm.getRequiredTokens()[1]);
     }
     
 }

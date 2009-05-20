@@ -100,6 +100,7 @@ public final class ManifestManager {
     public static final String OPENIDE_MODULE_LOCALIZING_BUNDLE = "OpenIDE-Module-Localizing-Bundle"; // NOI18N
     public static final String OPENIDE_MODULE_PUBLIC_PACKAGES = "OpenIDE-Module-Public-Packages"; // NOI18N
     public static final String BUNDLE_EXPORT_PACKAGE = "Export-Package"; // NOI18N
+    public static final String BUNDLE_IMPORT_PACKAGE = "Import-Package"; // NOI18N
     public static final String OPENIDE_MODULE_FRIENDS = "OpenIDE-Module-Friends"; // NOI18N
     public static final String OPENIDE_MODULE_MODULE_DEPENDENCIES = "OpenIDE-Module-Module-Dependencies"; // NOI18N
     public static final String CLASS_PATH = "Class-Path"; // NOI18N
@@ -263,23 +264,47 @@ public final class ManifestManager {
         Attributes attr = manifest.getMainAttributes();
         String codenamebase = attr.getValue(BUNDLE_SYMBOLIC_NAME);
         PackageExport[] publicPackages = null;
-        if (loadPublicPackages) {
-            publicPackages = EMPTY_EXPORTED_PACKAGES;
+        String requires = null;
+        String provides = null;
+        publicPackages = EMPTY_EXPORTED_PACKAGES;
+        {
             String pp = attr.getValue(BUNDLE_EXPORT_PACKAGE);
             if (pp != null) {
                 List<PackageExport> arr = new ArrayList<PackageExport>();
+                StringBuffer sb = new StringBuffer();
+                String sep = "";
                 for (String p : pp.replaceAll("\"[^\"]*\"", "").split(",")) {
-                    arr.add(new PackageExport(p.replaceAll(";.*$", "").trim(), false));
+                    final PackageExport pe = new PackageExport(p.replaceAll(";.*$", "").trim(), false);
+                    arr.add(pe);
+                    sb.append(sep).append(pe.getPackage());
+                    sep = ",";
                 }
                 publicPackages = arr.toArray(new PackageExport[0]);
+                provides = sb.toString();
             }
+        }
+        {
+            String pp = attr.getValue(BUNDLE_IMPORT_PACKAGE);
+            if (pp != null) {
+                StringBuffer sb = new StringBuffer();
+                String sep = "";
+                for (String p : pp.replaceAll("\"[^\"]*\"", "").split(",")) {
+                    sb.append(sep).append(p.replaceAll(";.*$", "").trim());
+                    sep = ",";
+                }
+                requires = sb.toString();
+            }
+        }
+
+        if (!loadPublicPackages) {
+            publicPackages = EMPTY_EXPORTED_PACKAGES;
         }
         return new ManifestManager(
                 codenamebase, null,
                 just3dots(attr.getValue(BUNDLE_VERSION)),
                 attr.getValue(BUNDLE_VERSION),
-                null, // provides
-                null, // requires
+                provides, // provides
+                requires, // requires
                 null, // needs
                 attr.getValue(OPENIDE_MODULE_LOCALIZING_BUNDLE),
                 attr.getValue(OPENIDE_MODULE_LAYER),
