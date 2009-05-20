@@ -48,7 +48,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.openide.util.NbBundle;
@@ -106,7 +105,7 @@ public abstract class Configuration implements ProjectConfiguration {
 
     public String getBaseDir() {
         // this dir is possibly local directory (in remote mode)
-        return FilePathAdaptor.mapToRemote(baseDir);
+        return baseDir;
     }
 
     public void setBaseDir(String baseDir) {

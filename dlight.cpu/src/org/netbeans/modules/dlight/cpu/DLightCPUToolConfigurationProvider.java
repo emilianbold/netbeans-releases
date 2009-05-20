@@ -60,6 +60,7 @@ import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.util.Util;
+import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
 import org.netbeans.modules.dlight.visualizers.api.FunctionsListViewVisualizerConfiguration;
 import org.openide.util.NbBundle;
@@ -74,6 +75,7 @@ public final class DLightCPUToolConfigurationProvider
     public static final int INDICATOR_POSITION = 100;
     private static final String TOOL_NAME = loc("CPUMonitorTool.ToolName"); // NOI18N
     private static final String DETAILED_TOOL_NAME = loc("CPUMonitorTool.DetailedToolName"); // NOI18N
+    private static final boolean CPU_TREE_TABLE = Boolean.valueOf(System.getProperty("cpu.tree.table", "false"));
 
     public DLightToolConfiguration create() {
         final DLightToolConfiguration toolConfiguration =
@@ -99,19 +101,26 @@ public final class DLightCPUToolConfigurationProvider
             SunStudioDCConfiguration.c_name,
             SunStudioDCConfiguration.c_iUser,
             SunStudioDCConfiguration.c_eUser);
-        // Register configured detailed view to be opened on indicator click...
-//        VisualizerConfiguration detailsVisualizerConfigSS =
-//            new CallersCalleesVisualizerConfiguration(
-//            detailedViewTableMetadataSS,
-//            "name", // NOI18N
-//            true);
-        FunctionDatatableDescription funcDescription = new FunctionDatatableDescription(SunStudioDCConfiguration.c_name.getColumnName(), null, SunStudioDCConfiguration.c_name.getColumnName());
-        FunctionsListViewVisualizerConfiguration detailsVisualizerConfigSS = new FunctionsListViewVisualizerConfiguration(detailedViewTableMetadataSS, funcDescription, Arrays.asList(SunStudioDCConfiguration.c_iUser, SunStudioDCConfiguration.c_eUser));
         ColumnsUIMapping columnsUIMapping = new ColumnsUIMapping();
         columnsUIMapping.setDisplayedName(SunStudioDCConfiguration.c_name.getColumnName(), loc("CPUMonitorTool.ColumnName.func_name")); // NOI18N
         columnsUIMapping.setColumnUI(SunStudioDCConfiguration.c_iUser.getColumnName(), loc("CPUMonitorTool.ColumnName.time_incl"), loc("CPUMonitorTool.ColumnTooltip.time_incl")); // NOI18N
         columnsUIMapping.setColumnUI(SunStudioDCConfiguration.c_eUser.getColumnName(), loc("CPUMonitorTool.ColumnName.time_excl"), loc("CPUMonitorTool.ColumnTooltip.time_excl")); // NOI18N
-        detailsVisualizerConfigSS.setColumnsUIMapping(columnsUIMapping);
+
+        // Register configured detailed view to be opened on indicator click...
+        VisualizerConfiguration detailsVisualizerConfigSS;
+        if (CPU_TREE_TABLE){
+            detailsVisualizerConfigSS =
+                new CallersCalleesVisualizerConfiguration(
+                detailedViewTableMetadataSS,
+                "name", // NOI18N
+                false);
+            ((CallersCalleesVisualizerConfiguration)detailsVisualizerConfigSS).setColumnsUIMapping(columnsUIMapping);
+        }else{
+            FunctionDatatableDescription funcDescription = new FunctionDatatableDescription(SunStudioDCConfiguration.c_name.getColumnName(), null, SunStudioDCConfiguration.c_name.getColumnName());
+            detailsVisualizerConfigSS = new FunctionsListViewVisualizerConfiguration(detailedViewTableMetadataSS, funcDescription, Arrays.asList(SunStudioDCConfiguration.c_iUser, SunStudioDCConfiguration.c_eUser));
+            ((FunctionsListViewVisualizerConfiguration)detailsVisualizerConfigSS).setColumnsUIMapping(columnsUIMapping);
+        }
+        
         // Use D-Trace as a provider of data for detailed view
         String scriptFile = Util.copyResource(getClass(),
             Util.getBasePath(getClass()) + "/resources/calls.d"); // NOI18N
@@ -164,7 +173,7 @@ public final class DLightCPUToolConfigurationProvider
         Column stackId = new Column("leaf_id", Integer.class, loc("CPUMonitorTool.ColumnName.leaf_id"), null); // NOI18N
 
         return new DataTableMetadata("CallStack", // NOI18N
-            Arrays.asList(cpuId, threadId, timestamp, stackId));
+            Arrays.asList(cpuId, threadId, timestamp, stackId), null);
     }
 
     private VisualizerConfiguration createDTraceBasedVisualizerConfiguration(DataTableMetadata profilerTableMetadata){
@@ -199,11 +208,20 @@ public final class DLightCPUToolConfigurationProvider
         DataTableMetadata result = new DataTableMetadata(
             StackDataStorage.STACK_METADATA_VIEW_NAME,
             columns, null, Arrays.asList(profilerTableMetadata));
-        FunctionDatatableDescription funcDescription = new FunctionDatatableDescription(nameColumn.getColumnName(), null, nameColumn.getColumnName());
-        FunctionsListViewVisualizerConfiguration configuration = new FunctionsListViewVisualizerConfiguration(result, funcDescription, metrics);
-        configuration.setColumnsUIMapping(columnsUIMapping);
-        return configuration;
-
+        if (CPU_TREE_TABLE){
+            CallersCalleesVisualizerConfiguration configuration =
+                new CallersCalleesVisualizerConfiguration(
+                result,
+                "name", // NOI18N
+                false);
+            configuration.setColumnsUIMapping(columnsUIMapping);
+            return configuration;
+        }else{
+            FunctionDatatableDescription funcDescription = new FunctionDatatableDescription(nameColumn.getColumnName(), null, nameColumn.getColumnName());
+            FunctionsListViewVisualizerConfiguration configuration = new FunctionsListViewVisualizerConfiguration(result, funcDescription, metrics);
+            configuration.setColumnsUIMapping(columnsUIMapping);
+            return configuration;
+        }
     }
 
 

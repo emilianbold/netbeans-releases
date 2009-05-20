@@ -62,6 +62,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -388,7 +390,12 @@ public final class UncaughtException implements ErrorRule<Void> {
                     wc.toPhase(Phase.RESOLVED);
                     Tree tree = wc.getTrees().getTree(method.resolve(wc));
 
-                    assert tree != null;
+                    if (tree == null) {
+                        Logger.getLogger(UncaughtException.class.getName()).log(Level.WARNING, "Cannot resolve Handle." +
+                                "fqn: " + fqn +
+                                "method: " + method.getQualifiedName());
+                        return;
+                    }
                     assert tree.getKind() == Kind.METHOD;
 
                     MethodTree nue = wc.getTreeMaker().addMethodThrows((MethodTree) tree, (ExpressionTree) wc.getTreeMaker().Type(thandle.resolve(wc)));

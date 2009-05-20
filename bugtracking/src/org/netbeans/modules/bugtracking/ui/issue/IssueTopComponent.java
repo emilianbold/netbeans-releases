@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.bugtracking.ui.issue;
@@ -421,7 +421,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 if(issue != null) {
-                    setName(issue.getDisplayName());
+                    setName(issue.getShortenedDisplayName());
                     setToolTipText(issue.getTooltip());
                 } else {
                     setName(NbBundle.getMessage(IssueTopComponent.class, "CTL_IssueTopComponent")); // NOI18N

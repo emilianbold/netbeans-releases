@@ -76,7 +76,7 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
     private CreateHostWizardIterator(List<HostSetupProvider> providers, ToolsCacheManager cacheManager) {
         this.providers = providers;
         this.cacheManager = cacheManager;
-        this.panel0 = new CreateHostWizardPanel0(this, providers);
+        this.panel0 = new CreateHostWizardPanel0(this, providers, cacheManager);
     }
 
     private HostSetupWorker getSelectedWorker() {

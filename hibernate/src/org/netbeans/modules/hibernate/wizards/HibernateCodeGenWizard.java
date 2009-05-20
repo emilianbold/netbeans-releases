@@ -290,7 +290,8 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
         ClassLoader oldClassLoader = null;
 
         File confFile = FileUtil.toFile(helper.getConfigurationFile());
-        File outputDir = FileUtil.toFile(helper.getLocation().getRootFolder());
+        File outputDirJava = FileUtil.toFile(helper.getLocation().getRootFolder());
+        File outputDirHbm = FileUtil.toFile(HibernateUtil.getFirstSourceGroup(project).getRootFolder());
         try {
 
             // Setup classloader.
@@ -331,10 +332,11 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
             try {
                 if (helper.getDomainGen()) {
                     handle.progress(NbBundle.getMessage(HibernateCodeGenWizard.class, "HibernateCodeGenerationPanel_WizardProgress_GenPOJO"), 1); // NOI18N
-                    POJOExporter exporter = new POJOExporter(cfg, outputDir);
+                    POJOExporter exporter = new POJOExporter(cfg, outputDirJava);
                     exporter.getProperties().setProperty("jdk5", new Boolean(helper.getJavaSyntax()).toString());
                     exporter.getProperties().setProperty("ejb3", new Boolean(helper.getEjbAnnotation()).toString());
                     exporter.start();
+                    FileUtil.refreshFor(outputDirJava);
                 }
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
@@ -344,7 +346,7 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
             try {
                 if (helper.getHbmGen()) {
                     handle.progress(NbBundle.getMessage(HibernateCodeGenWizard.class, "HibernateCodeGenerationPanel_WizardProgress_GenMapping"), 2); // NOI18N
-                    HibernateMappingExporter exporter = new HibernateMappingExporter(cfg, outputDir);
+                    HibernateMappingExporter exporter = new HibernateMappingExporter(cfg, outputDirHbm);
                     exporter.start();                    
                 }
             } catch (Exception ex) {
@@ -363,7 +365,7 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
             SessionFactory sf = hco.getHibernateConfiguration().getSessionFactory();
             HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
 
-            FileObject pkg = SourceGroups.getFolderForPackage(helper.getLocation(), helper.getPackageName(), false);
+            FileObject pkg = SourceGroups.getFolderForPackage(HibernateUtil.getFirstSourceGroup(project), helper.getPackageName(), false);
             if (pkg != null && pkg.isFolder()) {
                 // bugfix: 137052
                 pkg.getFileSystem().refresh(true);

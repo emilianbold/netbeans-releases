@@ -142,7 +142,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
             DLightIndicatorDPStrings.add(PROC_READER);
             if (!hasSunStudio) {
                 //if we are on Linux set LL, I do not think it is correct if user had selected Sun Studio in Project Properties
-                String platform = ((MakeConfiguration) getActiveConfiguration()).getPlatform().getName();
+                String platform = ((MakeConfiguration) getActiveConfiguration()).getDevelopmentHost().getBuildPlatformDisplayName();
                 if (platform.indexOf("Linux") != -1){//NOI18N
                     setForLinux();
                 }
@@ -150,11 +150,11 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         } else if (currentProvider == GizmoOptions.DataProvider.SIMPLE) {//On Linux - LL On Solaris Dtrace + Proc + PRSTATE
             log.log(Level.FINEST, "Simple Data provider is used will try to set LL monitor + proc reader");//NOI18N
             if (!setForLinux()) {
-                log.log(Level.FINEST, "Looks like it is not linux and not MacOS platform is " + ((MakeConfiguration) getActiveConfiguration()).getPlatform().getName());//NOI18N
+                log.log(Level.FINEST, "Looks like it is not linux and not MacOS platform is " + ((MakeConfiguration) getActiveConfiguration()).getDevelopmentHost().getBuildPlatformDisplayName());//NOI18N
             }
 
         } else if (currentProvider == GizmoOptions.DataProvider.DTRACE){//DTRACE?
-            String platform = ((MakeConfiguration) getActiveConfiguration()).getPlatform().getName();
+            String platform = ((MakeConfiguration) getActiveConfiguration()).getDevelopmentHost().getBuildPlatformDisplayName();
             if (platform.indexOf("Solaris") == -1){//NOI18N
                 setForLinux();
             }
@@ -162,8 +162,8 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
     }
 
     private boolean setForLinux() {        
-        String platform = ((MakeConfiguration) getActiveConfiguration()).getPlatform().getName();
-        if (platform.indexOf("Linux") != -1 || platform.indexOf("MacOS") != -1 || platform.indexOf("Windows") != -1) {//NOI18N
+        String platform = ((MakeConfiguration) getActiveConfiguration()).getDevelopmentHost().getBuildPlatformDisplayName();
+        if (platform.indexOf("Linux") != -1 || !GizmoServiceInfo.isPlatformSupported(platform)) {//NOI18N
             areCollectorsTurnedOn = false;
             if (platform.indexOf("Linux") != -1){//NOI18N
                 DLightCollectorString = SUNSTUDIO;

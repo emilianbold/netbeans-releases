@@ -58,7 +58,6 @@ import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -141,17 +140,9 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         if (preCheckProblem != null) {
             return preCheckProblem;
         }
-        FileObject file = SourceUtils.getFile(el, info.getClasspathInfo());
-        if (file!=null && FileUtil.getArchiveFile(file)!= null) { //NOI18N
-            preCheckProblem = createProblem(preCheckProblem, true, getCannotRename(file));
-            return preCheckProblem;
-        }
-        
-        if (file==null || !RetoucheUtils.isElementInOpenProject(file)) {
-            preCheckProblem = new Problem(true, NbBundle.getMessage(
-                    RenameRefactoringPlugin.class,
-                    "ERR_ProjectNotOpened",
-                    FileUtil.getFileDisplayName(file)));
+
+        preCheckProblem = JavaPluginUtils.isSourceElement(el, info);
+        if (preCheckProblem != null) {
             return preCheckProblem;
         }
         
@@ -224,10 +215,6 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         }
         fireProgressListenerStop();
         return preCheckProblem;
-    }
-    
-    private static final String getCannotRename(FileObject r) {
-        return new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_CannotRenameFile")).format(new Object[] {r.getNameExt()});
     }
     
     @Override

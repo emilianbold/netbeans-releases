@@ -63,11 +63,11 @@ public class HtmlKeystrokeHandlerTest extends TestBase {
     }
 
     public void testEmptyFile() throws ParseException {
-        assertLogicalRanges("|", new int[][]{});
+        assertLogicalRanges("|", new int[][]{}); //no range
     }
 
     public void testWholeDocumentRange() throws ParseException {
-        assertLogicalRanges("   |   ", new int[][]{{0,6}});
+        assertLogicalRanges("   |   ", new int[][]{}); //no range
         //                   012 3456
     }
 
@@ -122,7 +122,12 @@ public class HtmlKeystrokeHandlerTest extends TestBase {
         List<OffsetRange> ranges = handler.findLogicalRanges(htmlResult, pipeOffset);
         assertNotNull(ranges);
 
-        assertEquals("Unexpected number of logical ranges", expectedRangesLeaveToRoot.length, ranges.size());
+        StringBuffer buf = new StringBuffer();
+        for(OffsetRange or : ranges) {
+            buf.append("{" + or.getStart() + ", " + or.getEnd() + "}, ");
+        }
+
+        assertEquals("Unexpected number of logical ranges (" + buf.toString() + ")", expectedRangesLeaveToRoot.length, ranges.size());
 
         for(int i = 0; i < ranges.size(); i++) {
             OffsetRange or = ranges.get(i);

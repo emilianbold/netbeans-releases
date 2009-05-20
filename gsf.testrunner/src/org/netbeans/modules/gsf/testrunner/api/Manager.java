@@ -199,6 +199,17 @@ public final class Manager {
         displayInWindow(session, displayHandler);
     }
 
+    /**
+     * @param  suite  running suite
+     */
+    public synchronized void displaySuiteRunning(final TestSession session,
+                             final TestSuite suite) {
+
+        final ResultDisplayHandler displayHandler = getDisplayHandler(session);
+        displayHandler.displaySuiteRunning(suite);
+        displayInWindow(session, displayHandler);
+    }
+
     public void displayReport(final TestSession session,
                        final Report report) {
         displayReport(session, report, true);

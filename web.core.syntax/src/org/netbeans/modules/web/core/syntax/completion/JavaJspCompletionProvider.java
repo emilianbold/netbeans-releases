@@ -131,7 +131,7 @@ public class JavaJspCompletionProvider implements CompletionProvider {
             SimplifiedJspServlet simplifiedJSPServlet = new SimplifiedJspServlet(source.createSnapshot(), doc);
             try{
                 simplifiedJSPServlet.process();
-                Embedding fakedClassBody = simplifiedJSPServlet.getVirtualClassBody();
+                Embedding fakedClassBody = simplifiedJSPServlet.getSimplifiedServlet();
                 int shiftedOffset = fakedClassBody.getSnapshot().getEmbeddedOffset(caretOffset); /*simplifiedJSPServlet.getShiftedOffset(caretOffset);*/
 
                 if (shiftedOffset >= 0){

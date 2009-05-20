@@ -309,7 +309,10 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     
     public void fileInvalidated(CsmFile file) {
     }
-    
+
+    public void fileAddedToParse(CsmFile file) {
+    }
+
     public void fileParsingStarted(CsmFile file) {
     }
     

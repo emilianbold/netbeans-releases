@@ -45,6 +45,7 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
             <tocitem text="Configuring Maven Settings" target="maven_settings" />
             <tocitem text="Working with the Maven POM" target="maven_pom" />
             <tocitem text="Managing Maven Project Dependencies" target="maven_dependencies" />
+            <tocitem text="Working with Maven Artifacts" target="maven_artifacts" />
             <tocitem text="Building a Maven Project" target="maven_build" />
             <tocitem text="Working with Maven Repositories" target="maven_repositories" />
 

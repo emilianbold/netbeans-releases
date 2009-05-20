@@ -49,7 +49,6 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.CiManagement;
 import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -87,9 +86,14 @@ public class HudsonProviderImpl extends ProjectHudsonProvider {
         }
         Utilities.performPOMModelOperations(pom, Collections.<ModelOperation<POMModel>>singletonList(new ModelOperation<POMModel>() {
             public void performOperation(POMModel model) {
-                CiManagement cim = model.getFactory().createCiManagement();
-                cim.setSystem(HUDSON_SYSTEM);
-                cim.setUrl(a.toString());
+                CiManagement cim;
+                if (a != null) {
+                    cim = model.getFactory().createCiManagement();
+                    cim.setSystem(HUDSON_SYSTEM);
+                    cim.setUrl(a.toString());
+                } else {
+                    cim = null;
+                }
                 model.getProject().setCiManagement(cim);
             }
         }));

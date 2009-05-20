@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.awt.EventQueue;
 import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
 import java.io.File;
 import java.util.Arrays;
@@ -57,6 +58,7 @@ import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerLibraries;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerLibraries.Enabled;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
@@ -208,10 +210,17 @@ public class SuiteCustomizerLibrariesTest extends TestBase {
     }
     
     public void testDependencyWarnings() throws Exception { // #65924
-        SuiteProperties suiteProps = new SuiteProperties(suite, suite.getHelper(), suite.getEvaluator(), Collections.<NbModuleProject>emptySet());
-        Category cat = Category.create("dummy", "dummy", null);
-        SuiteCustomizerLibraries scl = new SuiteCustomizerLibraries(suiteProps, cat);
-
+        final SuiteProperties suiteProps = new SuiteProperties(suite, suite.getHelper(), suite.getEvaluator(), Collections.<NbModuleProject>emptySet());
+        final Category cat = Category.create("dummy", "dummy", null);
+        final SuiteCustomizerLibraries[] ref = new SuiteCustomizerLibraries[1];
+        Runnable r = new Runnable() {
+            public void run() {
+                // OutlineView in SCL must be initialized in EQ
+                ref[0] = new SuiteCustomizerLibraries(suiteProps, cat);
+            }
+        };
+        EventQueue.invokeAndWait(r);
+        SuiteCustomizerLibraries scl = ref[0];
         Set<SuiteCustomizerLibraries.UniverseModule> modules = SuiteCustomizerLibraries.loadUniverseModules(platform.getSortedModules(), SuiteUtils.getSubProjects(suite), Collections.<ModuleEntry>emptySet());
         Set<File> allClusters = new HashSet<File>(Arrays.asList(
                 new File(install, "somecluster"), new File(install, "anothercluster"), ClusterUtils.getClusterDirectory(suite)));
@@ -231,9 +240,17 @@ public class SuiteCustomizerLibrariesTest extends TestBase {
     }
     
     public void testClusterAndModuleNodesEnablement() throws Exception {    // #70714
-        SuiteProperties suiteProps = new SuiteProperties(suite, suite.getHelper(), suite.getEvaluator(), Collections.<NbModuleProject>emptySet());
-        Category cat = Category.create("dummy", "dummy", null);
-        SuiteCustomizerLibraries scl = new SuiteCustomizerLibraries(suiteProps, cat);
+        final SuiteProperties suiteProps = new SuiteProperties(suite, suite.getHelper(), suite.getEvaluator(), Collections.<NbModuleProject>emptySet());
+        final Category cat = Category.create("dummy", "dummy", null);
+        final SuiteCustomizerLibraries[] ref = new SuiteCustomizerLibraries[1];
+        Runnable r = new Runnable() {
+            public void run() {
+                // OutlineView in SCL must be initialized in EQ
+                ref[0] = new SuiteCustomizerLibraries(suiteProps, cat);
+            }
+        };
+        EventQueue.invokeAndWait(r);
+        SuiteCustomizerLibraries scl = ref[0];
         SuiteCustomizerLibraries.TEST = true;
         scl.refresh();
         

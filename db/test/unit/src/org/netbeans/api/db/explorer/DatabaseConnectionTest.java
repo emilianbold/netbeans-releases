@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,10 +43,8 @@ package org.netbeans.api.db.explorer;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.logging.Level;
 import org.netbeans.modules.db.test.Util;
 import org.netbeans.modules.db.test.DBTestBase;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -72,12 +70,39 @@ public class DatabaseConnectionTest extends DBTestBase {
 
         DatabaseConnection dbconn = DatabaseConnection.create(driver, "database", "user", "schema", "password", true);
         ConnectionManager.getDefault().addConnection(dbconn);
-        
+
         assertTrue(ConnectionManager.getDefault().getConnections().length > 0);
-        
+
         Util.clearConnections();
-        
+
         assertTrue(ConnectionManager.getDefault().getConnections().length == 0);
+    }
+
+    public void testGetJDDCDriver() throws Exception{
+        Util.clearConnections();
+        Util.deleteDriverFiles();
+
+        JDBCDriver driver = Util.createDummyDriver();
+        assertEquals(1, JDBCDriverManager.getDefault().getDrivers().length);
+
+        DatabaseConnection dbconn = DatabaseConnection.create(driver, "database", "user", "schema", "password", true);
+        assertEquals ("Returns the correct driver", driver, dbconn.getJDBCDriver ());
+    }
+
+    public void testGetJDDCDriverWhenAddOtherDriver() throws Exception{
+        Util.clearConnections();
+        Util.deleteDriverFiles();
+
+        JDBCDriver driver1 = Util.createDummyDriver();
+        assertEquals(1, JDBCDriverManager.getDefault().getDrivers().length);
+        DatabaseConnection dbconn1 = DatabaseConnection.create(driver1, "database", "user", "schema", "password", true);
+        assertEquals ("Returns the correct driver", driver1, dbconn1.getJDBCDriver ());
+
+        JDBCDriver driver2 = Util.createDummyDriverWithOtherJar ();
+        assertEquals(2, JDBCDriverManager.getDefault().getDrivers().length);
+        DatabaseConnection dbconn2 = DatabaseConnection.create(driver2, "database", "user", "schema", "password", true);
+        assertEquals ("Returns the correct driver", driver1, dbconn1.getJDBCDriver ());
+        assertEquals ("Returns the correct driver", driver2, dbconn2.getJDBCDriver ());
     }
 
     public void testSameDatabaseConnectionReturned() throws Exception {

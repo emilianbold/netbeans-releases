@@ -63,16 +63,19 @@ public final class LLDataCollectorConfiguration
     public static final DataTableMetadata CPU_TABLE = new DataTableMetadata(
             "lltool_cpu", Arrays.asList( // NOI18N
             new DataTableMetadata.Column("utime", Float.class), // NOI18N
-            new DataTableMetadata.Column("stime", Float.class))); // NOI18N
+            new DataTableMetadata.Column("stime", Float.class)), // NOI18N
+            null);
 
     public static final DataTableMetadata MEM_TABLE = new DataTableMetadata(
             "lltool_mem", Arrays.asList( // NOI18N
-            new DataTableMetadata.Column("total", Integer.class))); // NOI18N
+            new DataTableMetadata.Column("total", Integer.class)), // NOI18N
+            null);
 
     public static final DataTableMetadata SYNC_TABLE = new DataTableMetadata(
             "lltool_sync", Arrays.asList( // NOI18N
             new DataTableMetadata.Column("locks", Integer.class), // NOI18N
-            threads_count)); // NOI18N
+            threads_count),
+            null);
 
     private final CollectedData dataType;
 

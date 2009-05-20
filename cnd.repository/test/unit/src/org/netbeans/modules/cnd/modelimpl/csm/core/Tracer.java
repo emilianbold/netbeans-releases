@@ -175,7 +175,7 @@ public final class Tracer {
             CsmFile csmFile = file.getFileUID().getObject();
             printStream.println("\t\tModel File "+csmFile.getAbsolutePath());
             printStream.println("\t\tNumber of states "+file.getPrerocStates().size());
-            for (FileContainer.StatePair statePair : file.getStatePairs()) {
+            for (PreprocessorStatePair statePair : file.getStatePairs()) {
                 StringTokenizer st = new StringTokenizer(FilePreprocessorConditionState.toStringBrief(statePair.pcState),"\n");
                 boolean first = true;
                 while (st.hasMoreTokens()) {

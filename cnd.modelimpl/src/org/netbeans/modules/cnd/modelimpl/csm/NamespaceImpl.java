@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -246,13 +247,28 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return out;
     }
 
+    private WeakReference<DeclarationContainer> weakDeclarationContainer;
     private DeclarationContainer getDeclarationsSorage() {
         if (declarationsSorageKey == null) {
             return DeclarationContainer.empty();
         }
-        DeclarationContainer dc = (DeclarationContainer) RepositoryUtils.get(declarationsSorageKey);
+        DeclarationContainer dc = null;
+        WeakReference<DeclarationContainer> weak = null;
+        if (TraceFlags.USE_WEAK_MEMORY_CACHE) {
+            weak = weakDeclarationContainer;
+            if (weak != null) {
+                dc = weak.get();
+                if (dc != null) {
+                    return dc;
+                }
+            }
+        }
+        dc = (DeclarationContainer) RepositoryUtils.get(declarationsSorageKey);
         if (dc == null) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get DeclarationsSorage by key " + declarationsSorageKey)); // NOI18N
+        }
+        if (TraceFlags.USE_WEAK_MEMORY_CACHE && dc != null) {
+            weakDeclarationContainer = new WeakReference<DeclarationContainer>(dc);
         }
         return dc != null ? dc : DeclarationContainer.empty();
     }

@@ -365,7 +365,7 @@ public abstract class BaseDocumentUnitTestCase extends BaseTestCase {
         }
         
         public void setBlinkRate (int rate) {
-            this.blinkRate = blinkRate;
+            this.blinkRate = rate;
         }
         
         public boolean isVisible () {
@@ -373,7 +373,7 @@ public abstract class BaseDocumentUnitTestCase extends BaseTestCase {
         }
         
         public void setVisible (boolean v) {
-            this.visible = visible;
+            this.visible = v;
         }
         
         public boolean isSelectionVisible () {

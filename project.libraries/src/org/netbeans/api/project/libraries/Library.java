@@ -74,6 +74,8 @@ public final class Library {
     public static final String PROP_DESCRIPTION = "description";    //NOI18N
     public static final String PROP_CONTENT = "content";            //NOI18N
 
+    private static final Logger LOG = Logger.getLogger(Library.class.getName());
+
     // delegating peer
     private LibraryImplementation impl;
 
@@ -253,13 +255,13 @@ public final class Library {
         try {
             bundle = NbBundle.getBundle(bundleName);
         } catch (MissingResourceException mre) {
-            Logger.getLogger(Library.class.getName()).warning("No such bundle " + bundleName + " for " + getName());
+            LOG.warning("No such bundle " + bundleName + " for " + getName());
             return key;
         }
         try {
             return bundle.getString(key);
         } catch (MissingResourceException mre) {
-            Logger.getLogger(Library.class.getName()).warning("No such key " + key + " in " + bundleName + " for " + getName());
+            LOG.warning("No such key " + key + " in " + bundleName + " for " + getName());
             return key;
         }
     }

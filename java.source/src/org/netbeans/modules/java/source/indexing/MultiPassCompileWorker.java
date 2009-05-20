@@ -220,7 +220,6 @@ final class MultiPassCompileWorker extends CompileWorker {
                     //When the active file is not set (generated virtual source) ignore executable flag
                     ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().getURL(), active.jfo.toUri().toURL(), main[0]);
 //                        }
-                    TaskCache.getDefault().dumpErrors(context.getRootURI(), active.indexable.getURL(), diagnosticListener.getDiagnostics(active.jfo));
 //                        Log.instance(jt.getContext()).nerrors = 0;
 //                        if (compiledFiles != null && !activeTuple.virtual) {
 //                            //compiledFiles are not tracked for virtual sources
@@ -242,6 +241,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                             // presumably should not happen
                         }
                     }
+                    TaskCache.getDefault().dumpErrors(context.getRootURI(), active.indexable.getURL(), diagnosticListener.getDiagnostics(active.jfo));
                     Log.instance(jt.getContext()).nerrors = 0;
                     finished.add(active.indexable);
                     active = null;

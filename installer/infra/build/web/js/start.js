@@ -210,17 +210,6 @@ function write_download_header() {
 	document.write('</p>');
 }
 
-function getMD5(name,lang_id) {
-	var md5 = "";
-        for (var i = 0; i < FILES.length; i++) {		
-		if(FILES[i].name == name && languageCompatible(FILES[i].locales, lang_id)) {
-			md5 = FILES[i].md5;
-			break;
-		}
-        }
-	return md5;
-}
-
 function useBouncer(lang_id) {
         return get_build_info(isMainLanguage(lang_id)).USE_BOUNCER == 1; 
 }

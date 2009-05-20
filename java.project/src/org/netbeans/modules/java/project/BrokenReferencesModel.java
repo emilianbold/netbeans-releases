@@ -188,6 +188,8 @@ public class BrokenReferencesModel extends AbstractListModel {
     private static Set<OneReference> getReferences(AntProjectHelper helper, ReferenceHelper refHelper, PropertyEvaluator evaluator, String[] ps, boolean abortAfterFirstProblem) {
         Set<OneReference> set = new LinkedHashSet<OneReference>();
         StringBuffer all = new StringBuffer();
+        // this call waits for list of libraries to be refreshhed
+        Library[] allLibraries = LibraryManager.getDefault().getLibraries();
         for (String p : ps) {
             // evaluate given property and tokenize it
             

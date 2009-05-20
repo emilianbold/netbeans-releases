@@ -733,7 +733,7 @@ public final class Language {
         if (binaryLibraryPathIds == null) {
             getGsfLanguage();
             if (languageConfig != null) {
-                binaryLibraryPathIds = languageConfig.getLibraryPathIds();
+                binaryLibraryPathIds = languageConfig.getBinaryLibraryPathIds();
             }
         }
         return binaryLibraryPathIds;

@@ -368,7 +368,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 
         projectNameTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectNameTextField.AccessibleContext.accessibleName")); // NOI18N
         projectNameTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectNameTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        Mnemonics.setLocalizedText(kenaiURLPreviewLabel, PRJ_NAME_PREVIEW_PREFIX + "..."); 
+        Mnemonics.setLocalizedText(kenaiURLPreviewLabel, PRJ_NAME_PREVIEW_PREFIX + "...");
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -439,18 +439,18 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
             }
         });
         projectLicenseComboBox.addPopupMenuListener(new PopupMenuListener() {
-            public void popupMenuCanceled(PopupMenuEvent evt) {
+            public void popupMenuWillBecomeVisible(PopupMenuEvent evt) {
+                projectLicenseComboBoxPopupMenuWillBecomeVisible(evt);
             }
             public void popupMenuWillBecomeInvisible(PopupMenuEvent evt) {
             }
-            public void popupMenuWillBecomeVisible(PopupMenuEvent evt) {
-                projectLicenseComboBoxPopupMenuWillBecomeVisible(evt);
+            public void popupMenuCanceled(PopupMenuEvent evt) {
             }
         });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(4, 0, 0, 0);
@@ -908,7 +908,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         try {
             p = ProjectManager.getDefault().findProject(fo);
             ProjectInformation pi = ProjectUtils.getInformation(p);
-            setProjectName(pi.getName().toLowerCase().replaceAll("[^a-z0-9-]", "-"));//NOI18N
+            setProjectName(pi.getName().toLowerCase().replaceAll("[^a-z0-9-]", "-")); // NOI18N
             setProjectTitle(pi.getDisplayName());
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -944,7 +944,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         if (list != null) {
             return getLicenses().get(index).getName();
         }
-        return ""; // XXX or null ???
+        return ""; // NOI18N
     }
 
 }

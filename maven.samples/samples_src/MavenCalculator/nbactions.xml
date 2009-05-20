@@ -50,4 +50,15 @@
             <netbeans.deploy.debugmode>true</netbeans.deploy.debugmode>
         </properties>
     </action>
+    <action>
+        <actionName>profile</actionName>
+        <goals>
+            <goal>package</goal>
+        </goals>
+        <properties>
+            <netbeans.deploy>true</netbeans.deploy>
+            <netbeans.deploy.clientUrlPart>/CalculatorService?Tester</netbeans.deploy.clientUrlPart>
+            <netbeans.deploy.profilemode>true</netbeans.deploy.profilemode>
+        </properties>
+    </action>
 </actions>

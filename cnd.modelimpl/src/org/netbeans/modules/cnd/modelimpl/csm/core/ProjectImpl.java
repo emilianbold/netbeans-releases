@@ -52,10 +52,10 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
-import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -198,7 +198,7 @@ public final class ProjectImpl extends ProjectBase {
     }
 
     private FileImpl onFileRemovedImpl(FileImpl impl) {
-        APTIncludeUtils.clearFileExistenceCache();
+        CndFileUtils.clearFileExistenceCache();
         if (impl != null) {
             synchronized (editedFiles) {
                 editedFiles.remove(impl);
@@ -242,7 +242,7 @@ public final class ProjectImpl extends ProjectBase {
 
     private NativeFileItem onFileAddedImpl(NativeFileItem nativeFile, boolean deepReparse) {
         if (acceptNativeItem(nativeFile)) {
-            APTIncludeUtils.clearFileExistenceCache();
+            CndFileUtils.clearFileExistenceCache();
             try {
                 //Notificator.instance().startTransaction();
                 createIfNeed(nativeFile, isSourceFile(nativeFile));

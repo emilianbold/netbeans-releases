@@ -144,11 +144,11 @@ public class CatalogNode extends BaseNode {
     private void renderNames(Catalog catalog) {
         if (catalog == null) {
             name = "";
-        }
-
-        name = catalog.getName();
-        if (name == null) {
-            name = "Default"; // NOI18N
+        } else {
+            name = catalog.getName();
+            if (name == null) {
+                name = "Default"; // NOI18N
+            }
         }
 
         if (catalog != null) {

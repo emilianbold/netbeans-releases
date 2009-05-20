@@ -208,7 +208,7 @@ public abstract class RubyTestBase extends org.netbeans.api.ruby.platform.RubyTe
 
                 @Override
                 public void run(ResultIterator ri) throws Exception {
-                    resultHolder[0] = AstUtilities.getParseResult(ri.getParserResult());
+                    resultHolder[0] = (ParserResult) ri.getParserResult();
                 }
             });
         } catch (ParseException ex) {

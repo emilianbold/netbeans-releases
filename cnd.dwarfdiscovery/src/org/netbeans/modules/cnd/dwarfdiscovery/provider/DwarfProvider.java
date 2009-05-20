@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -155,8 +155,8 @@ abstract public class DwarfProvider extends BaseDwarfProvider {
                                 break;
                             }
                             File file = new File(path);
-                            if (file.exists()) {
-                                unique.add(FileUtil.normalizeFile(file).getAbsolutePath());
+                            if (CndFileUtils.exists(file)) {
+                                unique.add(CndFileUtils.normalizeFile(file).getAbsolutePath());
                             }
                         }
                         myIncludedFiles = new ArrayList<String>(unique);

@@ -68,10 +68,13 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
+import org.netbeans.modules.dlight.perfan.spi.datafilter.CollectedObjectsFilter;
 import org.netbeans.modules.dlight.perfan.storage.impl.PerfanDataStorage;
 import org.netbeans.modules.dlight.spi.SunStudioLocator.SunStudioDescription;
 import org.netbeans.modules.dlight.spi.SunStudioLocatorFactory;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.perfan.spi.datafilter.SunStudioFiltersProvider;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
@@ -94,7 +97,7 @@ import org.openide.windows.InputOutput;
  */
 public class SunStudioDataCollector
         extends IndicatorDataProvider<SunStudioDCConfiguration>
-        implements DataCollector<SunStudioDCConfiguration> {
+        implements DataCollector<SunStudioDCConfiguration>, SunStudioFiltersProvider {
 
     private static final String ID = "PerfanDataStorage"; // NOI18N
     private static final String COLLECTOR_NAME = "SunStudio"; // NOI18N
@@ -114,6 +117,8 @@ public class SunStudioDataCollector
     private final Collection<DataTableMetadata> dataTablesMetadata;
     private final Collection<ValidationListener> validationListeners;
     private final Collection<CollectedInfo> collectedInfo;
+    private final List<DataFilter> dataFilters;
+
     // ***
     private ValidationStatus validationStatus = ValidationStatus.initialStatus();
     private CollectorConfiguration config = null;
@@ -134,26 +139,31 @@ public class SunStudioDataCollector
                 "SunStudioCPUDetailedData", // NOI18N
                 Arrays.asList(SunStudioDCConfiguration.c_name,
                 SunStudioDCConfiguration.c_iUser,
-                SunStudioDCConfiguration.c_eUser));
+                SunStudioDCConfiguration.c_eUser),
+                null);
 
         syncInfoTable = new DataTableMetadata(
                 "SunStudioSyncDetailedData", // NOI18N
                 Arrays.asList(SunStudioDCConfiguration.c_name,
                 SunStudioDCConfiguration.c_eSync,
-                SunStudioDCConfiguration.c_eSyncn));
+                SunStudioDCConfiguration.c_eSyncn),
+                null);
 
         memInfoTable = new DataTableMetadata("SunStudioMemDetailedData", // NOI18N
                 Arrays.asList(SunStudioDCConfiguration.c_name,
                 SunStudioDCConfiguration.c_leakCount,
-                SunStudioDCConfiguration.c_leakSize));
+                SunStudioDCConfiguration.c_leakSize),
+                null);
 
         summaryInfoTable = new DataTableMetadata(
                 "SunStudioSummaryData", // NOI18N
-                Arrays.asList(SunStudioDCConfiguration.c_ulockSummary));
+                Arrays.asList(SunStudioDCConfiguration.c_ulockSummary),
+                null);
 
         memSummaryInfoTable = new DataTableMetadata(
                 "SunStudioMemorySummaryData", // NOI18N
-                Arrays.asList(SunStudioDCConfiguration.c_leakSize));
+                Arrays.asList(SunStudioDCConfiguration.c_leakSize),
+                null);
 
     }
 
@@ -162,6 +172,7 @@ public class SunStudioDataCollector
         dataTablesMetadata = new HashSet<DataTableMetadata>();
         validationListeners = new CopyOnWriteArraySet<ValidationListener>();
         isAttachable = true;
+        dataFilters = new ArrayList<DataFilter>();
         addCollectedInfo(collectedInfoList);
     }
 
@@ -362,6 +373,10 @@ public class SunStudioDataCollector
         }
     }
 
+    public List<DataFilter> getDataFilters() {
+        return dataFilters;
+    }
+
     private void reinit() {
         boolean result = true;
 
@@ -376,7 +391,8 @@ public class SunStudioDataCollector
                     config.dataStorage.init(
                             config.execEnv,
                             config.sproHome,
-                            config.experimentDirectory);
+                            config.experimentDirectory,
+                            this);
 
                     // In case when summary data was requested do init
                     // periodic SummaryDataFetchingTask ...
@@ -477,8 +493,9 @@ public class SunStudioDataCollector
             if (isAttachable()) {
                 // i.e. should start separate process
                 AttachableTarget at = (AttachableTarget) config.target;
-                NativeProcessBuilder npb = new NativeProcessBuilder(config.execEnv, cmd);
-                npb = npb.setArguments("-P", "" + at.getPID(), "-o", config.experimentDirectory); // NOI18N
+                NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(config.execEnv);
+                npb.setExecutable(cmd);
+                npb.setArguments("-P", "" + at.getPID(), "-o", config.experimentDirectory); // NOI18N
 
                 ExecutionDescriptor descr = new ExecutionDescriptor();
                 descr = descr.errProcessorFactory(new StdErrRedirectorFactory());
@@ -497,6 +514,18 @@ public class SunStudioDataCollector
 
     private static String loc(String key, String... params) {
         return NbBundle.getMessage(SunStudioDataCollector.class, key, params);
+    }
+
+    public void dataFiltersChanged(List<DataFilter> newSet) {
+        synchronized (dataFilters) {
+            dataFilters.clear();
+
+            for (DataFilter filter : newSet) {
+                if (filter instanceof CollectedObjectsFilter) {
+                    dataFilters.add(filter);
+                }
+            }
+        }
     }
 
     private static class StdErrRedirectorFactory

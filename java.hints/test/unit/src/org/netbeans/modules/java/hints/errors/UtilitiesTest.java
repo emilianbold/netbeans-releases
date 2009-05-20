@@ -41,6 +41,7 @@
 package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.util.TreePath;
+import javax.lang.model.type.TypeMirror;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -106,6 +107,11 @@ public class UtilitiesTest extends NbTestCase {
         assertEquals("aDo", Utilities.adjustName("do"));
     }
     
+    public void testCapturedTypeArray164543() throws Exception {
+        performCapturedTypeTest("package test; public class Test {public void t() {java.util.Map m; m.getClass().getTypeParameters(|); }}",
+                                "java.lang.reflect.TypeVariable<java.lang.Class<? extends java.util.Map>>[]");
+    }
+
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
         FileObject workFO = FileUtil.toFileObject(getWorkDir());
@@ -152,5 +158,21 @@ public class UtilitiesTest extends NbTestCase {
         
         assertEquals(desiredName, name);
     }
+
+    private void performCapturedTypeTest(String code, String golden) throws Exception {
+        int[] position = new int[1];
+        code = org.netbeans.modules.java.hints.TestUtilities.detectOffsets(code, position);
+
+        performCapturedTypeTest(code, position[0], golden);
+    }
     
+    private void performCapturedTypeTest(String code, int position, String golden) throws Exception {
+        prepareTest(code);
+
+        TreePath tp = info.getTreeUtilities().pathFor(position);
+        TypeMirror type = info.getTrees().getTypeMirror(tp);
+        TypeMirror resolved = Utilities.resolveCapturedType(info, type);
+
+        assertEquals(golden, org.netbeans.modules.editor.java.Utilities.getTypeName(resolved, true).toString());
+    }
 }

@@ -355,6 +355,8 @@
   <mapID target="netbeans.optionsDialog.editor.hints" url="configure/options_editor.html" />
   <mapID target="netbeans.optionsDialog.editor.markOccurences" url="configure/options_editor.html" />
   <mapID target="netbeans.optionsDialog.editor.tasklist" url="configure/options_editor.html" />
+  <mapID target="netbeans.optionsDialog.editor.identation" url="configure/options_editor.html" />
+  <mapID target="netbeans.optionsDialog.editor.codeCompletion" url="configure/options_editor.html" />
 
   <!--ID for CSH in Options | Basic Options - Fonts and Colors Category: --> 
   <mapID target="netbeans.optionsDialog.fontAndColorsPanel" url="configure/options_fontscolors.html" />
@@ -511,6 +513,9 @@
 
 <!-- Issue tracking csh topic for Options window -->
 <mapID target="org.netbeans.modules.bugzilla.options.BugzillaOptionsController" url="collab/csh/issues_options.html" />
+
+<!-- JIRA csh topic for dialog invoked when JIRA is not installed but user clicks My Issues or All Issues in Kenai Dashboard. JIRA support requires adding a plugin from Beta UC -->
+<mapID target="org.netbeans.modules.bugtracking.kenai.FakeJiraSupport" url="collab/csh/issues_about.html" />
 
 
 </map>

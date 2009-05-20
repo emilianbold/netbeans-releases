@@ -62,6 +62,7 @@ import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.impl.MultipleDTDCConfigurationAccessor;
 import org.netbeans.modules.dlight.dtrace.collector.support.DtraceDataCollector.IndicatorDataProvideHandler;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
@@ -123,7 +124,7 @@ public final class MultipleDtraceDataCollector extends IndicatorDataProvider<Mul
             ddc.init(storage, target);
         }
         collector.setLocalScriptPath(mergeScripts().getAbsolutePath());
-        collector.init(storage, target);
+            collector.init(storage, target);
     }
 
     private File mergeScripts() {
@@ -199,6 +200,9 @@ public final class MultipleDtraceDataCollector extends IndicatorDataProvider<Mul
 
     public void notify(List<DataRow> list) {
         notifyIndicators(list);
+    }
+
+    public void dataFiltersChanged(List<DataFilter> newSet) {
     }
 
     private class ProcessLineCallbackImpl implements ProcessLineCallback {

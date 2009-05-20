@@ -54,8 +54,8 @@ import javax.swing.JButton;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonVersion;
+import org.netbeans.modules.hudson.api.UI;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
-import org.netbeans.modules.hudson.ui.nodes.HudsonRootNode;
 import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -129,7 +129,7 @@ public class InstanceDialog extends DialogDescriptor {
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         dialog.dispose();
-                        HudsonRootNode.select(panel.getUrl());
+                        UI.selectNode(panel.getUrl());
                     }
                 });
             }

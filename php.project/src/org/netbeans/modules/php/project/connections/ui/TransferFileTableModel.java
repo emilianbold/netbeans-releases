@@ -289,7 +289,7 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
 
     public int getRowForUnit(TransferFileUnit unit) {
         int i = 0;
-        for (TransferFileUnit u : getAllUnits()) {
+        for (TransferFileUnit u : getVisibleFileUnits()) {
             if (unit.equals(u)) {
                 return i;
             }

@@ -149,7 +149,15 @@ public abstract class CsmUsingResolver {
      * @return sorted unmodifiable collection of namespace aliases visible for input offsetable element
      */
     public abstract Collection<CsmNamespaceAlias> findNamespaceAliases(CsmFile file, int offset, CsmProject onlyInProject);
-    
+
+    /**
+     * Finds all namespace aliases given namespace.
+     *
+     * @param namespace - namespace of interest
+     * @return unmodifiable collection of namespace aliases in given namespace
+     */
+    public abstract Collection<CsmNamespaceAlias> findNamespaceAliases(CsmNamespace namespace);
+
     /**
      * converts collection of using declarations into ordered list of namespaces
      * each namespace occurs only once according it's first using directive in 'decls' list
@@ -197,6 +205,10 @@ public abstract class CsmUsingResolver {
 //        }
     
         public Collection<CsmNamespaceAlias> findNamespaceAliases(CsmFile file, int offset, CsmProject onlyInProject) {
+            return Collections.<CsmNamespaceAlias>emptyList();
+        }
+
+        public Collection<CsmNamespaceAlias> findNamespaceAliases(CsmNamespace ns) {
             return Collections.<CsmNamespaceAlias>emptyList();
         }
 

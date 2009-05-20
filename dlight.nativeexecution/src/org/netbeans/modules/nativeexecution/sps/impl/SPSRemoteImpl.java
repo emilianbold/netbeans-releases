@@ -82,7 +82,8 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
         NativeProcess pidFetchProcess = null;
 
         try {
-            NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "ptree $$"); // NOI18N
+            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+            npb.setCommandLine("/bin/ptree $$"); // NOI18N
             pidFetchProcess = npb.call();
 
             int result = pidFetchProcess.waitFor();

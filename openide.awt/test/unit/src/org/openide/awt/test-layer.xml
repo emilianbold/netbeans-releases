@@ -79,6 +79,12 @@ made subject to such option by the copyright holder.
                     <attr name='delegate' methodvalue='org.openide.awt.AlwaysEnabledActionTest.myContextAction'/>
                     <attr name='displayName' bundlevalue='org.openide.awt.TestBundle#Always'/>
                 </file>
+                <file name="testIconDelegate.instance">
+                    <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.alwaysEnabled'/>
+                    <attr name='delegate' methodvalue='org.openide.awt.AlwaysEnabledActionTest.myIconAction'/>
+                    <attr name='displayName' bundlevalue='org.openide.awt.TestBundle#Always'/>
+                    <attr name='iconBase' methodvalue='org.openide.awt.AlwaysEnabledActionTest.myURL'/>
+                </file>
                 <file name="testExtraProperties.instance">
                     <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.alwaysEnabled'/>
                     <attr name='delegate' methodvalue='org.openide.awt.AlwaysEnabledActionTest.myAction'/>

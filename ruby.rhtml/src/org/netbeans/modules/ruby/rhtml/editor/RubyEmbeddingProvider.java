@@ -66,7 +66,7 @@ public final class RubyEmbeddingProvider extends EmbeddingProvider {
         }
     }
     
-    private static final String RUBY_MIMETYPE = "text/x-ruby"; //NOI18N
+    public static final String RUBY_MIMETYPE = "text/x-ruby"; //NOI18N
 
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {

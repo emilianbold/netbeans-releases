@@ -134,10 +134,12 @@ import org.openide.util.NbBundle;
         setPreferredSize(new java.awt.Dimension(534, 409));
         setRequestFocusEnabled(false);
 
+        jLabel1.setLabelFor(textHostname);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel1.class, "CreateHostVisualPanel1.jLabel1.text")); // NOI18N
 
         textHostname.setText(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel1.class, "CreateHostVisualPanel1.textHostname.text")); // NOI18N
 
+        jLabel2.setLabelFor(tableHostsList);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel1.class, "CreateHostVisualPanel1.jLabel2.text")); // NOI18N
 
         tableHostsList.setModel(tableModel);
@@ -154,6 +156,7 @@ import org.openide.util.NbBundle;
         pbarStatusPanel.setMinimumSize(new java.awt.Dimension(100, 10));
         pbarStatusPanel.setLayout(new java.awt.BorderLayout());
 
+        jLabel3.setLabelFor(textPort);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel1.class, "CreateHostVisualPanel1.jLabel3.text")); // NOI18N
 
         textPort.setText(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel1.class, "CreateHostVisualPanel1.textPort.text")); // NOI18N
@@ -165,16 +168,16 @@ import org.openide.util.NbBundle;
             .add(layout.createSequentialGroup()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(textHostname, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 26, Short.MAX_VALUE)
+                .add(textHostname, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 45, Short.MAX_VALUE)
                 .add(jLabel3)
                 .add(4, 4, 4)
                 .add(textPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 46, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
             .add(layout.createSequentialGroup()
                 .add(jLabel2)
-                .addContainerGap(364, Short.MAX_VALUE))
-            .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
-            .add(pbarStatusPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
+                .addContainerGap(402, Short.MAX_VALUE))
+            .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
+            .add(pbarStatusPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

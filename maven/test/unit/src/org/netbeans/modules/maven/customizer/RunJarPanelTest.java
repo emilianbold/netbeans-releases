@@ -82,6 +82,11 @@ public class RunJarPanelTest extends TestCase {
         assertEquals("${packageClassName}", RunJarPanel.splitMainClass(line));
         assertEquals("%classpath ${packageClassName}", RunJarPanel.splitParams(line));
 
+        //param with quotes and spaces..
+        line = "-Dparam1=\"one two three\" -classpath %classpath ${packageClassName} %classpath ${packageClassName} ";
+        assertEquals("-Dparam1=\"one two three\" -classpath %classpath", RunJarPanel.splitJVMParams(line));
+        assertEquals("${packageClassName}", RunJarPanel.splitMainClass(line));
+        assertEquals("%classpath ${packageClassName}", RunJarPanel.splitParams(line));
     }
 
 

@@ -39,7 +39,6 @@
 
 package org.openide.nodes;
 
-import java.util.List;
 import java.util.Map;
 import javax.swing.Action;
 
@@ -48,22 +47,23 @@ import javax.swing.Action;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class LazyNode extends FilterNode {
-    private Map map;
+    private Map<String,?> map;
 
-    LazyNode(Map map) {
-        this(new ChFactory(), map);
+    LazyNode(Map<String,?> map) {
+        this(new AbstractNode(new Children.Array()), map);
     }
-    private LazyNode(ChFactory factory, Map map) {
-        super(new AbstractNode(Children.create(factory, true)));
-        factory.node = this;
+    private LazyNode(AbstractNode an, Map<String,?> map) {
+        super(an, new SwitchChildren(an));
+        ((SwitchChildren)getChildren()).node = this;
         this.map = map;
         
-        AbstractNode an = (AbstractNode)getOriginal();
-
         an.setName((String) map.get("name")); // NOI18N
         an.setDisplayName((String) map.get("displayName")); // NOI18N
         an.setShortDescription((String) map.get("shortDescription")); // NOI18N
-        an.setIconBaseWithExtension((String)map.get("iconResource")); // NOI18N
+        String iconBase = (String) map.get("iconResource"); // NOI18N
+        if (iconBase != null) {
+            an.setIconBaseWithExtension(iconBase);
+        }
     }
 
     @Override
@@ -78,6 +78,9 @@ final class LazyNode extends FilterNode {
                 return getOriginal();
             }
             n[0] = (Node)map.get("original"); // NOI18N
+            if (n[0] == null) {
+                throw new IllegalArgumentException("Original Node from map " + map + " is null");
+            }
             map = null;
         }
         Children.MUTEX.postWriteRequest(new Runnable() {
@@ -88,20 +91,39 @@ final class LazyNode extends FilterNode {
         });
         return n[0];
     }
-
-    private static final class ChFactory extends ChildFactory<Object> {
+    
+    private static final class SwitchChildren extends FilterNode.Children {
         LazyNode node;
 
-        @Override
-        protected boolean createKeys(List<Object> toPopulate) {
-            LazyNode n = node;
-            node = null;
-            if (n != null) {
-                n.switchToOriginal();
-                return true;
-            } else {
-                return false;
-            }
+        public SwitchChildren(Node or) {
+            super(or);
         }
+
+        @Override
+        protected void addNotify() {
+            node.switchToOriginal();
+            super.addNotify();
+        }
+
+        @Override
+        public Node[] getNodes(boolean optimalResult) {
+            node.switchToOriginal();
+            return super.getNodes(optimalResult);
+        }
+
+        @Override
+        public int getNodesCount(boolean optimalResult) {
+            node.switchToOriginal();
+            return super.getNodesCount(optimalResult);
+        }
+
+
+        @Override
+        public Node findChild(String name) {
+            node.switchToOriginal();
+            return super.findChild(name);
+        }
+
+
     }
 }

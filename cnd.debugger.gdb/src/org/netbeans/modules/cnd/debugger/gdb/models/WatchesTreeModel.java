@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.debugger.gdb.models;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -78,13 +79,11 @@ public class WatchesTreeModel implements TreeModel, PropertyChangeListener {
     
     public WatchesTreeModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
-        debugger.addPropertyChangeListener(this);
     }
 
     public void propertyChange(PropertyChangeEvent ev) {
-        if (ev.getPropertyName().equals(GdbDebugger.PROP_STATE) &&
-                debugger.isStopped()) {
-            fireTreeChanged();
+        if (AbstractVariable.PROP_VALUE.equals(ev.getPropertyName())) {
+            fireNodeChanged(ev.getSource());
         }
     }
     
@@ -128,8 +127,9 @@ public class WatchesTreeModel implements TreeModel, PropertyChangeListener {
             for (i = 0; i < k; i++) {
                 AbstractVariable gw = watchToVariable.get(fws[i]);
                 if (gw == null) {
-                    gw = new GdbWatchVariable(fws[i]);
+                    gw = new GdbWatchVariable(debugger, fws[i]);
                     watchToVariable.put(fws[i], gw);
+                    gw.addPropertyChangeListener(this);
                 }
                 gws[i] = gw;
             }
@@ -207,26 +207,34 @@ public class WatchesTreeModel implements TreeModel, PropertyChangeListener {
     public void removeModelListener(ModelListener l) {
         listeners.remove(l);
     }
-    
-    protected void fireTreeChanged() {
-        log.fine("WTM.fireTreeChanged[" + Thread.currentThread().getName() + "]:");
-        ModelEvent event = new ModelEvent.TreeChanged(this);
-        for (ModelListener l : listeners) {
-            l.modelChanged(event);
+
+    void fireTreeChanged() {
+        List<ModelListener> ls;
+        synchronized (listeners) {
+            ls = new ArrayList<ModelListener>(listeners);
+        }
+        for (ModelListener l : ls) {
+            l.modelChanged(new ModelEvent.TreeChanged(this));
         }
     }
-    
-    private void fireWatchesChanged() {
-        ModelEvent event = new ModelEvent.NodeChanged(this, ROOT, ModelEvent.NodeChanged.CHILDREN_MASK);
-        for (ModelListener l : listeners) {
-            l.modelChanged(event);
+
+    private void fireTableValueChanged(Object node, String propertyName) {
+        List<ModelListener> ls;
+        synchronized (listeners) {
+            ls = new ArrayList<ModelListener>(listeners);
         }
-    }
-        
-    void fireTableValueChanged(Object node, String propertyName) {
-        log.fine("WTM.fireTableValueChanged[" + Thread.currentThread().getName() + "]:");
-        for (ModelListener l : listeners) {
+        for (ModelListener l : ls) {
             l.modelChanged(new ModelEvent.TableValueChanged(this, node, propertyName));
+        }
+    }
+
+    private void fireNodeChanged(Object node) {
+        List<ModelListener> ls;
+        synchronized (listeners) {
+            ls = new ArrayList<ModelListener>(listeners);
+        }
+        for (ModelListener l : ls) {
+            l.modelChanged(new ModelEvent.NodeChanged(this, node));
         }
     }
     
@@ -262,7 +270,7 @@ public class WatchesTreeModel implements TreeModel, PropertyChangeListener {
                 return;
             }
             watch.addPropertyChangeListener(this);
-            m.fireWatchesChanged();
+            m.fireTreeChanged();
         }
         
         @Override
@@ -277,7 +285,7 @@ public class WatchesTreeModel implements TreeModel, PropertyChangeListener {
                 ((GdbWatchVariable)o).remove();
             }
             watch.removePropertyChangeListener(this);
-            m.fireWatchesChanged();
+            m.fireTreeChanged();
         }
         
         // currently waiting / running refresh task

@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
-import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
@@ -49,12 +48,14 @@ import org.netbeans.modules.nativeexecution.NativeProcessInfo;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.CommandLineHelper;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
 public class UnbufferSupport {
+
     private static final java.util.logging.Logger log = Logger.getInstance();
     private static final HashMap<ExecutionEnvironment, String> cache =
             new HashMap<ExecutionEnvironment, String>();
@@ -97,8 +98,8 @@ public class UnbufferSupport {
 
                         if (remotePath == null) {
                             remotePath = hinfo.getTempDir() + unbufferPath;
-                            NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "/bin/mkdir"); // NOI18N
-                            npb = npb.setArguments("-p", remotePath, remotePath + "_64"); // NOI18N
+                            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+                            npb.setExecutable("/bin/mkdir").setArguments("-p", remotePath, remotePath + "_64"); // NOI18N
 
                             try {
                                 npb.call().waitFor();
@@ -155,9 +156,7 @@ public class UnbufferSupport {
                     ldPreload = ((ldPreload == null) ? "" : (ldPreload + ":")) + // NOI18N
                             unbufferPath + "/" + unbufferLib; // NOI18N
 
-                    if (isWindows) {
-                        ldPreload = WindowsSupport.getInstance().normalizePath(ldPreload);
-                    }
+                    ldPreload = CommandLineHelper.getInstance(execEnv).toShellPath(ldPreload);
                 } else {
                     ldPreload = ((ldPreload == null) ? "" : (ldPreload + ":")) + // NOI18N
                             unbufferLib;
@@ -169,9 +168,7 @@ public class UnbufferSupport {
                     env.put("DYLD_FORCE_FLAT_NAMESPACE", "yes"); // NOI18N
                 } else {
                     String ldLibPath = env.get(ldLibraryPathEnv);
-                    if (isWindows) {
-                        ldLibPath = WindowsSupport.getInstance().normalizeAllPaths(ldLibPath);
-                    }
+                    ldLibPath = CommandLineHelper.getInstance(execEnv).toShellPaths(ldLibPath);
                     ldLibPath = ((ldLibPath == null) ? "" : (ldLibPath + ":")) + // NOI18N
                             unbufferPath + ":" + unbufferPath + "_64"; // NOI18N
                     env.put(ldLibraryPathEnv, ldLibPath); // NOI18N

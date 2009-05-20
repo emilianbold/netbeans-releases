@@ -115,7 +115,7 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
 
     @Override
     protected void tick() {
-        panel.addData(Math.round(lastThreads * lastLocks / 100), lastThreads);
+        panel.addData(Math.round(lastThreads * Math.min(lastLocks, 100) / 100), lastThreads);
     }
 
     @Override
@@ -145,7 +145,7 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
             });
             UIThread.invoke(new Runnable() {
                 public void run() {
-                    panel.getPanel().setEnabled(false);
+//                    panel.getPanel().setEnabled(false);
                     panel.getPanel().setOverlay(repairPanel);
                 }
             });

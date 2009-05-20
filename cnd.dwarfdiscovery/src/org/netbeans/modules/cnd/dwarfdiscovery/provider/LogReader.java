@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfigurat
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -78,7 +78,7 @@ public class LogReader {
     
     public LogReader(String fileName, String root){
         if (root.length()>0) {
-            this.root = FileUtil.normalizeFile(new File(root)).getAbsolutePath();
+            this.root = CndFileUtils.normalizeFile(new File(root)).getAbsolutePath();
         } else {
             this.root = root;
         }
@@ -323,7 +323,7 @@ public class LogReader {
     
     private void setWorkingDir(String workingDir) {
         if (TRACE) {System.err.println("**>> new working dir: " + workingDir);}
-        this.workingDir = FileUtil.normalizeFile(new File(workingDir)).getAbsolutePath();
+        this.workingDir = CndFileUtils.normalizeFile(new File(workingDir)).getAbsolutePath();
     }
     
     private boolean parseLine(String line){
@@ -505,7 +505,7 @@ public class LogReader {
                 fullName = compilePath+"/"+sourceName; //NOI18N
             }
             File file = new File(fullName);
-            fullName = FileUtil.normalizeFile(file).getAbsolutePath();
+            fullName = CndFileUtils.normalizeFile(file).getAbsolutePath();
             fullName = PathCache.getString(fullName);
             this.userIncludes = userIncludes;
             this.userMacros = userMacros;

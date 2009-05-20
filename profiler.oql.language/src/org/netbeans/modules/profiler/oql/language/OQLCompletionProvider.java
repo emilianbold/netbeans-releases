@@ -113,7 +113,7 @@ public class OQLCompletionProvider implements CompletionProvider {
 
     public CompletionTask createTask(int queryType, final JTextComponent component) {
         if (queryType != CompletionProvider.COMPLETION_QUERY_TYPE) return null;
-        final Document document = ((JTextComponent)component).getDocument();
+        final Document document = component.getDocument();
         final TokenHierarchy<Document> th = TokenHierarchy.get(document);
 
         AsyncCompletionQuery query = new AsyncCompletionQuery() {

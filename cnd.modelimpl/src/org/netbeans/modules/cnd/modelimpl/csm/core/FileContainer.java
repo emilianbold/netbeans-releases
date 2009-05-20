@@ -76,7 +76,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 /**
  * Storage for files and states. Class was extracted from ProjectBase.
@@ -226,10 +226,10 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         return f.getPrerocStates();
     }
 
-    public Collection<StatePair> getStatePairs(File file) {
+    public Collection<PreprocessorStatePair> getStatePairs(File file) {
         FileEntry f = getFileEntry(file, false, false);
         if (f == null) {
-            return Collections.<StatePair>emptyList();
+            return Collections.<PreprocessorStatePair>emptyList();
         }
         return f.getStatePairs();
     }
@@ -300,7 +300,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 
     public static CharSequence getFileKey(File file, boolean sharedText) {
         if (CndUtils.isDebugMode()) {
-            File normFile = FileUtil.normalizeFile(file);
+            File normFile = CndFileUtils.normalizeFile(file);
             CndUtils.assertTrueInConsole(file.equals(normFile), "Parameter file was not " + // NOI18N
                         "normalized. Was " + file + " instead of " + normFile); // NOI18N
         }
@@ -542,40 +542,6 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         return new TreeMap<CharSequence, Object>(canonicFiles);
     }
 
-    public static class StatePair {
-        
-        public final APTPreprocHandler.State state;
-        public final FilePreprocessorConditionState pcState;
-        
-        public StatePair(State ppState, FilePreprocessorConditionState pcState) {
-            this.state = ppState;
-            this.pcState = pcState;
-        }
-
-        @Override
-        public String toString() {
-            return "(" + pcState + "\n" + state + ')'; //NOI18N
-        }
-    }
-//
-//    public static interface FileEntry {
-//
-//        /** Gets the states collection */
-//        Collection<StatePair> getStatePairs();
-//
-//        void setState(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState);
-//        //void setStates(Collection<StatePair> pairs);
-//        void setStates(Collection<StatePair> pairs, StatePair yetOneMore);
-//
-//        public void invalidateStates();
-//
-//        public Object getLock();
-//
-//        /** sets pc state for preproc state if needed */
-//        public boolean setParsedPCState(State ppState, FilePreprocessorConditionState pcState);
-//    }
-
-    // package access for unit tests only
     public static final class FileEntry {
 
         private final CsmUID<CsmFile> fileNew;
@@ -593,9 +559,9 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                 if (cnt == 1) {
                     data = readStatePair(input);
                 } else {
-                    data = new ArrayList<StatePair>(cnt);
+                    data = new ArrayList<PreprocessorStatePair>(cnt);
                     for (int i = 0; i < cnt; i++) {
-                        ((List<StatePair>) data).add(readStatePair(input));
+                        ((List<PreprocessorStatePair>) data).add(readStatePair(input));
                     }
                 }
             }
@@ -603,7 +569,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 
         private FileEntry(CsmUID<CsmFile> fileNew, APTPreprocHandler.State state, CharSequence fileKey) {
             this.fileNew = fileNew;
-            this.data = new StatePair(state, FilePreprocessorConditionState.PARSING);
+            this.data = new PreprocessorStatePair(state, FilePreprocessorConditionState.PARSING);
             this.canonical = getCanonicalKey(fileKey);
             this.modCount = 0;
         }
@@ -615,21 +581,21 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             Object aData = data;
             output.writeBoolean(aData != null);
             if (aData != null) {
-                if(aData instanceof StatePair) {
+                if(aData instanceof PreprocessorStatePair) {
                     output.writeInt(1);
-                    writeStatePair(output, (StatePair) aData);
+                    writeStatePair(output, (PreprocessorStatePair) aData);
                 } else {
                     @SuppressWarnings("unchecked")
-                    Collection<StatePair> pairs = (Collection<StatePair>)aData;
+                    Collection<PreprocessorStatePair> pairs = (Collection<PreprocessorStatePair>)aData;
                     output.writeInt(pairs.size());
-                    for (StatePair pair : pairs) {
+                    for (PreprocessorStatePair pair : pairs) {
                         writeStatePair(output, pair);
                     }
                 }
             }
         }
         
-        private static StatePair readStatePair(DataInput input) throws IOException {
+        private static PreprocessorStatePair readStatePair(DataInput input) throws IOException {
             if (input.readBoolean()) {
                 APTPreprocHandler.State state = null;
                 if (input.readBoolean()){
@@ -641,14 +607,14 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                 } else {
                     pcState = FilePreprocessorConditionState.PARSING;
                 }
-                return new StatePair(state, pcState);
+                return new PreprocessorStatePair(state, pcState);
             }
             return null;
             
             
         }
 
-        private static void writeStatePair(DataOutput output, StatePair pair) throws IOException {
+        private static void writeStatePair(DataOutput output, PreprocessorStatePair pair) throws IOException {
             output.writeBoolean(pair != null);
             if (pair != null) {
                 output.writeBoolean(pair.state != null);
@@ -673,10 +639,6 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         public Object getLock() {
             return this;
         }
-        
-//        public synchronized int size() {
-//            return (data instanceof Collection) ? ((Collection) data).size() : 1;
-//        }
 
         //@Deprecated
         private final synchronized APTPreprocHandler.State getState() {
@@ -698,11 +660,11 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             }
             if ((data instanceof Collection<?>)) {
                 @SuppressWarnings("unchecked")
-                Collection<StatePair> states = (Collection<StatePair>) data;
+                Collection<PreprocessorStatePair> states = (Collection<PreprocessorStatePair>) data;
                 // check how many good old states are there
                 // and pick a valid one to check that we aren't replacing better state by worse one 
                 int oldGoodStatesCount = 0;
-                for (StatePair pair : states) {
+                for (PreprocessorStatePair pair : states) {
                     if (pair.state != null && pair.state.isValid()) {
                         oldGoodStatesCount++;
                         if (oldState == null || state.isCompileContext()) {
@@ -713,15 +675,15 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                 if (oldGoodStatesCount > 1) {
                     if (CndUtils.isDebugMode()) {
                         StringBuilder sb = new StringBuilder("Attempt to set state while there are multiple states: " + canonical); // NOI18N
-                        for (StatePair pair : states) {
+                        for (PreprocessorStatePair pair : states) {
                             sb.append(String.format("\nvalid: %b context: %b %s", pair.state.isValid(), pair.state.isCompileContext(), pair.pcState)); //NOI18N
                         }
                         Utils.LOG.log(Level.SEVERE, sb.toString(), new Exception(sb.toString()));
                     }
                     //return;
                 }
-            } else if(data instanceof StatePair) {
-                oldState = ((StatePair) data).state;
+            } else if(data instanceof PreprocessorStatePair) {
+                oldState = ((PreprocessorStatePair) data).state;
             }
             
             incrementModCount();
@@ -748,7 +710,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                 System.err.println(state);
             }
             
-            data = new StatePair(state, pcState);
+            data = new PreprocessorStatePair(state, pcState);
         }
         
         /**
@@ -761,10 +723,10 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                 return false;
             }
             assert pcState != null && pcState != FilePreprocessorConditionState.PARSING;
-            if (data instanceof StatePair) {
-                StatePair pair = (StatePair) data;
+            if (data instanceof PreprocessorStatePair) {
+                PreprocessorStatePair pair = (PreprocessorStatePair) data;
                 if (state.equals(pair.state)) {
-                    data = new StatePair(pair.state, pcState);
+                    data = new PreprocessorStatePair(pair.state, pcState);
                     incrementModCount();
                     return true;
                 } else {
@@ -772,11 +734,11 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                 }
             } else {
                 @SuppressWarnings("unchecked")
-                List<StatePair> list = (List<StatePair>) data;
+                List<PreprocessorStatePair> list = (List<PreprocessorStatePair>) data;
                 for (int i = 0; i < list.size(); i++) {
-                    StatePair pair = list.get(i);
+                    PreprocessorStatePair pair = list.get(i);
                     if (state.equals(pair.state)) {
-                        list.set(i, new StatePair(pair.state, pcState));
+                        list.set(i, new PreprocessorStatePair(pair.state, pcState));
                         incrementModCount();
                         return true;
                     }
@@ -797,15 +759,15 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 //            }
 //        }
 
-        public synchronized void setStates(Collection<StatePair> pairs, StatePair yetOneMore) {
+        public synchronized void setStates(Collection<PreprocessorStatePair> pairs, PreprocessorStatePair yetOneMore) {
             incrementModCount();
             if (yetOneMore != null && yetOneMore.state != null && !yetOneMore.state.isCleaned()) {
-                yetOneMore = new StatePair(APTHandlersSupport.createCleanPreprocState(yetOneMore.state), yetOneMore.pcState);
+                yetOneMore = new PreprocessorStatePair(APTHandlersSupport.createCleanPreprocState(yetOneMore.state), yetOneMore.pcState);
             }
             if (pairs.size() == 0) {
                 data = yetOneMore;
             } else {
-                ArrayList<StatePair> newData = new ArrayList<StatePair>(pairs.size()+1);
+                ArrayList<PreprocessorStatePair> newData = new ArrayList<PreprocessorStatePair>(pairs.size()+1);
                 newData.addAll(pairs);
                 newData.add(yetOneMore);
                 data = newData;
@@ -816,13 +778,13 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         }
 
         private void checkConsistency() {
-            Collection<StatePair> pairs = getStatePairs();
+            Collection<PreprocessorStatePair> pairs = getStatePairs();
             if (!pairs.isEmpty()) {
                 boolean alarm = false;
 
                 State firstState = null;
                 boolean first = true;
-                for (StatePair pair : getStatePairs()) {
+                for (PreprocessorStatePair pair : getStatePairs()) {
                     if (first) {
                         first = false;
                         firstState = pair.state;
@@ -842,7 +804,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                 }
                 if (alarm) {
                     StringBuilder sb = new StringBuilder("Mixed preprocessor states: " + canonical); // NOI18N
-                    for (StatePair pair : getStatePairs()) {
+                    for (PreprocessorStatePair pair : getStatePairs()) {
                         if (pair.state == null) {
                             sb.append(String.format(" (null, %s)", pair.pcState)); //NOI18N
                         } else {
@@ -863,11 +825,11 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         public synchronized void invalidateStates() {
             incrementModCount();
             if (data != null) {
-                if (data instanceof StatePair) {
-                    data = createInvalidState((StatePair) data);
+                if (data instanceof PreprocessorStatePair) {
+                    data = createInvalidState((PreprocessorStatePair) data);
                 } else {
-                    Collection<StatePair> newData = new ArrayList<StatePair>();
-                    for (StatePair pair : (Collection<StatePair>) data) {
+                    Collection<PreprocessorStatePair> newData = new ArrayList<PreprocessorStatePair>();
+                    for (PreprocessorStatePair pair : (Collection<PreprocessorStatePair>) data) {
                         newData.add(createInvalidState(pair));
                     }
                     data = newData;
@@ -875,40 +837,40 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             }
         }
         
-        private static StatePair createInvalidState(StatePair pair) {
+        private static PreprocessorStatePair createInvalidState(PreprocessorStatePair pair) {
             if (pair == null) {
                 return pair;
             } else {
                 if (pair.state == null) {
                     return pair;
                 } else {
-                    return new StatePair(APTHandlersSupport.createInvalidPreprocState(pair.state), FilePreprocessorConditionState.PARSING);
+                    return new PreprocessorStatePair(APTHandlersSupport.createInvalidPreprocState(pair.state), FilePreprocessorConditionState.PARSING);
                 }
             }
         }
             
-        public synchronized Collection<StatePair> getStatePairs() {
+        public synchronized Collection<PreprocessorStatePair> getStatePairs() {
             if (data == null) {
-                return Collections.singleton(new StatePair(null, null));
-            } else if(data instanceof StatePair) {
-                return Collections.singleton((StatePair) data);
+                return Collections.singleton(new PreprocessorStatePair(null, null));
+            } else if(data instanceof PreprocessorStatePair) {
+                return Collections.singleton((PreprocessorStatePair) data);
             } else {
                 @SuppressWarnings("unchecked")
-                Collection<StatePair> array = (Collection<StatePair>) data;
-                return new ArrayList<StatePair>(array);
+                Collection<PreprocessorStatePair> array = (Collection<PreprocessorStatePair>) data;
+                return new ArrayList<PreprocessorStatePair>(array);
             }
         }
         
         public synchronized Collection<APTPreprocHandler.State> getPrerocStates() {
             if (data == null) {
                 return Collections.emptyList();
-            } else if(data instanceof StatePair) {
-                return Collections.singleton(((StatePair) data).state);
+            } else if(data instanceof PreprocessorStatePair) {
+                return Collections.singleton(((PreprocessorStatePair) data).state);
             } else {
                 @SuppressWarnings("unchecked")
-                Collection<StatePair> pairs = (Collection<StatePair>) data;
+                Collection<PreprocessorStatePair> pairs = (Collection<PreprocessorStatePair>) data;
                 Collection<APTPreprocHandler.State> result = new ArrayList<State>(pairs.size());
-                for (StatePair pair : pairs) {
+                for (PreprocessorStatePair pair : pairs) {
                     result.add(pair.state);
                 }
                 return result;
@@ -925,7 +887,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             StringBuilder sb = new StringBuilder();
             sb.append(fileNew);
             sb.append("states:\n"); //NOI18N
-            for (StatePair pair : getStatePairs()) {
+            for (PreprocessorStatePair pair : getStatePairs()) {
                 sb.append(pair);
                 sb.append('\n'); //NOI18N
             }

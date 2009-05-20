@@ -80,7 +80,7 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
     public boolean checkRunConfig(RunConfig config, ExecutionContext context) {
         Properties configProperties = config.getProperties();
 
-        if (ACTION_PROFILE.equals(config.getActionName()) || ACTION_PROFILE_SINGLE.equals(config.getActionName()) || ACTION_PROFILE_TESTS.equals(config.getActionName())) { // action "profile"
+        if (ACTION_PROFILE.equals(config.getActionName()) || config.getActionName().startsWith(ACTION_PROFILE_SINGLE) || ACTION_PROFILE_TESTS.equals(config.getActionName())) { // action "profile"
             // Get the ProjectTypeProfiler for Maven project
             final ProjectTypeProfiler ptp = ProjectUtilities.getProjectTypeProfiler(project);
             if (!(ptp instanceof MavenProjectTypeProfiler)) return false;
@@ -123,22 +123,8 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
     }
 
     private String fixAgentArg(String agentArg) {
-        agentArg = agentArg.replace("\\", "/");
-
         if (agentArg.indexOf(' ') != -1) { //NOI18N
-            if (Utilities.isUnix()) {
-                // Profiler is installed in directory with space on Unix (Linux, Solaris, Mac OS X)
-                // create temporary link in /tmp directory and use it instead of directory with space
-                String libsDir = Profiler.getDefault().getLibsDir();
-                return IntegrationUtils.fixLibsDirPath(libsDir, agentArg); //NOI18N
-            } else if (Utilities.isWindows()) {
-                // Profiler is installed in directory with space on Windows
-                // surround the whole -agentpath argument with quotes for NB source module
-
-// #164234 shall be done now for all properties directly in the CmdLine Build Executor.
-//                agentArg = "\\\"" + agentArg + "\\\""; //NOI18N
-                return agentArg; //NOI18N
-            }
+            return "\"" + agentArg + "\"";
         }
         return agentArg;
     }

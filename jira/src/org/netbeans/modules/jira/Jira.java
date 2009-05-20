@@ -52,7 +52,10 @@ import org.eclipse.mylyn.internal.tasks.core.TaskTask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.libs.bugtracking.BugtrackingRuntime;
+import org.netbeans.modules.jira.query.kenai.KenaiRepository;
+import org.netbeans.modules.jira.repository.JiraConfigurationCacheManager;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.netbeans.modules.jira.repository.JiraStorageManager;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -68,6 +71,8 @@ public class Jira {
     private JiraRepositoryConnector jrc;
     private static Jira instance;
     private Set<TaskRepository> refreshedRepos = new HashSet<TaskRepository>(1);
+    private JiraConfigurationCacheManager cacheManager;
+    private JiraStorageManager storageManager;
 
     public static Logger LOG = Logger.getLogger("org.netbeans.modules.jira.Jira");
     private RequestProcessor rp;
@@ -113,14 +118,12 @@ public class Jira {
     }
 
     public void addRepository(JiraRepository repository) {
-        // XXX
-//        if(repository instanceof KenaiRepository) {
-//            // we don't store kenai repositories - XXX  shouldn't be even called
-//            return;
-//        }
-        JiraConfig.getInstance().putRepository(repository.getDisplayName(), repository);
         synchronized(REPOSITORIES_LOCK) {
-            getStoredRepositories().add(repository);
+            if(!(repository instanceof KenaiRepository)) {
+                // we don't store kenai repositories - XXX  shouldn't be even called
+                JiraConfig.getInstance().putRepository(repository.getDisplayName(), repository);
+                getStoredRepositories().add(repository);
+            }
             BugtrackingRuntime
                     .getInstance()
                     .getTaskRepositoryManager()
@@ -179,4 +182,22 @@ public class Jira {
         JiraClientFactory.getDefault().repositoryRemoved(taskRepository);
     }
 
+    void shutdown () {
+        getConfigurationCacheManager().shutdown();
+        getStorageManager().shutdown();
+    }
+
+    public JiraConfigurationCacheManager getConfigurationCacheManager () {
+        if (cacheManager == null) {
+            cacheManager = JiraConfigurationCacheManager.getInstance();
+        }
+        return cacheManager;
+    }
+
+    public JiraStorageManager getStorageManager () {
+        if (storageManager == null) {
+            storageManager = JiraStorageManager.getInstance();
+        }
+        return storageManager;
+    }
 }

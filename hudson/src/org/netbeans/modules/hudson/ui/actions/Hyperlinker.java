@@ -103,7 +103,7 @@ class Hyperlinker {
             this.job = job;
             // XXX support Windows build servers (using backslashes)
             String jobNameQ = Pattern.quote(jobName);
-            hyperlinkable = Pattern.compile("\\s*(?:\\[.+\\] )?/.+/(?:jobs/" + jobNameQ + "/workspace|workspace/" + jobNameQ + // NOI18N
+            hyperlinkable = Pattern.compile("\\s*(?:\\[.+\\] )?/.+?/(?:jobs/" + jobNameQ + "/workspace|workspace/" + jobNameQ + // NOI18N
                     ")/([^:]+):(?:\\[?([0-9]+)[:,](?:([0-9]+)[]:])?)? (?:warning: )?(.+)"); // NOI18N
         }
         OutputListener findHyperlink(String line) {

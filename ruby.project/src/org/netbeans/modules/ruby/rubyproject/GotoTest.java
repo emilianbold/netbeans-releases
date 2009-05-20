@@ -65,6 +65,7 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
+import org.netbeans.modules.ruby.RubyParseResult;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
@@ -367,8 +368,13 @@ public class GotoTest implements TestLocator {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     Parser.Result parserResult = resultIterator.getParserResult();
-                    Node root = AstUtilities.getRoot(parserResult);
+                    // for .erb files we have FakeRhtmlParserResult, with which
+                    // we can't do much
+                    if (!(parserResult instanceof RubyParseResult)) {
+                        return;
+                    }
 
+                    Node root = AstUtilities.getRoot(parserResult);
                     if (root == null) {
                         return;
                     }

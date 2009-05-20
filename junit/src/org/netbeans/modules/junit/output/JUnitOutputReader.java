@@ -127,8 +127,6 @@ final class JUnitOutputReader {
     /** */
     private final Manager manager = Manager.getInstance();
     /** */
-    private String classpath;
-    /** */
     private ClassPath platformSources;
     
     private TestSession testSession;
@@ -263,18 +261,7 @@ final class JUnitOutputReader {
             case SUITE_FINISHED:
             case TESTCASE_ISSUE:
             {
-                /* Look for classpaths: */
-
-                /* Code copied from JavaAntLogger */
-
-                Matcher matcher;
-
-                matcher = RegexpUtils.CLASSPATH_ARGS.matcher(msg);
-                if (matcher.find()) {
-                    this.classpath = matcher.group(1);
-                }
-                // XXX should also probably clear classpath when taskFinished called
-                matcher = RegexpUtils.JAVA_EXECUTABLE.matcher(msg);
+                Matcher matcher = RegexpUtils.JAVA_EXECUTABLE.matcher(msg);
                 if (matcher.find()) {
                     String executable = matcher.group(1);
                     ClassPath platformSrcs = findPlatformSources(executable);
@@ -546,7 +533,6 @@ final class JUnitOutputReader {
     /**
      */
     void testTaskFinished() {
-        closePereviousReport();
     }
 
     private void closePereviousReport(){
@@ -599,6 +585,7 @@ final class JUnitOutputReader {
     /**
      */
     void buildFinished(final AntEvent event) {
+        closePereviousReport();
         manager.sessionFinished(testSession);
     }
 
@@ -613,13 +600,9 @@ final class JUnitOutputReader {
     private void suiteStarted(final String suiteName) {
         closePereviousReport();
         TestSuite suite = new JUnitTestSuite(suiteName, testSession);
-        if (classpath != null){
-//            suite.setClassPath(classpath, platformSources);
-        }
         testSession.addSuite(suite);
-        manager.displaySuiteRunning(testSession, suiteName);
+        manager.displaySuiteRunning(testSession, suite);
         state = State.SUITE_STARTED;
-        classpath = null;
         platformSources = null;
     }
     

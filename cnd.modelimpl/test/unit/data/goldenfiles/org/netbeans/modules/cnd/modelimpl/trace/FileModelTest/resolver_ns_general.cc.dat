@@ -39,14 +39,14 @@ NAMESPACE DEFINITOIN rng [1:1/0-36:2/675] SCOPE: resolver_ns_general.cc
                     UNIQUE NAME F:rng::C::CC::foo()
                     PARAMETERS:
                     RETURNS int TEXT=int  [17:13/316-17:16/319]
-    ALIAS B null  [22:5/350-22:20/365] SCOPE: rng 
+    ALIAS B rng::A  [22:5/350-22:20/365] SCOPE: rng 
     USING NAMESPACE. A  [24:5/394-24:22/411]; REF NS: rng::A SCOPE: null
     USING DECL. C::CC  [25:5/437-25:16/448]; REF DECL: rng::C::CC  [9:9/130-18:10/336] SCOPE: rng 
     CLASS ZZ (rng::ZZ ) [27:5/483-31:6/638] lcurly=492 SCOPE: rng 
         BASE CLASSES:
         MEMBERS:
             FIELD PRIVATE a [28:9/502-28:14/507]  TYPE: rng::A::AA TEXT=AA  [28:9/502-28:11/504]  INIT: null  SCOPE: ZZ 
-            FIELD PRIVATE b [29:9/548-29:17/556]  TYPE: $unresolved$::B::AA TEXT=B::AA  [29:9/548-29:14/553]  INIT: null  SCOPE: ZZ 
+            FIELD PRIVATE b [29:9/548-29:17/556]  TYPE: rng::A::AA TEXT=B::AA  [29:9/548-29:14/553]  INIT: null  SCOPE: ZZ 
             FIELD PRIVATE c [30:9/595-30:14/600]  TYPE: rng::C::CC TEXT=CC  [30:9/595-30:11/597]  INIT: null  SCOPE: ZZ 
     VARIABLE z [33:5/645-33:10/650]  TYPE: rng::ZZ TEXT=ZZ  [33:5/645-33:7/647]  INIT: null  SCOPE: rng 
     USING DECL. rng::C::CC  [35:5/656-35:21/672]; REF DECL: rng::C::CC  [9:9/130-18:10/336] SCOPE: rng 
@@ -77,14 +77,14 @@ NAMESPACE DEFINITIONS for rng (rng)
     resolver_ns_general.cc  [1:1/0-36:2/675]
     resolver_ns_general.cc  [39:1/678-49:2/831]
 NAMESPACE rng (rng) 
-    ALIAS B null  [22:5/350-22:20/365] SCOPE: rng 
+    ALIAS B rng::A  [22:5/350-22:20/365] SCOPE: rng 
     USING NAMESPACE. A  [24:5/394-24:22/411]; REF NS: rng::A SCOPE: null
     USING DECL. C::CC  [25:5/437-25:16/448]; REF DECL: rng::C::CC  [9:9/130-18:10/336] SCOPE: rng 
     CLASS ZZ (rng::ZZ ) [27:5/483-31:6/638] lcurly=492 SCOPE: rng 
         BASE CLASSES:
         MEMBERS:
             FIELD PRIVATE a [28:9/502-28:14/507]  TYPE: rng::A::AA TEXT=AA  [28:9/502-28:11/504]  INIT: null  SCOPE: ZZ 
-            FIELD PRIVATE b [29:9/548-29:17/556]  TYPE: $unresolved$::B::AA TEXT=B::AA  [29:9/548-29:14/553]  INIT: null  SCOPE: ZZ 
+            FIELD PRIVATE b [29:9/548-29:17/556]  TYPE: rng::A::AA TEXT=B::AA  [29:9/548-29:14/553]  INIT: null  SCOPE: ZZ 
             FIELD PRIVATE c [30:9/595-30:14/600]  TYPE: rng::C::CC TEXT=CC  [30:9/595-30:11/597]  INIT: null  SCOPE: ZZ 
     VARIABLE z [33:5/645-33:10/650]  TYPE: rng::ZZ TEXT=ZZ  [33:5/645-33:7/647]  INIT: null  SCOPE: rng 
     USING DECL. rng::C::CC  [35:5/656-35:21/672]; REF DECL: rng::C::CC  [9:9/130-18:10/336] SCOPE: rng 

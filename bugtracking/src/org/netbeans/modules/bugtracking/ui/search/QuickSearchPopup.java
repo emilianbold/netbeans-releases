@@ -95,7 +95,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
     /** text to search for */
     private String searchedText;
 
-    private Task evalTask;
+    private RequestProcessor.Task evalTask;
     private Repository repository;
     private RequestProcessor rp;
     private List<PopupItem> currentHitlist;
@@ -109,7 +109,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
         rModel = ResultsModel.getInstance();
         jList1.setModel(rModel);
         jList1.setCellRenderer(new SearchResultRender(comboBar, this));
-        rp = new RequestProcessor("", 1); // NOI18N // XXX throughput 1 ???
+        rp = new RequestProcessor("Bugtracking quick issue search", 1, true); // NOI18N
 
         updateStatusPanel();
     }
@@ -170,6 +170,19 @@ public class QuickSearchPopup extends javax.swing.JPanel
         rModel.setContent(null);
     }
 
+    public void cancel () {
+        cancelTask();
+        rModel.setContent(null);
+    }
+
+    private void cancelTask() {
+        if(evalTask != null) {
+            evalTask.removeTaskListener(this);
+            evalTask.cancel();
+            updateTimer.stop();
+        }
+    }
+
     public void maybeEvaluate (String text) {
         this.searchedText = text;
 
@@ -207,13 +220,10 @@ public class QuickSearchPopup extends javax.swing.JPanel
     }
 
     private void runTask(Runnable r) {
-        if (evalTask != null) {
-            evalTask.removeTaskListener(this);
-        }
+        cancelTask();
         evalTask = rp.create(r);
         evalTask.addTaskListener(this);
-        // start waiting on all providers execution
-        rp.post(evalTask);
+        evalTask.schedule(0);
     }
 
     private void searchLocalIssues() {

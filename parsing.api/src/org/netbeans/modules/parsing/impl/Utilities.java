@@ -91,12 +91,10 @@ public class Utilities {
      * @return true when indexing is active
      */
     public static boolean isScanInProgress () {
-        boolean ruStatus = RepositoryUpdater.getDefault().isScanInProgress();
         if (status == null) {
-            return ruStatus;
-        }
-        else {
-            return status.isScanInProgress() || ruStatus;
+            return RepositoryUpdater.getDefault().isScanInProgress();
+        } else {
+            return status.isScanInProgress();
         }
     }
     //where

@@ -53,8 +53,8 @@ import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.netbeans.modules.cnd.debugger.gdb.LocalVariable;
 import org.netbeans.modules.cnd.debugger.gdb.Field;
+import org.netbeans.modules.cnd.debugger.gdb.Variable;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.NbBundle;
@@ -100,11 +100,8 @@ public class VariablesNodeModel implements ExtendedNodeModel {
         if (o == TreeModel.ROOT) {
             return LC_LocalsModelColumnNameName;
         }
-        if (o instanceof Field) {
-            return ((Field) o).getName();
-        }
-        if (o instanceof LocalVariable) {
-            return ((LocalVariable) o).getName();
+        if (o instanceof Variable) {
+            return ((Variable) o).getName();
         }
         
         String str = o.toString();
@@ -156,15 +153,12 @@ public class VariablesNodeModel implements ExtendedNodeModel {
     private String getShortDescriptionSync(Object o) {
         if (o == TreeModel.ROOT) {
             return LC_LocalsModelColumnNameDesc;
-        } else if (o instanceof Field) {
-            Field f = (Field) o;
-            if (f.getType().length() == 0 && f.getValue().equals("...")) { // NOI18N
+        } else if (o instanceof Variable) {
+            Variable v = (Variable) o;
+            if (o instanceof Field && v.getType().length() == 0 && v.getValue().equals("...")) { // NOI18N
                 return NbBundle.getMessage(VariablesNodeModel.class, "LBL_TruncatedByGdb"); // NOI18N
-            } else {
-                return "(" + ((Field) o).getType() + ") " + ((Field) o).getValue(); // NOI18N
             }
-        } else if (o instanceof LocalVariable) {
-            return "(" + ((LocalVariable) o).getType() + ") " + ((LocalVariable) o).getValue(); // NOI18N
+            return "(" + v.getType() + ") " + v.getValue(); // NOI18N
         }
         
         String str = o.toString();
@@ -183,7 +177,7 @@ public class VariablesNodeModel implements ExtendedNodeModel {
     }
     
     private void testKnown(Object o) throws UnknownTypeException {
-        if (o == TreeModel.ROOT || o instanceof Field || o instanceof LocalVariable) {
+        if (o == TreeModel.ROOT || o instanceof Variable) {
             return;
         }
         String str = o.toString();

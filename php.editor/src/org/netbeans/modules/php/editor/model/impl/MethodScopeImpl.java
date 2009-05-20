@@ -93,7 +93,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         return isMagic() ? getName().contains("__construct") : false;
     }
 
-    public ClassScope getClassScope() {
+    public TypeScope getTypeScope() {
         return (ClassScope) getInScope();
     }
 

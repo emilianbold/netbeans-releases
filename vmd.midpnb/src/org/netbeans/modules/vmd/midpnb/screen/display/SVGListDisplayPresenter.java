@@ -66,10 +66,9 @@ public class SVGListDisplayPresenter extends UpdatableSVGComponentDisplayPresent
     protected static final String TRAIT_FONT_SIZE = "font-size";        // NOI18N
     protected static final String TRAIT_FONT_FAMILY = "font-family";      // NOI18N
     protected static final String TEXT = "text";             // NOI18N
-
-    public static final String METADATA_METADATA         = "text";           // NOI18N
-    public static final String METADATA_DISPLAY          = "display";        // NOI18N
-    public static final String METADATA_NONE             = "none";           // NOI18N
+    public static final String METADATA_METADATA = "text";           // NOI18N
+    public static final String METADATA_DISPLAY = "display";        // NOI18N
+    public static final String METADATA_NONE = "none";           // NOI18N
 
     @Override
     protected void reloadSVGComponent(SVGImage svgImage, DesignComponent svgComponent, String componentId) {
@@ -80,7 +79,9 @@ public class SVGListDisplayPresenter extends UpdatableSVGComponentDisplayPresent
                 svgImage, componentId + BOUNDS_SUFIX);
         SVGLocatableElement myContent = (SVGLocatableElement) Util.getElementById(
                 svgImage, componentId + CONTENT_SUFFIX);
-
+        if (myHiddenText == null || myBounds == null) {
+            return;
+        }
         float itemHeight = myHiddenText.getFloatTrait(TRAIT_FONT_SIZE);
         int listCapacity = (int) (myBounds.getBBox().getHeight() / itemHeight);
         SVGListCellRenderer renderer = new SVGListCellRenderer(svgImage.getDocument(), itemHeight, myHiddenText, myBounds, myContent);
@@ -91,7 +92,7 @@ public class SVGListDisplayPresenter extends UpdatableSVGComponentDisplayPresent
 
     private Vector<SVGLocatableElement> renderList(List<String> items, SVGListCellRenderer renderer, int listCapacity) {
         renderer.clearContent();
-        
+
         Vector<SVGLocatableElement> vector = new Vector<SVGLocatableElement>();
         int itemsCount = items.size();
         if (itemsCount == 0) {
@@ -127,17 +128,16 @@ public class SVGListDisplayPresenter extends UpdatableSVGComponentDisplayPresent
             itemsList.add(USERCODE);
         } else {
             List<PropertyValue> propsList = model.getArray();
-            if ( propsList == null || propsList.isEmpty() ){
+            if (propsList == null || propsList.isEmpty()) {
                 return itemsList;
             }
 
             for (PropertyValue propertyValue : propsList) {
                 PropertyValue stringValue = propertyValue.getComponent().
                         readProperty(SVGListElementEventSourceCD.PROP_STRING);
-                itemsList.add((String)stringValue.getPrimitiveValue());
+                itemsList.add((String) stringValue.getPrimitiveValue());
             }
         }
         return itemsList;
     }
-
 }

@@ -58,6 +58,7 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -534,12 +535,19 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
         protected InputStream getStream(URL page) throws IOException {
             SwingUtilities.invokeLater(SwingBrowserImpl.this);
 
-            // #53207: pre-read encoding from loaded URL
-            String charset = findEncodingFromURL(page.openStream());
-            LOG.log(Level.FINE, "Url " + page + " has charset " + charset); // NOI18N
+            try {
+                // #53207: pre-read encoding from loaded URL
+                String charset = findEncodingFromURL(page.openStream());
+                LOG.log(Level.FINE, "Url " + page + " has charset " + charset); // NOI18N
 
-            if (charset != null) {
-                putClientProperty("charset", charset);
+                if (charset != null) {
+                    putClientProperty("charset", charset);
+                }
+            } catch( IllegalArgumentException iaE ) {
+                //#165266 - empty url
+                MalformedURLException e = new MalformedURLException();
+                e.initCause(iaE);
+                throw e;
             }
 
             // XXX debugger ought to set this temporarily
@@ -575,6 +583,13 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
 
                 lastPaintException = true;
             }
+        }
+
+        @Override
+        public void scrollToReference(String reference) {
+            if( !isShowing() || null == getParent() || getWidth() < 1 || getHeight() < 1 )
+                return;
+            super.scrollToReference(reference);
         }
 
         /**

@@ -48,7 +48,7 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="panel" alignment="0" pref="799" max="32767" attributes="3"/>
+                  <Component id="panel" alignment="0" pref="870" max="32767" attributes="3"/>
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="repoPanel" max="32767" attributes="2"/>
@@ -141,6 +141,9 @@
                 </Component>
                 <Container class="javax.swing.JPanel" name="queriesPanel">
                   <Properties>
+                    <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                      <Color blue="e0" green="e0" red="e0" type="rgb"/>
+                    </Property>
                     <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                       <Dimension value="[400, 32767]"/>
                     </Property>

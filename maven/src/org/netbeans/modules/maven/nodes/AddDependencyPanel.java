@@ -70,6 +70,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
@@ -796,12 +797,8 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             }
 
             depPanel.searchField.setForeground(defSearchC);
-            if (curTypedText.length() < 3) {
-                depPanel.searchField.setForeground(Color.RED);
-                depPanel.nls.setWarningMessage(NbBundle.getMessage(AddDependencyPanel.class, "MSG_QueryTooShort"));
-            } else {
-                depPanel.searchField.setForeground(defSearchC);
-                depPanel.nls.clearMessages();
+
+            if (curTypedText.length() > 0) {
                 find(curTypedText);
             }
         }
@@ -842,20 +839,38 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             Task t = RequestProcessor.getDefault().post(new Runnable() {
 
                 public void run() {
-                    final List<NBVersionInfo> infos = RepositoryQueries.find(fields);
+                    List<NBVersionInfo> tempInfos = null;
+                    boolean tempIsError = false;
 
-                    Node node = null;
+                    try {
+                        tempInfos = RepositoryQueries.find(fields);
+                    } catch (BooleanQuery.TooManyClauses exc) {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                depPanel.searchField.setForeground(Color.RED);
+                                depPanel.nls.setWarningMessage(NbBundle.getMessage(AddDependencyPanel.class, "MSG_TooGeneral"));
+                            }
+                        });
+                        tempIsError = true;
+                    }
+
+                    final List<NBVersionInfo> infos = tempInfos;
+                    final boolean isError = tempIsError;
+
                     final Map<String, List<NBVersionInfo>> map = new HashMap<String, List<NBVersionInfo>>();
 
-                    for (NBVersionInfo nbvi : infos) {
-                        String key = nbvi.getGroupId() + " : " + nbvi.getArtifactId(); //NOI18n
-                        List<NBVersionInfo> get = map.get(key);
-                        if (get == null) {
-                            get = new ArrayList<NBVersionInfo>();
-                            map.put(key, get);
+                    if (infos != null) {
+                        for (NBVersionInfo nbvi : infos) {
+                            String key = nbvi.getGroupId() + " : " + nbvi.getArtifactId(); //NOI18n
+                            List<NBVersionInfo> get = map.get(key);
+                            if (get == null) {
+                                get = new ArrayList<NBVersionInfo>();
+                                map.put(key, get);
+                            }
+                            get.add(nbvi);
                         }
-                        get.add(nbvi);
                     }
+
                     final List<String> keyList = new ArrayList<String>(map.keySet());
                     // sort specially using our comparator, see compare method
                     Collections.sort(keyList, QueryPanel.this);
@@ -864,6 +879,10 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
 
                         public void run() {
                             manager.setRootContext(createResultsNode(keyList, map));
+                            if (!isError) {
+                                depPanel.searchField.setForeground(defSearchC);
+                                depPanel.nls.clearMessages();
+                            }
                         }
                     });
                 }

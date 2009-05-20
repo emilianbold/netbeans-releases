@@ -43,11 +43,8 @@ package org.netbeans.modules.css.visual.ui.preview;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import javax.swing.text.Document;
-import org.netbeans.modules.css.editor.CssEditorSupport;
+import org.openide.filesystems.FileObject;
 import org.netbeans.modules.css.visual.api.StyleBuilderTopComponent;
-import org.openide.cookies.EditorCookie;
-import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponent.Registry;
@@ -124,9 +121,9 @@ public class CssTCController implements PropertyChangeListener {
         if(tc == null) {
             return false;
         }
-        Document doc = getDocument(tc);
-        if (doc != null) {
-            String mimeType = (String) doc.getProperty("mimeType");
+        FileObject fob = tc.getLookup().lookup(FileObject.class);
+        if (fob != null) {
+            String mimeType = (String) fob.getMIMEType();
             if (mimeType != null && "text/x-css".equals(mimeType)) {
                 return true;
             }
@@ -134,19 +131,6 @@ public class CssTCController implements PropertyChangeListener {
         return false;
     }
 
-    private Document getDocument(TopComponent tc) {
-        Lookup lookup = tc.getLookup(); //should be always non null unless someone overrides the TC
-        if(lookup == null) {
-            return null;
-        }
-        EditorCookie ec = lookup.lookup(EditorCookie.class);
-        if (ec != null) {
-            return ec.getDocument();
-        } else {
-            return null;
-        }
-    }
-  
     private void previewableActivated(TopComponent tc) {
         this.lastCSSTC = tc;
         WindowManager.getDefault().findTopComponentGroup("Csswsgrp").open();

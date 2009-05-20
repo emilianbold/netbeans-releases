@@ -73,9 +73,9 @@ public class DebianPackager implements PackagerDescriptor {
 
     public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         String defArch;
-        if (makeConfiguration.getPlatform().getValue() == Platform.PLATFORM_SOLARIS_INTEL) {
+        if (makeConfiguration.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_SOLARIS_INTEL) {
             defArch = "i386"; // NOI18N
-        } else if (makeConfiguration.getPlatform().getValue() == Platform.PLATFORM_SOLARIS_SPARC) {
+        } else if (makeConfiguration.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_SOLARIS_SPARC) {
             defArch = "sparc"; // NOI18N
         } else {
             // Anything else ?

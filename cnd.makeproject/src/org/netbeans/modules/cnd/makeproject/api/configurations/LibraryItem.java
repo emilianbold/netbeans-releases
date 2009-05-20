@@ -192,7 +192,7 @@ public class LibraryItem {
         @Override
         public String getOption(MakeConfiguration conf) {
             CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-            Platform platform = Platforms.getPlatform(conf.getPlatform().getValue());
+            Platform platform = Platforms.getPlatform(conf.getDevelopmentHost().getBuildPlatform());
             String libPath = getPath();
             String libDir = IpeUtils.getDirName(libPath);
             String libName = IpeUtils.getBaseName(libPath);

@@ -75,6 +75,7 @@ made subject to such option by the copyright holder.
             </file>
             <file name="MasterDetailForm.form" url="templates/MasterDetailForm_form">
                 <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="java-forms"/>
             </file>
             </folder>
     </folder>

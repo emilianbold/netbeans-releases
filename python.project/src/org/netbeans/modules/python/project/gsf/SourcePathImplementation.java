@@ -84,8 +84,8 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                 }
                 this.resources = Collections.unmodifiableList(result);
             }
-        }                
-        return this.resources;
+            return this.resources;
+        }                        
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {

@@ -63,7 +63,7 @@ public abstract class ExecutionEngine extends Object {
      * @param name a name of the new process
      * @param run a runnable to execute
      * @param io an I/O handle to automatically redirect system I/O streams in the dynamic scope of the task to,
-     *           or null if no such redirection is required
+     *           or InputOutput.NULL if no such redirection is required
      * @return an executor task that can control the execution
      */
     public abstract ExecutorTask execute(String name, Runnable run, InputOutput io);

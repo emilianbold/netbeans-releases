@@ -44,9 +44,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
+import org.netbeans.modules.hudson.api.UI;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
-import org.netbeans.modules.hudson.ui.actions.ShowBuildConsole;
-import org.netbeans.modules.hudson.ui.actions.ShowFailures;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
@@ -82,11 +81,11 @@ class HudsonMavenModuleBuildNode extends AbstractNode {
 
     public @Override Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
-        actions.add(new ShowBuildConsole(module));
+        actions.add(UI.showConsoleAction(module));
         switch (module.getColor()) {
         case yellow:
         case yellow_anime:
-            actions.add(new ShowFailures(module));
+            actions.add(UI.showFailuresAction(module));
         }
         actions.add(null);
         actions.add(SystemAction.get(OpenUrlAction.class));

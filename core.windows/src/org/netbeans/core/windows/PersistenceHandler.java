@@ -603,7 +603,7 @@ final public class PersistenceHandler implements PersistenceObserver {
             ModeImpl modeImpl = (ModeImpl)it.next();
             //Do not save empty non permanent mode
             ModeConfig mc = getConfigFromMode(modeImpl);
-            if ((mc.tcRefConfigs.length == 0) && (!mc.permanent)) {
+            if ((mc.tcRefConfigs.length == 0) && (!mc.permanent) && wmi.getCentral().doCheckSlidingModes(modeImpl)) {
                 continue;
             }
             modeConfigs.add(mc);

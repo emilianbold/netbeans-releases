@@ -775,23 +775,26 @@ made subject to such option by the copyright holder.
     -->
     <answer id="exec-component">
         <api name="InitialTab" category="friend" group="property" type="export">
+            <p>
             The associated module autoupdate.ui provides possibility to open plugin manager dialog (<code>PluginManagerUI</code>) with the specified tab.
             That is controlled by setting this string property to one of the following values:
+            </p>
             <ul>
                 <li>update</li>
                 <li>available</li>
                 <li>local</li>
                 <li>installed</li>
             </ul>
-            If property is not set (as default) then default tab is choosen due to the UI spec.<br/><br/>
-            Usage example:<br/>
-            <code>
-                final FileObject  fo = FileUtil.getConfigFile("Actions/System/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance");<br/>
-                InstanceDataObject  ido = (InstanceDataObject) DataObject.find(fo);<br/>
-                CallableSystemAction action = (CallableSystemAction) ido.instanceCreate();<br/>
-                a.putValue("InitialTab", "installed");<br/>
-                action.performAction();<br/>
-            </code>
+            <p>
+            If property is not set (as default) then default tab is choosen due to the UI spec.
+            </p>
+            <i>Proposed usage of API:</i>
+            <pre>
+final FileObject fo = FileUtil.getConfigFile("Actions/System/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance");
+CallableSystemAction action = (CallableSystemAction) DataObject.find(fo).getCookie(InstanceCookie.class).instanceCreate();
+action.putValue("InitialTab", "installed");
+action.performAction();
+            </pre>            
         </api>
     </answer>
     

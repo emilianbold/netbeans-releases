@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
@@ -71,7 +72,35 @@ public class ScpSyncWorkerTestCase extends RemoteTestBase {
         ExecutionEnvironment execEnv = getRemoteExecutionEnvironment();
         assertNotNull(execEnv);
 
+        File src = createTestDir();
+        String dst = "/tmp/" + execEnv.getUser() + "/sync-worker-test";
+        doTest(src, execEnv, dst);
+    }
 
+//    public void testSyncWorker_2() throws Exception {
+//        if (!canTestRemote()) {
+//            return;
+//        }
+//        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew("vk155633", "endif.russia");
+//        assertNotNull(execEnv);
+//
+//        ConnectionManager.getInstance().connectTo(execEnv);
+//
+//        File src = new File("/export/home/vk155633/NetBeansProjects/ScpTest");
+//        String dst = "/tmp/vk155633/test-sync-worker/ScpTest";
+//        doTest(src, execEnv, dst);
+//    }
+
+    private void doTest(File src, ExecutionEnvironment execEnv, String dst) throws Exception {
+        PrintWriter out = new PrintWriter(System.out);
+        PrintWriter err = new PrintWriter(System.err);
+        System.err.printf("testUploadFile: %s to %s:%s\n", src.getAbsolutePath(), execEnv.getDisplayName(), dst);
+        ScpSyncWorker worker = new ScpSyncWorker(src, execEnv, out, err);
+        worker.synchronizeImpl(dst);
+        CommonTasksSupport.rmDir(execEnv, dst, true, err);
+    }
+
+    private File createTestDir() throws IOException {
         File src = createTempFile("test-sync-worker-dir", null, true);
         File subdir1 = new File(src, "dir1");
         subdir1.mkdirs();
@@ -96,28 +125,17 @@ public class ScpSyncWorkerTestCase extends RemoteTestBase {
         File file3 = new File(deeper, "file3");
         writeFile(file3, "this is file3\n");
         file3.deleteOnExit();
-
-        String dst = "/tmp/" + execEnv.getUser() + "/" +  src.getName();
-
-        PrintWriter out = new PrintWriter(System.out);
-        PrintWriter err = new PrintWriter(System.err);
-
-        System.err.printf("testUploadFile: %s to %s:%s\n", src.getAbsolutePath(), execEnv.getDisplayName(), dst);
-        ScpSyncWorker worker = new ScpSyncWorker(src, execEnv, out, err);
-        worker.synchronize();
-
-//        CharSequence orig = runCommand(ExecutionEnvironmentFactory.getLocal(), "ls", "-lR", src.getAbsolutePath());
-//        CharSequence copy = runCommand(execEnv, "ls", "-lR", dst);
-//        assertEquals(orig, copy);
-
-        CommonTasksSupport.rmDir(execEnv, dst, true, err);
+        return src;
     }
 
     private CharSequence runCommand(ExecutionEnvironment execEnv, String command, String... args) throws Exception {
-        NativeProcessBuilder pb = new NativeProcessBuilder(execEnv, command);
+        NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv);
+        pb.setExecutable(command);
+
         if (args != null) {
-            pb = pb.setArguments(args);
+            pb.setArguments(args);
         }
+
         NativeProcess lsProcess = pb.call();
         BufferedReader rdr = new BufferedReader(new InputStreamReader(lsProcess.getInputStream()));
         String line;

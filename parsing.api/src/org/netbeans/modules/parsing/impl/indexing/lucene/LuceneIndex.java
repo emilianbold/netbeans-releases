@@ -156,24 +156,9 @@ public class LuceneIndex implements IndexImpl {
                     LuceneIndex.this.staleFiles.removeAll(toRemove);
                 }
 
-                final IndexReader reader = getReader(true);
-//                try {
-//                    IndexWriter writer = new IndexWriter(
-//                        LuceneIndex.this.directory, // index directory
-//                        false, // auto-commit each flush
-//                        new KeywordAnalyzer(),
-//                        reader == null // open existing or create new index
-//                    );
-//                    try {
-                        flush(indexFolder, toAdd, toRemove, LuceneIndex.this.directory, reader, /*writer,*/ lmListener);
-//                    } finally {
-//                        writer.close();
-//                    }
-//                } finally {
-//                    if (reader != null) {
-//                        reader.close();
-//                    }
-//                }
+                if (toAdd.size() > 0 || toRemove.size() > 0) {
+                    flush(indexFolder, toAdd, toRemove, LuceneIndex.this.directory, lmListener);
+                }
                 
                 return null;
             }
@@ -512,11 +497,12 @@ public class LuceneIndex implements IndexImpl {
     }
 
     // called under LuceneIndexManager.writeAccess
-    private static void flush(File indexFolder, List<LuceneDocument> toAdd, List<String> toRemove, Directory directory, IndexReader in, /*IndexWriter out,*/ LMListener lmListener) throws IOException {
+    private void flush(File indexFolder, List<LuceneDocument> toAdd, List<String> toRemove, Directory directory, LMListener lmListener) throws IOException {
         LOGGER.log(Level.FINE, "Flushing: {0}", indexFolder); //NOI18N
         try {
             //assert ClassIndexManager.getDefault().holdsWriteLock();
             //1) delete all documents from to delete and toAdd
+            final IndexReader in = getReader(true);
             if (in != null) {
                 try {
                     final Searcher searcher = new IndexSearcher (in);

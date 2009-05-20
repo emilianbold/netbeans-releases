@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Confi
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.PlatformConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
@@ -141,9 +140,9 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
                     DevelopmentHostConfiguration oldDhc = mconf.getDevelopmentHost();
                     mconf.setDevelopmentHost(dhc);
                     mconf.setCompilerSet(new CompilerSet2Configuration(dhc));
-                    PlatformConfiguration platformConfiguration = mconf.getPlatform();
-                    platformConfiguration.propertyChange(new PropertyChangeEvent(
-                            jmi, DevelopmentHostConfiguration.PROP_DEV_HOST, oldDhc, dhc));
+//                    PlatformConfiguration platformConfiguration = mconf.getPlatform();
+//                    platformConfiguration.propertyChange(new PropertyChangeEvent(
+//                            jmi, DevelopmentHostConfiguration.PROP_DEV_HOST, oldDhc, dhc));
                     Object o = jmi.getClientProperty(PROJECT);
                     assert (o instanceof Project);
                     NativeProjectProvider npp = ((Project) o).getLookup().lookup(NativeProjectProvider.class);
