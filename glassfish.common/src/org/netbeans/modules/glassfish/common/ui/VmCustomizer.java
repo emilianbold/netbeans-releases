@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import javax.swing.JFileChooser;
+import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.common.Util;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.JrePicker;
@@ -272,8 +273,10 @@ public class VmCustomizer extends javax.swing.JPanel  {
                 if (arg0.isDirectory()) {
                     return true;
                 }
-                if (arg0.getName().equalsIgnoreCase(TESTNAME) &&
-                        Util.appearsToBeJdk6OrBetter(arg0)) {
+                if (arg0.getName().equalsIgnoreCase(TESTNAME)) {
+                    if (gm.getInstanceProvider().equals(GlassfishInstanceProvider.getEe6())) {
+                            return Util.appearsToBeJdk6OrBetter(arg0);
+                    }
                     return true;
                 }
                 return false;
