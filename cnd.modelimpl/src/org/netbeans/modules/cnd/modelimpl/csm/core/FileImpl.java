@@ -1789,10 +1789,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         output.writeLong(lastParsed);
         output.writeInt(lastParseTime);
         State curState = state;
-        if (curState != State.PARSED) {
-            System.err.println("file is written in intermediate state " + curState);
+        if (curState != State.PARSED && curState != State.INITIAL) {
+            curState = State.PARSED;
+            System.err.printf("file is written in intermediate state %s, switching to PARSED\n", curState);
         }
-        output.writeByte(State.PARSED.ordinal());
+        output.writeByte(curState.ordinal());
         try {
             staticLock.readLock().lock();
             UIDObjectFactory.getDefaultFactory().writeUIDCollection(staticFunctionDeclarationUIDs, output, false);
