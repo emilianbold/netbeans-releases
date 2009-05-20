@@ -453,8 +453,8 @@ public class SyntaxTree {
             }
         }
         if(missingAttributesListMsg.length() > 0) {
-            //cut last comma
-            missingAttributesListMsg.deleteCharAt(missingAttributesListMsg.length() - 1);
+            //cut last comma and space
+            missingAttributesListMsg.deleteCharAt(missingAttributesListMsg.length() - 2);
             //attach the error description
             node.addDescriptionToNode(MISSING_REQUIRED_ATTRIBUTES,
                     NbBundle.getMessage(SyntaxTree.class, "MSG_MISSING_REQUIRED_ATTRIBUTES", //NOI18N
