@@ -65,10 +65,13 @@ public class Util {
 
     public static boolean appearsToBeJdk6OrBetter(File javaExecutable) {
         File dir = javaExecutable.getParentFile();
-        if (dir.list(Util.JDK6_DETECTION_FILTER).length < 1) {
-            return false;
+        if (null != dir) {
+            String[] hits = dir.list(Util.JDK6_DETECTION_FILTER);
+            if (null != hits) {
+                return hits.length > 0;
+            }
         }
-        return true;
+        return false;
     }
 
 }
