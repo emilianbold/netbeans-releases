@@ -91,9 +91,9 @@ public class ChatPanel extends javax.swing.JPanel {
         final StyleSheet styleSheet = ((HTMLDocument) inbox.getDocument()).getStyleSheet();
 
         styleSheet.addRule(bodyRule);
-        styleSheet.addRule(".buddy {color: black; font-weight: bold;}"); // NOI18N
-        styleSheet.addRule(".time {color: lightgrey;"); // NOI18N
-        styleSheet.addRule(".message {color: lightgrey; padding: 3px;"); // NOI18N
+        styleSheet.addRule(".buddy {color: black; font-weight: bold; padding: 4px;}"); // NOI18N
+        styleSheet.addRule(".time {color: lightgrey; padding: 4px;"); // NOI18N
+        styleSheet.addRule(".message {color: lightgrey; padding: 2px 4px;"); // NOI18N
         styleSheet.addRule(".date {color: #cc9922; padding: 7px 0;"); // NOI18N
 
 
@@ -302,7 +302,7 @@ public class ChatPanel extends javax.swing.JPanel {
         if (evt.getKeyChar() == '\n') {
             if (evt.isAltDown() || evt.isShiftDown() || evt.isControlDown()) {
                 try {
-                    outbox.getStyledDocument().insertString(outbox.getStyledDocument().getLength(), "\n", null); //NOI18N
+                    outbox.getStyledDocument().insertString(outbox.getCaretPosition(), "\n", null); //NOI18N
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -317,7 +317,23 @@ public class ChatPanel extends javax.swing.JPanel {
                         return;
                     }
                 }
-                muc.sendMessage(outbox.getText().trim());
+                if (!outbox.getText().trim().equals("")) {
+                    //remove NL if before the caret...
+                    int pos = outbox.getCaretPosition();
+                    if (pos > 1 && (outbox.getText().charAt(pos - 1) == '\n' || outbox.getText().charAt(pos - 1) == '\r'))  {
+                        try {
+                            boolean tryRemoveR = outbox.getText().charAt(pos - 1) == '\n'; // it can be \r\n, \n to be removed
+                            outbox.getDocument().remove(pos - 1, 1);
+                            pos = outbox.getCaretPosition();
+                            if (tryRemoveR && pos > 1 && outbox.getText().charAt(pos - 1) == '\r')  {
+                                outbox.getDocument().remove(pos - 1, 1);
+                            }
+                        } catch (BadLocationException ex) {
+                            // harmless
+                        }
+                    }
+                    muc.sendMessage(outbox.getText().trim());
+                }
             } catch (XMPPException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -340,6 +356,7 @@ public class ChatPanel extends javax.swing.JPanel {
     private Date lastDatePrinted;
     private Date lastMessageDate;
     private String lastNickPrinted = null;
+    private String rgb = null;
 
     protected void insertMessage(Message message) {
         try {
@@ -348,8 +365,8 @@ public class ChatPanel extends javax.swing.JPanel {
             String fromRes = StringUtils.parseResource(message.getFrom());
             Random random = new Random(fromRes.hashCode());
             float randNum = random.nextFloat();
-            Color headerColor = Color.getHSBColor(randNum, 0.1F, 0.95F );
-            Color messageColor = Color.getHSBColor(randNum, 0.05F, 1.0F );
+            Color headerColor = Color.getHSBColor(randNum, 0.1F, 0.95F);
+            Color messageColor = Color.getHSBColor(randNum, 0.1F, 1.0F);
             boolean printheader = ((lastNickPrinted != null)?(!lastNickPrinted.equals(fromRes)):true); //Nickname is different from the last one, or...
             printheader |= (lastMessageDate != null && timestamp != null)?(timestamp.getTime() > lastMessageDate.getTime() + 120000):true;
             lastNickPrinted = fromRes;
@@ -357,6 +374,7 @@ public class ChatPanel extends javax.swing.JPanel {
             if (!isSameDate(lastDatePrinted,timestamp)) {
                 lastDatePrinted = timestamp;
                 printheader = true;
+                rgb = null;
                 String d = "<table border=\"0\" borderwith=\"0\" width=\"100%\"><tbody><tr><td class=\"date\" align=\"left\">" + // NOI18N
                     (isToday(timestamp)?NbBundle.getMessage(ChatPanel.class, "LBL_Today"):DateFormat.getDateInstance().format(timestamp)) + "</td><td class=\"date\" align=\"right\">" + // NOI18N
                     DateFormat.getTimeInstance(DateFormat.SHORT).format(timestamp) + "</td></tr></tbody></table>"; // NOI18N
@@ -364,13 +382,16 @@ public class ChatPanel extends javax.swing.JPanel {
             }
             String text = "";
             if (printheader) {
-                text += "<table border=\"0\" borderwith=\"0\" width=\"100%\" style=\"background-color: rgb(" + headerColor.getRed() + "," + headerColor.getGreen() + "," + headerColor.getBlue() + //NOI18N
-                    ")\"><tbody><tr><td class=\"buddy\" align=\"left\">"+ // NOI18N
-                    fromRes + "</td><td class=\"time\" align=\"right\">" + // NOI18N
-                    DateFormat.getTimeInstance(DateFormat.SHORT).format(getTimestamp(message)) + "</td></tr></tbody></table>"; // NOI18N
+                if (rgb != null) {
+                    text += "<div style=\"height: 3px; background-color: rgb(" + rgb + ")\"></div>";
+                }
+                text += "<table border=\"0\" borderwith=\"0\" width=\"100%\"><tbody>" + //NOI18N
+                        "<tr style=\"background-color: rgb(" + headerColor.getRed() + "," + headerColor.getGreen() + "," + headerColor.getBlue() + ")\">" + //NOI18N
+                        "<td class=\"buddy\" align=\"left\">"+ fromRes + "</td><td class=\"time\" align=\"right\">" + // NOI18N
+                        DateFormat.getTimeInstance(DateFormat.SHORT).format(getTimestamp(message)) + "</td></tr></tbody></table>"; // NOI18N
             }
-            text += "<div class=\"message\" style=\"background-color: rgb(" + messageColor.getRed() + "," + messageColor.getGreen() + "," + messageColor.getBlue() + //NOI18N
-                    ")\">" + replaceLinks(removeTags(message.getBody())) + "</div>"; // NOI18N
+            rgb = messageColor.getRed() + "," + messageColor.getGreen() + "," + messageColor.getBlue(); // NOI18N
+            text += "<div class=\"message\" style=\"background-color: rgb(" + rgb + ")\">" + replaceLinks(removeTags(message.getBody())) + "</div>"; // NOI18N
 
             editorKit.insertHTML(doc, doc.getLength(), text, 0, 0, null);
         } catch (IOException ex) {
