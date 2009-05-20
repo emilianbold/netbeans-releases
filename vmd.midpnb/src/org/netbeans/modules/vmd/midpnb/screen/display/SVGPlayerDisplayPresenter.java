@@ -42,7 +42,6 @@
 package org.netbeans.modules.vmd.midpnb.screen.display;
 
 import org.netbeans.modules.mobility.svgcore.util.Util;
-import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
@@ -64,6 +63,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 
 /**
@@ -105,6 +106,7 @@ public class SVGPlayerDisplayPresenter extends DisplayableDisplayPresenter {
             SVGImage svgImage = null;
             boolean notSVGTiny = false;
             if (svgImageComponent != null) {
+                // TODO copy image loading code from SVGComponentDisplayPresenter.getSvgImage()
                 PropertyValue propertyValue = svgImageComponent.readProperty(SVGImageCD.PROP_RESOURCE_PATH);
                 if (propertyValue.getKind() == PropertyValue.Kind.VALUE) {
                     Map<FileObject, FileObject> images = MidpProjectSupport.getFileObjectsForRelativeResourcePath(animatorComponent.getDocument(), MidpTypes.getString(propertyValue));
@@ -119,7 +121,7 @@ public class SVGPlayerDisplayPresenter extends DisplayableDisplayPresenter {
                                 svgFileObject.addFileChangeListener(imageFileListener);
                             }
                         } catch (IOException e) {
-                            Debug.warning(e);
+                            Logger.getLogger(this.getClass().getName()).log(Level.WARNING, null, e);
                             notSVGTiny = true;
                         }
                     }

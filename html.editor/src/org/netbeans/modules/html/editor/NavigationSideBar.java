@@ -141,7 +141,7 @@ public class NavigationSideBar extends JPanel implements Accessible {
     private void updateNestingInfo(final Result tsource, AstNode root, AstNode node) {
         List<AstNode> newNesting = new ArrayList<AstNode>();
         do {
-            if (node.type() == AstNode.NodeType.TAG) {
+            if (node.type() == AstNode.NodeType.OPEN_TAG) {
                 newNesting.add(0, node);
             }
             node = node.parent();

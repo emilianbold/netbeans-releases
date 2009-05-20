@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,45 +31,36 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.editor.ext.html.test;
 
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.BaseKit;
-import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.html.editor.HtmlKit;
-import org.netbeans.modules.html.editor.gsf.HtmlLanguage;
+package org.netbeans.modules.welcome.ui;
+
+import java.awt.event.ActionEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
- * @author Marek Fukala
+ * Opens Kenai dashboard window.
+ *
+ * @author S. Aubrecht
  */
-public class TestBase extends CslTestBase {
+public class KenaiAction extends AbstractAction {
 
-    private static final String PROP_MIME_TYPE = "mimeType"; //NOI18N
-
-    public TestBase(String name) {
-        super(name);
-    }
-
-    protected BaseDocument createDocument() {
-        NbEditorDocument doc = new NbEditorDocument(HtmlKit.class);
-        doc.putProperty(PROP_MIME_TYPE, BaseKit.getKit(HtmlKit.class).getContentType());
-        doc.putProperty(Language.class, HTMLTokenId.language()); //hack for LanguageManager - shoudl be removed
-
-        return doc;
-    }
-
-    @Override
-    protected DefaultLanguageConfig getPreferredLanguage() {
-        return new HtmlLanguage();
-    }
-
-    @Override
-    protected String getPreferredMimeType() {
-        return HtmlKit.HTML_MIME_TYPE;
+    public void actionPerformed(ActionEvent e) {
+        WindowManager wm = WindowManager.getDefault();
+        TopComponent tc = wm.findTopComponent("KenaiTopComponent"); //NOI18N
+        if( null != tc ) {
+            tc.open();
+            tc.requestActive();
+        } else {
+            Logger.getLogger(KenaiAction.class.getName()).log(Level.INFO, "Kenai window not found"); //NOI18N
+        }
     }
 }
