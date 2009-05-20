@@ -226,8 +226,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         FileObject root = URLMapper.findFileObject(rootUrl);
-        assert root != null : rootUrl + " can't be translated to FileObject"; //NOI18N
         if (root == null) {
+            LOGGER.info(rootUrl + " can't be translated to FileObject"); //NOI18N
             return;
         }
 
