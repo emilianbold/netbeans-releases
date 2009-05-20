@@ -1183,10 +1183,6 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         public final void doTheWork() {
-            if (supportsProgress && progressHandle == null) {
-                progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryUpdater.class, "MSG_BackgroundCompileStart")); //NOI18N
-                progressHandle.start();
-            }
             try {
                 finished.compareAndSet(false, getDone());
             } catch (Throwable t) {
@@ -1199,10 +1195,6 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     throw (ThreadDeath)t;
                 }
             } finally {
-                if (progressHandle != null) {
-                    progressHandle.finish();
-                    progressHandle = null;
-                }
                 latch.countDown();
             }
         }
@@ -1229,6 +1221,14 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         public final boolean isFinished() {
             return finished.get();
+        }
+
+        public final boolean supportsProgress() {
+            return supportsProgress;
+        }
+
+        public final void setProgressHandle(ProgressHandle progressHandle) {
+            this.progressHandle = progressHandle;
         }
 
         private String urlForMessage(URL currentlyScannedRoot) {
@@ -2109,13 +2109,28 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         private List<Runnable> followupTasks = null;
 
         private void _run() {
-            for(Work work = getWork(); work != null; work = getWork()) {
-                try {
-                    work.doTheWork();
-                } catch (ThreadDeath td) {
-                    throw td;
-                } catch (Throwable t) {
-                    LOGGER.log(Level.WARNING, null, t);
+            ProgressHandle progressHandle = null;
+            try {
+                for(Work work = getWork(); work != null; work = getWork()) {
+                    if (progressHandle == null && work.supportsProgress()) {
+                        progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryUpdater.class, "MSG_BackgroundCompileStart")); //NOI18N
+                        progressHandle.start();
+                    }
+                    work.setProgressHandle(progressHandle);
+                    try {
+                        work.doTheWork();
+                    } catch (ThreadDeath td) {
+                        throw td;
+                    } catch (Throwable t) {
+                        LOGGER.log(Level.WARNING, null, t);
+                    } finally {
+                        work.setProgressHandle(null);
+                    }
+                }
+            } finally {
+                if (progressHandle != null) {
+                    progressHandle.finish();
+                    progressHandle = null;
                 }
             }
         }
