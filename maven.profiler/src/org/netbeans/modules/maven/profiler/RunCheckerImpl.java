@@ -124,10 +124,10 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
         // !!!!!!!!!!!!!!!!!!!!!!!! Never remove this replacement !!!!!!!!!!!!!!!!!!!!!!!!!!
         // !! It is absolutely needed for correct profiling of maven projects on Windows  !!
         // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        agentArg = agentArg.replace("\\", "/");
+        agentArg = agentArg.replace("\\", "/"); // NOI18N
 
         if (agentArg.indexOf(' ') != -1) { //NOI18N
-            return "\"" + agentArg + "\"";
+            return "\"" + agentArg + "\""; // NOI18N
         }
         return agentArg;
     }
