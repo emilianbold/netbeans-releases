@@ -609,10 +609,10 @@ public class BugzillaIssue extends Issue {
     void resolve(String resolution) {
         assert !data.isNew();
 
-        setOperation(BugzillaOperation.resolve);
-        TaskAttribute rta = data.getRoot();
         String value = getFieldValue(IssueField.STATUS);
         if(!value.equals("RESOLVED")) {                                         // NOI18N
+            setOperation(BugzillaOperation.resolve);
+            TaskAttribute rta = data.getRoot();
             TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.resolve.getInputId());
             assert ta != null;
             if(ta != null) {
