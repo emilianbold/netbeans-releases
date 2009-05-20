@@ -64,6 +64,7 @@ public class SyntaxTree {
     static final String FORBIDDEN_END_TAG = "forbidded_endtag"; //NOI18N
     static final String UNMATCHED_TAG = "unmatched_tag"; //NOI18N
     static final String MISSING_REQUIRED_END_TAG = "missing_required_end_tag"; //NOI18N
+    static final String MISSING_REQUIRED_ATTRIBUTES = "missing_required_attribute"; //NOI18N
 
     public static AstNode makeTree(List<SyntaxElement> elements, DTD dtd) {
         assert elements != null;
@@ -119,7 +120,7 @@ public class SyntaxTree {
                         currentNodeDtdElement, stack(stack));
 
                 //check tag attributes
-                openTagNode.addDescriptions(checkTagAttributes((SyntaxElement.Tag) tagElement, currentNodeDtdElement));
+                checkTagAttributes(openTagNode, (SyntaxElement.Tag) tagElement, currentNodeDtdElement);
 
                 //add existing tag attributes
                 setTagAttributes(openTagNode, tagElement);
@@ -422,22 +423,44 @@ public class SyntaxTree {
         return tagName.contains(":"); //NOI18N
     }
 
-    private static Collection<Description> checkTagAttributes(SyntaxElement.Tag element, Element dtdElement) {
-        Collection<Description> errmsgs = new ArrayList<Description>(3);
-        //check attributes
+    private static void checkTagAttributes(AstNode node, SyntaxElement.Tag element, Element dtdElement) {
+        //check existing attributes
         List<TagAttribute> existingAttrs = element.getAttributes();
-
+        List<String> existingAttrNames = new ArrayList<String>(existingAttrs.size());
         for (TagAttribute ta : existingAttrs) {
-            if (!isIgnoredTagAttribute(ta.getName()) &&
-                    dtdElement.getAttribute(ta.getName().toLowerCase(Locale.ENGLISH)) == null) {
-                //unknown attribute
-                Description desc = Description.create(UNKNOWN_ATTRIBUTE_KEY, NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_ATTRIBUTE", //NOI18N
-                        new Object[]{ta.getName(), element.getName()}), Description.WARNING, ta.getNameOffset(), ta.getNameOffset() + ta.getName().length());
+            String tagName = ta.getName().toLowerCase(Locale.ENGLISH);
+            existingAttrNames.add(ta.getName().toLowerCase(Locale.ENGLISH));
+            DTD.Attribute attr = dtdElement.getAttribute(tagName);
+            if(attr == null) {
+                if (!isIgnoredTagAttribute(ta.getName())) {
+                    //unknown attribute
+                    Description desc = Description.create(UNKNOWN_ATTRIBUTE_KEY, NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_ATTRIBUTE", //NOI18N
+                            new Object[]{ta.getName(), element.getName()}), Description.WARNING, ta.getNameOffset(), ta.getNameOffset() + ta.getName().length());
 
-                errmsgs.add(desc);
+                    node.addDescription(desc);
+                }
             }
         }
-        return errmsgs;
+
+        //check missing required attributes
+        StringBuffer missingAttributesListMsg = new StringBuffer();
+        for(Object _attr : dtdElement.getAttributeList(null)) {
+            DTD.Attribute attr = (DTD.Attribute)_attr;
+            if(attr.isRequired() && !existingAttrNames.contains(attr.getName())) {
+                //missing required attribute
+                missingAttributesListMsg.append(attr.getName());
+                missingAttributesListMsg.append(", ");
+            }
+        }
+        if(missingAttributesListMsg.length() > 0) {
+            //cut last comma
+            missingAttributesListMsg.deleteCharAt(missingAttributesListMsg.length() - 1);
+            //attach the error description
+            node.addDescriptionToNode(MISSING_REQUIRED_ATTRIBUTES,
+                    NbBundle.getMessage(SyntaxTree.class, "MSG_MISSING_REQUIRED_ATTRIBUTES", //NOI18N
+                    new Object[]{missingAttributesListMsg.toString()}),
+                    Description.WARNING);
+        }
     }
 
     private static void setTagAttributes(AstNode node, SyntaxElement.Tag tag) {
