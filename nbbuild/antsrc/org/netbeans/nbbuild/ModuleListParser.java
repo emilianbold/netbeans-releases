@@ -42,6 +42,7 @@
 package org.netbeans.nbbuild;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -66,6 +67,8 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
@@ -77,7 +80,9 @@ import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.util.FileUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Scans for known modules.
@@ -565,6 +570,7 @@ final class ModuleListParser {
             final File configDir = new File(new File(cluster, "config"), "Modules");
             File[] configs = configDir.listFiles();
             XPathExpression expr = null;
+            DocumentBuilder b = null;
             if (configs != null) {
                 for (File xml : configs) {
                     // TODO, read location, scan
@@ -579,14 +585,22 @@ final class ModuleListParser {
                     try {
                         if (expr == null) {
                             expr = XPathFactory.newInstance().newXPath().compile("/module/param[@name='jar']");
+                            b = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+                            b.setEntityResolver(new EntityResolver() {
+                                public InputSource resolveEntity(String publicId, String systemId)
+                                throws SAXException, IOException {
+                                    return new InputSource(new ByteArrayInputStream(new byte[0]));
+                                }
+                            });
                         }
-                        String res = expr.evaluate(new InputSource(xml.toURI().toString()));
+                        Document doc = b.parse(xml);
+                        String res = expr.evaluate(doc);
                         File jar = new File(cluster, res.replace('/', File.separatorChar));
                         if (!jar.isFile()) {
                             throw new BuildException("Cannot find module " + jar + " from " + xml);
                         }
                         scanOneBinary(jar, cluster, entries);
-                    } catch (XPathExpressionException ex) {
+                    } catch (Exception ex) {
                         throw new BuildException(ex);
                     }
                 }
