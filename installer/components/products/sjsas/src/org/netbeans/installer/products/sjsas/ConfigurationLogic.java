@@ -228,6 +228,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         /////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.install.extra.files")); // NOI18N
+            list.add(new File(directory, DOMAINS_SUBDIR));
             list.add(new File(directory, DERBY_LOG));
         } catch (IOException e) {
             throw new InstallationException(
