@@ -90,6 +90,7 @@ public class ThreadsCache implements Executor {
     private Map<ThreadGroupReference, List<ThreadReference>> threadMap;
     private List<ThreadReference> allThreads;
     private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private final boolean[] canFireChanges = new boolean[] { false };
     
     public ThreadsCache(JPDADebuggerImpl debugger) {
         this.debugger = debugger;
@@ -102,25 +103,42 @@ public class ThreadsCache implements Executor {
         }
     }
     
-    public synchronized void setVirtualMachine(VirtualMachine vm) {
-        if (this.vm == vm) return ;
-        try {
-            this.vm = vm;
-            ThreadStartRequest tsr = EventRequestManagerWrapper.createThreadStartRequest(
-                    VirtualMachineWrapper.eventRequestManager(vm));
-            ThreadDeathRequest tdr = EventRequestManagerWrapper.createThreadDeathRequest(
-                    VirtualMachineWrapper.eventRequestManager(vm));
-            EventRequestWrapper.setSuspendPolicy(tsr, ThreadStartRequest.SUSPEND_NONE);
-            EventRequestWrapper.setSuspendPolicy(tdr, ThreadStartRequest.SUSPEND_NONE);
-            debugger.getOperator().register(tsr, this);
-            debugger.getOperator().register(tdr, this);
-            EventRequestWrapper.enable(tsr);
-            EventRequestWrapper.enable(tdr);
-            init();
-        } catch (VMDisconnectedExceptionWrapper e) {
-            this.vm = null;
-        } catch (InternalExceptionWrapper e) {
-            this.vm = null;
+    public void setVirtualMachine(VirtualMachine vm) {
+        List<ThreadReference> _allThreads;
+        List<ThreadGroupReference> _allGroups;
+        synchronized (this) {
+            if (this.vm == vm) return ;
+            try {
+                this.vm = vm;
+                ThreadStartRequest tsr = EventRequestManagerWrapper.createThreadStartRequest(
+                        VirtualMachineWrapper.eventRequestManager(vm));
+                ThreadDeathRequest tdr = EventRequestManagerWrapper.createThreadDeathRequest(
+                        VirtualMachineWrapper.eventRequestManager(vm));
+                EventRequestWrapper.setSuspendPolicy(tsr, ThreadStartRequest.SUSPEND_NONE);
+                EventRequestWrapper.setSuspendPolicy(tdr, ThreadStartRequest.SUSPEND_NONE);
+                debugger.getOperator().register(tsr, this);
+                debugger.getOperator().register(tdr, this);
+                EventRequestWrapper.enable(tsr);
+                EventRequestWrapper.enable(tdr);
+                init();
+            } catch (VMDisconnectedExceptionWrapper e) {
+                this.vm = null;
+            } catch (InternalExceptionWrapper e) {
+                this.vm = null;
+            }
+            _allThreads = allThreads;
+            _allGroups = getAllGroups();
+            
+        }
+        for (ThreadReference t : _allThreads) {
+            pcs.firePropertyChange(PROP_THREAD_STARTED, null, t);
+        }
+        for (ThreadGroupReference g : _allGroups) {
+            pcs.firePropertyChange(PROP_GROUP_ADDED, null, g);
+        }
+        synchronized (canFireChanges) {
+            canFireChanges[0] = true;
+            canFireChanges.notifyAll();
         }
     }
     
@@ -192,6 +210,22 @@ public class ThreadsCache implements Executor {
         }
         return groups;
     }
+
+    private synchronized List<ThreadGroupReference> getAllGroups() {
+        List<ThreadGroupReference> groups = new ArrayList<ThreadGroupReference>();
+        fillAllGroups(groups, null);
+        return groups;
+    }
+
+    private void fillAllGroups(List<ThreadGroupReference> groups, ThreadGroupReference g) {
+        List<ThreadGroupReference> gs = groupMap.get(g);
+        if (gs != null) {
+            groups.addAll(gs);
+            for (ThreadGroupReference gg : gs) {
+                fillAllGroups(groups, gg);
+            }
+        }
+    }
     
     private List<ThreadGroupReference> addGroups(ThreadGroupReference group) {
         List<ThreadGroupReference> addedGroups = new ArrayList<ThreadGroupReference>();
@@ -250,6 +284,13 @@ public class ThreadsCache implements Executor {
                     allThreads.add(thread);
                 }
             }
+            synchronized (canFireChanges) {
+                if (!canFireChanges[0]) {
+                    try {
+                        canFireChanges.wait();
+                    } catch (InterruptedException ex) {}
+                }
+            }
             if (addedGroups != null) {
                 for (ThreadGroupReference g : addedGroups) {
                     pcs.firePropertyChange(PROP_GROUP_ADDED, null, g);
@@ -294,6 +335,13 @@ public class ThreadsCache implements Executor {
                     threads.remove(thread);
                 }
                 allThreads.remove(thread);
+            }
+            synchronized (canFireChanges) {
+                if (!canFireChanges[0]) {
+                    try {
+                        canFireChanges.wait();
+                    } catch (InterruptedException ex) {}
+                }
             }
             pcs.firePropertyChange(PROP_THREAD_DIED, thread, null);
         }

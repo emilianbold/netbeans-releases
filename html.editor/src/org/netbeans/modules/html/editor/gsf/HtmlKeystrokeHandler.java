@@ -246,8 +246,10 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
             if(node != null) {
                 //go through the tree and add all parents with, eliminate duplicate nodes
                 do {
-                    int from = snapshot.getOriginalOffset(node.startOffset());
-                    int to = snapshot.getOriginalOffset(node.endOffset());
+                    int[] logicalRange = node.getLogicalRange();
+
+                    int from = snapshot.getOriginalOffset(logicalRange[0]);
+                    int to = snapshot.getOriginalOffset(logicalRange[1]);
 
                     if(from == -1 || to == -1 || from == to) {
                         continue;
