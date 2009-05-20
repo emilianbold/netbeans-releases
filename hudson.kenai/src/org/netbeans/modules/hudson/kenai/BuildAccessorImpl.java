@@ -88,6 +88,21 @@ public class BuildAccessorImpl extends BuildAccessor {
         return servers;
     }
 
+    public boolean isEnabled(ProjectHandle handle) {
+        String id = handle.getId();
+        try {
+            KenaiProject prj = Kenai.getDefault().getProject(id);
+            if (prj != null) {
+                // Avoid calling findServers as that would load hudson module code
+                // just to show that there is a Builds node (even if never expanded).
+                return prj.getFeatures(Type.HUDSON).length > 0;
+            }
+        } catch (KenaiException x) {
+            LOG.log(Level.FINE, "Could not find project " + id, x);
+        }
+        return false;
+    }
+
     public List<BuildHandle> getBuilds(final ProjectHandle handle) {
         HudsonChangeListener newListener;
         synchronized (listeners) {

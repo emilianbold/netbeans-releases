@@ -13,7 +13,7 @@
         <property name="tryme.args" value="
             -J-Dnetbeans.full.hack=true
             -J-Dorg.netbeans.modules.hudson.level=FINER
-            -J-Dkenai.com.url=http://testkenai.com
+            -J-Dkenai.com.url=https://testkenai.com
         "/>
         <ant dir="../nbbuild" target="tryme-debug"/>
     </target>

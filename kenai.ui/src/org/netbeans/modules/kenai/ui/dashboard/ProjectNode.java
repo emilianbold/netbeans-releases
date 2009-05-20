@@ -118,8 +118,10 @@ public class ProjectNode extends TreeListNode {
         ArrayList<TreeListNode> children = new ArrayList<TreeListNode>();
         if( null != MessagingAccessor.getDefault() )
             children.add( new MessagingNode(this, project) );
-        if( null != BuildAccessor.getDefault() )
-            children.add( new BuildListNode(this) );
+        BuildAccessor builds = BuildAccessor.getDefault();
+        if (builds.isEnabled(project)) {
+            children.add(new BuildListNode(this, builds));
+        }
         if( null != QueryAccessor.getDefault() )
             children.add( new QueryListNode(this) );
         if( null != SourceAccessor.getDefault() )
