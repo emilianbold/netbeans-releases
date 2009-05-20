@@ -139,7 +139,7 @@ public class CreateChatAction extends AbstractAction {
                                             public void run() {
                                                 final ChatTopComponent chatTc = ChatTopComponent.findInstance();
                                                 chatTc.open();
-                                                chatTc.addChat(new ChatPanel(KenaiConnection.getDefault().createChat(f)));
+                                                chatTc.addChat(new ChatPanel(KenaiConnection.getDefault().getChat(f)));
                                                 mainWindow.setCursor(Cursor.getDefaultCursor());
                                                 progress.finish();
                                                 if (source!=null) source.setEnabled(true);

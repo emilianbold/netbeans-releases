@@ -59,7 +59,7 @@ public class DelayExtensionProvider implements PacketExtensionProvider {
         Date stamp = null;
         try {
             synchronized (DelayInformation.UTC_FORMAT) {
-                stamp = DelayInformation.UTC_FORMAT.parse(parser.getAttributeValue("", "stamp"));
+                stamp = DelayInformation.UTC_FORMAT.parse(parser.getAttributeValue("", "stamp")); //NOI18N
             }
         } catch (ParseException e) {
             // Try again but assuming that the date follows JEP-82 format
@@ -67,39 +67,30 @@ public class DelayExtensionProvider implements PacketExtensionProvider {
             try {
                 synchronized (DelayInformation.NEW_UTC_FORMAT) {
                     stamp = DelayInformation.NEW_UTC_FORMAT
-                            .parse(parser.getAttributeValue("", "stamp"));
+                            .parse(parser.getAttributeValue("", "stamp")); //NOI18N
                 }
             } catch (ParseException e1) {
                 try {
                     // Last attempt. Try parsing the date assuming that it does not include milliseconds
-                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-                    formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-                    stamp = formatter.parse(parser.getAttributeValue("", "stamp"));
+                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"); //NOI18N
+                    formatter.setTimeZone(TimeZone.getTimeZone("UTC")); //NOI18N
+                    stamp = formatter.parse(parser.getAttributeValue("", "stamp")); //NOI18N
                 } catch (ParseException e2) {
                     try {
-                        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSz");
-                        formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
-                        String stampString = parser.getAttributeValue("", "stamp");
-                        String modifed = stampString.substring(0, stampString.length() - 6) + "GMT" + stampString.substring(stampString.length() - 6);
+                        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssz"); //NOI18N
+                        formatter.setTimeZone(TimeZone.getTimeZone("UTC")); //NOI18N
+                        String stampString = parser.getAttributeValue("", "stamp"); //NOI18N
+                        String modifed = stampString.substring(0, 19) + "UTC" + stampString.substring(stampString.length() - 6); //NOI18N
                         stamp = formatter.parse(modifed);
                     } catch (ParseException e3) {
-                        try {
-                            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSSSSSSSSSz");
-                            formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
-                            String stampString = parser.getAttributeValue("", "stamp");
-                            String modifed = stampString.substring(0, stampString.length() - 6) + "GMT" + stampString.substring(stampString.length() - 6);
-                            stamp = formatter.parse(modifed);
-                        } catch (ParseException pe) {
-                            Exceptions.printStackTrace(e);
+                            Exceptions.printStackTrace(e3);
                             stamp = new Date();
-                        }
-
                     }
                 }
             }
         }
         DelayInformation delayInformation = new DelayInformation(stamp);
-        delayInformation.setFrom(parser.getAttributeValue("", "from"));
+        delayInformation.setFrom(parser.getAttributeValue("", "from")); //NOI18N
         delayInformation.setReason(parser.nextText());
         return delayInformation;
     }
