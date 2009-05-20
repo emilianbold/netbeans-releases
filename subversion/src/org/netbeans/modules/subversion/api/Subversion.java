@@ -124,7 +124,7 @@ public class Subversion {
                                                    String password)
                 throws MalformedURLException, IOException {
 
-        if (!getSubversion().checkClientAvailable()) {
+        if (!isClientAvailable(true)) {
             org.netbeans.modules.subversion.Subversion.LOG.log(Level.WARNING, "Subversion client is unavailable");
             throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
         }
@@ -274,7 +274,7 @@ public class Subversion {
 
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
 
-        if (!getSubversion().checkClientAvailable()) {
+        if (!isClientAvailable(true)) {
             org.netbeans.modules.subversion.Subversion.LOG.log(Level.WARNING, "Subversion client is unavailable");
             throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
         }
@@ -335,7 +335,7 @@ public class Subversion {
     public static void mkdir(String url, String user, String password, String message) throws MalformedURLException, IOException {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in  awt!";
 
-        if (!getSubversion().checkClientAvailable()) {
+        if (!isClientAvailable(true)) {
             org.netbeans.modules.subversion.Subversion.LOG.log(Level.WARNING, "Subversion client is unavailable");
             throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
         }
@@ -373,7 +373,7 @@ public class Subversion {
      * @throws IOException when an error occurrs
      */
     public static void commit(final File[] roots, final String user, final String password, final String message) throws IOException {
-        if (!getSubversion().checkClientAvailable()) {
+        if (!isClientAvailable(true)) {
             org.netbeans.modules.subversion.Subversion.LOG.log(Level.WARNING, "Subversion client is unavailable");
             throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
         }
@@ -441,7 +441,7 @@ public class Subversion {
             org.netbeans.modules.subversion.Subversion.LOG.log(Level.INFO, "Trying to show history for an unmanaged file {0}", file.getAbsolutePath());
             return false;
         }
-        if(!getSubversion().checkClientAvailable()) {
+        if(!isClientAvailable(true)) {
             org.netbeans.modules.subversion.Subversion.LOG.log(Level.WARNING, "Subversion client is unavailable");
             throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
         }
@@ -527,7 +527,7 @@ public class Subversion {
      */
     public static void openCheckoutWizard (final String url) throws MalformedURLException, IOException {
         addRecentUrl(url);
-        if (!getSubversion().checkClientAvailable()) {
+        if (!isClientAvailable(true)) {
             org.netbeans.modules.subversion.Subversion.LOG.log(Level.INFO, "Subversion client is unavailable");
             throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
         }
