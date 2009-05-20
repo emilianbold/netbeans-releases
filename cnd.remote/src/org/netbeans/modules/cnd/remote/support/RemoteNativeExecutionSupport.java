@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -74,11 +75,18 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
         try {
             //String cmd = makeCommand(dirf, exe, args, envp);
             NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
-            pb.setExecutable(cmd); //NOI18N
-            pb = pb.addEnvironmentVariables(env);
+            pb.setExecutable(cmd);
+            pb.addEnvironmentVariables(env);
+
             if (args != null) {
-                pb = pb.setArguments(Utilities.parseParameters(args));
+                pb.setArguments(Utilities.parseParameters(args));
             }
+
+            pb.redirectError();
+            if (!env.containsKey("DISPLAY")) { // NOI18N
+                pb.setX11Forwarding(true);
+            }
+
             String path = null;
             if (dirf != null) {
                 path = RemotePathMap.getPathMap(executionEnvironment).getRemotePath(dirf.getAbsolutePath(),true);
@@ -133,6 +141,8 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             in.close();
 
         } catch (InterruptedException ie) {
+            // this occurs, for example, when user stops running program - need no report
+        } catch (InterruptedIOException ie) {
             // this occurs, for example, when user stops running program - need no report
         } catch (IOException ioe) {
             log.log(Level.WARNING, ioe.getMessage(), ioe);

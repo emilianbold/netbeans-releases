@@ -68,7 +68,7 @@ class PluginsPanel extends JPanel implements Constants {
         setOpaque(false);
         InstallConfig ic = InstallConfig.getDefault();
 
-        if( ic.isAllPacksInstalled() ) {
+        if( ic.isErgonomicsEnabled() ) {
             if( ic.somePacksDisabled() ) {
                 addActivateFeatures( 0, BundleSupport.getLabel("ActivateFeaturesFullIDE"), BundleSupport.getLabel("ActivateFeaturesDescrFullIDE"));
                 addInstallPlugins(2, BundleSupport.getLabel("InstallPluginsFullIDE"), BundleSupport.getLabel("InstallPluginsDescrFullIDE"));

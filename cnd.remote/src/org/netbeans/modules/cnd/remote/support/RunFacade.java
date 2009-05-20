@@ -42,6 +42,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Exceptions;
 
@@ -94,7 +95,9 @@ public abstract class RunFacade {
                 process.waitFor();
                 exitValue = process.exitValue();
             } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
+                // reporting does not make sense, just return -1
+            } catch (InterruptedIOException ex) {
+                // reporting does not make sense, just return -1
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

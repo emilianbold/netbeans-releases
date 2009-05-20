@@ -506,6 +506,12 @@ public class ProjectActionSupport {
                     return false;
                 }
             }
+
+            // Finally set pae.executable to a real, verified file with an absolute
+            // path that reflects file location on a target host (local or remote)
+
+            pae.setExecutable(executable);
+            
             return true;
         }
 

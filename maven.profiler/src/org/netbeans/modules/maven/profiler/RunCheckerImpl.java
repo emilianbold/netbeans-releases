@@ -44,14 +44,12 @@ import java.util.Properties;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.Profiler;
-import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -123,8 +121,13 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
     }
 
     private String fixAgentArg(String agentArg) {
+        // !!!!!!!!!!!!!!!!!!!!!!!! Never remove this replacement !!!!!!!!!!!!!!!!!!!!!!!!!!
+        // !! It is absolutely needed for correct profiling of maven projects on Windows  !!
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        agentArg = agentArg.replace("\\", "/"); // NOI18N
+
         if (agentArg.indexOf(' ') != -1) { //NOI18N
-            return "\"" + agentArg + "\"";
+            return "\"" + agentArg + "\""; // NOI18N
         }
         return agentArg;
     }

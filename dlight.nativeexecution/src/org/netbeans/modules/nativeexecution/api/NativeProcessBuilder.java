@@ -99,6 +99,10 @@ public final class NativeProcessBuilder implements Callable<Process> {
         return new NativeProcessBuilder(ExecutionEnvironmentFactory.getLocal());
     }
 
+    public void redirectError() {
+        info.redirectError(true);
+    }
+
     /**
      * Specif
      * @param executable
@@ -266,6 +270,18 @@ public final class NativeProcessBuilder implements Callable<Process> {
      */
     public NativeProcessBuilder unbufferOutput(boolean unbuffer) {
         info.setUnbuffer(unbuffer);
+        return this;
+    }
+
+    /**
+     * Configure X11 forwarding.
+     *
+     * @param x11forwarding  pass <code>true</code> to enable forwarding,
+     *      or <code>false</code> to disable
+     * @return this
+     */
+    public NativeProcessBuilder setX11Forwarding(boolean x11forwarding) {
+        info.setX11Forwarding(x11forwarding);
         return this;
     }
 }
