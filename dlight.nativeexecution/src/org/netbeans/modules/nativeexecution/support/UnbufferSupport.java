@@ -97,7 +97,7 @@ public class UnbufferSupport {
                         remotePath = cache.get(execEnv);
 
                         if (remotePath == null) {
-                            remotePath = hinfo.getTempDir() + unbufferPath;
+                            remotePath = hinfo.getTempDir() + "/" + unbufferPath; // NOI18N
                             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
                             npb.setExecutable("/bin/mkdir").setArguments("-p", remotePath, remotePath + "_64"); // NOI18N
 
@@ -128,10 +128,10 @@ public class UnbufferSupport {
                         }
                     }
 
-                    file = new File(remotePath, unbufferLib);
+                    unbufferPath = remotePath;
+                } else {
+                    unbufferPath = new File(file.getParent()).getAbsolutePath();
                 }
-
-                unbufferPath = file.getParentFile().getAbsolutePath();
 
                 String ldPreloadEnv;
                 String ldLibraryPathEnv;
