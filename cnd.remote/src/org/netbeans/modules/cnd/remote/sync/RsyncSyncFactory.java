@@ -75,6 +75,6 @@ public class RsyncSyncFactory extends RemoteSyncFactory {
 
     @Override
     public boolean isApplicable(ExecutionEnvironment execEnv) {
-        return true;
+        return false;
     }
 }

@@ -50,13 +50,15 @@ import org.openide.util.Lookup;
  * @author S. Aubrecht
  */
 class InstallConfig {
-    private boolean allPacks = false;
+    private boolean ergonomics = false;
     private boolean javaFX = false;
     private boolean somePacksDisabled = false;
     private Set<String> enabledPackNames = new HashSet<String>(10);
 
     private static final String javaFxPackName = "org.netbeans.modules.javafx.kit"; //NOI18N
 
+    private static final String ergonomicsPackName = "org.netbeans.modules.ide.ergonomics"; //NOI18N
+    
     private static final String[] packNames = new String[] {
         //java se
         "org.netbeans.modules.java.kit", //NOI18N
@@ -76,9 +78,10 @@ class InstallConfig {
 
 
     private InstallConfig() {
-        int packCount = 0;
         for( ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class) ) {
             javaFX = javaFX || isJavaFxPack(mi);
+
+            ergonomics = ergonomics || isErgonomicsPack(mi);
 
             if( !isPack(mi) )
                 continue;
@@ -88,10 +91,7 @@ class InstallConfig {
             } else {
                 somePacksDisabled = true;
             }
-            packCount++;
         }
-
-        allPacks = packCount == packNames.length;
     }
 
     private static InstallConfig theInstance;
@@ -111,8 +111,8 @@ class InstallConfig {
         return preferredPackNames[0];
     }
 
-    public boolean isAllPacksInstalled() {
-        return allPacks;
+    public boolean isErgonomicsEnabled() {
+        return ergonomics;
     }
 
     public boolean isJavaFXInstalled() {
@@ -140,6 +140,11 @@ class InstallConfig {
     private boolean isJavaFxPack( ModuleInfo mi ) {
         String moduleName = mi.getCodeNameBase();
         return moduleName.startsWith(javaFxPackName);
+    }
+
+    private boolean isErgonomicsPack( ModuleInfo mi ) {
+        String moduleName = mi.getCodeNameBase();
+        return moduleName.startsWith(ergonomicsPackName) && mi.isEnabled();
     }
 
     private boolean isPackEnabled(String prefName) {

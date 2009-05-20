@@ -68,9 +68,7 @@ public final class EnvWriter {
                 val = env.get(var);
 
                 if (val != null) {
-                    // TODO: is it safe to replace all '\' with '/'?
-                    os.write((var + "=\"" + val.replaceAll("\\\\", "/") + // NOI18N
-                            "\" && export " + var + "\n").getBytes()); // NOI18N
+                    os.write((var + "=" + val + " && export " + var + "\n").getBytes()); // NOI18N
                     os.flush();
                 }
             }

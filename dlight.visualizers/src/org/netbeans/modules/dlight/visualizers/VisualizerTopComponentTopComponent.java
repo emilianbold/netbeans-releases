@@ -106,8 +106,8 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
     protected void componentActivated() {
         super.componentActivated();
         if (viewComponent != null){
+            super.requestFocusInWindow(false);
             viewComponent.requestFocus();
-            viewComponent.requestFocusInWindow();
         }
     }
 
@@ -214,6 +214,17 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
             });
         }
     }
+
+    @Override
+    public void requestFocus() {
+        if (viewComponent != null){
+            viewComponent.requestFocus();
+        }else{
+            super.requestFocus(true);
+        }
+    }
+
+
 
     public void addContent(String toolName, JComponent viewComponent) {
         if (currentToolName == null || !currentToolName.equals(toolName) || this.viewComponent != viewComponent) {
