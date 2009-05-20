@@ -74,6 +74,8 @@ public final class NativeProcessInfo {
     private String commandLine;
     private String workingDirectory;
     private boolean unbuffer;
+    private boolean redirectError;
+    private boolean x11forwarding;
     private Collection<ChangeListener> listeners = null;
 
 //    public NativeProcessInfo(NativeProcessInfo info) {
@@ -120,6 +122,8 @@ public final class NativeProcessInfo {
         }
 
         isWindows = hostInfo != null && hostInfo.getOSFamily() == OSFamily.WINDOWS;
+
+        redirectError = false;
     }
 
     public void addNativeProcessListener(ChangeListener listener) {
@@ -128,6 +132,10 @@ public final class NativeProcessInfo {
         }
 
         listeners.add(listener);
+    }
+
+    public void redirectError(boolean redirectError) {
+        this.redirectError = redirectError;
     }
 
     public void setExecutable(String executable) {
@@ -148,6 +156,14 @@ public final class NativeProcessInfo {
 
     public boolean isUnbuffer() {
         return unbuffer;
+    }
+
+    public void setX11Forwarding(boolean x11forwarding) {
+        this.x11forwarding = x11forwarding;
+    }
+
+    public boolean getX11Forwarding() {
+        return x11forwarding;
     }
 
     /**
@@ -212,6 +228,10 @@ public final class NativeProcessInfo {
             for (String arg : arguments) {
                 sb.append(" '").append(arg).append('\''); // NOI18N
             }
+        }
+
+        if (redirectError) {
+            sb.append(" 2>&1"); // NOI18N
         }
 
         return sb.toString().trim();

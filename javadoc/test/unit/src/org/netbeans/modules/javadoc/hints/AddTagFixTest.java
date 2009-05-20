@@ -408,5 +408,76 @@ public class AddTagFixTest extends JavadocTestSupport {
                 "    }\n" +
                 "}\n");        
     }
+
+    public void testAddThrowsTagFix() throws Exception {
+        doFirstMemberFixTest(
+                "package test;\n" +
+                "class Zima {\n" +
+                "    /**\n" +
+                "     * \n" +
+                "     */\n" +
+                "    void leden() throws java.io.IOException {\n" +
+                "    }\n" +
+                "}\n",
+
+                "package test;\n" +
+                "class Zima {\n" +
+                "    /**\n" +
+                "     * \n" +
+                "     * @throws java.io.IOException \n" +
+                "     */\n" +
+                "    void leden() throws java.io.IOException {\n" +
+                "    }\n" +
+                "}\n");
+    }
+
+    public void testAddThrowsTagFix2() throws Exception {
+        doFirstMemberFixTest(
+                "package test;\n" +
+                "import java.io.IOException;\n" +
+                "class Zima {\n" +
+                "    /**\n" +
+                "     * \n" +
+                "     */\n" +
+                "    void leden() throws IOException {\n" +
+                "    }\n" +
+                "}\n",
+
+                "package test;\n" +
+                "import java.io.IOException;\n" +
+                "class Zima {\n" +
+                "    /**\n" +
+                "     * \n" +
+                "     * @throws IOException \n" +
+                "     */\n" +
+                "    void leden() throws IOException {\n" +
+                "    }\n" +
+                "}\n");
+    }
+
+    public void testAddThrowsTagFix_NestedClass_160414() throws Exception {
+        // issue 160414
+        doFirstMemberFixTest(
+                "package test;\n" +
+                "class Zima {\n" +
+                "    /**\n" +
+                "     * \n" +
+                "     */\n" +
+                "    void leden() throws MEx {\n" +
+                "    }\n" +
+                "    public static class MEx extends Exception {}\n" +
+                "}\n",
+
+                "package test;\n" +
+                "class Zima {\n" +
+                "    /**\n" +
+                "     * \n" +
+                "     * @throws test.Zima.MEx \n" +
+                "     */\n" +
+                "    void leden() throws MEx {\n" +
+                "    }\n" +
+                "    public static class MEx extends Exception {}\n" +
+                "}\n");
+    }
     
 }

@@ -286,6 +286,10 @@ public class AstNode {
         attributes.put(key, value);
     }
 
+    public Collection<String> getAttributeKeys() {
+        return attributes.keySet();
+    }
+
     public Object getAttribute(String key) {
         return attributes == null ? null : attributes.get(key);
     }

@@ -738,7 +738,11 @@ public class CsmUtilities {
             while (!(temp instanceof TopComponent)) {
                 temp = temp.getParent();
             }
-            ((TopComponent) temp).requestActive();
+            if (temp instanceof TopComponent) {
+                ((TopComponent) temp).open();
+                ((TopComponent) temp).requestActive();
+                ((TopComponent) temp).requestVisible();
+            }
         }
     }
     //    /** Jumps to element on given editor pane. Call only outside AWT thread!

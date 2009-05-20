@@ -97,7 +97,7 @@ public class UnbufferSupport {
                         remotePath = cache.get(execEnv);
 
                         if (remotePath == null) {
-                            remotePath = hinfo.getTempDir() + unbufferPath;
+                            remotePath = hinfo.getTempDir() + "/" + unbufferPath; // NOI18N
                             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
                             npb.setExecutable("/bin/mkdir").setArguments("-p", remotePath, remotePath + "_64"); // NOI18N
 
@@ -128,10 +128,10 @@ public class UnbufferSupport {
                         }
                     }
 
-                    file = new File(remotePath, unbufferLib);
+                    unbufferPath = remotePath;
+                } else {
+                    unbufferPath = new File(file.getParent()).getAbsolutePath();
                 }
-
-                unbufferPath = file.getParentFile().getAbsolutePath();
 
                 String ldPreloadEnv;
                 String ldLibraryPathEnv;
@@ -149,14 +149,20 @@ public class UnbufferSupport {
 
                 String ldPreload = env.get(ldPreloadEnv);
 
-                if (isMacOS || isWindows) {
+                if (isWindows) {
+                    // TODO: FIXME (?) For Mac and Windows just put unbuffer
+                    // with path to it to LD_PRELOAD/DYLD_INSERT_LIBRARIES
+                    // Reason: no luck to make it work using PATH ;(
+                    ldPreload = ((ldPreload == null) ? "" : (ldPreload + ";")) + // NOI18N
+                            unbufferPath + "/" + unbufferLib; // NOI18N
+
+                    ldPreload = CommandLineHelper.getInstance(execEnv).toShellPaths(ldPreload);
+                } else if (isMacOS) {
                     // TODO: FIXME (?) For Mac and Windows just put unbuffer
                     // with path to it to LD_PRELOAD/DYLD_INSERT_LIBRARIES
                     // Reason: no luck to make it work using PATH ;(
                     ldPreload = ((ldPreload == null) ? "" : (ldPreload + ":")) + // NOI18N
                             unbufferPath + "/" + unbufferLib; // NOI18N
-
-                    ldPreload = CommandLineHelper.getInstance(execEnv).toShellPath(ldPreload);
                 } else {
                     ldPreload = ((ldPreload == null) ? "" : (ldPreload + ":")) + // NOI18N
                             unbufferLib;
@@ -166,9 +172,14 @@ public class UnbufferSupport {
 
                 if (isMacOS) {
                     env.put("DYLD_FORCE_FLAT_NAMESPACE", "yes"); // NOI18N
+                } else if (isWindows) {
+//                    String ldLibPath = env.get(ldLibraryPathEnv);
+//                    ldLibPath = ((ldLibPath == null) ? "" : (ldLibPath + ";")) + // NOI18N
+//                            unbufferPath + ";" + unbufferPath + "_64"; // NOI18N
+//                    ldLibPath = CommandLineHelper.getInstance(execEnv).toShellPaths(ldLibPath);
+//                    env.put(ldLibraryPathEnv, ldLibPath); // NOI18N
                 } else {
                     String ldLibPath = env.get(ldLibraryPathEnv);
-                    ldLibPath = CommandLineHelper.getInstance(execEnv).toShellPaths(ldLibPath);
                     ldLibPath = ((ldLibPath == null) ? "" : (ldLibPath + ":")) + // NOI18N
                             unbufferPath + ":" + unbufferPath + "_64"; // NOI18N
                     env.put(ldLibraryPathEnv, ldLibPath); // NOI18N

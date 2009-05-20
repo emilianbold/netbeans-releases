@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -109,21 +110,13 @@ public class HtmlStructureScanner implements StructureScanner {
                 if (node.type() == AstNode.NodeType.OPEN_TAG
                         || node.type() == AstNode.NodeType.COMMENT) {
                     try {
-                        int so, eo;
-                        if(node.type() == AstNode.NodeType.OPEN_TAG) {
-                            AstNode match = node.getMatchingTag();
-                            if(match == null) {
-                                return ;
-                            } else {
-                                so = node.startOffset();
-                                eo = match.endOffset();
-                            }
-                        } else {
-                            //comment
-                            so = documentPosition(node.startOffset(), info.getSnapshot());
-                            eo = documentPosition(node.endOffset(), info.getSnapshot());
-                        }
-
+                        int[] logicalRange = node.getLogicalRange();
+                        int from = logicalRange[0];
+                        int to = logicalRange[1];
+                        
+                        int so = documentPosition(from, info.getSnapshot());
+                        int eo = documentPosition(to, info.getSnapshot());
+                        
                         if (eo > doc.getLength()) {
                             eo = doc.getLength();
                             if (so > eo) {
@@ -196,7 +189,28 @@ public class HtmlStructureScanner implements StructureScanner {
 
         @Override
         public String getHtml(HtmlFormatter formatter) {
-            return getName();
+            formatter.appendHtml(getName());
+
+            AstNode node = handle.node();
+            String idAttr = getAttributeValue(node, "id"); //NOI18N
+            String classAttr = getAttributeValue(node, "class"); //NOI18N
+
+            if(idAttr != null) {
+                formatter.appendHtml("&nbsp;<font color=808080>id=" + idAttr + "</font>"); //NOI18N
+            }
+            if(classAttr != null) {
+                formatter.appendHtml("&nbsp;<font color=808080>class=" + classAttr + "</font>"); //NOI18N
+            }
+            
+            return formatter.getText();
+        }
+
+        private String getAttributeValue(AstNode node, String key) {
+            String value = (String)node.getAttribute(key.toLowerCase(Locale.ENGLISH)); //try lowercase
+            if(value == null) {
+                value = (String)node.getAttribute(key.toUpperCase(Locale.ENGLISH)); //try uppercase
+            }
+            return value;
         }
 
         @Override
@@ -271,11 +285,11 @@ public class HtmlStructureScanner implements StructureScanner {
         }
 
         public long getPosition() {
-            return HtmlStructureScanner.documentPosition(handle.node().startOffset(), snapshot);
+            return HtmlStructureScanner.documentPosition(handle.from(), snapshot);
         }
 
         public long getEndPosition() {
-            return HtmlStructureScanner.documentPosition(handle.node().endOffset(), snapshot);
+            return HtmlStructureScanner.documentPosition(handle.to(), snapshot);
         }
 
         @Override
