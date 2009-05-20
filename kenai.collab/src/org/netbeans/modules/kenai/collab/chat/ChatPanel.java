@@ -300,7 +300,7 @@ public class ChatPanel extends javax.swing.JPanel {
 
     private void keyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_keyTyped
         if (evt.getKeyChar() == '\n') {
-            if (evt.isAltDown()) {
+            if (evt.isAltDown() || evt.isShiftDown() || evt.isControlDown()) {
                 try {
                     outbox.getStyledDocument().insertString(outbox.getStyledDocument().getLength(), "\n", null); //NOI18N
                 } catch (BadLocationException ex) {
