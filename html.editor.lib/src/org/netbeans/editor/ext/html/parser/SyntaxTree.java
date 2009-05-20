@@ -415,13 +415,18 @@ public class SyntaxTree {
         return tagName.contains(":"); //NOI18N
     }
 
+    private static boolean isIgnoredTagAttribute(String tagName) {
+        return tagName.contains(":"); //NOI18N
+    }
+
     private static Collection<Description> checkTagAttributes(SyntaxElement.Tag element, Element dtdElement) {
         Collection<Description> errmsgs = new ArrayList<Description>(3);
         //check attributes
         List<TagAttribute> existingAttrs = element.getAttributes();
 
         for (TagAttribute ta : existingAttrs) {
-            if (dtdElement.getAttribute(ta.getName().toLowerCase(Locale.ENGLISH)) == null) {
+            if (!isIgnoredTagAttribute(ta.getName()) &&
+                    dtdElement.getAttribute(ta.getName().toLowerCase(Locale.ENGLISH)) == null) {
                 //unknown attribute
                 Description desc = Description.create(UNKNOWN_ATTRIBUTE_KEY, NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_ATTRIBUTE", //NOI18N
                         new Object[]{ta.getName(), element.getName()}), Description.WARNING, ta.getNameOffset(), ta.getNameOffset() + ta.getName().length());
