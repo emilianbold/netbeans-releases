@@ -77,6 +77,7 @@ public class GeneralSanityTest extends NbTestCase {
             addTest(
                 "testBlacklistedClassesHandler",
                 "testOrgOpenideOptionsIsDisabledAutoload",
+                "testOrgNetBeansModulesLanguagesIsDisabledAutoload",
                 "testOrgNetBeansModulesGsfIsDisabledAutoload",
                 "testInstalledPlugins"
             )
