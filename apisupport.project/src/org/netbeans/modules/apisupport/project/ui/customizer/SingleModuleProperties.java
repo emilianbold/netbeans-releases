@@ -222,9 +222,9 @@ public final class SingleModuleProperties extends ModuleProperties {
         projectXMLManager = null;
         if (isSuiteComponent()) {
             assert getSuiteDirectory() != null;
-            ModuleList.refreshSuiteModuleList(getSuiteDirectory());
+            ModuleList.refreshModuleListForRoot(getSuiteDirectory());
         } else if (isStandalone()) {
-            ModuleList.refreshSuiteModuleList(getProjectDirectoryFile());
+            ModuleList.refreshModuleListForRoot(getProjectDirectoryFile());
         }
         ManifestManager manifestManager = ManifestManager.getInstance(getManifestFile(), false);
         majorReleaseVersion = manifestManager.getReleaseVersion();
@@ -264,9 +264,12 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         firePropertiesRefreshed();
     }
-    
-    void libraryWrapperAdded() {
-        // presuambly we do not need to reset anything else
+
+    /**
+     * Forces set of module deps returned from {@link #getUiverseDependencies(boolean)}
+     * to be recomputed next time it is queried.
+     */
+    void resetUniverseDependencies() {
         universeDependencies = null;
     }
     
@@ -714,14 +717,14 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         String[] friends = getFriendListModel().getFriends();
         String[] publicPkgs = getPublicPackagesModel().getSelectedPackages();
-        boolean refreshSuite = false;
+        boolean refreshModuleList = false;
         if (getPublicPackagesModel().isChanged() || getFriendListModel().isChanged()) {
             if (friends.length > 0) { // store friends packages
                 getProjectXMLManager().replaceFriends(friends, publicPkgs);
             } else { // store public packages
                 getProjectXMLManager().replacePublicPackages(publicPkgs);
             }
-            refreshSuite = true;
+            refreshModuleList = true;
         }
         
         if (isStandalone()) {
@@ -729,13 +732,18 @@ public final class SingleModuleProperties extends ModuleProperties {
             if (javaPlatformChanged) {
                 ModuleProperties.storeJavaPlatform(getHelper(), getEvaluator(), getActiveJavaPlatform(), false);
             }
-            if (refreshSuite) {
-                ModuleList.refreshSuiteModuleList(getProjectDirectoryFile());
+            if (refreshModuleList) {
+                ModuleList.refreshModuleListForRoot(getProjectDirectoryFile());
             }
-        } else if (isSuiteComponent() && refreshSuite) {
-            ModuleList.refreshSuiteModuleList(getSuiteDirectory());
-        } else if (isNetBeansOrg() && javaPlatformChanged) {
-            ModuleProperties.storeJavaPlatform(getHelper(), getEvaluator(), getActiveJavaPlatform(), true);
+        } else if (isSuiteComponent() && refreshModuleList) {
+            ModuleList.refreshModuleListForRoot(getSuiteDirectory());
+        } else if (isNetBeansOrg()) {
+            if (javaPlatformChanged) {
+                ModuleProperties.storeJavaPlatform(getHelper(), getEvaluator(), getActiveJavaPlatform(), true);
+            }
+            if (refreshModuleList) {
+                ModuleList.refreshModuleListForRoot(ModuleList.findNetBeansOrg(getProjectDirectoryFile()));
+            }
         }
     }
     

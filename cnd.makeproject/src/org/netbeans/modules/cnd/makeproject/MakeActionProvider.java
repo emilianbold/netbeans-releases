@@ -681,14 +681,12 @@ public class MakeActionProvider implements ActionProvider {
                         // naturalize if relative
                         path = makeArtifact.getOutput();
                         //TODO: we also need remote aware IpeUtils..........
-                        if (conf.getDevelopmentHost().isLocalhost()) {
-                            if (!IpeUtils.isPathAbsolute(path)) {
-                                // make path relative to run working directory
-                                path = makeArtifact.getWorkingDirectory() + "/" + path; // NOI18N
-                                path = FilePathAdaptor.naturalize(path);
-                                path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
-                                path = FilePathAdaptor.naturalize(path);
-                            }
+                        if (!IpeUtils.isPathAbsolute(path)) {
+                            // make path relative to run working directory
+                            path = makeArtifact.getWorkingDirectory() + "/" + path; // NOI18N
+                            path = FilePathAdaptor.naturalize(path);
+                            path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
+                            path = FilePathAdaptor.naturalize(path);
                         }
                     } else {
                         // Always absolute

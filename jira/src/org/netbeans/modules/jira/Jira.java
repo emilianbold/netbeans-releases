@@ -55,6 +55,7 @@ import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.netbeans.modules.jira.query.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfigurationCacheManager;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.netbeans.modules.jira.repository.JiraStorageManager;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -71,6 +72,7 @@ public class Jira {
     private static Jira instance;
     private Set<TaskRepository> refreshedRepos = new HashSet<TaskRepository>(1);
     private JiraConfigurationCacheManager cacheManager;
+    private JiraStorageManager storageManager;
 
     public static Logger LOG = Logger.getLogger("org.netbeans.modules.jira.Jira");
     private RequestProcessor rp;
@@ -182,6 +184,7 @@ public class Jira {
 
     void shutdown () {
         getConfigurationCacheManager().shutdown();
+        getStorageManager().shutdown();
     }
 
     public JiraConfigurationCacheManager getConfigurationCacheManager () {
@@ -189,5 +192,12 @@ public class Jira {
             cacheManager = JiraConfigurationCacheManager.getInstance();
         }
         return cacheManager;
+    }
+
+    public JiraStorageManager getStorageManager () {
+        if (storageManager == null) {
+            storageManager = JiraStorageManager.getInstance();
+        }
+        return storageManager;
     }
 }

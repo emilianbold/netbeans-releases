@@ -99,32 +99,30 @@ int main(int argc, char** argv) {
         return -4;
     }
 
+    int msgwant;
     int silence = 0;
-    while (1) {
-        int numget = monitor_cpu + monitor_mem + monitor_sync;
+    while (msgwant = monitor_cpu + monitor_mem + monitor_sync) {
+        int msggot = 0;
         if (monitor_sync) {
             if (msgrcv(msqid, &syncbuf, sizeof (syncbuf) - sizeof (syncbuf.type), SYNCMSG, IPC_NOWAIT) < 0) {
                 if (user_term || errno != ENOMSG) {
                     break;
-                } else {
-                    numget--;
                 }
             } else {
+                ++msggot;
                 printf("sync: %lf\t%d\n",
                         ((double) syncbuf.lock_ticks) / per_sec,
-                        syncbuf.thr_count
-                        );
-                        fflush(stdout);
+                        syncbuf.thr_count);
+                fflush(stdout);
             }
         }
         if (monitor_mem) {
             if (msgrcv(msqid, &membuf, sizeof (membuf) - sizeof (membuf.type), MEMMSG, IPC_NOWAIT) < 0) {
                 if (user_term || errno != ENOMSG) {
                     break;
-                } else {
-                    numget--;
                 }
             } else {
+                ++msggot;
                 printf("mem: %d\n", membuf.heapused);
                 fflush(stdout);
             }
@@ -133,18 +131,29 @@ int main(int argc, char** argv) {
             if (msgrcv(msqid, &cpubuf, sizeof (cpubuf) - sizeof (cpubuf.type), CPUMSG, IPC_NOWAIT) < 0) {
                 if (user_term || errno != ENOMSG) {
                     break;
-                } else {
-                    numget--;
                 }
             } else {
+                ++msggot;
                 printf("cpu: %d\t%d\n", cpubuf.user, cpubuf.sys);
                 fflush(stdout);
             }
         }
-        if (numget) {
-            ++silence;
+
+        if (msggot) {
+            silence = 0;
+        } else {
+            if (++silence > 5) {
+                // looks like agent has been killed and queue remains alive
+                struct msqid_ds msbuf;
+                msgctl(msqid, IPC_RMID, &msbuf);
+                fprintf(stderr, "Communication with process %ld has been lost\n", pid);
+                return -4;
+            }
+        }
+        if (msggot < msgwant) {
             struct failmsg fbuf;
             if (msgrcv(msqid, &fbuf, sizeof (fbuf) - sizeof (fbuf.type), FAILMSG, IPC_NOWAIT) == 0) {
+                // something happened in agent
                 if (fbuf.type == MEMMSG) {
                     monitor_mem = 0;
                     printf("mem: failure!\n");
@@ -157,16 +166,10 @@ int main(int argc, char** argv) {
                     monitor_sync = 0;
                     printf("sync: failure!\n");
                 }
-            };
-            if (silence > 3) {
-                struct msqid_ds msbuf;
-                msgctl(msqid, IPC_RMID, &msbuf); // looks like agent has been killed and queue remains alive
-                fprintf(stderr, "Communication with process %ld has been lost\n", pid);
-                return -4;
+            } else {
+                // give agent some more time to send messages
+                sleep(1);
             }
-            sleep(1);
-        } else {
-            silence = 0;
         }
     }
     if (user_term) {

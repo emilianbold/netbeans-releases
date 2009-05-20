@@ -41,6 +41,7 @@
 
 package org.openide.util;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -850,7 +851,23 @@ public final class RequestProcessor implements Executor{
 
         @Override
         public Throwable fillInStackTrace() {
-            return SLOW ? super.fillInStackTrace() : this;
+            if (SLOW) {
+                Throwable ret = super.fillInStackTrace();
+                StackTraceElement[] arr = ret.getStackTrace();
+                for (int i = 1; i < arr.length; i++) {
+                    if (arr[i].getClassName().startsWith("java.lang")) {
+                        continue;
+                    }
+                    if (arr[i].getClassName().startsWith(RequestProcessor.class.getName())) {
+                        continue;
+                    }
+                    ret.setStackTrace(Arrays.asList(arr).subList(i - 1, arr.length).toArray(new StackTraceElement[0]));
+                    break;
+                }
+                return ret;
+            } else {
+                return this;
+            }
         }
 
         public @Override String getMessage() {
@@ -1023,9 +1040,6 @@ public final class RequestProcessor implements Executor{
                         // for debugging hooks
                         em.log(Level.SEVERE, null, oome);
                     } catch (StackOverflowError e) {
-                        // Try as hard as possible to get a real stack trace
-                        e.printStackTrace();
-
                         // recoverable too
                         doNotify(todo, e);
                     } catch (Throwable t) {
@@ -1086,11 +1100,11 @@ public final class RequestProcessor implements Executor{
         /** @see "#20467" */
         private static void doNotify(RequestProcessor.Task todo, Throwable ex) {
             if (SLOW && todo.item.message == null) {
-                todo.item.message = "task failed: " + ex;
+                todo.item.message = "task failed due to: " + ex;
                 todo.item.initCause(ex);
                 ex = todo.item;
             }
-            logger().log(Level.SEVERE, null, ex);
+            logger().log(Level.SEVERE, "Error in RequestProcessor " + todo.debug(), ex);
         }
 
         /**

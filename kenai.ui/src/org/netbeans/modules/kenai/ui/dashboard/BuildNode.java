@@ -51,7 +51,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.kenai.ui.treelist.LeafNode;
 import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
-import org.netbeans.modules.kenai.ui.spi.BuildAccessor;
 import org.netbeans.modules.kenai.ui.spi.BuildHandle;
 import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
 
@@ -116,6 +115,6 @@ public class BuildNode extends LeafNode implements PropertyChangeListener {
 
     @Override
     public ActionListener getDefaultAction() {
-        return BuildAccessor.getDefault().getDefaultAction(build);
+        return build.getDefaultAction();
     }
 }

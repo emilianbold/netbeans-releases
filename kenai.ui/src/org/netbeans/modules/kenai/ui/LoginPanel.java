@@ -39,8 +39,11 @@
 
 package org.netbeans.modules.kenai.ui;
 
+import java.awt.Container;
+import java.awt.event.MouseEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
+import javax.swing.ToolTipManager;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.ui.dashboard.LinkButton;
 import org.openide.util.Exceptions;
@@ -61,7 +64,7 @@ public class LoginPanel extends javax.swing.JPanel {
             Exceptions.printStackTrace(ex);
         }
         try {
-            registerUrl = new URL("https://kenai.com/people/new");
+            registerUrl = new URL("https://kenai.com/people/signup");
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -84,17 +87,28 @@ public class LoginPanel extends javax.swing.JPanel {
         error.setText(ex.getMessage());
         error.setVisible(true);
         password.requestFocus();
+        setLoginButtonEnabled(true);
     }
 
     public void showProgress() {
         error.setVisible(false);
         progressBar.setVisible(true);
         progressBar.setIndeterminate(true);
+        setLoginButtonEnabled(false);
     }
 
     public void clearStatus() {
         error.setVisible(false);
         progressBar.setVisible(false);
+        setLoginButtonEnabled(true);
+    }
+
+    private void setLoginButtonEnabled(boolean enabled) {
+        try {
+            ((Container) getParent().getComponents()[1]).getComponents()[0].setEnabled(enabled);
+        } catch (Exception e) {
+            //ignore
+        }
     }
 
     /** This method is called from within the constructor to
@@ -134,6 +148,12 @@ public class LoginPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lblPassword, org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.lblPassword.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(chkRememberMe, org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.chkRememberMe.text")); // NOI18N
+        chkRememberMe.setToolTipText(org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.chkRememberMe.toolTipText")); // NOI18N
+        chkRememberMe.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chkRememberMeActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(lblNoAccount, org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.lblNoAccount.text")); // NOI18N
 
@@ -157,7 +177,7 @@ public class LoginPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(lblKenaiLogoLeft)
                 .add(0, 0, 0)
-                .add(lblKenaiLogoCenter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
+                .add(lblKenaiLogoCenter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE)
                 .add(0, 0, 0)
                 .add(lblKenaiLogoRight))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
@@ -175,13 +195,13 @@ public class LoginPanel extends javax.swing.JPanel {
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(signUp))
                             .add(chkRememberMe)
-                            .add(password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE)
-                            .add(username, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE)
+                            .add(password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
+                            .add(username, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
                             .add(forgotPassword))))
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(progressBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
+                .add(progressBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 418, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -230,6 +250,16 @@ public class LoginPanel extends javax.swing.JPanel {
         password.setSelectionStart(0);
         password.setSelectionEnd(password.getPassword().length);
     }//GEN-LAST:event_passwordFocusGained
+
+    private void chkRememberMeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkRememberMeActionPerformed
+        if (chkRememberMe.isSelected()) {
+            ToolTipManager tooltipManager = ToolTipManager.sharedInstance();
+            int initialDelay = tooltipManager.getInitialDelay();
+            tooltipManager.setInitialDelay(0);
+            tooltipManager.mouseMoved(new MouseEvent(chkRememberMe, 0, 0, 0, 0, 0, 0, false));
+            tooltipManager.setInitialDelay(initialDelay);
+        }
+    }//GEN-LAST:event_chkRememberMeActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

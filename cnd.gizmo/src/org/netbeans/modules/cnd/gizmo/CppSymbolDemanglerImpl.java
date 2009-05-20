@@ -202,7 +202,8 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
     }
 
     private void demangleImpl(List<String> mangledNames) {
-        NativeProcessBuilder npb = new NativeProcessBuilder(env, demanglerTool, false);
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+        npb.setExecutable(demanglerTool);
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL).outLineBased(true);
 
         final List<String> demangledNames = new ArrayList<String>();

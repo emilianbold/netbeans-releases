@@ -273,10 +273,10 @@ public class RemotePathMap extends PathMap {
                 REMOTE_PATH_MAP + ExecutionEnvironmentFactory.toUniqueID(execEnv), newValue);
     }
 
-    private static boolean validateMapping(ExecutionEnvironment exexEnv, 
+    private static boolean validateMapping(ExecutionEnvironment execEnv,
             String rpath, String lpath) throws InterruptedException {
 
-        if (!PlatformInfo.getDefault(exexEnv).isWindows() && !PlatformInfo.getDefault(ExecutionEnvironmentFactory.getLocal()).isWindows()) {
+        if (!PlatformInfo.getDefault(execEnv).isWindows() && !PlatformInfo.getDefault(ExecutionEnvironmentFactory.getLocal()).isWindows()) {
             File path = new File(lpath);
             if (path.exists() && path.isDirectory()) {
                 File validationFile = null;
@@ -288,11 +288,12 @@ public class RemotePathMap extends PathMap {
                         String validationLine = Double.toString(Math.random());
                         out.write(validationLine);
                         out.close();
-                        String cmd = "cat " + rpath + "/" + validationFile.getName() + " | grep " + validationLine; // NOI18N
-                        if (!Boolean.getBoolean("emulate.remote.cmd.hangup")) { // VK: a safe way to test error recovery - no risk of pushing bad changes :)
-                            cmd = String.format("bash -c \"%s\"", cmd); //NOI18N
-                        }
-                        RemoteCommandSupport rcs = new RemoteCommandSupport(exexEnv, cmd); // NOI18N
+
+                        RemoteCommandSupport rcs = new RemoteCommandSupport(
+                                execEnv, "grep", null, // NOI18N
+                                validationLine,
+                                rpath + "/" + validationFile.getName()); // NOI18N
+
                         if (rcs.run() == 0) {
                             return true;
                         }

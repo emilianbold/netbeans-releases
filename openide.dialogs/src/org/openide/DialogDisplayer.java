@@ -484,7 +484,14 @@ public abstract class DialogDisplayer {
                 this.dd = dd;
             }
 
-            public void propertyChange(PropertyChangeEvent ev) {
+            public void propertyChange(final PropertyChangeEvent ev) {
+                if( !SwingUtilities.isEventDispatchThread() ) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            propertyChange(ev);
+                        }
+                    });
+                }
                 String pname = ev.getPropertyName();
                 if (NotifyDescriptor.PROP_TITLE.equals(pname)) {
                     dialog.setTitle(dd.getTitle());

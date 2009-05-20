@@ -39,19 +39,24 @@
 package org.netbeans.modules.dlight.visualizers;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Box;
@@ -62,8 +67,13 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.tree.TreePath;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
@@ -80,15 +90,17 @@ import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
 import org.netbeans.modules.dlight.visualizers.api.FunctionsListViewVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.impl.FunctionsListViewVisualizerConfigurationAccessor;
+import org.netbeans.swing.outline.Outline;
+import org.openide.awt.MouseUtils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.OutlineView;
+import org.openide.explorer.view.TreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.PropertySupport;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -107,7 +119,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private boolean isEmptyContent;
     private boolean isLoadingContent;
     private boolean isShown = true;
-    private OutlineView outlineView;
+    private final OutlineView outlineView;
     private final ExplorerManager explorerManager;
     private final FunctionDatatableDescription functionDatatableDescription;
     private final FunctionsListDataProvider dataProvider;
@@ -118,6 +130,10 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private final TableCellRenderer outlineNodePropertyDefault;
     private final VisualizersSupport visSupport;
     private FunctionCallChildren currentChildren;
+    private ExecutorService sourcePrefetchExecutor;
+    private final String sourcePrefetchExecutorLock = new String("sourcePrefetchExecutorLock");//NOI18N
+    private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
+    private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); // NOI18N
 
     public FunctionsListViewVisualizer(FunctionsListDataProvider dataProvider, FunctionsListViewVisualizerConfiguration configuration) {
         visSupport = new VisualizersSupport(new VisualizerImplSessionStateListener());
@@ -132,10 +148,38 @@ public class FunctionsListViewVisualizer extends JPanel implements
         addComponentListener(this);
         String nodeLabel = columnsUIMapping == null || columnsUIMapping.getDisplayedName(functionDatatableDescription.getNameColumn()) == null ? metadata.getColumnByName(functionDatatableDescription.getNameColumn()).getColumnUName() : columnsUIMapping.getDisplayedName(functionDatatableDescription.getNameColumn());
         outlineView = new OutlineView(nodeLabel);
-        outlineView.getOutline().setRootVisible(false);
-        outlineView.getOutline().setDefaultRenderer(Object.class, new ExtendedTableCellRendererForNode());
+        final Outline outline = outlineView.getOutline();
+        outline.setRootVisible(false);
+        outline.setDefaultRenderer(Object.class, new ExtendedTableCellRendererForNode());
         outlineNodePropertyDefault = outlineView.getOutline().getDefaultRenderer(Node.Property.class);
-        outlineView.getOutline().setDefaultRenderer(Node.Property.class, new FunctionsListSheetCell.OutlineSheetCell(outlineView.getOutline(), metrics));
+        outline.setDefaultRenderer(Node.Property.class, new FunctionsListSheetCell.OutlineSheetCell(outlineView.getOutline(), metrics));
+        outline.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int selRow = outline.rowAtPoint(e.getPoint());
+                if ((selRow != -1) && SwingUtilities.isLeftMouseButton(e) && MouseUtils.isDoubleClick(e)) {
+                    // Default action.
+                    if (outline.getSelectedColumn() == 0) {
+                        FunctionCallNode node = findNodeByName("" + outline.getValueAt(selRow, 0));//NOI18N
+                        if (node != null) {
+                            Action a = node.getGoToSourceAction();
+                            if (a != null) {
+                                if (a.isEnabled()) {
+                                    a.actionPerformed(new ActionEvent(node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+                                } else {
+                                    Logger.getLogger(OutlineView.class.getName()).info("Action " + a + " on node " + node + " is disabled");//NOI18N
+                                }
+
+                                e.consume();
+                                return;
+                            }
+                        }
+
+                    }
+                }
+                super.mouseClicked(e);
+            }
+        });
         List<Property> result = new ArrayList<Property>();
         for (Column c : metrics) {
             String displayedName = columnsUIMapping == null || columnsUIMapping.getDisplayedName(c.getColumnName()) == null ? c.getColumnUName() : columnsUIMapping.getDisplayedName(c.getColumnName());
@@ -155,6 +199,9 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
         }
         outlineView.setProperties(result.toArray(new Property[0]));
+        if (isMacLaf) {
+            buttonsToolbar.setBackground(macBackground);
+        }
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
 
     }
@@ -209,17 +256,40 @@ public class FunctionsListViewVisualizer extends JPanel implements
             return;
         }
 
+        // Our own executor service prefetching source infos.
+        // Don't use DLightExecutorService because:
+        // 1) We want to be able to cancel all pending prefetch tasks
+        //    when the function list is reloaded
+        // 2) We want regular GoToSourceActions
+        //    not to be blocked by prefetch tasks
+        final boolean isEmptyConent = list == null || list.isEmpty();
+        synchronized (sourcePrefetchExecutorLock) {
+            if (sourcePrefetchExecutor != null) {
+                sourcePrefetchExecutor.shutdownNow();
+                sourcePrefetchExecutor = null;
+            }
+            if (!isEmptyContent) {
+                sourcePrefetchExecutor = Executors.newFixedThreadPool(2);
+            }
+        }
+
         UIThread.invoke(new Runnable() {
 
             public void run() {
                 synchronized (uiLock) {
-                    final boolean isEmptyConent =
-                            list == null || list.isEmpty();
                     setContent(isEmptyConent);
                     if (!isEmptyConent) {
-                        currentChildren = new FunctionCallChildren(list);
-                        explorerManager.setRootContext(new AbstractNode(currentChildren));
-                        setNonEmptyContent();
+                        final FunctionCallChildren children = new FunctionCallChildren(list);
+                        currentChildren = children;
+                        if (!Children.MUTEX.isReadAccess()) {
+                            Children.MUTEX.writeAccess(new Runnable() {
+
+                                public void run() {
+                                    explorerManager.setRootContext(new AbstractNode(children));
+                                    setNonEmptyContent();
+                                }
+                            });
+                        }
                     }
                 }
             }
@@ -370,6 +440,20 @@ public class FunctionsListViewVisualizer extends JPanel implements
         return explorerManager;
     }
 
+    private final FunctionCallNode findNodeByName(String name) {
+        if (currentChildren == null) {
+            return null;
+        }
+        for (Node node : currentChildren.getNodes()) {
+            FunctionCallNode currentNode = (FunctionCallNode) node;
+            String displayName = currentNode.getDisplayName();
+            if (displayName != null && displayName.equals(name)) {
+                return currentNode;
+            }
+        }
+        return null;
+    }
+
     public class FunctionCallChildren extends Children.Keys<FunctionCall> {
 
         private final List<FunctionCall> list;
@@ -443,6 +527,10 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
         @Override
         public Action getPreferredAction() {
+            return null;
+        }
+
+        Action getGoToSourceAction() {
             return goToSourceAction;
         }
 
@@ -470,89 +558,67 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private class GoToSourceAction extends AbstractAction {
 
         private final FunctionCallNode functionCallNode;
-        private final Future<SourceFileInfo> sourceFileInfoTask;
-        private boolean isEnabled = true;
-        private boolean gotTheInfo = false;
+        private SourceFileInfo sourceInfo;
+        private Future<Boolean> goToSourceTask;
 
         public GoToSourceAction(FunctionCallNode funcCallNode) {
             super(NbBundle.getMessage(FunctionsListViewVisualizer.class, "GoToSourceActionName"));//NOI18N
             this.functionCallNode = funcCallNode;
-            sourceFileInfoTask = DLightExecutorService.submit(new Callable<SourceFileInfo>() {
-
-                public SourceFileInfo call() {
-                    FunctionCall functionCall = functionCallNode.getFunctionCall();
-                    return dataProvider.getSourceFileInfo(functionCall);
+            synchronized (sourcePrefetchExecutorLock) {
+                if (sourcePrefetchExecutor == null) {
+                    sourcePrefetchExecutor = Executors.newFixedThreadPool(2);
                 }
-            }, "SourceFileInfo getting info from Functions List View"); // NOI18N
-            waitForSourceFileInfo();
-//            try {
-//                SourceFileInfo sourceFileInfo = sourceFileInfoTask.get();
-//                isEnabled = sourceFileInfo != null && sourceFileInfo.isSourceKnown();
-//            } catch (InterruptedException ex) {
-//                isEnabled = false;
-//            } catch (ExecutionException ex) {
-//                isEnabled = false;
-//            } finally {
-//                synchronized (GoToSourceAction.this) {
-//                    gotTheInfo = true;
-//                }
-//                setEnabled(isEnabled);
-//                functionCallNode.fire();
-//
-//            }
-        }
-
-        private void waitForSourceFileInfo() {
-            DLightExecutorService.submit(new Runnable() {
+            }
+            sourcePrefetchExecutor.submit(new Runnable() {
 
                 public void run() {
-                    try {
-                        SourceFileInfo sourceFileInfo = sourceFileInfoTask.get();
-                        isEnabled = sourceFileInfo != null && sourceFileInfo.isSourceKnown();
-                    } catch (InterruptedException ex) {
-                        isEnabled = false;
-                    } catch (ExecutionException ex) {
-                        isEnabled = false;
-                    } finally {
-                        synchronized (GoToSourceAction.this) {
-                            gotTheInfo = true;
-                        }
-                        setEnabled(isEnabled);
-                        functionCallNode.fire();
-
-                    }
-
+                    getSource();
                 }
-            }, "Wait For the SourceFileInfo");//NOI18N
+            });
         }
 
-        @Override
-        public boolean isEnabled() {
-            return isEnabled;
+        public synchronized void actionPerformed(ActionEvent e) {
+            if (goToSourceTask == null || goToSourceTask.isDone()) {
+                goToSourceTask = DLightExecutorService.submit(new Callable<Boolean>() {
+
+                    public Boolean call() {
+                        return goToSource();
+                    }
+                }, "GoToSource from Functions List View"); // NOI18N
+            }
         }
 
-        public void actionPerformed(ActionEvent e) {
+        private boolean goToSource() {
+            SourceFileInfo source = getSource();
+            if (source != null && source.isSourceKnown()) {
+                SourceSupportProvider sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
+                sourceSupportProvider.showSource(source);
+                return true;
+            } else {
+                return false;
+            }
+        }
 
-            DLightExecutorService.submit(new Runnable() {
-
-                public void run() {
-                    SourceFileInfo sourceFileInfo = null;
-                    try {
-                        sourceFileInfo = sourceFileInfoTask.get();
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (ExecutionException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    if (sourceFileInfo == null) {// TODO: what should I do here if there is no source file info
-                        return;
-                    }
-
-                    SourceSupportProvider sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
-                    sourceSupportProvider.showSource(sourceFileInfo);
+        private SourceFileInfo getSource() {
+            synchronized (this) {
+                if (sourceInfo != null) {
+                    return sourceInfo;
                 }
-            }, "GoToSource from Functions List View"); // NOI18N
-
+            }
+            FunctionCall functionCall = functionCallNode.getFunctionCall();
+            SourceFileInfo result = dataProvider.getSourceFileInfo(functionCall);
+            if (result != null && result.isSourceKnown()) {
+                synchronized (this) {
+                    if (sourceInfo == null) {
+                        sourceInfo = result;
+                    }
+                }
+                return sourceInfo;
+            } else {
+                setEnabled(false);
+                functionCallNode.fire();
+                return null;
+            }
         }
     }
 
@@ -567,19 +633,14 @@ public class FunctionsListViewVisualizer extends JPanel implements
             PropertyEditor editor = PropertyEditorManager.findEditor(metadata.getColumnByName(functionDatatableDescription.getNameColumn()).getColumnClass());
             FunctionCallNode node = null;
             synchronized (FunctionsListViewVisualizer.this.uiLock) {
-                if (currentChildren != null){
-                    Node[] nodes  =  currentChildren.getNodes();
-                    if (row >= 0 && row < nodes.length) {
-                        node = (FunctionCallNode) nodes[row];
-                    }
-                }
+                node = findNodeByName(value + "");//NOI18N
             }
 
             //get node object
             if (editor != null && value != null && !(value + "").trim().equals("")) {//NOI18N
                 editor.setValue(value);
                 DefaultTableCellRenderer c = (DefaultTableCellRenderer) super.getTableCellRendererComponent(table, editor.getAsText(), isSelected, hasFocus, row, column);
-                c.setEnabled(node != null && node.getPreferredAction().isEnabled());
+                c.setEnabled(node != null && node.getGoToSourceAction().isEnabled());
                 return c;
             }
 

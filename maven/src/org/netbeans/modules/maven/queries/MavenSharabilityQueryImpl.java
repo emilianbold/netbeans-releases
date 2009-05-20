@@ -73,14 +73,6 @@ public class MavenSharabilityQueryImpl implements SharabilityQueryImplementation
             // #98662
             return false;
         }
-        MavenProject proj = project.getOriginalMavenProject();
-        Build build = proj.getBuild();
-        if (build != null && build.getDirectory() != null) {
-            File target = new File(build.getDirectory());
-            if (target.equals(file) || file.getAbsolutePath().startsWith(target.getAbsolutePath())) {
-                return false;
-            }
-        }
         if (file.equals(new File(basedir, "profiles.xml"))) { //NOI18N
             //profiles.xml are not meant to be put in version control.
             return false;
@@ -95,6 +87,17 @@ public class MavenSharabilityQueryImpl implements SharabilityQueryImplementation
                         return false;
                     }
                 }
+            }
+        }
+
+        //this part is slow if invoked on built project that is not opened (needs to load the embedder)
+        //can it be replaced with code not touching the embedder?
+        MavenProject proj = project.getOriginalMavenProject();
+        Build build = proj.getBuild();
+        if (build != null && build.getDirectory() != null) {
+            File target = new File(build.getDirectory());
+            if (target.equals(file) || file.getAbsolutePath().startsWith(target.getAbsolutePath())) {
+                return false;
             }
         }
         return true;

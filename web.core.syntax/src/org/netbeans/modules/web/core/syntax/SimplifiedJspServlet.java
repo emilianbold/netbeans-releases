@@ -305,43 +305,54 @@ public class SimplifiedJspServlet {
         tokenSequence.moveStart();
 
         while (tokenSequence.moveNext()) {
-            if (tokenSequence.token().id() == JspTokenId.TAG 
-                    && TokenUtilities.equals("page", tokenSequence.token().text())) { //NOI18N
+            PieceOfCode pieceOfCode = extractCodeFromTagAttribute(tokenSequence, "page", "import"); //NOI18N
 
-                if (tokenSequence.moveNext() && consumeWS(tokenSequence)) {
+            if (pieceOfCode != null){
+                localImports.add(snapshot.create("import ", "text/x-java")); //NOI18N
+                localImports.add(snapshot.create(pieceOfCode.getStartOffset(), pieceOfCode.getLength(), "text/x-java")); //NOI18N
+                localImports.add(snapshot.create(";\n", "text/x-java")); //NOI18N
+            } else {
+                pieceOfCode = extractCodeFromTagAttribute(tokenSequence, "tag", "import"); //NOI18N
 
-                    if (tokenSequence.token().id() == JspTokenId.ATTRIBUTE
-                            && TokenUtilities.equals("import", tokenSequence.token().text())) { //NOI18N
+                if (pieceOfCode != null) {
+                    localImports.add(snapshot.create("import ", "text/x-java")); //NOI18N
+                    localImports.add(snapshot.create(pieceOfCode.getStartOffset(), pieceOfCode.getLength(), "text/x-java")); //NOI18N
+                    localImports.add(snapshot.create(";\n", "text/x-java")); //NOI18N
+                }
+            }
+        }
+        return imports;
+    }
 
-                        if (tokenSequence.moveNext()
-                                && consumeWS(tokenSequence)
-                                && tokenSequence.token().id() == JspTokenId.SYMBOL
-                                && TokenUtilities.equals("=", tokenSequence.token().text())) {
+    private PieceOfCode extractCodeFromTagAttribute(TokenSequence tokenSequence, String tagName, String attrName) {
+        if (tokenSequence.token().id() == JspTokenId.TAG && TokenUtilities.equals(tagName, tokenSequence.token().text())) { //NOI18N
 
-                            if (tokenSequence.moveNext() && consumeWS(tokenSequence)
-                                    && tokenSequence.token().id() == JspTokenId.ATTR_VALUE) {
+            if (tokenSequence.moveNext() && consumeWS(tokenSequence)) {
+
+                if (tokenSequence.token().id() == JspTokenId.ATTRIBUTE && TokenUtilities.equals(attrName, tokenSequence.token().text())) { //NOI18N
+
+                    if (tokenSequence.moveNext() && consumeWS(tokenSequence) && tokenSequence.token().id() == JspTokenId.SYMBOL && TokenUtilities.equals("=", tokenSequence.token().text())) {
+
+                        if (tokenSequence.moveNext() && consumeWS(tokenSequence) && tokenSequence.token().id() == JspTokenId.ATTR_VALUE) {
+
+                            String val = tokenSequence.token().text().toString();
+
+                            if (val.length() > 2 && val.charAt(0) == '"' && val.charAt(val.length() - 1) == '"') {
+
+                                int startOffset = tokenSequence.offset() + 1;
+                                int len = val.length() - 2;
+                                String imprt = val.substring(1, len);
+                                PieceOfCode pieceOfCode = new PieceOfCode(imprt, startOffset, len);
                                 
-                                String val = tokenSequence.token().text().toString();
-
-                                if (val.length() > 2 && val.charAt(0) == '"' 
-                                        && val.charAt(val.length() - 1) == '"') {
-                                    
-                                    int startOffset = tokenSequence.offset() + 1;
-                                    int len = val.length() - 2;
-                                    String imprt = val.substring(1, len);
-                                    localImports.add(snapshot.create("import ", "text/x-java")); //NOI18N
-                                    localImports.add(snapshot.create(startOffset, len, "text/x-java")); //NOI18N
-                                    localImports.add(snapshot.create(";\n", "text/x-java")); //NOI18N
-                                    imports.add(imprt);
-                                }
+                                return pieceOfCode;
                             }
-
                         }
                     }
                 }
             }
         }
-        return imports;
+
+        return null;
     }
 
     private void processIncludedFile(String filePath, Collection<String> processedFiles) {
@@ -608,4 +619,27 @@ public class SimplifiedJspServlet {
         protected abstract void process(FileObject fileObject, Source javaEmbedding);
     }
 
+    private class PieceOfCode{
+        private String content;
+        private int startOffset;
+        private int length;
+
+        public PieceOfCode(String content, int startOffset, int length) {
+            this.content = content;
+            this.startOffset = startOffset;
+            this.length = length;
+        }
+
+        public String getContent() {
+            return content;
+        }
+
+        public int getLength() {
+            return length;
+        }
+
+        public int getStartOffset() {
+            return startOffset;
+        }
+    }
 }

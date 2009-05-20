@@ -41,6 +41,7 @@ package org.netbeans.modules.kenai.ui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.util.logging.Level;
@@ -122,6 +123,10 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
 
                         } catch (MalformedURLException ex) {
                             Exceptions.printStackTrace(ex);
+                        } catch (IOException ex) {
+                            if (Subversion.CLIENT_UNAVAILABLE_ERROR_MESSAGE.equals(ex.getMessage())) {
+                                // DO SOMETHING, svn client is unavailable
+                            }
                         }
                     }
                 });
@@ -163,6 +168,10 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
             }
         } catch (MalformedURLException malformedURLException) {
             Logger.getLogger(GetSourcesFromKenaiAction.class.getName()).log(Level.INFO, "Cannot checkout external repository " + url, malformedURLException);
+        } catch (IOException ex) {
+            if (Subversion.CLIENT_UNAVAILABLE_ERROR_MESSAGE.equals(ex.getMessage())) {
+                // DO SOMETHING, svn client is unavailable
+            }
         }
         JOptionPane.showMessageDialog(
                 WindowManager.getDefault().getMainWindow(),

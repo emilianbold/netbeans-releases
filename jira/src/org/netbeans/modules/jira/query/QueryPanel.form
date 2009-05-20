@@ -845,7 +845,7 @@
                           <Component id="webButton" linkSize="3" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="saveButton" linkSize="3" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="separatorLabel1" linkSize="3" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="separatorLabel2" alignment="3" min="-2" pref="14" max="-2" attributes="0"/>
+                          <Component id="separatorLabel2" linkSize="3" alignment="3" min="-2" pref="14" max="-2" attributes="0"/>
                       </Group>
                   </Group>
               </Group>

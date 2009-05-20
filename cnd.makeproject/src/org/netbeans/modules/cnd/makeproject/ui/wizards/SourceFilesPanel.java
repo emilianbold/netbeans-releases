@@ -47,6 +47,9 @@ import java.util.Vector;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -63,9 +66,10 @@ public class SourceFilesPanel extends javax.swing.JPanel {
     private SourceFileTable sourceFileTable = null;
     private String baseDir;
     private String wd;
+    private ChangeListener listener;
 
     /** Creates new form SourceFilesPanel */
-    public SourceFilesPanel() {
+    public SourceFilesPanel(ChangeListener listener) {
         initComponents();
         scrollPane.getViewport().setBackground(java.awt.Color.WHITE);
 
@@ -74,6 +78,24 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         deleteButton.getAccessibleContext().setAccessibleDescription(getString("DeleteButtonAD"));
         refresh();
         initFocus();
+        this.listener = listener;
+        ignoreFoldersTextField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                update();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                update();
+            }
+            public void changedUpdate(DocumentEvent e) {
+                update();
+            }
+        });
+    }
+
+    private void update(){
+        if (listener != null) {
+            listener.stateChanged(null);
+        }
     }
 
     public void setSeed(String baseDir, String wd) {

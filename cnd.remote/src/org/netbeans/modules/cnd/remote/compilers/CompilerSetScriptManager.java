@@ -46,7 +46,6 @@ import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.remote.support.RemoteConnectionSupport;
-import org.netbeans.modules.cnd.remote.support.ShellUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 
@@ -66,22 +65,13 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
         super(env);
     }
 
-//    private String substituteCommand(String script) {
-//        // The PATH stuff makes in much less likely to get a non-standard chmod...
-//        String cmd = ShellUtils.prepareExportString(new String[] {"PATH=/bin:/usr/bin:$PATH"})+ "(chmod 755 " + script + ") && " + script; // NOI18N
-//        log.finest("RemoteScriptSupport runs: " + cmd);
-//        return ShellUtils.wrapCommand(executionEnvironment, cmd);
-//    }
-
-
     private static int emulateFailure = Integer.getInteger("cnd.remote.failure", 0); // NOI18N
 
     public void runScript() {
         if (!isFailedOrCancelled()) {
             try {
-                //String cmd = "(chmod 755 " + SCRIPT + ") && " + SCRIPT;
-                String cmd = SCRIPT;
-                NativeProcessBuilder pb = new NativeProcessBuilder(executionEnvironment, cmd,false);
+                NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
+                pb.setExecutable(SCRIPT);
                 Process process = pb.call();
                 InputStream is = process.getInputStream();
                 in = new BufferedReader(new InputStreamReader(is));

@@ -55,6 +55,7 @@ import org.netbeans.modules.welcome.content.Utils;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.actions.CallableSystemAction;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -119,8 +120,7 @@ class PluginsPanel extends JPanel implements Constants {
         public void actionPerformed(ActionEvent e) {
             try {
                 ClassLoader cl = Lookup.getDefault ().lookup (ClassLoader.class);
-                Class<CallableSystemAction> clz = (Class<CallableSystemAction>)cl.loadClass("org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction");
-                CallableSystemAction a = CallableSystemAction.findObject(clz, true);
+                CallableSystemAction a = SystemAction.get(cl.loadClass("org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction").asSubclass(CallableSystemAction.class));
                 a.putValue("InitialTab", initialTab); // NOI18N
                 a.performAction ();
             } catch (Exception ex) {

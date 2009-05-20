@@ -69,7 +69,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
@@ -584,6 +586,7 @@ public class IssuePanel extends javax.swing.JPanel {
         CyclicDependencyDocumentListener cyclicDependencyListener = new CyclicDependencyDocumentListener();
         blocksField.getDocument().addDocumentListener(cyclicDependencyListener);
         dependsField.getDocument().addDocumentListener(cyclicDependencyListener);
+        addCommentArea.getDocument().addDocumentListener(new RevalidatingListener());
     }
 
     private void updateNoSummary() {
@@ -765,7 +768,20 @@ public class IssuePanel extends javax.swing.JPanel {
         dummyLabel2 = new javax.swing.JLabel();
         addCommentLabel = new javax.swing.JLabel();
         scrollPane1 = new javax.swing.JScrollPane();
-        addCommentArea = new javax.swing.JTextArea();
+        addCommentArea = new javax.swing.JTextArea() {
+            @Override
+            public Dimension getPreferredScrollableViewportSize() {
+                Dimension dim = super.getPreferredScrollableViewportSize();
+                JScrollPane scrollPane = (JScrollPane)SwingUtilities.getAncestorOfClass(JScrollPane.class, this);
+                int delta = 0;
+                if (scrollPane != null) {
+                    Component comp = scrollPane.getHorizontalScrollBar();
+                    delta = comp.isVisible() ? comp.getHeight() : 0;
+                }
+                dim = new Dimension(dim.width, delta + ((dim.height < 100) ? 100 : dim.height));
+                return dim;
+            }
+        };
         submitButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
         dummyCommentsPanel = new javax.swing.JPanel();
@@ -916,8 +932,7 @@ public class IssuePanel extends javax.swing.JPanel {
         addCommentLabel.setLabelFor(addCommentArea);
         org.openide.awt.Mnemonics.setLocalizedText(addCommentLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.addCommentLabel.text")); // NOI18N
 
-        addCommentArea.setColumns(20);
-        addCommentArea.setRows(5);
+        scrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
         scrollPane1.setViewportView(addCommentArea);
         addCommentArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.addCommentArea.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -1317,7 +1332,10 @@ public class IssuePanel extends javax.swing.JPanel {
     private class FormListener implements java.awt.event.ActionListener {
         FormListener() {}
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            if (evt.getSource() == productCombo) {
+            if (evt.getSource() == duplicateButton) {
+                IssuePanel.this.duplicateButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == productCombo) {
                 IssuePanel.this.productComboActionPerformed(evt);
             }
             else if (evt.getSource() == componentCombo) {
@@ -1367,9 +1385,6 @@ public class IssuePanel extends javax.swing.JPanel {
             }
             else if (evt.getSource() == reloadButton) {
                 IssuePanel.this.reloadButtonActionPerformed(evt);
-            }
-            else if (evt.getSource() == duplicateButton) {
-                IssuePanel.this.duplicateButtonActionPerformed(evt);
             }
         }
     }// </editor-fold>//GEN-END:initComponents
@@ -1864,6 +1879,30 @@ public class IssuePanel extends javax.swing.JPanel {
                 } catch (NumberFormatException nfex) {}
             }
             return bugs;
+        }
+    }
+
+    class RevalidatingListener implements DocumentListener, Runnable {
+        private boolean ignoreUpdate;
+
+        public void insertUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            if (ignoreUpdate) return;
+            ignoreUpdate = true;
+            EventQueue.invokeLater(this);
+        }
+
+        public void run() {
+            revalidate();
+            repaint();
+            ignoreUpdate = false;
         }
 
     }

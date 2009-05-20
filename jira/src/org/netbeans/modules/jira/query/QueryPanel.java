@@ -720,7 +720,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                         .add(separatorLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 14, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
         );
 
-        searchPanelLayout.linkSize(new java.awt.Component[] {saveButton, separatorLabel1, webButton}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        searchPanelLayout.linkSize(new java.awt.Component[] {saveButton, separatorLabel1, separatorLabel2, webButton}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         queryHeaderPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
 
@@ -1001,6 +1001,11 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         descriptionCheckBox.setEnabled(enable);
         commentsCheckBox.setEnabled(enable);
         environmentCheckBox.setEnabled(enable);
+        reloadAttributesButton.setEnabled(enable);
+        reporterComboBox.setEnabled(enable);
+        reporterTextField.setEnabled(enable);
+        assigneeComboBox.setEnabled(enable);
+        assigneeTextField.setEnabled(enable);
     }
 
     void switchQueryFields(boolean showAdvanced) {

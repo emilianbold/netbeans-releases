@@ -79,7 +79,7 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
     private final SourceRoots testRoots;
     private Sources delegate;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private SourcesHelper sourcesHelper;
+    private boolean dirty;
 
     WebSources(Project project, AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots, SourceRoots testRoots) {
         this.project = project;
@@ -90,7 +90,7 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
         this.sourceRoots.addPropertyChangeListener(this);
         this.testRoots.addPropertyChangeListener(this);
         this.evaluator.addPropertyChangeListener(this);
-        initSources(); // have to register external build roots eagerly
+        delegate = initSources(); // have to register external build roots eagerly
     }
 
     /**
@@ -105,9 +105,11 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
             public SourceGroup[] run() {
                 Sources _delegate;
                 synchronized (WebSources.this) {
-                    if (delegate == null) {
+                    if (dirty) {
+                        delegate.removeChangeListener(WebSources.this);
                         delegate = initSources();
                         delegate.addChangeListener(WebSources.this);
+                        dirty = false;
                     }
                     _delegate = delegate;
                 }
@@ -117,9 +119,9 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
     }
 
     private Sources initSources() {
-        sourcesHelper = new SourcesHelper(project, helper, evaluator);
-        register(sourceRoots);
-        register(testRoots);
+        SourcesHelper sourcesHelper = new SourcesHelper(project, helper, evaluator);
+        register(sourcesHelper, sourceRoots);
+        register(sourcesHelper, testRoots);
         
         //Web Pages
         String webModuleLabel = org.openide.util.NbBundle.getMessage(WebSources.class, "LBL_Node_WebModule"); //NOI18N
@@ -140,7 +142,7 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
         return sourcesHelper.createSources();
     }
 
-    private void register(SourceRoots roots) {
+    private void register(SourcesHelper sourcesHelper, SourceRoots roots) {
         String[] propNames = roots.getRootProperties();
         String[] rootNames = roots.getRootNames();
         for (int i = 0; i < propNames.length; i++) {
@@ -164,7 +166,7 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
 
     private void fireChange() {
         synchronized (this) {
-            delegate = null;
+            dirty = true;
         }
         changeSupport.fireChange();
     }

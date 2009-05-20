@@ -66,6 +66,8 @@ import hidden.org.codehaus.plexus.util.IOUtil;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.jdom.DefaultJDOMFactory;
 import org.jdom.Document;
@@ -73,8 +75,10 @@ import org.jdom.JDOMException;
 import org.jdom.JDOMFactory;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.MavenProjectPropsImpl;
+import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.execute.model.io.jdom.NetbeansBuildActionJDOMWriter;
@@ -84,15 +88,20 @@ import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.maven.model.profile.ProfilesModel;
 import org.netbeans.modules.maven.model.profile.ProfilesModelFactory;
+import org.netbeans.modules.maven.problems.ProblemReporterImpl;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -110,6 +119,8 @@ public class CustomizerProviderImpl implements CustomizerProvider {
 "<profilesXml xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +//NO18N
 "  xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/profiles-1.0.0.xsd\">\n" +//NO18N
 "</profilesXml>";//NO18N
+
+    private static final String BROKEN_NBACTIONS = "BROKENNBACTIONS";  //NOI18N
     
     public CustomizerProviderImpl(NbMavenProjectImpl project) {
         this.project = project;
@@ -320,7 +331,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             Utilities.saveChanges(handle.getProfileModel());
         }
         if (handle.isModified(handle.getActionMappings())) {
-            writeNbActionsModel(project.getProjectDirectory(), handle.getActionMappings(), M2Configuration.getFileNameExt(M2Configuration.DEFAULT));
+            writeNbActionsModel(project, handle.getActionMappings(), M2Configuration.getFileNameExt(M2Configuration.DEFAULT));
         }
         project.getLookup().lookup(ConfigurationProviderEnabler.class).enableConfigurations(handle.isConfigurationsEnabled());
         if (handle.isConfigurationsEnabled()) {
@@ -353,14 +364,22 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             //save action mappings for configurations..
             for (ModelHandle.Configuration c : handle.getConfigurations()) {
                 if (handle.isModified(handle.getActionMappings(c))) {
-                    writeNbActionsModel(project.getProjectDirectory(), handle.getActionMappings(c), M2Configuration.getFileNameExt(c.getId()));
+                    writeNbActionsModel(project, handle.getActionMappings(c), M2Configuration.getFileNameExt(c.getId()));
                 }
                 
             }
         }
    }
+
+    public static void writeNbActionsModel(final FileObject pomDir, final ActionToGoalMapping mapping, final String path) throws IOException {
+        writeNbActionsModel(null, pomDir, mapping, path);
+    }
+
+    public static void writeNbActionsModel(final Project project, final ActionToGoalMapping mapping, final String path) throws IOException {
+        writeNbActionsModel(project, project.getProjectDirectory(), mapping, path);
+    }
     
-   public static void writeNbActionsModel(final FileObject pomDir, final ActionToGoalMapping mapping, final String path) throws IOException {
+    private static void writeNbActionsModel(final Project project, final FileObject pomDir, final ActionToGoalMapping mapping, final String path) throws IOException {
         pomDir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
                 JDOMFactory factory = new DefaultJDOMFactory();
@@ -396,7 +415,17 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                     }
                     writer.write(mapping, doc, outStr, form);
                 } catch (JDOMException exc){
-                    throw (IOException) new IOException("Cannot parse the nbactions.xml by JDOM.").initCause(exc); //NOI18N
+                    //throw (IOException) new IOException("Cannot parse the nbactions.xml by JDOM.").initCause(exc); //NOI18N
+                    ProblemReporterImpl impl = project != null ? project.getLookup().lookup(ProblemReporterImpl.class) : null;
+                    if (impl != null && !impl.hasReportWithId(BROKEN_NBACTIONS)) {
+                        ProblemReport rep = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
+                                NbBundle.getMessage(CustomizerProviderImpl.class, "TXT_Problem_Broken_Actions"),
+                                NbBundle.getMessage(CustomizerProviderImpl.class, "DESC_Problem_Broken_Actions", exc.getMessage()),
+                                new OpenActions(pomDir.getFileObject(path)));
+                        rep.setId(BROKEN_NBACTIONS);
+                        impl.addReport(rep);
+                    }
+                    Logger.getLogger(CustomizerProviderImpl.class.getName()).log(Level.INFO, exc.getMessage(), exc);
                 } finally {
                     IOUtil.close(inStr);
                     IOUtil.close(outStr);
@@ -407,6 +436,29 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 }
             }
         });
+    }
+
+    private static class OpenActions extends AbstractAction {
+
+        private FileObject fo;
+
+        OpenActions(FileObject file) {
+            putValue(Action.NAME, NbBundle.getMessage(CustomizerProviderImpl.class, "TXT_OPEN_FILE"));
+            fo = file;
+        }
+
+
+        public void actionPerformed(ActionEvent e) {
+            if (fo != null) {
+                try {
+                    DataObject dobj = DataObject.find(fo);
+                    EditCookie edit = dobj.getCookie(EditCookie.class);
+                    edit.edit();
+                } catch (DataObjectNotFoundException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
     }
     
 }

@@ -70,6 +70,7 @@ import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.gsf.codecoverage.api.CoverageProvider;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageSummary;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.awt.Mnemonics;
@@ -316,10 +317,15 @@ final class CoverageReportTopComponent extends TopComponent {
 
     private void runAllTests(ActionEvent evt) {//GEN-FIRST:event_runAllTests
         Lookup lookup = project.getLookup();
-        ActionProvider provider = project.getLookup().lookup(ActionProvider.class);
-        if (provider != null) {
-            if (provider.isActionEnabled(ActionProvider.COMMAND_TEST, lookup)) {
-                provider.invokeAction(ActionProvider.COMMAND_TEST, lookup);
+        ActionProvider actionProvider = project.getLookup().lookup(ActionProvider.class);
+        CoverageProvider coverageProvider = CoverageManagerImpl.getProvider(project);
+        String action = ActionProvider.COMMAND_TEST;
+        if (coverageProvider != null && coverageProvider.getTestAllAction() != null) {
+            action = coverageProvider.getTestAllAction();
+        }
+        if (actionProvider != null) {
+            if (actionProvider.isActionEnabled(ActionProvider.COMMAND_TEST, lookup)) {
+                actionProvider.invokeAction(action, lookup);
             }
         }
     }//GEN-LAST:event_runAllTests

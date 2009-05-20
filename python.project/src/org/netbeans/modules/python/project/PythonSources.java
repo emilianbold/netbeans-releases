@@ -33,7 +33,7 @@ public class PythonSources implements Sources, ChangeListener, PropertyChangeLis
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
     private Sources delegate;
-    private SourcesHelper sourcesHelper;
+    private boolean dirty;
 
     public PythonSources(final Project project, final AntProjectHelper helper, final PropertyEvaluator eval,
             final SourceRoots sources, final SourceRoots tests) {
@@ -51,19 +51,19 @@ public class PythonSources implements Sources, ChangeListener, PropertyChangeLis
         this.sourceRoots.addPropertyChangeListener(this);
         this.testRoots.addPropertyChangeListener(this);        
         this.evaluator.addPropertyChangeListener(this);
-        initSources();
+        delegate = initSources();
     }
-    
-    
 
     public SourceGroup[] getSourceGroups(final String type) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<SourceGroup[]>() {
             public SourceGroup[] run() {
                 Sources _delegate;
                 synchronized (PythonSources.this) {
-                    if (delegate == null) {                    
+                    if (dirty) {
+                        delegate.removeChangeListener(PythonSources.this);
                         delegate = initSources();
                         delegate.addChangeListener(PythonSources.this);
+                        dirty = false;
                     }
                     _delegate = delegate;
                 }
@@ -74,14 +74,14 @@ public class PythonSources implements Sources, ChangeListener, PropertyChangeLis
     }    
     
     private Sources initSources() {
-        sourcesHelper = new SourcesHelper(project, helper, evaluator);   //Safe to pass APH
-        register(sourceRoots);
-        register(testRoots);
+        SourcesHelper sourcesHelper = new SourcesHelper(project, helper, evaluator);   //Safe to pass APH
+        register(sourcesHelper, sourceRoots);
+        register(sourcesHelper, testRoots);
         sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-        return this.sourcesHelper.createSources();
+        return sourcesHelper.createSources();
     }
 
-    private void register(SourceRoots roots) {
+    private void register(SourcesHelper sourcesHelper, SourceRoots roots) {
         String[] propNames = roots.getRootProperties();
         String[] rootNames = roots.getRootNames();
         for (int i = 0; i < propNames.length; i++) {
@@ -103,10 +103,7 @@ public class PythonSources implements Sources, ChangeListener, PropertyChangeLis
 
     private void fireChange() {
         synchronized (this) {
-            if (delegate != null) {
-                delegate.removeChangeListener(this);
-                delegate = null;
-            }
+            dirty = true;
         }
         changeSupport.fireChange();
     }
@@ -121,6 +118,5 @@ public class PythonSources implements Sources, ChangeListener, PropertyChangeLis
     public void stateChanged (ChangeEvent event) {
         this.fireChange();
     }
-    
 
 }

@@ -246,13 +246,14 @@ public class InstalledTableModel extends UnitCategoryTableModel {
     
     
     public int getPreferredWidth(JTableHeader header, int col) {
+        final int minWidth = super.getMinWidth(header, col);
         switch (col) {
         case 1:
-            return super.getMinWidth(header, col)*4;
+            return minWidth*5;
         case 2:
-            return super.getMinWidth(header, col)*2;
+            return minWidth*3;
         }
-        return super.getMinWidth(header, col);
+        return minWidth;
     }
     
     

@@ -105,7 +105,6 @@ public class AddExternalItemAction extends AbstractAction {
 		itemPath = IpeUtils.toRelativePath(makeProjectDescriptor.getBaseDir(), files[i].getPath());
 	    else
 		itemPath = files[i].getPath();
-	    itemPath = FilePathAdaptor.mapToRemote(itemPath);
 	    itemPath = FilePathAdaptor.normalize(itemPath);
             Item item = makeProjectDescriptor.getExternalItemFolder().findItemByPath(itemPath);
 	    if (item != null) {

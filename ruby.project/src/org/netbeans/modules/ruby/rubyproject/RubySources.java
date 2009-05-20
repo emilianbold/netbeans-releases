@@ -72,7 +72,7 @@ public class RubySources implements Sources, PropertyChangeListener, ChangeListe
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
-    private SourcesHelper sourcesHelper;
+    private boolean dirty;
     private Sources delegate;
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
 
@@ -86,7 +86,7 @@ public class RubySources implements Sources, PropertyChangeListener, ChangeListe
         this.sourceRoots.addPropertyChangeListener(this);
         this.testRoots.addPropertyChangeListener(this);        
         this.evaluator.addPropertyChangeListener(this);
-        initSources(); // have to register external build roots eagerly
+        delegate = initSources(); // have to register external build roots eagerly
     }
 
     /**
@@ -101,9 +101,11 @@ public class RubySources implements Sources, PropertyChangeListener, ChangeListe
             public SourceGroup[] run() {
                 Sources _delegate;
                 synchronized (RubySources.this) {
-                    if (delegate == null) {                    
+                    if (dirty) {
+                        delegate.removeChangeListener(RubySources.this);
                         delegate = initSources();
                         delegate.addChangeListener(RubySources.this);
+                        dirty = false;
                     }
                     _delegate = delegate;
                 }
@@ -113,15 +115,15 @@ public class RubySources implements Sources, PropertyChangeListener, ChangeListe
     }
 
     private Sources initSources() {        
-        sourcesHelper = new SourcesHelper(project, helper, evaluator);   //Safe to pass APH
+        SourcesHelper sourcesHelper = new SourcesHelper(project, helper, evaluator);   //Safe to pass APH
         String[] propNames = sourceRoots.getRootProperties();
         String[] rootNames = sourceRoots.getRootNames();
         for (int i = 0; i < propNames.length; i++) {
             String displayName = rootNames[i];
             displayName = sourceRoots.getRootDisplayName(displayName, propNames[i]);
             String prop = "${" + propNames[i] + "}";            
-            this.sourcesHelper.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
-            this.sourcesHelper.addTypedSourceRoot(prop,  RubyProject.SOURCES_TYPE_RUBY, displayName, /*XXX*/null, null);
+            sourcesHelper.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
+            sourcesHelper.addTypedSourceRoot(prop,  RubyProject.SOURCES_TYPE_RUBY, displayName, /*XXX*/null, null);
         }
         propNames = testRoots.getRootProperties();
         rootNames = testRoots.getRootNames();
@@ -129,13 +131,13 @@ public class RubySources implements Sources, PropertyChangeListener, ChangeListe
             String displayName = rootNames[i];            
             displayName = testRoots.getRootDisplayName(displayName, propNames[i]);
             String prop = "${" + propNames[i] + "}";
-            this.sourcesHelper.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
-            this.sourcesHelper.addTypedSourceRoot(prop,  RubyProject.SOURCES_TYPE_RUBY, displayName, /*XXX*/null, null);
+            sourcesHelper.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
+            sourcesHelper.addTypedSourceRoot(prop,  RubyProject.SOURCES_TYPE_RUBY, displayName, /*XXX*/null, null);
         }        
-        this.sourcesHelper.addNonSourceRoot (BUILD_DIR_PROP);
-        this.sourcesHelper.addNonSourceRoot(DIST_DIR_PROP);
+        sourcesHelper.addNonSourceRoot (BUILD_DIR_PROP);
+        sourcesHelper.addNonSourceRoot(DIST_DIR_PROP);
         sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-        return this.sourcesHelper.createSources();
+        return sourcesHelper.createSources();
     }
 
     public void addChangeListener(ChangeListener changeListener) {
@@ -153,10 +155,7 @@ public class RubySources implements Sources, PropertyChangeListener, ChangeListe
     private void fireChange() {
         ChangeListener[] _listeners;
         synchronized (this) {
-            if (delegate != null) {
-                delegate.removeChangeListener(this);
-                delegate = null;
-            }
+            dirty = true;
         }
         synchronized (listeners) {
             if (listeners.isEmpty()) {

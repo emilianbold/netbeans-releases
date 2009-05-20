@@ -64,6 +64,9 @@ public class BugzillaConfig {
     private static final String ISSUE_REFRESH_INT   = "bugzilla.issue_refresh";         // NOI18N
     private static final String DELIMITER           = "<=>";                            // NOI18N
 
+    public static final int DEFAULT_QUERY_REFRESH = 30;
+    public static final int DEFAULT_ISSUE_REFRESH = 15;
+
     private BugzillaConfig() { }
 
     public static BugzillaConfig getInstance() {
@@ -90,11 +93,11 @@ public class BugzillaConfig {
     }
 
     public int getQueryRefreshInterval() {
-        return getPreferences().getInt(QUERY_REFRESH_INT, 30);
+        return getPreferences().getInt(QUERY_REFRESH_INT, DEFAULT_QUERY_REFRESH);
     }
 
     public int getIssueRefreshInterval() {
-        return getPreferences().getInt(ISSUE_REFRESH_INT, 15);
+        return getPreferences().getInt(ISSUE_REFRESH_INT, DEFAULT_ISSUE_REFRESH);
     }
 
     public boolean getQueryAutoRefresh(String queryName) {

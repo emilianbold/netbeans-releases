@@ -108,7 +108,7 @@ public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilt
         synchronized (this) {
             expandedExplicitely.add(node);
         }
-        nodeExpanded(node);
+        //nodeExpanded(node);
         fireNodeExpanded(node);
         
     }

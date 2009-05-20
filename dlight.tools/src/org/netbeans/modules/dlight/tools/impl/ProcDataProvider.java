@@ -227,7 +227,8 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
             return;
         }
 
-        NativeProcessBuilder npb = new NativeProcessBuilder(env, hostInfo.getShell(),false);
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+        npb.setExecutable(hostInfo.getShell());
         ExecutionDescriptor descr = new ExecutionDescriptor();
         descr = descr.inputOutput(InputOutput.NULL);
         int pid = ((AttachableTarget) target).getPID();

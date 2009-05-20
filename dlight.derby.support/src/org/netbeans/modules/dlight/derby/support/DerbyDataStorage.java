@@ -86,7 +86,7 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
             HostInfo hi = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
             tempDir = hi.getTempDir();
             if (hi.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
-                tempDir = WindowsSupport.getInstance().convertoToWindowsPath(tempDir);
+                tempDir = WindowsSupport.getInstance().convertToWindowsPath(tempDir);
             }
         } catch (IOException ex) {
         } catch (CancellationException ex) {

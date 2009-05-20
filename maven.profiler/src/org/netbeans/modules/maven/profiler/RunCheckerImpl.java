@@ -80,7 +80,7 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
     public boolean checkRunConfig(RunConfig config, ExecutionContext context) {
         Properties configProperties = config.getProperties();
 
-        if (ACTION_PROFILE.equals(config.getActionName()) || ACTION_PROFILE_SINGLE.equals(config.getActionName()) || ACTION_PROFILE_TESTS.equals(config.getActionName())) { // action "profile"
+        if (ACTION_PROFILE.equals(config.getActionName()) || config.getActionName().startsWith(ACTION_PROFILE_SINGLE) || ACTION_PROFILE_TESTS.equals(config.getActionName())) { // action "profile"
             // Get the ProjectTypeProfiler for Maven project
             final ProjectTypeProfiler ptp = ProjectUtilities.getProjectTypeProfiler(project);
             if (!(ptp instanceof MavenProjectTypeProfiler)) return false;

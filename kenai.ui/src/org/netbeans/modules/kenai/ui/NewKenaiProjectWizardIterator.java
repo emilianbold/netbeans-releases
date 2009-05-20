@@ -222,27 +222,29 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                     if (passwdAuth != null) {
                         final File localFile = new File(newPrjScmLocal);
                         if (KenaiService.Names.SUBVERSION.equals(featureService)) {
-                            if (isShareExistingFolder) {
-                                String initialRevision = NbBundle.getMessage(NewKenaiProjectWizardIterator.class, "NewKenaiProject.initialRevision", newPrjTitle);
-                                String dirName = activeNode.getLookup().lookup(Project.class).getProjectDirectory().getName();
+                            try {
+                                if (isShareExistingFolder) {
+                                    String initialRevision = NbBundle.getMessage(NewKenaiProjectWizardIterator.class, "NewKenaiProject.initialRevision", newPrjTitle);
+                                    String dirName = activeNode.getLookup().lookup(Project.class).getProjectDirectory().getName();
                                     final String remoteDir = scmLoc.concat("/" + dirName); // NOI18N
-                                try {
-                                    Subversion.mkdir(remoteDir,passwdAuth.getUserName(), new String(passwdAuth.getPassword()), initialRevision);
-                                } catch (IOException io) {
-                                    Exceptions.printStackTrace(io);
+                                    Subversion.mkdir(remoteDir, passwdAuth.getUserName(), new String(passwdAuth.getPassword()), initialRevision);
+                                    Subversion.checkoutRepositoryFolder(remoteDir, new String[]{"."}, localFile, // NOI18N
+                                            passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true, false);
+                                    if (autoCommit) {
+                                        handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
+                                                "NewKenaiProject.progress.repositoryCommit"), 5);
+                                        Subversion.commit(new File[]{localFile}, passwdAuth.getUserName(), new String(passwdAuth.getPassword()), initialRevision);
+                                    }
+                                } else {
+                                    Subversion.checkoutRepositoryFolder(scmLoc, new String[]{"."}, localFile, // NOI18N
+                                            passwdAuth.getUserName(), new String(passwdAuth.getPassword()), false);
                                 }
-                                Subversion.checkoutRepositoryFolder(remoteDir, new String[]{"."},localFile, // NOI18N
-                                        passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true, false);
-                                if (autoCommit) {
-                                    handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
-                                    "NewKenaiProject.progress.repositoryCommit"),5);
-                                    Subversion.commit(new File[]{localFile}, passwdAuth.getUserName(), new String(passwdAuth.getPassword()), initialRevision);
+                            } catch (IOException io) {
+                                if (Subversion.CLIENT_UNAVAILABLE_ERROR_MESSAGE.equals(io.getMessage())) {
+                                    // DO SOMETHING, svn client is unavailable
                                 }
-                            } else {
-                                Subversion.checkoutRepositoryFolder(scmLoc, new String[]{"."},localFile, // NOI18N
-                                        passwdAuth.getUserName(), new String(passwdAuth.getPassword()), false);
+                                throw io;
                             }
-
                         } else if (KenaiService.Names.MERCURIAL.equals(featureService)) {
 
                             Mercurial.cloneRepository(scmLoc,localFile, "", "", "", // NOI18N

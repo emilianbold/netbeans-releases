@@ -133,6 +133,7 @@ public class Generate {
         ReferenceTypeExceptions.put("methodsByName", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));
         ReferenceTypeExceptions.put("allLineLocations", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));
         ReferenceTypeExceptions.put("locationsOfLine", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));
+        ReferenceTypeExceptions.put("classObject", Collections.singleton((Class) java.lang.UnsupportedOperationException.class));
         EXCEPTIONS_BY_METHODS.put(com.sun.jdi.ReferenceType.class.getName(), ReferenceTypeExceptions);
         Map<String, Set<Class>> ClassTypeExceptions = new LinkedHashMap<String, Set<Class>>();
         ClassTypeExceptions.put("interfaces", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));

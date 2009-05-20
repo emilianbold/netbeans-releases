@@ -101,7 +101,7 @@ public class DatabaseConnectionSupport {
             return null;
         }
         Project project = getProject(doc);
-        String name = getProjectPreferences(project).get(PROP_DBCONN, null);
+        String name = project != null ? getProjectPreferences(project).get(PROP_DBCONN, null) : null;
         return getDatabaseConnection(name, reconnect);
     }
 

@@ -71,10 +71,12 @@ public class BugzillaQuery extends Query {
     private final Set<String> issues = new HashSet<String>();
     private Set<String> archivedIssues = new HashSet<String>();
 
+    // XXX its not clear how the urlParam is used between query and controller
     protected String urlParameters;
     private boolean initialUrlDef;
     
     private boolean firstRun = true;
+    private ColumnDescriptor[] columnDescriptors;
 
     public BugzillaQuery(BugzillaRepository repository) {
         this(null, repository, null, false, -1, false);
@@ -133,7 +135,10 @@ public class BugzillaQuery extends Query {
 
     @Override
     public ColumnDescriptor[] getColumnDescriptors() {
-        return BugzillaIssue.getColumnDescriptors();
+        if(columnDescriptors == null) {
+            columnDescriptors = BugzillaIssue.getColumnDescriptors(repository);
+        }
+        return columnDescriptors;
     }
 
     @Override

@@ -40,7 +40,6 @@ package org.netbeans.modules.dlight.core.stack.dataprovider.impl;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
@@ -114,22 +113,13 @@ final class StackDataProviderImpl implements StackDataProvider {
 
     public SourceFileInfo getSourceFileInfo(FunctionCall functionCall) {
         //we should get here SourceFileInfoProvider
-        Collection<? extends SourceFileInfoProvider> sourceInforFileProviders =
+        Collection<? extends SourceFileInfoProvider> sourceInfoProviders =
                 Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
 
-        if (sourceInforFileProviders.isEmpty()) {
-            return null;
-        }
-        Iterator<? extends SourceFileInfoProvider> iterator = sourceInforFileProviders.iterator();
-        while (iterator.hasNext()) {
-            SourceFileInfoProvider provider = iterator.next();
-            try {
-                // TODO: pass meaningful values for offset and executable
-                final SourceFileInfo lineInfo = provider.fileName(functionCall.getFunction().getName(), functionCall.getOffset(), serviceInfoDataStorage.getInfo());
-                if (lineInfo != null && lineInfo.isSourceKnown()) {
-                    return lineInfo;
-                }
-            } catch (SourceFileInfoProvider.SourceFileInfoCannotBeProvided e) {
+        for (SourceFileInfoProvider provider : sourceInfoProviders) {
+            final SourceFileInfo sourceInfo = provider.fileName(functionCall.getFunction().getName(), functionCall.getOffset(), serviceInfoDataStorage.getInfo());
+            if (sourceInfo != null && sourceInfo.isSourceKnown()) {
+                return sourceInfo;
             }
         }
         return null;

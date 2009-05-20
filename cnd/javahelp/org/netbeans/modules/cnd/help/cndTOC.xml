@@ -26,6 +26,7 @@
 			<tocitem text="Configuring C and C++ Semantic Highlighting" target="ConfiguringSemanticHighlighting" />
 			<tocitem text="Configuring C and C++ File Extensions" target="ConfiguringFileExtensions" />
 			<tocitem text="Configuring Code Assistance" target="CodeAssistance" />
+			<tocitem text="Profiling C and C++ Projects" target="ProfilingCorC++Projects" />
 			<tocitem text="Deleting a C or C++ Project" target="DeletingCorC++Project" />
 			<tocitem text="Moving, Copying, or Renaming a C or C++ Project" target="MovingCorC++Project" />
 			<tocitem text="Creating a Makefile" target="CreatingMakefile" />

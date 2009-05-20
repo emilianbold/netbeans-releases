@@ -134,9 +134,9 @@ public class GdbProxyEngine {
     
     private void startDebugger(List<String> debuggerCommand, String workingDirectory, String cspath) throws IOException {
         ExecutionEnvironment execEnv = debugger.getHostExecutionEnvironment();
-        NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, debuggerCommand.get(0),false);
         String[] args = debuggerCommand.subList(1, debuggerCommand.size()).toArray(new String[debuggerCommand.size()-1]);
-        npb = npb.setArguments(args);
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+        npb.setExecutable(debuggerCommand.get(0)).setArguments(args);
 
         if (execEnv.isLocal()) {
             String pathname = Path.getPathName();

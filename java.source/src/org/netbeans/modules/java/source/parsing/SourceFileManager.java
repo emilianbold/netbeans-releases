@@ -48,6 +48,8 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileManager.Location;
 import javax.tools.JavaFileObject;
@@ -65,6 +67,7 @@ public class SourceFileManager implements JavaFileManager {
     
     private final ClassPath sourceRoots;
     private final boolean ignoreExcludes;
+    private static Logger log = Logger.getLogger(SourceFileManager.class.getName());
     
     /** Creates a new instance of SourceFileManager */
     public SourceFileManager (final ClassPath sourceRoots, final boolean ignoreExcludes) {
@@ -223,7 +226,8 @@ public class SourceFileManager implements JavaFileManager {
                 return result;
             }
         } catch (MalformedURLException e) {
-            ErrorManager.getDefault().notify(e);
+            if (log.isLoggable(Level.SEVERE))
+                log.log(Level.SEVERE, e.getMessage(), e);
         }        
         return null;
     }

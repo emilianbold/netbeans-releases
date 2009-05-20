@@ -81,10 +81,8 @@ public class DirectoryChooserInnerPanel extends ListEditorPanel<String> {
             return null;
         }
         String itemPath = fileChooser.getSelectedFile().getPath();
-        itemPath = FilePathAdaptor.mapToRemote(itemPath);
         itemPath = FilePathAdaptor.naturalize(itemPath);
         String bd = baseDir;
-        bd = FilePathAdaptor.mapToRemote(bd);
         bd = FilePathAdaptor.naturalize(bd);
         itemPath = IpeUtils.toRelativePath(bd, itemPath);
 //        if (pathPanel != null && pathPanel.getMode() == PathPanel.REL_OR_ABS) {

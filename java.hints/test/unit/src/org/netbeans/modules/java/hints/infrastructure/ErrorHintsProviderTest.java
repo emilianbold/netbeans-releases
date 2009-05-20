@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,12 +41,13 @@
 
 package org.netbeans.modules.java.hints.infrastructure;
 
-import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import javax.swing.text.Document;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -54,12 +55,13 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.TestUtil;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 
 /**
@@ -84,7 +86,8 @@ public class ErrorHintsProviderTest extends NbTestCase {
     
     private static File cache;
     private static FileObject cacheFO;
-    
+
+    @Override
     protected void setUp() throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml"}, new Object[0]);
         
@@ -94,10 +97,16 @@ public class ErrorHintsProviderTest extends NbTestCase {
             
             cache.deleteOnExit();
         }
+
+        RepositoryUpdater.getDefault().start(true);
+        ClassPath empty = ClassPathSupport.createClassPath(new FileObject[0]);
+        JavaSource.create(ClasspathInfo.create(empty, empty, empty)).runWhenScanFinished(new Task<CompilationController>() {
+            public void run(CompilationController parameter) throws Exception {}
+        }, true).get();
     }
     
     private void prepareTest(String capitalizedName) throws Exception {
-        FileObject workFO = makeScratchDir(this);
+        FileObject workFO = SourceUtilsTestUtil.makeScratchDir(this);
         
         assertNotNull(workFO);
         
@@ -129,6 +138,8 @@ public class ErrorHintsProviderTest extends NbTestCase {
         TestUtil.copyFiles(getDataDir(), FileUtil.toFile(sourceRoot), files);
         
         packageRoot.refresh();
+
+        SourceUtilsTestUtil.compileRecursively(sourceRoot);
         
         testSource = packageRoot.getFileObject(capitalizedName + ".java");
         
@@ -143,37 +154,11 @@ public class ErrorHintsProviderTest extends NbTestCase {
         assertNotNull(info);
     }
     
-    /**Copied from org.netbeans.api.project.
-     * Create a scratch directory for tests.
-     * Will be in /tmp or whatever, and will be empty.
-     * If you just need a java.io.File use clearWorkDir + getWorkDir.
-     */
-    public static FileObject makeScratchDir(NbTestCase test) throws IOException {
-        test.clearWorkDir();
-        File root = test.getWorkDir();
-        assert root.isDirectory() && root.list().length == 0;
-        FileObject fo = FileUtil.toFileObject(root);
-        if (fo != null) {
-            // Presumably using masterfs.
-            return fo;
-        } else {
-            // For the benefit of those not using masterfs.
-            LocalFileSystem lfs = new LocalFileSystem();
-            try {
-                lfs.setRootDirectory(root);
-            } catch (PropertyVetoException e) {
-                assert false : e;
-            }
-            Repository.getDefault().addFileSystem(lfs);
-            return lfs.getRoot();
-        }
-    }
-    
     private void performTest(String name) throws Exception {
         prepareTest(name);
         
         DataObject testData = DataObject.find(testSource);
-        EditorCookie ec = testData.getCookie(EditorCookie.class);
+        EditorCookie ec = testData.getLookup().lookup(EditorCookie.class);
         Document doc = ec.openDocument();
         
         doc.putProperty(Language.class, JavaTokenId.language());

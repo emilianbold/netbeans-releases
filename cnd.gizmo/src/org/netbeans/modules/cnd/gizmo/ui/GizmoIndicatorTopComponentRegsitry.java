@@ -61,6 +61,7 @@ final class GizmoIndicatorTopComponentRegsitry implements PropertyChangeListener
     //private List<PropertyChangeListener> propertyChangeListeners = new ArrayList<PropertyChangeListener>();
     private PropertyChangeSupport pcs;
     private Reference<GizmoIndicatorsTopComponent> active = new WeakReference<GizmoIndicatorsTopComponent>(null);
+    private Reference<TopComponent> lastNonIndicatorActive = new WeakReference<TopComponent>(null);
     private final Set<GizmoIndicatorsTopComponent> opened;
 
     private GizmoIndicatorTopComponentRegsitry() {
@@ -113,6 +114,9 @@ final class GizmoIndicatorTopComponentRegsitry implements PropertyChangeListener
                 setActive((GizmoIndicatorsTopComponent) tc);
                 firePropertyChangeEvent(new PropertyChangeEvent(evt.getSource(), PROP_DLIGHT_TC_ACTIVATED, evt.getOldValue(), evt.getNewValue()));
             }
+            if (tc != null && !(tc instanceof GizmoIndicatorsTopComponent)){
+                setActiveNonIndicators(tc);
+            }
         } else if (TopComponent.Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
             if (evt.getNewValue() instanceof GizmoIndicatorsTopComponent) {
                 GizmoIndicatorsTopComponent tc = (GizmoIndicatorsTopComponent) evt.getNewValue();
@@ -122,6 +126,8 @@ final class GizmoIndicatorTopComponentRegsitry implements PropertyChangeListener
                 }
                 //check if closed component was active
                 firePropertyChangeEvent(new PropertyChangeEvent(evt.getSource(), PROP_DLIGHT_TC_CLOSED, evt.getOldValue(), evt.getNewValue()));
+            }else {
+                setActiveNonIndicators(null);
             }
         } else if (TopComponent.Registry.PROP_TC_OPENED.equals(evt.getPropertyName())) {
             TopComponent tc = (TopComponent) evt.getNewValue();
@@ -131,10 +137,20 @@ final class GizmoIndicatorTopComponentRegsitry implements PropertyChangeListener
                 setActive((GizmoIndicatorsTopComponent) tc);
                 firePropertyChangeEvent(new PropertyChangeEvent(evt.getSource(), PROP_DLIGHT_TC_ACTIVATED, evt.getOldValue(), evt.getNewValue()));
             //firePropertyChangeEvent(new PropertyChangeEvent(evt.getSource(), PROP_DLIGHT_TC_OPENED, evt.getOldValue(), evt.getNewValue()));
+            }else{
+                setActiveNonIndicators(tc);
             }
         } else if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(evt.getPropertyName())) {
         }
     //throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    private synchronized  void setActiveNonIndicators(TopComponent tc){
+            lastNonIndicatorActive = new WeakReference<TopComponent>(tc);
+    }
+
+    TopComponent getActivatedNonIndicators(){
+        return lastNonIndicatorActive.get();
     }
 
     private synchronized void setActive(GizmoIndicatorsTopComponent tc) {

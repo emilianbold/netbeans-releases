@@ -160,6 +160,10 @@ public final class PhpCoverageProvider implements CoverageProvider {
         return result;
     }
 
+    public String getTestAllAction() {
+        return null;
+    }
+
     private CoverageVO getCoverage() {
         CoverageVO cov = null;
         synchronized (lock) {

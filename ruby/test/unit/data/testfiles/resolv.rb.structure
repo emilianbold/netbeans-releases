@@ -24,9 +24,9 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
     EncodeError:CLASS:[]:ESCAPED{EncodeError}:
     Label:MODULE:[]:ESCAPED{Label}:
       Str:CLASS:[]:ESCAPED{Str}:
-        ==:METHOD:[PUBLIC]:ESCAPED{==}(PARAMETERS{ESCAPED{other}}):
+        ==:METHOD:[PUBLIC]:ESCAPED{==}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
         downcase:ATTRIBUTE:[]:ESCAPED{downcase}:
-        eql?:METHOD:[PUBLIC]:ESCAPED{eql?}(PARAMETERS{ESCAPED{other}}):
+        eql?:METHOD:[PUBLIC]:ESCAPED{eql?}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
         hash:METHOD:[PUBLIC]:ESCAPED{hash}:
         initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{string}}):
         inspect:METHOD:[PUBLIC]:ESCAPED{inspect}<font color='#777777'> : ESCAPED{String}</font>:
@@ -77,7 +77,7 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
       each_authority:METHOD:[PUBLIC]:ESCAPED{each_authority}<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
       each_question:METHOD:[PUBLIC]:ESCAPED{each_question}<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
       each_resource:METHOD:[PUBLIC]:ESCAPED{each_resource}:
-      encode:METHOD:[PUBLIC]:ESCAPED{encode}:
+      encode:METHOD:[PUBLIC]:ESCAPED{encode}<font color='#777777'> : ESCAPED{String}</font>:
       id:ATTRIBUTE:[]:ESCAPED{id}:
       identifier:FIELD:[STATIC]:ESCAPED{identifier}:
       initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{id}}):
@@ -99,7 +99,7 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
       inspect:METHOD:[PUBLIC]:ESCAPED{inspect}<font color='#777777'> : ESCAPED{String}</font>:
       labels:FIELD:[]:ESCAPED{labels}:
       length:METHOD:[PUBLIC]:ESCAPED{length}<font color='#777777'> : ESCAPED{Integer}</font>:
-      subdomain_of?:METHOD:[PUBLIC]:ESCAPED{subdomain_of?}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{FalseClass}</font>:
+      subdomain_of?:METHOD:[PUBLIC]:ESCAPED{subdomain_of?}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{FalseClass, TrueClass}</font>:
       to_a:METHOD:[PUBLIC]:ESCAPED{to_a}<font color='#777777'> : ESCAPED{Array}</font>:
       to_s:METHOD:[PUBLIC]:ESCAPED{to_s}<font color='#777777'> : ESCAPED{String}</font>:
     OpCode:MODULE:[]:ESCAPED{OpCode}:
@@ -279,7 +279,7 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
         strings:ATTRIBUTE:[]:ESCAPED{strings}:
       decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}}):
       encode_rdata:METHOD:[PUBLIC]:ESCAPED{encode_rdata}(PARAMETERS{ESCAPED{msg}}):
-      eql?:METHOD:[PUBLIC]:ESCAPED{eql?}(PARAMETERS{ESCAPED{other}}):
+      eql?:METHOD:[PUBLIC]:ESCAPED{eql?}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
       get_class:METHOD:[PUBLIC, STATIC]:ESCAPED{get_class}(PARAMETERS{ESCAPED{type_value}, ESCAPED{class_value}}):
       hash:METHOD:[PUBLIC]:ESCAPED{hash}<font color='#777777'> : ESCAPED{Integer}</font>:
     UDPSize:CONSTANT:[]:ESCAPED{UDPSize}<font color='#777777'> : ESCAPED{Fixnum}</font>:
@@ -301,7 +301,7 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
     mutex:FIELD:[]:ESCAPED{mutex}:
     open:METHOD:[PUBLIC, STATIC]:ESCAPED{open}(PARAMETERS{ESCAPED{*args}}):
     requester:FIELD:[]:ESCAPED{requester}:
-  DefaultResolver:CONSTANT:[]:ESCAPED{DefaultResolver}<font color='#777777'> : ESCAPED{self}</font>:
+  DefaultResolver:CONSTANT:[]:ESCAPED{DefaultResolver}:
   Hosts:CLASS:[]:ESCAPED{Hosts}:
     DefaultFileName:CONSTANT:[]:ESCAPED{DefaultFileName}:
     DefaultFileName:CONSTANT:[]:ESCAPED{DefaultFileName}<font color='#777777'> : ESCAPED{String}</font>:
@@ -323,7 +323,7 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
     Regex:CONSTANT:[]:ESCAPED{Regex}<font color='#777777'> : ESCAPED{Regexp}</font>:
     address:ATTRIBUTE:[]:ESCAPED{address}:
     create:METHOD:[PUBLIC, STATIC]:ESCAPED{create}(PARAMETERS{ESCAPED{arg}}):
-    eql?:METHOD:[PUBLIC]:ESCAPED{eql?}(PARAMETERS{ESCAPED{other}}):
+    eql?:METHOD:[PUBLIC]:ESCAPED{eql?}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
     hash:METHOD:[PUBLIC]:ESCAPED{hash}<font color='#777777'> : ESCAPED{Fixnum}</font>:
     initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{address}}):
     inspect:METHOD:[PUBLIC]:ESCAPED{inspect}<font color='#777777'> : ESCAPED{String}</font>:
@@ -338,7 +338,7 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
     Regex_CompressedHex4Dec:CONSTANT:[]:ESCAPED{Regex_CompressedHex4Dec}<font color='#777777'> : ESCAPED{Regexp}</font>:
     address:ATTRIBUTE:[]:ESCAPED{address}:
     create:METHOD:[PUBLIC, STATIC]:ESCAPED{create}(PARAMETERS{ESCAPED{arg}}):
-    eql?:METHOD:[PUBLIC]:ESCAPED{eql?}(PARAMETERS{ESCAPED{other}}):
+    eql?:METHOD:[PUBLIC]:ESCAPED{eql?}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
     hash:METHOD:[PUBLIC]:ESCAPED{hash}<font color='#777777'> : ESCAPED{Fixnum}</font>:
     initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{address}}):
     inspect:METHOD:[PUBLIC]:ESCAPED{inspect}<font color='#777777'> : ESCAPED{String}</font>:

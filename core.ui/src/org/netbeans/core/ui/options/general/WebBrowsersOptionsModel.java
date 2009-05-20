@@ -154,7 +154,11 @@ public class WebBrowsersOptionsModel extends DefaultListModel {
         }
         return retVal;
     }
-    
+
+    public boolean isDefaultBrowser(int index) {
+        return index2desc.get(index).isDefaultBrowser();
+    }
+
     public void setBrowserName(int index, String name) {
         index2desc.get(index).setNewName(name);
     }
@@ -283,7 +287,16 @@ public class WebBrowsersOptionsModel extends DefaultListModel {
         public void setNewName(String name) {
             newName = name;
         }
-        
+
+        /** Returns true if browser is default, i.e. not added by user. We use
+         * the fact that default browsers are defined in layers in extbrowser
+         * module and have SystemFileSystem.icon attribute set.
+         * @return true if default browser, false otherwise
+         */
+        public boolean isDefaultBrowser() {
+            return browserSettings.getPrimaryFile().getAttribute("SystemFileSystem.icon") != null;  //NOI18N
+        }
+
         public void setChangeStatus(ChangeStatus stat) {
             changeStatus = stat;
         }

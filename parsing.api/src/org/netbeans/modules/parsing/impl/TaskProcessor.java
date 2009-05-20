@@ -889,10 +889,10 @@ public class TaskProcessor {
         boolean setCurrentTask (Request reference) throws InterruptedException {
             boolean result = false;
             assert !parserLock.isHeldByCurrentThread();
-            assert reference == null || reference.cache == null || !Thread.holdsLock(reference.cache.getSnapshot().getSource());
+            assert reference == null || reference.cache == null || !Thread.holdsLock(INTERNAL_LOCK);
             synchronized (CRR_LOCK) {
                 while (this.canceledReference!=null) {
-                    assert canceledReference.cache == null || !Thread.holdsLock(canceledReference.cache.getSnapshot().getSource());
+                    assert canceledReference.cache == null || !Thread.holdsLock(INTERNAL_LOCK);
                     CRR_LOCK.wait();
                 }
                 result = this.canceled;

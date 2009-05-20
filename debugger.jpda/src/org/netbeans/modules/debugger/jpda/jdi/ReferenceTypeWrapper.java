@@ -205,7 +205,7 @@ public final class ReferenceTypeWrapper {
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    public static com.sun.jdi.ClassObjectReference classObject(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static com.sun.jdi.ClassObjectReference classObject(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper {
         try {
             return a.classObject();
         } catch (com.sun.jdi.InternalException ex) {
@@ -213,6 +213,8 @@ public final class ReferenceTypeWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (java.lang.UnsupportedOperationException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper(ex);
         }
     }
 

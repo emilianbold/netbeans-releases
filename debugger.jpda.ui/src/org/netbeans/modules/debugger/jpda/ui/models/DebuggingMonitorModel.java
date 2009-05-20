@@ -391,7 +391,7 @@ NodeActionsProviderFilter, TableModel, Constants {
     
     public String getShortDescription (final NodeModel model, final Object o) throws 
     UnknownTypeException {
-        
+
         synchronized (shortDescriptionMap) {
             Object shortDescription = shortDescriptionMap.remove(o);
             if (shortDescription instanceof String) {

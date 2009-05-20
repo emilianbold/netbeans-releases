@@ -196,7 +196,10 @@ public class Utilities {
             }
             ExecutableElement iteratorMethod = (ExecutableElement) iterableElement.getEnclosedElements().get(0);
             ExecutableType iteratorMethodType = (ExecutableType) info.getTypes().asMemberOf(declaredType, iteratorMethod);
-            designedType = ((DeclaredType) iteratorMethodType.getReturnType()).getTypeArguments().get(0);
+            List<? extends TypeMirror> typeArguments = ((DeclaredType) iteratorMethodType.getReturnType()).getTypeArguments();
+            if (!typeArguments.isEmpty()) {
+                designedType = typeArguments.get(0);
+            }
         } else if (iterableType.getKind() == TypeKind.ARRAY) {
             designedType = ((ArrayType) iterableType).getComponentType();
         }

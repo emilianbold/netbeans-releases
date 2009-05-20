@@ -48,7 +48,16 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.nio.charset.Charset;
+import java.text.DateFormat;
+import java.util.logging.Level;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputWriter;
 
 /**
  * Applies contextual patches to files. The patch file can contain patches for multiple files. 
@@ -93,7 +102,7 @@ public final class ContextualPatch {
      * @throws PatchException
      * @throws IOException
      */
-    public List<PatchReport> patch(boolean dryRun) throws PatchException, IOException {
+    public void patch(boolean dryRun) throws PatchException, IOException {
         List<PatchReport> report = new ArrayList<PatchReport>();
         init();
         try {
@@ -113,7 +122,8 @@ public final class ContextualPatch {
                     report.add(new PatchReport(patch.targetFile, null, patch.binary, PatchStatus.Failure, e));
                 }
             }
-            return report;
+            displayPatchReport(report);
+
         } finally {
             if (patchReader != null) try { patchReader.close(); } catch (IOException e) {}
         }
@@ -734,4 +744,137 @@ public final class ContextualPatch {
             return failure;
         }
     }
+
+    private void displayPatchReport(List<ContextualPatch.PatchReport> report) {
+
+        List<ContextualPatch.PatchReport> successful = new ArrayList<ContextualPatch.PatchReport>();
+        List<ContextualPatch.PatchReport> failed = new ArrayList<ContextualPatch.PatchReport>();
+
+        for (ContextualPatch.PatchReport patchReport : report) {
+            switch (patchReport.getStatus()) {
+            case Patched:
+                successful.add(patchReport);
+                break;
+            case Failure:
+            case Missing:
+                failed.add(patchReport);
+                break;
+            }
+        }
+
+        InputOutput log = IOProvider.getDefault().getIO("Patch Report", false);
+        OutputWriter ow = log.getOut();
+
+        try {
+            ow.print(DateFormat.getDateTimeInstance().format(new Date()));
+            ow.println("  ===========================================================================");
+
+            ow.println("--- Successfully Patched ---");
+            if (successful.size() > 0) {
+                for (ContextualPatch.PatchReport patchReport : successful) {
+                    ow.println(patchReport.getFile().getAbsolutePath());
+                }
+            } else {
+                ow.println("<none>");
+            }
+
+            ow.println("--- Failed ---");
+            if (failed.size() > 0) {
+                for (ContextualPatch.PatchReport patchReport : failed) {
+                    ow.print(patchReport.getFile().getAbsolutePath());
+                    ow.print(" (");
+                    ow.print(patchReport.getFailure().getLocalizedMessage());
+                    ow.println(" )");
+                }
+            } else {
+                ow.println("<none>");
+            }
+        } finally {
+            ow.close();
+        }
+
+        if (successful.size() > 0) {
+            List<FileObject> binaries = new ArrayList<FileObject>();
+            List<FileObject> appliedFiles = new ArrayList<FileObject>();
+            Map<FileObject, FileObject> backups = new HashMap<FileObject, FileObject>();
+            for (ContextualPatch.PatchReport patchReport : successful) {
+                FileObject fo = FileUtil.toFileObject(patchReport.getFile());
+                FileObject backup = FileUtil.toFileObject(patchReport.getOriginalBackupFile());
+                if (patchReport.isBinary()) {
+                    binaries.add(fo);
+                }
+                appliedFiles.add(fo);
+                backups.put(fo, backup);
+            }
+
+            String message = failed.size() > 0 ? NbBundle.getMessage(ContextualPatch.class, "MSG_PatchAppliedPartially") : NbBundle.getMessage(ContextualPatch.class, "MSG_PatchAppliedSuccessfully");
+            Object notifyResult = DialogDisplayer.getDefault().notify(
+                new NotifyDescriptor.Message(message));
+            if (NotifyDescriptor.YES_OPTION.equals(notifyResult)) {
+//                showDiffs(appliedFiles, binaries, backups);
+                removeBackups(appliedFiles, backups, true);
+            } else {
+                removeBackups(appliedFiles, backups, false);
+            }
+        } else {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(ContextualPatch.class, "MSG_WrongPatch")));
+        }
+    }
+
+    /** Removes the backup copies of files upon the successful application
+     * of a patch (.orig files).
+     * @param files a list of files, to which the patch was successfully applied
+     * @param backups a map of a form original file -> backup file
+     */
+    private void removeBackups(List<FileObject> files, Map<FileObject, FileObject> backups, boolean onExit) {
+        StringBuffer filenames=new StringBuffer(),
+                     exceptions=new StringBuffer();
+        for (int i = 0; i < files.size(); i++) {
+            FileObject targetFileObject = files.get(i);
+            FileObject backup= backups.get(targetFileObject);
+
+            // delete files that become empty and they have a backup file
+            if (targetFileObject != null && targetFileObject.getSize() == 0) {
+                if (backup != null && backup.isValid() && backup.getSize() > 0) {
+                    if (onExit) {
+                        deleteOnExit(targetFileObject);
+                    } else {
+                        try {
+                            targetFileObject.delete();
+                        } catch (IOException e) {
+                            BugtrackingManager.LOG.log(Level.INFO, "Patch can not delete file, skipping...", e);
+                        }
+                    }
+                }
+            }
+
+            if (backup != null && backup.isValid()) {
+                if (onExit) {
+                    deleteOnExit(backup);
+                } else {
+                    try {
+                        backup.delete();
+                    }
+                    catch (IOException ex) {
+                        filenames.append(FileUtil.getFileDisplayName(backup));
+                        filenames.append('\n');
+                        exceptions.append(ex.getLocalizedMessage());
+                        exceptions.append('\n');
+                    }
+                }
+            }
+        }
+        if (filenames.length()>0)
+            BugtrackingManager.LOG.log(Level.SEVERE, NbBundle.getMessage(ContextualPatch.class,
+                        "EXC_CannotRemoveBackup", filenames, exceptions));
+    }
+
+
+    private void deleteOnExit(FileObject fo) {
+        File file = FileUtil.toFile(fo);
+        if (file != null) {
+            file.deleteOnExit();
+        }
+    }
+
 }

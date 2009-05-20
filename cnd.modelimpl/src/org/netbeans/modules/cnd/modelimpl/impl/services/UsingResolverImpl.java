@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
-import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -337,7 +336,10 @@ public final class UsingResolverImpl extends CsmUsingResolver implements CsmProg
     
     public void fileInvalidated(CsmFile file) {
     }
-    
+
+    public void fileAddedToParse(CsmFile file) {
+    }
+
     public void fileParsingStarted(CsmFile file) {
     }
     

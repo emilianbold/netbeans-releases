@@ -416,6 +416,14 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
 
         }
 
+        if (COMMAND_RSPEC_ALL.equals(command)) {
+            TestRunner testRunner = Util.getTestRunner(TestRunner.TestType.RSPEC);
+            if (testRunner != null) {
+                testRunner.getInstance().runAllTests(project, false);
+            }
+            return;
+        }
+
         if (COMMAND_AUTOTEST.equals(command)) {
             if (AutoTestSupport.isInstalled(project, TestType.AUTOTEST)) {
                 AutoTestSupport support = new AutoTestSupport(context, project, getSourceEncoding());
