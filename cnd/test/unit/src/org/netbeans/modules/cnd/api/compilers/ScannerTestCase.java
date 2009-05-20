@@ -70,6 +70,11 @@ public class ScannerTestCase extends NbTestCase {
         doTest(getLogs(), toolchain.getScanner(), getRef());
     }
 
+    public void testGnuFortranLogs() throws Exception {
+        ToolchainDescriptor toolchain = ToolchainManager.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
+        doTest(getLogs(), toolchain.getScanner(), getRef());
+    }
+
     private void doTest(File logFile, ScannerDescriptor scanner, PrintStream ref) throws Exception {
         BufferedReader reader = new BufferedReader(new FileReader(logFile));
         String line;
