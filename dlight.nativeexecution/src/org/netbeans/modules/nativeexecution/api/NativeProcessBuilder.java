@@ -99,6 +99,10 @@ public final class NativeProcessBuilder implements Callable<Process> {
         return new NativeProcessBuilder(ExecutionEnvironmentFactory.getLocal());
     }
 
+    public void redirectError() {
+        info.redirectError(true);
+    }
+
     /**
      * Specif
      * @param executable

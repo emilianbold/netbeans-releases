@@ -163,10 +163,25 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             int lineLen = lineElem.getEndOffset() - lineStartOffset;
             t = doc.getText(lineStartOffset, lineLen);
             int identStart = col;
-            while (identStart > 0 && (Character.isJavaIdentifierPart(t.charAt(identStart - 1)) ||
-                        (t.charAt (identStart - 1) == '.'))) {
-                identStart--;
+
+            // Scan for :: -> . and symbols
+            while (identStart > 0) {
+                char token = t.charAt(identStart - 1);
+                if (identStart > 1) {
+                    char prevToken = t.charAt(identStart - 2);
+                    if ((prevToken == '-' && token == '>') ||
+                        (prevToken == ':' && token == ':')) {
+                        identStart -= 2;
+                        continue;
+                    }
+                }
+                if (Character.isJavaIdentifierPart(token) || token == '.') {
+                    identStart--;
+                    continue;
+                }
+                break;
             }
+
             int identEnd = col;
             while (identEnd < lineLen && Character.isJavaIdentifierPart(t.charAt(identEnd))) {
                 identEnd++;

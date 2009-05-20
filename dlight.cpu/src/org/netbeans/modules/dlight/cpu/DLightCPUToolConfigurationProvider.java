@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
  * @author mt154047
  */
 public final class DLightCPUToolConfigurationProvider
-    implements DLightToolConfigurationProvider {
+        implements DLightToolConfigurationProvider {
 
     public static final int INDICATOR_POSITION = 100;
     private static final String TOOL_NAME = loc("CPUMonitorTool.ToolName"); // NOI18N
@@ -79,14 +79,14 @@ public final class DLightCPUToolConfigurationProvider
 
     public DLightToolConfiguration create() {
         final DLightToolConfiguration toolConfiguration =
-            new DLightToolConfiguration(TOOL_NAME, DETAILED_TOOL_NAME);
+                new DLightToolConfiguration(TOOL_NAME, DETAILED_TOOL_NAME);
         toolConfiguration.setIcon("org/netbeans/modules/dlight/cpu/resources/cpu.png"); // NOI18N
 
         // SunStudio should collect data about most CPU-expensive functions
         // i.e. create a configuration that collects
         // CollectedInfo.FUNCTIONS_LIST
         SunStudioDCConfiguration ssCollectorConfig =
-            new SunStudioDCConfiguration(CollectedInfo.FUNCTIONS_LIST);
+                new SunStudioDCConfiguration(CollectedInfo.FUNCTIONS_LIST);
 
         // This tool will use DataCollector with this configuration...
         toolConfiguration.addDataCollectorConfiguration(ssCollectorConfig);
@@ -97,10 +97,10 @@ public final class DLightCPUToolConfigurationProvider
         // with CollectedInfo.FUNCTIONS_LIST
 
         DataTableMetadata detailedViewTableMetadataSS =
-            SunStudioDCConfiguration.getCPUTableMetadata(
-            SunStudioDCConfiguration.c_name,
-            SunStudioDCConfiguration.c_iUser,
-            SunStudioDCConfiguration.c_eUser);
+                SunStudioDCConfiguration.getCPUTableMetadata(
+                SunStudioDCConfiguration.c_name,
+                SunStudioDCConfiguration.c_iUser,
+                SunStudioDCConfiguration.c_eUser);
         ColumnsUIMapping columnsUIMapping = new ColumnsUIMapping();
         columnsUIMapping.setDisplayedName(SunStudioDCConfiguration.c_name.getColumnName(), loc("CPUMonitorTool.ColumnName.func_name")); // NOI18N
         columnsUIMapping.setColumnUI(SunStudioDCConfiguration.c_iUser.getColumnName(), loc("CPUMonitorTool.ColumnName.time_incl"), loc("CPUMonitorTool.ColumnTooltip.time_incl")); // NOI18N
@@ -108,34 +108,36 @@ public final class DLightCPUToolConfigurationProvider
 
         // Register configured detailed view to be opened on indicator click...
         VisualizerConfiguration detailsVisualizerConfigSS;
-        if (CPU_TREE_TABLE){
+        if (CPU_TREE_TABLE) {
             detailsVisualizerConfigSS =
-                new CallersCalleesVisualizerConfiguration(
-                detailedViewTableMetadataSS,
-                "name", // NOI18N
-                false);
-            ((CallersCalleesVisualizerConfiguration)detailsVisualizerConfigSS).setColumnsUIMapping(columnsUIMapping);
-        }else{
+                    new CallersCalleesVisualizerConfiguration(
+                    detailedViewTableMetadataSS,
+                    "name", // NOI18N
+                    false);
+            ((CallersCalleesVisualizerConfiguration) detailsVisualizerConfigSS).setColumnsUIMapping(columnsUIMapping);
+        } else {
             FunctionDatatableDescription funcDescription = new FunctionDatatableDescription(SunStudioDCConfiguration.c_name.getColumnName(), null, SunStudioDCConfiguration.c_name.getColumnName());
             detailsVisualizerConfigSS = new FunctionsListViewVisualizerConfiguration(detailedViewTableMetadataSS, funcDescription, Arrays.asList(SunStudioDCConfiguration.c_iUser, SunStudioDCConfiguration.c_eUser));
-            ((FunctionsListViewVisualizerConfiguration)detailsVisualizerConfigSS).setColumnsUIMapping(columnsUIMapping);
+            ((FunctionsListViewVisualizerConfiguration) detailsVisualizerConfigSS).setColumnsUIMapping(columnsUIMapping);
+            ((FunctionsListViewVisualizerConfiguration) detailsVisualizerConfigSS).setEmptyAnalyzeMessage(loc("DetailedView.EmptyAnalyzeMessage"));//NOI18N
+            ((FunctionsListViewVisualizerConfiguration) detailsVisualizerConfigSS).setEmptyRunningMessage(loc("DetailedView.EmptyRunningMessage"));//NOI18N
         }
-        
+
         // Use D-Trace as a provider of data for detailed view
         String scriptFile = Util.copyResource(getClass(),
-            Util.getBasePath(getClass()) + "/resources/calls.d"); // NOI18N
+                Util.getBasePath(getClass()) + "/resources/calls.d"); // NOI18N
 
         DataTableMetadata profilerTableMetadata = createProfilerTableMetadata();
 
         DTDCConfiguration dtraceDataCollectorConfiguration =
-            new DTDCConfiguration(scriptFile,
-            Arrays.asList(profilerTableMetadata));
+                new DTDCConfiguration(scriptFile,
+                Arrays.asList(profilerTableMetadata));
 
         dtraceDataCollectorConfiguration.setStackSupportEnabled(true);
 
         toolConfiguration.addDataCollectorConfiguration(
-            new MultipleDTDCConfiguration(
-            dtraceDataCollectorConfiguration, "cpu:")); // NOI18N
+                new MultipleDTDCConfiguration(
+                dtraceDataCollectorConfiguration, "cpu:")); // NOI18N
 
 //        DataTableMetadata detailedViewTableMetadataDtrace =
 //            createFunctionsListMetadata(profilerTableMetadata);
@@ -154,7 +156,7 @@ public final class DLightCPUToolConfigurationProvider
         resultColumns.add(ProcDataProviderConfiguration.USR_TIME);
         resultColumns.add(ProcDataProviderConfiguration.SYS_TIME);
         IndicatorMetadata indicatorMetadata =
-            new IndicatorMetadata(resultColumns);
+                new IndicatorMetadata(resultColumns);
         CpuIndicatorConfiguration indicatorConfiguration = new CpuIndicatorConfiguration(
                 indicatorMetadata,
                 new HashSet<String>(Arrays.asList(ProcDataProviderConfiguration.SYS_TIME.getColumnName())),
@@ -173,15 +175,15 @@ public final class DLightCPUToolConfigurationProvider
         Column stackId = new Column("leaf_id", Integer.class, loc("CPUMonitorTool.ColumnName.leaf_id"), null); // NOI18N
 
         return new DataTableMetadata("CallStack", // NOI18N
-            Arrays.asList(cpuId, threadId, timestamp, stackId), null);
+                Arrays.asList(cpuId, threadId, timestamp, stackId), null);
     }
 
-    private VisualizerConfiguration createDTraceBasedVisualizerConfiguration(DataTableMetadata profilerTableMetadata){
+    private VisualizerConfiguration createDTraceBasedVisualizerConfiguration(DataTableMetadata profilerTableMetadata) {
         List<Column> columns = new ArrayList<Column>();
         List<Column> metrics = new ArrayList<Column>();
         Column nameColumn = new Column("name", String.class, loc("CPUMonitorTool.ColumnName.name"), null);//NOI18N
         columns.add(nameColumn);
-        
+
         //  columns.add(new Column("name_qualified", String.class, loc("CPUMonitorTool.ColumnName.name_qualified"), null)); // NOI18N
 
         List<FunctionMetric> metricsList = SQLStackStorage.METRICS;
@@ -191,53 +193,53 @@ public final class DLightCPUToolConfigurationProvider
             String metricID = metric.getMetricID();
             String displayedName = locMetricDisplayedName(metricID);
             String metricTooltip = locMetricTooltip(metricID);
-            if (displayedName != null){
+            if (displayedName != null) {
                 columnsUIMapping.setDisplayedName(metricID, displayedName);
             }
-            if (metricTooltip != null){
+            if (metricTooltip != null) {
                 columnsUIMapping.setTooltip(metricID, metricTooltip);
             }
             Column metricColumn = new Column(
-                metricID,
-                metric.getMetricValueClass(),
-                metric.getMetricDisplayedName(), null);
+                    metricID,
+                    metric.getMetricValueClass(),
+                    metric.getMetricDisplayedName(), null);
             columns.add(metricColumn);
             metrics.add(metricColumn);
         }
 
         DataTableMetadata result = new DataTableMetadata(
-            StackDataStorage.STACK_METADATA_VIEW_NAME,
-            columns, null, Arrays.asList(profilerTableMetadata));
-        if (CPU_TREE_TABLE){
+                StackDataStorage.STACK_METADATA_VIEW_NAME,
+                columns, null, Arrays.asList(profilerTableMetadata));
+        if (CPU_TREE_TABLE) {
             CallersCalleesVisualizerConfiguration configuration =
-                new CallersCalleesVisualizerConfiguration(
-                result,
-                "name", // NOI18N
-                false);
+                    new CallersCalleesVisualizerConfiguration(
+                    result,
+                    "name", // NOI18N
+                    false);
             configuration.setColumnsUIMapping(columnsUIMapping);
             return configuration;
-        }else{
+        } else {
             FunctionDatatableDescription funcDescription = new FunctionDatatableDescription(nameColumn.getColumnName(), null, nameColumn.getColumnName());
             FunctionsListViewVisualizerConfiguration configuration = new FunctionsListViewVisualizerConfiguration(result, funcDescription, metrics);
+            configuration.setEmptyAnalyzeMessage(loc("DetailedView.EmptyAnalyzeMessage"));//NOI18N
+            configuration.setEmptyRunningMessage(loc("DetailedView.EmptyRunningMessage"));//NOI18N
             configuration.setColumnsUIMapping(columnsUIMapping);
             return configuration;
         }
     }
 
-
-
     private static String locMetricDisplayedName(String metricID) {
-        try{
+        try {
             return NbBundle.getMessage(DLightCPUToolConfigurationProvider.class, "FunctionMetric." + metricID);//NOI18N
-        }catch(MissingResourceException e){
+        } catch (MissingResourceException e) {
             return null;
         }
     }
 
-    private static String locMetricTooltip(String metricID){
-        try{
+    private static String locMetricTooltip(String metricID) {
+        try {
             return NbBundle.getMessage(DLightCPUToolConfigurationProvider.class, "FunctionMetric.tooltip." + metricID);//NOI18N
-        }catch(MissingResourceException e){
+        } catch (MissingResourceException e) {
             return null;
         }
 
@@ -245,6 +247,6 @@ public final class DLightCPUToolConfigurationProvider
 
     private static String loc(String key, String... params) {
         return NbBundle.getMessage(
-            DLightCPUToolConfigurationProvider.class, key, params);
+                DLightCPUToolConfigurationProvider.class, key, params);
     }
 }

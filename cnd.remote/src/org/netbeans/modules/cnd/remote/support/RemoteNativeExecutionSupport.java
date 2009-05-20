@@ -75,10 +75,14 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             //String cmd = makeCommand(dirf, exe, args, envp);
             NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
             pb.setExecutable(cmd); //NOI18N
-            pb = pb.addEnvironmentVariables(env);
+            pb.addEnvironmentVariables(env);
+
             if (args != null) {
-                pb = pb.setArguments(Utilities.parseParameters(args));
+                pb.setArguments(Utilities.parseParameters(args));
             }
+
+            pb.redirectError();
+
             String path = null;
             if (dirf != null) {
                 path = RemotePathMap.getPathMap(executionEnvironment).getRemotePath(dirf.getAbsolutePath(),true);
