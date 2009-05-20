@@ -143,9 +143,13 @@ public final class WindowsSupport {
      * For now it is assumed that once cygwin was found it is used for starting
      * shell ... So in this case will convert to /cygdrive/....
      */
-    public String convertToShellPath(final String path) {
+    public String convertToShellPath(String path) {
         if (path == null) {
             return ""; // NOI18N
+        }
+
+        while (path.startsWith("\"") && path.endsWith("\"")) { // NOI18N
+            path = path.substring(1, path.length() - 1);
         }
 
         if (path.length() < 2) {

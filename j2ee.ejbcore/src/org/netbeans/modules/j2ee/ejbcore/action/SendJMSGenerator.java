@@ -64,6 +64,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.ResourceReference;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
+import org.netbeans.modules.j2ee.core.api.support.classpath.ContainerClassPathModifier;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
@@ -107,7 +108,15 @@ public final class SendJMSGenerator {
             FileObject fileObject,
             ServiceLocatorStrategy slStrategy,
             J2eeModuleProvider j2eeModuleProvider) throws IOException {
-        
+
+        Project project = FileOwnerQuery.getOwner(fileObject);
+        ContainerClassPathModifier ccpm = project.getLookup().lookup(ContainerClassPathModifier.class);
+        if (ccpm != null) {
+            ccpm.extendClasspath(fileObject, new String[] {
+                ContainerClassPathModifier.API_J2EE //likely too wide, narrow
+            });
+        }
+
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         final boolean[] isInjectionTarget = new boolean[1];
         javaSource.runUserActionTask(new Task<CompilationController>() {

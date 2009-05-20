@@ -105,6 +105,20 @@ is the proper place.
 
     <changes>
 
+        <change id="added-dialogbinding">
+            <summary>DialogBinding added</summary>
+            <version major="1" minor="11"/>
+            <date day="15" month="5" year="2009"/>
+            <author login="dbalek"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>DialogBinding allows for content of some text component to be virtually placed
+                to the given offset inside of a file or document. This way, the necessary context is
+                provided for code completion and similar features to work in any text component.
+            </description>
+            <class package="org.netbeans.api.editor" name="DialogBinding"/>
+            <issue number="163769"/>
+        </change>
+
         <change id="added-editoractionregistration">
             <summary>EditorActionRegistration annotation added</summary>
             <version major="1" minor="10"/>

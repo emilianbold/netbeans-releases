@@ -74,7 +74,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
         try {
             //String cmd = makeCommand(dirf, exe, args, envp);
             NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
-            pb.setExecutable(cmd); //NOI18N
+            pb.setExecutable(cmd);
             pb.addEnvironmentVariables(env);
 
             if (args != null) {
@@ -82,6 +82,9 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             }
 
             pb.redirectError();
+            if (!env.containsKey("DISPLAY")) { // NOI18N
+                pb.setX11Forwarding(true);
+            }
 
             String path = null;
             if (dirf != null) {

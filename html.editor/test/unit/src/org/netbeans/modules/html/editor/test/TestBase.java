@@ -40,9 +40,11 @@
  */
 package org.netbeans.modules.html.editor.test;
 
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.junit.MockServices;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.csl.api.test.CslTestBase;
@@ -58,6 +60,12 @@ public class TestBase extends CslTestBase {
 
     public TestBase(String name) {
         super(name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        MockServices.setServices(MockMimeLookup.class);
+        super.setUp();
     }
 
     protected BaseDocument createDocument() {

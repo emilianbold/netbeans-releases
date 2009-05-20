@@ -272,4 +272,16 @@ public final class NativeProcessBuilder implements Callable<Process> {
         info.setUnbuffer(unbuffer);
         return this;
     }
+
+    /**
+     * Configure X11 forwarding.
+     *
+     * @param x11forwarding  pass <code>true</code> to enable forwarding,
+     *      or <code>false</code> to disable
+     * @return this
+     */
+    public NativeProcessBuilder setX11Forwarding(boolean x11forwarding) {
+        info.setX11Forwarding(x11forwarding);
+        return this;
+    }
 }
