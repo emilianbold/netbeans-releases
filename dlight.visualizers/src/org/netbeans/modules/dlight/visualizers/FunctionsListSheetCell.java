@@ -300,8 +300,9 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
 
         if (property != null) {
             JComponent propPanel = null;
-            if (metrics.get(column - 1).getColumnClass() == Time.class ||
-                    metrics.get(column - 1).getColumnClass().getSuperclass() == Number.class) {
+
+            if (column > 0 && (metrics.get(column - 1).getColumnClass() == Time.class ||
+                    metrics.get(column - 1).getColumnClass().getSuperclass() == Number.class)) {
                 try {
                     propPanel = getNumberRenderer(property, n, hasFocus);
                 } catch (IllegalAccessException ex) {
