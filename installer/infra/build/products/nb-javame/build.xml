@@ -145,10 +145,13 @@
 
         <set property="wtk.directory"       value="WTK2.5.2"/>
         <set property="javamesdk.directory" value="Java_ME_platform_SDK_3.0"/>
+
+
         <set property="mobility.cluster"    value="mobility8"/>
 
 
         <if property="i" value="2">
+            <if property="product.platforms" value="linux">
             <mkdir dir="${data.directory}/${mobility.cluster}/"/>            
             <move todir="${data.directory}/${mobility.cluster}/${wtk.directory}">
                 <fileset dir="${data.directory}">
@@ -156,13 +159,26 @@
 		    <exclude name="${mobility.cluster}/${wtk.directory}"/>
                 </fileset>
             </move>
+            </if>
+
+            <if property="product.platforms" value="windows">
+            <mkdir dir="${data.directory}/${mobility.cluster}/"/>            
+            <delete dir="${data.directory}/toolbar" includeemptydirs="true"/>
+
+            <move todir="${data.directory}/${mobility.cluster}/${javamesdk.directory}">
+                <fileset dir="${data.directory}">
+		    <exclude name="${mobility.cluster}"/>
+		    <exclude name="${mobility.cluster}/${javamesdk.directory}"/>
+                </fileset>
+            </move>
+            </if>
         </if>
+
 
         <condition property="is.descriptor" value="true" else="false">
             <or>
                 <equals arg1="${i}" arg2="3"/>
                 <equals arg1="${i}" arg2="4"/>
-                <equals arg1="${i}" arg2="5"/>
             </or>
         </condition>
  
@@ -177,17 +193,7 @@
             </move>
         </if>
 
-        <if property="i" value="6">
-            <mkdir dir="${data.directory}/${mobility.cluster}/"/>            
-            <delete dir="${data.directory}/toolbar" includeemptydirs="true"/>
 
-            <move todir="${data.directory}/${mobility.cluster}/${javamesdk.directory}">
-                <fileset dir="${data.directory}">
-		    <exclude name="${mobility.cluster}"/>
-		    <exclude name="${mobility.cluster}/${javamesdk.directory}"/>
-                </fileset>
-            </move>
-        </if>
 
 
     </target>
