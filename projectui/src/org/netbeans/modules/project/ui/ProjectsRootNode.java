@@ -806,7 +806,8 @@ public class ProjectsRootNode extends AbstractNode {
                 delegate = SearchInfoFactory.createSearchInfo(
                         folders,
                         true,
-                        new FileObjectFilter[] {SearchInfoFactory.VISIBILITY_FILTER});
+                        new FileObjectFilter[] { SearchInfoFactory.VISIBILITY_FILTER,
+                                                 SearchInfoFactory.SHARABILITY_FILTER });
             }
         }
 

@@ -148,6 +148,16 @@
             </folder>
         </folder>
         <folder name="Editor">
+            <folder name="MarkOccurrences">
+                <folder name="text">
+                    <folder name="x-php5">
+                        <file name="PhpMarkOccurences.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" newvalue="org.netbeans.modules.php.editor.options.MarkOccurencesOptionsPanelController"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
             <folder name="Hints">
                 <attr name="position" intvalue="0"/>
                 <folder name="text">

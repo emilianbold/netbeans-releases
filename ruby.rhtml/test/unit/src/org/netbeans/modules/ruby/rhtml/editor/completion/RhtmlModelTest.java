@@ -42,33 +42,26 @@
 package org.netbeans.modules.ruby.rhtml.editor.completion;
 
 import java.io.File;
-import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 //import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.junit.NbTestCase;
-//import org.netbeans.modules.gsf.LanguageRegistry;
-//import org.netbeans.modules.gsf.api.EditHistory;
-//import org.netbeans.modules.gsf.api.EmbeddingModel;
-//import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
-//import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.csl.api.EditHistory;
 import org.netbeans.modules.csl.api.Severity;
-import org.netbeans.modules.csl.core.LanguageRegistry;
-import org.netbeans.modules.csl.hints.infrastructure.Pair;
 import org.netbeans.modules.csl.spi.ParserResult;
-//import org.netbeans.modules.gsf.api.Error;
-//import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel.UpdateState;
-//import org.netbeans.modules.gsf.api.Severity;
-//import org.netbeans.modules.gsfret.hints.infrastructure.Pair;
-import org.netbeans.modules.ruby.AstUtilities;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.ruby.RubyTestBase;
+import org.netbeans.modules.ruby.rhtml.editor.RubyEmbeddingProvider;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 public class RhtmlModelTest extends RubyTestBase {
 
@@ -144,9 +137,7 @@ public class RhtmlModelTest extends RubyTestBase {
 //
     private void checkEruby(String relFilePath) throws Exception {
         ParserResult pr = getParserResult(relFilePath);
-//        TranslatedSource translatedSource = getTranslatedSource(relFilePath);
-//        String generatedRuby = translatedSource.getSource();
-        CharSequence generatedRuby = pr.getSnapshot().getText();
+        String generatedRuby = getTranslatedSource(relFilePath);
 
         assertDescriptionMatches(relFilePath, generatedRuby.toString(), false, ".rb");
 
@@ -154,9 +145,7 @@ public class RhtmlModelTest extends RubyTestBase {
         File rubyFile = new File(getDataDir(), relFilePath + ".rb");
         FileObject rubyFo = FileUtil.toFileObject(rubyFile);
         assertNotNull(rubyFo);
-//        CompilationInfo info = getInfo(rubyFo);
-//        assertNotNull(info);
-        assertNotNull("Parse error on translated source; " + pr.getDiagnostics(), AstUtilities.getRoot(pr));
+        assertNotNull("Parse error on translated source; " + pr.getDiagnostics(), pr);
         // Warnings are okay:
         //assertTrue(info.getErrors().toString(), info.getErrors().size() == 0);
         for (org.netbeans.modules.csl.api.Error error : pr.getDiagnostics()) {
@@ -164,16 +153,37 @@ public class RhtmlModelTest extends RubyTestBase {
         }
     }
 
+    private String getTranslatedSource(String relFilePath) {
+        Source source = Source.create(getTestFile(relFilePath));
+        final String[] resultHolder = new String[1];
+        try {
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
+
+                @Override
+                public void run(ResultIterator ri) throws Exception {
+                    resultHolder[0] = "";
+                    for (Embedding each : ri.getEmbeddings()) {
+                        if (RubyEmbeddingProvider.RUBY_MIMETYPE.equals(each.getMimeType())) {
+                            resultHolder[0] += each.getSnapshot().getText();
+                        }
+                    }
+                }
+            });
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return resultHolder[0];
+
+    }
+
     private void checkPositionTranslations(String relFilePath, String checkBeginLine, String checkEndLine) throws Exception {
         // TODO
         // Translate source... then iterate through the source positions and assert
         // that everything in the source matches. Also make sure that the stuff that
         // doesn't match is properly placed...
+        
         ParserResult pr = getParserResult(relFilePath);
-//        TranslatedSource translatedSource = getTranslatedSource(relFilePath);
-//        translatedSource.getSource(); // ensure initialized
-//        String text = readFile(getTestFile(relFilePath));
-        String text = pr.getSnapshot().getText().toString();
+        String text = getTranslatedSource(relFilePath);
 
         assertNotNull(checkBeginLine);
         assertNotNull(checkEndLine);
@@ -198,12 +208,10 @@ public class RhtmlModelTest extends RubyTestBase {
 
         // First, make sure that all positions that are defined work symmetrically
         for (int i = 0; i < text.length(); i++) {
-//            int astOffset = translatedSource.getAstOffset(i);
             int astOffset = pr.getSnapshot().getOriginalOffset(i);
             if (astOffset == -1) {
                 continue;
             }
-//            int lexOffset = translatedSource.getLexicalOffset(astOffset);
             int lexOffset = pr.getSnapshot().getEmbeddedOffset(astOffset);
             if (lexOffset == -1) {
                 fail("Ast offset " + astOffset + " (for lexical position " + i + ") didn't map back properly; " + getSourceWindow(text, i));
@@ -216,13 +224,11 @@ public class RhtmlModelTest extends RubyTestBase {
         // Next check the provided region to make sure we actually define AST offsets there
 
         for (int i = checkBeginOffset; i < checkEndOffset; i++) {
-//            int astOffset = translatedSource.getAstOffset(i);
             int astOffset = pr.getSnapshot().getOriginalOffset(i);
             if (astOffset == -1) {
                 fail("Lexical offset " + i + " didn't map to an ast offset; " + getSourceWindow(text, i));
             }
             // Probably not needed, this should follow from the first check section
-//            int lexOffset = translatedSource.getLexicalOffset(astOffset);
             int lexOffset = pr.getSnapshot().getEmbeddedOffset(i);
             if (lexOffset == -1) {
                 fail("Ast offset " + astOffset + " (for lexical position " + i + ") didn't map back properly; " + getSourceWindow(text, i));

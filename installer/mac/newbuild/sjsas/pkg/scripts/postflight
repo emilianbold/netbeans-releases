@@ -1,0 +1,101 @@
+#!/bin/sh -x
+
+# The contents of this file are subject to the terms of the Common Development
+# and Distribution License (the License). You may not use this file except in
+# compliance with the License.
+
+# You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+# or http://www.netbeans.org/cddl.txt.
+
+# When distributing Covered Code, include this CDDL Header Notice in each file
+# and include the License file at http://www.netbeans.org/cddl.txt.
+# If applicable, add the following below the CDDL Header, with the fields
+# enclosed by brackets [] replaced by your own identifying information:
+# "Portions Copyrighted [year] [name of copyright owner]"
+
+# The Original Software is NetBeans. The Initial Developer of the Original
+# Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+# Microsystems, Inc. All Rights Reserved.
+
+set -e
+
+#update netbeans.conf
+script_dir=`dirname "$0"`
+
+JAVA_HOME=`"$script_dir"/get_current_jdk.sh`
+
+. "$script_dir"/env.sh
+
+"$script_dir"/add_gf.sh "$NETBEANS_INSTALL_DIR" "$2"
+
+"$script_dir"/unpack200.sh "$2" "$2" "$JAVA_HOME"
+
+cd "$2"
+
+echo Configuring SJSAS in `pwd`
+
+ant_bin=./lib/ant/bin/ant
+
+#set JAVA_HOME to be used by ant
+java_exe="$JAVA_HOME/bin/java"
+
+getPort() {
+   basePort=$1
+   freePort=`$java_exe -jar "$script_dir"/getport.jar $basePort`
+   echo $freePort
+}
+
+getHostName() {
+   echo `$java_exe -jar "$script_dir"/getport.jar "getHostName"`
+}
+
+if [ -f $ant_bin ]
+then
+  echo Ant found:
+  ls -l $ant_bin
+  if ! [ -x $ant_bin ]
+  then
+    echo Making ant executable: $ant_bin
+    chmod a+x $ant_bin
+  fi
+
+  admin_port=`getPort 4848`
+  instance_port=`getPort 8080` 
+  https_port=`getPort 8181`
+  host_name=`getHostName`
+
+
+###############Setup SJSAS############################################### 
+
+  $ant_bin --noconfig -v -f "$script_dir"/setup.xml -Dinstall.home="$2" -Dadmin.port=$admin_port -Dinstance.port=$instance_port -Dhttps.port=$https_port -Dhost.name=$host_name
+##################################################################
+
+else
+  echo No ant found: $ant_bin
+fi
+
+"$script_dir"/perm.sh
+
+if [ -d "/Library/Receipts/sjsas.pkg" ] ; then
+    rm -rf "/Library/Receipts/sjsas.pkg"
+fi
+
+#Fix for 132115
+sed -i '' "s/never/TUE/" $2/updatecenter/config/config.xml
+
+#Fix for 126419
+#First, get ownership info for current user home directory
+#Second, execute "chown user:group" against .asadminpass and .asadmintruststore
+ownership=`ls -nlda ~ | awk ' { print $3 ":" $4 } ' 2>/dev/null`
+echo "Updating sjsas security files permissions to $ownership"
+[ -f ~/.asadminpass ]       && chown "$ownership" ~/.asadminpass
+[ -f ~/.asadmintruststore ] && chown "$ownership" ~/.asadmintruststore
+
+#add Product ID
+"$script_dir"/addproduct_id.sh "SJSAS"
+
+#create ST for NB
+#//TODO
+"$script_dir"/servicetag.sh "gf-v2.1" "$2"
+
+

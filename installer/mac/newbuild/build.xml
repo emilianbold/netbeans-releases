@@ -33,9 +33,19 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="glassfish"/>      
     </target>
 
+    <target name="build-sjsas-pkg" >
+        <echo message="Building ${sjsas-title} into ${basedir}/sjsas"/>
+        <ant dir="sjsas"/>
+    </target>  
+
     <target name="build-glassfish-v3-pkg" >
         <echo message="Building ${glassfish-v3-title} into ${basedir}/glassfish-v3"/>
         <ant dir="glassfish-v3"/>      
+    </target>
+
+    <target name="build-glassfish-v3-sun-pkg" >
+        <echo message="Building ${glassfish-v3-sun-title} into ${basedir}/glassfish-v3-sun"/>
+        <ant dir="glassfish-v3-sun"/>
     </target>
     
     <target name="build-tomcat-pkg">
@@ -52,7 +62,9 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${basedir}/build"/>
         <delete dir="${basedir}/dist"/>
         <ant dir="${basedir}/glassfish" target="clean"/>
+        <ant dir="${basedir}/sjsas" target="clean"/>
         <ant dir="${basedir}/glassfish-v3" target="clean"/>
+        <ant dir="${basedir}/glassfish-v3-sun" target="clean"/>
         <ant dir="${basedir}/tomcat" target="clean"/>
         <ant dir="${basedir}/openesb" target="clean"/>
         <ant dir="${basedir}/netBeans/baseide" target="clean"/>
@@ -202,13 +214,13 @@ Microsystems, Inc. All Rights Reserved.
         </exec>                                         
     </target>          
     
-    <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-pkg,build-glassfish-v3-pkg,build-tomcat-pkg,build-openesb-pkg">                                                        
+    <target name="build-all-dmg" depends="clean,init,build-pkg,build-sjsas-pkg,build-glassfish-v3-sun-pkg,build-tomcat-pkg,build-openesb-pkg">
                   
         <property name="bundles" value="        (./build/*pkg),
                                              -javase(./build/baseide.pkg ./build/javase.pkg),
-                                             -java(./build/baseide.pkg ./build/javase.pkg  ./build/webcommon.pkg ./build/javaee.pkg ./build/groovy.pkg ./build/ergonomics.pkg ./build/glassfish.pkg ./build/glassfish-v3.pkg ./build/tomcat.pkg),
+                                             -java(./build/baseide.pkg ./build/javase.pkg  ./build/webcommon.pkg ./build/javaee.pkg ./build/groovy.pkg ./build/ergonomics.pkg ./build/sjsas.pkg ./build/glassfish-v3-sun.pkg ./build/tomcat.pkg),
                                              -cpp(./build/baseide.pkg ./build/cpp.pkg),
-                                             -ruby(./build/baseide.pkg ./build/webcommon.pkg ./build/ruby.pkg ./build/glassfish-v3.pkg),
+                                             -ruby(./build/baseide.pkg ./build/webcommon.pkg ./build/ruby.pkg ./build/glassfish-v3-sun.pkg),
                                              -php(./build/baseide.pkg ./build/webcommon.pkg ./build/php.pkg)"/>        
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
             <delete dir="${basedir}/dist_dmg"/>                          
@@ -436,8 +448,8 @@ Microsystems, Inc. All Rights Reserved.
                 <filter token="SIZE_GROOVY" value="${sizeof.groovy}"/>
                 <!--<filter token="SIZE_SOA" value="${sizeof.soa}"/>-->
                 <filter token="SIZE_ERGONOMICS" value="${sizeof.ergonomics}"/>
-                <filter token="SIZE_GLASSFISH" value="${sizeof.glassfish}"/>
-                <filter token="SIZE_GLASSFISHV3" value="${sizeof.glassfish.v3}"/>
+                <filter token="SIZE_GLASSFISH" value="${sizeof.sjsas}"/>
+                <filter token="SIZE_GLASSFISHV3" value="${sizeof.glassfish.v3.sun}"/>
                 <filter token="SIZE_TOMCAT" value="${sizeof.tomcat}"/>                
                 <filter token="SIZE_OPENESB" value="${sizeof.openesb}"/>   
                 <filter token="SIZE_BASEIDE" value="${sizeof.baseide}"/>                

@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<project name="Top Level Build" default="all" basedir=".">
+
+
+<property name="install.home" value="${basedir}"/>
+
+<property name="admin.port" value="4848"/>
+<property name="instance.port" value="8080"/>
+<property name="https.port" value="8181"/>
+<property name="host.name" value="localhost"/>
+
+<property name="admin.user" value="admin"/>
+<property name="admin.password" value="adminadmin"/>
+<property name="domain.name" value="domain1"/>
+<property name="asadmin.default.profile" value="developer"/>
+<property name="adminpassfile" value="${install.home}/passfile"/>
+
+<property name="token.installhome"  value="#INSTALL_HOME#"/>
+<property name="token.javahome"     value="#JAVA_HOME#"/>
+<property name="token.hostname"     value="#HOST_NAME#"/>
+<property name="token.adminuser"    value="#ADMIN_USERNAME#"/>
+<property name="token.httpport"     value="8080"/>
+<property name="token.adminport"    value="4848"/>
+
+<target name="all" description="Installer the server">
+   
+    <!-- ============= TOKEN REPLACEMENT ===================  -->
+    <antcall target="do.token"/>
+
+    <!-- ============= CHMOD ===================  -->
+    <antcall target="do.chmod"/>   
+
+    <!-- ============= CREATE DEFAULT DOMAIN ===================  -->
+    <antcall target="create.domain"/>
+
+    <antcall target="create.launchers"/>
+
+</target>
+
+<target name="do.token">
+    	<replace dir="${install.home}">
+            <include name="**/**"/>
+            <exclude name="**/*.*"/>
+            <exclude name="lib/install/templates/**"/>
+
+            <replacefilter token="${token.installhome}"  value="${install.home}"/>
+            <replacefilter token="${token.javahome}"     value="${java.home}"/>
+            <replacefilter token="${token.hostname}"     value="${host.name}"/>
+            <replacefilter token="${token.adminuser}"    value="${admin.user}"/>
+            <replacefilter token="${token.httpport}"     value="${instance.port}"/>
+            <replacefilter token="${token.adminport}"    value="${admin.port}"/>
+        </replace>
+
+        <replace dir="${install.home}">
+            <include name="**/*.bat"/>
+            <include name="**/*.xml"/>
+            <include name="**/*.sh"/>
+            <include name="**/*.conf"/>
+            <include name="**/*.properties"/>
+            <include name="**/*.html"/>
+            <include name="**/*.txt"/>
+            <exclude name="lib/install/templates/**"/>
+
+            <replacefilter token="${token.installhome}"  value="${install.home}"/>
+            <replacefilter token="${token.javahome}"     value="${java.home}"/>
+            <replacefilter token="${token.hostname}"     value="${host.name}"/>
+            <replacefilter token="${token.adminuser}"    value="${admin.user}"/>
+            <replacefilter token="${token.httpport}"     value="${instance.port}"/>
+            <replacefilter token="${token.adminport}"    value="${admin.port}"/>
+        </replace>
+</target>
+
+<target name="do.chmod">
+    <!-- all the executable GlassFish/bin executable files -->
+    <chmod perm="ugo+x">
+	    <fileset dir="${install.home}/bin"/>
+    </chmod>
+    <chmod perm="ugo+x">
+	<fileset dir="${install.home}">
+       <include name="*.sh"/>
+       <include name="*.pu"/>
+       <include name="*.pl"/>
+    </fileset>
+    </chmod>
+    <!-- all the GlassFish/lib libraries and helper executables -->
+    <chmod perm="ugo+x">
+	<fileset dir="${install.home}/lib">
+	    <include name="*.so"/>
+	    <include name="appserv"/>
+	    <include name="appservLauncher"/>
+	</fileset>
+    </chmod>
+    <!-- the IMQ executables -->
+    <chmod perm="ugo+x">
+	<fileset dir="${install.home}/imq/bin"/>
+    </chmod>
+    <!-- Apache ANT -->
+    <chmod perm="ugo+x">
+	<fileset dir="${install.home}/lib/ant/bin">
+	    <!--
+	     We don't plan to run GlassFish under Cygwin.
+	     Cygwin requires executable bits for all the .exe, .dll, .bat and .cmd.
+	     If you want to run GlassFish under Cygwin, comment the following <exclude/>.
+	    -->
+	    <exclude name="*.bat"/>
+	    <exclude name="*.cmd"/>
+	</fileset>
+    </chmod>
+    <!-- Netscape security executables -->
+    <chmod perm="ugo+x">
+	<fileset dir="${install.home}/lib/upgrade"/>
+    </chmod>
+    <!-- javadb -->
+    <chmod perm="ugo+x">
+	<fileset dir="${install.home}/javadb/bin">
+	    <include name="*.ksh"/>
+	    <!--
+	     For Cygwin use the following:
+		<includ e name="*.bat"/>
+		<include name="*.cmd"/>
+	    -->
+	</fileset>
+    </chmod>
+    <!-- updatecenter -->
+    <chmod perm="ugo+x">
+	<fileset dir="${install.home}/updatecenter/bin"/>
+    </chmod>
+	<chmod file="${install.home}/lib/killserv" perm="ugo+x"/> 
+</target>
+
+<target name="set.env">
+    <property name="ASADMIN" value="${install.home}/bin/asadmin"/>
+</target>
+
+<target name="create.adminpassfile">    
+    <echo message="AS_ADMIN_PASSWORD=${admin.password}" file="${adminpassfile}"/>
+</target>
+
+
+<target name="create.domain" depends="set.env, create.adminpassfile">
+    <exec executable="${ASADMIN}" failonerror="true">
+        <arg line="create-domain" />
+        <arg line="--adminport ${admin.port}" />
+        <arg line="--instanceport ${instance.port}" />
+        <arg line="--user ${admin.user}" />
+        <arg line="--passwordfile &quot;${adminpassfile}&quot;" />
+        <arg line="--domainproperties http.ssl.port=${https.port}" />
+        <arg line="--savelogin" />
+        <arg line="--interactive=false" />
+        <arg line="${domain.name}" />
+    </exec>
+    <delete file="${adminpassfile}" />
+</target>
+
+<target name="create.launchers" depends="set.env">
+    <property name="start.domain.file" value="${install.home}/bin/start-default-domain"/>
+    <property name="stop.domain.file" value="${install.home}/bin/stop-default-domain"/>
+    <property name="start.derby.file" value="${install.home}/bin/start-derby"/>
+    <property name="stop.derby.file" value="${install.home}/bin/start-derby"/>
+</target>
+
+
+</project>

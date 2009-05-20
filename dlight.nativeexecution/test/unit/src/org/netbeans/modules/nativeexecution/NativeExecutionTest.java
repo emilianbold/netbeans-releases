@@ -39,7 +39,9 @@
 
 package org.netbeans.modules.nativeexecution;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -48,6 +50,8 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -125,6 +129,60 @@ public class NativeExecutionTest extends NbTestCase {
             }
         }
         return testExecutionEnvironment;
+    }
+
+    protected static ExecutionEnvironment getTestExecutionEnvironment(String mspec) throws IOException, CancellationException {
+        ExecutionEnvironment result = null;
+
+        if (mspec == null) {
+            return result;
+        }
+
+        String rcFile = System.getProperty("cnd.remote.testuserinfo.rcfile"); // NOI18N
+        
+        if (rcFile == null) {
+            return result;
+        }
+
+        BufferedReader rcReader = new BufferedReader(new FileReader(rcFile));
+        String str;
+        Pattern infoPattern = Pattern.compile("^([^#].*)[ \t]+(.*)"); // NOI18N
+        Pattern pwdPattern = Pattern.compile("([^:]+):(.*)@(.*)"); // NOI18N
+        char[] passwd = null;
+
+        while ((str = rcReader.readLine()) != null) {
+            Matcher m = infoPattern.matcher(str);
+            String spec = null;
+            String loginInfo;
+
+            if (m.matches()) {
+                spec = m.group(1);
+                loginInfo = m.group(2);
+            } else {
+                continue;
+            }
+
+            if (mspec.equals(spec)) {
+                m = pwdPattern.matcher(loginInfo);
+                String remoteHKey = null;
+                
+                if (m.matches()) {
+                    passwd = m.group(2).toCharArray();
+                    remoteHKey = m.group(1) + "@" + m.group(3); // NOI18N
+                } else {
+                    remoteHKey = loginInfo;
+                }
+
+                result = ExecutionEnvironmentFactory.fromUniqueID(remoteHKey);
+                break;
+            }
+        }
+
+        if (result != null) {
+            ConnectionManager.getInstance().connectTo(result, passwd, false);
+        }
+
+        return result;
     }
 
     @Override

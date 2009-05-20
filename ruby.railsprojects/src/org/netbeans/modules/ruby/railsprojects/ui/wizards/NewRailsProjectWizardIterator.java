@@ -51,12 +51,14 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.railsprojects.RailsProjectCreateData;
 import org.netbeans.modules.ruby.railsprojects.RailsProjectGenerator;
 import org.netbeans.modules.ruby.railsprojects.database.RailsAdapterFactory;
 import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.ErrorManager;
@@ -180,7 +182,12 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
         handle.progress (NbBundle.getMessage (NewRailsProjectWizardIterator.class, "LBL_NewRailsProjectWizardIterator_WizardProgress_PreparingToOpen"), 4);
         dirF = (dirF != null) ? dirF.getParentFile() : null;
         if (dirF != null && dirF.exists()) {
-            ProjectChooser.setProjectsFolder (dirF);    
+            ProjectChooser.setProjectsFolder (dirF);
+
+            // #164082
+            if (deploy) {
+                RakeSupport.refreshTasks(FileOwnerQuery.getOwner(dir));
+            }
         }
         
         // Open README.rails in the JRuby distribution
@@ -222,7 +229,7 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
                 }
             }
         }
-        
+
         return resultSet;
     }
     

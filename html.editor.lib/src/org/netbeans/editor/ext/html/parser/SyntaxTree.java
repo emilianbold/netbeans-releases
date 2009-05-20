@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.editor.ext.html.parser;
@@ -55,6 +55,14 @@ import org.openide.util.NbBundle;
  * @author Tomasz.Slota@Sun.COM, mfukala@netbeans.org
  */
 public class SyntaxTree {
+
+    //error messages keys, used for unit testing
+    static final String UNEXPECTED_TAG_KEY = "unexpected_tag";
+    static final String UNRESOLVED_TAG_KEY = "unresolved_tag";
+    static final String UNKNOWN_TAG_KEY = "unknown_tag";
+    static final String UNKNOWN_ATTRIBUTE_KEY = "unknown_attribute";
+    static final String FORBIDDEN_END_TAG = "forbidded_endtag";
+    static final String UNMATCHED_TAG = "unmatched_tag";
 
     static boolean DEBUG = false; //for unit testing
 
@@ -79,7 +87,15 @@ public class SyntaxTree {
                 // add opening tag node
 
                 String tagName = ((SyntaxElement.Named) element).getName();
-                AstNode lastNode = !nodeStack.isEmpty() ? nodeStack.getLast() : null;
+
+                AstNode lastNode = null;
+                //find first dtd tag in the stack
+                for(int i = nodeStack.size() - 1; i >= 0; i--) {
+                    if(nodeStack.get(i).isDTDTag()) {
+                        lastNode = nodeStack.get(i);
+                        break;
+                    }
+                }
 
                 if (DEBUG) {
                     System.out.println("--------------------------------");
@@ -89,7 +105,7 @@ public class SyntaxTree {
 
                 Element currentNodeDtdElement = dtd.getElement(isXHTML ? tagName : tagName.toUpperCase(Locale.ENGLISH));
                 ContentModel contentModel = null;
-                Collection<String> errorMessages = new ArrayList<String>(2);
+                Collection<String[]> errorMessages = new ArrayList<String[]>(2);
                 Collection<Description> unknownAttributeMessages = new ArrayList<Description>(2);
 
                 //some error checks >>>
@@ -103,10 +119,9 @@ public class SyntaxTree {
                             if (!lastNode.isResolved()) {
                                 //the parent node is not resolved we cannot close it
                                 //some mandatory content unresolved, report error
-
                                 String expectedElements = elementsToString(lastNode.getAllPossibleElements());
-                                errorMessages.add(NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG",
-                                        new Object[]{currentNodeDtdElement.getName(), expectedElements}));
+                                errorMessages.add(new String[]{UNEXPECTED_TAG_KEY, NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG",
+                                        new Object[]{currentNodeDtdElement.getName(), expectedElements})});
 
                                 if (DEBUG) {
                                     System.out.println("NODE NOT RESOLVED! Missing " + expectedElements);
@@ -121,26 +136,26 @@ public class SyntaxTree {
                                     //the last node need an end tag => error
                                     Collection<Element> possibleElems = lastNode.getAllPossibleElements();
                                     if (possibleElems.isEmpty()) {
-                                        errorMessages.add(NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG_NO_EXPECTED_CONTENT",
-                                                new Object[]{currentNodeDtdElement.getName()}));
+                                        errorMessages.add(new String[]{UNEXPECTED_TAG_KEY,NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG_NO_EXPECTED_CONTENT",
+                                                new Object[]{currentNodeDtdElement.getName()})});
                                     } else {
                                         String expectedElements = elementsToString(possibleElems);
-                                        errorMessages.add(NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG",
-                                                new Object[]{currentNodeDtdElement.getName(), expectedElements}));
+                                        errorMessages.add(new String[]{UNEXPECTED_TAG_KEY, NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG",
+                                                new Object[]{currentNodeDtdElement.getName(), expectedElements})});
                                     }
                                 } else {
                                     //the last node has optional end tag, can be closed
 
                                     //close the previous node
                                     lastNode.setEndOffset(element.offset());
-                                    nodeStack.removeLast();
+                                    nodeStack.remove(lastNode);
 
-                                    //hmm, the last node didn't resolve this tag, lets try its parent
-                                    AstNode parentNode = nodeStack.getLast();
-                                    if (!parentNode.isResolved()) {
-                                        //an attempt to reduce the current node within its parent
-                                        parentNode.reduce(currentNodeDtdElement);
-                                    }
+//                                    //hmm, the last node didn't resolve this tag, lets try its parent
+//                                    AstNode parentNode = nodeStack.getLast();
+//                                    if (!parentNode.isResolved()) {
+//                                        //an attempt to reduce the current node within its parent
+//                                        parentNode.reduce(currentNodeDtdElement);
+//                                    }
 
                                     if (DEBUG) {
                                         System.out.println("Closing tag " + lastNode.name() + " by the end of this tag!");
@@ -158,7 +173,7 @@ public class SyntaxTree {
                     //create DTD content for this node
                     contentModel = currentNodeDtdElement.getContentModel();
                 }
-                
+
                 //<<< end of error checks
 
                 int openingTagEndOffset = element.offset() + element.length();
@@ -168,7 +183,7 @@ public class SyntaxTree {
                 nodeStack.getLast().addChild(newTagNode);
                 if (!(( (SyntaxElement.Tag) element).isEmpty() ||
                         (currentNodeDtdElement != null && currentNodeDtdElement.isEmpty()))) {
-                    //the node is either empty by declaration or by definition
+                    //the node is neeither empty by declaration nor by definition
                     nodeStack.add(newTagNode);
                 }
 
@@ -219,12 +234,12 @@ public class SyntaxTree {
                                 String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNRESOLVED_TAG",
                                         new Object[]{elementsToString(lastNode.getAllPossibleElements())});
 
-                                openTag.addDescriptionToNode(errorMessage, Description.ERROR);
+                                openTag.addDescriptionToNode(UNRESOLVED_TAG_KEY, errorMessage, Description.ERROR);
                             }
 
                             //test if the tag is empty - if so the and tag is forbidden
                             if (dtdElement.isEmpty()) {
-                                closingTag.addDescriptionToNode(NbBundle.getMessage(SyntaxTree.class, "MSG_FORBIDDEN_ENDTAG"), Description.ERROR);
+                                closingTag.addDescriptionToNode(FORBIDDEN_END_TAG, NbBundle.getMessage(SyntaxTree.class, "MSG_FORBIDDEN_ENDTAG"), Description.ERROR);
                             }
 
                         } else {
@@ -233,7 +248,7 @@ public class SyntaxTree {
                             if (!openTag.name().contains(":")) {
                                 String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_TAG",
                                         new Object[]{openTag.name()});
-                                openTag.addDescriptionToNode(errorMessage, Description.ERROR);
+                                openTag.addDescriptionToNode(UNKNOWN_TAG_KEY, errorMessage, Description.ERROR);
                             }
                         }
                     }
@@ -246,7 +261,9 @@ public class SyntaxTree {
                     AstNode newTagNode = new AstNode(tagName, AstNode.NodeType.TAG,
                             element.offset(), closingTagEndOffset);
 
-                    newTagNode.markUnmatched();
+                    String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNMATCHED_TAG");
+                    newTagNode.addDescriptionToNode(UNMATCHED_TAG, errorMessage, Description.WARNING);
+
                     nodeStack.getLast().addChild(newTagNode);
                     nodeStack.add(newTagNode);
                     newTagNode.addChild(closingTag);
@@ -275,7 +292,7 @@ public class SyntaxTree {
         for (TagAttribute ta : existingAttrs) {
             if (dtdElement.getAttribute(ta.getName().toLowerCase(Locale.ENGLISH)) == null) {
                 //unknown attribute
-                Description desc = Description.create(NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_ATTRIBUTE",
+                Description desc = Description.create(UNKNOWN_ATTRIBUTE_KEY, NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_ATTRIBUTE",
                         new Object[]{ta.getName(), element.getName()}), Description.WARNING, ta.getNameOffset(), ta.getNameOffset() + ta.getName().length());
 
                 errmsgs.add(desc);
@@ -306,15 +323,19 @@ public class SyntaxTree {
 
         for (int i = 0; i < nodesToDelete; i++) {
             LinkedList<AstNode> orphans = new LinkedList<AstNode>();
-            nodeStack.getLast().markUnmatched();
+            AstNode lastInStack = nodeStack.getLast();
+            lastInStack.markUnmatched();
 
-            for (AstNode child : nodeStack.getLast().children()) {
+            String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNMATCHED_TAG");
+            lastInStack.addDescriptionToNode(UNMATCHED_TAG, errorMessage, Description.WARNING);
+
+            for (AstNode child : lastInStack.children()) {
                 if (child.type() == AstNode.NodeType.TAG || child.type() == AstNode.NodeType.UNMATCHED_TAG) {
                     orphans.add(child);
                 }
             }
 
-            nodeStack.getLast().removeTagChildren();
+            lastInStack.removeTagChildren();
 
             nodeStack.removeLast();
             orphanMatrix.addFirst(orphans);
@@ -347,4 +368,5 @@ public class SyntaxTree {
 
         return null;
     }
+
 }

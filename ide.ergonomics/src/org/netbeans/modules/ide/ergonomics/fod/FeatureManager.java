@@ -45,6 +45,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -68,18 +70,23 @@ import org.openide.util.lookup.InstanceContent;
  */
 public final class FeatureManager
 implements PropertyChangeListener, LookupListener {
-    private static FeatureManager INSTANCE = new FeatureManager ();
+    private static FeatureManager INSTANCE;
     private static Logger UILOG = Logger.getLogger("org.netbeans.ui.ergonomics"); // NOI18N
     private final Lookup.Result<ModuleInfo> result;
     private final ChangeSupport support;
+    private Set<String> enabledCnbs = Collections.emptySet();
 
     private FeatureManager() {
         support = new ChangeSupport(this);
         result = Lookup.getDefault().lookupResult(ModuleInfo.class);
         result.addLookupListener(this);
+        resultChanged(null);
     }
 
-    public static FeatureManager getInstance () {
+    public static synchronized FeatureManager getInstance () {
+        if (INSTANCE == null) {
+            INSTANCE = new FeatureManager();
+        }
         return INSTANCE;
     }
 
@@ -175,9 +182,11 @@ implements PropertyChangeListener, LookupListener {
             throw new IllegalStateException();
         }
         featureTypesLookup = lkp;
+        noCnbCheck = true;
     }
 
     private static Lookup featureTypesLookup;
+    private static boolean noCnbCheck;
     private static synchronized Lookup featureTypesLookup() {
         if (featureTypesLookup != null) {
             return featureTypesLookup;
@@ -214,9 +223,6 @@ implements PropertyChangeListener, LookupListener {
     }
 
     public void addChangeListener(ChangeListener l) {
-        if (!support.hasListeners()) {
-            resultChanged(null);
-        }
         support.addChangeListener(l);
     }
     public void removeChangeListener(ChangeListener l) {
@@ -228,13 +234,29 @@ implements PropertyChangeListener, LookupListener {
             m.removePropertyChangeListener(this);
             m.addPropertyChangeListener(this);
         }
+        Set<String> tmp = new HashSet<String>();
+        for (ModuleInfo mi : result.allInstances()) {
+            if (mi.isEnabled()) {
+                tmp.add(mi.getCodeNameBase());
+            }
+        }
+        enabledCnbs = tmp;
         if (ev != null) {
             support.fireChange();
         }
     }
     public void propertyChange(PropertyChangeEvent evt) {
         if (ModuleInfo.PROP_ENABLED.equals(evt.getPropertyName())) {
+            ModuleInfo mi = (ModuleInfo)evt.getSource();
+            if (!noCnbCheck && enabledCnbs.contains(mi.getCodeNameBase()) && mi.isEnabled()) {
+                return;
+            }
             support.fireChange();
+            if (mi.isEnabled()) {
+                enabledCnbs.add(mi.getCodeNameBase());
+            } else {
+                enabledCnbs.remove(mi.getCodeNameBase());
+            }
         }
     }
 

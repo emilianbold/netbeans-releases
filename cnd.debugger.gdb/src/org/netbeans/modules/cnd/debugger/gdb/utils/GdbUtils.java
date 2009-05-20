@@ -855,4 +855,32 @@ public class GdbUtils {
         Thread cur = Thread.currentThread();
         return cur.getName() + ':' + Long.toString(cur.getId());
     }
+
+    public static int log10(int n) {
+        int l = 1;
+        while ((n = n / 10) > 0) {
+            l++;
+        }
+        return l;
+    }
+
+    // We have the same in BreakpointsNodeModel
+    private static final String ZEROS = "            "; // NOI18N
+
+    public static String zeros(int n) {
+        // Perf & mem optimization
+        switch (n) {
+            case 1 : return " "; // NOI18N
+            case 2 : return "  "; // NOI18N
+        }
+        if (n < ZEROS.length()) {
+            return ZEROS.substring(0, n);
+        } else {
+            String z = ZEROS;
+            while (z.length() < n) {
+                z += " ";  // NOI18N
+            }
+            return z;
+        }
+    }
 }

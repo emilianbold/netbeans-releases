@@ -47,10 +47,8 @@ import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
+import org.netbeans.modules.hudson.api.UI;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
-import org.netbeans.modules.hudson.ui.actions.ShowBuildConsole;
-import org.netbeans.modules.hudson.ui.actions.ShowChanges;
-import org.netbeans.modules.hudson.ui.actions.ShowFailures;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
@@ -102,10 +100,10 @@ class HudsonJobBuildNode extends AbstractNode {
 
     public @Override Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
-        actions.add(new ShowChanges(build));
-        actions.add(new ShowBuildConsole(build));
+        actions.add(UI.showChangesAction(build));
+        actions.add(UI.showConsoleAction(build));
         if (build.getResult() == HudsonJobBuild.Result.UNSTABLE && build.getMavenModules().isEmpty()) {
-            actions.add(new ShowFailures(build));
+            actions.add(UI.showFailuresAction(build));
         }
         actions.add(null);
         actions.add(SystemAction.get(OpenUrlAction.class));

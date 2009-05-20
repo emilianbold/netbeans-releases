@@ -52,7 +52,6 @@ import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -95,23 +94,15 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
         Element el = treePathHandle.resolveElement(info);
         TreePathHandle sourceType = refactoring.getSourceType();
         
-        if (sourceType == null) {
-            preCheckProblem = new Problem(true, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "ERR_InnerToOuter_MustBeInnerClass")); // NOI18N
-            return preCheckProblem;
-        }
-        
         // check whether the element is valid
-        //            Problem result = isElementAvail(sourceType);
-        //            if (result != null) {
-        //                // fatal error -> don't continue with further checks
-        //                return result;
-        //            }
-        if (!RetoucheUtils.isElementInOpenProject(RetoucheUtils.getFileObject(sourceType))) {
-            preCheckProblem = new Problem(true, NbBundle.getMessage(
-                    InnerToOuterRefactoringPlugin.class,
-                    "ERR_ProjectNotOpened",
-                    FileUtil.getFileDisplayName(RetoucheUtils.getFileObject(sourceType))));
-            return preCheckProblem;
+        Problem result = isElementAvail(sourceType, info);
+        if (result != null) {
+            // fatal error -> don't continue with further checks
+            return result;
+        }
+        result = JavaPluginUtils.isSourceElement(el, info);
+        if (result != null) {
+            return result;
         }
         
         

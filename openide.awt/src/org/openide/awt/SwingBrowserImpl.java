@@ -577,6 +577,13 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
             }
         }
 
+        @Override
+        public void scrollToReference(String reference) {
+            if( !isShowing() || null == getParent() || getWidth() < 1 || getHeight() < 1 )
+                return;
+            super.scrollToReference(reference);
+        }
+
         /**
          * An action to scroll the browser content up or down.
          */

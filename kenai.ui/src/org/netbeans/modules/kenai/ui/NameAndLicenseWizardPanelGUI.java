@@ -908,7 +908,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         try {
             p = ProjectManager.getDefault().findProject(fo);
             ProjectInformation pi = ProjectUtils.getInformation(p);
-            setProjectName(pi.getName().toLowerCase().replaceAll("[^a-z0-9-]", "-"));//NOI18N
+            setProjectName(pi.getName().toLowerCase().replaceAll("[^a-z0-9-]", "-")); // NOI18N
             setProjectTitle(pi.getDisplayName());
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -944,7 +944,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         if (list != null) {
             return getLicenses().get(index).getName();
         }
-        return ""; // XXX or null ???
+        return ""; // NOI18N
     }
 
 }

@@ -45,12 +45,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
@@ -61,7 +59,7 @@ import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -128,7 +126,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         if (p != null) {
             String s = (String) p.getValue();
             if (s.length() > 0) {
-                restrictSourceRoot = FileUtil.normalizeFile(new File(s)).getAbsolutePath();
+                restrictSourceRoot = CndFileUtils.normalizeFile(new File(s)).getAbsolutePath();
             }
         }
         String restrictCompileRoot = null;
@@ -136,7 +134,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         if (p != null) {
             String s = (String) p.getValue();
             if (s.length() > 0) {
-                restrictCompileRoot = FileUtil.normalizeFile(new File(s)).getAbsolutePath();
+                restrictCompileRoot = CndFileUtils.normalizeFile(new File(s)).getAbsolutePath();
             }
         }
         for (SourceFileProperties f : getSourceFileProperties(file, map)) {
@@ -357,7 +355,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         }
 
         private String normalizePath(String path){
-            path = FileUtil.normalizeFile(new File(path)).getAbsolutePath();
+            path = CndFileUtils.normalizeFile(new File(path)).getAbsolutePath();
             if (Utilities.isWindows()) {
                 path = path.replace('\\', '/');
             }

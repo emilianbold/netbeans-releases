@@ -1655,10 +1655,10 @@ public final class FileUtil extends Object {
         try {
             retVal = file.getCanonicalFile();
         } catch (IOException e) {
+            String path = file.getPath();
             // report only other than UNC path \\ or \\computerName because these cannot be canonicalized
-            if (!file.getPath().equals("\\\\") && !("\\\\".equals(file.getParent()))) {  //NOI18N
-                LOG.warning("getCanonicalFile() on file " + file + " failed: " + e);  //NOI18N
-                LOG.log(Level.FINE, file.toString(), e);
+            if (!path.equals("\\\\") && !("\\\\".equals(file.getParent()))) {  //NOI18N
+                LOG.log(Level.FINE, path, e);
             }
         }
         // #135547 - on Windows Vista map "Documents and Settings\<username>\My Documents" to "Users\<username>\Documents"

@@ -99,6 +99,11 @@ public class RecentSearches {
                 return;
             }
         }
+
+        // ugly hack to not include special Maven setup search item
+        if ("SearchSetup".equals(result.getAction().getClass().getSimpleName())) {
+            return;
+        }
         
         if (recent.size()>=MAX_ITEMS) {
             recent.removeLast();

@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.ide.ergonomics.fod;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,20 +46,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.core.startup.layers.LayerCacheManager;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.XMLFileSystem;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
-import org.xml.sax.SAXException;
 
 /**
  *
@@ -68,6 +66,7 @@ import org.xml.sax.SAXException;
 public class FoDFileSystem extends MultiFileSystem 
 implements Runnable, ChangeListener, LookupListener {
     private static FoDFileSystem INSTANCE;
+    private static final LayerCacheManager manager = LayerCacheManager.create("all-ergonomics.dat"); // NOI18N
     final static Logger LOG = Logger.getLogger (FoDFileSystem.class.getPackage().getName());
     private static RequestProcessor RP = new RequestProcessor("Ergonomics"); // NOI18N
     private RequestProcessor.Task refresh = RP.create(this, true);
@@ -80,6 +79,17 @@ implements Runnable, ChangeListener, LookupListener {
         INSTANCE = this;
         setPropagateMasks(true);
         FeatureManager.getInstance().addChangeListener(this);
+        FileSystem fs;
+        try {
+            fs = manager.loadCache();
+            if (fs != null) {
+                LOG.fine("Using cached layer"); // NOI18N
+                setDelegates(fs);
+                return;
+            }
+        } catch (IOException ex) {
+            LOG.log(Level.WARNING, "Cannot read cache", ex); // NOI18N
+        }
         refresh();
     }
 
@@ -106,52 +116,45 @@ implements Runnable, ChangeListener, LookupListener {
         refresh.waitFinished();
     }
 
-    private FileSystem def;
-    private FileSystem getDefaultLayer() {
-        if (def == null) {
-            try {
-                if (FeatureInfo.doParseXML()) {
-                    def = new XMLFileSystem(FoDFileSystem.class.getResource("default.xml"));
-                    return def;
-                }
-                def = FileUtil.createMemoryFileSystem();
-            } catch (SAXException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return def;
-    }
-    
     public void run() {
         boolean empty = true;
-
         LOG.fine("collecting layers"); // NOI18N
-        List<FileSystem> delegate = new ArrayList<FileSystem>();
+        List<URL> urls = new ArrayList<URL>();
         for (FeatureInfo info : FeatureManager.features()) {
             if (!info.isPresent()) {
                 continue;
             }
             if (!info.isEnabled()) {
                 LOG.finest("adding feature " + info.clusterName); // NOI18N
-                delegate.add(info.getXMLFileSystem());
+                if (info.getLayerURL() != null) {
+                    urls.add(info.getLayerURL());
+                }
             } else {
                 empty = false;
             }
         }
         if (empty && noAdditionalProjects()) {
             LOG.fine("adding default layer"); // NOI18N
-            delegate.add(0, getDefaultLayer());
+            urls.add(0, FoDFileSystem.class.getResource("default.xml")); // NOI18N
         }
         if (forcedRefresh) {
             forcedRefresh = false;
             LOG.log(Level.INFO, "Forced refresh. Setting delegates to empty"); // NOI18N
             setDelegates();
-            LOG.log(Level.INFO, "New delegates count: {0}", delegate.size()); // NOI18N
-            LOG.log(Level.INFO, "{0}", delegate); // NOI18N
+            LOG.log(Level.INFO, "New delegates count: {0}", urls.size()); // NOI18N
+            LOG.log(Level.INFO, "{0}", urls); // NOI18N
         }
-        LOG.log(Level.FINE, "delegating to {0} layers", delegate.size()); // NOI18N
-        LOG.log(Level.FINEST, "{0}", delegate); // NOI18N
-        setDelegates(delegate.toArray(new FileSystem[0]));
+        LOG.log(Level.FINE, "delegating to {0} layers", urls.size()); // NOI18N
+        LOG.log(Level.FINEST, "{0}", urls); // NOI18N
+
+        try {
+            FileSystem fs = getDelegates().length == 0 ?
+                manager.createEmptyFileSystem() : getDelegates()[0];
+            fs = manager.store(fs, urls);
+            setDelegates(fs);
+        } catch (IOException ex) {
+            LOG.log(Level.WARNING, "Cannot save cache", ex);
+        }
         LOG.fine("done");
         FeatureManager.dumpModules();
     }

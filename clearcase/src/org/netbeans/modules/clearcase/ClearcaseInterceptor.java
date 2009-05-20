@@ -259,7 +259,20 @@ public class ClearcaseInterceptor extends VCSInterceptor {
     public boolean isMutable(File file) {
         return true;
     }
-    
+
+    @Override
+    public Object getAttribute(final File file, String attrName) {
+        if("ProvidedExtensions.Refresh".equals(attrName)) {
+            return new Runnable() {
+                public void run() {
+                    FileStatusCache.refreshRecursively(file, true, null, cache);
+                }
+            };
+        } else {
+            return super.getAttribute(file, attrName);
+        }
+    }
+
     private void exec(ClearcaseCommand command, boolean notifyErrors) {        
         Clearcase.getInstance().getClient().exec(command, notifyErrors);
     }

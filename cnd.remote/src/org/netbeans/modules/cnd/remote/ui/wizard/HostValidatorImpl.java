@@ -108,12 +108,11 @@ public class HostValidatorImpl implements HostValidator {
             return false;
         }
         if (!alreadyOnline) {
+            writer.print(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgDone") + '\n');
+            writer.print(NbBundle.getMessage(getClass(), "CSM_ConfHost") + '\n');
             record.init(null);
         }
         if (record.isOnline()) {
-            if (!alreadyOnline) {
-                writer.print(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgDone") + '\n');
-            }
             CompilerSetReporter.setWriter(new Writer() {
 
                 @Override
@@ -130,8 +129,8 @@ public class HostValidatorImpl implements HostValidator {
                 public void close() throws IOException {
                 }
             });
-            final CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(env);
-           csm.initialize(false, false);
+            final CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(env, false);
+            csm.initialize(false, false);
             runOnFinish = new Runnable() {
                 public void run() {
                     csm.finishInitialization();

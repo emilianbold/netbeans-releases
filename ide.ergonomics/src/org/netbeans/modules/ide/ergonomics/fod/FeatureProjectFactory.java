@@ -132,11 +132,11 @@ public class FeatureProjectFactory implements ProjectFactory, PropertyChangeList
                 doms.put(relative, doc);
                 return doc;
             } catch (ParserConfigurationException parserConfigurationException) {
-                Exceptions.printStackTrace(parserConfigurationException);
+                LOG.log(Level.WARNING, "Cannot configure XML parser", parserConfigurationException); // NOI18N
             } catch (SAXException sAXException) {
-                Exceptions.printStackTrace(sAXException);
+                LOG.log(Level.INFO, "XML broken in " + f, sAXException); // NOI18N
             } catch (IOException iOException) {
-                Exceptions.printStackTrace(iOException);
+                LOG.log(Level.INFO, "Cannot read " + f, iOException); // NOI18N
             }
             return null;
         }

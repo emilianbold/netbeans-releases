@@ -116,7 +116,6 @@ is the proper place.
                  Addint <code>TreeMake.Method(..., boolean isVarArg)</code> to allow creation of methods with variable lenght of arguments. 
              </description>
             <class package="org.netbeans.api.java.source" name="TreeMaker"/>
-            <class package="org.netbeans.modules.java.source.builder" name="TreeFactory"/>
         </change>
         <change id="Comment.create">
              <api name="general"/>

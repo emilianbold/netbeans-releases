@@ -107,7 +107,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
                     fullname = fullname.toLowerCase();
                 }
                 // go through path map
-                path = debugger.getPathMap().getRemotePath(path);
+                path = debugger.getPathMap().getRemotePath(path,true);
                 
                 if (!debugger.comparePaths(path, fullname)) {
                     debugger.getGdbProxy().getLogger().logMessage(

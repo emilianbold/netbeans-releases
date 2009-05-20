@@ -39,7 +39,8 @@
 package org.netbeans.modules.maven.j2ee.ear;
 
 import java.io.File;
-import org.netbeans.modules.maven.api.Constants;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -49,7 +50,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
@@ -60,7 +60,6 @@ import org.netbeans.modules.j2ee.spi.ejbjar.EarProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.POHImpl;
-import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -120,8 +119,14 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
      * @return array of J2eeModuleProvider objects.
      */
     public J2eeModuleProvider[] getChildModuleProviders() {
-//        System.out.println("!!!give me child module providers..");
-        return new J2eeModuleProvider[0];
+        List<J2eeModuleProvider> provs = new ArrayList<J2eeModuleProvider>();
+        for (Project prj : earimpl.getProjects()) {
+            J2eeModuleProvider prv = prj.getLookup().lookup(J2eeModuleProvider.class);
+            if (prv != null) {
+                provs.add(prv);
+            }
+        }
+        return provs.toArray(new J2eeModuleProvider[0]);
     }
 
     public synchronized J2eeModule getJ2eeModule() {

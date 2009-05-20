@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -165,7 +166,7 @@ public final class NativeProjectProvider {
 	
 	private void addFiles(List<File> files) {
 	    for( File file : files ) {
-		addFile(file);
+		addFile(file.getAbsoluteFile());
 	    }
 	}
 	
@@ -294,7 +295,7 @@ public final class NativeProjectProvider {
         public NativeFileItemImpl(File file, NativeProjectImpl project, NativeFileItem.Language language) {
 	    
             this.project = project;
-            this.file = FileUtil.normalizeFile(file);
+            this.file = CndFileUtils.normalizeFile(file);
             this.lang = language;
         }
         

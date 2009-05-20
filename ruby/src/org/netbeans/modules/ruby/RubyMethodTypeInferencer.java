@@ -72,6 +72,7 @@ final class RubyMethodTypeInferencer {
     private final boolean fast;
 
     static {
+        METHOD_TYPES.put("<=>", RubyType.INTEGER);
         METHOD_TYPES.put("to_s", RubyType.STRING);
         METHOD_TYPES.put("to_str", RubyType.STRING);
         METHOD_TYPES.put("to_string", RubyType.STRING);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,16 +34,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.jira;
 
+import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.spi.KenaiSupport;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.jira.issue.JiraIssueFinder;
 import org.netbeans.modules.jira.query.kenai.KenaiSupportImpl;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -54,6 +57,7 @@ import org.openide.util.NbBundle;
 public class JiraConnector extends BugtrackingConnector {
 
     private KenaiSupport kenaiSupport;
+    private JiraIssueFinder issueFinder;
 
     public String getDisplayName() {
         return getConnectorName();
@@ -83,6 +87,14 @@ public class JiraConnector extends BugtrackingConnector {
             kenaiSupport = new KenaiSupportImpl();
         }
         return kenaiSupport;
+    }
+
+    @Override
+    public IssueFinder getIssueFinder() {
+        if (issueFinder == null) {
+            issueFinder = Lookup.getDefault().lookup(JiraIssueFinder.class);
+        }
+        return issueFinder;
     }
 
 }

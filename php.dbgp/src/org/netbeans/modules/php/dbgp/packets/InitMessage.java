@@ -78,11 +78,12 @@ public class InitMessage extends DbgpMessage {
      * @see org.netbeans.modules.php.dbgp.packets.DbgpMessage#process(org.netbeans.modules.php.dbgp.DebugSession)
      */
     @Override
-    public void process( DebugSession session, DbgpCommand command )
-    {
-        setId( session );
-
-        setMaxDataSize( session );
+    public void process( DebugSession session, DbgpCommand command ) {
+        setId(session);
+        setShowHidden(session);
+        setMaxDepth(session);
+        setMaxChildren(session);
+        setMaxDataSize(session);
         
         setBreakpoints( session );
         final String transactionId = session.getTransactionId();        
@@ -121,6 +122,23 @@ public class InitMessage extends DbgpMessage {
         else {
             DbgpMessage.setMaxDataSize( maxSize );
         }
+    }
+    private void setShowHidden(DebugSession session) {
+        setFeature(session, Feature.SHOW_HIDDEN, "1");//NOI18N
+    }
+    private void setMaxDepth(DebugSession session) {
+        setFeature(session, Feature.MAX_DEPTH, "3");//NOI18N
+    }
+    private void setMaxChildren(DebugSession session) {
+        setFeature(session, Feature.MAX_CHILDREN, "31");//NOI18N
+    }
+    private void setFeature(DebugSession session, Feature feature, String value) {
+        FeatureSetCommand setCommand = new FeatureSetCommand(
+                session.getTransactionId());
+        setCommand.setFeature(feature);
+        setCommand.setValue(value);
+        DbgpResponse response = session.sendSynchronCommand(setCommand);
+        assert response instanceof FeatureSetResponse;
     }
 
     private void setBreakpoints( DebugSession session ) {

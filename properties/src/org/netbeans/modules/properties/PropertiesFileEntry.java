@@ -85,6 +85,9 @@ public class PropertiesFileEntry extends PresentableFileEntry
     /** Editor support for this entry. */
     private transient PropertiesEditorSupport editorSupport;
 
+    /** This object is used for marking all undoable edits performed as one atomic undoable action. */
+    transient Object atomicUndoRedoFlag;
+    
     /** Generated serial version UID. */    
     static final long serialVersionUID = -3882240297814143015L;
     
@@ -228,7 +231,7 @@ public class PropertiesFileEntry extends PresentableFileEntry
     protected PropertiesEditorSupport getPropertiesEditor() {
         // Hack to ensure open support is created.
         // PENDING has to be made finer.
-        getDataObject().getCookie(PropertiesOpen.class);
+//        getDataObject().getCookie(PropertiesOpen.class);
 
         synchronized(this) {
             if(editorSupport == null) 

@@ -55,6 +55,7 @@ import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import javax.swing.BoxLayout;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -655,6 +656,10 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         }
     }
 
+    protected String getIcon(T node){
+        return null;
+    }
+
     class NodeModelImpl implements ExtendedNodeModel {
 
         private final Object nodesMapLock = new Object();
@@ -707,7 +712,22 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
             return "Unknown";//NOI18N
         }
 
+
+
+        @SuppressWarnings("unchecked")
         public String getIconBase(Object node) {
+            if (node == TreeModel.ROOT) {
+                return null;
+            }
+            final Object finalNodeObject = node;
+            if (node instanceof DefaultMutableTreeNode) {
+                DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) node;
+                final Object nodeObject = treeNode.getUserObject();
+                //we should check type here
+                if (nodeObject instanceof TreeTableNode) {
+                    return getIcon((T)nodeObject);
+                }
+            }
             return null;
         }
 
@@ -764,7 +784,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
                 listeners.remove(l);
             }
         }
-
+        
         public boolean canRename(Object arg0) throws UnknownTypeException {
             return false;
         }

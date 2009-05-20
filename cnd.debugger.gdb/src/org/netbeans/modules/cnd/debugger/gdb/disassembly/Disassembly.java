@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.cookies.CloseCookie;
@@ -218,7 +219,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
                         //String path = debugger.getRunDirectory();
                         String fileStr = readValue(FILE_HEADER, msg, combinedPos);
                         if (srcFile != null && srcFile.getName().equals(fileStr)) {
-                            FileObject src_fo = FileUtil.toFileObject(FileUtil.normalizeFile(srcFile));
+                            FileObject src_fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(srcFile));
                             if (src_fo != null) {
                                 try {
                                     String lineText = DataObject.find(src_fo).getCookie(LineCookie.class).getLineSet().getCurrent(lineIdx-1).getText();

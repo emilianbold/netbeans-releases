@@ -93,17 +93,8 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
                 totalColumn,
                 stackColumn);
 
-
-        rawTableMetadata = new DataTableMetadata("mem", columns); // NOI18N
-//
-//        columns = Arrays.asList(
-//                timestampColumn,
-//                kindColumn,
-//                sizeColumn,
-//                addressColumn,
-//                totalColumn);
-//
-//        indicatorTableMetadata = new DataTableMetadata("mem", columns); // NOI18N
+        rawTableMetadata = new DataTableMetadata("mem", // NOI18N
+                columns, Arrays.asList(timestampColumn, addressColumn));
     }
 
     public MemoryToolConfigurationProvider() {

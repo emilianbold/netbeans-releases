@@ -48,7 +48,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.Utilities;
 
 /**
@@ -122,7 +122,7 @@ public final class ProjectImpl implements ProjectProperties {
    
     private void updateFolder(SourceFileProperties source){
         File file = new File(source.getItemPath());
-        String path = FileUtil.normalizeFile(file.getParentFile()).getAbsolutePath();
+        String path = CndFileUtils.normalizeFile(file.getParentFile()).getAbsolutePath();
         // folders should use unix style
         if (Utilities.isWindows()) {
             path = path.replace('\\', '/');

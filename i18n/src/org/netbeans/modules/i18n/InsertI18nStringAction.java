@@ -153,7 +153,7 @@ public class InsertI18nStringAction extends CookieAction {
         try {
             I18nString i18nString = i18nPanel.getI18nString();
 
-            if(i18nString.key == null) {
+            if(i18nString.key == null || "".equals(i18nString.key)) {
                 return;
             }
 

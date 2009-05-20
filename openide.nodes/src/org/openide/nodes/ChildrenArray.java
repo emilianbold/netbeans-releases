@@ -40,8 +40,8 @@
  */
 package org.openide.nodes;
 
-import java.lang.ref.Reference;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -113,7 +113,7 @@ final class ChildrenArray extends NodeAdapter {
      * all references stored in the map, that are finalized
      * will be cleared.
      */
-    public void finalizeNodes() {
+    public synchronized void finalizeNodes() {
         Map m = map;
         if (m != null) {
             // processes the queue of garbage
@@ -152,7 +152,12 @@ final class ChildrenArray extends NodeAdapter {
 
         if (nodes == null) {
             assert !hasToExist : "Cannot find nodes for " + info + " in " + map;
-            nodes = info.entry.nodes(null);
+            try {
+                nodes = info.entry.nodes(null);
+            } catch (RuntimeException ex) {
+                NodeOp.warning(ex);
+                nodes = Collections.<Node>emptyList();
+            }
             info.length = nodes.size();
             map.put(info, nodes);
             if (IS_LOG) {

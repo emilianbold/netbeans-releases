@@ -108,7 +108,7 @@ public class AddExistingFolderItemsAction extends NodeAction {
             addButton,
             DialogDescriptor.CANCEL_OPTION,
         };
-        SourceFilesPanel sourceFilesPanel = new SourceFilesPanel();
+        SourceFilesPanel sourceFilesPanel = new SourceFilesPanel(null);
         JPanel panel = new JPanel();
         panel.setPreferredSize(new Dimension(700, 380));
         panel.setLayout(new java.awt.GridBagLayout());

@@ -145,7 +145,7 @@ public class HudsonManagerImpl {
         return instance;
     }
     
-    public HudsonInstance getInstance(String url) {
+    public HudsonInstanceImpl getInstance(String url) {
         return getInstancesMap().get(url);
     }
     
@@ -274,21 +274,21 @@ public class HudsonManagerImpl {
                 ProjectHudsonProvider.Association assoc = ProjectHudsonProvider.getDefault().findAssociation(project);
                 if (assoc != null && !exists) {
                     String url = assoc.getServerUrl();
-                    HudsonInstance in = getInstance(url);
-                    if (in != null && !in.isPersisted()) {
-                        ProjectHIP props = (ProjectHIP)((HudsonInstanceImpl)in).getProperties();
+                    HudsonInstanceImpl in = getInstance(url);
+                    if (in != null && in.getProperties() instanceof ProjectHIP) {
+                        ProjectHIP props = (ProjectHIP) in.getProperties();
                         props.addProvider(project);
-                        projectInstances.put(project, (HudsonInstanceImpl)in);
+                        projectInstances.put(project,in);
                     } else if (in == null) {
                         ProjectHIP props = new ProjectHIP();
                         props.addProvider(project);
                         addInstance(HudsonInstanceImpl.createHudsonInstance(props));
-                        HudsonInstanceImpl impl = (HudsonInstanceImpl) getInstance(props.get(INSTANCE_URL));
+                        HudsonInstanceImpl impl = getInstance(props.get(INSTANCE_URL));
                         projectInstances.put(project, impl);
                     }
                 } else if (assoc == null && exists) {
                     HudsonInstanceImpl remove = projectInstances.remove(project);
-                    if (remove != null && !remove.isPersisted()) {
+                    if (remove != null && remove.getProperties() instanceof ProjectHIP) {
                         ProjectHIP props = (ProjectHIP)remove.getProperties();
                         props.removeProvider(project);
                         if (props.getProviders().isEmpty()) {
@@ -301,7 +301,7 @@ public class HudsonManagerImpl {
             newprjs.removeAll(Arrays.asList(prjs));
             for (Project project : newprjs) {
                 HudsonInstanceImpl remove = projectInstances.remove(project);
-                if (remove != null && !remove.isPersisted()) {
+                if (remove != null && remove.getProperties() instanceof ProjectHIP) {
                     ProjectHIP props = (ProjectHIP)remove.getProperties();
                     props.removeProvider(project);
                     if (props.getProviders().isEmpty()) {

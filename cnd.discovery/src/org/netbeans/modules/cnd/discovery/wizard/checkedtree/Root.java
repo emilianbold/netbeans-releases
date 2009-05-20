@@ -48,7 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 /**
  *
@@ -74,7 +74,7 @@ public class Root implements AbstractRoot {
     }
 
     public String getFolder(){
-        return FileUtil.normalizeFile(new File(folder)).getAbsolutePath();
+        return CndFileUtils.normalizeFile(new File(folder)).getAbsolutePath();
     }
     
     private Root getChild(String child){

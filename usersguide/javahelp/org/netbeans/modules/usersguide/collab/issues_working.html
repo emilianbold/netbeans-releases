@@ -13,34 +13,67 @@
     <body>
         <h2>Working With Issues</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-        <!--<p>The IDE enables you to configure options for its many areas of functionality
-        as well as  customize its workspace. </p>
-        <h3>The IDE's Configuration Tools</h3>
-        <p>The primary tools you can use to configure and update the IDE include the following:</p>
-        <ul>
-            <li><b>Options Window.</b> Enables you to set general IDE settings, edit any of the IDE's configurable
-            settings and <a href="../shortcuts/menucuts-setting.html">set keyboard shortcuts</a>. 
-            You open the Options window by choosing Tools &gt; Options. (On Mac OS X, 
-            choose NetBeans &gt; Preferences.)
-            For more information, see <a href="configure_options.html">Using the Options Window</a>.</li>
-            <li><b>Plugins manager.</b> Enables you to enable and disable installed plugins and add new or updated plugins to the
-            IDE. For more information, see <a href="modules/autoupdate.html">Updating the IDE</a>.</li>
-        </ul>
+        <p>After you register an issue tracking system with the IDE,
+        you can perform most common issues-related tasks from within the IDE.
+        If you are using an issue tracking system provided by Kenai, the issue tracker
+        is already registered with the IDE and associated with a project.
+        You can also <a href="issues_external.html">register an external tracker</a> in the Services window.
+        </p>
 
         <ul class="note">
-            <li>You can also pass startup parameters to the IDE
-            launcher in the <i>IDE-HOME</i><tt>/etc/netbeans.conf</tt> file 
-            by using startup switches. For more information, see <a href="configure_startup-switches.html">IDE Startup Parameters</a>.</li>
-        </ul>-->
+            <li>If you are working on a project on Kenai,
+            you can use the Kenai Dashboard to work with project issues.
+            For more information, see <a href="kenai_dashboard.html">Working With Kenai Projects</a>.</li>
+        </ul>
+
+            <h3>Finding and Opening issues</h3>
+            <p>The Find Issues form enables you to find and view reported issues on a registered issue tracker.
+            You also use the Find Issues form to create and save queries.</p>
+            <ol>
+                <li>From the main menu, choose Team &gt; Find Issues.</li>
+                <li>Select the issue tracker from the dropdown list.</li>
+                <li>Specify the search criteria.</li>
+                <li>Click Search.</li>
+            </ol>
+            <p>Issues matching your search query are displayed at the bottom of the form.
+            Double-click an issue to open it in a new window in the IDE.
+            You can update the issue in the IDE.</p>
+            
+            <h3>Creating and Saving Issue Queries</h3>
+            <p>The IDE enables you to save and name search queries that you use repeatedly.
+            You can create and save queries using the Find Issues form or create a query as a URL.
+            </p>
+            <ol>
+                <li>In the Find Issues form, select the issue tracker from the dropdown list.</li>
+                <li>Specify the search criteria.</li>
+                <li>Click Save this query.</li>
+            </ol>
+            <p>After you save a query, the query is available at the top of the Find Issues form each time
+                that you select the associated issue tracker.
+            </p>
+            
+            
+            <h3>Reporting New Issues</h3>
+            <p>If you are reporting an issue to an issue tracker provided by Kenai, you need to login to Kenai before
+                you can submit the issue in the New Issue form.
+            </p>
+            <ol>
+                <li>From the main menu, choose Team &gt; Report an Issue.</li>
+                <li>Select the issue tracker for the project.</li>
+                <li>Specify the details of the issue.</li>
+                <li>Click Submit Issue.</li>
+            </ol>
+
+
+        
 
 
 
         <dl>
             <dt>
             <a name="seealso">See Also</a></dt>
-       <!--     <dd>      <a href="configure_overview.html">Working with IDE Configurations </a></dd>
-            <dd>      <a href="configure_quickref.html">Configuration Tasks: Quick Reference</a></dd>
--->
+            <dd>      <a href="issues_about.html">About Issue Trackers</a></dd>
+            <dd>      <a href="issues_quickref.html">Issue Tracking Tasks: Quick Reference</a></dd>
         </dl>
         <hr>
         <small><a href="../credits.html">Legal Notices</a></small>

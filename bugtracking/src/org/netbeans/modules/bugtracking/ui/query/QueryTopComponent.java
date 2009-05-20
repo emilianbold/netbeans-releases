@@ -241,6 +241,7 @@ final class QueryTopComponent extends TopComponent
         repoPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
         repoPanel.setNextFocusableComponent(newButton);
 
+        queriesPanel.setBackground(new java.awt.Color(224, 224, 224));
         queriesPanel.setMaximumSize(new java.awt.Dimension(400, 32767));
         queriesPanel.setMinimumSize(new java.awt.Dimension(400, 26));
         queriesPanel.addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -317,7 +318,7 @@ final class QueryTopComponent extends TopComponent
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(panel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 799, Short.MAX_VALUE)
+            .add(panel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 870, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(repoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)

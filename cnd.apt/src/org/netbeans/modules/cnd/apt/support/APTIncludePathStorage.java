@@ -53,24 +53,9 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
  */
 public final class APTIncludePathStorage {
     private final Map<CharSequence, List<CharSequence>> allIncludes = new HashMap<CharSequence, List<CharSequence>>();
-    private static String baseNewName = "#INCLUDES# "; // NOI18N
     
     public APTIncludePathStorage() {
     }
-
-//    public List<CharSequence> get(List<CharSequence> includeList) {
-//        synchronized (allIncludes) {
-//            // look for equal list in values
-//            for (Iterator<List<CharSequence>> it = allIncludes.values().iterator(); it.hasNext();) {
-//                List<CharSequence> list = it.next();
-//                if (list.equals(includeList)) {
-//                    return list;
-//                }
-//            }
-//            // not found => add new labled one
-//            return get(baseNewName+allIncludes.size(), includeList);
-//        }
-//    }
 
     public List<CharSequence> get(CharSequence configID, List<? extends CharSequence> sysIncludes) {
         CharSequence key = CharSequenceKey.create(configID);

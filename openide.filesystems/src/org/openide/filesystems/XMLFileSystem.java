@@ -308,8 +308,12 @@ public final class XMLFileSystem extends AbstractFileSystem {
 
     private synchronized void setXmlUrls(URL[] urls, boolean validate)
     throws IOException, PropertyVetoException {
-        if ((urls == null) || Arrays.asList(urls).contains(null)) {
-            throw new NullPointerException("Null URL list or member"); // NOI18N
+        if (urls == null) {
+            throw new NullPointerException("Null URL list"); // NOI18N
+        }
+        Collection<URL> asList = Arrays.asList(urls);
+        if (asList.contains(null)) {
+            throw new NullPointerException("Null URL list member: " + asList); // NOI18N
         }
 
         ResourceElem rootElem;

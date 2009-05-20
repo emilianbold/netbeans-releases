@@ -122,6 +122,12 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                 }
             }
         }
+        if (token.getTokenID() == CppTokenId.NEW_LINE) {
+            TokenItem prev = token.getPrevious();
+            if (prev != null && prev.getTokenID() == CppTokenId.ESCAPED_LINE) {
+                return -1;
+            }
+        }
 
         if (token.getTokenID() == CppTokenId.BLOCK_COMMENT || token.getTokenID() == CppTokenId.DOXYGEN_COMMENT){
             if (isMultiLineComment(token)) {

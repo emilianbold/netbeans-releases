@@ -38,15 +38,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 public class IntConfiguration {
+
     private IntConfiguration master;
     private int def;
     private String[] names;
     private String[] options;
-
     private int value;
     private boolean modified;
     private boolean dirty = false;
@@ -58,9 +57,10 @@ public class IntConfiguration {
         this.options = options;
         reset();
     }
-    
+
     /** Needed for CompilerSetConfiguration to maintain compatibility */
-    protected IntConfiguration() {}
+    protected IntConfiguration() {
+    }
 
     public void setValue(int value) {
         this.value = value;
@@ -81,7 +81,7 @@ public class IntConfiguration {
             }
         }
     }
-    
+
     public int getValue() {
         if (master != null && !getModified()) {
             return master.getValue();
@@ -105,7 +105,7 @@ public class IntConfiguration {
     public boolean getDirty() {
         return dirty;
     }
-    
+
     public int getDefault() {
         return def;
     }

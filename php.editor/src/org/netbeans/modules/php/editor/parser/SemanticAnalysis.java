@@ -338,7 +338,12 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         @Override
         public void visit(StaticFieldAccess node) {
             Expression expr = node.getField().getName();
+            if (expr instanceof ArrayAccess) {
+                ArrayAccess arrayAccess = (ArrayAccess)expr;
+                expr = arrayAccess.getName();
+            }
             (new FieldAccessVisitor(ColoringAttributes.STATIC_FIELD_SET)).scan(expr);
+
         }
 
         private class FieldAccessVisitor extends DefaultVisitor {

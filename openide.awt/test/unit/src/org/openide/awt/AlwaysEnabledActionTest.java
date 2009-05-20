@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
@@ -152,6 +153,28 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
 
         assertNull("No icon", smallIcon);
         assertEquals("No warnings:\n" + log, 0, log.length());
+    }
+
+    public void testIconTakenFromDelegate() throws Exception {
+        myListenerCounter = 0;
+        myIconResourceCounter = 0;
+        Action a = readAction("testIconDelegate.instance");
+
+        assertNotNull("Action created", a);
+        Object smallIcon = a.getValue(Action.SMALL_ICON);
+        assertNotNull("Icon taken from iconBase", smallIcon);
+
+        a.actionPerformed(new ActionEvent(this, 0, ""));
+
+        Object newIcon = a.getValue(Action.SMALL_ICON);
+        assertNotNull("Icon provided", newIcon);
+        assertNull("No iconBase anymore", a.getValue("iconBase"));
+
+        if (newIcon == smallIcon) {
+            fail("Icons shall be different!");
+        }
+
+        assertSame("It is the one provided by action", newIcon, a.getValue("v"));
     }
 
     public static URL myURL() {
@@ -328,6 +351,13 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
     private static Action myNamedAction() {
         MyAction a = new MyAction();
         a.putValue(Action.NAME, "MyNamedAction");
+        return a;
+    }
+    private static Action myIconAction() {
+        MyAction a = new MyAction();
+        final ImageIcon ii = new ImageIcon();
+        a.putValue(MyAction.SMALL_ICON, ii);
+        a.putValue("v", ii);
         return a;
     }
     private static ActionListener myContextAction() {

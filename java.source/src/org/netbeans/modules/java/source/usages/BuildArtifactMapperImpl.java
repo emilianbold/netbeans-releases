@@ -286,7 +286,7 @@ public class BuildArtifactMapperImpl {
     }
 
     public static void classCacheUpdated(URL sourceRoot, File cacheRoot, Iterable<File> deleted, Iterable<File> updated) {
-        File targetFolder = getTarget(sourceRoot);
+        File targetFolder = deleted.iterator().hasNext() || updated.iterator().hasNext() ? getTarget(sourceRoot) : null;
         
         if (targetFolder == null) {
             return ;
@@ -317,20 +317,22 @@ public class BuildArtifactMapperImpl {
                 Exceptions.printStackTrace(ex);
             }
         }
-        
-        Set<ArtifactsUpdated> listeners;
-        
-        synchronized (BuildArtifactMapperImpl.class) {
-            listeners = source2Listener.get(sourceRoot);
-            
-            if (listeners != null) {
-                listeners = new HashSet<ArtifactsUpdated>(listeners);
+
+        if (updatedFiles.size() > 0) {
+            Set<ArtifactsUpdated> listeners;
+
+            synchronized (BuildArtifactMapperImpl.class) {
+                listeners = source2Listener.get(sourceRoot);
+
+                if (listeners != null) {
+                    listeners = new HashSet<ArtifactsUpdated>(listeners);
+                }
             }
-        }
-        
-        if (listeners != null) {
-            for (ArtifactsUpdated listener : listeners) {
-                listener.artifactsUpdated(updatedFiles);
+
+            if (listeners != null) {
+                for (ArtifactsUpdated listener : listeners) {
+                    listener.artifactsUpdated(updatedFiles);
+                }
             }
         }
     }

@@ -126,7 +126,7 @@ public abstract class TestBase extends CslTestBase {
         return "test" + (index == (-1) ? "" : (char) ('a' + index)) + ".php";
     }
     
-    protected void performTest(String[] code, final UserTask task) throws Exception {
+    protected void performTest(String[] code, final UserTask task, boolean waitFinished) throws Exception {
         clearWorkDir();
         FileUtil.refreshAll();
 
@@ -143,8 +143,15 @@ public abstract class TestBase extends CslTestBase {
         final FileObject test = folder.getFileObject("test.php");
 
         Source testSource = getTestSource(test);
-        Future<Void> parseWhenScanFinished = ParserManager.parseWhenScanFinished(Collections.singleton(testSource), task);
-        parseWhenScanFinished.get();
+        if (waitFinished) {
+            Future<Void> parseWhenScanFinished = ParserManager.parseWhenScanFinished(Collections.singleton(testSource), task);
+            parseWhenScanFinished.get();
+        } else {
+            ParserManager.parse(Collections.singleton(testSource), task);
+        }
+    }
+    protected void performTest(String[] code, final UserTask task) throws Exception {
+        performTest(code, task, true);
     }
 
     private static Document openDocument(FileObject fileObject) throws Exception {

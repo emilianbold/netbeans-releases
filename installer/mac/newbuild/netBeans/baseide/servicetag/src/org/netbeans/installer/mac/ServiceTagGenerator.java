@@ -110,11 +110,14 @@ public class ServiceTagGenerator {
 
 
     private static void createSTGlassFish(final String product) throws IOException {
-        //Glassfish has product like gf-<version>, i.e. gf-v2, gf-v3
+        //Glassfish has product like gf-<version>, i.e. gf-v2, gf-v3, gf-v2.1
         final String version = product.substring(product.lastIndexOf('-')+1);
         final String gfHome = System.getProperty("location");
         System.out.println("version = " + version);
         System.out.println("gfHome = " + gfHome);
+        // installation ST for glassfish is created in postflight/setup.xml
+        // installation ST for sjsas exists in image
+        // so we just have to register 
      
         ServiceTag gfST = null;
         if (System.getProperty("netbeans.home") != null) {

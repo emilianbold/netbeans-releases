@@ -15,9 +15,12 @@
             </file>
         </folder>
         <folder name="Ruby">
-            <file name="RubyInstanceProviderImpl.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.jruby.RubyInstanceProviderImpl.getDefault"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.jruby.RubyInstanceProviderImpl"/>
+            <file name="V3Provider.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.jruby.RubyInstanceProviderImpl.getV3Provider"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstanceProvider"/>
+            </file>
+            <file name="V3PreludeProvider.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.jruby.RubyInstanceProviderImpl.getV3PreludeProvider"/>
                 <attr name="instanceOf" stringvalue="org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstanceProvider"/>
             </file>
         </folder>

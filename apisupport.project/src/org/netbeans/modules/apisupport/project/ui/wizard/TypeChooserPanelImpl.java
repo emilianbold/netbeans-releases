@@ -596,7 +596,8 @@ JFileChooser chooser = ProjectChooser.projectChooser();
         static void setIsStandaloneOrSuiteComponent(
                 WizardDescriptor settings, Boolean value)
         {
-            if (settings != null){
+            if (settings != null && (value != null ||
+                    settings.getProperty(IS_STANDALONE_OR_SUITE_COMPONENT) != null)) { // #164567 JDK 6 doesn't check for null->null prop. change
                 settings.putProperty(IS_STANDALONE_OR_SUITE_COMPONENT, value);
             }
         }

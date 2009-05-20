@@ -95,7 +95,10 @@ made subject to such option by the copyright holder.
 
 <!-- SQL specific topcs -->
 
-<mapID target="sql_history" url="sql_history.html" /> 
+<mapID target="sql_history" url="sql_history.html" />
+
+<!-- SQL editor context specific help -->
+<mapID target="text.x-sql" url="dbmod.html" />
 
 <!-- SQL History CSH -->
 

@@ -61,6 +61,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.Node;
 import org.openide.text.PositionBounds;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -493,6 +494,77 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
             }
             formFileRenameDone = false; // not to block redo
         }
+    }
+
+    /**
+     * Rough and simple utility to rename a component variable in custom code
+     * areas. Does the same thing as processCustomCode in this regard, but
+     * directly in the model, while processCustomCode changes the .form file
+     * (so does not require the form to be opened).
+     */
+    static void renameComponentInCustomCode(RADComponent metacomp, String newName) {
+        String oldName = metacomp.getName();
+        for (RADComponent comp : metacomp.getFormModel().getAllComponents()) {
+            renameInCustomCode(comp.getKnownBeanProperties(), oldName, newName);
+            renameInCustomCode(comp.getKnownAccessibilityProperties(), oldName, newName);
+            if (comp instanceof RADVisualComponent) {
+                renameInCustomCode(((RADVisualComponent)comp).getConstraintsProperties(), oldName, newName);
+            }
+            renameInCustomCode(comp.getSyntheticProperties(), oldName, newName);
+        }
+    }
+
+    private static void renameInCustomCode(Node.Property[] properties, String oldName, String newName) {
+        for (Node.Property prop : properties) {
+            if (prop instanceof FormProperty) {
+                FormProperty formProp = (FormProperty) prop;
+                String newCode;
+                newCode = replaceCode(formProp.getPreCode(), oldName, newName);
+                if (newCode != null) {
+                    formProp.setPreCode(newCode);
+                }
+                newCode = replaceCode(formProp.getPostCode(), oldName, newName);
+                if (newCode != null) {
+                    formProp.setPostCode(newCode);
+                }
+                if (formProp.isChanged()) {
+                    try {
+                        Object value = formProp.getValue();
+                        if (value instanceof RADConnectionPropertyEditor.RADConnectionDesignValue) {
+                            RADConnectionPropertyEditor.RADConnectionDesignValue rr
+                                    = (RADConnectionPropertyEditor.RADConnectionDesignValue) value;
+                            if (rr.getType() == RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_CODE) {
+                                newCode = replaceCode(rr.getCode(), oldName, newName);
+                                if (newCode != null) {
+                                    value = new RADConnectionPropertyEditor.RADConnectionDesignValue(newCode);
+                                    formProp.setValue(value);
+                                }
+                            }
+                        } else if (value instanceof String && formProp instanceof JavaCodeGenerator.CodeProperty) {
+                            newCode = replaceCode((String)value, oldName, newName);
+                            if (newCode != null) {
+                                formProp.setValue(newCode);
+                            }
+                        }
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
+    }
+
+    private static String replaceCode(String code, String oldName, String newName) {
+        if (code != null && code.contains(oldName)) {
+            NameReplacer rep = new NameReplacer(new String[] { oldName },
+                    new String[] { newName }, code.length()+10);
+            rep.append(code);
+            String newCode = rep.getResult();
+            if (!code.equals(newCode)) {
+                return newCode;
+            }
+        }
+        return null;
     }
 
     // -----

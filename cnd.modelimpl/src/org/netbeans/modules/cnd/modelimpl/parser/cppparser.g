@@ -1964,6 +1964,10 @@ declarator[int kind]
         (ptr_operator)=> ptr_operator // AMPERSAND or STAR
         restrict_declarator[kind]
     |
+        // type (var) = {...}
+        (LPAREN declarator[kind] RPAREN ASSIGNEQUAL LCURLY) =>
+        LPAREN declarator[kind] RPAREN
+    |
         // typedef ((...));
         // int (i);
         {_td || (_ts != tsTYPEID && _ts != tsInvalid)}? (LPAREN declarator[kind] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>

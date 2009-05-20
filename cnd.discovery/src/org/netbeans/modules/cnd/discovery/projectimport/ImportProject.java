@@ -95,6 +95,7 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -223,7 +224,7 @@ public class ImportProject implements PropertyChangeListener {
 
     public Set<FileObject> create() throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
-        projectFolder = FileUtil.normalizeFile(projectFolder);
+        projectFolder = CndFileUtils.normalizeFile(projectFolder);
         MakeConfiguration extConf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE); // NOI18N
         String workingDirRel;
         if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
@@ -276,7 +277,7 @@ public class ImportProject implements PropertyChangeListener {
         // Add makefile and configure script to important files
         ArrayList<String> importantItems = new ArrayList<String>();
         if (makefilePath != null && makefilePath.length() > 0) {
-            makefileFile = FileUtil.normalizeFile(new File(makefilePath));
+            makefileFile = CndFileUtils.normalizeFile(new File(makefilePath));
             if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
                 makefilePath = IpeUtils.toAbsoluteOrRelativePath(projectFolder.getPath(), FilePathAdaptor.naturalize(makefilePath));
             } else if (PathPanel.getMode() == PathPanel.REL) {
@@ -288,7 +289,7 @@ public class ImportProject implements PropertyChangeListener {
             importantItems.add(makefilePath);
         }
         if (configurePath != null && configurePath.length() > 0) {
-            configureFile = FileUtil.normalizeFile(new File(configurePath));
+            configureFile = CndFileUtils.normalizeFile(new File(configurePath));
             if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
                 configurePath = IpeUtils.toAbsoluteOrRelativePath(projectFolder.getPath(), FilePathAdaptor.naturalize(configurePath));
             } else if (PathPanel.getMode() == PathPanel.REL) {
@@ -649,12 +650,13 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private void fixMacros(List<ProjectConfiguration> confs) {
-        NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
+        //NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
         for (ProjectConfiguration conf : confs) {
             List<FileConfiguration> files = conf.getFiles();
             for (FileConfiguration fileConf : files) {
                 if (fileConf.getUserMacros().size() > 0) {
-                    NativeFileItem item = np.findFileItem(new File(fileConf.getFilePath()));
+                    //NativeFileItem item = np.findFileItem(new File(fileConf.getFilePath()));
+                    NativeFileItem item = findByNormalizedName(new File(fileConf.getFilePath()));
                     if (item instanceof Item) {
                         if (TRACE) {
                             logger.log(Level.FINE, "#fix macros for file " + fileConf.getFilePath());
@@ -756,7 +758,8 @@ public class ImportProject implements PropertyChangeListener {
                         FileImpl impl = (FileImpl) file;
                         NativeFileItem item = impl.getNativeFileItem();
                         if (item == null) {
-                            item = np.findFileItem(impl.getFile());
+                            //item = np.findFileItem(impl.getFile());
+                            item = findByNormalizedName(impl.getFile());
                         }
                         if (item != null && np.equals(item.getNativeProject()) && item.isExcluded()) {
                             if (item instanceof Item) {
@@ -781,6 +784,24 @@ public class ImportProject implements PropertyChangeListener {
                 importResult.put(Step.FixExcluded, State.Successful);
             }
         }
+    }
+
+    private Map<String,Item> normalizedItems;
+    private Item findByNormalizedName(File file){
+        if (normalizedItems == null) {
+            normalizedItems = new HashMap<String,Item>();
+            ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            if (pdp != null) {
+                MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor) pdp.getConfigurationDescriptor();
+                if (makeConfigurationDescriptor != null) {
+                    for(Item item : makeConfigurationDescriptor.getProjectItems()){
+                        normalizedItems.put(item.getNormalizedFile().getAbsolutePath(),item);
+                    }
+                }
+            }
+        }
+        String path = CndFileUtils.normalizeFile(file).getAbsolutePath();
+        return normalizedItems.get(path);
     }
 
     private void modelDiscovery() {

@@ -171,6 +171,8 @@ public final class SuiteOperations implements DeleteOperationImplementation,
         List<FileObject> files = new ArrayList<FileObject>();
         addFile(GeneratedFilesHelper.BUILD_XML_PATH, files);
         addFile("nbproject", files); // NOI18N
+        addFile("master.jnlp", files);    // NOI18N
+        addFile("branding.jnlp", files);    // NOI18N
         return files;
     }
     

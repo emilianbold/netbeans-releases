@@ -151,6 +151,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
     private final FooIndexerFactory indexerFactory = new FooIndexerFactory();
     private final EmbIndexerFactory eindexerFactory = new EmbIndexerFactory();
 
+    private final Map<String, Set<ClassPath>> registeredClasspaths = new HashMap<String, Set<ClassPath>>();
+
     public RepositoryUpdaterTest (String name) {
         super (name);
     }
@@ -236,6 +238,34 @@ public class RepositoryUpdaterTest extends NbTestCase {
         waitForRepositoryUpdaterInit();
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        for(String id : registeredClasspaths.keySet()) {
+            Set<ClassPath> classpaths = registeredClasspaths.get(id);
+            GlobalPathRegistry.getDefault().unregister(id, classpaths.toArray(new ClassPath[classpaths.size()]));
+        }
+
+        super.tearDown();
+    }
+
+    protected final void globalPathRegistry_register(String id, ClassPath [] classpaths) {
+        Set<ClassPath> set = registeredClasspaths.get(id);
+        if (set == null) {
+            set = new HashSet<ClassPath>();
+            registeredClasspaths.put(id, set);
+        }
+        set.addAll(Arrays.asList(classpaths));
+        GlobalPathRegistry.getDefault().register(id, classpaths);
+    }
+
+    protected final void globalPathRegistry_unregister(String id, ClassPath [] classpaths) {
+        GlobalPathRegistry.getDefault().unregister(id, classpaths);
+        Set<ClassPath> set = registeredClasspaths.get(id);
+        if (set != null) {
+            set.removeAll(Arrays.asList(classpaths));
+        }
+    }
+
     /* package */ static void waitForRepositoryUpdaterInit() throws Exception {
         RepositoryUpdater.getDefault().start(true);
         RepositoryUpdater.State state;
@@ -247,6 +277,11 @@ public class RepositoryUpdaterTest extends NbTestCase {
             Thread.sleep(100);
             state = RepositoryUpdater.getDefault().getState();
         } while (state != RepositoryUpdater.State.ACTIVE);
+        
+        // clear all data from previous test runs
+        RepositoryUpdater.getDefault().getScannedBinaries().clear();
+        RepositoryUpdater.getDefault().getScannedSources().clear();
+        RepositoryUpdater.getDefault().getScannedUnknowns().clear();
     }
 
     @RandomlyFails
@@ -266,7 +301,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
         mcpi1.addResource(this.srcRoot1);
         ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
-        GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1});
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
         assertTrue (handler.await());
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
@@ -275,21 +310,21 @@ public class RepositoryUpdaterTest extends NbTestCase {
         //Nothing should be scanned if the same cp is registered again
         handler.reset();
         ClassPath cp1clone = ClassPathFactory.createClassPath(mcpi1);
-        GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1clone});        
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1clone});
         assertTrue (handler.await());
         assertEquals(0, handler.getBinaries().size());
         assertEquals(0, handler.getSources().size());
 
         //Nothing should be scanned if the cp is unregistered
         handler.reset();        
-        GlobalPathRegistry.getDefault().unregister(SOURCES,new ClassPath[]{cp1clone});        
+        globalPathRegistry_unregister(SOURCES,new ClassPath[]{cp1clone});
         assertTrue (handler.await());
         assertEquals(0, handler.getBinaries().size());
         assertEquals(0, handler.getSources().size());
 
         //Nothing should be scanned after classpath remove
         handler.reset();
-        GlobalPathRegistry.getDefault().unregister(SOURCES,new ClassPath[]{cp1});
+        globalPathRegistry_unregister(SOURCES,new ClassPath[]{cp1});
         assertTrue (handler.await());
         assertEquals(0, handler.getBinaries().size());
         assertEquals(0, handler.getSources().size());        
@@ -297,7 +332,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
         //Testing changes in registered classpath - add cp root
         handler.reset();
-        GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1});
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
         assertTrue (handler.await());
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
@@ -322,7 +357,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         MutableClassPathImplementation mcpi2 = new MutableClassPathImplementation ();
         mcpi2.addResource(srcRoot1);
         ClassPath cp2 = ClassPathFactory.createClassPath(mcpi2);
-        GlobalPathRegistry.getDefault().register (SOURCES, new ClassPath[] {cp2});
+        globalPathRegistry_register (SOURCES, new ClassPath[] {cp2});
         assertTrue(handler.await());
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
@@ -338,7 +373,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
         //Testing removing ClassPath
         handler.reset();
-        GlobalPathRegistry.getDefault().unregister(SOURCES,new ClassPath[] {cp2});
+        globalPathRegistry_unregister(SOURCES,new ClassPath[] {cp2});
         assertTrue(handler.await());
         assertEquals(0, handler.getBinaries().size());
         assertEquals(0, handler.getSources().size());
@@ -346,7 +381,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         //Testing registering classpath with SFBQ - register PLATFROM
         handler.reset();
         ClassPath cp3 = ClassPathSupport.createClassPath(new FileObject[] {bootRoot1,bootRoot2});
-        GlobalPathRegistry.getDefault().register(PLATFORM,new ClassPath[] {cp3});
+        globalPathRegistry_register(PLATFORM,new ClassPath[] {cp3});
         assertTrue(handler.await());
         assertEquals(1, handler.getBinaries().size());
         assertEquals(this.bootRoot2.getURL(), handler.getBinaries().iterator().next());
@@ -358,7 +393,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         MutableClassPathImplementation mcpi4 = new MutableClassPathImplementation ();
         mcpi4.addResource (compRoot1);
         ClassPath cp4 = ClassPathFactory.createClassPath(mcpi4);
-        GlobalPathRegistry.getDefault().register(LIBS,new ClassPath[] {cp4});
+        globalPathRegistry_register(LIBS,new ClassPath[] {cp4});
         assertTrue(handler.await());
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
@@ -382,7 +417,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
         //Testing registering classpath with SFBQ - unregister PLATFORM
         handler.reset();
-        GlobalPathRegistry.getDefault().unregister(PLATFORM,new ClassPath[] {cp3});
+        globalPathRegistry_unregister(PLATFORM,new ClassPath[] {cp3});
         assertTrue(handler.await());
         assertEquals(0, handler.getBinaries().size());
         assertEquals(0, handler.getSources().size());
@@ -415,7 +450,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
         mcpi1.addResource(this.srcRootWithFiles1);
         ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
-        GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1});
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
         assertTrue (handler.await());
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
@@ -424,13 +459,13 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertTrue(eindexerFactory.indexer.awaitIndex());
 
         handler.reset();
-        GlobalPathRegistry.getDefault().unregister(SOURCES,new ClassPath[]{cp1});
+        globalPathRegistry_unregister(SOURCES,new ClassPath[]{cp1});
         assertTrue (handler.await());
 
         handler.reset();
         indexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
         eindexerFactory.indexer.setExpectedFile(new URL[0],new URL[0], new URL[0]);
-        GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1});
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
         assertTrue (handler.await());
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
@@ -439,7 +474,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, eindexerFactory.indexer.getIndexCount());
 
         handler.reset();
-        GlobalPathRegistry.getDefault().unregister(SOURCES,new ClassPath[]{cp1});
+        globalPathRegistry_unregister(SOURCES,new ClassPath[]{cp1});
         assertTrue (handler.await());
 
         Thread.sleep(5000); //Wait for file system time
@@ -448,7 +483,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         eindexerFactory.indexer.setExpectedFile(new URL[0],new URL[0], new URL[0]);
         File file = new File (embeddedFiles[0].toURI());
         file.setLastModified(System.currentTimeMillis());
-        GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1});
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
         assertTrue (handler.await());
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
@@ -457,7 +492,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(1, eindexerFactory.indexer.getIndexCount());
 
         handler.reset();
-        GlobalPathRegistry.getDefault().unregister(SOURCES,new ClassPath[]{cp1});
+        globalPathRegistry_unregister(SOURCES,new ClassPath[]{cp1});
         assertTrue (handler.await());
 
         Thread.sleep(5000); //Wait for file system time
@@ -470,7 +505,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         file.delete();
         srcRootWithFiles1.getFileSystem().refresh(true);
         
-        GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1});
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
         assertTrue (handler.await());
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
@@ -490,7 +525,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         binIndexerFactory.indexer.setExpectedRoots(bootRoot2.getURL(), bootRoot3.getURL());
 //        jarIndexerFactory.indexer.setExpectedRoots(bootRoot3.getURL());
         ClassPath cp = ClassPathSupport.createClassPath(new FileObject[] {bootRoot2, bootRoot3});
-        GlobalPathRegistry.getDefault().register(PLATFORM,new ClassPath[] {cp});
+        globalPathRegistry_register(PLATFORM,new ClassPath[] {cp});
         assertTrue(handler.await());
         assertEquals(2, handler.getBinaries().size());
 //        assertEquals(1, jarIndexerFactory.indexer.getCount());
@@ -508,7 +543,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
         mcpi1.addResource(this.srcRootWithFiles1);
         ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
-        GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1});
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
         assertTrue (handler.await());
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
@@ -602,7 +637,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
         mcpi1.addResource(this.srcRootWithFiles1);
         ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
-        GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1});
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
         assertTrue (handler.await());
 
         final URL newURL = new URL(f3.getParent().getURL(), "newName.emb");

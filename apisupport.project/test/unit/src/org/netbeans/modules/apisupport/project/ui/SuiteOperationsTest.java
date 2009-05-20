@@ -105,7 +105,8 @@ public class SuiteOperationsTest extends TestBase {
         prjDir.getFileSystem().refresh(true);
         assertNull(prjDir.getFileObject("build"));
     }
-    
+
+    // TODO test deleting of JNLP descriptors and behavior vs. lib wrapper projects (#72981) 
     public void testDeleteOfNonEmptySuite() throws Exception {
         SuiteProject suite = generateSuite("suite");
         FileObject prjDir = suite.getProjectDirectory();

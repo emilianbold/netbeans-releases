@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -775,15 +776,26 @@ public class InstallSupportImpl {
         
         int increment = 0;
         InputStream is = null;
+        URLConnection connection = null;
+        int contentLength = -1;
         try {
-            is = source.openStream();
+            connection = source.openConnection();
+            connection.setConnectTimeout(AutoupdateSettings.getOpenConnectionTimeout ());
+
+            is = connection.getInputStream();
+            contentLength = connection.getContentLength();
         } catch (FileNotFoundException x) {
             err.log (Level.INFO, x.getMessage(), x);
             throw new IOException(NbBundle.getMessage(InstallSupportImpl.class,
                     "InstallSupportImpl_Download_Unavailable", source));            
+        } catch (IOException x) {
+            err.log (Level.INFO, x.getMessage(), x);
+            throw new IOException(NbBundle.getMessage(InstallSupportImpl.class,
+                    "InstallSupportImpl_Download_Unavailable", source));            
         }
+
         BufferedInputStream bsrc = new BufferedInputStream (is);
-        BufferedOutputStream bdest = new BufferedOutputStream (new FileOutputStream (dest));
+        BufferedOutputStream bdest = null;
         
         err.log (Level.FINEST, "Copy " + source + " to " + dest + "[" + estimatedSize + "]");
         
@@ -792,6 +804,9 @@ public class InstallSupportImpl {
             int size;
             int c = 0;
             while (!cancelled() && (size = bsrc.read (bytes)) != -1) {
+                if(bdest == null) {
+                    bdest = new BufferedOutputStream (new FileOutputStream (dest));
+                }
                 bdest.write (bytes, 0, size);
                 increment += size;
                 c += size;
@@ -813,7 +828,7 @@ public class InstallSupportImpl {
             //        + ") of is equal to estimatedSize (" + estimatedSize + ").";
             if (estimatedSize != increment) {
                 err.log (Level.FINEST, "Increment (" + increment + ") of is not equal to estimatedSize (" + estimatedSize + ").");
-            }
+            }            
         } catch (IOException ioe) {
             err.log (Level.INFO, "Writing content of URL " + source + " failed.", ioe);
         } finally {
@@ -825,6 +840,16 @@ public class InstallSupportImpl {
                 err.log (Level.INFO, ioe.getMessage (), ioe);
             }
         }
+        if (contentLength != -1 && increment != contentLength) {
+            err.log(Level.INFO, "Content length was reported as " + contentLength + " byte(s) but read " + increment + " byte(s)");
+            if(bdest!=null && dest.exists()) {
+                err.log(Level.INFO, "Deleting not fully downloaded file " + dest);
+                dest.delete();
+                getDownloadedFiles ().remove(FileUtil.normalizeFile (dest));
+            }
+            throw new IOException("Server closed connection unexpectedly");
+        }
+
         err.log (Level.FINE, "Destination " + dest + " is successfully wrote. Size " + dest.length());
         
         return estimatedSize;

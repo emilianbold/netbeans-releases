@@ -178,8 +178,7 @@ public final class GtkViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         drawBump(g, index, x + 4, y + 6, BUMP_WIDTH, height - 8);
         
         // draw text in right color
-        Color txtC = UIManager.getColor("TabbedPane.foreground"); //NOI18N
-        
+        Color txtC = UIManager.getColor("textText"); //NOI18N
         HtmlRenderer.renderString(text, g, x + TXT_X_PAD, y + fm.getAscent()
             + TXT_Y_PAD,
             txtWidth, height, getTxtFont(),

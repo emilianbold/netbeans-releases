@@ -90,8 +90,38 @@ public class AutoupdateInfoParser extends DefaultHandler {
     
     private AutoupdateInfoParser (Map<String, UpdateItem> items, File nbmFile) {
         this.items = items;
-        this.entityResolver = org.netbeans.updater.XMLUtil.createAUResolver ();
+        this.entityResolver = newEntityResolver();
         this.nbmFile = nbmFile;
+    }
+
+    private EntityResolver newEntityResolver () {
+        try {
+            Class.forName("org.netbeans.updater.XMLUtil");
+        } catch (ClassNotFoundException e) {
+            final File netbeansHomeFile = new File(System.getProperty("netbeans.home"));
+            final File userdir = new File(System.getProperty("netbeans.user"));
+
+            final String updaterPath = "modules/ext/updater.jar";
+            final String newUpdaterPath = "update/new_updater/updater.jar";
+
+            final File updaterPlatform = new File(netbeansHomeFile, updaterPath);
+            final File updaterUserdir  = new File(userdir, updaterPath);
+
+            final File newUpdaterPlatform = new File(netbeansHomeFile, newUpdaterPath);
+            final File newUpdaterUserdir  = new File(userdir, newUpdaterPath);
+
+            String message =
+                    "    org.netbeans.updater.XMLUtil is not accessible\n" +
+                    "    platform dir = " + netbeansHomeFile.getAbsolutePath() + "\n" +
+                    "    userdir  dir = " + userdir.getAbsolutePath() + "\n" +
+                    "    updater in platform exist = " + updaterPlatform.exists() + (updaterPlatform.exists() ? (", length = " + updaterPlatform.length() + " bytes") : "") + "\n" +
+                    "    updater in userdir  exist = " + updaterUserdir.exists() + (updaterUserdir.exists() ? (", length = " + updaterUserdir.length() + " bytes") : "") + "\n" +
+                    "    new updater in platform exist = " + newUpdaterPlatform.exists() + (newUpdaterPlatform.exists() ? (", length = " + newUpdaterPlatform.length() + " bytes") : "") + "\n" +
+                    "    new updater in userdir  exist = " + newUpdaterUserdir.exists() + (newUpdaterUserdir.exists() ? (", length = " + newUpdaterUserdir.length() + " bytes") : "") + "\n";
+
+            ERR.log(Level.WARNING, message);
+        }
+        return org.netbeans.updater.XMLUtil.createAUResolver ();
     }
     
     private static final Logger ERR = Logger.getLogger (AutoupdateInfoParser.class.getName ());

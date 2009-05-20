@@ -42,10 +42,10 @@ package org.netbeans.modules.php.editor.nav;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -61,6 +61,7 @@ import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
 import org.netbeans.modules.php.editor.model.PhpKind;
+import org.netbeans.modules.php.editor.options.MarkOccurencesSettings;
 
 /**
  *
@@ -84,8 +85,12 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
     }
     
     public void run(Result result, SchedulerEvent event) {
-        for (OffsetRange r : compute((ParserResult) result, GsfUtilities.getLastKnownCaretOffset(result.getSnapshot(), event))) {
-            range2Attribs.put(r, ColoringAttributes.MARK_OCCURRENCES);
+        Preferences node = MarkOccurencesSettings.getCurrentNode();
+
+        if (node.getBoolean(MarkOccurencesSettings.ON_OFF, true)) {
+            for (OffsetRange r : compute((ParserResult) result, GsfUtilities.getLastKnownCaretOffset(result.getSnapshot(), event))) {
+                range2Attribs.put(r, ColoringAttributes.MARK_OCCURRENCES);
+            }
         }
     }
     

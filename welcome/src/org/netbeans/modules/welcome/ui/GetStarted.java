@@ -46,10 +46,6 @@ import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -76,31 +72,36 @@ import org.openide.util.ImageUtilities;
 class GetStarted extends JPanel implements Constants {
 
     private int row;
+    private InstallConfig ic;
 
     /** Creates a new instance of RecentProjects */
     public GetStarted() {
         super( new GridBagLayout() );
         setOpaque(false);
+        ic = InstallConfig.getDefault();
         buildContent();
     }
     
     private void buildContent() {
-        FileObject root = FileUtil.getConfigFile( "WelcomePage/GettingStartedLinks" ); // NOI18N
+        String rootName = ic.isJavaFXInstalled()
+                ? "WelcomePage/GettingStartedLinksJavaFX"  // NOI18N
+                : "WelcomePage/GettingStartedLinks"; // NOI18N
+        FileObject root = FileUtil.getConfigFile( rootName );
         if( null == root ) {
             Logger.getLogger(GetStarted.class.getName()).log(Level.INFO,
-                    "Start page content not found: " + "FileObject: WelcomePage/GettingStartedLinks" ); //NOI18N
+                    "Start page content not found: " + "FileObject: " + rootName ); //NOI18N
             return;
         }
         DataFolder folder = DataFolder.findFolder( root );
         if( null == folder ) {
             Logger.getLogger(GetStarted.class.getName()).log(Level.INFO,
-                    "Start page content not found: " + "DataFolder: WelcomePage/GettingStartedLinks" ); //NOI18N
+                    "Start page content not found: " + "DataFolder: " + rootName ); //NOI18N
             return;
         }
         DataObject[] children = folder.getChildren();
         if( null == children ) {
             Logger.getLogger(GetStarted.class.getName()).log(Level.INFO,
-                    "Start page content not found: " + "DataObject: WelcomePage/GettingStartedLinks" ); //NOI18N
+                    "Start page content not found: " + "DataObject: " + rootName ); //NOI18N
             return;
         }
         for( int i=0; i<children.length; i++ ) {
@@ -135,8 +136,8 @@ class GetStarted extends JPanel implements Constants {
         FileObject file = dob.getPrimaryFile();
         String fileName = file.getName();
         if( !fileName.endsWith("_default") ) { //NOI18N
-            String prefCluster = getPreferredCluster();
-            if( !fileName.endsWith(prefCluster) ) {
+            String prefPackname = ic.getPreferredPackName();
+            if( !fileName.endsWith(prefPackname) ) {
                 return row;
             } 
         }
@@ -202,34 +203,5 @@ class GetStarted extends JPanel implements Constants {
             if( null != oc )
                 oc.open();
         }
-    }
-    
-    private String getPreferredCluster() {
-        
-        String preferredCluster = "java"; //NOI18N
-        try {
-            FileObject fo = FileUtil.getConfigFile("/productid"); // NOI18N
-            if (fo != null) {
-                InputStream is = fo.getInputStream();
-                try {
-                    BufferedReader r = new BufferedReader(new InputStreamReader (is));
-                    String clusterList = r.readLine().trim().toLowerCase();
-                    if( clusterList.contains("java") ) { //NOI18N
-                        preferredCluster = "java"; //NOI18N
-                    } else if( clusterList.contains("ruby") ) { //NOI18N
-                        preferredCluster = "ruby"; //NOI18N
-                    } else if( clusterList.contains("cnd") ) { //NOI18N
-                        preferredCluster = "cnd"; //NOI18N
-                    } else if( clusterList.contains("php") ) { //NOI18N
-                        preferredCluster = "php"; //NOI18N
-                    }
-                } finally {
-                    is.close();
-                }
-            }
-        } catch (IOException ignore) {
-            Logger.getLogger(GetStarted.class.getName()).log(Level.FINE, null, ignore);
-        }
-        return preferredCluster;
     }
 }

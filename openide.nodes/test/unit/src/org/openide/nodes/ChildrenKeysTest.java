@@ -2152,7 +2152,7 @@ public class ChildrenKeysTest extends NbTestCase {
             }
         }
 
-        final Children ch = new K(lazy(), "a1", "a2");
+        final K ch = new K(lazy(), "a1", "a2");
         final Node root = createNode(ch);
         Node[] nodes = null;
         try {
@@ -2163,14 +2163,9 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals("Should be only 1", 1, nodes.length);
         assertEquals("a2", nodes[0].getName());
 
-        /*WeakReference<Node> ref = new WeakReference<Node>(nodes[0]);
-        nodes = null;
-        assertGC("should be GCed", ref);
-
+        ch.keys("c1");
         nodes = root.getChildren().getNodes();
-        assertEquals("Should be 2", 2, nodes.length);
-        assertEquals("a1", nodes[0].getName());
-        assertEquals("a2", nodes[1].getName());*/
+        assertEquals("c1", nodes[0].getName());
     }
 
     @RandomlyFails // assumed to suffer from same random problem as testGetNodesFromTwoThreads57769; see Thread.sleep

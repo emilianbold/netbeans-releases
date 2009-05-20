@@ -44,6 +44,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URL;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
@@ -84,13 +86,16 @@ import org.openide.util.WeakListeners;
 public final class ClasspathInfo {
     
     private static final ClassPath EMPTY_PATH = ClassPathSupport.createClassPath(new URL[0]);
+    private static Logger log = Logger.getLogger(ClasspathInfo.class.getName());
     
     static {
         ClasspathInfoAccessor.setINSTANCE(new ClasspathInfoAccessorImpl());
         try {
             Class.forName(ClassIndex.class.getName(), true, CompilationInfo.class.getClassLoader());
-        } catch (ClassNotFoundException ex) {            
-            ErrorManager.getDefault().notify (ex);
+        } catch (ClassNotFoundException ex) {
+            if (log.isLoggable(Level.SEVERE))
+                log.log(Level.SEVERE, ex.getMessage(), ex);
+//            ErrorManager.getDefault().notify (ex);
         }
     }    
     
