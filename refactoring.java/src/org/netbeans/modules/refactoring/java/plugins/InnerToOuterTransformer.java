@@ -51,7 +51,6 @@ import javax.lang.model.element.*;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.GeneratorUtilities;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
@@ -245,7 +244,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                         MethodTree m = (MethodTree) member;
                         if (m.getReturnType()==null) {
                             MethodInvocationTree superCall = (MethodInvocationTree) ((ExpressionStatementTree) m.getBody().getStatements().get(0)).getExpression();
-                            List<ExpressionTree> newArgs = new ArrayList(superCall.getArguments());
+                            List<ExpressionTree> newArgs = new ArrayList<ExpressionTree>(superCall.getArguments());
                             
                             MethodTree newConstructor = null;
                             ExpressionTree exprTree = (ExpressionTree)make.Identifier(variable.getName().toString());
