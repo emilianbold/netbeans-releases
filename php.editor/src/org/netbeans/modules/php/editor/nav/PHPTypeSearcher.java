@@ -43,6 +43,8 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.Icon;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -263,7 +265,14 @@ public class PHPTypeSearcher implements IndexSearcher {
         }
 
         public void open() {
-            GsfUtilities.open(element.getFileObject(), element.getOffset(), element.getName());
+            FileObject fileObject = element.getFileObject();
+            if (fileObject != null) {
+                GsfUtilities.open(fileObject, element.getOffset(), element.getName());
+            } else {
+                Logger logger = Logger.getLogger(PHPTypeSearcher.class.getName());
+                logger.log(Level.INFO,String.format("%s: cannot find %s", //NOI18N
+                        PHPTypeSearcher.class.getName(), element.getFilenameUrl()));
+            }
         }
 
         public String getContextName() {
