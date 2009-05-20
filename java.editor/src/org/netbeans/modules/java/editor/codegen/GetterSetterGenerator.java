@@ -190,6 +190,7 @@ public class GetterSetterGenerator implements CodeGenerator {
     }
 
     public void invoke() {
+        final int caretOffset = component.getCaretPosition();
         final GetterSetterPanel panel = new GetterSetterPanel(description, type);
         String title;
         if (type == GeneratorUtils.GETTERS_ONLY)
@@ -205,7 +206,6 @@ public class GetterSetterGenerator implements CodeGenerator {
             JavaSource js = JavaSource.forDocument(component.getDocument());
             if (js != null) {
                 try {
-                    final int caretOffset = component.getCaretPosition();
                     ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
                         public void run(WorkingCopy copy) throws IOException {
                             copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
