@@ -75,6 +75,7 @@ public final class NativeProcessInfo {
     private String workingDirectory;
     private boolean unbuffer;
     private boolean redirectError;
+    private boolean x11forwarding;
     private Collection<ChangeListener> listeners = null;
 
 //    public NativeProcessInfo(NativeProcessInfo info) {
@@ -155,6 +156,14 @@ public final class NativeProcessInfo {
 
     public boolean isUnbuffer() {
         return unbuffer;
+    }
+
+    public void setX11Forwarding(boolean x11forwarding) {
+        this.x11forwarding = x11forwarding;
+    }
+
+    public boolean getX11Forwarding() {
+        return x11forwarding;
     }
 
     /**

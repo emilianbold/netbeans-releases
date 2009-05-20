@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.gizmo.GizmoServiceInfo;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
@@ -113,11 +114,15 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
             executable = new File(runDirectory, executable.getPath());
         }
 
+        Map<String, String> envVars = createMap(pae.getProfile().getEnvironment().getenvAsPairs());
         NativeExecutableTargetConfiguration targetConf = new NativeExecutableTargetConfiguration(
                 executable.getAbsolutePath(),
                 pae.getProfile().getArgsArray(),
-                createMap(pae.getProfile().getEnvironment().getenvAsPairs()));
+                envVars);
 
+        if (execEnv.isRemote() && !envVars.containsKey("DISPLAY")) { // NOI18N
+            targetConf.setX11Forwarding(true);
+        }
 
         targetConf.putInfo(ServiceInfoDataStorage.EXECUTION_ENV_KEY, ExecutionEnvironmentFactory.toUniqueID(execEnv));
         targetConf.putInfo(GizmoServiceInfo.PLATFORM, pae.getConfiguration().getDevelopmentHost().getBuildPlatformDisplayName());

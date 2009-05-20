@@ -157,6 +157,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             try {
                 ChannelExec echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
                 echannel.setCommand(command);
+                echannel.setXForwarding(info.getX11Forwarding());
                 echannel.connect(10000);
 
                 return new ChannelStreams(echannel,
