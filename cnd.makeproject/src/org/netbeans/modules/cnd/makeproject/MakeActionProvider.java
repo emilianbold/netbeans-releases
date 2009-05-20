@@ -1111,11 +1111,15 @@ public class MakeActionProvider implements ActionProvider {
         ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
         int hostPlatformId = CompilerSetManager.getDefault(execEnv).getPlatform();
         if (buildPlatformId != hostPlatformId) {
-            Platform buildPlatform = Platforms.getPlatform(buildPlatformId);
-            Platform hostPlatform = Platforms.getPlatform(hostPlatformId);
-            String errormsg = getString("WRONG_PLATFORM", hostPlatform.getDisplayName(), buildPlatform.getDisplayName());
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
-            return false;
+            if (!conf.isMakefileConfiguration()) {
+                Platform buildPlatform = Platforms.getPlatform(buildPlatformId);
+                Platform hostPlatform = Platforms.getPlatform(hostPlatformId);
+                String errormsg = getString("WRONG_PLATFORM", hostPlatform.getDisplayName(), buildPlatform.getDisplayName());
+                if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(errormsg, NotifyDescriptor.WARNING_MESSAGE)) != NotifyDescriptor.OK_OPTION) {
+                    return false;
+                }
+            }
+            conf.getDevelopmentHost().setBuildPlatform(hostPlatformId);
         }
 
         boolean unknownCompilerSet = false;
