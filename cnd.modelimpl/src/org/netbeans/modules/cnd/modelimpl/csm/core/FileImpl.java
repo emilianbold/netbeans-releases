@@ -1790,8 +1790,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         output.writeInt(lastParseTime);
         State curState = state;
         if (curState != State.PARSED && curState != State.INITIAL) {
-            curState = State.PARSED;
             System.err.printf("file is written in intermediate state %s, switching to PARSED\n", curState);
+            curState = State.PARSED;
         }
         output.writeByte(curState.ordinal());
         try {
