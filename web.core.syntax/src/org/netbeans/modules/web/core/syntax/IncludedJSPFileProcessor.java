@@ -41,17 +41,14 @@ package org.netbeans.modules.web.core.syntax;
 
 import java.util.Collections;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
-import org.openide.filesystems.FileObject;
 import static org.netbeans.api.jsp.lexer.JspTokenId.JavaCodeType;
 
 /**
@@ -125,7 +122,8 @@ class IncludedJSPFileProcessor extends JSPProcessor{
         }
 
         importsDeclarations.append(createImplicitImportStatements(Collections.<String>emptyList()));
-        declarations.append(createBeanVarDeclarations());
+        // no need to do it, the JSP parser will return the beans for the including page
+        //declarations.append(createBeanVarDeclarations());
     }
 
     public String getDeclarations() {
