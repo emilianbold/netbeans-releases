@@ -60,8 +60,9 @@ public class ProfilesModelImpl extends ProfilesModel {
     private ProfilesComponent rootComponent;
     private ProfilesComponentFactory componentFactory;
     private ProfilesQNames profilesQNames;
-    private QName ROOT_NS = ProfilesQName.createQName("profilesXml", true); ///NOI18N
-    private QName ROOT = ProfilesQName.createQName("profilesXml", false); ///NOI18N
+    private QName ROOT_NS = ProfilesQName.createQName("profilesXml", true, false); ///NOI18N
+    private QName ROOT_NS_OLD = ProfilesQName.createQName("profilesXml", true, true); ///NOI18N
+    private QName ROOT = ProfilesQName.createQName("profilesXml", false, false); ///NOI18N
     
     public ProfilesModelImpl(ModelSource source) {
         super(source);
@@ -84,10 +85,13 @@ public class ProfilesModelImpl extends ProfilesModel {
         QName q = root == null ? null : AbstractDocumentComponent.getQName(root);
         if (root != null ) {
             if (ROOT.equals(q)) {
-                profilesQNames = new ProfilesQNames(false);
+                profilesQNames = new ProfilesQNames(false, false);
                 rootComponent = new ProfilesRootImpl(this, root);
             } else if (ROOT_NS.equals(q)) {
-                profilesQNames = new ProfilesQNames(true);
+                profilesQNames = new ProfilesQNames(true, false);
+                rootComponent = new ProfilesRootImpl(this, root);
+            } else if (ROOT_NS_OLD.equals(q)) {
+                profilesQNames = new ProfilesQNames(true, true);
                 rootComponent = new ProfilesRootImpl(this, root);
             }
         } 
