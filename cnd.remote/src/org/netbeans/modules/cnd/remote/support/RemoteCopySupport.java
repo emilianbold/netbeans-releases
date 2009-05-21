@@ -42,6 +42,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -170,6 +171,9 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
             }
             setExitStatus(process.waitFor());
 
+        } catch (InterruptedIOException e) {
+            // don't log, this just mean that somebody has interrupted us
+            return false;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
