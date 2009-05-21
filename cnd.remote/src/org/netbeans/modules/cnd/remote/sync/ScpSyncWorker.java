@@ -149,7 +149,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         dirCount++;
         File[] files = localDir.listFiles(sharabilityFilter);
         if (files == null) {
-            throw new IOException("Failed to get children of " + localDir);
+            throw new IOException("Failed to get children of " + localDir); // NOI18N
         } else {
             for (File file : files) {
                 synchronizeImpl(file, remoteDir);
