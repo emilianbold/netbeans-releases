@@ -42,8 +42,13 @@ package org.netbeans.modules.cnd.ui.options;
 
 import java.awt.Dimension;
 import java.io.File;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
@@ -58,13 +63,15 @@ import org.openide.util.NbBundle;
  *
  * @author  thp
  */
-        
 /*package-local*/ final class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentListener {
+
     private DialogDescriptor dialogDescriptor = null;
     private final CompilerSetManager csm;
     private final boolean local;
+    private final String lock = new String("lockForCompilersFound");//NOI18N
+    private final String remoteCompilerCheckExecutorLock = new String("remoteCompilerCheckExecutorLock");//NOI18N
+    private ExecutorService remoteCompilerCheckExecutor;
 
-    
     /** Creates new form AddCompilerSetPanel */
     public AddCompilerSetPanel(CompilerSetManager csm) {
         initComponents();
@@ -76,7 +83,7 @@ import org.openide.util.NbBundle;
             btBaseDirectory.setText(getString("AddCompilerSetPanel.btBaseDirectoryRemoteMode.text"));
             btBaseDirectory.setMnemonic(0);
         }
-        
+
         List<CompilerFlavor> list = CompilerFlavor.getFlavors(csm.getPlatform());
         for (CompilerFlavor cf : list) {
             cbFamily.addItem(cf);
@@ -85,11 +92,26 @@ import org.openide.util.NbBundle;
         cbFamily.addItem(CompilerFlavor.getUnknown(csm.getPlatform()));
         tfName.setText(""); // NOI18N
         validateData();
-        
+
         setPreferredSize(new Dimension(800, 300));
-        
+
         tfBaseDirectory.getDocument().addDocumentListener(this);
         tfName.getDocument().addDocumentListener(this);
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        synchronized (remoteCompilerCheckExecutorLock) {
+            if (remoteCompilerCheckExecutor != null) {
+                AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+                    public Object run() {
+                        return remoteCompilerCheckExecutor.shutdownNow();
+                    }
+                });
+            }
+        }
     }
 
     private static String getString(String key) {
@@ -100,11 +122,11 @@ import org.openide.util.NbBundle;
         this.dialogDescriptor = dialogDescriptor;
         dialogDescriptor.setValid(false);
     }
-
     private CompilerSet lastFoundRemoteCompilerSet;
-    
+
     private void updateDataBaseDir() {
         if (local) {
+            //This will be invoked in UI thread
             File dirFile = new File(tfBaseDirectory.getText());
             List<CompilerFlavor> flavors = CompilerSet.getCompilerSetFlavor(dirFile.getAbsolutePath(), csm.getPlatform());
             if (flavors.size() > 0) {
@@ -112,42 +134,81 @@ import org.openide.util.NbBundle;
             } else {
                 cbFamily.setSelectedItem(CompilerFlavor.getUnknown(csm.getPlatform()));
             }
+            updateDataFamily();
+            if (!dialogDescriptor.isValid()) {
+                tfName.setText("");
+            }
         } else {
-            lastFoundRemoteCompilerSet = null;
-            String path = tfBaseDirectory.getText().trim();
+            synchronized (lock) {
+                lastFoundRemoteCompilerSet = null;
+            }
+            final String path = tfBaseDirectory.getText().trim();
             if (path.length() > 0) {
-                List<CompilerSet> css = csm.findRemoteCompilerSets(path);
-                if (css.size() > 0) {
-                    cbFamily.setSelectedItem(css.get(0).getCompilerFlavor());
-                    lastFoundRemoteCompilerSet = css.get(0);
-                } 
+                //go to non UI thread
+                synchronized (remoteCompilerCheckExecutorLock) {
+                    if (remoteCompilerCheckExecutor != null) {
+                        AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+                            public Object run() {
+                                return remoteCompilerCheckExecutor.shutdownNow();
+                            }
+                        });
+                        remoteCompilerCheckExecutor = null;
+                    }
+                    remoteCompilerCheckExecutor = Executors.newSingleThreadExecutor();
+                }
+                remoteCompilerCheckExecutor.submit(new Runnable() {
+
+                    public void run() {
+                        final List<CompilerSet> css = csm.findRemoteCompilerSets(path);
+                        //check if we are not shutdowned already
+                        try {
+                            Thread.sleep(1);
+                        } catch (InterruptedException e) {
+                        }
+                        if (Thread.interrupted()) {
+                            return;
+                        }
+                        if (css.size() > 0) {
+                            SwingUtilities.invokeLater(new Runnable() {
+
+                                public void run() {
+                                    cbFamily.setSelectedItem(css.get(0).getCompilerFlavor());
+                                    synchronized (AddCompilerSetPanel.this.lock) {
+                                        lastFoundRemoteCompilerSet = css.get(0);
+                                    }
+                                    updateDataFamily();
+                                    if (!dialogDescriptor.isValid()) {
+                                        tfName.setText("");
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+
             }
         }
 
-        updateDataFamily();
-        if (!dialogDescriptor.isValid()) {
-            tfName.setText("");
-        }
     }
-    
+
     private void updateDataFamily() {
-        CompilerSet.CompilerFlavor flavor = (CompilerSet.CompilerFlavor)cbFamily.getSelectedItem();
+        CompilerSet.CompilerFlavor flavor = (CompilerSet.CompilerFlavor) cbFamily.getSelectedItem();
         int n = 0;
         String suggestedName = null;
         while (true) {
             suggestedName = flavor.toString() + (n > 0 ? ("_" + n) : ""); // NOI18N
             if (csm.getCompilerSet(suggestedName) != null) {
                 n++;
-            }
-            else {
+            } else {
                 break;
             }
         }
         tfName.setText(suggestedName);
-        
+
         validateData();
     }
-    
+
     private void validateData() {
         boolean valid = true;
         lbError.setText(""); // NOI18N
@@ -159,9 +220,11 @@ import org.openide.util.NbBundle;
                 lbError.setText(getString("BASE_INVALID"));
             }
         } else {
-            if (lastFoundRemoteCompilerSet == null) {
-                valid = false;
-                lbError.setText(getString("REMOTEBASE_INVALID"));
+            synchronized (lock) {
+                if (lastFoundRemoteCompilerSet == null) {
+                    valid = false;
+                    lbError.setText(getString("REMOTEBASE_INVALID"));
+                }
             }
         }
 
@@ -183,18 +246,17 @@ import org.openide.util.NbBundle;
             dialogDescriptor.setValid(valid);
         }
     }
-    
+
     private void handleUpdate(DocumentEvent e) {
         if (e.getDocument() == tfBaseDirectory.getDocument()) {
             if (local) { // we can't support real-time validation for remote base dir
                 updateDataBaseDir();
             }
-        }
-        else {
+        } else {
             validateData();
         }
     }
-    
+
     public void insertUpdate(DocumentEvent e) {
         handleUpdate(e);
     }
@@ -206,15 +268,15 @@ import org.openide.util.NbBundle;
     public void changedUpdate(DocumentEvent e) {
         //validateData();
     }
-    
+
     public String getBaseDirectory() {
         return tfBaseDirectory.getText();
     }
-    
+
     private CompilerSet.CompilerFlavor getFamily() {
-        return (CompilerSet.CompilerFlavor)cbFamily.getSelectedItem();
+        return (CompilerSet.CompilerFlavor) cbFamily.getSelectedItem();
     }
-    
+
     private String getCompilerSetName() {
         return IpeUtils.replaceOddCharacters(tfName.getText().trim(), '_');
     }
@@ -229,11 +291,17 @@ import org.openide.util.NbBundle;
             CompilerSetManager.getDefault().initCompilerSet(cs);
             return cs;
         } else {
-            lastFoundRemoteCompilerSet.setName(compilerSetName);
-            return lastFoundRemoteCompilerSet;
+            synchronized (lock) {
+                if (lastFoundRemoteCompilerSet != null){
+                    lastFoundRemoteCompilerSet.setName(compilerSetName);
+                    return lastFoundRemoteCompilerSet;
+                }else{
+                    return lastFoundRemoteCompilerSet;
+                }
+            }
         }
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -367,11 +435,9 @@ private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//G
         String seed = null;
         if (tfBaseDirectory.getText().length() > 0) {
             seed = tfBaseDirectory.getText();
-        }
-        else if (FileChooser.getCurrectChooserFile() != null) {
+        } else if (FileChooser.getCurrectChooserFile() != null) {
             seed = FileChooser.getCurrectChooserFile().getPath();
-        }
-        else {
+        } else {
             seed = System.getProperty("user.home"); // NOI18N
         }
         FileChooser fileChooser = new FileChooser(getString("SELECT_BASE_DIRECTORY_TITLE"), null, JFileChooser.DIRECTORIES_ONLY, null, seed, true);

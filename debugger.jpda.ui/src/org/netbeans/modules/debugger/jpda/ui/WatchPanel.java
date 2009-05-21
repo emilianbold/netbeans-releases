@@ -211,7 +211,7 @@ public class WatchPanel {
             int offset = NbDocument.findLineOffset(doc, line - 1);
             //editorPane.getDocument().putProperty(javax.swing.text.Document.StreamDescriptionProperty, dobj);
             //System.err.println("WatchPanel.setupContext("+file+", "+line+", "+offset+")");
-            DialogBinding.bindComponentToFile(file, offset, 0, editorPane);
+            DialogBinding.bindComponentToDocument(doc, offset, 0, editorPane);
         } catch (IndexOutOfBoundsException ioobex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioobex);
         }
@@ -252,7 +252,7 @@ public class WatchPanel {
         Mnemonics.setLocalizedText(textLabel, bundle.getString ("CTL_Watch_Name")); // NOI18N
         if (expression != null && expression.trim().length() == 0) {
             JEditorPane editor = EditorContextDispatcher.getDefault().getMostRecentEditor();
-            if (editor.getDocument() instanceof StyledDocument) {
+            if (editor != null && editor.getDocument() instanceof StyledDocument) {
                 StyledDocument doc = (StyledDocument) editor.getDocument();
                 String selectedExpression = getSelectedIdentifier(doc, editor, editor.getCaret ().getDot ());
                 if (selectedExpression != null) {

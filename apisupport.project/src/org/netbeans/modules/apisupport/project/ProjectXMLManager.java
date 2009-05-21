@@ -511,44 +511,32 @@ public final class ProjectXMLManager {
         final Element tmdEl = testModuleDependenciesEl;
         final Set<TestModuleDependency> tdSet = testDependenciesSet;
 
-        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+        AuxiliaryConfiguration auxConf = project.getHelper().createAuxiliaryConfiguration();
+        auxConf.removeConfigurationFragment(NbModuleProjectType.NAME_SHARED, NbModuleProjectType.NAMESPACE_SHARED_2, true);
 
-            public Void run() {
-                try {
-                    project.setRunInAtomicAction(true);
-                    AuxiliaryConfiguration auxConf = project.getHelper().createAuxiliaryConfiguration();
-                    auxConf.removeConfigurationFragment(NbModuleProjectType.NAME_SHARED, NbModuleProjectType.NAMESPACE_SHARED_2, true);
-
-                    //? new or existing test type?
-                    if (ttEl == null) {
-                        //this test type, does not exist, create it, and add new test dependency
-                        Element newTestTypeEl = createNewTestTypeElement(doc, testType);
-                        tmdEl.appendChild(newTestTypeEl);
-                        createTestModuleDependencyElement(newTestTypeEl, newTestDep);
-                        project.putPrimaryConfigurationData(confData);
-                        return null;
-                    } else {
-                        //testtype exists, refresh it
-                        Node beforeWhat = ttEl.getNextSibling();
-                        tmdEl.removeChild(ttEl);
-                        Element refreshedTestTypeEl = createNewTestTypeElement(doc, testType);
-                        if (beforeWhat == null) {
-                            tmdEl.appendChild(refreshedTestTypeEl);
-                        } else {
-                            tmdEl.insertBefore(refreshedTestTypeEl, beforeWhat);
-                        }
-                        for (Iterator it = tdSet.iterator(); it.hasNext();) {
-                            TestModuleDependency tmd = (TestModuleDependency) it.next();
-                            createTestModuleDependencyElement(refreshedTestTypeEl, tmd);
-                            project.putPrimaryConfigurationData(confData);
-                        }
-                    }
-                } finally {
-                    project.setRunInAtomicAction(false);
-                }
-                return null;
+        //? new or existing test type?
+        if (ttEl == null) {
+            //this test type, does not exist, create it, and add new test dependency
+            Element newTestTypeEl = createNewTestTypeElement(doc, testType);
+            tmdEl.appendChild(newTestTypeEl);
+            createTestModuleDependencyElement(newTestTypeEl, newTestDep);
+            project.putPrimaryConfigurationData(confData);
+        } else {
+            //testtype exists, refresh it
+            Node beforeWhat = ttEl.getNextSibling();
+            tmdEl.removeChild(ttEl);
+            Element refreshedTestTypeEl = createNewTestTypeElement(doc, testType);
+            if (beforeWhat == null) {
+                tmdEl.appendChild(refreshedTestTypeEl);
+            } else {
+                tmdEl.insertBefore(refreshedTestTypeEl, beforeWhat);
             }
-        });
+            for (Iterator it = tdSet.iterator(); it.hasNext();) {
+                TestModuleDependency tmd = (TestModuleDependency) it.next();
+                createTestModuleDependencyElement(refreshedTestTypeEl, tmd);
+                project.putPrimaryConfigurationData(confData);
+            }
+        }
     }
 
     private Element createNewTestTypeElement(Document doc, String testTypeName) {

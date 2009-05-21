@@ -83,7 +83,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
     /*
      * was: readFromDisk
      */
-    public ConfigurationDescriptor read(final String relativeOffset) throws IOException {
+    public MakeConfigurationDescriptor read(final String relativeOffset) throws IOException {
         final String tag;
         final FileObject xml;
         // Try first new style file

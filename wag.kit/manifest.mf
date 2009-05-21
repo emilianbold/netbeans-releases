@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.wag.kit
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/wag/kit/Bundle.properties
+OpenIDE-Module-Specification-Version: 0.1
+AutoUpdate-Show-In-Client: true
+OpenIDE-Module-Provides: org.netbeans.modules.wag.kit
+

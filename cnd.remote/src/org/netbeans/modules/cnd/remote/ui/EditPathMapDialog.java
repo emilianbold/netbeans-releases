@@ -40,14 +40,9 @@
 package org.netbeans.modules.cnd.remote.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.FocusTraversalPolicy;
-import java.awt.FontMetrics;
-import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -60,17 +55,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractCellEditor;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -104,7 +95,6 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
 
     private static final String ACTION_INLINE_EDITOR = "invokeInlineEditor";  //NOI18N
     private static final String ACTION_ESCAPE_TABLE = "escapeTable";  //NOI18N
-    private static final String ACTION_ALT_H = "firstComponemt";  //NOI18N
     private static final String ACTION_TAB_IN_CELL = "tabInCell";  //NOI18N
     private static final String ACTION_SHIFT_TAB_IN_CELL = "shiftTabInCell";  //NOI18N
 
@@ -160,19 +150,10 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         }
 
         initComponents();
-        cbHostsList.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                JLabel out = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                ServerRecord rec = (ServerRecord) value;
-                out.setText(rec.getDisplayName());
-                return out;
-            }
-        });
-
         addTableActions();
 
-        cbHostsList.setSelectedItem(currentHost);
+        tfHostName.setBackground(getBackground()); // otherwise it looks like editable on Mac
+        tfHostName.setText(currentHost.getDisplayName());
         initTable();
 
         String explanationText;
@@ -214,13 +195,6 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                 EditPathMapDialog.this.btnOK.requestFocus();
             }
         });
-        tblPathMappings.getInputMap().put(KeyStroke.getKeyStroke(ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("EPMD_Hostname").charAt(0),
-                                          KeyEvent.ALT_MASK), ACTION_ALT_H);
-        tblPathMappings.getActionMap().put(ACTION_ALT_H, new AbstractAction(){
-            public void actionPerformed(ActionEvent e) {
-                EditPathMapDialog.this.cbHostsList.requestFocus();
-            }
-        });
     }
 
     private static RemotePathMap getRemotePathMap(ExecutionEnvironment host) {
@@ -235,8 +209,8 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                 if (rows.length > 0) {
                     DefaultTableModel model = (DefaultTableModel) tblPathMappings.getModel();
                     Arrays.sort(rows);
-                    for (int row = rows.length - 1; row >= 0; row-- ) {
-                        model.removeRow(row);
+                    for (int i = rows.length - 1; i >= 0; i-- ) {
+                        model.removeRow(rows[i]);
                     }
                 }
             }
@@ -319,7 +293,6 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     private void enableControls(boolean value, String message) {
         btnOK.setEnabled(value);
         tblPathMappings.setEnabled(value);
-        cbHostsList.setEnabled(value);
         txtError.setText(message);
     }
 
@@ -379,7 +352,6 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     private void initComponents() {
 
         lblHostName = new javax.swing.JLabel();
-        cbHostsList = new javax.swing.JComboBox();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblPathMappings = new javax.swing.JTable();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -388,18 +360,11 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         txtError = new javax.swing.JTextArea();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
+        tfHostName = new javax.swing.JTextField();
 
         lblHostName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("EPMD_Hostname").charAt(0));
-        lblHostName.setLabelFor(cbHostsList);
         lblHostName.setText(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EditPathMapDialog.lblHostName.text")); // NOI18N
         lblHostName.setFocusable(false);
-
-        cbHostsList.setModel(serverListModel);
-        cbHostsList.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                cbHostsListItemStateChanged(evt);
-            }
-        });
 
         tblPathMappings.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -448,6 +413,9 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         jLabel1.setLabelFor(tblPathMappings);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMD_MappingsTable_AN")); // NOI18N
 
+        tfHostName.setEditable(false);
+        tfHostName.setText(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EditPathMapDialog.tfHostName.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -459,10 +427,10 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                     .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
                     .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
                     .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                    .add(layout.createSequentialGroup()
                         .add(lblHostName)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(cbHostsList, 0, 393, Short.MAX_VALUE))
+                        .add(tfHostName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE))
                     .add(jLabel1))
                 .addContainerGap())
         );
@@ -472,7 +440,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblHostName)
-                    .add(cbHostsList, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(tfHostName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 61, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(5, 5, 5)
@@ -481,24 +449,16 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 99, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 11, Short.MAX_VALUE)
                 .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 118, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
         lblHostName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Hostname")); // NOI18N
         lblHostName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Host_AD")); // NOI18N
-        cbHostsList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Hostname")); // NOI18N
-        cbHostsList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Host_AD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-private void cbHostsListItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbHostsListItemStateChanged
-    currentHost = (ServerRecord) cbHostsList.getSelectedItem();
-    initTableModel(currentHost);
-}//GEN-LAST:event_cbHostsListItemStateChanged
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox cbHostsList;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
@@ -506,6 +466,7 @@ private void cbHostsListItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FI
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JLabel lblHostName;
     private javax.swing.JTable tblPathMappings;
+    private javax.swing.JTextField tfHostName;
     private javax.swing.JTextArea txtError;
     private javax.swing.JTextArea txtExplanation;
     // End of variables declaration//GEN-END:variables

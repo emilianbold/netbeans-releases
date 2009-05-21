@@ -630,12 +630,15 @@ public class TreeFactory {
                 
                 tp = make.TypeArray((JCExpression) Type(((ArrayType) type).getComponentType()));
                 break;
+            case NULL:
+                tp = make.Literal(TypeTags.BOT, null);
+                break;
             case ERROR:
                 tp = make.Ident(((ErrorType) type).tsym.name);
                 break;
             default:
-        return make.Type((Type)type);
-    }
+                return make.Type((Type)type);
+        }
     
         return tp;
     }

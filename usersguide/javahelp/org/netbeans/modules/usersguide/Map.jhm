@@ -219,10 +219,10 @@
 
 
 <!--CSH for plain text editor-->
-<mapID target="text.plain" url="pending.html" />
+<mapID target="text.plain" url="editing/editor_quickref.html" />
 
 <!--CSH for css text editor-->
-<mapID target="text.x-css" url="pending.html" />
+<mapID target="text.x-css" url="xml/css/css_edit.html" />
 
 <!--Add New Class dialog box-->
 <mapID target="org.netbeans.modules.java.ui.nodes.elements.SourceEditSupport$AddNewClass" url="pending.html"/>
@@ -515,7 +515,7 @@
 <mapID target="org.netbeans.modules.bugzilla.options.BugzillaOptionsController" url="collab/csh/issues_options.html" />
 
 <!-- JIRA csh topic for dialog invoked when JIRA is not installed but user clicks My Issues or All Issues in Kenai Dashboard. JIRA support requires adding a plugin from Beta UC -->
-<mapID target="org.netbeans.modules.bugtracking.kenai.FakeJiraSupport" url="collab/csh/issues_about.html" />
+<mapID target="org.netbeans.modules.bugtracking.kenai.FakeJiraSupport" url="collab/issues_about.html" />
 
 
 </map>
