@@ -1260,12 +1260,14 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public boolean hasDeclarations() {
-        try {
-            declarationsLock.readLock().lock();
-            return !declarations.isEmpty();
-        } finally {
-            declarationsLock.readLock().unlock();
-        }
+        // due to unblocking size() - use it
+        return declarations.size() != 0;
+//        try {
+//            declarationsLock.readLock().lock();
+//            return !declarations.isEmpty();
+//        } finally {
+//            declarationsLock.readLock().unlock();
+//        }
     }
     
     public Collection<CsmOffsetableDeclaration> getDeclarations() {
@@ -1298,12 +1300,14 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      * @return number of declarations
      */
     public int getDeclarationsSize(){
-        try {
-            declarationsLock.readLock().lock();
-            return declarations.size();
-        } finally {
-            declarationsLock.readLock().unlock();
-        }
+//        try {
+//            declarationsLock.readLock().lock();
+        // NOTE: in the current implementation declarations is TreeMap based
+        // no need to syn here
+        return declarations.size();
+//        } finally {
+//            declarationsLock.readLock().unlock();
+//        }
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> findDeclarations(CsmDeclaration.Kind[] kinds, CharSequence prefix) {
