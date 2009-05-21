@@ -376,6 +376,15 @@ public class Outline extends ETable {
                 }
                 TreePath tp1 = getLayoutCache().getPathForRow(index1);
                 TreePath tp2 = getLayoutCache().getPathForRow(index2);
+                if (tp1 == null) {
+                    if (tp2 == null) {
+                        return 0;
+                    } else {
+                        return -1;
+                    }
+                } else if (tp2 == null) {
+                    return 1;
+                }
                 if (tp1.isDescendant(tp2)) {
                     return -1;
                 }

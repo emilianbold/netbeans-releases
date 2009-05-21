@@ -170,7 +170,7 @@ public class WatchPanel {
         try {
             final int offset = NbDocument.findLineOffset(doc, line);
             //editorPane.getDocument().putProperty(javax.swing.text.Document.StreamDescriptionProperty, dobj);
-            DialogBinding.bindComponentToFile(file, offset, 0, editorPane);
+            DialogBinding.bindComponentToDocument(doc, offset, 0, editorPane);
         } catch (IndexOutOfBoundsException ioobex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioobex);
         }

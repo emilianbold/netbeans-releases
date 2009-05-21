@@ -168,6 +168,12 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         projectHandle.firePropertyChange(ProjectHandle.PROP_SOURCE_LIST, null, null);
     }
 
+    void refresh() {
+        if (projectHandle!=null) {
+            projectHandle.firePropertyChange(ProjectHandle.PROP_SOURCE_LIST, null, null);
+        }
+    }
+
     private void addToRecentProjects(List<Project> newProjects, boolean fireChanges) {
         for (Project prj : newProjects) {
             try {

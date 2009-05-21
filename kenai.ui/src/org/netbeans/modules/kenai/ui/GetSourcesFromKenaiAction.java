@@ -52,6 +52,7 @@ import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.GetSourcesFromKenaiPanel.GetSourcesInfo;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
+import org.netbeans.modules.kenai.ui.spi.SourceHandle;
 import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
 import org.netbeans.modules.versioning.system.cvss.api.CVS;
@@ -65,17 +66,19 @@ import org.openide.windows.WindowManager;
 public final class GetSourcesFromKenaiAction implements ActionListener {
 
     private ProjectAndFeature prjAndFeature;
+    private SourceHandleImpl srcHandle;
 
     private String dialogTitle = NbBundle.getMessage(GetSourcesFromKenaiAction.class, "GetSourcesFromKenaiTitle");
     private String getOption = NbBundle.getMessage(GetSourcesFromKenaiAction.class, "GetSourcesFromKenaiAction.GetFromKenai.option");
     private String cancelOption = NbBundle.getMessage(GetSourcesFromKenaiAction.class, "GetSourcesFromKenaiAction.Cancel.option");
 
-    public GetSourcesFromKenaiAction(ProjectAndFeature prjFtr) {
+    public GetSourcesFromKenaiAction(ProjectAndFeature prjFtr, SourceHandle src) {
         prjAndFeature = prjFtr;
+        this.srcHandle = (SourceHandleImpl) src;
     }
 
     public GetSourcesFromKenaiAction() {
-        this(null);
+        this(null, null);
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -128,6 +131,9 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
                                     Subversion.checkoutRepositoryFolder(feature.getLocation(), sourcesInfo.relativePaths,
                                             new File(sourcesInfo.localFolderPath), true);
                                 }
+                                if (srcHandle!=null) {
+                                    srcHandle.refresh();
+                                }
 
                             } catch (MalformedURLException ex) {
                                 Exceptions.printStackTrace(ex);
@@ -151,7 +157,9 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
                                 Mercurial.cloneRepository(feature.getLocation(), new File(sourcesInfo.localFolderPath),
                                     "", "", ""); // NOI18N
                             }
-
+                            if (srcHandle != null) {
+                                srcHandle.refresh();
+                            }
                         } catch (MalformedURLException ex) {
                             Exceptions.printStackTrace(ex);
                         }
