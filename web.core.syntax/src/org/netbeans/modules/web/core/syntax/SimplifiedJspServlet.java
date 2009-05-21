@@ -391,7 +391,13 @@ public class SimplifiedJspServlet extends JSPProcessor {
         content.addAll(scriptlets);
         content.add(snapshot.create(CLASS_FOOTER, "text/x-java"));
 
-        return Embedding.create(content);
+        Embedding embedding = Embedding.create(content);
+
+        if (logger.isLoggable(Level.FINEST)){
+            logger.finest("---\n" + embedding.getSnapshot().getText() + "\n---");
+        }
+        
+        return embedding;
     }
 
     public static abstract class VirtualJavaClass {

@@ -90,15 +90,8 @@ public class HtmlParserResult extends ParserResult {
     public synchronized AstNode root() {
         if (parseTreeRoot == null) {
             parseTreeRoot = SyntaxTree.makeTree(elementsList(), dtd());
-
             //analyze the parser result for errors if not disable by hint
-            FileObject fo = getSnapshot().getSource().getFileObject();
-            if(fo == null || fo.getAttribute(HtmlHintsProvider.DISABLE_ERROR_CHECKS_KEY) == null) {
-                analyzeParseResult();
-            } else {
-                errors = Collections.emptyList();
-            }
-
+            analyzeParseResult();
         }
         return parseTreeRoot;
     }
