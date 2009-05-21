@@ -138,8 +138,11 @@ public final class CommonTasksSupport {
             }
         };
 
+        CommandLineHelper helper = CommandLineHelper.getInstance(dstExecEnv);
+        String dstFileNameEscaped = helper.toShellPath(dstFileName);
+
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(dstExecEnv);
-        npb.setExecutable("scp").setArguments("-p", "-t", dstFileName); // NOI18N
+        npb.setCommandLine(String.format("cat >%s && chmod 0%03o %s", dstFileNameEscaped, mask, dstFileNameEscaped)); // NOI18N
         npb.addNativeProcessListener(processListener);
 
         ExecutionDescriptor descriptor =
@@ -322,9 +325,9 @@ public final class CommonTasksSupport {
                     workUnitFactor = 1;
                 }
 
-                String command = String.format("C0%03o %d %s\n", // NOI18N
-                        mask, filesize, srcFile.getName());
-                buffer.put(command.getBytes(), 0, command.length());
+//                String command = String.format("C0%03o %d %s\n", // NOI18N
+//                        mask, filesize, srcFile.getName());
+//                buffer.put(command.getBytes(), 0, command.length());
 
                 // send a content of srcFile
                 final FileInputStream fis = new FileInputStream(srcFile);

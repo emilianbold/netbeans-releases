@@ -187,14 +187,14 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
         }
         return getExitStatus() == 0;
     }
-    
-    public static boolean copyTo(ExecutionEnvironment execEnv, String localFile, String remotePath) {
+
+    public static boolean copyTo(ExecutionEnvironment execEnv, String localFile, String remoteFile) {
         RemoteCopySupport support = new RemoteCopySupport(execEnv);
-        return support.copyTo(localFile, remotePath);
+        return support.copyTo(localFile, remoteFile);
     }
 
-    public boolean copyTo(String localFile, String remotePath) {
-        Future<Integer> result = CommonTasksSupport.uploadFile(localFile, executionEnvironment, remotePath, 0775, null);
+    public boolean copyTo(String localFile, String remoteFile) {
+        Future<Integer> result = CommonTasksSupport.uploadFile(localFile, executionEnvironment, remoteFile, 0775, null);
         try {
             Integer i = result.get();
             if (i != null) {
