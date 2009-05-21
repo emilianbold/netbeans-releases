@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -42,13 +42,15 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
-<filesystem>
-  <folder name="org-netbeans-api-project-libraries">
-    <folder name="Libraries">
-      <file name="wag4j.xml" url="wag4j.xml"/>
-      <file name="wagfx.xml" url="wagfx.xml"/>
-    </folder>
-  </folder>
-</filesystem>
+<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
+<library version="1.0">
+    <name>wagfx</name>
+    <type>j2se</type>
+    <localizing-bundle>org/netbeans/libs/wag/Bundle</localizing-bundle>
+    <volume>
+        <type>classpath</type>
+        <resource>jar:nbinst:///modules/ext/wag/JSON.org.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/wag/zclcore-0.5.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/wag/zclfx_min-0.5.jar!/</resource>
+    </volume>
+</library>
