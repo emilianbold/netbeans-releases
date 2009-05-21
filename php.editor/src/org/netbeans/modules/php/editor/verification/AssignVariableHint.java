@@ -272,6 +272,7 @@ public class AssignVariableHint implements AstRule {
 
         String getVariableName(String guessName) {
             guessName = adjustName(firstToLower(guessName));
+            guessName = guessName != null ? guessName : "variable";//NOI18N
             String proposedName = guessName;
             int incr = -1;
             boolean cont = true;

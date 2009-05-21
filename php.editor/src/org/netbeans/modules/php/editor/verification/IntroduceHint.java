@@ -189,9 +189,17 @@ public class IntroduceHint implements AstRule {
         public void visit(ClassInstanceCreation instanceCreation) {
             if (isInside(instanceCreation.getStartOffset(), lineBegin, lineEnd)) {
                 String clzName = CodeUtils.extractClassName(instanceCreation.getClassName());
-                IndexedClass clz = clzName != null ? getIndexedClass(clzName) : null;
-                if (clz == null && clzName != null) {
-                    fix = IntroduceClassFix.getInstance(clzName, model, instanceCreation);
+                clzName = (clzName != null && clzName.trim().length() > 0) ? clzName : null;
+                PHPIndex index = model.getIndexScope().getIndex();
+                Collection<IndexedClass> classes = Collections.emptyList();
+                if (clzName != null) {
+                    classes = index.getClasses(null, clzName, Kind.EXACT);
+                }
+                if (clzName != null && classes.isEmpty()) {
+                    IndexedClass clz = clzName != null ? getIndexedClass(clzName) : null;
+                    if (clz == null && clzName != null) {
+                        fix = IntroduceClassFix.getInstance(clzName, model, instanceCreation);
+                    }
                 }
             }
             super.visit(instanceCreation);
