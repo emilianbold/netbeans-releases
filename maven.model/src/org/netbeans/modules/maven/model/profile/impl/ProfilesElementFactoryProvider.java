@@ -72,8 +72,9 @@ import org.w3c.dom.Element;
 @ServiceProvider(service=ElementFactory.class)
 public class ProfilesElementFactoryProvider implements ElementFactory {
 
-    private ProfilesQNames ns = new ProfilesQNames(true);
-    private ProfilesQNames nonns = new ProfilesQNames(false);
+    private ProfilesQNames ns = new ProfilesQNames(true, false);
+    private ProfilesQNames nsold = new ProfilesQNames(true, true);
+    private ProfilesQNames nonns = new ProfilesQNames(false, false);
     private Set<QName> all;
 
 
@@ -81,6 +82,7 @@ public class ProfilesElementFactoryProvider implements ElementFactory {
         all = new HashSet<QName>();
         all.addAll(ns.getElementQNames());
         all.addAll(nonns.getElementQNames());
+        all.addAll(nsold.getElementQNames());
     }
 
     public Set<QName> getElementQNames() {
