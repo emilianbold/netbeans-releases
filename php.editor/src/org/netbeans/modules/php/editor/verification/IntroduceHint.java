@@ -130,7 +130,7 @@ public class IntroduceHint implements AstRule {
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
-        if (lineBegin != -1 && lineEnd != -1) {
+        if (lineBegin != -1 && lineEnd != -1 && caretOffset > lineBegin) {
             Model model = ModelFactory.getModel(context.parserResult);
             IntroduceFixVisitor introduceFixVisitor = new IntroduceFixVisitor(model, doc, caretOffset, lineBegin, lineEnd);
             phpParseResult.getProgram().accept(introduceFixVisitor);

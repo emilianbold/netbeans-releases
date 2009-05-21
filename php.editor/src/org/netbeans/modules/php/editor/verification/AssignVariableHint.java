@@ -116,7 +116,7 @@ public class AssignVariableHint implements AstRule {
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
-        if (lineBegin != -1 && lineEnd != -1) {
+        if (lineBegin != -1 && lineEnd != -1 && caretOffset > lineBegin) {
             IntroduceFixVisitor introduceFixVisitor = new IntroduceFixVisitor(doc, lineBegin, lineEnd);
             phpParseResult.getProgram().accept(introduceFixVisitor);
             IntroduceFix variableFix = introduceFixVisitor.getIntroduceFix();
