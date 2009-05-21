@@ -59,7 +59,7 @@ public class CndFileVisibilityQuery  implements VisibilityQueryImplementation2, 
 
     private Pattern acceptedFilesPattern = null;
 
-    private static final String DEFAULT_IGNORE_BYNARY_PATTERN = ".*\\.(o|lo|la|Po|Plo)$"; // NOI18N
+    private static final String DEFAULT_IGNORE_BYNARY_PATTERN = ".*\\.(o|so|a|dll|dylib|lib|lo|la|Po|Plo)$"; // NOI18N
     private Pattern ignoredFilesPattern = Pattern.compile(DEFAULT_IGNORE_BYNARY_PATTERN);
 
     /** Default instance for lookup. */

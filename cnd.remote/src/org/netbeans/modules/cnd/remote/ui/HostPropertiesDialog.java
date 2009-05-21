@@ -143,43 +143,23 @@ public class HostPropertiesDialog extends JPanel {
 
         tfHost.setEditable(false);
         tfHost.setText(org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.tfHost.text")); // NOI18N
-        tfHost.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tfHostActionPerformed(evt);
-            }
-        });
 
         lblPort.setLabelFor(tfPort);
         org.openide.awt.Mnemonics.setLocalizedText(lblPort, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.lblPort.text")); // NOI18N
 
         tfPort.setEditable(false);
         tfPort.setText(org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.tfPort.text")); // NOI18N
-        tfPort.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tfPortActionPerformed(evt);
-            }
-        });
 
         lblUser.setLabelFor(tfUser);
         org.openide.awt.Mnemonics.setLocalizedText(lblUser, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.lblUser.text")); // NOI18N
 
         tfUser.setEditable(false);
         tfUser.setText(org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.tfUser.text")); // NOI18N
-        tfUser.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tfUserActionPerformed(evt);
-            }
-        });
 
         lblName.setLabelFor(tfName);
         org.openide.awt.Mnemonics.setLocalizedText(lblName, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.lblName.text")); // NOI18N
 
         tfName.setText(org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.tfName.text")); // NOI18N
-        tfName.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tfNameActionPerformed(evt);
-            }
-        });
 
         lblSync.setLabelFor(cbSync);
         org.openide.awt.Mnemonics.setLocalizedText(lblSync, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.lblSync.text")); // NOI18N
@@ -204,12 +184,12 @@ public class HostPropertiesDialog extends JPanel {
                                 .add(lblPort)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(tfPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(tfUser, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)
-                            .add(tfName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)))
+                            .add(tfUser, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
+                            .add(tfName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .add(lblSync)
                         .add(18, 18, 18)
-                        .add(cbSync, 0, 279, Short.MAX_VALUE)))
+                        .add(cbSync, 0, 289, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -236,22 +216,6 @@ public class HostPropertiesDialog extends JPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void tfHostActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tfHostActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_tfHostActionPerformed
-
-    private void tfUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tfUserActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_tfUserActionPerformed
-
-    private void tfPortActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tfPortActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_tfPortActionPerformed
-
-    private void tfNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tfNameActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_tfNameActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

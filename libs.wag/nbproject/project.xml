@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
+            <code-name-base>org.netbeans.libs.wag</code-name-base>
+            <module-dependencies/>
+            <public-packages>
+                <package>org.json</package>
+                <package>com.sun.zembly.popzcl</package>
+                <package>com.sun.zembly.popzcl.config</package>
+                <package>com.sun.zembly.popzcl.config.impl</package>
+                <package>com.sun.zembly.oauth.api</package>
+                <package>com.sun.zembly.oauth.core</package>
+            </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/wag/JSON.org.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/wag/popzcl-oauth.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/wag/popzcl4j.jar</runtime-relative-path>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>

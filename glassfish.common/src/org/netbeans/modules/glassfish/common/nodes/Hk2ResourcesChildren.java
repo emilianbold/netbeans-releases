@@ -137,9 +137,18 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
                             java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
                             CommandRunner mgr = new CommandRunner(ip);
                             Decorator decorator = DecoratorManager.findDecorator(type, null);
-                            List<ResourceDesc> reslourcesList = mgr.getResources(type);
-                            for (ResourceDesc resource : reslourcesList) {
-                                keys.add(new Hk2ResourceNode(lookup, resource, (ResourceDecorator) decorator, getCustomizer(type)));
+                            if (decorator == null) {
+                                if (type.equals(GlassfishModule.JDBC_RESOURCE)) {
+                                    decorator = Hk2ItemNode.JDBC_MANAGED_DATASOURCES;
+                                } else if (type.equals(GlassfishModule.JDBC_CONNECTION_POOL)) {
+                                    decorator = Hk2ItemNode.CONNECTION_POOLS;
+                                }
+                            }
+                            if (decorator != null) {
+                                List<ResourceDesc> reslourcesList = mgr.getResources(type);
+                                for (ResourceDesc resource : reslourcesList) {
+                                    keys.add(new Hk2ResourceNode(lookup, resource, (ResourceDecorator) decorator, getCustomizer(type)));
+                                }
                             }
                         } catch (Exception ex) {
                             Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);

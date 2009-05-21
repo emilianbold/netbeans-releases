@@ -100,7 +100,10 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
         
         this.component = component;
         this.waypoint = waypoint;
-        
+
+        putValue("menuText", NbBundle.getMessage(NavigationHistoryBackAction.class,
+                "NavigationHistoryBackAction_Tooltip_simple")); //NOI18N
+
         if (waypoint != null) {
             putValue(NAME, actionName);
             putValue(SHORT_DESCRIPTION, NbBundle.getMessage(NavigationHistoryBackAction.class, 

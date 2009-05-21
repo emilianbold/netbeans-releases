@@ -290,7 +290,23 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
                     new ScrollCompletionPane(comp, fixes, null, null, getMaxSizeAt( p ));
 
             Dimension popup = hintListComponent.getPreferredSize();
-            Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+            Dimension screen = null;
+            Rectangle bounds;
+            int xOnCurrentScreen = p.x;
+            final GraphicsEnvironment graphEnv = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            //find proper display
+            GraphicsDevice[] screenDevices = graphEnv.getScreenDevices();
+            for (int i = 0; i < screenDevices.length; i++) {
+                bounds = screenDevices[i].getDefaultConfiguration().getBounds();
+                if(bounds.contains(p)) {
+                    screen = bounds.getSize();
+                    if (graphEnv.getDefaultScreenDevice() != screenDevices[i]) {
+                        //shift x coordinate to current display
+                        xOnCurrentScreen -= bounds.x;
+                    }
+                }
+            }
+            
             boolean exceedsHeight = p.y + popup.height > screen.height;
 
             try {
@@ -315,7 +331,7 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
                 p.y -= popup.height + rowHeight + POPUP_VERTICAL_OFFSET;
             }
 
-            if(p.x + popup.width > screen.width) { //shift popup left necessary
+            if(xOnCurrentScreen + popup.width > screen.width) { //shift popup left necessary
                 p.x -= p.x + popup.width - screen.width;
             }
 

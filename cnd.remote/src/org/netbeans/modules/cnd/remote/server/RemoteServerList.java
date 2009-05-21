@@ -257,7 +257,15 @@ public class RemoteServerList implements ServerListImplementation {
     }
     
     @Override
-    public synchronized void clear() {
+    public synchronized void set(List<ServerRecord> records, int defaultIndex) {
+        clear();
+        for (ServerRecord rec : records) {
+            addServer(rec.getExecutionEnvironment(), rec.getDisplayName(), rec.getSyncFactory(), false, false);
+        }
+        setDefaultIndex(defaultIndex);
+    }
+
+    private void clear() {
         for (RemoteServerRecord record : items) {
             record.setDeleted(true);
         }

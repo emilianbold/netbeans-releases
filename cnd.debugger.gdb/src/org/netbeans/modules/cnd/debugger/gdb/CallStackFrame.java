@@ -52,10 +52,12 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmForStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmIfStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
@@ -312,7 +314,7 @@ public class CallStackFrame {
                             for (int[] span : spans) {
                                 if (span[0] <= reference.getStartOffset() && reference.getEndOffset() <= span[1]) {
                                     CsmObject referencedObject = reference.getReferencedObject();
-                                    if (CsmKindUtilities.isVariable(referencedObject)) {
+                                    if (CsmKindUtilities.isVariable(referencedObject) && !filterAuto((CsmVariable)referencedObject)) {
                                         StringBuilder sb = new StringBuilder(reference.getText());
                                         if (context.size() > 1) {
                                             outer: for (int i = context.size()-1; i >= 0; i--) {
@@ -356,6 +358,11 @@ public class CallStackFrame {
             }
         }
         return cachedAutos;
+    }
+
+    private static boolean filterAuto(CsmScopeElement object) {
+        CsmScope scope = object.getScope();
+        return CsmKindUtilities.isNamespace(scope) && "std".equals(((CsmNamespace)scope).getQualifiedName().toString()); // NOI18N
     }
 
     @Override

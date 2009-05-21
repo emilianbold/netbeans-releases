@@ -233,6 +233,9 @@ public class DocumentFinder
 
         Boolean b = (Boolean)props.get(EditorFindSupport.FIND_BACKWARD_SEARCH);
         boolean back = (b != null && b.booleanValue());
+        if (oppositeDir) {
+            back = !back;
+        }
         b = (Boolean)props.get(EditorFindSupport.FIND_BLOCK_SEARCH);
         boolean blockSearch = (b != null && b.booleanValue());
         Integer i = (Integer) props.get(EditorFindSupport.FIND_BLOCK_SEARCH_START);

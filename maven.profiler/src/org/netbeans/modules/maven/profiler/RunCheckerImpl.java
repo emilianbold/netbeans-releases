@@ -44,14 +44,12 @@ import java.util.Properties;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.Profiler;
-import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -80,7 +78,9 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
     public boolean checkRunConfig(RunConfig config, ExecutionContext context) {
         Properties configProperties = config.getProperties();
 
-        if (ACTION_PROFILE.equals(config.getActionName()) || config.getActionName().startsWith(ACTION_PROFILE_SINGLE) || ACTION_PROFILE_TESTS.equals(config.getActionName())) { // action "profile"
+        if (   ACTION_PROFILE.equals(config.getActionName()) ||
+               ACTION_PROFILE_TESTS.equals(config.getActionName()) ||
+              (config.getActionName() != null && config.getActionName().startsWith(ACTION_PROFILE_SINGLE))) { // action "profile"
             // Get the ProjectTypeProfiler for Maven project
             final ProjectTypeProfiler ptp = ProjectUtilities.getProjectTypeProfiler(project);
             if (!(ptp instanceof MavenProjectTypeProfiler)) return false;
@@ -123,8 +123,13 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
     }
 
     private String fixAgentArg(String agentArg) {
+        // !!!!!!!!!!!!!!!!!!!!!!!! Never remove this replacement !!!!!!!!!!!!!!!!!!!!!!!!!!
+        // !! It is absolutely needed for correct profiling of maven projects on Windows  !!
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        agentArg = agentArg.replace("\\", "/"); // NOI18N
+
         if (agentArg.indexOf(' ') != -1) { //NOI18N
-            return "\"" + agentArg + "\"";
+            return "\"" + agentArg + "\""; // NOI18N
         }
         return agentArg;
     }

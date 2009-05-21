@@ -73,6 +73,8 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.plaf.metal.*;
 
 import org.netbeans.modules.openide.explorer.UIException;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 
 /** A few utility methods useful to implementors of Inplace Editors.
@@ -255,6 +257,7 @@ final class PropUtils {
                 return s1.compareToIgnoreCase(s2);
             }
 
+        @Override
             public String toString() {
                 return "Type comparator"; //NOI18N
             }
@@ -269,6 +272,7 @@ final class PropUtils {
                 return String.CASE_INSENSITIVE_ORDER.compare(s1, s2);
             }
 
+        @Override
             public String toString() {
                 return "Name comparator"; //NOI18N
             }
@@ -676,7 +680,9 @@ final class PropUtils {
                                      null, null);
         }
 
-        Exceptions.printStackTrace(throwable);
+        String msg = Exceptions.findLocalizedMessage(throwable);
+        NotifyDescriptor d = new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
+        DialogDisplayer.getDefault().notifyLater(d);
     }
 
     /** Fetches a localized message for an exception that may be displayed to
@@ -1712,11 +1718,13 @@ final class PropUtils {
     }
 
     private static class CleanSplitPaneUI extends BasicSplitPaneUI {
+        @Override
         protected void installDefaults() {
             super.installDefaults();
             divider.setBorder(new SplitBorder());
         }
         
+        @Override
         public BasicSplitPaneDivider createDefaultDivider() {
             return new CleanSplitPaneDivider(this);
         }
@@ -1728,9 +1736,11 @@ final class PropUtils {
         public CleanSplitPaneDivider( BasicSplitPaneUI ui ) {
             super( ui );
         }
+        @Override
         public AccessibleContext getAccessibleContext() {
             if( null == accessibleContext ) {
                 accessibleContext = new AccessibleAWTComponent() {
+                    @Override
                             public AccessibleRole getAccessibleRole() {
                                 return AccessibleRole.SPLIT_PANE;
                             }
