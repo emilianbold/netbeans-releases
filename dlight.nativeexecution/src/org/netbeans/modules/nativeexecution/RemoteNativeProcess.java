@@ -38,7 +38,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
 
             try {
                 if (isInterrupted()) {
-                    return;
+                    throw new InterruptedException();
                 }
 
                 final String commandLine = info.getCommandLineForShell();
@@ -55,7 +55,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
                 envVars.put("PATH", "/bin:/usr/bin:$PATH"); // NOI18N
 
                 if (isInterrupted()) {
-                    return;
+                    throw new InterruptedException();
                 }
 
                 final Session session = ConnectionManagerAccessor.getDefault().
