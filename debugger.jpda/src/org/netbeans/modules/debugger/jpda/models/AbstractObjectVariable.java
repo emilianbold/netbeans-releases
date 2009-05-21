@@ -594,13 +594,13 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
     
     @Override
     protected void setInnerValue (Value v) {
+        super.setInnerValue(v);
         /*Value old = getInnerValue();
         if (old instanceof ObjectReference) {
             try {
                 ObjectReferenceWrapper.enableCollection((ObjectReference) old);
             } catch (Exception ex) {}
         }
-        super.setInnerValue(v);
         if (v instanceof ObjectReference) {
             try {
                 ObjectReferenceWrapper.disableCollection((ObjectReference) v);

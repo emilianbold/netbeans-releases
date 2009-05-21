@@ -136,6 +136,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         Set<FileObject> srcRootsToListenForArtifactsUpdates = null;
         
         // 2) get default allSourceRoots of source roots used for stepping
+        if (logger.isLoggable(Level.FINE)) logger.fine("Have properties = "+properties);
         if (properties != null) {
             baseDir = (File) properties.get("baseDir");
             smartSteppingSourcePath = (ClassPath) properties.get ("sourcepath");
