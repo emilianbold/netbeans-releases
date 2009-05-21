@@ -32,66 +32,75 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
     }
 
     protected void create() throws Throwable {
-        synchronized (lock) {
-            ChannelStreams streams = null;
-            String error = null;
+        Throwable exception = null;
+        ChannelStreams streams = null;
 
-            try {
-                if (isInterrupted()) {
-                    throw new InterruptedException();
-                }
+        if (isInterrupted()) {
+            throw new InterruptedException();
+        }
 
-                final String commandLine = info.getCommandLineForShell();
-                final ConnectionManager mgr = ConnectionManager.getInstance();
-                final ExecutionEnvironment execEnv = info.getExecutionEnvironment();
+        try {
+            final String commandLine = info.getCommandLineForShell();
+            final ConnectionManager mgr = ConnectionManager.getInstance();
+            final ExecutionEnvironment execEnv = info.getExecutionEnvironment();
 
-                final String sh = hostInfo.getShell();
-                final MacroMap envVars = info.getEnvVariables();
+            final String sh = hostInfo.getShell();
+            final MacroMap envVars = info.getEnvVariables();
 
-                // Setup LD_PRELOAD to load unbuffer library...
-                UnbufferSupport.initUnbuffer(info, envVars);
+            // Setup LD_PRELOAD to load unbuffer library...
+            UnbufferSupport.initUnbuffer(info, envVars);
 
-                // Always prepend /bin and /usr/bin to PATH
-                envVars.put("PATH", "/bin:/usr/bin:$PATH"); // NOI18N
+            // Always prepend /bin and /usr/bin to PATH
+            envVars.put("PATH", "/bin:/usr/bin:$PATH"); // NOI18N
 
-                if (isInterrupted()) {
-                    throw new InterruptedException();
-                }
-
-                final Session session = ConnectionManagerAccessor.getDefault().
-                        getConnectionSession(mgr, execEnv, true);
-
-                streams = execCommand(session, sh + " -s"); // NOI18N
-                streams.in.write("echo $$\n".getBytes()); // NOI18N
-                streams.in.flush();
-
-                final String workingDirectory = info.getWorkingDirectory(true);
-
-                if (workingDirectory != null) {
-                    streams.in.write(("cd " + CommandLineHelper.getInstance(execEnv).toShellPath(workingDirectory) + "\n").getBytes()); // NOI18N
-                    streams.in.flush();
-                }
-
-                EnvWriter ew = new EnvWriter(streams.in);
-                ew.write(envVars);
-
-                streams.in.write(("exec " + commandLine + "\n").getBytes()); // NOI18N
-                streams.in.flush();
-
-                readPID(streams.out);
-            } catch (Throwable ex) {
-                error = ex.getMessage() == null ? ex.toString() : ex.getMessage();
-            } finally {
-                if (streams == null) {
-                    streams = new ChannelStreams(
-                            cstreams == null ? null : cstreams.channel,
-                            new ByteArrayInputStream(new byte[0]),
-                            new ByteArrayInputStream(error == null ? new byte[0] : error.getBytes()),
-                            new ByteArrayOutputStream());
-                }
-
-                cstreams = streams;
+            if (isInterrupted()) {
+                throw new InterruptedException();
             }
+
+            synchronized (lock) {
+                try {
+                    final Session session = ConnectionManagerAccessor.getDefault().
+                            getConnectionSession(mgr, execEnv, true);
+
+                    streams = execCommand(session, sh + " -s"); // NOI18N
+                    streams.in.write("echo $$\n".getBytes()); // NOI18N
+                    streams.in.flush();
+
+                    final String workingDirectory = info.getWorkingDirectory(true);
+
+                    if (workingDirectory != null) {
+                        streams.in.write(("cd " + CommandLineHelper.getInstance(execEnv).toShellPath(workingDirectory) + "\n").getBytes()); // NOI18N
+                        streams.in.flush();
+                    }
+
+                    EnvWriter ew = new EnvWriter(streams.in);
+                    ew.write(envVars);
+
+                    streams.in.write(("exec " + commandLine + "\n").getBytes()); // NOI18N
+                    streams.in.flush();
+
+                    readPID(streams.out);
+                } catch (Throwable ex) {
+                    exception = ex;
+                }
+            }
+        } catch (Throwable ex) {
+            exception = ex;
+        } finally {
+            if (streams == null) {
+                String error = null;
+
+                if (exception != null) {
+                    error = exception.getMessage() == null ? exception.toString() : exception.getMessage();
+                }
+
+                streams = new ChannelStreams(null,
+                        new ByteArrayInputStream(new byte[0]),
+                        new ByteArrayInputStream(error == null ? new byte[0] : error.getBytes()),
+                        new ByteArrayOutputStream());
+            }
+
+            cstreams = streams;
         }
     }
 
