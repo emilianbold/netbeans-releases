@@ -209,7 +209,8 @@ public final class EAVisualPanel extends JPanel implements DocumentListener {
         boolean result = false;
         try {
             String escaped = XMLUtil.toAttributeValue(coord);
-            result = escaped.length() == coord.length() && coord.indexOf(">") == -1;
+            result = escaped.length() == coord.length() && coord.indexOf(">") == -1
+                    && coord.indexOf(" ") == -1;
         } catch (CharConversionException ex) {
             // ignore this one
         }
