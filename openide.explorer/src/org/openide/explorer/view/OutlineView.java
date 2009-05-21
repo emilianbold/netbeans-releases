@@ -226,6 +226,9 @@ public class OutlineView extends JScrollPane {
      * You can override it and create different model in the subclass.
      */
     protected OutlineModel createOutlineModel(NodeTreeModel treeModel, RowModel rowModel, String label) {
+        if (label == null) {
+            label = NbBundle.getMessage(OutlineView.class, "NodeOutlineModel_NodesColumnLabel"); // NOI18N
+        }
         return new NodeOutlineModel(treeModel, rowModel, false, label);
     }
     
