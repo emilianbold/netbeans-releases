@@ -123,7 +123,19 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         long time = System.currentTimeMillis();
         boolean success = false;
         try {
-            synchronizeImpl(remoteDir);
+            boolean same;
+            try {
+                same = RemotePathMap.isTheSame(executionEnvironment, remoteDir, localDir);
+            } catch (InterruptedException e) {
+                return false;
+            }
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.finest(executionEnvironment.getHost() + ":" + remoteDir + " and " + localDir.getAbsolutePath() + //NOI18N
+                        (same ? " are same - skipping" : " arent same - copying")); //NOI18N
+            }
+            if (!same) {
+                synchronizeImpl(remoteDir);
+            }
             success = true;
         } catch (InterruptedException ex) {
             // reporting does not make sense, just return false
