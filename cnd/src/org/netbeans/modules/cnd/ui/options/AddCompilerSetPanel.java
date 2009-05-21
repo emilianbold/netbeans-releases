@@ -155,7 +155,7 @@ import org.openide.util.NbBundle;
                         });
                         remoteCompilerCheckExecutor = null;
                     }
-                    remoteCompilerCheckExecutor = Executors.newFixedThreadPool(2);
+                    remoteCompilerCheckExecutor = Executors.newSingleThreadExecutor();
                 }
                 remoteCompilerCheckExecutor.submit(new Runnable() {
 
