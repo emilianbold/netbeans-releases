@@ -65,7 +65,7 @@ public class RemoveFolderAction extends NodeAction {
 	    assert folder != null;
             
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
-            MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
+            MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
             if (!makeConfigurationDescriptor.okToChange()) {
                 return;
             }
@@ -88,6 +88,7 @@ public class RemoveFolderAction extends NodeAction {
 	return null;
     }
 
+    @Override
     protected boolean asynchronous() {
 	return false;
     }

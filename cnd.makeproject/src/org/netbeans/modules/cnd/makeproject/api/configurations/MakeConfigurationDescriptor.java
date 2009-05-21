@@ -167,11 +167,20 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     public static MakeConfigurationDescriptor getMakeConfigurationDescriptor(Project project) {
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         if (pdp != null) {
-            MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor) pdp.getConfigurationDescriptor();
+            MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
             return makeConfigurationDescriptor;
         } else {
             return null;
         }
+    }
+
+    /** NPE-safe method for getting active configuration */
+    public MakeConfiguration getActiveConfiguration() {
+        Configurations confs = getConfs();
+        if (confs != null) {
+            return (MakeConfiguration) confs.getActive();
+        }
+        return null;
     }
 
     /*

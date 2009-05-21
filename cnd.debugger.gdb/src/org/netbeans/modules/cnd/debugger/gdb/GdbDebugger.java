@@ -2064,10 +2064,10 @@ public class GdbDebugger implements PropertyChangeListener {
     private static void attach2Target(Object target, ProjectInformation pinfo) throws DebuggerStartException {
         Project project = pinfo.getProject();
         ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        MakeConfigurationDescriptor mcd = (MakeConfigurationDescriptor) cdp.getConfigurationDescriptor();
+        MakeConfigurationDescriptor mcd = cdp.getConfigurationDescriptor();
         
         if (mcd != null) {
-            MakeConfiguration conf = (MakeConfiguration) mcd.getConfs().getActive();
+            MakeConfiguration conf = mcd.getActiveConfiguration();
             String path = getExecutableOrSharedLibrary(pinfo, conf);
 
             if (path != null) {
