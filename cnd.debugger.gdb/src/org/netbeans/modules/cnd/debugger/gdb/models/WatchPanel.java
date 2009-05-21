@@ -191,7 +191,7 @@ public class WatchPanel {
         }
         try {
             int offset = NbDocument.findLineOffset(doc, line);
-            DialogBinding.bindComponentToFile(contextFO, offset, 0, editorPane);
+            DialogBinding.bindComponentToDocument(doc, offset, 0, editorPane);
         } catch (IndexOutOfBoundsException ioobex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioobex);
         }
