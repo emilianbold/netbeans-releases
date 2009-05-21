@@ -209,8 +209,8 @@ public final class TestCreator implements TestabilityJudge {
     }
     
     public TestabilityResult isClassTestable(CompilationInfo compInfo,
-                                             TypeElement classElem) {
-        return setup.isClassTestable(compInfo, classElem);
+                                             TypeElement classElem, long skipTestabilityResultMask) {
+        return setup.isClassTestable(compInfo, classElem, skipTestabilityResultMask);
     }
 
     public boolean isMethodTestable(ExecutableElement method) {
