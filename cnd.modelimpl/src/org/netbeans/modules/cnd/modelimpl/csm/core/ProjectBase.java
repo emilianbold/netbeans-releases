@@ -1897,6 +1897,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             getUnresolved().dispose();
             RepositoryUtils.closeUnit(getUID(), getRequiredUnits(), cleanPersistent);
 
+            weakClassifierContainer = null;
+            weakDeclarationContainer = null;
+            weakFileContainer = null;
+            weakGraphContainer = null;
+
             platformProject = null;
             unresolved = null;
             uid = null;
@@ -2658,7 +2663,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         this.FAKE_GLOBAL_NAMESPACE = new NamespaceImpl(this, true);
     }
 
-    private WeakReference<DeclarationContainer> weakDeclarationContainer;
+    private WeakReference<DeclarationContainer> weakDeclarationContainer = TraceFlags.USE_WEAK_MEMORY_CACHE ? new WeakReference<DeclarationContainer>(null) : null;
     DeclarationContainer getDeclarationsSorage() {
         DeclarationContainer dc = null;
         WeakReference<DeclarationContainer> weak = null;
@@ -2675,13 +2680,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (dc == null && isValid()) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get DeclarationsSorage by key " + declarationsSorageKey)); // NOI18N
         }
-        if (TraceFlags.USE_WEAK_MEMORY_CACHE && dc != null) {
+        if (TraceFlags.USE_WEAK_MEMORY_CACHE && dc != null && weakDeclarationContainer != null) {
             weakDeclarationContainer = new WeakReference<DeclarationContainer>(dc);
         }
         return dc != null ? dc : DeclarationContainer.empty();
     }
 
-    private WeakReference<FileContainer> weakFileContainer;
+    private WeakReference<FileContainer> weakFileContainer = TraceFlags.USE_WEAK_MEMORY_CACHE ? new WeakReference<FileContainer>(null) : null;
     FileContainer getFileContainer() {
         FileContainer fc = null;
         WeakReference<FileContainer> weak = null;
@@ -2698,13 +2703,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (fc == null && isValid()) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get FileContainer by key " + fileContainerKey)); // NOI18N
         }
-        if (TraceFlags.USE_WEAK_MEMORY_CACHE && fc != null) {
+        if (TraceFlags.USE_WEAK_MEMORY_CACHE && fc != null && weakFileContainer != null) {
             weakFileContainer = new WeakReference<FileContainer>(fc);
         }
         return fc != null ? fc : FileContainer.empty();
     }
 
-    private WeakReference<GraphContainer> weakGraphContainer;
+    private WeakReference<GraphContainer> weakGraphContainer = TraceFlags.USE_WEAK_MEMORY_CACHE ? new WeakReference<GraphContainer>(null) : null;
     public final GraphContainer getGraphStorage() {
         GraphContainer gc = null;
         WeakReference<GraphContainer> weak = null;
@@ -2721,13 +2726,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (gc == null && isValid()) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get GraphContainer by key " + graphStorageKey)); // NOI18N
         }
-        if (TraceFlags.USE_WEAK_MEMORY_CACHE && gc != null) {
+        if (TraceFlags.USE_WEAK_MEMORY_CACHE && gc != null && weakGraphContainer != null) {
             weakGraphContainer = new WeakReference<GraphContainer>(gc);
         }
         return gc != null ? gc : GraphContainer.empty();
     }
 
-    private WeakReference<ClassifierContainer> weakClassifierContainer;
+    private WeakReference<ClassifierContainer> weakClassifierContainer = TraceFlags.USE_WEAK_MEMORY_CACHE ? new WeakReference<ClassifierContainer>(null) : null;
     final ClassifierContainer getClassifierSorage() {
         ClassifierContainer cc = null;
         WeakReference<ClassifierContainer> weak = null;
@@ -2744,7 +2749,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (cc == null && isValid()) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get ClassifierSorage by key " + classifierStorageKey)); // NOI18N
         }
-        if (TraceFlags.USE_WEAK_MEMORY_CACHE && cc != null) {
+        if (TraceFlags.USE_WEAK_MEMORY_CACHE && cc != null && weakClassifierContainer != null) {
             weakClassifierContainer = new WeakReference<ClassifierContainer>(cc);
         }
         return cc != null ? cc : ClassifierContainer.empty();

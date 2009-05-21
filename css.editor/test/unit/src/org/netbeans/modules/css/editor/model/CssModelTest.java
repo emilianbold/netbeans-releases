@@ -152,4 +152,33 @@ public class CssModelTest extends TestBase {
         assertEquals(5, property.offset());
 
     }
+
+    public void testSeverelyBrokenSource() throws org.netbeans.modules.parsing.spi.ParseException, BadLocationException {
+        String content = "@ ";
+        //                0123456789012345678
+        //                0         1
+
+        Document doc = getDocument(content);
+        Source source = Source.create(doc);
+        final Result[] _result = new Result[1];
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                _result[0] = resultIterator.getParserResult();
+            }
+        });
+
+        Result result = _result[0];
+        assertTrue(result instanceof CssParserResult);
+        assertNotNull(result);
+
+        CssModel model = CssModel.create((CssParserResult) result);
+        assertNotNull(model);
+
+        List<CssRule> rules = model.rules();
+        assertNotNull(rules);
+        assertEquals(0, rules.size()); //no rules
+    }
+
 }

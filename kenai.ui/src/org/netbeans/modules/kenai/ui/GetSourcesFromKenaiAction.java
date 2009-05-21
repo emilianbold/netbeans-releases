@@ -84,6 +84,12 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
             return;
         }
 
+        if (prjAndFeature!=null && KenaiService.Names.SUBVERSION.equals(prjAndFeature.feature.getService())) {
+            if (!Subversion.isClientAvailable(true)) {
+                return;
+            }
+        }
+
         Object options[] = new Object[2];
         options[0] = getOption;
         options[1] = cancelOption;
@@ -109,27 +115,30 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
             final KenaiFeature feature = sourcesInfo.feature;
 
             if (KenaiService.Names.SUBVERSION.equals(feature.getService())) {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        try {
+                if (Subversion.isClientAvailable(true)) {
+                    RequestProcessor.getDefault().post(new Runnable() {
 
-                            if (passwdAuth != null) {
-                                Subversion.checkoutRepositoryFolder(feature.getLocation(), sourcesInfo.relativePaths,
-                                    new File(sourcesInfo.localFolderPath), passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true);
-                            } else {
-                                Subversion.checkoutRepositoryFolder(feature.getLocation(), sourcesInfo.relativePaths,
-                                    new File(sourcesInfo.localFolderPath), true);
-                            }
+                        public void run() {
+                            try {
 
-                        } catch (MalformedURLException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (IOException ex) {
-                            if (Subversion.CLIENT_UNAVAILABLE_ERROR_MESSAGE.equals(ex.getMessage())) {
-                                // DO SOMETHING, svn client is unavailable
+                                if (passwdAuth != null) {
+                                    Subversion.checkoutRepositoryFolder(feature.getLocation(), sourcesInfo.relativePaths,
+                                            new File(sourcesInfo.localFolderPath), passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true);
+                                } else {
+                                    Subversion.checkoutRepositoryFolder(feature.getLocation(), sourcesInfo.relativePaths,
+                                            new File(sourcesInfo.localFolderPath), true);
+                                }
+
+                            } catch (MalformedURLException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } catch (IOException ex) {
+                                if (Subversion.CLIENT_UNAVAILABLE_ERROR_MESSAGE.equals(ex.getMessage())) {
+                                    // DO SOMETHING, svn client is unavailable
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
             } else if (KenaiService.Names.MERCURIAL.equals(feature.getService())) {
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
@@ -170,7 +179,8 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
             Logger.getLogger(GetSourcesFromKenaiAction.class.getName()).log(Level.INFO, "Cannot checkout external repository " + url, malformedURLException);
         } catch (IOException ex) {
             if (Subversion.CLIENT_UNAVAILABLE_ERROR_MESSAGE.equals(ex.getMessage())) {
-                // DO SOMETHING, svn client is unavailable
+                //this should not happen. It is handled in openCheckoutWizard
+                return;
             }
         }
         JOptionPane.showMessageDialog(
