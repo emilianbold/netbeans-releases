@@ -39,12 +39,11 @@
 package org.netbeans.modules.html.editor.gsf;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import org.netbeans.editor.ext.html.dtd.DTD;
-import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNode.Description;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
@@ -58,7 +57,7 @@ import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.openide.util.NbBundle;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -91,7 +90,15 @@ public class HtmlParserResult extends ParserResult {
     public synchronized AstNode root() {
         if (parseTreeRoot == null) {
             parseTreeRoot = SyntaxTree.makeTree(elementsList(), dtd());
-            analyzeParseResult();
+
+            //analyze the parser result for errors if not disable by hint
+            FileObject fo = getSnapshot().getSource().getFileObject();
+            if(fo == null || fo.getAttribute(HtmlHintsProvider.DISABLE_ERROR_CHECKS_KEY) == null) {
+                analyzeParseResult();
+            } else {
+                errors = Collections.emptyList();
+            }
+
         }
         return parseTreeRoot;
     }
