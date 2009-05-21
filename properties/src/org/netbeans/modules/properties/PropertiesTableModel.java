@@ -258,7 +258,9 @@ public class PropertiesTableModel extends AbstractTableModel {
             return !structure.isReadOnly();
         } else {
             PropertiesFileEntry entry = structure.getNthEntry(columnIndex-1);
-            return entry.getFile().canWrite();
+            if (entry != null)
+                return entry.getFile().canWrite();
+            return false;
         }
     }
 
