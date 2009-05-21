@@ -46,6 +46,7 @@ import java.util.HashSet;
 import javax.swing.JDialog;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.JavaProjectsTabOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -277,7 +278,7 @@ public class NewProjectFileTest extends JellyTestCase {
         MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
         stt.start();
         // call Build on project node
-        new ProjectsTabOperator().getProjectRootNode("NewMobileApplication").buildProject(); // NOI18N
+        new JavaProjectsTabOperator().getJavaProjectRootNode("NewMobileApplication").buildProject(); // NOI18N
 
         // wait message "Building NewMobileApplication (compile-single)..."
         stt.waitText("Building", true); // NOI18N

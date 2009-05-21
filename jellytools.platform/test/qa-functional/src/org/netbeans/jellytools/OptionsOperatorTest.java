@@ -43,23 +43,12 @@ package org.netbeans.jellytools;
 import java.io.IOException;
 import java.util.Properties;
 import junit.textui.TestRunner;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.properties.PropertySheetOperator;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.junit.NbTestSuite;
-import org.openide.util.Exceptions;
 
 /** Tests org.netbeans.jellytools.OptionsOperator. */
 public class OptionsOperatorTest extends JellyTestCase {
 
-    // "IDE Configuration"
-    //private static String ideConfLabel;
-    // "IDE Configuration|System|File Types|HTML and XHTML files"
-    //private static String path1;
-    // "IDE Configuration|System|Print Settings"
-    //private static String path2;
-    // "IDE Configuration|Look and Feel|Toolbars"
-    //private static String path3;
-    private static Properties props;
 
     /** Use for internal test execution inside IDE
      * @param args command line arguments
@@ -69,17 +58,7 @@ public class OptionsOperatorTest extends JellyTestCase {
     }
     
     public static String[] tests = new String[] {
-// test classic view
-        /*
-        "testTreeTable",
-        "testLevelsShowing",
-        "testLevelChanging",
-        "testPopup",
-        "testGetPropertySheet",
-        "testSelectOption",
-         */
-        // test modern view
-        "testSwitchToModernView",
+        
         "testSelectEditor",
         "testSelectFontAndColors",
         "testSelectKeymap",
@@ -91,25 +70,7 @@ public class OptionsOperatorTest extends JellyTestCase {
      * @return  created suite
      */
     public static NbTestSuite suite() {
-        /*
-        NbTestSuite suite = new NbTestSuite();
-        // test classic view
-        suite.addTest(new OptionsOperatorTest("testTreeTable"));
-        suite.addTest(new OptionsOperatorTest("testLevelsShowing"));
-        suite.addTest(new OptionsOperatorTest("testLevelChanging"));
-        suite.addTest(new OptionsOperatorTest("testPopup"));
-        suite.addTest(new OptionsOperatorTest("testGetPropertySheet"));
-        suite.addTest(new OptionsOperatorTest("testSelectOption"));
-        // test modern view
-        suite.addTest(new OptionsOperatorTest("testSwitchToModernView"));
-        suite.addTest(new OptionsOperatorTest("testSelectEditor"));
-        suite.addTest(new OptionsOperatorTest("testSelectFontAndColors"));
-        suite.addTest(new OptionsOperatorTest("testSelectKeymap"));
-        suite.addTest(new OptionsOperatorTest("testSelectMiscellaneous"));
-        suite.addTest(new OptionsOperatorTest("testSelectGeneral"));
-        suite.addTest(new OptionsOperatorTest("testClose"));
-        return suite;
-         */
+       
         return (NbTestSuite) createModuleTest(OptionsOperatorTest.class, 
         tests);
     }
@@ -124,26 +85,24 @@ public class OptionsOperatorTest extends JellyTestCase {
     private static OptionsOperator optionsOperator = null;
     
     /** Setup */
-    public void setUp() throws IOException {
-            props=new Properties();
-            props.load(OptionsOperatorTest.class.getClassLoader().getResourceAsStream("org/netbeans/jellytools/Bundle.properties"));
-        System.out.println("### "+getName()+" ###");
-    //ideConfLabel =
-    //    Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration");
-    //path1 = ideConfLabel+"|"+
-        //Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration/System")+"|"+
-    //    props.getProperty("UI/Services/IDEConfiguration/System")+"|"+
-    //    Bundle.getString("org.netbeans.core.Bundle", "Services/MIMEResolver")+"|"+
-    //    Bundle.getString("org.netbeans.modules.html.Bundle", "Services/MIMEResolver/html.xml");
-    //path2 = ideConfLabel+"|"+
-    //    Bundle.getStrin   g("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration/System")+"|"+
-    //    Bundle.getString("org.netbeans.core.Bundle", "Services/org-openide-text-PrintSettings.settings");
-    //path3 = ideConfLabel+"|"+
-        //Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration/LookAndFeel")+"|"+
-    //    props.getProperty("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration/LookAndFeel")+"|"+
-    //    Bundle.getString("org.netbeans.core.ui.resources.Bundle", "Toolbars");
+    public void setUp() throws Exception {
+
+        System.out.println("### "+getName()+" ###");   
         // opens Options window
         if(optionsOperator == null) {
+
+             //Make sure the menu has time to load
+            new Action(Bundle.getStringTrimmed(
+                "org.netbeans.core.ui.resources.Bundle", "Menu/Tools"), null).performMenu();
+
+            Thread.sleep(1000);
+
+
+            new Action(Bundle.getStringTrimmed(
+                "org.netbeans.core.ui.resources.Bundle", "Menu/GoTo"), null).performMenu();
+
+            Thread.sleep(1000);
+
             optionsOperator = OptionsOperator.invoke();
         }
     }
@@ -151,57 +110,14 @@ public class OptionsOperatorTest extends JellyTestCase {
     /** Tear down. */
     public void tearDown() {
     }
-    /*
-    public void testTreeTable() {
-        optionsOperator.switchToClassicView();
-        optionsOperator.selectOption(path1);
-        //optionsOperator.selectOption(path2);
-        optionsOperator.selectOption(path1);
-        //optionsOperator.selectOption(path2);
-    }
-*/
+
     public void testLevelsShowing() {
         optionsOperator.hideLevels();
         optionsOperator.showLevels();
         optionsOperator.hideLevels();
         optionsOperator.showLevels();
     }
-  /*
-    public void testLevelChanging() {
-        optionsOperator.setUserLevel(path1);
-        //optionsOperator.setUserLevel(path2);
-        optionsOperator.setDefaultLevel(path1);
-        optionsOperator.setUserLevel(path1);
-        //optionsOperator.setDefaultLevel(path2);
-        //optionsOperator.setUserLevel(path2);
-    }
-    */
-    public void testPopup() {
-        // "Refresh Folder"
-        //String refreshFolderLabel = Bundle.getString("org.openide.loaders.Bundle", "LAB_Refresh");
-        //new Node(optionsOperator.treeTable().tree(), path3).performPopupAction(refreshFolderLabel);
-    }
     
-    /** Test getPropertySheet() method. */
-    /*
-    public void testGetPropertySheet() {
-        PropertySheetOperator pso = optionsOperator.getPropertySheet(path1);
-    }
-    */
-    /** Test selectOption() method. */
-    /*
-    public void testSelectOption() {
-        optionsOperator.selectOption(path1);
-        String nodeName = optionsOperator.treeTable().tree().getSelectionPath().getLastPathComponent().toString();
-        PropertySheetOperator pso = new PropertySheetOperator(optionsOperator);
-        assertEquals("Wrong node was selected.", nodeName, pso.getDescriptionHeader());  // NOI18N
-    }
-    */
-    /** Test of switchToModernView method. */
-    public void testSwitchToModernView() {
-        optionsOperator.switchToModernView();
-    }
-
     /** Test of selectEditor method. */
     public void testSelectEditor() {
         optionsOperator.selectEditor();
