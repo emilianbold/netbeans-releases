@@ -231,7 +231,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                             try {
                                 if (isShareExistingFolder) {
                                     String initialRevision = NbBundle.getMessage(NewKenaiProjectWizardIterator.class, "NewKenaiProject.initialRevision", newPrjTitle);
-                                    String dirName = activeNode.getLookup().lookup(Project.class).getProjectDirectory().getName();
+                                    String dirName = new File(newPrjScmLocal).getName();
                                     final String remoteDir = scmLoc.concat("/" + dirName); // NOI18N
                                     Subversion.mkdir(remoteDir, passwdAuth.getUserName(), new String(passwdAuth.getPassword()), initialRevision);
                                     Subversion.checkoutRepositoryFolder(remoteDir, new String[]{"."}, localFile, // NOI18N
