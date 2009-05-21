@@ -98,7 +98,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
     public Hk2DeploymentManager(String uri, String uname, String passwd, ServerUtilities su) {
         this.uri = uri;
         this.su = su;
-        pluginProperties = new Hk2PluginProperties(this);
+        pluginProperties = new Hk2PluginProperties(this,su);
     }
         
     
