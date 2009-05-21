@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
@@ -939,8 +940,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (out == null) {
             out = new APTFileCacheEntry(getAbsolutePath());
         } else {
-            if (false && traceFile(getAbsolutePath())) {
-                System.err.printf("APT CACHE for %s\nsize %d, key: %s\ncache state:%s\n", getAbsolutePath(), cache.size(), key, "");
+            if (APTTraceFlags.TRACE_APT_CACHE && traceFile(getAbsolutePath())) {
+                System.err.printf("APT CACHE for %s\nsize %d, key: %s\ncache state:%s\n", getAbsolutePath(), cache.size(), "", "");
             }
         }
         assert out != null;
