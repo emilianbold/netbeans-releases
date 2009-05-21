@@ -297,6 +297,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         if (factory == null) {
             throw new InvalidParameterException("No CustomIndexerFactory with name: '" + indexerName + "'"); //NOI18N
         } else {
+            if (indexerMimeTypes.equals(Util.getAllMimeTypes())) {
+                indexerMimeTypes = null;
+            }
+            
             Work w = new RefreshIndices(indexerMimeTypes, factory, scannedRoots2Dependencies);
             scheduleWork(w, false);
         }
@@ -723,7 +727,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     for(CustomIndexerFactory factory : customIndexerFactories) {
                         try {
                             Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root), root,
-                                    factory.getIndexerName(), factory.getIndexVersion(), null, false, true);
+                                    factory.getIndexerName(), factory.getIndexVersion(), null, false, true, null);
                             factory.filesDirty(dirty, ctx);
                         } catch (IOException ex) {
                             LOGGER.log(Level.WARNING, null, ex);
@@ -733,7 +737,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     for(EmbeddingIndexerFactory factory : embeddingIndexerFactories) {
                         try {
                             Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root), root,
-                                    factory.getIndexerName(), factory.getIndexVersion(), null, false, true);
+                                    factory.getIndexerName(), factory.getIndexVersion(), null, false, true, null);
                             factory.filesDirty(dirty, ctx);
                         } catch (IOException ex) {
                             LOGGER.log(Level.WARNING, null, ex);
@@ -912,6 +916,18 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         private final boolean checkEditor;
         private final CountDownLatch latch = new CountDownLatch(1);
         private final Map<String,EmbeddingIndexerFactory> embeddedIndexers = new HashMap<String, EmbeddingIndexerFactory>();
+        private final CancelRequest cancelRequest = new CancelRequest() {
+            public boolean isRaised() {
+                if (cancelled.get()) {
+                    synchronized (RepositoryUpdater.getDefault()) {
+                        if (RepositoryUpdater.getDefault().getState() == State.STOPPED) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+        };
         private final boolean supportsProgress;
         private ProgressHandle progressHandle = null;
 
@@ -979,12 +995,12 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
 
                 for (CustomIndexerFactory factory : customIndexerFactories) {
-                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor);
+                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor, null);
                     factory.filesDeleted(deleted, ctx);
                 }
 
                 for(EmbeddingIndexerFactory factory : embeddingIndexerFactories) {
-                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor);
+                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor, null);
                     factory.filesDeleted(deleted, ctx);
                 }
             } finally {
@@ -997,7 +1013,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
         }
 
-        protected final void index (final Map<String,Collection<Indexable>> resources, final URL root) throws IOException {
+        protected final boolean index (final Map<String,Collection<Indexable>> resources, final URL root) throws IOException {
             LinkedList<Context> transactionContexts = new LinkedList<Context>();
             try {
                 // determine the total number of files
@@ -1012,6 +1028,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
                 final FileObject cacheRoot = CacheFolder.getDataFolder(root);
                 for (String mimeType : resources.keySet()) {
+                    if (getShuttdownRequest().isRaised()) {
+                        return false;
+                    }
+                    
                     final Collection<? extends Indexable> indexables = resources.get(mimeType);
                     if (indexables == null) {
                         continue;
@@ -1024,13 +1044,17 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     final Collection<? extends CustomIndexerFactory> factories = MimeLookup.getLookup(mimeType).lookupAll(CustomIndexerFactory.class);
                     boolean supportsEmbeddings = true;
                     for (CustomIndexerFactory factory : factories) {
+                        if (getShuttdownRequest().isRaised()) {
+                            return false;
+                        }
+
                         boolean b = factory.supportsEmbeddedIndexers();
                         if (LOGGER.isLoggable(Level.FINER)) {
                             LOGGER.fine("CustomIndexerFactory: " + factory + ", supportsEmbeddedIndexers=" + b); //NOI18N
                         }
 
                         supportsEmbeddings &= b;
-                        final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor);
+                        final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor, getShuttdownRequest());
                         transactionContexts.add(ctx);
 
                         // some CustomIndexers (eg. java) need to know about roots even when there
@@ -1057,7 +1081,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
 //                            final SourceIndexer si = new SourceIndexer(root, cacheRoot, followUpJob, checkEditor);
 //                            si.index(indexables, transactionContexts);
-                            indexEmbedding(cacheRoot, root, indexables, transactionContexts, scannedFilesCount, totalFilesCount);
+                            boolean f = indexEmbedding(cacheRoot, root, indexables, transactionContexts, scannedFilesCount, totalFilesCount);
+                            if (!f) {
+                                return false;
+                            }
                         } else {
                             if (LOGGER.isLoggable(Level.FINE)) {
                                 LOGGER.fine(mimeType + " has no Parser or EmbeddingProvider registered and won't be indexed by embedding indexers"); //NOI18N
@@ -1083,6 +1110,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     }
                 }
             }
+
+            return true;
         }
 
         protected final void indexBinary(URL root) throws IOException {
@@ -1108,7 +1137,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
 
                 for(BinaryIndexerFactory f : factories) {
-                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, f.getIndexerName(), f.getIndexVersion(), null, false, false);
+                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, f.getIndexerName(), f.getIndexVersion(), null, false, false, null);
                     transactionContexts.add(ctx);
 
                     final BinaryIndexer indexer = f.createIndexer();
@@ -1127,9 +1156,13 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
         }
 
-        private void indexEmbedding(final FileObject cache, final URL rootURL, Iterable<? extends Indexable> files, final List<Context> transactionContexts, int scannedFilesCount, int totalFilesCount) throws IOException {
+        private boolean indexEmbedding(final FileObject cache, final URL rootURL, Iterable<? extends Indexable> files, final List<Context> transactionContexts, int scannedFilesCount, int totalFilesCount) throws IOException {
             // XXX: Replace with multi source when done
             for (final Indexable dirty : files) {
+                if (getShuttdownRequest().isRaised()) {
+                    return false;
+                }
+
                 try {
                     final FileObject fileObject = URLMapper.findFileObject(dirty.getURL());
                     if (fileObject != null) {
@@ -1152,7 +1185,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                                     if (pr != null) {
                                         final String indexerName = currentIndexerFactory.getIndexerName();
                                         final int indexerVersion = currentIndexerFactory.getIndexVersion();
-                                        final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion, null, followUpJob, checkEditor);
+                                        final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion, null, followUpJob, checkEditor, null);
                                         transactionContexts.add(context);
 
                                         final EmbeddingIndexer indexer = currentIndexerFactory.createIndexer(dirty, pr.getSnapshot());
@@ -1182,6 +1215,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
                 updateProgress(rootURL, ++scannedFilesCount, totalFilesCount);
             }
+
+            return true;
         }
 
         private EmbeddingIndexerFactory findEmbeddingIndexer (final String mimeType) {
@@ -1213,6 +1248,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         protected final boolean isCancelled() {
             return cancelled.get();
+        }
+
+        protected final CancelRequest getShuttdownRequest() {
+            return cancelRequest;
         }
 
         public final void doTheWork() {
@@ -1325,11 +1364,15 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             if (rootFo != null) {
                 try {
                     final Crawler crawler = files.isEmpty() ?
-                        new FileObjectCrawler(rootFo, false, null) : // rescan the whole root (no timestamp check)
-                        new FileObjectCrawler(rootFo, files.toArray(new FileObject[files.size()]), null); // rescan selected files (no timestamp check)
+                        new FileObjectCrawler(rootFo, false, null, getShuttdownRequest()) : // rescan the whole root (no timestamp check)
+                        new FileObjectCrawler(rootFo, files.toArray(new FileObject[files.size()]), null, getShuttdownRequest()); // rescan selected files (no timestamp check)
 
                     final Map<String,Collection<Indexable>> resources = crawler.getResources();
-                    index (resources, root);
+                    if (crawler.isFinished()) {
+                        if (index(resources, root)) {
+                            crawler.storeTimestamps();
+                        }
+                    }
                 } catch (IOException ioe) {
                     LOGGER.log(Level.WARNING, null, ioe);
                 }
@@ -1439,49 +1482,58 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         protected @Override boolean getDone() {
             for(URL root : scannedRoots2Dependencies.keySet()) {
+                if (getShuttdownRequest().isRaised()) {
+                    // XXX: this only happens when the IDE is shutting down
+                    return true;
+                }
+
                 try {
                     final FileObject rootFo = URLMapper.findFileObject(root);
                     if (rootFo != null) {
-                        Crawler crawler = new FileObjectCrawler(rootFo, false, indexerMimeTypes);
+                        Crawler crawler = new FileObjectCrawler(rootFo, false, indexerMimeTypes, getShuttdownRequest());
                         final Map<String, Collection<Indexable>> resources = crawler.getResources();
                         final Collection<Indexable> deleted = crawler.getDeletedResources();
 
-                        if (deleted.size() > 0) {
-                            delete(deleted, root);
-                        }
+                        if (crawler.isFinished()) {
+                            if (deleted.size() > 0) {
+                                delete(deleted, root);
+                            }
 
-                        final FileObject cacheRoot = CacheFolder.getDataFolder(root);
-                        LinkedList<Context> transactionContexts = new LinkedList<Context>();
-                        try {
-                            for(String mimeType : resources.keySet()) {
-                                final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, indexerFactory.getIndexerName(), indexerFactory.getIndexVersion(), null, false, false);
-                                transactionContexts.add(ctx);
+                            final FileObject cacheRoot = CacheFolder.getDataFolder(root);
+                            LinkedList<Context> transactionContexts = new LinkedList<Context>();
+                            try {
+                                for(String mimeType : resources.keySet()) {
+                                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, indexerFactory.getIndexerName(), indexerFactory.getIndexVersion(), null, false, false, null);
+                                    transactionContexts.add(ctx);
 
-                                // some CustomIndexers (eg. java) need to know about roots even when there
-                                // are no modified Inexables at the moment (eg. java checks source level in
-                                // the associated project, etc)
-                                final Collection<? extends Indexable> indexables = resources.get(mimeType);
-                                if (indexables != null) {
-                                    final CustomIndexer indexer = indexerFactory.createIndexer();
-                                    if (LOGGER.isLoggable(Level.FINE)) {
-                                        LOGGER.fine("Reindexing " + indexables.size() + " indexables; using " + indexer + "; mimeType='" + mimeType + "'"); //NOI18N
+                                    // some CustomIndexers (eg. java) need to know about roots even when there
+                                    // are no modified Inexables at the moment (eg. java checks source level in
+                                    // the associated project, etc)
+                                    final Collection<? extends Indexable> indexables = resources.get(mimeType);
+                                    if (indexables != null) {
+                                        final CustomIndexer indexer = indexerFactory.createIndexer();
+                                        if (LOGGER.isLoggable(Level.FINE)) {
+                                            LOGGER.fine("Reindexing " + indexables.size() + " indexables; using " + indexer + "; mimeType='" + mimeType + "'"); //NOI18N
+                                        }
+                                        try {
+                                            SPIAccessor.getInstance().index(indexer, Collections.unmodifiableCollection(indexables), ctx);
+                                        } catch (ThreadDeath td) {
+                                            throw td;
+                                        } catch (Throwable t) {
+                                            LOGGER.log(Level.WARNING, null, t);
+                                        }
                                     }
-                                    try {
-                                        SPIAccessor.getInstance().index(indexer, Collections.unmodifiableCollection(indexables), ctx);
-                                    } catch (ThreadDeath td) {
-                                        throw td;
-                                    } catch (Throwable t) {
-                                        LOGGER.log(Level.WARNING, null, t);
+                                }
+                            } finally {
+                                for(Context ctx : transactionContexts) {
+                                    IndexingSupport support = SPIAccessor.getInstance().context_getAttachedIndexingSupport(ctx);
+                                    if (support != null) {
+                                        SupportAccessor.getInstance().store(support);
                                     }
                                 }
                             }
-                        } finally {
-                            for(Context ctx : transactionContexts) {
-                                IndexingSupport support = SPIAccessor.getInstance().context_getAttachedIndexingSupport(ctx);
-                                if (support != null) {
-                                    SupportAccessor.getInstance().store(support);
-                                }
-                            }
+
+                            crawler.storeTimestamps();
                         }
                     }
                 } catch (IOException ioe) {
@@ -1755,8 +1807,12 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 final long tmStart = System.currentTimeMillis();
                 try {
                     updateProgress(source);
-                    scanSource (source);
-                    ctx.scannedRoots.add(source);
+                    if (scanSource (source)) {
+                        ctx.scannedRoots.add(source);
+                    } else {
+                        finished = false;
+                        break;
+                    }
                 } catch (IOException ioe) {
                     LOGGER.log(Level.WARNING, null, ioe);
                 } finally {
@@ -1780,59 +1836,69 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             return finished;
         }
 
-        private void scanSource (URL root) throws IOException {
+        private boolean scanSource (URL root) throws IOException {
             LOGGER.log(Level.FINE, "Scanning sources root: {0}", root); //NOI18N
 
-            //todo: optimize for java.io.Files
-            final FileObject rootFo = URLMapper.findFileObject(root);
-            if (rootFo != null) {
-                if (noRootsScan && useInitialState && TimeStamps.existForRoot(root)) {
-                    // We've already seen the root at least once and roots scanning is forcibly turned off
-                    // so just call indexers with no files to let them know about the root, but perform
-                    // no indexing.
+            if (noRootsScan && useInitialState && TimeStamps.existForRoot(root)) {
+                // We've already seen the root at least once and roots scanning is forcibly turned off
+                // so just call indexers with no files to let them know about the root, but perform
+                // no indexing.
 //                    final Map<String, Collection<Indexable>> resources = new HashMap<String, Collection<Indexable>>();
 //                    for(String mimeType : Util.getAllMimeTypes()) {
 //                        resources.put(mimeType, Collections.<Indexable>emptySet());
 //                    }
 //                    index(resources, root);
-                    LinkedList<Context> transactionContexts = new LinkedList<Context>();
-                    try {
-                        final FileObject cacheRoot = CacheFolder.getDataFolder(root);
-                        Set<CustomIndexerFactory> customIndexerFactories = new HashSet<CustomIndexerFactory>();
-                        for (String mimeType : Util.getAllMimeTypes()) {
-                            Collection<? extends CustomIndexerFactory> factories = MimeLookup.getLookup(mimeType).lookupAll(CustomIndexerFactory.class);
-                            customIndexerFactories.addAll(factories);
-                        }
+                LinkedList<Context> transactionContexts = new LinkedList<Context>();
+                try {
+                    final FileObject cacheRoot = CacheFolder.getDataFolder(root);
+                    Set<CustomIndexerFactory> customIndexerFactories = new HashSet<CustomIndexerFactory>();
+                    for (String mimeType : Util.getAllMimeTypes()) {
+                        Collection<? extends CustomIndexerFactory> factories = MimeLookup.getLookup(mimeType).lookupAll(CustomIndexerFactory.class);
+                        customIndexerFactories.addAll(factories);
+                    }
 
-                        for (CustomIndexerFactory factory : customIndexerFactories) {
-                            final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, isFollowUpJob(), hasToCheckEditor());
-                            CustomIndexer indexer = factory.createIndexer();
-                            
-                            if (LOGGER.isLoggable(Level.FINE)) {
-                                LOGGER.fine("Fake indexing: indexer=" + indexer); //NOI18N
-                            }
-                            try {
-                                SPIAccessor.getInstance().index(indexer, Collections.<Indexable>emptySet(), ctx);
-                            } catch (ThreadDeath td) {
-                                throw td;
-                            } catch (Throwable t) {
-                                LOGGER.log(Level.WARNING, null, t);
-                            }
+                    for (CustomIndexerFactory factory : customIndexerFactories) {
+                        final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, isFollowUpJob(), hasToCheckEditor(), null);
+                        CustomIndexer indexer = factory.createIndexer();
+
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.fine("Fake indexing: indexer=" + indexer); //NOI18N
                         }
-                    } finally {
-                        for(Context ctx : transactionContexts) {
-                            IndexingSupport support = SPIAccessor.getInstance().context_getAttachedIndexingSupport(ctx);
-                            if (support != null) {
-                                SupportAccessor.getInstance().store(support);
-                            }
+                        try {
+                            SPIAccessor.getInstance().index(indexer, Collections.<Indexable>emptySet(), ctx);
+                        } catch (ThreadDeath td) {
+                            throw td;
+                        } catch (Throwable t) {
+                            LOGGER.log(Level.WARNING, null, t);
                         }
                     }
-                } else {
-                    final Crawler crawler = new FileObjectCrawler(rootFo, useInitialState, null);
+                } finally {
+                    for(Context ctx : transactionContexts) {
+                        IndexingSupport support = SPIAccessor.getInstance().context_getAttachedIndexingSupport(ctx);
+                        if (support != null) {
+                            SupportAccessor.getInstance().store(support);
+                        }
+                    }
+                }
+                return true;
+            } else {
+                //todo: optimize for java.io.Files
+                final FileObject rootFo = URLMapper.findFileObject(root);
+                if (rootFo != null) {
+                    final Crawler crawler = new FileObjectCrawler(rootFo, useInitialState, null, getShuttdownRequest());
                     final Map<String,Collection<Indexable>> resources = crawler.getResources();
                     final Collection<Indexable> deleted = crawler.getDeletedResources();
-                    delete(deleted, root);
-                    index(resources, root);
+                    if (crawler.isFinished()) {
+                        delete(deleted, root);
+                        if (index(resources, root)) {
+                            crawler.storeTimestamps();
+                            return true;
+                        }
+                    }
+                    return false;
+                } else {
+                    // can't traverse the root, but still mark it as scanned/finished
+                    return true;
                 }
             }
         }
