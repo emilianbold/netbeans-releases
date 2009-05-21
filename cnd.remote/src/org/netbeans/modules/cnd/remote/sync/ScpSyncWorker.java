@@ -147,8 +147,13 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
     void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
         CommonTasksSupport.mkDir(executionEnvironment, remoteDir, err);
         dirCount++;
-        for (File file : localDir.listFiles(sharabilityFilter)) {
-            synchronizeImpl(file, remoteDir);
+        File[] files = localDir.listFiles(sharabilityFilter);
+        if (files == null) {
+            throw new IOException("Failed to get children of " + localDir);
+        } else {
+            for (File file : files) {
+                synchronizeImpl(file, remoteDir);
+            }
         }
     }
 
