@@ -422,9 +422,9 @@ public class OutputWindowWriter extends Writer {
         }
     }
 
-    private static final Pattern GCC_ERROR_SCANNER = Pattern.compile("([a-zA-Z]:[^:\n]*|[^:\n]*):([^:\n]*):([^:\n]*):([^\n]*)"); // NOI18N
-    private static final Pattern GCC_ERROR_SCANNER_ANOTHER = Pattern.compile("([^:\n]*):([0-9]+): ([a-zA-Z]*):*.*"); // NOI18N
-    private static final Pattern GCC_ERROR_SCANNER_INTEL = Pattern.compile("([^\\(\n]*)\\(([0-9]+)\\): ([^:\n]*): ([^\n]*)"); // NOI18N
+    private static final Pattern GCC_ERROR_SCANNER = Pattern.compile("^([a-zA-Z]:[^:\n]*|[^:\n]*):([0-9]+)[\\.:]([^:\n]*):([^\n]*)"); // NOI18N
+    private static final Pattern GCC_ERROR_SCANNER_ANOTHER = Pattern.compile("^([^:\n]*):([0-9]+): ([a-zA-Z]*):*.*"); // NOI18N
+    private static final Pattern GCC_ERROR_SCANNER_INTEL = Pattern.compile("^([^\\(\n]*)\\(([0-9]+)\\): ([^:\n]*): ([^\n]*)"); // NOI18N
     private static final Pattern GCC_DIRECTORY_ENTER = Pattern.compile("[gd]?make(?:\\.exe)?(?:\\[([0-9]+)\\])?: Entering[\\w+\\s+]+`([^']*)'"); // NOI18N
     private static final Pattern GCC_DIRECTORY_LEAVE = Pattern.compile("[gd]?make(?:\\.exe)?(?:\\[([0-9]+)\\])?: Leaving[\\w+\\s+]+`([^']*)'"); // NOI18N
     private static final Pattern GCC_DIRECTORY_CD    = Pattern.compile("cd\\s+([\\S]+)[\\s;]");// NOI18N

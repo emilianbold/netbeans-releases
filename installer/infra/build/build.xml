@@ -418,9 +418,9 @@
             prefix="glassfish-mod"/>
         -->
 	<set property="glassfish-mod-sun.milestone.number"      value="28"/>
-	<set property="glassfish-mod-sun.milestone.number.real" value="28c"/>
+	<set property="glassfish-mod-sun.milestone.number.real" value="28d"/>
 	<set property="glassfish-mod-sun.build.type"            value="prelude"/>
-	<set property="glassfish-mod-sun.build.number"          value="20081022"/>
+	<set property="glassfish-mod-sun.build.number"          value="20090514"/>
 
 	<set property="glassfish-mod.milestone.number"      value="28"/>
 	<set property="glassfish-mod.milestone.number.real" value="28c"/>
@@ -658,7 +658,7 @@ jarsigner.storepass=${jarsigner.storepass}
         <delete failonerror="false">
             <fileset dir="${nbi.cache.dir}/packaged">
                 <!-- glassfish-mod-sun -->
-                <exclude name="**/glassfish-mod-sun*3.0.0.${glassfish-mod-sun.milestone.number}.${glassfish-mod-sun.build.number}*"/>
+                <include name="**/glassfish-mod-sun*"/>
                 <exclude name="**/glassfish-mod-sun*3.0.0.${glassfish-mod-sun.milestone.number}.${glassfish-mod-sun.build.number}*"/>
                 <!-- server -->
                 <include name="**/${server-uid}*"/>

@@ -491,6 +491,7 @@ public abstract class DialogDisplayer {
                             propertyChange(ev);
                         }
                     });
+                    return;
                 }
                 String pname = ev.getPropertyName();
                 if (NotifyDescriptor.PROP_TITLE.equals(pname)) {

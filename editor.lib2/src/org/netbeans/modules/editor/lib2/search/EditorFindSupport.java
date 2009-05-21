@@ -741,7 +741,7 @@ public final class EditorFindSupport {
         props = getValidFindProperties(props);
         props = new HashMap<String, Object>(props);
         String replaceWithOriginal = (String)props.get(FIND_REPLACE_WITH);
-        
+
         Boolean b = (Boolean)props.get(FIND_BLOCK_SEARCH);
         boolean blockSearch = (b != null && b.booleanValue());
         b = (Boolean)props.get(FIND_WRAP_SEARCH);
@@ -808,13 +808,13 @@ public final class EditorFindSupport {
                         }
                     }
                     if (skip) {
-                        pos = blk[0] + len;
+                        pos = backSearch ? blk[0] : blk[0] + len;
 
                     } else { // can and will insert the new string
                         if (replaceWith != null && replaceWith.length() > 0) {
                             doc.insertString(blk[0], replaceWith, null);
                         }
-                        pos = blk[0] + ((replaceWith != null) ? replaceWith.length() : 0);
+                        pos = backSearch ? blk[0] : blk[0] + ((replaceWith != null) ? replaceWith.length() : 0);
                         replacedCnt++;
                     }
                 }

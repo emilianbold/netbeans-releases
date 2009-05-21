@@ -134,25 +134,40 @@ class XMLResultItem implements CompletionItem {
      * @param offset the target offset
      * @param len a length that should be removed before inserting text
      */
-    boolean replaceText( JTextComponent component, String text, int offset, int len) {
+    boolean replaceText( JTextComponent component, final String replaceToText, int offset, int len) {
         BaseDocument doc = (BaseDocument)component.getDocument();
         doc.atomicLock();
+        int replacementLength = replaceToText.length();
         try {
-            String currentText = doc.getText(offset, (doc.getLength() - offset) < text.length() ? (doc.getLength() - offset) : text.length()) ;
+            String currentText = doc.getText(offset, 
+                    (doc.getLength() - offset) < replacementLength ?
+                        (doc.getLength() - offset) : replacementLength) ;
             //fix for #86792
-            if(("<"+currentText+">").equals(("</")+text))
+            if(("<"+currentText+">").equals(("</")+replaceToText))
                 return true;
-            if(!text.equals(currentText)) {
+            if(!replaceToText.equals(currentText)) {
                 //fix for 137717
                 String str = doc.getText(offset-1, 1);
                 if(str != null && str.equals("&")) {
                     offset--;
-                    len = 1;
+                    currentText = doc.getText(offset,
+                        (doc.getLength() - offset) < replacementLength ?
+                            (doc.getLength() - offset) : replacementLength) ;
                 }
-                doc.remove( offset, len );
-                doc.insertString( offset, text, null);
+                //
+                // Length correction here. See the issue #141320
+                len = getFirstDiffPosition(currentText, replaceToText);
+                //
+                // if the text is going to remove isn't the same as that is going
+                // to be inserted, then only move the caret position
+                if (len == replacementLength) {
+                    component.setCaretPosition(offset + len);
+                } else {
+                    doc.remove( offset, len );
+                    doc.insertString( offset, replaceToText, null);
+                }
             } else {
-                int newCaretPos = component.getCaret().getDot() + text.length() - len;
+                int newCaretPos = component.getCaret().getDot() + replacementLength - len;
                 //#82242 workaround - the problem is that in some situations
                 //1) result item is created and it remembers the remove length
                 //2) document is changed
@@ -172,6 +187,25 @@ class XMLResultItem implements CompletionItem {
         return true;
     }
     
+    /**
+     * Calculates the index of the first difference between two strings. 
+     * If they are differenent starting the first character, then 0 is returned.
+     * If one of the string completely starts with another one, then the length
+     * of the shorter string is returned.
+     * @param str1
+     * @param str2
+     * @return
+     */
+    private int getFirstDiffPosition(String str1, String str2) {
+        int lastCharIndex = Math.min(str1.length(), str2.length());
+        for (int index = 0; index < lastCharIndex; index++) {
+            if (str1.charAt(index) != str2.charAt(index)) {
+                return index;
+            }
+        }
+        return lastCharIndex;
+    }
+
     public boolean substituteCommonText( JTextComponent c, int offset, int len, int subLen ) {
         return replaceText( c, getReplacementText(0).substring( 0, subLen ), offset, len );
     }

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.groovy.grailsproject.classpath;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.GrailsSources;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
 import org.openide.filesystems.FileObject;
@@ -60,8 +62,11 @@ public class SourceRoots {
 
     private final FileObject projectRoot;
 
-    public SourceRoots(FileObject projectRoot) {
+    private final GrailsProject project;
+
+    public SourceRoots(GrailsProject project, FileObject projectRoot) {
         this.projectRoot = projectRoot;
+        this.project = project;
     }
 
     public FileObject[] getRoots() {
@@ -90,7 +95,7 @@ public class SourceRoots {
         return urls;
     }
 
-    private static void addGrailsSourceRoots(FileObject projectRoot, List<FileObject> result) {
+    private void addGrailsSourceRoots(FileObject projectRoot, List<FileObject> result) {
         addRoot(projectRoot, SourceCategory.GRAILSAPP_CONF, result);
         addRoot(projectRoot, SourceCategory.GRAILSAPP_CONTROLLERS, result);
         addRoot(projectRoot, SourceCategory.GRAILSAPP_DOMAIN, result);
@@ -102,13 +107,23 @@ public class SourceRoots {
         addRoot(projectRoot, SourceCategory.SRC_JAVA, result);
         addRoot(projectRoot, SourceCategory.TEST_INTEGRATION, result);
         addRoot(projectRoot, SourceCategory.TEST_UNIT, result);
-// this may lead to OOME when plugin dir is in project root
-//        for (FileObject child : projectRoot.getChildren()) {
-//            if (child.isFolder() && VisibilityQuery.getDefault().isVisible(child) &&
-//                    !GrailsSources.KNOWN_FOLDERS.contains(child.getName())) {
-//                result.add(child);
-//            }
-//        }
+
+        File pluginsDirFile = project == null ? null : project.getBuildConfig().getProjectPluginsDir();
+        FileObject pluginsDir = pluginsDirFile == null ? null : FileUtil.toFileObject(
+                FileUtil.normalizeFile(pluginsDirFile));
+        File globalPluginsDirFile = project == null ? null : project.getBuildConfig().getGlobalPluginsDir();
+        FileObject globalPluginsDir = globalPluginsDirFile == null ? null : FileUtil.toFileObject(
+                FileUtil.normalizeFile(globalPluginsDirFile));
+
+        for (FileObject child : projectRoot.getChildren()) {
+            if (child.isFolder()
+                    && VisibilityQuery.getDefault().isVisible(child)
+                    && !GrailsSources.KNOWN_FOLDERS.contains(child.getName())
+                    && child != pluginsDir
+                    && child != globalPluginsDir) {
+                result.add(child);
+            }
+        }
 
         addUnknownRoots(GrailsSources.KNOWN_FOLDERS_IN_GRAILS_APP, projectRoot, result, "grails-app");
         addUnknownRoots(GrailsSources.KNOWN_OR_IGNORED_FOLDERS_IN_TEST, projectRoot, result, "test");

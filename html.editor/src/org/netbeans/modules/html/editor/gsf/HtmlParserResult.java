@@ -39,12 +39,11 @@
 package org.netbeans.modules.html.editor.gsf;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import org.netbeans.editor.ext.html.dtd.DTD;
-import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNode.Description;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
@@ -58,7 +57,7 @@ import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.openide.util.NbBundle;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -91,6 +90,7 @@ public class HtmlParserResult extends ParserResult {
     public synchronized AstNode root() {
         if (parseTreeRoot == null) {
             parseTreeRoot = SyntaxTree.makeTree(elementsList(), dtd());
+            //analyze the parser result for errors if not disable by hint
             analyzeParseResult();
         }
         return parseTreeRoot;
@@ -153,35 +153,9 @@ public class HtmlParserResult extends ParserResult {
                 new AstNodeVisitor() {
 
                     public void visit(AstNode node) {
-
-//                        if (node.type() == AstNode.NodeType.UNMATCHED_TAG) {
-//                            AstNode unmatched = node.children().get(0);
-//                            if (dtd() != null) {
-//                                //check the unmatched tag according to the DTD
-//                                Element element = dtd().getElement(node.name().toUpperCase(Locale.US));
-//                                if (element != null) {
-//                                    if (unmatched.type() == AstNode.NodeType.OPEN_TAG && element.hasOptionalEnd() /*||
-//                                            unmatched.type() == AstNode.NodeType.ENDTAG && element.hasOptionalStart()*/) {
-//                                        return;
-//                                    }
-//                                }
-//                            }
-//                            String msg = NbBundle.getMessage(this.getClass(), "MSG_Unmatched_Tag"); //NOI18N
-//                            Error error =
-//                                    DefaultError.createDefaultError("unmatched_tag",//NOI18N
-//                                    msg,
-//                                    msg,
-//                                    getSnapshot().getSource().getFileObject(),
-//                                    getSnapshot().getOriginalOffset(node.startOffset()),
-//                                    getSnapshot().getOriginalOffset(node.endOffset()),
-//                                    false /* not line error */,
-//                                    Severity.WARNING); //NOI18N
-//                            _errors.add(error);
-
-                        if (node.type() == AstNode.NodeType.TAG ||
-                                node.type() == AstNode.NodeType.OPEN_TAG ||
+                        if (node.type() == AstNode.NodeType.OPEN_TAG ||
                                 node.type() == AstNode.NodeType.ENDTAG ||
-                                node.type() == AstNode.NodeType.UNMATCHED_TAG) {
+                                node.type() == AstNode.NodeType.UNKNOWN_TAG) {
 
                             for(Description desc : node.getDescriptions()) {
                                 if(desc.getType() < Description.WARNING) {

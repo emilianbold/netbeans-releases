@@ -142,15 +142,12 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 
         DocumentListener firingDocListener = new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
-                prjNameCheckMessage = null;
                 panel.fireChangeEvent();
             }
             public void removeUpdate(DocumentEvent e) {
-                prjNameCheckMessage = null;
                 panel.fireChangeEvent();
             }
             public void changedUpdate(DocumentEvent e) {
-                prjNameCheckMessage = null;
                 panel.fireChangeEvent();
             }
         };
@@ -368,7 +365,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 
         projectNameTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectNameTextField.AccessibleContext.accessibleName")); // NOI18N
         projectNameTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectNameTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        Mnemonics.setLocalizedText(kenaiURLPreviewLabel, PRJ_NAME_PREVIEW_PREFIX + "..."); 
+        Mnemonics.setLocalizedText(kenaiURLPreviewLabel, PRJ_NAME_PREVIEW_PREFIX + "...");
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -439,18 +436,18 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
             }
         });
         projectLicenseComboBox.addPopupMenuListener(new PopupMenuListener() {
-            public void popupMenuCanceled(PopupMenuEvent evt) {
+            public void popupMenuWillBecomeVisible(PopupMenuEvent evt) {
+                projectLicenseComboBoxPopupMenuWillBecomeVisible(evt);
             }
             public void popupMenuWillBecomeInvisible(PopupMenuEvent evt) {
             }
-            public void popupMenuWillBecomeVisible(PopupMenuEvent evt) {
-                projectLicenseComboBoxPopupMenuWillBecomeVisible(evt);
+            public void popupMenuCanceled(PopupMenuEvent evt) {
             }
         });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(4, 0, 0, 0);
@@ -598,6 +595,8 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
             panel.fireChangeEvent();
             return;
         }
+        prjNameCheckMessage = null;
+        panel.fireChangeEvent();
         errorChecker.post(new Runnable() {
             public void run() {
                 try {
@@ -695,16 +694,9 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 
     }
 
-    // XXX
     public void validateWizard() throws WizardValidationException {
-//        if (getProjectName().equals(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
-//                    "NameAndLicenseWizardPanelGUI.defaultName"))) {
-//            throw new WizardValidationException(this, "M - Please provide some other project name than default",
-//                    "LM - Please provide some other project name than default");
-//        }
     }
 
-    // XXX All messages from bundle
     // - not all errors are checked!
     private String checkForErrors() {
         String prjName = getProjectName();
@@ -715,14 +707,14 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         } else if (prjName.length() > 2 && !checkPrjName(prjName)) {
             return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
                     "NameAndLicenseWizardPanelGUI.invalidPrjName"); // NOI18N
-        } else if (/*getProjectTitle().length() < 2 ||*/ getProjectTitle().length() > 40) {
+        }  else if (prjNameCheckMessage!=null) {
+            return prjNameCheckMessage;
+        } else if (getProjectTitle().length() == 1 || getProjectTitle().length() > 40) {
             return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
                     "NameAndLicenseWizardPanelGUI.prjTitleLengthErrMsg"); // NOI18N
         } else if (getProjectDesc().length() > 500) {
             return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
                     "NameAndLicenseWizardPanelGUI.prjDescLengthErrMsg"); // NOI18N
-        } else if (prjNameCheckMessage!=null) {
-            return prjNameCheckMessage;
         } else if (!licensesLoaded) {
             return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
                     "NameAndLicenseWizardPanelGUI.noLicensesErrMsg"); // NOI18N
