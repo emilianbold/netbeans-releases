@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  *
@@ -114,12 +115,17 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
                 this.classifierText = typeName;
             }
         }
+        if (this.classifierText == null) {
+            CndUtils.assertTrueInConsole(false, "why null classifierText?"+classifier);
+            this.classifierText = CharSequenceKey.empty();
+        }
         instantiationParams.trimToSize();
     }
 
     // package-local - for facory only
     TypeImpl(CsmFile file, int pointerDepth, boolean reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
+        this.classifierText = CharSequenceKey.empty();
         this.pointerDepth = (byte) pointerDepth;
         setFlags(FLAGS_REFERENCE, reference);
         this.arrayDepth = (byte) arrayDepth;
