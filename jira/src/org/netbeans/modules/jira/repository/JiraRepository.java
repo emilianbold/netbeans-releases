@@ -374,8 +374,6 @@ public class JiraRepository extends Repository {
     }
 
     private JiraConfiguration getConfigurationIntern(final boolean forceRefresh) {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-
         // XXX need logging incl. consumed time
 
         class ConfigurationCommand extends JiraCommand {
