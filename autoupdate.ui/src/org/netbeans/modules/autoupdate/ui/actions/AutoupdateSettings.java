@@ -261,8 +261,27 @@ public class AutoupdateSettings {
         forImport.add (currentVersion);
         if (exp != null && ! forImport.contains (exp)) {
             try {
+                final int period = getPeriod();
+                boolean shared = Utilities.isGlobalInstallation();
                 p.removeNode ();
                 getPreferences ().put (IMPORTED, Boolean.toString (true));
+                getPreferences ().putInt(PROP_PERIOD, period);
+                if (shared) {
+                    // Check that we can use 'shared' flag imported from previous installation with a new one.
+                    // Obtained from SettingsTab.cbGlobalInstallActionPerformed
+                    Collection<File> dirs = Utilities.sharedDirs();
+                    if (!dirs.isEmpty()) {
+                        for (File f : dirs) {
+                            if (f.exists() && f.isDirectory() && !Utilities.canWriteInCluster(f)) {
+                                shared = false;
+                                break;
+                            }
+                        }
+                        if (shared) {
+                            Utilities.setGlobalInstallation(shared);
+                        }
+                    }
+                }
                 err.log (Level.FINE, "Don't read preferences from userdir " + exp);
             } catch (BackingStoreException ex) {
                 err.log (Level.INFO, ex.getLocalizedMessage (), ex);
