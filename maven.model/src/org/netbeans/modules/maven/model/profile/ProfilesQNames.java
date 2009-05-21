@@ -78,37 +78,39 @@ public final class ProfilesQNames {
 
     public final ProfilesQName ACTIVEPROFILES; //NOI18N
     public final ProfilesQName ACTIVEPROFILE; //NOI18N
-    private boolean ns;
+    private final boolean ns;
+    private final boolean old;
 
-    public ProfilesQNames(boolean ns) {
+    public ProfilesQNames(boolean ns, boolean old) {
         this.ns = ns;
-        PROFILESROOT = new ProfilesQName(ProfilesQName.createQName("profilesXml",ns), ns); // NOI18N
-        REPOSITORY = new ProfilesQName(ProfilesQName.createQName("repository",ns), ns); // NOI18N
-        PLUGINREPOSITORY = new ProfilesQName(ProfilesQName.createQName("pluginRepository",ns), ns); // NOI18N
-        RELEASES = new ProfilesQName(ProfilesQName.createQName("releases",ns), ns); // NOI18N
-        SNAPSHOTS = new ProfilesQName(ProfilesQName.createQName("snapshots",ns), ns); // NOI18N
-        PROFILE = new ProfilesQName(ProfilesQName.createQName("profile",ns), ns); // NOI18N
-        ACTIVATION = new ProfilesQName(ProfilesQName.createQName("activation",ns), ns); // NOI18N
-        ACTIVATIONPROPERTY = new ProfilesQName(ProfilesQName.createQName("property",ns), ns); // NOI18N
-        ACTIVATIONOS = new ProfilesQName(ProfilesQName.createQName("os",ns), ns); // NOI18N
-        ACTIVATIONFILE = new ProfilesQName(ProfilesQName.createQName("file",ns), ns); // NOI18N
-        ACTIVATIONCUSTOM = new ProfilesQName(ProfilesQName.createQName("custom",ns), ns); // NOI18N
-        PROFILES = new ProfilesQName(ProfilesQName.createQName("profiles",ns), ns); // NOI18N
-        REPOSITORIES = new ProfilesQName(ProfilesQName.createQName("repositories",ns), ns); // NOI18N
-        PLUGINREPOSITORIES = new ProfilesQName(ProfilesQName.createQName("pluginRepositories",ns), ns); // NOI18N
+        this.old = old;
+        PROFILESROOT = new ProfilesQName(ProfilesQName.createQName("profilesXml",ns, old), ns); // NOI18N
+        REPOSITORY = new ProfilesQName(ProfilesQName.createQName("repository",ns, old), ns); // NOI18N
+        PLUGINREPOSITORY = new ProfilesQName(ProfilesQName.createQName("pluginRepository",ns, old), ns); // NOI18N
+        RELEASES = new ProfilesQName(ProfilesQName.createQName("releases",ns, old), ns); // NOI18N
+        SNAPSHOTS = new ProfilesQName(ProfilesQName.createQName("snapshots",ns, old), ns); // NOI18N
+        PROFILE = new ProfilesQName(ProfilesQName.createQName("profile",ns, old), ns); // NOI18N
+        ACTIVATION = new ProfilesQName(ProfilesQName.createQName("activation",ns, old), ns); // NOI18N
+        ACTIVATIONPROPERTY = new ProfilesQName(ProfilesQName.createQName("property",ns, old), ns); // NOI18N
+        ACTIVATIONOS = new ProfilesQName(ProfilesQName.createQName("os",ns, old), ns); // NOI18N
+        ACTIVATIONFILE = new ProfilesQName(ProfilesQName.createQName("file",ns, old), ns); // NOI18N
+        ACTIVATIONCUSTOM = new ProfilesQName(ProfilesQName.createQName("custom",ns, old), ns); // NOI18N
+        PROFILES = new ProfilesQName(ProfilesQName.createQName("profiles",ns, old), ns); // NOI18N
+        REPOSITORIES = new ProfilesQName(ProfilesQName.createQName("repositories",ns, old), ns); // NOI18N
+        PLUGINREPOSITORIES = new ProfilesQName(ProfilesQName.createQName("pluginRepositories",ns, old), ns); // NOI18N
 
-        ID = new ProfilesQName(ProfilesQName.createQName("id",ns), ns); //NOI18N
-        CONFIGURATION = new ProfilesQName(ProfilesQName.createQName("configuration",ns), ns); //NOI18N
-        PROPERTIES = new ProfilesQName(ProfilesQName.createQName("properties",ns), ns); //NOI18N
-        URL = new ProfilesQName(ProfilesQName.createQName("url",ns), ns); //NOI18N
-        NAME = new ProfilesQName(ProfilesQName.createQName("name",ns), ns); //NOI18N
+        ID = new ProfilesQName(ProfilesQName.createQName("id",ns, old), ns); //NOI18N
+        CONFIGURATION = new ProfilesQName(ProfilesQName.createQName("configuration",ns, old), ns); //NOI18N
+        PROPERTIES = new ProfilesQName(ProfilesQName.createQName("properties",ns, old), ns); //NOI18N
+        URL = new ProfilesQName(ProfilesQName.createQName("url",ns, old), ns); //NOI18N
+        NAME = new ProfilesQName(ProfilesQName.createQName("name",ns, old), ns); //NOI18N
 
-        VALUE = new ProfilesQName(ProfilesQName.createQName("value",ns), ns); //NOI18N
+        VALUE = new ProfilesQName(ProfilesQName.createQName("value",ns, old), ns); //NOI18N
 
-        LAYOUT = new ProfilesQName(ProfilesQName.createQName("layout",ns), ns); //NOI18N
+        LAYOUT = new ProfilesQName(ProfilesQName.createQName("layout",ns, old), ns); //NOI18N
 
-        ACTIVEPROFILE = new ProfilesQName(ProfilesQName.createQName("activeProfile",ns), ns); //NOI18N
-        ACTIVEPROFILES = new ProfilesQName(ProfilesQName.createQName("activeProfiles",ns), ns); //NOI18N
+        ACTIVEPROFILE = new ProfilesQName(ProfilesQName.createQName("activeProfile",ns, old), ns); //NOI18N
+        ACTIVEPROFILES = new ProfilesQName(ProfilesQName.createQName("activeProfiles",ns, old), ns); //NOI18N
 
         //when adding items here, need to add them to the set below as well.
 
@@ -117,6 +119,11 @@ public final class ProfilesQNames {
     public boolean isNSAware() {
         return ns;
     }
+
+    public boolean isOldNS() {
+        return old;
+    }
+
 
     public Set<QName> getElementQNames() {
         QName[] names = new QName[] {
@@ -147,5 +154,6 @@ public final class ProfilesQNames {
         List<QName> list = Arrays.asList(names);
         return new HashSet<QName>(list);
     }
+
     
 }

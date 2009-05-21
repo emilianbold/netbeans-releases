@@ -69,13 +69,13 @@ public class PropertiesImpl extends SettingsComponentImpl implements Properties 
 
 
     public void setProperty(String key, String value) {
-        QName qname = SettingsQName.createQName(key, getModel().getSettingsQNames().isNSAware());
+        QName qname = SettingsQName.createQName(key, getModel().getSettingsQNames().isNSAware(), getModel().getSettingsQNames().isOldNS());
         setChildElementText(qname.getLocalPart(), value,
                 qname);
     }
 
     public String getProperty(String key) {
-        return getChildElementText(SettingsQName.createQName(key, getModel().getSettingsQNames().isNSAware()));
+        return getChildElementText(SettingsQName.createQName(key, getModel().getSettingsQNames().isNSAware(), getModel().getSettingsQNames().isOldNS()));
     }
 
     public Map<String, String> getProperties() {
@@ -84,7 +84,7 @@ public class PropertiesImpl extends SettingsComponentImpl implements Properties 
         for (SettingsComponent pc : chlds) {
             Element el = pc.getPeer();
             String key = el.getLocalName();
-            String val = getChildElementText(SettingsQName.createQName(key, getModel().getSettingsQNames().isNSAware()));
+            String val = getChildElementText(SettingsQName.createQName(key, getModel().getSettingsQNames().isNSAware(), getModel().getSettingsQNames().isOldNS()));
             toRet.put(key, val);
         }
         return toRet;

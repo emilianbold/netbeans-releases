@@ -412,36 +412,36 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
 }//GEN-LAST:event_browseKenaiButtonActionPerformed
 
     private void browseRepoButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_browseRepoButtonActionPerformed
-        
-        PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
+        if (Subversion.isClientAvailable(true)) {
+            PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
 
-        KenaiFeatureListItem featureItem = (KenaiFeatureListItem) kenaiRepoComboBox.getSelectedItem();
-        String svnFolders[] = null;
-        if (featureItem != null) {
-            String title = NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
-                    "GetSourcesFromKenaiPanel.SelectRepositoryFolderTitle"); // NOI18N
-            String repoUrl = featureItem.feature.getLocation();
-            try {
-                if (passwdAuth != null) {
-                    svnFolders = Subversion.selectRepositoryFolders(title, repoUrl,
-                        passwdAuth.getUserName(), new String(passwdAuth.getPassword()));
-                } else {
-                    svnFolders = Subversion.selectRepositoryFolders(title, repoUrl);
-                }
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IOException io) {
-                if (Subversion.CLIENT_UNAVAILABLE_ERROR_MESSAGE.equals(io.getMessage())) {
-                    // DO SOMETHING, svn client is unavailable
-                } else {
-                    Exceptions.printStackTrace(io);
+            KenaiFeatureListItem featureItem = (KenaiFeatureListItem) kenaiRepoComboBox.getSelectedItem();
+            String svnFolders[] = null;
+            if (featureItem != null) {
+                String title = NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
+                        "GetSourcesFromKenaiPanel.SelectRepositoryFolderTitle"); // NOI18N
+                String repoUrl = featureItem.feature.getLocation();
+                try {
+                    if (passwdAuth != null) {
+                        svnFolders = Subversion.selectRepositoryFolders(title, repoUrl,
+                                passwdAuth.getUserName(), new String(passwdAuth.getPassword()));
+                    } else {
+                        svnFolders = Subversion.selectRepositoryFolders(title, repoUrl);
+                    }
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IOException io) {
+                    if (Subversion.CLIENT_UNAVAILABLE_ERROR_MESSAGE.equals(io.getMessage())) {
+                        // DO SOMETHING, svn client is unavailable
+                    } else {
+                        Exceptions.printStackTrace(io);
+                    }
                 }
             }
+            if (svnFolders != null) {
+                repoFolderTextField.setText(svnFolders[0]);
+            }
         }
-        if (svnFolders != null) {
-            repoFolderTextField.setText(svnFolders[0]);
-        }
-        
     }//GEN-LAST:event_browseRepoButtonActionPerformed
 
     private void browseLocalButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_browseLocalButtonActionPerformed

@@ -72,7 +72,7 @@ public class SyntaxTreeTest extends TestBase {
 
     public static Test xsuite(){
 	TestSuite suite = new TestSuite();
-        suite.addTest(new SyntaxTreeTest("testIssue162576"));
+        suite.addTest(new SyntaxTreeTest("testUnexpectedContentAfterBody"));
         return suite;
     }
 
@@ -167,7 +167,7 @@ public class SyntaxTreeTest extends TestBase {
 
         //STYLE is not allowed in BODY; Issue 164903
         AstNode.Description[] expectedErrors = new AstNode.Description[]{
-            desc(SyntaxTree.UNEXPECTED_TAG_KEY, 40, 55, Description.ERROR),
+            desc(SyntaxTree.UNEXPECTED_TAG_KEY, 40, 46, Description.ERROR),
             desc(SyntaxTree.UNMATCHED_TAG, 55, 63, Description.WARNING)
         };
         assertAST("<html><head><title></title></head><body><style type=''></style></body></html>", expectedErrors);
@@ -280,6 +280,16 @@ public class SyntaxTreeTest extends TestBase {
         assertAST(code);
     }
 
+    //issue 165680, currently failing
+    public void testUnexpectedContentAfterBody() throws Exception {
+        String code = "<html><head><title></title></head><body>" +
+                "</body><tr><td></tr></html>";
+
+//        assertAST(code, 1);
+    }
+
+
+
     public void testXhtmlNamespaceAttrs() throws Exception {
         assertAST("<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:ui="+
                 "\"http://java.sun.com/jsf/facelets\"><head><meta content=\"\"></meta>"+
@@ -302,6 +312,17 @@ public class SyntaxTreeTest extends TestBase {
         //try it also in optional end tag
         assertAST("<html><head><title></title><body><table><tr><td dummy='value'></table></body></html>",
                 desc(SyntaxTree.UNKNOWN_ATTRIBUTE_KEY, 48, 53, Description.WARNING));
+    }
+
+    public void testErrorDescriptionsOnOpenTags() throws Exception {
+        //error descriptions attached to open tags should span either the whole
+        //tag area if there are no attributes or just the opening symbol and
+        //tag name if there are some.
+        assertAST("<title>",
+                desc(SyntaxTree.UNMATCHED_TAG, 0, 7, Description.WARNING));
+        //         01234567
+        assertAST("<title lang=''>",
+                desc(SyntaxTree.UNMATCHED_TAG, 0, 6, Description.WARNING));
     }
 
     public void testTagsMatching() throws Exception {
