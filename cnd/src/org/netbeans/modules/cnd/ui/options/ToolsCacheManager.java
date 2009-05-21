@@ -121,12 +121,10 @@ public final class ToolsCacheManager {
         if (isRemoteAvailable()) {
             if (serverUpdateCache != null) {
                 liveServers = new ArrayList<ExecutionEnvironment>();
-                ServerList.clear();
+                ServerList.set(serverUpdateCache.getHosts(), serverUpdateCache.getDefaultIndex());
                 for (ServerRecord rec : serverUpdateCache.getHosts()) {
-                    ServerList.addServer(rec.getExecutionEnvironment(), rec.getDisplayName(), rec.getSyncFactory(), false, false);
                     liveServers.add(rec.getExecutionEnvironment());
                 }
-                ServerList.setDefaultIndex(serverUpdateCache.getDefaultIndex());
                 serverUpdateCache = null;
             } else {
                 ServerList.setDefaultIndex(selectedIndex);

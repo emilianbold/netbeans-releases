@@ -95,8 +95,8 @@ public class ServerList {
         return getDefault().getDefaultRecord();
     }
     
-    public static void clear() {
-        getDefault().clear();
+    public static void set(List<ServerRecord> records, int defaultIndex) {
+        getDefault().set(records, defaultIndex);
     }
 
     public static ServerRecord addServer(ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory, boolean asDefault, boolean connect) {
