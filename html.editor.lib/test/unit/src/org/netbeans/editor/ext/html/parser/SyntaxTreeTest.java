@@ -70,7 +70,7 @@ public class SyntaxTreeTest extends TestBase {
         super(testName);
     }
 
-    public static Test suite(){
+    public static Test xsuite(){
 	TestSuite suite = new TestSuite();
         suite.addTest(new SyntaxTreeTest("testUnexpectedContentAfterBody"));
         return suite;
