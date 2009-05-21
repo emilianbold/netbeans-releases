@@ -122,7 +122,8 @@ class IncludedJSPFileProcessor extends JSPProcessor{
         }
 
         importsDeclarations.append(createImplicitImportStatements(Collections.<String>emptyList()));
-        declarations.append(createBeanVarDeclarations());
+        // no need to do it, the JSP parser will return the beans for the including page
+        //declarations.append(createBeanVarDeclarations());
     }
 
     public String getDeclarations() {
