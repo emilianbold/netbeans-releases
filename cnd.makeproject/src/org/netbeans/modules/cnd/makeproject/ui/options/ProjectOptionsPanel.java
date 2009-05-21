@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui.options;
 
 import java.awt.Color;
@@ -57,14 +56,12 @@ import org.openide.util.NbBundle;
  * Replaces the old project system options panel.
  */
 public class ProjectOptionsPanel extends JPanel {
-    
+
     private boolean changed;
     private boolean listen = false;
-    
     private ArrayList<PropertyChangeListener> propertyChangeListeners = new ArrayList<PropertyChangeListener>();
-    
     private DocumentListener documentListener;
-    
+
     /** Creates new form ProjectOptionsPanel */
     public ProjectOptionsPanel() {
         initComponents();
@@ -77,100 +74,72 @@ public class ProjectOptionsPanel extends JPanel {
         makeOptionsTextField.getAccessibleContext().setAccessibleDescription(getString("MAKE_OPTIONS_AD"));
         filePathTxt.getAccessibleContext().setAccessibleDescription(getString("FILE_PATH_TXT_AD"));
         filePathTxt.getAccessibleContext().setAccessibleName(getString("FILE_PATH_TXT_AN"));
-        
-        
+
+
         documentListener = new DocumentListener() {
+
             public void insertUpdate(DocumentEvent e) {
                 validateFields();
             }
-            
+
             public void removeUpdate(DocumentEvent e) {
                 validateFields();
             }
-            
+
             public void changedUpdate(DocumentEvent e) {
                 validateFields();
             }
         };
-        
+
         makeOptionsTextField.getDocument().addDocumentListener(documentListener);
         setName("TAB_ProjectsTab"); // NOI18N (used as a pattern...)
-        
-        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
-            setOpaque( false );
-        }
-        else {
+
+        if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
+            setOpaque(false);
+        } else {
             Color c = getBackground();
             Color cc = new Color(c.getRed(), c.getGreen(), c.getBlue());
-           filePathTxt.setBackground(cc);
+            filePathTxt.setBackground(cc);
         }
     }
-    
+
     public void update() {
         listen = false;
         MakeOptions makeOptions = MakeOptions.getInstance();
-        
-        // Platform
-//        platformComboBox.removeAllItems();
-//        for (int i = 0; i < Platforms.getPlatformDisplayNames().length; i++) {
-//            platformComboBox.addItem(Platforms.getPlatformDisplayNames()[i]);
-//        }
-//        platformComboBox.setSelectedIndex(makeOptions.getPlatform());
-        
-        // Dependency Checking
         dependencyCheckingCheckBox.setSelected(makeOptions.getDepencyChecking());
-        
-        // Make Command
         makeOptionsTextField.setText(makeOptions.getMakeOptions());
-        
-        // Path Mode
         filePathcomboBox.removeAllItems();
         for (int i = 0; i < MakeOptions.PathModeNames.length; i++) {
             filePathcomboBox.addItem(MakeOptions.PathModeNames[i]);
         }
         filePathcomboBox.setSelectedIndex(makeOptions.getPathMode());
-        
-        // Save
         saveCheckBox.setSelected(makeOptions.getSave());
-        
-        // Reuse
         reuseCheckBox.setSelected(makeOptions.getReuse());
-        
+        viewBinaryFilesCheckBox.setSelected(makeOptions.getViewBinaryFiles());
+
         listen = true;
         changed = false;
     }
-    
+
     /** Apply changes */
     public void applyChanges() {
-        
         MakeOptions makeOptions = MakeOptions.getInstance();
-        
-        // Platform
-//        makeOptions.setPlatform(platformComboBox.getSelectedIndex());
-        
-        // Dependency Checking
+
         makeOptions.setDepencyChecking(dependencyCheckingCheckBox.isSelected());
-        
-        // Make Command
         makeOptions.setMakeOptions(makeOptionsTextField.getText());
-        
-        // Path Mode
         makeOptions.setPathMode(filePathcomboBox.getSelectedIndex());
-        
-        // Save
         makeOptions.setSave(saveCheckBox.isSelected());
-        
-        // Reuse
         makeOptions.setReuse(reuseCheckBox.isSelected());
-        
+        makeOptions.setViewBinaryFiles(viewBinaryFilesCheckBox.isSelected());
+
         changed = false;
     }
-    
+
     /** What to do if user cancels the dialog (nothing) */
     public void cancel() {
         changed = false;
     }
-    
+
     /**
      * Lets NB know if the data in the panel is valid and OK should be enabled
      * 
@@ -179,7 +148,7 @@ public class ProjectOptionsPanel extends JPanel {
     public boolean dataValid() {
         return true;
     }
-    
+
     /**
      * Lets caller know if any data has been changed.
      * 
@@ -188,12 +157,12 @@ public class ProjectOptionsPanel extends JPanel {
     public boolean isChanged() {
         return changed;
     }
-    
+
     private void validateFields() {
         PropertyChangeEvent pce = new PropertyChangeEvent(this, OptionsPanelController.PROP_VALID, this, this);
         firePropertyChange(pce);
     }
-    
+
     public void firePropertyChange(PropertyChangeEvent evt) {
         ArrayList<PropertyChangeListener> newList = new ArrayList<PropertyChangeListener>();
         newList.addAll(propertyChangeListeners);
@@ -201,11 +170,11 @@ public class ProjectOptionsPanel extends JPanel {
             listener.propertyChange(evt);
         }
     }
-    
+
     private static String getString(String key) {
         return NbBundle.getMessage(ProjectOptionsPanel.class, key);
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -224,6 +193,7 @@ public class ProjectOptionsPanel extends JPanel {
         saveCheckBox = new javax.swing.JCheckBox();
         reuseCheckBox = new javax.swing.JCheckBox();
         dependencyCheckingCheckBox = new javax.swing.JCheckBox();
+        viewBinaryFilesCheckBox = new javax.swing.JCheckBox();
         jSeparator1 = new javax.swing.JSeparator();
 
         setLayout(new java.awt.GridBagLayout());
@@ -246,7 +216,7 @@ public class ProjectOptionsPanel extends JPanel {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 6);
         add(makeOptionsTextField, gridBagConstraints);
 
         makeOptionsTxt.setText(bundle.getString("MAKE_OPTIONS_TXT")); // NOI18N
@@ -276,7 +246,7 @@ public class ProjectOptionsPanel extends JPanel {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 4, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(12, 4, 0, 6);
         add(filePathcomboBox, gridBagConstraints);
 
         filePathTxt.setEditable(false);
@@ -300,8 +270,9 @@ public class ProjectOptionsPanel extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(12, 6, 6, 6);
         add(saveCheckBox, gridBagConstraints);
 
         reuseCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("REUSE_CHECKBOX_MN").charAt(0));
@@ -310,8 +281,9 @@ public class ProjectOptionsPanel extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(reuseCheckBox, gridBagConstraints);
 
         dependencyCheckingCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("DEPENDENCY_CHECKING_MN").charAt(0));
@@ -324,13 +296,31 @@ public class ProjectOptionsPanel extends JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 11);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(dependencyCheckingCheckBox, gridBagConstraints);
+
+        viewBinaryFilesCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("DISPLAY_BINARY_FILES_MN").charAt(0));
+        viewBinaryFilesCheckBox.setText(org.openide.util.NbBundle.getMessage(ProjectOptionsPanel.class, "DISPLAY_BINARY_FILES_TXT")); // NOI18N
+        viewBinaryFilesCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                viewBinaryFilesCheckBoxActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
+        add(viewBinaryFilesCheckBox, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -340,14 +330,17 @@ public class ProjectOptionsPanel extends JPanel {
 
     private void dependencyCheckingCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dependencyCheckingCheckBoxActionPerformed
 // TODO add your handling code here:
-        
+
         PropertyChangeEvent pce = new PropertyChangeEvent(this, OptionsPanelController.PROP_VALID, this, this);
         firePropertyChange(pce);
 //        pce = new PropertyChangeEvent(this, "buran" + OptionsPanelController.PROP_VALID, this, this);
 //        firePropertyChange(pce);
     }//GEN-LAST:event_dependencyCheckingCheckBoxActionPerformed
-    
-    
+
+    private void viewBinaryFilesCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewBinaryFilesCheckBoxActionPerformed
+        PropertyChangeEvent pce = new PropertyChangeEvent(this, OptionsPanelController.PROP_VALID, this, this);
+        firePropertyChange(pce);
+    }//GEN-LAST:event_viewBinaryFilesCheckBoxActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox dependencyCheckingCheckBox;
     private javax.swing.JLabel filePathLabel;
@@ -359,6 +352,6 @@ public class ProjectOptionsPanel extends JPanel {
     private javax.swing.JLabel makeOptionsTxt;
     private javax.swing.JCheckBox reuseCheckBox;
     private javax.swing.JCheckBox saveCheckBox;
+    private javax.swing.JCheckBox viewBinaryFilesCheckBox;
     // End of variables declaration//GEN-END:variables
-    
 }

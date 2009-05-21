@@ -51,6 +51,8 @@ import java.awt.dnd.DnDConstants;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -76,6 +78,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
+import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.actions.AddExistingFolderItemsAction;
 import org.netbeans.modules.cnd.makeproject.api.actions.AddExistingItemAction;
@@ -568,6 +571,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
         class VisualUpdater implements Runnable {
+
             public void run() {
                 fireIconChange();
                 fireOpenedIconChange();
@@ -820,10 +824,20 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
-    private class LogicalViewChildren extends BaseMakeViewChildren {
+    private class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChangeListener {
 
         public LogicalViewChildren(Folder folder) {
             super(folder);
+            if (folder.isDiskFolder()) {
+                MakeOptions.getInstance().addPropertyChangeListener(this);
+            }
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            String property = evt.getPropertyName();
+            if (property.equals(MakeOptions.VIEW_BINARY_FILES)) {
+                stateChanged(new ChangeEvent(this));
+            }
         }
 
         protected Node[] createNodes(Object key) {
@@ -897,7 +911,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                             continue;
                         }
 
-                        if (CndFileVisibilityQuery.getDefault().isIgnored(child)){
+                        if (!MakeOptions.getInstance().getViewBinaryFiles() && CndFileVisibilityQuery.getDefault().isIgnored(child)) {
                             continue;
                         }
 
@@ -986,8 +1000,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             }
         }
 
-
         class VisualUpdater implements Runnable {
+
             public void run() {
                 fireIconChange();
                 fireOpenedIconChange();
@@ -996,6 +1010,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         /*
          * Something in the folder has changed
          **/
+
         public void stateChanged(ChangeEvent e) {
             updateAnnotationFiles();
             EventQueue.invokeLater(new VisualUpdater()); // IZ 151257
@@ -1621,8 +1636,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             List<Action> newActions = new ArrayList<Action>();
             if (getItem().getFolder() == null) {
                 return oldActions;
-            }
-            else if (getItem().getFolder().isDiskFolder()) {
+            } else if (getItem().getFolder().isDiskFolder()) {
                 for (int i = 0; i < oldActions.length; i++) {
                     if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.OpenAction) {
                         newActions.add(oldActions[i]);
@@ -1706,6 +1720,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
         class VisualUpdater implements Runnable {
+
             public void run() {
                 fireIconChange();
                 fireOpenedIconChange();
