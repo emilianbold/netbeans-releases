@@ -850,7 +850,7 @@ public class DependencyNode extends AbstractNode {
             boolean hasOpen = false;
             for (int i = 0; i < superActions.length; i++) {
                 if ((superActions[i] instanceof OpenAction || superActions[i] instanceof EditAction)
-                        && !dobj.getClass().getName().contains("ClassDataObject")) {//NOI18N #148053
+                        && (dobj != null && !dobj.getClass().getName().contains("ClassDataObject"))) {//NOI18N #148053
                     result.add(superActions[i]);
                     hasOpen = true;
                 }

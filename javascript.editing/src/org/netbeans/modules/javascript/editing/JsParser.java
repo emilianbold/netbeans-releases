@@ -1179,6 +1179,11 @@ public class JsParser extends Parser {
             this.event = event;
             this.source = asString(snapshot.getText());
             this.caretOffset = GsfUtilities.getLastKnownCaretOffset(snapshot, event);
+            
+            //recompute the caret offset relative to the embeddings if found
+            if(caretOffset >= 0) {
+                this.caretOffset = snapshot.getEmbeddedOffset(caretOffset);
+            }
         }
         
         @Override

@@ -78,10 +78,6 @@ public class BuildAccessorImpl extends BuildAccessor {
             if (prj != null) {
                 for (KenaiFeature feature : prj.getFeatures(Type.HUDSON)) {
                     String server = feature.getWebLocation().toString();
-                    { // XXX just for testing until real service works
-                        LOG.warning("Ignoring reported server location " + server + " in favor of http://localhost:8080/");
-                        server = "http://localhost:8080/";
-                    }
                     // XXX maybe remove these transient instances when the Kenai projects go away somehow?
                     servers.add(HudsonManager.addInstance(id, server, 5, false));
                 }
@@ -90,6 +86,21 @@ public class BuildAccessorImpl extends BuildAccessor {
             LOG.log(Level.FINE, "Could not find project " + id, x);
         }
         return servers;
+    }
+
+    public boolean isEnabled(ProjectHandle handle) {
+        String id = handle.getId();
+        try {
+            KenaiProject prj = Kenai.getDefault().getProject(id);
+            if (prj != null) {
+                // Avoid calling findServers as that would load hudson module code
+                // just to show that there is a Builds node (even if never expanded).
+                return prj.getFeatures(Type.HUDSON).length > 0;
+            }
+        } catch (KenaiException x) {
+            LOG.log(Level.FINE, "Could not find project " + id, x);
+        }
+        return false;
     }
 
     public List<BuildHandle> getBuilds(final ProjectHandle handle) {

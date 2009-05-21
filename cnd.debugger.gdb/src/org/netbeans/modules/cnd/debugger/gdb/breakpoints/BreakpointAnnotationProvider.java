@@ -42,10 +42,12 @@
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,6 +73,7 @@ import org.openide.text.AnnotationProvider;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 
@@ -84,16 +87,41 @@ import org.openide.util.WeakSet;
 @org.openide.util.lookup.ServiceProvider(service=org.openide.text.AnnotationProvider.class)
 public class BreakpointAnnotationProvider implements AnnotationProvider, DebuggerManagerListener {
 
-    private final Map<GdbBreakpoint, Annotation[]> breakpointToAnnotations = new HashMap<GdbBreakpoint, Annotation[]>();
+    private final Map<GdbBreakpoint, Set<Annotation>> breakpointToAnnotations = new HashMap<GdbBreakpoint, Set<Annotation>>();
     private final Set<FileObject> annotatedFiles = new WeakSet<FileObject>();
+    private Set<PropertyChangeListener> dataObjectListeners;
     private boolean attachManagerListener = true;
     private final Logger log = Logger.getLogger("gdb.breakpoint.annotations"); // NOI18N
 
-    public void annotate(Line.Set set, Lookup lookup) {
-        FileObject fo = lookup.lookup(FileObject.class);
-        if (fo == null) {
-            return;
+    public void annotate (Line.Set set, Lookup lookup) {
+        final FileObject fo = lookup.lookup(FileObject.class);
+        if (fo != null) {
+            DataObject dobj = lookup.lookup(DataObject.class);
+            if (dobj != null) {
+                PropertyChangeListener pchl = new PropertyChangeListener() {
+                    /** annotate renamed files. */
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
+                            DataObject dobj = (DataObject) evt.getSource();
+                            FileObject newFO = dobj.getPrimaryFile();
+                            annotate(newFO);
+                        }
+                    }
+                };
+                dobj.addPropertyChangeListener(WeakListeners.propertyChange(pchl, dobj));
+                synchronized (this) {
+                    if (dataObjectListeners == null) {
+                        dataObjectListeners = new HashSet<PropertyChangeListener>();
+                    }
+                    // Prevent from GC.
+                    dataObjectListeners.add(pchl);
+                }
+            }
+            annotate(fo);
         }
+    }
+
+    public void annotate (final FileObject fo) {
         synchronized (breakpointToAnnotations) {
             if (annotatedFiles.contains(fo)) {
                 // Already annotated
@@ -106,7 +134,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
                     GdbBreakpoint b = (GdbBreakpoint) breakpoint;
                     if (!annotatedBreakpoints.contains(b)) {
                         b.addPropertyChangeListener (this);
-                        breakpointToAnnotations.put(b, new Annotation[] {});
+                        breakpointToAnnotations.put(b, new WeakSet<Annotation>());
                         if (b instanceof LineBreakpoint) {
                             LineBreakpoint lb = (LineBreakpoint) b;
                             LineTranslations.getTranslations().registerForLineUpdates(lb);
@@ -118,9 +146,9 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
             annotatedFiles.add(fo);
         }
         if (attachManagerListener) {
+            attachManagerListener = false;
             DebuggerManager.getDebuggerManager().addDebuggerListener(WeakListeners.create(DebuggerManagerListener.class,
                  this, DebuggerManager.getDebuggerManager()));
-            attachManagerListener = false;
         }
     }
 
@@ -128,13 +156,8 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
         if (isAnnotatable(breakpoint)) {
             GdbBreakpoint b = (GdbBreakpoint) breakpoint;
             log.fine("BreakpointAnnotationProvider.breakpointAdded: " + b.getPath() + ":" + b.getLineNumber());
-            synchronized (breakpointToAnnotations) {
-                b.addPropertyChangeListener(this);
-                breakpointToAnnotations.put(b, new Annotation[] {});
-                for (FileObject fo : annotatedFiles) {
-                    addAnnotationTo(b, fo);
-                }
-            }
+            b.addPropertyChangeListener (this);
+            RequestProcessor.getDefault().post(new AnnotationRefresh(b, false, true));
             if (b instanceof LineBreakpoint) {
                 LineBreakpoint lb = (LineBreakpoint) b;
                 LineTranslations.getTranslations().registerForLineUpdates(lb);
@@ -146,11 +169,8 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
         if (isAnnotatable(breakpoint)) {
             GdbBreakpoint b = (GdbBreakpoint) breakpoint;
             log.fine("BreakpointAnnotationProvider.breakpointRemoved: " + b.getPath() + ":" + b.getLineNumber());
-            synchronized (breakpointToAnnotations) {
-                b.removePropertyChangeListener(this);
-                removeAnnotations(b);
-                breakpointToAnnotations.remove(b);
-            }
+            b.removePropertyChangeListener (this);
+            RequestProcessor.getDefault().post(new AnnotationRefresh(b, true, false));
             if (b instanceof LineBreakpoint) {
                 LineBreakpoint lb = (LineBreakpoint) b;
                 LineTranslations.getTranslations().unregisterFromLineUpdates(lb);
@@ -176,13 +196,47 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
         }
         
         GdbBreakpoint b = (GdbBreakpoint) evt.getSource();
-        synchronized (breakpointToAnnotations) {
-            removeAnnotations(b);
-            breakpointToAnnotations.put(b, new Annotation[] {});
-            for (FileObject fo : annotatedFiles) {
-                addAnnotationTo(b, fo);
+        DebuggerManager manager = DebuggerManager.getDebuggerManager();
+        Breakpoint[] bkpts = manager.getBreakpoints();
+        boolean found = false;
+        for (Breakpoint breakpoint : bkpts) {
+            if (b == breakpoint) {
+                found = true;
+                break;
             }
         }
+        if (!found) {
+            // breakpoint has been removed
+            return;
+        }
+        RequestProcessor.getDefault().post(new AnnotationRefresh(b, true, true));
+    }
+
+    private final class AnnotationRefresh implements Runnable {
+        private GdbBreakpoint b;
+        private boolean remove, add;
+
+        public AnnotationRefresh(GdbBreakpoint b, boolean remove, boolean add) {
+            this.b = b;
+            this.remove = remove;
+            this.add = add;
+        }
+
+        public void run() {
+            synchronized (breakpointToAnnotations) {
+                if (remove) {
+                    removeAnnotations(b);
+                    if (!add) breakpointToAnnotations.remove(b);
+                }
+                if (add) {
+                    breakpointToAnnotations.put(b, new WeakSet<Annotation>());
+                    for (FileObject fo : annotatedFiles) {
+                        addAnnotationTo(b, fo);
+                    }
+                }
+            }
+        }
+
     }
     
     private static boolean isAnnotatable(Breakpoint b) {
@@ -269,16 +323,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
             return;
         }
         log.fine("BreakpointAnnotationProvider.addAnnotationTo: " + b.getPath() + ":" + b.getLineNumber());
-        String condition;
-        if (b instanceof LineBreakpoint) {
-            condition = ((LineBreakpoint) b).getCondition();
-        } else if (b instanceof FunctionBreakpoint) {
-            condition = ((FunctionBreakpoint) b).getCondition();
-        } else if (b instanceof AddressBreakpoint) {
-            condition = ((AddressBreakpoint) b).getCondition();
-        } else {
-            throw new IllegalStateException(b.toString());
-        }
+        String condition = b.getCondition();
         boolean isConditional = (condition != null) && condition.trim().length() > 0;
         String annotationType = getAnnotationType(b, isConditional);
         DataObject dataObject;
@@ -303,24 +348,20 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
             }
         }
         if (annotations.isEmpty()) {
-            return ;
+            return;
         }
-        Object[] oldAnnotations = breakpointToAnnotations.get(b);
-        if (oldAnnotations == null || oldAnnotations.length == 0) {
-            breakpointToAnnotations.put(b, annotations.toArray(new Annotation[annotations.size()]));
+        Set<Annotation> bpAnnotations = breakpointToAnnotations.get(b);
+        if (bpAnnotations == null) {
+            breakpointToAnnotations.put(b, new WeakSet<Annotation>(annotations));
         } else {
-            Annotation[] newAnnotations = new Annotation[oldAnnotations.length + annotations.size()];
-            System.arraycopy(oldAnnotations, 0, newAnnotations, 0, oldAnnotations.length);
-            for (int i = 0; i < annotations.size(); i++) {
-                newAnnotations[i + oldAnnotations.length] = annotations.get(i);
-            }
-            breakpointToAnnotations.put(b, newAnnotations);
+            bpAnnotations.addAll(annotations);
+            breakpointToAnnotations.put(b, bpAnnotations);
         }
     }
 
     // Is called under synchronized (breakpointToAnnotations)
     private void removeAnnotations(GdbBreakpoint b) {
-        Annotation[] annotations = breakpointToAnnotations.remove(b);
+        Set<Annotation> annotations = breakpointToAnnotations.remove(b);
         if (annotations == null) {
             return;
         }

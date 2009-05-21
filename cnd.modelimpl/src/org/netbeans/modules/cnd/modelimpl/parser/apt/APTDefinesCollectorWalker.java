@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 
+
 /**
  *
  * @author Sergey Grinev
@@ -96,8 +97,12 @@ public class APTDefinesCollectorWalker extends APTSelfWalker {
     /*package*/ final MacroInfo getMacroInfo(APTToken token) {
         return macroRefMap.get(token.getTextID());
     }
-}
 
+    @Override
+    protected boolean hasIncludeActionSideEffects() {
+        return true;
+    }
+}
 class MacroInfo {
 
     public MacroInfo(CsmFile file, int startOffest, int endOffset, CharSequence includePath) {

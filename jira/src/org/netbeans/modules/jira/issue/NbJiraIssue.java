@@ -84,6 +84,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
@@ -108,6 +109,7 @@ public class NbJiraIssue extends Issue {
     static final String LABEL_NAME_SUMMARY      = "jira.issue.summary";     // NOI18N
 
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";               // NOI18N
+    private static final int SHORTENED_SUMMARY_LENGTH = 22;
 
     private static final String FIXED = "Fixed";                        //NOI18N
 
@@ -373,7 +375,7 @@ public class NbJiraIssue extends Issue {
      * @throws org.eclipse.mylyn.internal.jira.core.service.JiraException
      * @throws java.lang.IllegalStateException if resolve operation is not permitted for this issue
      */
-    public void resolve(Resolution resolution, String comment) throws JiraException {
+    public void resolve(Resolution resolution, String comment) {
         if (Jira.LOG.isLoggable(Level.FINE)) {
             Jira.LOG.fine(getClass().getName() + ": resolve issue " + getKey() + ": " + resolution.getName());    //NOI18N
         }
@@ -443,7 +445,7 @@ public class NbJiraIssue extends Issue {
      * @throws org.eclipse.mylyn.internal.jira.core.service.JiraException
      * @throws java.lang.IllegalStateException if resolve operation is not permitted for this issue
      */
-    public void close(Resolution resolution, String comment) throws JiraException {
+    public void close(Resolution resolution, String comment) {
         if (Jira.LOG.isLoggable(Level.FINE)) {
             Jira.LOG.fine(getClass().getName() + ": close issue " + getKey() + ": " + resolution.getName());    //NOI18N
         }
@@ -478,7 +480,7 @@ public class NbJiraIssue extends Issue {
      * @throws org.eclipse.mylyn.internal.jira.core.service.JiraException
      * @throws java.lang.IllegalStateException if resolve operation is not permitted for this issue
      */
-    public void startProgress() throws JiraException {
+    public void startProgress() {
         if (Jira.LOG.isLoggable(Level.FINE)) {
             Jira.LOG.fine(getClass().getName() + ": starting issue " + getKey());    //NOI18N
         }
@@ -509,7 +511,7 @@ public class NbJiraIssue extends Issue {
      * @throws org.eclipse.mylyn.internal.jira.core.service.JiraException
      * @throws java.lang.IllegalStateException if resolve operation is not permitted for this issue
      */
-    public void stopProgress() throws JiraException {
+    public void stopProgress() {
         if (Jira.LOG.isLoggable(Level.FINE)) {
             Jira.LOG.fine(getClass().getName() + ": starting issue " + getKey());    //NOI18N
         }
@@ -587,12 +589,23 @@ public class NbJiraIssue extends Issue {
 
     @Override
     public String getDisplayName() {
-        return "Issue: " + getKey();
+        return taskData.isNew() ?
+            NbBundle.getMessage(NbJiraIssue.class, "CTL_NewIssue") : // NOI18N
+            NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue", new Object[] {getID(), getSummary()}); // NOI18N
     }
 
     @Override
     public String getShortenedDisplayName() {
-        return "Issue: " + getKey();
+        if (taskData.isNew()) {
+            return getDisplayName();
+        }
+
+        String shortSummary = TextUtils.shortenText(getSummary(),
+                                                    2,    //try at least 2 words
+                                                    SHORTENED_SUMMARY_LENGTH);
+        return NbBundle.getMessage(NbJiraIssue.class,
+                                   "CTL_Issue",                         //NOI18N
+                                   new Object[] {getID(), shortSummary});
     }
 
     @Override
@@ -623,11 +636,7 @@ public class NbJiraIssue extends Issue {
 
         // resolved attrs
         if(close) {
-            try {
-                resolve(JiraUtils.getResolutionByName(repository, FIXED), comment); // XXX constant, what about setting in options?
-            } catch (JiraException ex) {
-                Jira.LOG.log(Level.SEVERE, null, ex);
-            }
+            resolve(JiraUtils.getResolutionByName(repository, FIXED), comment); // XXX constant, what about setting in options?
         }
 
         JiraCommand submitCmd = new JiraCommand() {

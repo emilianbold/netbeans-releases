@@ -72,7 +72,8 @@ import org.openide.util.NbBundle;
 
     void init() {
         textHostDisplayName.setText(data.getExecutionEnvironment().getDisplayName());
-        compilerSetManager = data.getCacheManager().getCompilerSetManagerCopy(data.getExecutionEnvironment());
+        // here we know for sure that it is created and initialized
+        compilerSetManager = data.getCacheManager().getCompilerSetManagerCopy(data.getExecutionEnvironment(), false);
         labelPlatformValue.setText(PlatformTypes.toString(compilerSetManager.getPlatform()));
         labelUsernameValue.setText(data.getExecutionEnvironment().getUser());
         labelHostnameValue.setText(data.getExecutionEnvironment().getHost());
@@ -145,16 +146,22 @@ import org.openide.util.NbBundle;
         setPreferredSize(new java.awt.Dimension(534, 409));
         setRequestFocusEnabled(false);
 
+        jLabel1.setLabelFor(textHostDisplayName);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.jLabel1.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(labelPlatform, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.labelPlatform.text")); // NOI18N
+        labelPlatform.setLabelFor(labelPlatformValue);
+        labelPlatform.setText(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.labelPlatform.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(labelHostname, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.labelHostname.text")); // NOI18N
+        labelHostname.setLabelFor(labelHostnameValue);
+        labelHostname.setText(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.labelHostname.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(labelUsername, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.labelUsername.text")); // NOI18N
+        labelUsername.setLabelFor(labelUsernameValue);
+        labelUsername.setText(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.labelUsername.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.jLabel2.text")); // NOI18N
+        jLabel2.setLabelFor(jTextArea1);
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.jLabel2.text")); // NOI18N
 
+        jLabel3.setLabelFor(cbDefaultToolchain);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.jLabel3.text")); // NOI18N
 
         jTextArea1.setColumns(20);
@@ -169,6 +176,7 @@ import org.openide.util.NbBundle;
 
         org.openide.awt.Mnemonics.setLocalizedText(labelUsernameValue, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.labelUsernameValue.text")); // NOI18N
 
+        jLabel4.setLabelFor(cbSyncMode);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.jLabel4.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -178,7 +186,7 @@ import org.openide.util.NbBundle;
             .add(layout.createSequentialGroup()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(textHostDisplayName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE))
+                .add(textHostDisplayName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(labelPlatform)
@@ -199,10 +207,10 @@ import org.openide.util.NbBundle;
                     .add(jLabel3))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(cbSyncMode, 0, 386, Short.MAX_VALUE)
-                    .add(cbDefaultToolchain, 0, 386, Short.MAX_VALUE)))
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
-            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
+                    .add(cbSyncMode, 0, 424, Short.MAX_VALUE)
+                    .add(cbDefaultToolchain, 0, 424, Short.MAX_VALUE)))
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
+            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

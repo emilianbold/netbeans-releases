@@ -115,6 +115,7 @@ public class EvaluatorNodeModelFilter implements ExtendedNodeModelFilter {
     }
 
     public void setName(ExtendedNodeModel original, Object node, String name) throws UnknownTypeException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public String getIconBaseWithExtension(ExtendedNodeModel original, Object node) throws UnknownTypeException {

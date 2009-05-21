@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.remote.sync;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.PrintWriter;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -49,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 
@@ -80,7 +82,8 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         if (root != null) {
             return root;
         }
-        return "/home/" + executionEnvironment.getUser() + "/.netbeans/remote"; // NOI18N
+        String home = RemoteUtil.getHomeDirectory(executionEnvironment);
+        return (home == null) ? null : home + "/.netbeans/remote"; // NOI18N
     }
 
     public boolean synchronize() {
@@ -88,16 +91,29 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         // determine the remote directory
         RemotePathMap mapper = RemotePathMap.getRemotePathMapInstance(executionEnvironment);
 
+        // probably mapper already knows it?
         String remoteDir = mapper.getRemotePath(this.localDir.getAbsolutePath(), false);
         if (remoteDir == null) {
+            // mapper does not know dir; let's check its parent
             String localParent = this.localDir.getParentFile().getAbsolutePath();
             String remoteParent = mapper.getRemotePath(localParent, false);
             boolean addMapping = false;
             if (remoteParent == null) {
+                // we can't map parent path either
                 addMapping = true;
                 remoteParent = getRemoteSyncRoot();
+                if (remoteParent == null) {
+                    if (mapper.checkRemotePath(localDir.getAbsolutePath(), true)) {
+                        remoteDir = mapper.getRemotePath(this.localDir.getAbsolutePath(), false);
+                        addMapping = false;
+                    } else {
+                        return false;
+                    }
+                }
             }
-            remoteDir = remoteParent + '/' + localDir.getName(); //NOI18N
+            if (remoteDir == null) {
+                remoteDir = remoteParent + '/' + localDir.getName(); //NOI18N
+            }
             if (addMapping) {
                 mapper.addMapping(localParent, remoteParent);
             }
@@ -110,7 +126,11 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
             synchronizeImpl(remoteDir);
             success = true;
         } catch (InterruptedException ex) {
-            logger.log(Level.FINE, null, ex);
+            // reporting does not make sense, just return false
+            logger.log(Level.FINEST, null, ex);
+        } catch (InterruptedIOException ex) {
+            // reporting does not make sense, just return false
+            logger.log(Level.FINEST, null, ex);
         } catch (ExecutionException ex) {
             logger.log(Level.FINE, null, ex);
         } catch (IOException ex) {

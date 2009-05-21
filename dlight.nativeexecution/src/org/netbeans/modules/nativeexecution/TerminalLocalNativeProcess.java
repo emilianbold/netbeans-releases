@@ -111,13 +111,15 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 throw new IOException(loc("NativeProcess.shellNotFound.text")); // NOI18N
             }
 
-            final String commandLine = info.getCommandLine();
+            final String commandLine = info.getCommandLineForShell();
             String wDir = info.getWorkingDirectory(true);
+            
+            String workingDirectory;
 
-            String workingDirectory = wDir;
-
-            if (isWindows || workingDirectory == null) {
+            if (wDir == null || isWindows) {
                 workingDirectory = "."; // NOI18N
+            } else {
+                workingDirectory = new File(wDir).getAbsolutePath();
             }
 
             File pidFile = File.createTempFile("dlight", "termexec"); // NOI18N
@@ -140,7 +142,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             if (isWindows) {
                 pidFileName = pidFileName.replaceAll("\\\\", "/"); // NOI18N
                 envFileName = envFileName.replaceAll("\\\\", "/"); // NOI18N
-                cmd = cmd.replaceAll("\\\\", "/"); // NOI18N
             }
 
             List<String> command = terminalInfo.wrapCommand(
@@ -189,7 +190,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
                 if (isWindows) {
                     String path = env.get("PATH"); // NOI18N
-                    env.put("PATH", WindowsSupport.getInstance().normalizeAllPaths(path)); // NOI18N
+                    env.put("PATH", WindowsSupport.getInstance().convertToAllShellPaths(path)); // NOI18N
                 }
 
                 // Always prepend /bin and /usr/bin to PATH

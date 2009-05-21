@@ -492,16 +492,20 @@ public class ModelSupport implements PropertyChangeListener {
 
                 EditorCookie editor = curObj.getCookie(EditorCookie.class);
                 Document doc = editor != null ? editor.getDocument() : null;
-                FileObject primaryFile = curObj.getPrimaryFile();
-                File file = FileUtil.toFile(primaryFile);
-                final FileBufferDoc buffer = new FileBufferDoc(file, doc);
+                if (doc.getProperty("cnd.refactoring.modification.event") != Boolean.TRUE) {
+                    FileObject primaryFile = curObj.getPrimaryFile();
+                    File file = FileUtil.toFile(primaryFile);
+                    final FileBufferDoc buffer = new FileBufferDoc(file, doc);
 
-                for (NativeFileItem nativeFile : set.getItems()) {
-                    ProjectBase csmProject = (ProjectBase) model.getProject(nativeFile.getNativeProject());
-                    if (csmProject != null) { // this could be null when code assistance is turned off for project
-                        addBufNP(curObj, new BufAndProj(buffer, csmProject, nativeFile));
-                        csmProject.onFileEditStart(buffer, nativeFile);
+                    for (NativeFileItem nativeFile : set.getItems()) {
+                        ProjectBase csmProject = (ProjectBase) model.getProject(nativeFile.getNativeProject());
+                        if (csmProject != null) { // this could be null when code assistance is turned off for project
+                            addBufNP(curObj, new BufAndProj(buffer, csmProject, nativeFile));
+                            csmProject.onFileEditStart(buffer, nativeFile);
+                        }
                     }
+                } else {
+                    System.err.println("skip unnecessary switch of buffers");
                 }
             }
         }
@@ -594,6 +598,8 @@ public class ModelSupport implements PropertyChangeListener {
                             if (bufNP != null) {
                                 // removing old doc buffer and creating new one
                                 bufNP.project.onFileEditEnd(getFileBuffer(bufNP.buffer.getFile()), bufNP.nativeFile);
+                            } else {
+                                System.err.println("no buffer for " + dao);
                             }
                         }
                         toDelete.add(dao);
@@ -625,14 +631,14 @@ public class ModelSupport implements PropertyChangeListener {
     }
 
     private class ExternalUpdateListener extends FileChangeAdapter implements Runnable {
-
+        
         private boolean isRunning;
         private final Map<FileObject, Boolean> changedFileObjects = new HashMap<FileObject, Boolean>();
+        private final Map<FileObject, Long> eventTimes = new WeakHashMap<FileObject, Long>();
 
         /** FileChangeListener implementation. Fired when a file is changed. */
-        public 
         @Override
-        void fileChanged(FileEvent fe) {
+        public void fileChanged(FileEvent fe) {
             if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
                 System.err.printf("External updates: fileChanged %s\n", fe);
             }
@@ -640,7 +646,7 @@ public class ModelSupport implements PropertyChangeListener {
             if (model != null) {
                 FileObject fo = fe.getFile();
                 if (isCOrCpp(fo)) {
-                    scheduleUpdate(fo, false);
+                    scheduleUpdate(fo, fe.getTime(), false);
                 }
             }
         }
@@ -654,15 +660,24 @@ public class ModelSupport implements PropertyChangeListener {
             if (model != null) {
                 FileObject fo = fe.getFile();
                 if (isCOrCpp(fo)) {
-                    scheduleUpdate(fo, true);
+                    scheduleUpdate(fo, fe.getTime(), true);
                 }
             }
         }
 
-        private void scheduleUpdate(FileObject fo, boolean isCreated) {
+        private void scheduleUpdate(FileObject fo, long eventTime, boolean isCreated) {
             ModelImpl model = theModel;
             if (model != null) {
                 synchronized (this) {
+                    Long lastEvent = eventTimes.get(fo);
+                    if (lastEvent == null || (eventTime - lastEvent.longValue()) > 500) {
+                        eventTimes.put(fo, Long.valueOf(eventTime));
+                    } else {
+                        if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
+                            System.err.printf("External updates: SKIP EVENT By oldT:%s and newT:%d\n", lastEvent, eventTime);
+                        }
+                        return;
+                    }
                     if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
                         System.err.printf("External updates: scheduling update for %s\n", fo);
                     }

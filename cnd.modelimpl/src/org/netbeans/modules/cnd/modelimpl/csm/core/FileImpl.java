@@ -393,17 +393,20 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 this.fileBuffer.removeChangeListener(fileBufferChangeListener);
             }
             this.fileBuffer = fileBuffer;
+//            if (traceFile(getAbsolutePath())) {
+//                new Exception("setBuffer: " + fileBuffer).printStackTrace(System.err);
+//            }
             // we do not need listener for non-document based buffer
             // all state invalidations are made through:
             //  - external file change event
             //  - or "end file edit" action in deep reparsing utils
             if (fileBuffer != null && !fileBuffer.isFileBased()) {
-                if (state != State.INITIAL) {
+                if (state != State.INITIAL || parsingState != ParsingState.NOT_BEING_PARSED) {
                     if (reportParse || logState || TraceFlags.DEBUG) {
-                        System.err.printf("#setBuffer changing to MODIFIED %s is %s with current state %s\n", getAbsolutePath(), fileType, state); // NOI18N
+                        System.err.printf("#setBuffer changing to MODIFIED %s is %s with current state %s %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
                     }
                     state = State.MODIFIED;
-                    _markModifiedIfBeingParsed();
+                    postMarkedAsModified();
                 }
                 this.fileBuffer.addChangeListener(fileBufferChangeListener);
             }
@@ -411,7 +414,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     /** must be called only changeStateLock */
-    private void _markModifiedIfBeingParsed() {
+    private void postMarkedAsModified() {
+        tsRef.clear();
+        aptCaches.clear();
         if (parsingState == ParsingState.BEING_PARSED) {
             parsingState = ParsingState.MODIFIED_WHILE_BEING_PARSED;
         }
@@ -440,7 +445,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 }
                 if (reportParse || logState || TraceFlags.DEBUG) {
                     if (traceFile(getAbsolutePath())) {
-                        System.err.printf("#ensureParsed %s is %s, has %d handlers, state %s dummy=%s\n", getAbsolutePath(), fileType, handlers.size(), curState, wasDummy); // NOI18N
+                        System.err.printf("#ensureParsed %s is %s, has %d handlers, state %s %s dummy=%s\n", getAbsolutePath(), fileType, handlers.size(), curState, parsingState, wasDummy); // NOI18N
                         int i = 0;
                         for (APTPreprocHandler aPTPreprocHandler : handlers) {
                             logParse("EnsureParsed handler " + (i++), aPTPreprocHandler); // NOI18N
@@ -457,7 +462,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                     case INITIAL:
                     case PARTIAL:
                         if (TraceFlags.TIMING_PARSE_PER_FILE_FLAT && curState == State.PARSED) {
-                            System.err.printf("additional parse with PARSED state for %s\n", getAbsolutePath()); // NOI18N
+                            System.err.printf("additional parse with PARSED state " + parsingState + "for %s\n", getAbsolutePath()); // NOI18N
                         }
                         time = System.currentTimeMillis();
                         try {
@@ -573,10 +578,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                         System.err.printf("VALIDATED %s\n\t lastModified=%d\n\t   lastParsed=%d\n", getAbsolutePath(), lastModified, lastParsed);
                     }
                     if (reportParse || logState || TraceFlags.DEBUG) {
-                        System.err.printf("#validate changing to MODIFIED %s is %s with current state %s\n", getAbsolutePath(), fileType, state); // NOI18N
+                        System.err.printf("#validate changing to MODIFIED %s is %s with current state %s %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
                     }
                     state = State.MODIFIED;
-                    _markModifiedIfBeingParsed();
+                    postMarkedAsModified();
                     return false;
                 }
             }
@@ -587,15 +592,14 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public final void markReparseNeeded(boolean invalidateCache) {
         synchronized (changeStateLock) {
-            if (state != State.INITIAL) {
-                if (reportParse || logState || TraceFlags.DEBUG) {
-                    System.err.printf("#markReparseNeeded changing to MODIFIED %s is %s with current state %s\n", getAbsolutePath(), fileType, state); // NOI18N
-                }
+            if (reportParse || logState || TraceFlags.DEBUG) {
+                System.err.printf("#markReparseNeeded %s is %s with current state %s, %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
+            }
+            if (state != State.INITIAL || parsingState != ParsingState.NOT_BEING_PARSED) {
                 state = State.MODIFIED;
-                _markModifiedIfBeingParsed();
+                postMarkedAsModified();
             }
             if (invalidateCache) {
-                tsRef.clear();
                 APTDriver.getInstance().invalidateAPT(this.getBuffer());
             }
         }
@@ -604,7 +608,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public final void markMoreParseNeeded() {
         synchronized (changeStateLock) {
             if (reportParse || logState || TraceFlags.DEBUG) {
-                System.err.printf("#markMoreParseNeeded %s is %s with current state %s\n", getAbsolutePath(), fileType, state); // NOI18N
+                System.err.printf("#markMoreParseNeeded %s is %s with current state %s, %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
             }
             switch (state) {
                 case PARSED:
@@ -825,7 +829,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         APTLanguageFilter languageFilter = getLanguageFilter(ppState);
         FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(getAbsolutePath());
-        APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler, false, pcBuilder, getIncludeCacheEntry(preprocHandler));
+        APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler, false, pcBuilder, getAPTCacheEntry(preprocHandler));
         tsCache.addNewPair(pcBuilder, walker.getTokenStream(false), languageFilter);
         return true;
     }    
@@ -912,26 +916,45 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
-    private ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> aptCaches = new ConcurrentHashMap<APTIncludeHandler.State, APTFileCacheEntry>();
-    public final APTFileCacheEntry getIncludeCacheEntry(APTPreprocHandler preprocHandler) {
-        if (true) {
+    private Reference<ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>> aptCaches = new SoftReference<ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>(null);
+    private final Object aptCachesLock = new Object();
+    private ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> getAPTCache(boolean clean) {
+        synchronized (aptCachesLock) {
+            ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> out = aptCaches.get();
+            if (out == null || clean) {
+                out = new ConcurrentHashMap<APTIncludeHandler.State, APTFileCacheEntry>();
+                aptCaches = new SoftReference<ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>(out);
+            }
+            return out;
+        }
+    }
+
+    public final APTFileCacheEntry getAPTCacheEntry(APTPreprocHandler preprocHandler) {
+        if (!TraceFlags.APT_FILE_CACHE_ENTRY) {
             return null;
         }
         APTIncludeHandler.State key = preprocHandler.getIncludeHandler().getState();
-        APTFileCacheEntry out = aptCaches.get(key);
+        ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> cache = getAPTCache(false);
+        APTFileCacheEntry out = cache.get(key);
         if (out == null) {
             out = new APTFileCacheEntry(getAbsolutePath());
-            APTFileCacheEntry prev = aptCaches.putIfAbsent(key, out);
-            if (prev != null) {
-                out = prev;
-            }
         } else {
-            int i = 0;
+            if (false && traceFile(getAbsolutePath())) {
+                System.err.printf("APT CACHE for %s\nsize %d, key: %s\ncache state:%s\n", getAbsolutePath(), cache.size(), key, "");
+            }
         }
         assert out != null;
         return out;
     }
 
+    /*package*/final void setAPTCacheEntry(APTPreprocHandler preprocHandler, APTFileCacheEntry entry, boolean cleanOthers) {
+        if (TraceFlags.APT_FILE_CACHE_ENTRY && entry != null) {
+            ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> cache = getAPTCache(cleanOthers);
+            APTIncludeHandler.State key = preprocHandler.getIncludeHandler().getState();
+            cache.put(key, entry);
+        }
+    }
+    
     public ReadOnlyTokenBuffer getErrors(final Collection<RecognitionException> result) {
         CPPParserEx.ErrorDelegate delegate = new CPPParserEx.ErrorDelegate() {
 
@@ -958,7 +981,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         try {
             APTFile aptFull = getFullAPT();
             if (aptFull != null) {
-                APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, false, null, getIncludeCacheEntry(preprocHandler));
+                APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, false, null, getAPTCacheEntry(preprocHandler));
                 CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter(ppState)), flags);
                 parser.setErrorDelegate(delegate);
                 parser.setLazyCompound(false);
@@ -1022,7 +1045,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
             // We gather conditional state here as well, because sources are not included anywhere
             FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(getAbsolutePath());
-            APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, true, pcBuilder, getIncludeCacheEntry(preprocHandler));
+            APTFileCacheEntry aptCacheEntry = getAPTCacheEntry(preprocHandler);
+            APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, true, pcBuilder,aptCacheEntry);
             walker.addMacroAndIncludes(true);
             if (TraceFlags.DEBUG) {
                 System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocState(ppState));
@@ -1043,6 +1067,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
             CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter(ppState)), flags);
             FilePreprocessorConditionState pcState = pcBuilder.build();
+            if(false)setAPTCacheEntry(preprocHandler, aptCacheEntry, false);
             startProject.setParsedPCState(this, ppState, pcState);
             long time = (emptyAstStatictics) ? System.currentTimeMillis() : 0;
             try {
@@ -1614,16 +1639,42 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
+    private static final boolean TRACE_SCHUDULE_PARSING = Boolean.getBoolean("cnd.trace.schedule.parsing"); // NOI18N
     public void scheduleParsing(boolean wait) throws InterruptedException {
         synchronized (stateLock) {
-            if (!isParsed()) {
-                while (!isParsed()) {
-                    ParserQueue.instance().add(this, Collections.singleton(DUMMY_STATE),
-                            ParserQueue.Position.HEAD, false, ParserQueue.FileAction.NOTHING);
+            while (!isParsed()) {
+                String oldName = wait ? Thread.currentThread().getName() : "";
+                try {
                     if (wait) {
+                        StringBuilder name = new StringBuilder(oldName);
+                        name.append(": scheduleParsing ").append(getAbsolutePath()); // NOI18N
+                        name.append(" in states ").append(state).append(", ").append(parsingState); // NOI18N
+                        Thread.currentThread().setName(name.toString());
+                    }
+                    if (!isParsingOrParsed()) {
+                        if (TRACE_SCHUDULE_PARSING) {
+                            System.err.printf("scheduleParsing: enqueue %s in states %s, %s\n", getAbsolutePath(), state, parsingState); // NOI18N
+                        }
+                        boolean added = ParserQueue.instance().add(this, Collections.singleton(DUMMY_STATE),
+                                ParserQueue.Position.HEAD, false, ParserQueue.FileAction.NOTHING);
+                        if (!added) {
+                            return;
+                        }
+                    }
+                    if (wait) {
+                        if (TRACE_SCHUDULE_PARSING) {
+                            System.err.printf("scheduleParsing: waiting for %s in states %s, %s\n", getAbsolutePath(), state, parsingState); // NOI18N
+                        }
                         stateLock.wait();
+                        if (TRACE_SCHUDULE_PARSING) {
+                            System.err.printf("scheduleParsing: lock notified for %s in states %s, %s\n", getAbsolutePath(), state, parsingState); // NOI18N
+                        }
                     } else {
                         return;
+                    }
+                } finally {
+                    if (wait) {
+                        Thread.currentThread().setName(oldName);
                     }
                 }
             }
@@ -1737,7 +1788,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         output.writeLong(lastParsed);
         output.writeInt(lastParseTime);
-        output.writeByte((byte)state.ordinal());
+        State curState = state;
+        if (curState != State.PARSED && curState != State.INITIAL) {
+            System.err.printf("file is written in intermediate state %s, switching to PARSED\n", curState);
+            curState = State.PARSED;
+        }
+        output.writeByte(curState.ordinal());
         try {
             staticLock.readLock().lock();
             UIDObjectFactory.getDefaultFactory().writeUIDCollection(staticFunctionDeclarationUIDs, output, false);
@@ -1873,7 +1929,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     /*package-local*/ void clearStateCache() {
+        tsRef.clear();
+        aptCaches.clear();
         stateCache.clearStateCache();
+        APTDriver.getInstance().invalidateAPT(this.getBuffer());
     }
 
     public static class NameKey implements Comparable<NameKey> {

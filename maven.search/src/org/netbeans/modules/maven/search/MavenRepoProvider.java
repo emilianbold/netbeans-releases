@@ -45,17 +45,28 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.prefs.Preferences;
 import org.apache.lucene.search.BooleanQuery;
 import org.netbeans.modules.maven.indexer.api.NBArtifactInfo;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.QueryField;
+import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
-import org.openide.util.RequestProcessor;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 public class MavenRepoProvider implements SearchProvider {
+
+    private static final String NOT_SHOW_AGAIN = "notShowAgain";
+    private static final String SEARCH_ENABLED = "searchEnabled";
+
+    private static final SearchSetup sSetup = new SearchSetup();
 
     /**
      * Method is called by infrastructure when search operation was requested.
@@ -66,6 +77,16 @@ public class MavenRepoProvider implements SearchProvider {
      * @param response Search response object that stores search results. Note that it's important to react to return value of SearchResponse.addResult(...) method and stop computation if false value is returned.
      */
     public void evaluate(final SearchRequest request, final SearchResponse response) {
+        List<RepositoryInfo> loadedRepos = RepositoryQueries.getLoadedContexts();
+        Preferences prefs = NbPreferences.forModule(MavenRepoProvider.class);
+        if (loadedRepos.size() == 0 && !prefs.getBoolean(SEARCH_ENABLED, false)) {
+            if (!prefs.getBoolean(NOT_SHOW_AGAIN, false)) {
+                response.addResult(sSetup, NbBundle.getMessage(MavenRepoProvider.class, "LBL_SearchSetup"),
+                        NbBundle.getMessage(MavenRepoProvider.class, "TIP_SearchSetup"), null);
+            }
+            return;
+        }
+
         List<NBVersionInfo> infos = null;
         try {
             infos = RepositoryQueries.find(getQuery(request));
@@ -140,6 +161,27 @@ public class MavenRepoProvider implements SearchProvider {
                 return index1 - index2;
             } else {
                 return s1.compareTo(s2);
+            }
+        }
+
+    }
+
+    private static class SearchSetup implements Runnable {
+
+        public void run() {
+            SearchSetupPanel ssPanel = new SearchSetupPanel();
+            DialogDescriptor dd = new DialogDescriptor(ssPanel,
+                    NbBundle.getBundle(MavenRepoProvider.class).getString("TIT_SearchSetup"));
+            dd.setOptionType(NotifyDescriptor.YES_NO_OPTION);
+            Object ret = DialogDisplayer.getDefault().notify(dd);
+            if (ret == DialogDescriptor.YES_OPTION || ssPanel.isNotAgainChecked()) {
+                Preferences prefs = NbPreferences.forModule(MavenRepoProvider.class);
+                if (ret == DialogDescriptor.YES_OPTION) {
+                    prefs.putBoolean(SEARCH_ENABLED, true);
+                }
+                if (ssPanel.isNotAgainChecked()) {
+                    prefs.putBoolean(NOT_SHOW_AGAIN, true);
+                }
             }
         }
 

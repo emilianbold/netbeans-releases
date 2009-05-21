@@ -101,7 +101,7 @@ public final class NbMavenProject {
         AccessorImpl impl = new AccessorImpl();
         impl.assign();
     }
-    private RequestProcessor.Task task;
+    private final RequestProcessor.Task task;
     private static RequestProcessor BINARYRP = new RequestProcessor("Maven projects Binary Downloads", 1);
     private static RequestProcessor NONBINARYRP = new RequestProcessor("Maven projects Source/Javadoc Downloads", 1);
     
@@ -298,11 +298,11 @@ public final class NbMavenProject {
     }
     
     
-    public synchronized void addWatchedPath(String relPath) {
+    public void addWatchedPath(String relPath) {
         addWatchedPath(FileUtilities.getDirURI(project.getProjectDirectory(), relPath));
     } 
     
-    public synchronized void addWatchedPath(URI uri) {
+    public void addWatchedPath(URI uri) {
         //#110599
         boolean addListener = false;
         File fil = new File(uri);
@@ -321,17 +321,21 @@ public final class NbMavenProject {
      * asynchronous dependency download, scheduled to some time in the future. Useful
      * for cases when a 3rd party codebase calls maven classes and can do so repeatedly in one sequence.
      */
-    public synchronized void triggerDependencyDownload() {
-        task.schedule(1000);
+    public void triggerDependencyDownload() {
+        synchronized (task) {
+            task.schedule(1000);
+        }
     }
 
     /**
      * Not to be called from AWT, will wait til the project binary dependency resolution finishes.
      */
-    public synchronized void synchronousDependencyDownload() {
+    public void synchronousDependencyDownload() {
         assert !SwingUtilities.isEventDispatchThread() : " Not to be called from AWT, can take significant amount ot time to download dependencies from the network."; //NOI18N
-        task.schedule(0);
-        task.waitFinished();
+        synchronized (task) {
+            task.schedule(0);
+            task.waitFinished();
+        }
     }
 
     /**
@@ -418,10 +422,10 @@ public final class NbMavenProject {
     }
 
     
-    public synchronized void removeWatchedPath(String relPath) {
+    public void removeWatchedPath(String relPath) {
         removeWatchedPath(FileUtilities.getDirURI(project.getProjectDirectory(), relPath));
     }
-    public synchronized void removeWatchedPath(URI uri) {
+    public void removeWatchedPath(URI uri) {
         //#110599
         boolean removeListener = false;
         File fil = new File(uri);

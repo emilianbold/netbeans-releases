@@ -115,24 +115,33 @@ public abstract class APTAbstractWalker extends APTWalker {
             if (!startPath.equals(cacheEntry.getFilePath())) {
                 System.err.println("using not expected entry " + cacheEntry + " when work with file " + startPath);
             }
-            Object lock = cacheEntry.getLock(aptInclude);
+            Object lock = cacheEntry.getIncludeLock(aptInclude);
             synchronized (lock) {
                 APTMacroMap.State postIncludeState = cacheEntry.getPostIncludeMacroState(aptInclude);
-                if (postIncludeState != null) {
+                if (postIncludeState != null && !hasIncludeActionSideEffects()) {
                     getPreprocHandler().getMacroMap().setState(postIncludeState);
                     return;
                 }
-                include(resolvedPath, aptInclude);
-                postIncludeState = getPreprocHandler().getMacroMap().getState();
-                cacheEntry.setPostIncludeMacroState(aptInclude, postIncludeState);
+                if (include(resolvedPath, aptInclude, postIncludeState)) {
+                    postIncludeState = getPreprocHandler().getMacroMap().getState();
+                    cacheEntry.setPostIncludeMacroState(aptInclude, postIncludeState);
+                }
             }
         } else {
-            include(resolvedPath, aptInclude);
+            include(resolvedPath, aptInclude, null);
         }
     }
 
-    abstract protected void include(ResolvedPath resolvedPath, APTInclude aptInclude);
-   
+    /**
+     * 
+     * @param resolvedPath
+     * @param aptInclude
+     * @param postIncludeState cached information about visit of this include directive
+     * @return true if need to cache post include state
+     */
+    abstract protected boolean include(ResolvedPath resolvedPath, APTInclude aptInclude, APTMacroMap.State postIncludeState);
+    abstract protected boolean hasIncludeActionSideEffects();
+
     protected void onDefine(APT apt) {
         APTDefine define = (APTDefine)apt;
         if (define.isValid()) {
@@ -199,7 +208,15 @@ public abstract class APTAbstractWalker extends APTWalker {
         }
         boolean res = false;
         try {
-            res = APTConditionResolver.evaluate(apt, getMacroMap());
+            Boolean cachedRes = cacheEntry != null ? cacheEntry.getEvalResult(apt) : null;
+            if (cachedRes != null) {
+                res = cachedRes.booleanValue();
+            } else {
+                res = APTConditionResolver.evaluate(apt, getMacroMap());
+                if (cacheEntry != null) {
+                    cacheEntry.setEvalResult(apt, res);
+                }
+            }
         } catch (TokenStreamException ex) {
             APTUtils.LOG.log(Level.SEVERE, "error on evaluating condition node " + apt, ex);// NOI18N
         }

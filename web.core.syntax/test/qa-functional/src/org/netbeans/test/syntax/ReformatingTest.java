@@ -126,6 +126,7 @@ public class ReformatingTest extends CompletionTest {
                 String first = text.substring(0, firstIndex);
                 String second = text.substring(firstIndex + 1, text.indexOf(':', firstIndex + 1));
                 eOperator.select(Integer.parseInt(first), Integer.parseInt(second));
+                waitTypingFinished(doc);
                 eOperator.pushKey(KeyEvent.VK_F, InputEvent.ALT_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK);
             }
             eOperator.waitModified(true);

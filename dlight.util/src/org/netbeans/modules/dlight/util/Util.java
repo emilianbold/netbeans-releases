@@ -94,7 +94,7 @@ public class Util {
             String tmpDirBase = hostInfo.getTempDir();
 
             if (hostInfo.getOSFamily() == hostInfo.getOSFamily().WINDOWS) {
-                tmpDirBase = WindowsSupport.getInstance().convertoToWindowsPath(tmpDirBase);
+                tmpDirBase = WindowsSupport.getInstance().convertToWindowsPath(tmpDirBase);
             }
 
             File result_file = File.createTempFile(prefix, ".d", new File(tmpDirBase));//NOI18N

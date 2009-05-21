@@ -53,6 +53,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.ruby.elements.AstAttributeElement;
 import org.netbeans.modules.ruby.elements.AstClassElement;
+import org.netbeans.modules.ruby.options.TypeInferenceSettings;
 
 /**
  * @author Tor Norbye
@@ -61,6 +62,9 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
 
     public RubyStructureAnalyzerTest(String testName) {
         super(testName);
+        RubyIndexer.skipTypeInferenceForTests = false;
+        TypeInferenceSettings.getDefault().setMethodTypeInference(true);
+        TypeInferenceSettings.getDefault().setRdocTypeInference(true);
     }
 
     @Override

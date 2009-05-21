@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
@@ -186,20 +187,16 @@ public class CompilerSetManager {
             // we postpone dialog displayer until EDT is free to process
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    RequestProcessor.getDefault().post(new NamedRunnable("Postponed No Compilers Found Notification") { // NOI18N
-                        public void runImpl() {
-                            DialogDescriptor dialogDescriptor = new DialogDescriptor(
-                                    new NoCompilersPanel(),
-                                    getString("NO_COMPILERS_FOUND_TITLE"),
-                                    true,
-                                    new Object[]{DialogDescriptor.OK_OPTION},
-                                    DialogDescriptor.OK_OPTION,
-                                    DialogDescriptor.BOTTOM_ALIGN,
-                                    null,
-                                    null);
-                            DialogDisplayer.getDefault().notify(dialogDescriptor);
-                        }
-                    });
+                    DialogDescriptor dialogDescriptor = new DialogDescriptor(
+                            new NoCompilersPanel(),
+                            getString("NO_COMPILERS_FOUND_TITLE"),
+                            true,
+                            new Object[]{DialogDescriptor.OK_OPTION},
+                            DialogDescriptor.OK_OPTION,
+                            DialogDescriptor.BOTTOM_ALIGN,
+                            null,
+                            null);
+                    DialogDisplayer.getDefault().notify(dialogDescriptor);
                 }
             });
         }
@@ -479,8 +476,8 @@ public class CompilerSetManager {
         }
     }
 
-    public static CompilerSetManager getDeepCopy(ExecutionEnvironment execEnv) {
-        return getDefaultImpl(execEnv, false).deepCopy();
+    public static CompilerSetManager getDeepCopy(ExecutionEnvironment execEnv, boolean initialize) {
+        return getDefaultImpl(execEnv, initialize).deepCopy();
     }
 
     private CompilerSetManager deepCopy() {
@@ -618,18 +615,23 @@ public class CompilerSetManager {
             CompilerSet cs = null;
             cs.addDirectory(data);
         }
-        int i1 = data.indexOf(';');
-        int i2 = data.indexOf(';', i1 + 1);
-        String flavor = data.substring(0, i1);
-        String path = data.substring(i1 + 1, i2);
-        String tools = data.substring(i2 + 1);
+
+        String flavor;
+        String path;
+        StringTokenizer st = new StringTokenizer(data, ";"); // NOI18N
+        try {
+            flavor = st.nextToken();
+            path = st.nextToken();
+        } catch (NoSuchElementException ex) {
+            log.warning("Malformed compilerSetString: " + data);
+            return null;
+        }
         CompilerFlavor compilerFlavor = CompilerFlavor.toFlavor(flavor, platform);
         if (compilerFlavor == null) { // #158084
             log.warning("NULL compiler flavor for " + flavor + " on platform " + platform);
             return null;
         }
         CompilerSet cs = new CompilerSet(compilerFlavor, path, flavor);
-        StringTokenizer st = new StringTokenizer(tools, ";"); // NOI18N
         while (st.hasMoreTokens()) {
             String name = st.nextToken();
             int kind = -1;
@@ -643,14 +645,12 @@ public class CompilerSetManager {
                     kind = Tool.FortranCompiler;
                 } else if (name.startsWith("as=")) { // NOI18N
                     kind = Tool.Assembler;
-                    i1 = name.indexOf('=');
-                    p = name.substring(i1 + 1);
+                    p = name.substring(name.indexOf('=') + 1);
                 } else if (name.equals("dmake")) { // NOI18N
                     kind = Tool.MakeTool;
                 } else if (name.startsWith("gdb=")) { // NOI18N
                     kind = Tool.DebuggerTool;
-                    i1 = name.indexOf('=');
-                    p = name.substring(i1 + 1);
+                    p = name.substring(name.indexOf('=') + 1);
                 }
             } else {
                 if (name.equals("gcc")) { // NOI18N
@@ -669,8 +669,7 @@ public class CompilerSetManager {
                     kind = Tool.DebuggerTool;
                 } else if (name.startsWith("gdb=")) { // NOI18N
                     kind = Tool.DebuggerTool;
-                    i1 = name.indexOf('=');
-                    p = name.substring(i1 + 1);
+                    p = name.substring(name.indexOf('=') + 1);
                 }
             }
             if (kind != -1) {

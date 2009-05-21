@@ -92,12 +92,11 @@ public class AttachIssueProvider extends ExportDiffSupport.ExportDiffProvider im
     }
 
     @Override
-    public JComponent getComponent() {
+    public JComponent createComponent() {
         assert files != null;
-        if(panel == null) { // HOTFIX XXX
-            panel = new AttachPanel(this);
-            panel.descriptionTextField.getDocument().addDocumentListener(this);
-        }
+        panel = new AttachPanel(this);
+        panel.descriptionTextField.getDocument().addDocumentListener(this);
+        
         Repository[] repos = BugtrackingUtil.getKnownRepositories();
         Repository repoToSelect = null;
         if(files.length > 0) {

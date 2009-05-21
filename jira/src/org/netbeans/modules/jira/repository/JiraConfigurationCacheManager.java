@@ -48,7 +48,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -66,15 +65,14 @@ public final class JiraConfigurationCacheManager {
 
     private static JiraConfigurationCacheManager instance;
     private HashMap<String, ConfigurationData> cacheData;
-    private static final String CACHE_DIR_NAME = "jiraconfiguration";   //NOI18N
-    private static final String CACHE_FILE_NAME = "configurationcache"; //NOI18N
-    private static final String VERSION = "0.12";                        //NOI18N
-    private final Object DATA_LOCK = new Object();
-    private static final Level LOG_LEVEL = JiraUtils.isAssertEnabled() ? Level.SEVERE : Level.INFO;
-    
+    private static final String CACHE_DIR_NAME      = "jiraconfiguration"; //NOI18N
+    private static final String CACHE_FILE_NAME     = "configurationcache"; //NOI18N
+    private static final String VERSION             = "0.12";           //NOI18N
+    private final Object DATA_LOCK                  = new Object();
+    private static final Level LOG_LEVEL            = JiraUtils.isAssertEnabled() ? Level.SEVERE : Level.INFO;
 
     private JiraConfigurationCacheManager () {
-        
+
     }
 
     public static JiraConfigurationCacheManager getInstance() {
@@ -88,6 +86,13 @@ public final class JiraConfigurationCacheManager {
      * Stores cached configuration data to a disk
      */
     public void shutdown() {
+        storeConfigurations();
+    }
+
+    /**
+     * Stores cached configuration data to a disk
+     */
+    public void storeConfigurations() {
         Jira.LOG.fine("shutdown: saving configuration data");                //NOI18N
         if (cacheData == null) {
             Jira.LOG.fine("shutdown: no data loaded, no data saved");
@@ -127,6 +132,7 @@ public final class JiraConfigurationCacheManager {
             }
         }
         if (success) {
+            success = false;
             // rename the temp file to the permanent one
             File newFile = new File(f, CACHE_FILE_NAME);
             try {

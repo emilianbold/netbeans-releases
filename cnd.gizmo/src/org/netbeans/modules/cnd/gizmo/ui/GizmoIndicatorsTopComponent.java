@@ -39,33 +39,53 @@
 package org.netbeans.modules.cnd.gizmo.ui;
 
 import java.awt.CardLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.EventQueue;
+import java.awt.FocusTraversalPolicy;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.Serializable;
+import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.FocusManager;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorComponentEmptyContentProvider;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
  * Top component which displays something.
  */
-final class GizmoIndicatorsTopComponent extends TopComponent {
+final class GizmoIndicatorsTopComponent extends TopComponent implements ExplorerManager.Provider {
 
     private static GizmoIndicatorsTopComponent instance;
     private DLightSession session;
@@ -77,8 +97,19 @@ final class GizmoIndicatorsTopComponent extends TopComponent {
     private JPanel cardsLayoutPanel;
     private JPanel panel1;
     private JPanel panel2;
+    private Vector<JComponent> indicatorPanels = null;
     private boolean showFirstPanel = true;
     private boolean dock;
+    private final ExplorerManager manager = new ExplorerManager();
+    private JComponent lastFocusedComponent = null;
+    private final FocusTraversalPolicy focusPolicy = new FocusTraversalPolicyImpl();
+    private GizmoIndicatorsTopComponentActionsProvider actionsProvider = null;
+    private final PopupAction popupAction = new PopupAction("popupGizmoIndicatorTopComponentAction");//NOI18N
+
+
+    static {
+        GizmoIndicatorTopComponentRegsitry.getRegistry();
+    }
 
     private GizmoIndicatorsTopComponent(boolean dock) {
         initComponents();
@@ -94,6 +125,25 @@ final class GizmoIndicatorsTopComponent extends TopComponent {
                 }
             }
         }
+        setFocusTraversalPolicyProvider(true);
+        setFocusTraversalPolicy(focusPolicy);
+        ActionMap map = new ActionMap();
+        map.put("org.openide.actions.PopupAction", popupAction);//NOI18N
+        this.associateLookup(ExplorerUtils.createLookup(manager, map));
+        installActions();
+    }
+
+    public ExplorerManager getExplorerManager() {
+        return manager;
+    }
+
+    void setActionsProvider(GizmoIndicatorsTopComponentActionsProvider actionsProvoder) {
+        this.actionsProvider = actionsProvoder;
+
+    }
+
+    private Action getPopupAction() {
+        return null;
     }
 
     private GizmoIndicatorsTopComponent() {
@@ -112,6 +162,12 @@ final class GizmoIndicatorsTopComponent extends TopComponent {
 
     }
 
+    void installActions() {
+        KeyStroke returnKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true);
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(returnKey, "return"); // NOI18N
+        getActionMap().put("return", new ESCHandler()); // NOI18N
+    }
+
     void setActive() {
         cardLayout.show(cardsLayoutPanel, showFirstPanel ? "#1" : "#2");//NOI18N
         showFirstPanel = !showFirstPanel;
@@ -119,6 +175,10 @@ final class GizmoIndicatorsTopComponent extends TopComponent {
 
     JPanel getNextPanel() {
         return (showFirstPanel ? panel1 : panel2);
+    }
+
+    private JPanel getCurrentPanel() {
+        return (showFirstPanel ? panel2 : panel1);
     }
 
     public void setSession(DLightSession session) {
@@ -161,8 +221,11 @@ final class GizmoIndicatorsTopComponent extends TopComponent {
             JScrollPane scrollPane = new JScrollPane();
             scrollPane.setBorder(BorderFactory.createEmptyBorder());
             JSplitPane prevSplit = null;
+            indicatorPanels = new Vector<JComponent>(indicators.size());
+            indicatorPanels.setSize(indicators.size());
             for (int i = 0; i < indicators.size(); ++i) {
                 JComponent component = indicators.get(i).getComponent();
+                indicatorPanels.set(i, component);
                 if (i + 1 < indicators.size()) {
                     JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
                     splitPane.setBorder(BorderFactory.createEmptyBorder());
@@ -184,6 +247,7 @@ final class GizmoIndicatorsTopComponent extends TopComponent {
 //            add(scrollPane);
             componentToAdd = scrollPane;
         } else {
+            indicatorPanels = null;
             JLabel emptyLabel = new JLabel(NbBundle.getMessage(GizmoIndicatorsTopComponent.class, "IndicatorsTopCompinent.EmptyContent")); // NOI18N
             emptyLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
             componentToAdd = emptyLabel;
@@ -234,7 +298,7 @@ final class GizmoIndicatorsTopComponent extends TopComponent {
 
     @Override
     public int getPersistenceType() {
-        if (!dock){
+        if (!dock) {
             return TopComponent.PERSISTENCE_ALWAYS;
         }
         return TopComponent.PERSISTENCE_NEVER;
@@ -243,6 +307,36 @@ final class GizmoIndicatorsTopComponent extends TopComponent {
     @Override
     public void componentOpened() {
         // TODO add custom code on component opening
+    }
+
+    @Override
+    protected void componentDeactivated() {
+        super.componentDeactivated();
+        lastFocusedComponent = null;
+        if (indicatorPanels == null || indicatorPanels.size() == 0) {
+            return;
+        }
+        for (JComponent c : indicatorPanels) {
+            if (c.hasFocus()) {
+                lastFocusedComponent = c;
+                break;
+            }
+        }
+        if (lastFocusedComponent == null) {
+            lastFocusedComponent = indicatorPanels.get(0);
+        }
+    }
+
+    @Override
+    protected void componentActivated() {
+        //should request focus
+        super.componentActivated();
+        if (lastFocusedComponent != null) {
+            lastFocusedComponent.requestFocus();
+        } else {
+            focusPolicy.getFirstComponent(this).requestFocus();
+        }
+
     }
 
     @Override
@@ -266,7 +360,7 @@ final class GizmoIndicatorsTopComponent extends TopComponent {
 
     @Override
     protected String preferredID() {
-        if (!dock){
+        if (!dock) {
             return PREFERRED_ID;
         }
         return PREFERRED_ID + index.incrementAndGet();
@@ -283,5 +377,104 @@ final class GizmoIndicatorsTopComponent extends TopComponent {
 
     private static String getMessage(String name, Object... params) {
         return NbBundle.getMessage(GizmoIndicatorsTopComponent.class, name, params);
+    }
+
+
+
+    private final class FocusTraversalPolicyImpl extends FocusTraversalPolicy {
+
+        @Override
+        public Component getComponentAfter(Container aContainer, Component aComponent) {
+            if (aComponent == getCurrentPanel()) {
+                return getCurrentPanel();//no path to go
+            }
+            int indexOf = indicatorPanels.indexOf(aComponent);
+            if (indexOf == -1) {
+                return getCurrentPanel();
+            }
+            if (indexOf == indicatorPanels.size() - 1) {
+                return indicatorPanels.get(0);
+            }
+            return indicatorPanels.get(indexOf + 1);
+        }
+
+        @Override
+        public Component getComponentBefore(Container aContainer, Component aComponent) {
+            if (aComponent == getCurrentPanel()) {
+                return getCurrentPanel();//no path to go
+            }
+            int indexOf = indicatorPanels.indexOf(aComponent);
+            if (indexOf == -1) {
+                return getCurrentPanel();
+            }
+            if (indexOf == 0) {
+                return indicatorPanels.get(indicatorPanels.size() - 1);
+            }
+            return indicatorPanels.get(indexOf - 1);
+        }
+
+        @Override
+        public Component getFirstComponent(Container aContainer) {
+            if (indicatorPanels == null || indicatorPanels.size() == 0) {
+                return getCurrentPanel();
+            }
+            return indicatorPanels.get(0);
+        }
+
+        @Override
+        public Component getLastComponent(Container aContainer) {
+            if (indicatorPanels == null || indicatorPanels.size() == 0) {
+                return getCurrentPanel();
+            }
+            return indicatorPanels.get(indicatorPanels.size() - 1);
+        }
+
+        @Override
+        public Component getDefaultComponent(Container aContainer) {
+            if (indicatorPanels == null || indicatorPanels.size() == 0) {
+                return getCurrentPanel();
+            }
+            return indicatorPanels.get(0);
+        }
+    }
+
+    private class PopupAction extends AbstractAction implements Runnable {
+
+        private PopupAction(String name) {
+            super(name);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            SwingUtilities.invokeLater(this);
+        }
+
+        public void run() {
+
+            if (actionsProvider == null) {
+                return;
+            }
+            Action[] actions = actionsProvider.getActions(GizmoIndicatorsTopComponent.this);
+            if (actions != null && actions.length > 0) {
+                //System.out.println("I have" + actions.length + " actions to display in menu");
+                JPopupMenu menu = Utilities.actionsToPopup(actions, GizmoIndicatorsTopComponent.this);
+                menu.show(GizmoIndicatorsTopComponent.this, 0, 0);
+
+            }
+        }
+    }
+
+    private class ESCHandler extends AbstractAction {
+
+        public void actionPerformed(ActionEvent e) {
+            Component focusOwner = FocusManager.getCurrentManager().getFocusOwner();
+            if (GizmoIndicatorTopComponentRegsitry.getRegistry().getActivated() == null || focusOwner == null ||
+                    !SwingUtilities.isDescendingFrom(focusOwner, GizmoIndicatorsTopComponent.this)) {
+                return;
+            }
+            TopComponent prevFocusedTc = GizmoIndicatorTopComponentRegsitry.getRegistry().getActivatedNonIndicators();
+            if (prevFocusedTc != null) {
+                prevFocusedTc.requestActive();
+            }
+        }
     }
 }

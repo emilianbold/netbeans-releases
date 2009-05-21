@@ -62,7 +62,6 @@ import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
 import org.netbeans.modules.maven.execute.ActionToGoalUtils;
 import org.netbeans.modules.maven.execute.ModelRunConfig;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
@@ -455,7 +454,7 @@ public class ActionProviderImpl implements ActionProvider {
                         }
                         mapping.setDisplayName(pnl.isRememberedAs());
                         //TODO shall we write to configuration based files or not?
-                        CustomizerProviderImpl.writeNbActionsModel(project.getProjectDirectory(), mappings, M2Configuration.getFileNameExt(M2Configuration.DEFAULT));
+                        CustomizerProviderImpl.writeNbActionsModel(project, mappings, M2Configuration.getFileNameExt(M2Configuration.DEFAULT));
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }

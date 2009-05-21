@@ -49,7 +49,7 @@
     <!-- Sun GlassFish V3 properties   -->
     <property name="glassfish.v3.sun.build.type"      value="prelude"/>
     <property name="glassfish.v3.sun.location.prefix" value="${gf_builds_host}/java/re/glassfish_branch/10.0/promoted"/>
-    <property name="glassfish.v3.sun.build.number"    value="28c"/>
+    <property name="glassfish.v3.sun.build.number"    value="28d"/>
     <!--
     <loadresource property="glassfish.v3.sun.build.number">
           <url url="${glassfish.v3.sun.location.prefix}/prelude/latest/archive/bundles"/>
@@ -67,7 +67,8 @@
     <!--property name="glassfish_v3_sun_location"     value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles/sges-v3-${glassfish.v3.sun.build.type}-${glassfish.v3.sun.version}.zip"/-->
     <!--property name="glassfish_v3_sun_location_ml"     value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles-ml/sges-v3-${glassfish.v3.sun.build.type}-ml.zip"/-->
     <property name="glassfish_v3_sun_location"     value="${binary_cache_host}/glassfish/sges-v3-prelude.zip"/>
-    <property name="glassfish_v3_sun_location_ml"  value="${binary_cache_host}/glassfish/sges-v3-prelude-b28d-05_07_2009.zip"/>
+    <!--property name="glassfish_v3_sun_location_ml"  value="${binary_cache_host}/glassfish/sges-v3-prelude-b28d-05_07_2009.zip"/-->
+    <property name="glassfish_v3_sun_location_ml"  value="${binary_cache_host}/glassfish/sges-v3-prelude-ml.zip"/>
     <property name="glassfish.v3.sun.subdir"       value="glassfishv3-prelude"/>
 
 
@@ -95,7 +96,7 @@
     <property name="glassfish.v3.subdir"       value="glassfishv3-prelude"/>
     
     <!-- Open ESB Properties-->    
-    <property name="openesb.install.dir" value="${glassfish.install.dir}/addons"/>
+    <property name="openesb.install.dir" value="${sjsas.install.dir}/addons"/>
     <property name="openesb.version" value="v2"/>
     <property name="openesb_location" value="${openesb_builds_host}/kits/ojc/openesb_as9_ur2/latest/installers/jbi_components_installer.jar"/>
     <!--property name="openesb_core_source" value="${openesb_builds_host}/kits/openesb/main/latest/CORE/jbi-core-installer.jar"/-->                  

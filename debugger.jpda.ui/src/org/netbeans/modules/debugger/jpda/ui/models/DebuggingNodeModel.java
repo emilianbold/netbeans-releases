@@ -241,14 +241,6 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     }
 
     private static String getDisplayName(JPDAThread t, boolean showPackageNames, DebuggingNodeModel model) throws UnknownTypeException {
-        String frame;
-        synchronized (frameDescriptionsByThread) {
-            frame = frameDescriptionsByThread.get(t);
-            if (t.isSuspended()) {
-                // Load it in any case to assure refreshes
-                loadFrameDescription(frame, t, showPackageNames, model);
-            }
-        }
         String name = t.getName();
         JPDABreakpoint breakpoint = t.getCurrentBreakpoint();
         if (DebuggingTreeModel.isMethodInvoking(t)) {
@@ -258,6 +250,14 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             return getThreadAtBreakpointDisplayName(name, breakpoint);
         }
         if (t.isSuspended()) {
+            String frame;
+            synchronized (frameDescriptionsByThread) {
+                frame = frameDescriptionsByThread.get(t);
+                if (t.isSuspended()) {
+                    // Load it in any case to assure refreshes
+                    loadFrameDescription(frame, t, showPackageNames, model);
+                }
+            }
             if (frame != null) {
                 return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_State_Suspended_At", name, frame);
             } else {
@@ -606,7 +606,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             ls = new ArrayList<ModelListener>(listeners);
         }
         ModelEvent event;
-        if (node instanceof JPDAThread && DebuggingTreeModel.isMethodInvoking((JPDAThread) node)) {
+        if (node instanceof JPDAThread/* && DebuggingTreeModel.isMethodInvoking((JPDAThread) node)*/) {
             event = new ModelEvent.NodeChanged(this, node,
                     ModelEvent.NodeChanged.DISPLAY_NAME_MASK |
                     ModelEvent.NodeChanged.ICON_MASK |

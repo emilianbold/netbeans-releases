@@ -84,6 +84,7 @@ public class GoToSupportTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml"}, new Object[0]);
+        org.netbeans.api.project.ui.OpenProjects.getDefault().getOpenProjects();
     }
     
     public void testGoToMethod() throws Exception {
@@ -989,7 +990,7 @@ public class GoToSupportTest extends NbTestCase {
         if (tooltip)
             return GoToSupport.getGoToElementTooltip(doc, offset, false);
         else
-            GoToSupport.goTo(doc, offset, false);
+            GoToSupport.goToImpl(doc, offset, false);
         
         return null;
     }

@@ -72,6 +72,7 @@ import org.netbeans.modules.gsf.codecoverage.api.FileCoverageDetails;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageSummary;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
+import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -87,6 +88,12 @@ import org.openide.util.Utilities;
  * @author Tor Norbye
  */
 public final class RubyCoverageProvider implements CoverageProvider {
+
+    /**
+     * Specifies the name of the action that invoking 'Test All' in the code coverage 
+     * bar should run.
+     */
+    private static final String CODE_COVERAGE_TEST_ACTION = "code.coverage.test.action"; //NOI18N
 
     private Map<String, String> hitCounts;
     private Map<String, String> fullNames;
@@ -592,6 +599,19 @@ public final class RubyCoverageProvider implements CoverageProvider {
         });
 
         return descriptor;
+    }
+
+    public String getTestAllAction() {
+        if (project != null) {
+            PropertyEvaluator evaluator = project.getLookup().lookup(PropertyEvaluator.class);
+            if (evaluator != null) {
+                String action = evaluator.getProperty(CODE_COVERAGE_TEST_ACTION);
+                if (action != null) {
+                    return action;
+                }
+            }
+        }
+        return null;
     }
 
     // Remove stacktrace lines that refer to frames in the wrapper scripts (rcov, or rcov_wrapper)

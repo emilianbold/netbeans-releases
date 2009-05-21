@@ -136,6 +136,22 @@ final class RootNode extends AbstractNode {
     }
 
     /**
+     * Displays a message that a given test suite is running.
+     *
+     * @param  suite  running test suite,
+     *                    or {@code ANONYMOUS_TEST_SUITE} for anonymous suites
+     *
+     * @see  ResultDisplayHandler#ANONYMOUS_TEST_SUITE
+     */
+    void displaySuiteRunning(final TestSuite suite) {
+        assert EventQueue.isDispatchThread();
+
+        /* Called from the EventDispatch thread */
+
+        children.displaySuiteRunning(suite);
+    }
+
+    /**
      */
     public TestsuiteNode displayReport(final Report report) {
         assert EventQueue.isDispatchThread();

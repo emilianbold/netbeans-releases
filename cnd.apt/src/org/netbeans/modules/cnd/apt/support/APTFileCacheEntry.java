@@ -39,8 +39,11 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap.State;
 
@@ -49,7 +52,8 @@ import org.netbeans.modules.cnd.apt.support.APTMacroMap.State;
  * @author Vladimir Voskresensky
  */
 public final class APTFileCacheEntry {
-    private final ConcurrentMap<APTInclude, Data> cache = new ConcurrentHashMap<APTInclude, Data>();
+    private final ConcurrentMap<Integer, IncludeData> cache = new ConcurrentHashMap<Integer, IncludeData>();
+    private final Map<Integer, Boolean> evalData = new HashMap<Integer, Boolean>();
     private final CharSequence filePath;
     private static boolean TRACE = false;
     public APTFileCacheEntry(CharSequence filePath) {
@@ -57,38 +61,59 @@ public final class APTFileCacheEntry {
         this.filePath = filePath;
     }
 
-    private static volatile int hits = 0;
+    private static volatile int includeHits = 0;
+    private static volatile int evalHits = 0;
     /** must be called under lock */
     /*package*/ APTMacroMap.State getPostIncludeMacroState(APTInclude node) {
-        Data data = cache.get(node);
+        IncludeData data = getIncludeData(node);
         assert data != null;
-        if (data.state != null) {
-            hits++;
+        if (data.postIncludeMacroState != null) {
+            includeHits++;
             if (TRACE) {
-                if (hits % 10 == 0) {
-                    System.err.println("HIT " + hits + " cache for line:" + node.getToken().getLine() + " in " + filePath);
+                if (needTraceValue(includeHits)) {
+                    System.err.println("INCLUDE HIT " + includeHits + " cache for line:" + node.getToken().getLine() + " in " + filePath);
                 }
             }
         }
-        return data.state;
+        return data.postIncludeMacroState;
     }
 
     /** must be called under lock */
     /*package*/ void setPostIncludeMacroState(APTInclude node, APTMacroMap.State state) {
-        assert cache.get(node).state == null;
-        cache.get(node).state = state;
+        IncludeData data = getIncludeData(node);
+        assert data.postIncludeMacroState == null;
+        data.postIncludeMacroState = state;
     }
 
-    /*package*/ Object getLock(APTInclude node) {
-        Data data = cache.get(node);
+    /*package*/ Object getIncludeLock(APTInclude node) {
+        return getIncludeData(node);
+    }
+
+    /*package*/ Boolean getEvalResult(APT node) {
+        Boolean out = evalData.get(node.getOffset());
+        if (TRACE) {
+            if (out != null && needTraceValue(evalHits++)) {
+                System.err.println("EVAL HIT " + evalHits + " cache for line:" + node.getToken().getLine() + " as " + out + " in " + filePath);
+            }
+        }
+        return out;
+    }
+
+    /*package*/ void setEvalResult(APT node, boolean result) {
+        evalData.put(node.getOffset(), Boolean.valueOf(result));
+    }
+
+    private IncludeData getIncludeData(APTInclude node) {
+        Integer key = Integer.valueOf(node.getOffset());
+        IncludeData data = cache.get(key);
         if (data == null) {
-            data = new Data(null);
-            Data prev = cache.putIfAbsent(node, data);
+            data = new IncludeData(null);
+            IncludeData prev = cache.putIfAbsent(key, data);
             if (prev != null) {
                 data = prev;
             }
         }
-        return data.lock;
+        return data;
     }
 
     public CharSequence getFilePath() {
@@ -100,12 +125,16 @@ public final class APTFileCacheEntry {
         return "APT cache for " + filePath; // NOI18N
     }
 
-    private static final class Data {
-        APTMacroMap.State state;
-        private final Object lock = new Object();
+    private boolean needTraceValue(int val) {
+//        return CharSequenceKey.ComparatorIgnoreCase.compare(filePath, "/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/include/math.h") == 0;
+        return val % 10 == 0;
+    }
 
-        public Data(State state) {
-            this.state = state;
+    private static final class IncludeData {
+        private volatile APTMacroMap.State postIncludeMacroState;
+
+        public IncludeData(State state) {
+            this.postIncludeMacroState = state;
         }
     }
 }

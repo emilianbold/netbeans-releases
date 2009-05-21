@@ -135,33 +135,43 @@ public class MakeSampleProjectGenerator {
             CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(CompilerSetManager.getDefaultExecutionEnvironment());
             int platform = compilerSetManager.getPlatform();
             CompilerSet compilerSet = compilerSetManager.getDefaultCompilerSet();
-            String variant = MakeConfiguration.getVariant(compilerSet, platform);
+            String variant = null;
+            if (compilerSet != null) {
+                variant = MakeConfiguration.getVariant(compilerSet, platform);
+            }
             if (platform == Platform.PLATFORM_WINDOWS) { // Utilities.isWindows()) {
                 changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagName(doc, "output", "dll", "X-LIBSUFFIX-X"); // NOI18N
                 changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "dll", "X-LIBSUFFIX-X"); // NOI18N
-                changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
+                if (variant != null) {
+                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
+                }
             }
             if (platform == Platform.PLATFORM_MACOSX) { //Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                 changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagName(doc, "output", "dylib", "X-LIBSUFFIX-X"); // NOI18N
                 changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "dylib", "X-LIBSUFFIX-X"); // NOI18N
-                changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
-            }
-            else {
+                if (variant != null) {
+                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
+                }
+            } else {
                 changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagName(doc, "output", "so", "X-LIBSUFFIX-X"); // NOI18N
                 changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "so", "X-LIBSUFFIX-X"); // NOI18N
-                changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
+                if (variant != null) {
+                    changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
+                }
             }
             //saveXml(doc, prjLoc, "nbproject/projectDescriptor.xml"); // NOI18N
             saveXml(doc, prjLoc, PROJECT_CONFIGURATION_FILE);
             
         } catch (Exception e) {
-            throw new IOException(e.toString());
+            IOException ex = new IOException();
+            ex.initCause(e);
+            throw ex;
         }
     }
     
@@ -185,7 +195,9 @@ public class MakeSampleProjectGenerator {
             prjLoc.refresh(false);
             set.add(DataObject.find(prjLoc));
         } catch (Exception e) {
-            throw new IOException(e.toString());
+            IOException ex = new IOException();
+            ex.initCause(e);
+            throw ex;
         }
     }
     

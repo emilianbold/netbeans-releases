@@ -83,7 +83,7 @@ public abstract class VCSInterceptor {
      * @return the attributes value or null if not available
      * @since 1.10
      */
-    public String getAttribute(File file, String attrName) {
+    public Object getAttribute(File file, String attrName) {
         return null;
     }
 

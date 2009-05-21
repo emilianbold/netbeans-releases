@@ -95,6 +95,7 @@ import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.netbeans.modules.maven.indexer.spi.ContextLoadedQuery;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -132,7 +133,7 @@ import org.sonatype.nexus.index.updater.IndexUpdater;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation.class)
 public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementation,
         BaseQueries, ChecksumQueries, ArchetypeQueries, DependencyInfoQueries,
-        ClassesQuery, GenericFindQuery {
+        ClassesQuery, GenericFindQuery, ContextLoadedQuery {
     private static final String MAVENINDEX_PATH = "mavenindex";
 
     private ArtifactRepository repository;
@@ -927,6 +928,29 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             Exceptions.printStackTrace(ex);
         }
         return Collections.<NBVersionInfo>emptyList();
+    }
+
+    public List<RepositoryInfo> getLoaded(final List<RepositoryInfo> repos) {
+        try {
+            return MUTEX.writeAccess(new Mutex.ExceptionAction<List<RepositoryInfo>>() {
+
+                public List<RepositoryInfo> run() throws Exception {
+                    if (!inited) {
+                        return Collections.emptyList();
+                    }
+                    List<RepositoryInfo> toRet = new ArrayList<RepositoryInfo>(repos.size());
+                    for (RepositoryInfo info : repos) {
+                        if (indexer.getIndexingContexts().get(info.getId()) != null) {
+                            toRet.add(info);
+                        }
+                    }
+                    return toRet;
+                }
+            });
+        } catch (MutexException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return Collections.emptyList();
     }
 
     private String toNexusField(String field) {

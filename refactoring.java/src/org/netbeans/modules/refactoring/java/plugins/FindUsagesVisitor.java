@@ -147,7 +147,12 @@ public class FindUsagesVisitor extends FindVisitor {
     
     private void addIfMatch(TreePath path, Tree tree, Element elementToFind) {
         if (workingCopy.getTreeUtilities().isSynthetic(path)) {
-            return;
+            if (ElementKind.CONSTRUCTOR != elementToFind.getKind()
+                    || tree.getKind() != Tree.Kind.IDENTIFIER
+                    || !"super".contentEquals(((IdentifierTree) tree).getName())) { // NOI18N
+                // do not skip synthetic usages of constructor
+                return;
+            }
         }
         Trees trees = workingCopy.getTrees();
         Element el = trees.getElement(path);

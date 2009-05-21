@@ -121,12 +121,10 @@ public final class ToolsCacheManager {
         if (isRemoteAvailable()) {
             if (serverUpdateCache != null) {
                 liveServers = new ArrayList<ExecutionEnvironment>();
-                ServerList.clear();
+                ServerList.set(serverUpdateCache.getHosts(), serverUpdateCache.getDefaultIndex());
                 for (ServerRecord rec : serverUpdateCache.getHosts()) {
-                    ServerList.addServer(rec.getExecutionEnvironment(), rec.getDisplayName(), rec.getSyncFactory(), false, false);
                     liveServers.add(rec.getExecutionEnvironment());
                 }
-                ServerList.setDefaultIndex(serverUpdateCache.getDefaultIndex());
                 serverUpdateCache = null;
             } else {
                 ServerList.setDefaultIndex(selectedIndex);
@@ -165,10 +163,10 @@ public final class ToolsCacheManager {
         return ServerList.getDefaultRecord().getExecutionEnvironment();
     }
 
-    public synchronized CompilerSetManager getCompilerSetManagerCopy(ExecutionEnvironment env) {
+    public synchronized CompilerSetManager getCompilerSetManagerCopy(ExecutionEnvironment env, boolean initialize) {
         CompilerSetManager out = copiedManagers.get(env);
         if (out == null) {
-            out = CompilerSetManager.getDeepCopy(env);
+            out = CompilerSetManager.getDeepCopy(env, initialize);
             if (out.getCompilerSets().size() == 1 && out.getCompilerSets().get(0).getName().equals(CompilerSet.None)) {
                 out.remove(out.getCompilerSets().get(0));
             }

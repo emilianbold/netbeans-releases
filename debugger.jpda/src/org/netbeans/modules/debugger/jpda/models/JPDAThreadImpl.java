@@ -54,6 +54,7 @@ import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.EventRequest;
+import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.StepRequest;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
@@ -107,6 +108,7 @@ import org.netbeans.modules.debugger.jpda.jdi.request.BreakpointRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.MonitorContendedEnteredRequestWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.netbeans.modules.debugger.jpda.util.Operator;
@@ -823,6 +825,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     private boolean methodInvokingDisabledUntilResumed;
     private boolean resumedToFinishMethodInvocation;
     private boolean unsuspendedStateWhenInvoking;
+    private List<StepRequest> stepsDeletedDuringMethodInvoke;
     
     public void notifyMethodInvoking() throws PropertyVetoException {
         SingleThreadWatcher watcherToDestroy = null;
@@ -841,6 +844,33 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             if (!isThreadSuspended()) {
                 throw new PropertyVetoException(
                         NbBundle.getMessage(JPDAThreadImpl.class, "MSG_NoCurrentContext"), null);
+            }
+            if (vm != null) {
+                // Check if there aren't any steps submitted, which would break method invocation:
+                try {
+                    EventRequestManager erm = VirtualMachineWrapper.eventRequestManager(vm);
+                    List<StepRequest> srs = EventRequestManagerWrapper.stepRequests0(erm);
+                    List<StepRequest> stepsToDelete = null;
+                    for (StepRequest sr : srs) {
+                        ThreadReference t = StepRequestWrapper.thread(sr);
+                        if (threadReference.equals(t)) {
+                            if (stepsToDelete == null) {
+                                stepsToDelete = new ArrayList<StepRequest>();
+                            }
+                            stepsToDelete.add(sr);
+                        }
+                    }
+                    if (stepsToDelete != null) {
+                        for (StepRequest sr : stepsToDelete) {
+                            //debugger.getOperator().unregister(sr);
+                            //EventRequestManagerWrapper.deleteEventRequest(erm, sr);
+                            EventRequestWrapper.disable(sr);
+                            if (logger.isLoggable(Level.FINE)) logger.fine("DISABLED Step Request: "+sr);
+                        }
+                    }
+                    stepsDeletedDuringMethodInvoke = stepsToDelete;
+                } catch (InternalExceptionWrapper iew) {
+                } catch (VMDisconnectedExceptionWrapper dew) {}
             }
             methodInvoking = true;
             unsuspendedStateWhenInvoking = !isSuspended();
@@ -881,6 +911,16 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 }
                 //System.err.println("\""+getName()+"\""+":  Suspended after method invocation.");
                 resumedToFinishMethodInvocation = false;
+            }
+            if (stepsDeletedDuringMethodInvoke != null) {
+                try {
+                    for (StepRequest sr : stepsDeletedDuringMethodInvoke) {
+                        EventRequestWrapper.enable(sr);
+                        if (logger.isLoggable(Level.FINE)) logger.fine("ENABLED Step Request: "+sr);
+                    }
+                } catch (InternalExceptionWrapper iew) {
+                } catch (VMDisconnectedExceptionWrapper dew) {}
+                stepsDeletedDuringMethodInvoke = null;
             }
             methodInvoking = false;
             wasUnsuspendedStateWhenInvoking = unsuspendedStateWhenInvoking;

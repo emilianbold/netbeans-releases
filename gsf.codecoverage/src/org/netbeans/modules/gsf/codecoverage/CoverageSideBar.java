@@ -287,7 +287,12 @@ public class CoverageSideBar extends javax.swing.JPanel {
 }//GEN-LAST:event_clearResults
 
     private void allTests(ActionEvent evt) {//GEN-FIRST:event_allTests
-        runAction(ActionProvider.COMMAND_TEST);
+        String action = ActionProvider.COMMAND_TEST;
+        CoverageProvider provider = getProvider();
+        if (provider != null && provider.getTestAllAction() != null) {
+            action = provider.getTestAllAction();
+        }
+        runAction(action);
     }//GEN-LAST:event_allTests
 
     private void testOne(ActionEvent evt) {//GEN-FIRST:event_testOne

@@ -133,8 +133,10 @@ made subject to such option by the copyright holder.
     <target name="test" description="Run all tests">
         <subant target="test" buildpath="../cnd" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../cnd.editor" inheritrefs="false" inheritall="false" failonerror="false"/>
+        <subant target="test" buildpath="../cnd.lexer" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../cnd.folding" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../cnd.modelimpl" inheritrefs="false" inheritall="false" failonerror="false"/>
+        <subant target="test" buildpath="../cnd.modelui" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../cnd.completion" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../cnd.refactoring" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../cnd.classview" inheritrefs="false" inheritall="false" failonerror="false"/>
@@ -146,6 +148,29 @@ made subject to such option by the copyright holder.
         <subant target="test" buildpath="../cnd.makeproject" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../cnd.remote" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../cnd.gotodeclaration" inheritrefs="false" inheritall="false" failonerror="false"/>
+    </target>
+
+    <target name="test-build" description="Compile all tests">
+        <subant target="test-build" buildpath="../cnd"/>
+        <subant target="test-build" buildpath="../cnd.editor"/>
+        <subant target="test-build" buildpath="../cnd.lexer"/>
+        <subant target="test-build" buildpath="../cnd.folding"/>
+        <subant target="test-build" buildpath="../cnd.modelimpl"/>
+        <subant target="test-build" buildpath="../cnd.modelui"/>
+        <subant target="test-build" buildpath="../cnd.completion"/>
+        <subant target="test-build" buildpath="../cnd.refactoring"/>
+        <subant target="test-build" buildpath="../cnd.classview"/>
+        <subant target="test-build" buildpath="../cnd.repository"/>
+        <subant target="test-build" buildpath="../cnd.navigation"/>
+        <subant target="test-build" buildpath="../cnd.highlight"/>
+        <subant target="test-build" buildpath="../cnd.dwarfdiscovery"/>
+        <subant target="test-build" buildpath="../cnd.modeldiscovery"/>
+        <subant target="test-build" buildpath="../cnd.makeproject"/>
+        <subant target="test-build" buildpath="../cnd.remote"/>
+        <subant target="test-build" buildpath="../cnd.gotodeclaration"/>
+        <!-- not included in tests -->
+        <subant target="test-build" buildpath="../cnd.utils"/>
+        <subant target="test-build" buildpath="../cnd.debugger.gdb"/>
     </target>
 
     <target name="xref-test" description="Run XRef tests">

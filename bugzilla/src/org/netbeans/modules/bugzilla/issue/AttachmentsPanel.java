@@ -188,7 +188,7 @@ public class AttachmentsPanel extends JPanel {
                 filenameButton.setAction(new DefaultAttachmentAction(attachment));
                 filenameButton.setText(filename);
                 filenameButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AttachmentsPanel.class, "AttachmentPanels.filenameButton.AccessibleContext.accessibleDescription")); // NOI18N
-                dateLabel = new JLabel(DateFormat.getDateInstance().format(date));
+                dateLabel = new JLabel(date != null ? DateFormat.getDateInstance().format(date) : ""); // NOI18N
                 authorLabel = new JLabel(author);
                 descriptionLabel.setComponentPopupMenu(menu);
                 filenameButton.setComponentPopupMenu(menu);

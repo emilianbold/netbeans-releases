@@ -131,8 +131,8 @@ public final class Kenai {
         propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN_STARTED, null, null));
         try {
             synchronized (this) {
-                impl.verify(username, password);
-                auth = new PasswordAuthentication(username, password);
+                String shortName = impl.verify(username, password);
+                auth = new PasswordAuthentication(shortName, password);
                 myProjects=null;
 //        Authenticator.setDefault(new Authenticator() {
 //            @Override

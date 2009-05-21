@@ -94,7 +94,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
     protected final Map<CharSequence, CsmFile> macro2file = new HashMap<CharSequence, CsmFile>();
 
     public APTFindMacrosWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
-        super(apt, csmFile, preprocHandler, cacheEntry);
+        super(apt, csmFile, preprocHandler, null);
     }
 
     @Override

@@ -204,7 +204,8 @@ public class MonitorsUpdateService {
                             restarted = true;
 
                             int currThreads = threadsStatistic.getThreadsCount();
-                            double currTime = stat.getDuration();
+                            Double ctime = stat.getDuration();
+                            double currTime = (ctime == null) ? 0 : ctime.doubleValue();
                             double currLocks;
 
                             if (linuxMode) {
@@ -217,7 +218,8 @@ public class MonitorsUpdateService {
                                     currLocks = sumMetrics(syncFunctions);
                                 }
                             } else {
-                                currLocks = stat.getULock();
+                                Double clocks = stat.getULock();
+                                currLocks = clocks == null ? 0 : clocks;
                             }
 
                             if (0.1 < currTime - prevTime) {

@@ -129,7 +129,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private final BugzillaRepository repository;
     protected BugzillaQuery query;
 
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss, EEE MMM d yyyy"); // NOI18N
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // NOI18N
     private QueryTask searchTask;
     private QueryTask refreshTask;
 
@@ -205,6 +205,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
         createQueryParameter(TextFieldParameter.class, panel.changedFromTextField, "chfieldfrom");                  // NOI18N
         createQueryParameter(TextFieldParameter.class, panel.changedToTextField, "chfieldto");                      // NOI18N
         createQueryParameter(TextFieldParameter.class, panel.newValueTextField, "chfieldvalue");                    // NOI18N
+
+        panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
 
         if(query.isSaved()) {
             setAsSaved();
@@ -360,8 +362,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     if (urlParameters != null) {
                         setParameters(urlParameters);
                     }
-
-                    panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
 
                     if(query.isSaved()) {
                         final boolean autoRefresh = BugzillaConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
@@ -581,6 +581,16 @@ public class QueryController extends BugtrackingController implements DocumentLi
     public void selectFilter(Filter filter) {
         if(filter != null) {
             panel.filterComboBox.setSelectedItem(filter);
+
+            // XXX this part should be handled in the issues table - move the filtercombo and the label over
+            Issue[] issues = query.getIssues();
+            int c = 0;
+            if(issues != null) {
+                for (Issue issue : issues) {
+                    if(filter.accept(issue)) c++;
+                }
+            }
+            setIssueCount(c);
         }
     }
 

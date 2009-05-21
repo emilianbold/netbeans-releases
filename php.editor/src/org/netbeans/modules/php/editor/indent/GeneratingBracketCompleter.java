@@ -38,7 +38,6 @@
  */
 
 package org.netbeans.modules.php.editor.indent;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,6 +50,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.nav.SemiAttribute;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement;
@@ -61,6 +61,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
@@ -192,11 +193,23 @@ public class GeneratingBracketCompleter {
             if (var != null && var.getName() instanceof Identifier) {
                 name = ((Identifier) var.getName()).getName();
             }
-            generateDocEntry(doc, toAdd, "@param", indent, "$" + name, null);
+            AttributedType type = null;
+            if (p.getParameterType() != null) {
+                final Identifier paramIdentifier = p.getParameterType();
+                if (paramIdentifier != null) {
+                    type = new AttributedType() {
+                        @Override
+                        public String getTypeName() {
+                            return paramIdentifier.getName();
+                        }
+                    };
+                }
+            }
+            generateDocEntry(doc, toAdd, "@param", indent, "$" + name, type);
         }
         
         if (i.hasReturn) {
-            generateDocEntry(doc, toAdd, "@return", indent, null, null);
+            generateDocEntry(doc, toAdd, "@return", indent, null, i.returnType);
         }
         
         doc.insertString(offset - 1, toAdd.toString(), null);
@@ -278,7 +291,21 @@ public class GeneratingBracketCompleter {
         @Override
         public void visit(ReturnStatement node) {
             hasReturn = true;
-            returnType = null; //TODO: resolve type (should be recorded in SemiAttribute)
+            Expression expression = node.getExpression();
+            if (expression instanceof ClassInstanceCreation) {
+                ClassInstanceCreation instanceCreation = (ClassInstanceCreation) expression;
+                final String clsname = CodeUtils.extractClassName(instanceCreation.getClassName());
+                if (clsname != null) {
+                    //TODO: resolve type (should be recorded in SemiAttribute)
+                    returnType = new AttributedType() {
+                        @Override
+                        public String getTypeName() {
+                            return clsname;
+                        }
+                    };
+                }
+            }
+
         }
 
         @Override

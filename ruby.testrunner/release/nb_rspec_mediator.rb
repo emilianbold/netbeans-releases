@@ -46,9 +46,12 @@ class NbRspecMediator < Spec::Runner::ExampleGroupRunner
     "Spec::Rails::Example::FunctionalExampleGroup",
     "Spec::Rails::Example::ModelExampleGroup",
     "Spec::Rails::Example::RailsExampleGroup",
+    "Spec::Rails::Example::RoutingExampleGroup",
     "ActionController::IntegrationTest",
     "ActionController::TestCase",
+    "ActionView::TestCase",
     "ActiveSupport::TestCase",
+    "ActiveRecord::TestCase",
     "ActionMailer::TestCase"]
 
   def initialize(options, args)
@@ -68,9 +71,7 @@ class NbRspecMediator < Spec::Runner::ExampleGroupRunner
     end
     overall_start_time = Time.now
     example_groups.each do |example_group|
-      if exclude?(example_group)
-        next
-      end
+      next if exclude?(example_group)
       example_group_start_time = Time.now
       puts "%RSPEC_SUITE_STARTING% #{example_group.description}"
       success = success & run_example_group(example_group)
@@ -217,7 +218,10 @@ class NbSpecParser < Spec::Runner::SpecParser
   def spec_name_for(file, line_number)
     best_match.clear
     file = File.expand_path(file)
-    safe_get_options.example_groups.each do |example_group|
+    example_groups = safe_get_options.example_groups.reject do |example_group|
+      NbRspecMediator::EXCLUDE.include?(example_group.name)
+    end
+    example_groups.each do |example_group|
       if self.respond_to?(:consider_example_group_for_best_match)
         consider_example_group_for_best_match example_group, file, line_number
       else

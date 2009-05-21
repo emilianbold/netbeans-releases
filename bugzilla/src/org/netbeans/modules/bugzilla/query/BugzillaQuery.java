@@ -71,6 +71,7 @@ public class BugzillaQuery extends Query {
     private final Set<String> issues = new HashSet<String>();
     private Set<String> archivedIssues = new HashSet<String>();
 
+    // XXX its not clear how the urlParam is used between query and controller
     protected String urlParameters;
     private boolean initialUrlDef;
     

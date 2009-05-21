@@ -101,36 +101,47 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         InstanceProperties ip = null;
         GlassfishModule commonModule = instanceLookup.lookup(GlassfishModule.class);
         if(commonModule != null) {
-            try {
-                Map<String, String> props = commonModule.getInstanceProperties();
-                String url = props.get(InstanceProperties.URL_ATTR);
-                ip = InstanceProperties.getInstanceProperties(url);
-                if(ip == null) {
-                    String username = props.get(InstanceProperties.USERNAME_ATTR);
-                    String password = props.get(InstanceProperties.PASSWORD_ATTR);
-                    String displayName = props.get(InstanceProperties.DISPLAY_NAME_ATTR);
-                    ip = InstanceProperties.createInstancePropertiesWithoutUI(
-                            url, username, password, displayName, props);
-                    
-                    if(ip == null) {
-                        Logger.getLogger("glassfish-javaee").log(Level.INFO, 
-                                "Unable to create/locate J2EE InstanceProperties for " + url);
+            Map<String, String> props = commonModule.getInstanceProperties();
+            String url = props.get(InstanceProperties.URL_ATTR);
+            ip = InstanceProperties.getInstanceProperties(url);
+            if(ip == null) {
+                String username = props.get(InstanceProperties.USERNAME_ATTR);
+                String password = props.get(InstanceProperties.PASSWORD_ATTR);
+                String displayName = props.get(InstanceProperties.DISPLAY_NAME_ATTR);
+                int fail = 0;
+                while (null == ip && fail < 20) {
+                    try {
+                        ip = InstanceProperties.createInstancePropertiesWithoutUI(
+                                url, username, password, displayName, props);
+                    } catch (InstanceCreationException ex) {
+                        fail++;
+                        if (fail >= 20) {
+                            Logger.getLogger("glassfish-javaee").log(Level.WARNING, null, ex); // NOI18N
+                        }
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException ie) {
+                            Logger.getLogger("glassfish-javaee").log(Level.INFO, null, ie); // NOI18N
+                        }
                     }
                 }
-                
-                final String installRoot = commonModule.getInstanceProperties().get(
-                        GlassfishModule.GLASSFISH_FOLDER_ATTR);
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        ensureEclipseLinkSupport(installRoot);
-                        ensureCometSupport(installRoot);
-                    }
-                });
-            } catch(InstanceCreationException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.WARNING, null, ex);
+
+                if(ip == null) {
+                    Logger.getLogger("glassfish-javaee").log(Level.INFO,
+                            "Unable to create/locate J2EE InstanceProperties for " + url);
+                }
             }
+
+            final String installRoot = commonModule.getInstanceProperties().get(
+                    GlassfishModule.GLASSFISH_FOLDER_ATTR);
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    ensureEclipseLinkSupport(installRoot);
+                    ensureCometSupport(installRoot);
+                }
+            });
         } else {
-                Logger.getLogger("glassfish-javaee").log(Level.WARNING, "commonModule is NULL");
+            Logger.getLogger("glassfish-javaee").log(Level.WARNING, "commonModule is NULL");
         }
 
         return (ip != null) ? new JavaEEServerModule(instanceLookup, ip) : null;

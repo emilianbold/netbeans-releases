@@ -103,6 +103,7 @@ public class CallStackFrameImpl implements CallStackFrame {
     
     private final JPDAThreadImpl thread;
     private StackFrame          sf;
+    private Location            sfLocation;
     private int                 depth;
     private JPDADebuggerImpl    debugger;
     //private AST                 ast;
@@ -122,6 +123,9 @@ public class CallStackFrameImpl implements CallStackFrame {
         this.debugger = debugger;
         equalsInfo = new EqualsInfo(debugger, sf, depth);
         this.valid = true; // suppose we're valid when we're new
+        try {
+            sfLocation = StackFrameWrapper.location(sf);
+        } catch (Exception ex) {}
     }
 
     // public interface ........................................................
@@ -132,9 +136,10 @@ public class CallStackFrameImpl implements CallStackFrame {
     * @return Returns line number of this frame in this callstack.
     */
     public synchronized int getLineNumber (String struts) {
-        if (!valid) return 0;
+        if (!valid && sfLocation == null) return 0;
         try {
-            return LocationWrapper.lineNumber0(StackFrameWrapper.location(getStackFrame()), struts);
+            if (sfLocation == null) sfLocation = StackFrameWrapper.location(getStackFrame());
+            return LocationWrapper.lineNumber0(sfLocation, struts);
         } catch (InvalidStackFrameExceptionWrapper isfex) {
             // this stack frame is not available or information in it is not available
             valid = false;
@@ -160,10 +165,10 @@ public class CallStackFrameImpl implements CallStackFrame {
     * @return Returns method name of this frame in this callstack.
     */
     public synchronized String getMethodName () {
-        if (!valid) return "";
+        if (!valid && sfLocation == null) return "";
         try {
-            return TypeComponentWrapper.name(
-                    LocationWrapper.method(StackFrameWrapper.location(getStackFrame())));
+            if (sfLocation == null) sfLocation = StackFrameWrapper.location(getStackFrame());
+            return TypeComponentWrapper.name(LocationWrapper.method(sfLocation));
         } catch (InvalidStackFrameExceptionWrapper ex) {
             // this stack frame is not available or information in it is not available
             valid = false;
@@ -181,10 +186,10 @@ public class CallStackFrameImpl implements CallStackFrame {
     * @return class name of this frame in this callstack
     */
     public synchronized String getClassName () {
-        if (!valid) return "";
+        if (!valid && sfLocation == null) return "";
         try {
-            return ReferenceTypeWrapper.name(LocationWrapper.declaringType(
-                    StackFrameWrapper.location(getStackFrame())));
+            if (sfLocation == null) sfLocation = StackFrameWrapper.location(getStackFrame());
+            return ReferenceTypeWrapper.name(LocationWrapper.declaringType(sfLocation));
         } catch (InternalExceptionWrapper ex) {
             return "";
         } catch (VMDisconnectedExceptionWrapper ex) {
@@ -202,10 +207,10 @@ public class CallStackFrameImpl implements CallStackFrame {
     * @return name of default stratumn
     */
     public synchronized String getDefaultStratum () {
-        if (!valid) return "";
+        if (!valid && sfLocation == null) return "";
         try {
-            return ReferenceTypeWrapper.defaultStratum(LocationWrapper.declaringType(
-                    StackFrameWrapper.location(getStackFrame())));
+            if (sfLocation == null) sfLocation = StackFrameWrapper.location(getStackFrame());
+            return ReferenceTypeWrapper.defaultStratum(LocationWrapper.declaringType(sfLocation));
         } catch (InvalidStackFrameExceptionWrapper ex) {
             // this stack frame is not available or information in it is not available
             valid = false;
@@ -223,9 +228,10 @@ public class CallStackFrameImpl implements CallStackFrame {
     * @return name of default stratumn
     */
     public synchronized List<String> getAvailableStrata () {
-        if (!valid) return Collections.emptyList();
+        if (!valid && sfLocation == null) return Collections.emptyList();
         try {
-            return ReferenceTypeWrapper.availableStrata(LocationWrapper.declaringType(StackFrameWrapper.location(getStackFrame())));
+            if (sfLocation == null) sfLocation = StackFrameWrapper.location(getStackFrame());
+            return ReferenceTypeWrapper.availableStrata(LocationWrapper.declaringType(sfLocation));
         } catch (InvalidStackFrameExceptionWrapper ex) {
             // this stack frame is not available or information in it is not available
             valid = false;
@@ -245,9 +251,10 @@ public class CallStackFrameImpl implements CallStackFrame {
     *   occurres.
     */
     public synchronized String getSourceName (String stratum) throws AbsentInformationException {
-        if (!valid) return "";
+        if (!valid && sfLocation == null) return "";
         try {
-            return LocationWrapper.sourceName(StackFrameWrapper.location(getStackFrame()), stratum);
+            if (sfLocation == null) sfLocation = StackFrameWrapper.location(getStackFrame());
+            return LocationWrapper.sourceName(sfLocation, stratum);
         } catch (InvalidStackFrameExceptionWrapper ex) {
             // this stack frame is not available or information in it is not available
             valid = false;
@@ -265,9 +272,10 @@ public class CallStackFrameImpl implements CallStackFrame {
      * @return source path of file this frame is stopped in or null
      */
     public synchronized String getSourcePath (String stratum) throws AbsentInformationException {
-        if (!valid) return "";
+        if (!valid && sfLocation == null) return "";
         try {
-            return LocationWrapper.sourcePath(StackFrameWrapper.location(getStackFrame()), stratum);
+            if (sfLocation == null) sfLocation = StackFrameWrapper.location(getStackFrame());
+            return LocationWrapper.sourcePath(sfLocation, stratum);
         } catch (InvalidStackFrameExceptionWrapper ex) {
             // this stack frame is not available or information in it is not available
             valid = false;
@@ -287,8 +295,8 @@ public class CallStackFrameImpl implements CallStackFrame {
     public org.netbeans.api.debugger.jpda.LocalVariable[] getLocalVariables () 
     throws AbsentInformationException {
         try {
-            String className = ReferenceTypeWrapper.name(LocationWrapper.declaringType(
-                    StackFrameWrapper.location(getStackFrame())));
+            if (sfLocation == null) sfLocation = StackFrameWrapper.location(getStackFrame());
+            String className = ReferenceTypeWrapper.name(LocationWrapper.declaringType(sfLocation));
             List l = StackFrameWrapper.visibleVariables (getStackFrame());
             int n = l.size();
             LocalVariable[] locals = new LocalVariable [n];
@@ -329,8 +337,8 @@ public class CallStackFrameImpl implements CallStackFrame {
     org.netbeans.api.debugger.jpda.LocalVariable getLocalVariable(String name) 
     throws AbsentInformationException {
         try {
-            String className = ReferenceTypeWrapper.name(LocationWrapper.declaringType(
-                    StackFrameWrapper.location(getStackFrame())));
+            if (sfLocation == null) sfLocation = StackFrameWrapper.location(getStackFrame());
+            String className = ReferenceTypeWrapper.name(LocationWrapper.declaringType(sfLocation));
             com.sun.jdi.LocalVariable lv;
             try {
                 lv = StackFrameWrapper.visibleVariableByName(getStackFrame(), name);
@@ -372,7 +380,8 @@ public class CallStackFrameImpl implements CallStackFrame {
                                                             getDefaultStratum());
             List<Value> argValues = getArgumentValues(sf);
             if (argValues == null) return null;
-            MethodArgument[] argumentNames = EditorContextBridge.getContext().getArguments(url, LocationWrapper.lineNumber(StackFrameWrapper.location(sf)));
+            if (sfLocation == null) sfLocation = StackFrameWrapper.location(getStackFrame());
+            MethodArgument[] argumentNames = EditorContextBridge.getContext().getArguments(url, LocationWrapper.lineNumber(sfLocation));
             if (argumentNames == null) return null;
             int n = Math.min(argValues.size(), argumentNames.length);
             LocalVariable[] arguments = new LocalVariable[n];
@@ -592,7 +601,8 @@ public class CallStackFrameImpl implements CallStackFrame {
      */
     public synchronized boolean isObsolete () {
         try {
-            return MethodWrapper.isObsolete0(LocationWrapper.method(StackFrameWrapper.location(getStackFrame())));
+            if (sfLocation == null) sfLocation = StackFrameWrapper.location(getStackFrame());
+            return MethodWrapper.isObsolete0(LocationWrapper.method(sfLocation));
         } catch (InvalidStackFrameExceptionWrapper ex) {
             throw ex.getCause();
         } catch (InternalExceptionWrapper ex) {
@@ -683,6 +693,7 @@ public class CallStackFrameImpl implements CallStackFrame {
                     throw isfex;
                 }
                 sf = ThreadReferenceWrapper.frame(ref, depth);
+                sfLocation = StackFrameWrapper.location(getStackFrame());
             } catch (ObjectCollectedExceptionWrapper ex) {
                 throw isfex;
             } catch (IncompatibleThreadStateException ex) {

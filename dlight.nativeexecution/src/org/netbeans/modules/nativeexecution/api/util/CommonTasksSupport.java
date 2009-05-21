@@ -68,7 +68,8 @@ import org.openide.windows.InputOutput;
  */
 public final class CommonTasksSupport {
 
-    private CommonTasksSupport() {}
+    private CommonTasksSupport() {
+    }
 
     /**
      * Starts <tt>srcFileName</tt> file upload from the localhost to the host,
@@ -117,8 +118,6 @@ public final class CommonTasksSupport {
             return null;
         }
 
-        final String cmd = "scp"; // NOI18N
-
         ChangeListener processListener = new ChangeListener() {
 
             public void stateChanged(ChangeEvent e) {
@@ -139,9 +138,9 @@ public final class CommonTasksSupport {
             }
         };
 
-        NativeProcessBuilder npb = new NativeProcessBuilder(dstExecEnv, cmd,false);
-        npb = npb.setArguments("-p", "-t", dstFileName); // NOI18N
-        npb = npb.addNativeProcessListener(processListener);
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(dstExecEnv);
+        npb.setExecutable("scp").setArguments("-p", "-t", dstFileName); // NOI18N
+        npb.addNativeProcessListener(processListener);
 
         ExecutionDescriptor descriptor =
                 new ExecutionDescriptor().inputOutput(
@@ -179,9 +178,8 @@ public final class CommonTasksSupport {
     public static Future<Integer> rmFile(
             ExecutionEnvironment execEnv,
             String fname, final Writer error) {
-        NativeProcessBuilder npb =
-                new NativeProcessBuilder(execEnv, "rm",false); // NOI18N
-        npb = npb.setArguments("-f", fname); // NOI18N
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+        npb.setExecutable("rm").setArguments("-f", fname); // NOI18N
 
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
                 InputOutput.NULL);
@@ -203,15 +201,16 @@ public final class CommonTasksSupport {
      * @param file  file to change permissions for
      * @param mode  new file permissions in octal form, e.g. <tt>0755</tt>
      * @param error if not <tt>null</tt> and some error occurs,
-              an error message will be written to this <tt>Writer</tt>.
+    an error message will be written to this <tt>Writer</tt>.
      * @return a <tt>Future&lt;Integer&gt;</tt> representing exit code
      *         of the chmod task. <tt>0</tt> means success, any other value
      *         means failure.
      */
     public static Future<Integer> chmod(final ExecutionEnvironment execEnv,
             final String file, final int mode, final Writer error) {
-        NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "chmod",false); // NOI18N
-        npb = npb.setArguments(String.format("0%03o", mode), file); // NOI18N
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+        npb.setExecutable("chmod").setArguments(String.format("0%03o", mode), file); // NOI18N
+
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
                 InputOutput.NULL);
 
@@ -245,9 +244,8 @@ public final class CommonTasksSupport {
         String[] args = recursively
                 ? new String[]{"-rf", dirname} : new String[]{"-f", dirname}; // NOI18N
 
-        NativeProcessBuilder npb =
-                new NativeProcessBuilder(execEnv, cmd,false); // NOI18N
-        npb = npb.setArguments(args);
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+        npb.setExecutable(cmd).setArguments(args);
 
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
                 InputOutput.NULL);
@@ -276,8 +274,9 @@ public final class CommonTasksSupport {
      */
     public static Future<Integer> mkDir(final ExecutionEnvironment execEnv,
             final String dirname, final Writer error) {
-        NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "mkdir",false); // NOI18N
-        npb = npb.setArguments("-p", dirname); // NOI18N
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+        npb.setExecutable("/bin/mkdir").setArguments("-p", dirname); // NOI18N
+
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
                 InputOutput.NULL);
 

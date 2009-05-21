@@ -151,7 +151,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     }
 
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("Libraries"); // NOI18N
+        return new HelpCtx("PackagingFiles"); // NOI18N
     }
 
     /** This method is called from within the constructor to
