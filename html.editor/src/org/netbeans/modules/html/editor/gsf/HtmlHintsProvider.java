@@ -41,6 +41,7 @@ package org.netbeans.modules.html.editor.gsf;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
@@ -52,6 +53,7 @@ import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.Rule.ErrorRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.filesystems.FileObject;
@@ -114,7 +116,7 @@ public class HtmlHintsProvider implements HintsProvider {
             //add a special hint for reenabling disabled error checks
             HintFix fix = new EnableErrorChecksFix(snapshot);
             Hint h = new Hint(new HtmlRule(HintSeverity.WARNING, false),
-                    NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_ENABLE_ERROR_CHECKS_FILE_DESCR"),  //NOI18N
+                    NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_ENABLE_ERROR_CHECKS_FILE_DESCR"), //NOI18N
                     fo,
                     new OffsetRange(0, 0),
                     Collections.singletonList(fix),
@@ -232,7 +234,7 @@ public class HtmlHintsProvider implements HintsProvider {
 
             //force reparse => hints update
             Document doc = snapshot.getSource().getDocument(false);
-            if(doc != null) {
+            if (doc != null) {
                 forceReparse(doc);
             }
         }
@@ -266,7 +268,7 @@ public class HtmlHintsProvider implements HintsProvider {
 
             //force reparse => hints update
             Document doc = snapshot.getSource().getDocument(false);
-            if(doc != null) {
+            if (doc != null) {
                 forceReparse(doc);
             }
         }
@@ -280,10 +282,21 @@ public class HtmlHintsProvider implements HintsProvider {
         }
     }
 
-    private static void forceReparse(Document doc) {
-        MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);
-        if (mti != null) {
-            mti.tokenHierarchyControl().rebuild();
-        }
+    private static void forceReparse(final Document doc) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                NbEditorDocument nbdoc = (NbEditorDocument) doc;
+                nbdoc.runAtomic(new Runnable() {
+                    public void run() {
+                        MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);
+                        if (mti != null) {
+                            mti.tokenHierarchyControl().rebuild();
+                        }
+                    }
+                });
+            }
+        });
     }
+
+    
 }
