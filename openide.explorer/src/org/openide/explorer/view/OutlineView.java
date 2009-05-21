@@ -153,6 +153,7 @@ public class OutlineView extends JScrollPane {
 
     /** Listener on keystroke to invoke default action */
     private ActionListener defaultTreeActionListener;
+    private final String nodesColumnLabel;
 
     /** Creates a new instance of TableView */
     public OutlineView() {
@@ -164,6 +165,7 @@ public class OutlineView extends JScrollPane {
         treeModel = new NodeTreeModel();
         rowModel = new PropertiesRowModel();
         model = createOutlineModel(treeModel, rowModel, nodesColumnLabel);
+        this.nodesColumnLabel = nodesColumnLabel;
         outline = new OutlineViewOutline(model, rowModel);
         rowModel.setOutline(outline);
         outline.setRenderDataProvider(new NodeRenderDataProvider(outline));
@@ -365,8 +367,12 @@ public class OutlineView extends JScrollPane {
     /** Synchronize the root context from the manager of this Explorer.
     */
     final void synchronizeRootContext() {
-        if( null != treeModel )
+        if( null != treeModel ) {
             treeModel.setNode(manager.getRootContext());
+            if (this.nodesColumnLabel == null && model instanceof NodeOutlineModel) {
+                ((NodeOutlineModel) model).setNodesColumnLabel(manager.getRootContext().getDisplayName());
+            }
+        }
     }
 
     /** Synchronize the selected nodes from the manager of this Explorer.
