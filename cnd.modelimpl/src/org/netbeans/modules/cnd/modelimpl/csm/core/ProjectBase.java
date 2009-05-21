@@ -2703,7 +2703,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (fc == null && isValid()) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get FileContainer by key " + fileContainerKey)); // NOI18N
         }
-        if (TraceFlags.USE_WEAK_MEMORY_CACHE && fc != null && weakFileContainer == null) {
+        if (TraceFlags.USE_WEAK_MEMORY_CACHE && fc != null && weakFileContainer != null) {
             weakFileContainer = new WeakReference<FileContainer>(fc);
         }
         return fc != null ? fc : FileContainer.empty();
