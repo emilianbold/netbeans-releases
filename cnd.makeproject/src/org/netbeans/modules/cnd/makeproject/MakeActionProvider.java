@@ -52,7 +52,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JButton;
@@ -80,7 +79,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CustomToolConfigu
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
@@ -666,7 +664,9 @@ public class MakeActionProvider implements ActionProvider {
                         if (cancelled.get()) {
                             return; // getEnv() might be costly for remote host
                         }
-                        if (HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
+                        if (conf.getDevelopmentHost().getExecutionEnvironment().isLocal() &&
+                                HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DISPLAY") == null && // NOI18N
+                                conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
                             // DISPLAY hasn't been set
                             if (runProfile == null) {
                                 runProfile = conf.getProfile().clone(conf);

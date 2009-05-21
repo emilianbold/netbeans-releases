@@ -56,6 +56,7 @@ public abstract class  KeyFactory extends AbstractObjectFactory {
     
     /** default instance */
     private static KeyFactory defaultFactory;
+    private static final Object lock = new Object();
     
     protected KeyFactory() {
     }
@@ -63,18 +64,23 @@ public abstract class  KeyFactory extends AbstractObjectFactory {
     /** Static method to obtain the factory.
      * @return the factory
      */
-    public static synchronized KeyFactory getDefaultFactory() {
-        if (defaultFactory != null) {
-            return defaultFactory;
-        }
-        defaultFactory = Lookup.getDefault().lookup(KeyFactory.class);
+    public static KeyFactory getDefaultFactory() {
         if (defaultFactory == null) {
-            throw new UnsupportedOperationException("There is no KeyFactory implementation to be used"); //NOI18N
+            synchronized (lock) {
+                // double check is necessary because
+                // it is possible to have concurrent creators serialized on lock
+                if (defaultFactory == null) {
+                    defaultFactory = Lookup.getDefault().lookup(KeyFactory.class);
+                }
+            }
+            if (defaultFactory == null) {
+                throw new UnsupportedOperationException("There is no KeyFactory implementation to be used"); //NOI18N
+            }
         }
         return defaultFactory;
     }
-        
-    
+
+
     /** Method to serialize a key
      * @param aKey  A key
      * @param aStream A DataOutput Stream

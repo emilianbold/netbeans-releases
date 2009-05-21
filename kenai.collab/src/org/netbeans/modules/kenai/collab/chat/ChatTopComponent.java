@@ -56,6 +56,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
@@ -115,14 +116,16 @@ public class ChatTopComponent extends TopComponent {
         }
     };
 
-    public void reconnect(final ProjectHandle project) {
+    public void reconnect() {
         RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
                 synchronized (kec) {
-                    if (project!=null)
-                        project.firePropertyChange(ProjectHandle.PROP_CONTENT, null, null);
-                    kec.tryConnect();
+                    try {
+                        kec.reconnect(null);
+                    } catch (XMPPException ex) {
+                        Logger.getLogger(ChatTopComponent.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+                    }
                 }
 
                 if (kec.isConnected()) {
@@ -569,7 +572,7 @@ public class ChatTopComponent extends TopComponent {
     }// </editor-fold>//GEN-END:initComponents
 
     private void retryLinkMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_retryLinkMouseClicked
-        reconnect(null);
+        reconnect();
 }//GEN-LAST:event_retryLinkMouseClicked
 
     private void retryLinkMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_retryLinkMouseEntered

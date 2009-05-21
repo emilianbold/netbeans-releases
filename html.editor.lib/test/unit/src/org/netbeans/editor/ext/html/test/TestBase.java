@@ -38,26 +38,25 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.editor.ext.html.test;
 
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.html.editor.HtmlKit;
+import org.netbeans.modules.html.editor.gsf.HtmlLanguage;
 
 /**
- * Common ancestor for all test classes.
- *
- * @author Andrei Badea
+ * @author Marek Fukala
  */
-public class TestBase extends NbTestCase {
+public class TestBase extends CslTestBase {
 
     private static final String PROP_MIME_TYPE = "mimeType"; //NOI18N
-    
+
     public TestBase(String name) {
         super(name);
     }
@@ -66,8 +65,17 @@ public class TestBase extends NbTestCase {
         NbEditorDocument doc = new NbEditorDocument(HtmlKit.class);
         doc.putProperty(PROP_MIME_TYPE, BaseKit.getKit(HtmlKit.class).getContentType());
         doc.putProperty(Language.class, HTMLTokenId.language()); //hack for LanguageManager - shoudl be removed
-        
+
         return doc;
     }
-    
+
+    @Override
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new HtmlLanguage();
+    }
+
+    @Override
+    protected String getPreferredMimeType() {
+        return HtmlKit.HTML_MIME_TYPE;
+    }
 }

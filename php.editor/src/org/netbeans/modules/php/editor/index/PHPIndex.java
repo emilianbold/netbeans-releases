@@ -681,8 +681,7 @@ public class PHPIndex {
                     continue;
                 }
 
-                assert typeSignatures.length == 1;
-                String foundTypeName = getSignatureItem(typeSignatures[0], 1);
+                String foundTypeName = typeSignatures.length > 0 ? getSignatureItem(typeSignatures[0], 1) : null;
                 foundTypeName = (foundTypeName != null) ? foundTypeName.toLowerCase() : null;
 
                 if (forConstructor) {

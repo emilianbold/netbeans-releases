@@ -18,11 +18,12 @@ public class Installer extends ModuleInstall {
     @Override
     public void restored () {
         super.restored();
+        RepositoryUpdater.getDefault().start(false);
+
         WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
             public void run () {
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
-                        RepositoryUpdater.getDefault().start(false);
                         Schedulers.init();
                     }
                 });

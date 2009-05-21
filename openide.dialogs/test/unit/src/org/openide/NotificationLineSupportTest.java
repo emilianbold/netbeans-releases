@@ -49,18 +49,20 @@ import javax.swing.JRootPane;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.junit.NbTestCase;
 import static org.junit.Assert.*;
 
 /** Tests implementation #148730: Add helper class to simplify dealing with error/warning/info messages in dialogs
  *
  * @author Jiri Rechtacek
  */
-public class NotificationLineSupportTest {
+public class NotificationLineSupportTest extends NbTestCase {
     private JButton closeButton = new JButton ("Close action");
     private JButton [] options = new JButton [] {closeButton};
     private static String NOTIFICATION_LABEL_NAME = "FixedHeightLabel";
 
     public NotificationLineSupportTest() {
+        super("NotificationLineSupportTest");
     }
 
     @BeforeClass
@@ -69,6 +71,11 @@ public class NotificationLineSupportTest {
 
     @AfterClass
     public static void tearDownClass () throws Exception {
+    }
+
+    @Override
+    protected boolean runInEQ() {
+        return true;
     }
 
     @Test

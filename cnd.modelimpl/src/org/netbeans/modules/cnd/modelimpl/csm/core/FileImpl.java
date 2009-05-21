@@ -401,7 +401,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             //  - external file change event
             //  - or "end file edit" action in deep reparsing utils
             if (fileBuffer != null && !fileBuffer.isFileBased()) {
-                if (state != State.INITIAL) {
+                if (state != State.INITIAL || parsingState != ParsingState.NOT_BEING_PARSED) {
                     if (reportParse || logState || TraceFlags.DEBUG) {
                         System.err.printf("#setBuffer changing to MODIFIED %s is %s with current state %s %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
                     }
@@ -592,13 +592,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public final void markReparseNeeded(boolean invalidateCache) {
         synchronized (changeStateLock) {
-//            if (traceFile(getAbsolutePath())) {
-//                new Exception("markReparseNeeded: inval cache:" + invalidateCache + " " + getAbsolutePath()).printStackTrace(System.err);
-//            }
-            if (state != State.INITIAL) {
-                if (reportParse || logState || TraceFlags.DEBUG) {
-                    System.err.printf("#markReparseNeeded changing to MODIFIED %s is %s with current state %s, %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
-                }
+            if (reportParse || logState || TraceFlags.DEBUG) {
+                System.err.printf("#markReparseNeeded %s is %s with current state %s, %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
+            }
+            if (state != State.INITIAL || parsingState != ParsingState.NOT_BEING_PARSED) {
                 state = State.MODIFIED;
                 postMarkedAsModified();
             }
@@ -610,9 +607,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public final void markMoreParseNeeded() {
         synchronized (changeStateLock) {
-//            if (traceFile(getAbsolutePath())) {
-//                new Exception("markMoreParseNeeded " + getAbsolutePath()).printStackTrace(System.err);
-//            }
             if (reportParse || logState || TraceFlags.DEBUG) {
                 System.err.printf("#markMoreParseNeeded %s is %s with current state %s, %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
             }
@@ -1649,26 +1643,39 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public void scheduleParsing(boolean wait) throws InterruptedException {
         synchronized (stateLock) {
             while (!isParsed()) {
-                if (!isParsingOrParsed()) {
-                    if (TRACE_SCHUDULE_PARSING) {
-                        System.err.printf("scheduleParsing: enqueue %s in states %s, %s\n", getAbsolutePath(), state, parsingState); // NOI18N
+                String oldName = wait ? Thread.currentThread().getName() : "";
+                try {
+                    if (wait) {
+                        StringBuilder name = new StringBuilder(oldName);
+                        name.append(": scheduleParsing ").append(getAbsolutePath()); // NOI18N
+                        name.append(" in states ").append(state).append(", ").append(parsingState); // NOI18N
+                        Thread.currentThread().setName(name.toString());
                     }
-                    boolean added = ParserQueue.instance().add(this, Collections.singleton(DUMMY_STATE),
-                            ParserQueue.Position.HEAD, false, ParserQueue.FileAction.NOTHING);
-                    if (!added) {
+                    if (!isParsingOrParsed()) {
+                        if (TRACE_SCHUDULE_PARSING) {
+                            System.err.printf("scheduleParsing: enqueue %s in states %s, %s\n", getAbsolutePath(), state, parsingState); // NOI18N
+                        }
+                        boolean added = ParserQueue.instance().add(this, Collections.singleton(DUMMY_STATE),
+                                ParserQueue.Position.HEAD, false, ParserQueue.FileAction.NOTHING);
+                        if (!added) {
+                            return;
+                        }
+                    }
+                    if (wait) {
+                        if (TRACE_SCHUDULE_PARSING) {
+                            System.err.printf("scheduleParsing: waiting for %s in states %s, %s\n", getAbsolutePath(), state, parsingState); // NOI18N
+                        }
+                        stateLock.wait();
+                        if (TRACE_SCHUDULE_PARSING) {
+                            System.err.printf("scheduleParsing: lock notified for %s in states %s, %s\n", getAbsolutePath(), state, parsingState); // NOI18N
+                        }
+                    } else {
                         return;
                     }
-                }
-                if (wait) {
-                    if (TRACE_SCHUDULE_PARSING) {
-                        System.err.printf("scheduleParsing: waiting for %s in states %s, %s\n", getAbsolutePath(), state, parsingState); // NOI18N
+                } finally {
+                    if (wait) {
+                        Thread.currentThread().setName(oldName);
                     }
-                    stateLock.wait();
-                    if (TRACE_SCHUDULE_PARSING) {
-                        System.err.printf("scheduleParsing: lock notified for %s in states %s, %s\n", getAbsolutePath(), state, parsingState); // NOI18N
-                    }
-                } else {
-                    return;
                 }
             }
         }
@@ -1781,7 +1788,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         output.writeLong(lastParsed);
         output.writeInt(lastParseTime);
-        output.writeByte((byte)state.ordinal());
+        State curState = state;
+        if (curState != State.PARSED && curState != State.INITIAL) {
+            curState = State.PARSED;
+            System.err.printf("file is written in intermediate state %s, switching to PARSED\n", curState);
+        }
+        output.writeByte(curState.ordinal());
         try {
             staticLock.readLock().lock();
             UIDObjectFactory.getDefaultFactory().writeUIDCollection(staticFunctionDeclarationUIDs, output, false);

@@ -45,17 +45,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.TreeSet;
 import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.servlet.jsp.JspException;
-import javax.servlet.jsp.tagext.TagAttributeInfo;
-import javax.servlet.jsp.tagext.TagData;
-import javax.servlet.jsp.tagext.TagInfo;
-import javax.servlet.jsp.tagext.VariableInfo;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -71,10 +63,8 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.web.core.syntax.spi.JspColoringData;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
-import org.netbeans.modules.web.jsps.parserapi.Node.IncludeDirective;
-import org.netbeans.modules.web.jsps.parserapi.Node.Visitor;
+
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.cookies.EditorCookie;
@@ -83,7 +73,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import static org.netbeans.api.jsp.lexer.JspTokenId.JavaCodeType;
 
@@ -98,7 +87,7 @@ import static org.netbeans.api.jsp.lexer.JspTokenId.JavaCodeType;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class SimplifiedJspServlet {
+public class SimplifiedJspServlet extends JSPProcessor {
 
     private static final String CLASS_HEADER = "\nclass SimplifiedJSPServlet extends %s {\n" + //NOI18N
             "\tprivate static final long serialVersionUID = 1L;\n"; //NOI18N
@@ -115,9 +104,7 @@ public class SimplifiedJspServlet {
             + "\t\tThrowable exception\n"
             + "\t) throws Throwable {\n"; //NOI18N
     private static final String CLASS_FOOTER = "\n\t}\n}"; //NOI18N
-    private final Document doc;
     private CharSequence charSequence;
-    private final FileObject fobj;
     private final Snapshot snapshot;
     private final ArrayList<Embedding> codeBlocks = new ArrayList<Embedding>();
 
@@ -127,11 +114,10 @@ public class SimplifiedJspServlet {
     private List<Embedding> localImports = new LinkedList<Embedding>();
     // keep bean declarations separate to avoid duplicating the declaration, see #130745
     private Embedding beanDeclarations;
-    private boolean processCalled = false;
-    private Embedding implicitImports;
+    
+    private List<Embedding> implicitImports = new LinkedList<Embedding>();;
     private int expressionIndex = 1;
-    private static final Logger logger = Logger.getLogger(SimplifiedJspServlet.class.getName());
-    private boolean processingSuccessful = true;
+    
 
     public SimplifiedJspServlet(Snapshot snapshot, Document doc){
         this(snapshot, doc, null);
@@ -238,47 +224,11 @@ public class SimplifiedJspServlet {
         }
 
         header = snapshot.create(getClassHeader(), "text/x-java");
-        implicitImports = snapshot.create(createImplicitImportStatements(localImports), "text/x-java");
+        implicitImports.add(snapshot.create(createImplicitImportStatements(localImports), "text/x-java"));
         beanDeclarations = snapshot.create("\n" + createBeanVarDeclarations(), "text/x-java");
     }
 
-    private void processIncludes()  {
-        PageInfo pageInfo = getPageInfo();
-
-        if (pageInfo == null) {
-            //if we do not get pageinfo it is unlikely we will get something reasonable from
-            //jspSyntax.getParseResult()...
-            return ;
-        }
-
-        final Collection<String> processedFiles = new TreeSet<String>(Collections.singleton(fobj.getPath()));
-
-        if (pageInfo.getIncludePrelude() != null){
-            for (String preludePath : (List<String>)pageInfo.getIncludePrelude()){
-                processIncludedFile(preludePath, processedFiles);
-            }
-        }
-
-        Visitor visitor = new Visitor() {
-
-            @Override
-            public void visit(IncludeDirective includeDirective) throws JspException {
-                String fileName = includeDirective.getAttributeValue("file");
-                processIncludedFile(fileName, processedFiles);
-            }
-        };
-
-        JspSyntaxSupport jspSyntax = JspSyntaxSupport.get(doc);
-        try {
-            JspParserAPI.ParseResult parseResult = jspSyntax.getParseResult();
-
-            if (parseResult != null && parseResult.getNodes() != null){
-                parseResult.getNodes().visit(visitor);
-            }
-        } catch (JspException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
+    
 
     private boolean consumeWS(TokenSequence tokenSequence){
         if (tokenSequence.token().id() == JspTokenId.WHITESPACE){
@@ -355,35 +305,7 @@ public class SimplifiedJspServlet {
         return null;
     }
 
-    private void processIncludedFile(String filePath, Collection<String> processedFiles) {
-//        FileObject includedFile = JspUtils.getFileObject(doc, filePath);
-//
-//        if (includedFile != null && includedFile.canRead()
-//                // prevent endless loop in case of a circular reference
-//                && !processedFiles.contains(includedFile.getPath())) {
-//
-//            processedFiles.add(includedFile.getPath());
-//
-//            try {
-//                DataObject includedFileDO = DataObject.find(includedFile);
-//                String mimeType = includedFile.getMIMEType();
-//
-//                if ("text/x-jsp".equals(mimeType) || "text/x-tag".equals(mimeType)) { //NOI18N
-//                    EditorCookie editor = includedFileDO.getCookie(EditorCookie.class);
-//
-//                    if (editor != null) {
-//                        SimplifiedJspServlet simplifiedServlet = new SimplifiedJspServlet(editor.openDocument());
-//                        simplifiedServlet.process(true);
-//
-//                        declarations.append(simplifiedServlet.declarations);
-//                        scriptlets.append(simplifiedServlet.scriptlets);
-//                    }
-//                }
-//            } catch (Exception e) {
-//                logger.log(Level.WARNING, e.getMessage(), e);
-//            }
-//        }
-    }
+    
 
     private boolean isServletAPIOnClasspath() {
         ClassPath cp = ClassPath.getClassPath(fobj, ClassPath.COMPILE);
@@ -393,6 +315,13 @@ public class SimplifiedJspServlet {
         }
 
         return false;
+    }
+
+    protected void processIncludedFile(IncludedJSPFileProcessor includedJSPFileProcessor) {
+        implicitImports.add(snapshot.create(includedJSPFileProcessor.getImports(), "text/x-java"));
+        declarations.add(snapshot.create(includedJSPFileProcessor.getDeclarations(), "text/x-java"));
+        //TODO: is it necessary?
+        scriptlets.add(snapshot.create(includedJSPFileProcessor.getScriptlets(), "text/x-java"));
     }
 
     private void displayServletAPIMissingWarning() {
@@ -417,136 +346,9 @@ public class SimplifiedJspServlet {
         }
     }
 
-    private String createBeanVarDeclarations() {
-        //TODO: the parser data contains no information about offsets and
-        //therefore it is not possible to create proper java embeddings
-        //inside bean declarations. We need a similar solution to what was
-        //done for imports, see issue #161246
-        StringBuilder beanDeclarationsBuff = new StringBuilder();
 
-        PageInfo pageInfo = getPageInfo();
-
-        if (pageInfo != null) {
-            PageInfo.BeanData[] beanData = getBeanData();
-
-            if (beanData != null) {
-                for (PageInfo.BeanData bean : beanData) {
-                    beanDeclarationsBuff.append(bean.getClassName() + " " + bean.getId() + ";\n"); //NOI18N
-                }
-            }
-
-            if (pageInfo.isTagFile()){
-                for (TagAttributeInfo info : pageInfo.getTagInfo().getAttributes()){
-                    if (info.getTypeName() != null){ // will be null e.g. for fragment attrs
-                        beanDeclarationsBuff.append(info.getTypeName() + " " + info.getName() + ";\n"); //NOI18N
-                    }
-                }
-            }
-        }
-
-        JspSyntaxSupport syntaxSupport = JspSyntaxSupport.get(doc);
-        JspColoringData coloringData = JspUtils.getJSPColoringData(fobj);
-
-        if (coloringData != null && coloringData.getPrefixMapper() != null){
-            Collection<String> prefixes = coloringData.getPrefixMapper().keySet();
-            TagData fooArg = new TagData((Object[][])null);
-
-            for (String prefix : prefixes) {
-                List<TagInfo> tags = syntaxSupport.getAllTags(prefix, false); //do not require fresh data - #146762
-
-                for (TagInfo tag : tags) {
-                    // #146754 - prevent NPE:
-                    if (tag == null) {
-                        continue;
-                    }
-                    VariableInfo vars[] = tag.getVariableInfo(fooArg);
-
-                    if (vars != null){
-                        for (VariableInfo var : vars) {
-                            // Create Variable Definitions
-                            if (var.getVarName() != null && var.getClassName() != null
-                                    && var.getDeclare()){
-                                String varDeclaration = var.getClassName() + " " + var.getVarName() + ";\n";
-                                beanDeclarationsBuff.append(varDeclaration);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return beanDeclarationsBuff.toString();
-    }
-
-    private String[] getImportsFromJspParser() {
-        PageInfo pi = getPageInfo();
-        if (pi == null) {
-            //we need at least some basic imports
-            return new String[]{"javax.servlet.*", "javax.servlet.http.*", "javax.servlet.jsp.*"};
-        }
-        List<String> imports = pi.getImports();
-        return imports.toArray(new String[imports.size()]);
-    }
-
-    private PageInfo.BeanData[] getBeanData() {
-
-        PageInfo pageInfo = getPageInfo();
-        //pageInfo can be null in some cases when the parser cannot parse
-        //the webmodule or the page itself
-        if (pageInfo != null) {
-            return pageInfo.getBeans();
-        }
-
-        //TagLibParseSupport support = (dobj == null) ?
-        //null : (TagLibParseSupport)dobj.getCookie(TagLibParseSupport.class);
-        //return support.getTagLibEditorData().getBeanData();
-        return null;
-    }
-
-    private PageInfo getPageInfo() {
-        //Workaround of issue #120195 - Deadlock in jspparser while reformatting JSP
-        //Needs to be removed after properly fixing the issue
-        if(DocumentUtilities.isWriteLocked(doc)) {
-            return null;
-        }
-
-        JspParserAPI.ParseResult parseResult = JspUtils.getCachedParseResult(fobj, true, false);
-
-        if (parseResult != null) {
-            return parseResult.getPageInfo();
-        }
-
-        //report error but do not break the entire CC
-        logger.log(Level.INFO, null, "PageInfo obtained from JspParserAPI.ParseResult is null");
-
-        return null;
-    }
-
-
-    /**
-     * Add extra imports according to information obtained from the JSP parser
-     *
-     * @param localImports imports already included in the Simplified Servlet
-     * by the processImportDirectives method
-     */
-    private String createImplicitImportStatements(List<String> localImports) {
-        StringBuilder importsBuff = new StringBuilder();
-        String[] imports = getImportsFromJspParser();
-
-        if (imports == null || imports.length == 0){
-            processingSuccessful = false;
-        } else {
-            // TODO: better support for situation when imports is null
-            // (JSP doesn't belong to a project)
-            for (String pckg : imports) {
-                if (!localImports.contains(pckg)){
-                    importsBuff.append("import " + pckg + ";\n"); //NOI18N
-                }
-            }
-        }
-
-        return importsBuff.toString();
-    }
+    
+    
 
     private String getClassHeader() {
         String extendsClass = null; //NOI18N
@@ -565,11 +367,7 @@ public class SimplifiedJspServlet {
         return String.format(CLASS_HEADER, extendsClass);
     }
 
-    private void assureProcessCalled() {
-        if (!processCalled) {
-            throw new IllegalStateException("process() method must be called first!"); //NOI18N
-        }
-    }
+    
 
     public Embedding getSimplifiedServlet() {
         assureProcessCalled();
@@ -584,7 +382,7 @@ public class SimplifiedJspServlet {
 
         List<Embedding> content = new LinkedList<Embedding>();
 
-        content.add(implicitImports);
+        content.addAll(implicitImports);
         content.addAll(localImports);
         content.add(header);
         content.addAll(declarations);

@@ -152,12 +152,12 @@ class CheckboxInplaceEditor extends JCheckBox implements InplaceEditor {
         }
 
         if (editor != null) {
-            Boolean value = (Boolean) editor.getValue();
+            Object value = editor.getValue();
 
             if (value == null) {
                 getModel().setArmed(true);
-            } else {
-                setSelected(value.booleanValue());
+            } else if (value instanceof Boolean) {
+                setSelected((Boolean) value);
             }
         }
     }
