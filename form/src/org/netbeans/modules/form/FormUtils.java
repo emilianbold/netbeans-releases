@@ -56,6 +56,7 @@ import javax.swing.ListModel;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.TreeModelListener;
 import javax.swing.plaf.ComponentUI;
+import javax.swing.text.Document;
 import javax.swing.tree.DefaultTreeModel;
 import org.netbeans.api.editor.DialogBinding;
 import org.netbeans.editor.EditorUI;
@@ -66,6 +67,8 @@ import org.openide.util.*;
 import org.openide.nodes.Node;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.form.project.ClassPathUtils;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  * A class that contains utility methods for the formeditor.
@@ -921,7 +924,19 @@ public class FormUtils
     }
 
     public static void setupEditorPane(javax.swing.JEditorPane editor, FileObject srcFile, int ccPosition) {
-        DialogBinding.bindComponentToFile(srcFile, ccPosition, 0, editor);
+        DataObject dob = null;
+        try {
+            dob = DataObject.find(srcFile);
+        } catch (DataObjectNotFoundException dnfex) {
+            LOGGER.log(Level.INFO, dnfex.getMessage(), dnfex);
+        }
+        if (!(dob instanceof FormDataObject)) {
+            LOGGER.log(Level.INFO, "Unable to find FormDataObject for " + srcFile); // NOI18N
+            return;
+        }
+        FormDataObject formDob = (FormDataObject)dob;
+        Document document = formDob.getFormEditorSupport().getDocument();
+        DialogBinding.bindComponentToDocument(document, ccPosition, 0, editor);
 
         // do not highlight current row
         EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(editor);
