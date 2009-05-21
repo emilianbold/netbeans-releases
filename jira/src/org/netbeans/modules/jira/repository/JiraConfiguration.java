@@ -111,6 +111,7 @@ public class JiraConfiguration extends JiraClientCache {
     }
 
     private void refreshData () throws JiraException {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
         
         data.projects = client.getProjects(nullProgressMonitor);
