@@ -146,10 +146,6 @@ public final class NativeProcessBuilder implements Callable<Process> {
      */
     public NativeProcess call() throws IOException {
 
-        if (Thread.currentThread().isInterrupted()) {
-            return null;
-        }
-
         if (info.getExecutionEnvironment().isRemote()) {
             process = new RemoteNativeProcess(info);
         } else {
@@ -164,10 +160,6 @@ public final class NativeProcessBuilder implements Callable<Process> {
             } else {
                 process = new LocalNativeProcess(info);
             }
-        }
-
-        if (Thread.currentThread().isInterrupted()) {
-            return null;
         }
 
         return process.createAndStart();

@@ -58,6 +58,7 @@ import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.Context;
 import org.netbeans.api.languages.ParseException;
+import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
@@ -146,7 +147,7 @@ public class CompletionTest extends TestCase {
         Language language = createTestLanguage (features);
         
         JEditorPane editor = createTestComponent (language);
-//        ParserManager pm = ParserManager.get (editor.getDocument ());
+        ParserManager pm = ParserManager.get (editor.getDocument ());
         editor.getDocument ().insertString(editor.getDocument ().getLength (), " ", null);
         
         editor.setCaretPosition (27);
@@ -178,7 +179,7 @@ public class CompletionTest extends TestCase {
         Language language = createTestLanguage (features);
         
         JEditorPane editor = createTestComponent (language);
-//        ParserManager.get (editor.getDocument ());
+        ParserManager.get (editor.getDocument ());
         editor.getDocument ().insertString(editor.getDocument ().getLength (), " ", null);
         
         editor.setCaretPosition (27);
@@ -212,7 +213,7 @@ public class CompletionTest extends TestCase {
         Language language = createTestLanguage (features);
         
         JEditorPane editor = createTestComponent (language);
-//        ParserManager.get (editor.getDocument ());
+        ParserManager.get (editor.getDocument ());
         editor.getDocument ().insertString(editor.getDocument ().getLength (), " ", null);
         
         editor.setCaretPosition (27);
@@ -258,7 +259,7 @@ public class CompletionTest extends TestCase {
         Language language = createTestLanguage (features);
         
         JEditorPane editor = createTestComponent (language);
-//        ParserManager.get (editor.getDocument ());
+        ParserManager.get (editor.getDocument ());
         editor.getDocument ().insertString(editor.getDocument ().getLength (), " ", null);
         
         editor.setCaretPosition (27);

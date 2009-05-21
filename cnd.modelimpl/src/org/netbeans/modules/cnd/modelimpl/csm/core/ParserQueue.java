@@ -415,9 +415,14 @@ public final class ParserQueue {
                     } else {
                         entry.addStates(ppStates);
                     }
-                    if (position.compareTo(entry.getPosition()) < 0) {
+                    if (file != entry.file) {
+                        // Replace old file instance by new
                         queue.remove(entry);
-                        entry = new Entry(entry.getFile(), entry.getPreprocStates(), position, serial.incrementAndGet());
+                        entry = new Entry(file, entry.getPreprocStates(), position, serial.incrementAndGet());
+                        addEntry = true;
+                    } else if (position.compareTo(entry.getPosition()) < 0) {
+                        queue.remove(entry);
+                        entry = new Entry(file, entry.getPreprocStates(), position, serial.incrementAndGet());
                         addEntry = true;
                     }
                 }
@@ -827,9 +832,16 @@ public final class ParserQueue {
 
     private Entry findEntry(FileImpl file) {
 //        return fileEntry.get(file);
+        int fileHashCode = file.hashCode();
         for (Entry e : queue) {
-            if (e.getFile() == file) {
+            FileImpl f = e.getFile();
+            if (f == file) {
                 return e;
+            }
+            if (fileHashCode == f.hashCode()) {
+                if (file.equals(f)) {
+                    return e;
+                }
             }
         }
         return null;

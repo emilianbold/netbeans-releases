@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap.State;
@@ -55,7 +56,6 @@ public final class APTFileCacheEntry {
     private final ConcurrentMap<Integer, IncludeData> cache = new ConcurrentHashMap<Integer, IncludeData>();
     private final Map<Integer, Boolean> evalData = new HashMap<Integer, Boolean>();
     private final CharSequence filePath;
-    private static boolean TRACE = false;
     public APTFileCacheEntry(CharSequence filePath) {
         assert (filePath != null);
         this.filePath = filePath;
@@ -69,10 +69,8 @@ public final class APTFileCacheEntry {
         assert data != null;
         if (data.postIncludeMacroState != null) {
             includeHits++;
-            if (TRACE) {
-                if (needTraceValue(includeHits)) {
-                    System.err.println("INCLUDE HIT " + includeHits + " cache for line:" + node.getToken().getLine() + " in " + filePath);
-                }
+            if (APTTraceFlags.TRACE_APT_CACHE && needTraceValue(includeHits)) {
+                System.err.println("INCLUDE HIT " + includeHits + " cache for line:" + node.getToken().getLine() + " in " + filePath);
             }
         }
         return data.postIncludeMacroState;
@@ -91,7 +89,7 @@ public final class APTFileCacheEntry {
 
     /*package*/ Boolean getEvalResult(APT node) {
         Boolean out = evalData.get(node.getOffset());
-        if (TRACE) {
+        if (APTTraceFlags.TRACE_APT_CACHE) {
             if (out != null && needTraceValue(evalHits++)) {
                 System.err.println("EVAL HIT " + evalHits + " cache for line:" + node.getToken().getLine() + " as " + out + " in " + filePath);
             }

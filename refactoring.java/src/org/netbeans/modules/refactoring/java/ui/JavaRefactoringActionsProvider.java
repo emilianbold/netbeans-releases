@@ -388,8 +388,39 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                     return new UseSuperTypeRefactoringUI(s);
                 }
             };
-        RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.useSuperTypeAction()));
+        } else if (RefactoringActionsProvider.nodeHandle(lookup)) {
+            task = new TreePathHandleTask(new HashSet<Node>(lookup.lookupAll(Node.class)), true) {
+
+                RefactoringUI ui;
+
+                @Override
+                protected void treePathHandleResolved(TreePathHandle handle, CompilationInfo javac) {
+                    ui = new UseSuperTypeRefactoringUI(handle);
+                }
+
+                @Override
+                protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles) {
+                    return ui;
+                }
+            };
+        } else {
+            task = new NodeToFileObjectTask(Collections.singleton(lookup.lookup(Node.class))) {
+
+                RefactoringUI ui;
+
+                @Override
+                protected void nodeTranslated(Node node, Collection<TreePathHandle> handles, CompilationInfo javac) {
+                    TreePathHandle tph = handles.iterator().next();
+                    ui = new UseSuperTypeRefactoringUI(tph);
+                }
+
+                @Override
+                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
+                    return ui;
+                }
+            };
         }
+        RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.useSuperTypeAction()));
     }
     
     @Override
