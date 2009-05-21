@@ -364,6 +364,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
                 unnamedNrs.remove(Integer.valueOf(0));
             }
         }
+        RepositoryUtils.put(this);
     }
 
     /**
