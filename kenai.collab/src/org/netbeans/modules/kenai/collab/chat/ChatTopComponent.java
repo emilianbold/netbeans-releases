@@ -233,9 +233,15 @@ public class ChatTopComponent extends TopComponent {
 
     private void clearChatsTabbedPane() {
         chats.removeAll();
+        addMoreChatsTab(0);
+    }
+
+    private void addMoreChatsTab(int index) {
         chats.add(newPanel);
-        chats.setDisabledIconAt(0, ImageUtilities.loadImageIcon(PLUS, true));
-        chats.setEnabledAt(0, false);
+        chats.setDisabledIconAt(index, ImageUtilities.loadImageIcon(PLUS, true));
+        chats.setEnabledAt(index, false);
+        chats.setToolTipTextAt(index, NbBundle.getMessage(ChatTopComponent.class, "LBL_MoreChats"));
+
     }
     private void putLoginScreen() {
         Runnable r = new Runnable() {
@@ -331,9 +337,7 @@ public class ChatTopComponent extends TopComponent {
             Exceptions.printStackTrace(ex);
         }
 
-        chats.add(newPanel);
-        chats.setDisabledIconAt(idx+1, ImageUtilities.loadImageIcon(PLUS, true));
-        chats.setEnabledAt(idx+1, false);
+        addMoreChatsTab(idx+1);
 
         open.add(chatPanel.getName());
         chats.setSelectedComponent(chatPanel);
