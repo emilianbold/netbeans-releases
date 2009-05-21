@@ -252,7 +252,7 @@ public class WatchPanel {
         Mnemonics.setLocalizedText(textLabel, bundle.getString ("CTL_Watch_Name")); // NOI18N
         if (expression != null && expression.trim().length() == 0) {
             JEditorPane editor = EditorContextDispatcher.getDefault().getMostRecentEditor();
-            if (editor.getDocument() instanceof StyledDocument) {
+            if (editor != null && editor.getDocument() instanceof StyledDocument) {
                 StyledDocument doc = (StyledDocument) editor.getDocument();
                 String selectedExpression = getSelectedIdentifier(doc, editor, editor.getCaret ().getDot ());
                 if (selectedExpression != null) {
