@@ -45,8 +45,6 @@ import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import java.awt.Image;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -67,7 +65,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.IssueCache;
+import org.netbeans.modules.bugtracking.spi.IssueCache;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.commands.JiraCommand;
@@ -116,7 +114,8 @@ public class JiraRepository extends Repository {
         if(password == null) {
             password = "";                                                      // NOI18N
         }
-        setTaskRepository(name, url, user, password, httpUser, httpPassword);
+        taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
+        Jira.getInstance().addRepository(this);
     }
 
     public Query createQuery() {
@@ -209,7 +208,7 @@ public class JiraRepository extends Repository {
     }
 
     public void removeQuery(JiraQuery query) {
-        JiraConfig.getInstance().removeQuery(this, query);
+        Jira.getInstance().getStorageManager().removeQuery(this, query);
         getIssueCache().removeQuery(name);
         getQueriesIntern().remove(query);
         stopRefreshing(query);
@@ -217,22 +216,14 @@ public class JiraRepository extends Repository {
 
     public void saveQuery(JiraQuery query) {
         assert name != null;
-        JiraConfig.getInstance().putQuery(this, query); // XXX display name ????
+        Jira.getInstance().getStorageManager().putQuery(this, query);
         getQueriesIntern().add(query);
     }
 
     private Set<Query> getQueriesIntern() {
         if(queries == null) {
-            queries = new HashSet<Query>(10);
-            String[] qs = JiraConfig.getInstance().getQueries(name);
-            for (String queryName : qs) {
-                JiraQuery q = JiraConfig.getInstance().getQuery(this, queryName);
-                if(q != null ) {
-                    queries.add(q);
-                } else {
-                    Jira.LOG.warning("Couldn't find query with stored name " + queryName); // NOI18N
-                }
-            }
+            JiraStorageManager manager = Jira.getInstance().getStorageManager();
+            queries = manager.getQueries(this);
         }
         return queries;
     }
@@ -308,8 +299,8 @@ public class JiraRepository extends Repository {
 
     protected void setTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
-        Jira.getInstance().addRepository(this);
         resetRepository(); // only on url, user or passwd change        
+        Jira.getInstance().addRepository(this);
     }
 
     static TaskRepository createTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
@@ -368,16 +359,21 @@ public class JiraRepository extends Repository {
      */
     public synchronized JiraConfiguration getConfiguration() {
         if(configuration == null) {
-            configuration = getConfigurationIntern();
+            configuration = getConfigurationIntern(false);
         }
         return configuration;
+    }
+
+    public synchronized void refreshConfiguration() {
+        JiraConfiguration c = getConfigurationIntern(true);
+        configuration = c;
     }
 
     protected JiraConfiguration createConfiguration(JiraClient client) {
         return new JiraConfiguration(client, JiraRepository.this);
     }
 
-    private JiraConfiguration getConfigurationIntern() {
+    private JiraConfiguration getConfigurationIntern(final boolean forceRefresh) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
 
         // XXX need logging incl. consumed time
@@ -388,7 +384,7 @@ public class JiraRepository extends Repository {
             public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
                 final JiraClient client = Jira.getInstance().getClient(getTaskRepository());
                 configuration = createConfiguration(client);
-                configuration.initialize();
+                configuration.initialize(forceRefresh);
             }
         }
         ConfigurationCommand cmd = new ConfigurationCommand();
@@ -514,7 +510,7 @@ public class JiraRepository extends Repository {
         return refreshProcessor;
     }
 
-    private class Cache extends IssueCache {
+    private class Cache extends IssueCache<TaskData> {
         Cache() {
             super(JiraRepository.this.getUrl());
         }

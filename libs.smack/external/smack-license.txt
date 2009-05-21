@@ -1,5 +1,5 @@
 Name: Smack API
-Version: 3.0.4
+Version: 3.1.0
 License: Apache-2.0
 Description: Open Source XMPP (Jabber) client library
 OSR: 11270

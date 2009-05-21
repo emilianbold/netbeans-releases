@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
+import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 
 /**
  * @author   Jan Jancura and Gordon Prieur
@@ -94,9 +95,9 @@ public class BreakpointsNodeModel implements NodeModel {
             Integer maxInt = BreakpointsTreeModelFilter.MAX_LINES.get(b);
             if (maxInt != null) {
                 int max = maxInt.intValue();
-                int num0 = AbstractVariable.log10(max) - AbstractVariable.log10(lineNum);
+                int num0 = GdbUtils.log10(max) - GdbUtils.log10(lineNum);
                 if (num0 > 0) {
-                    line = AbstractVariable.zeros(num0) + line;
+                    line = GdbUtils.zeros(num0) + line;
                 }
             }
             return bold(b, NbBundle.getMessage(BreakpointsNodeModel.class, "CTL_Line_Breakpoint", // NOI18N

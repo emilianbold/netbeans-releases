@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.tools.impl;
 
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
 import java.io.IOException;
 import java.util.Arrays;
@@ -83,7 +84,8 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
             NAME, Arrays.asList(
             ProcDataProviderConfiguration.SYS_TIME,
             ProcDataProviderConfiguration.USR_TIME,
-            ProcDataProviderConfiguration.THREADS));
+            ProcDataProviderConfiguration.THREADS),
+            null);
 
     private List<ValidationListener> validationListeners;
     private ValidationStatus validationStatus;
@@ -225,7 +227,8 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
             return;
         }
 
-        NativeProcessBuilder npb = new NativeProcessBuilder(env, hostInfo.getShell());
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+        npb.setExecutable(hostInfo.getShell());
         ExecutionDescriptor descr = new ExecutionDescriptor();
         descr = descr.inputOutput(InputOutput.NULL);
         int pid = ((AttachableTarget) target).getPID();
@@ -257,6 +260,9 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
             }
             procReaderTask = null;
         }
+    }
+
+    public void dataFiltersChanged(List<DataFilter> newSet) {
     }
 
     /**

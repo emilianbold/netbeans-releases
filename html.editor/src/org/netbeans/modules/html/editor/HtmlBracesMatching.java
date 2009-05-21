@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.html.editor;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.text.AbstractDocument;
@@ -56,12 +55,9 @@ import org.netbeans.editor.ext.html.HtmlSyntaxSupport;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
-import org.netbeans.modules.html.editor.Utils;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResult;
-import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -197,8 +193,8 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                     }
 
                     HtmlParserResult result = (HtmlParserResult) resultIterator.getParserResult();
-                    if(result == null) {
-                        return ;
+                    if (result == null) {
+                        return;
                     }
                     AstNode root = result.root();
 
@@ -206,36 +202,44 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
 
                     AstNode origin = AstNodeUtils.findDescendant(root, searched);
                     if (origin != null) {
-                        if (origin.type() == AstNode.NodeType.OPEN_TAG) {
-                            AstNode parent = origin.parent();
-                            if (parent.type() == AstNode.NodeType.UNMATCHED_TAG) {
-                                Element element = result.dtd().getElement(origin.name().toUpperCase());
-                                if (element != null && (element.hasOptionalEnd() || element.isEmpty())) {
-                                    ret[0] = new int[]{context.getSearchOffset(), context.getSearchOffset()}; //match nothing, origin will be yellow  - workaround
-                                } else {
-                                    ret[0] = null; //no match
-                                }
+                        if (origin.type() == AstNode.NodeType.OPEN_TAG ||
+                                origin.type() == AstNode.NodeType.ENDTAG) {
+
+                            //adjust the tag node, we are interested in the tags itself, not in the tag ranges
+                            origin = AstNodeUtils.getTagNode(origin, searched);
+
+                            if (origin == null) {
+                                //offset between tags, no match
+                                ret[0] = null;
                             } else {
-                                //last element must be the matching tag
-                                AstNode endTag = parent.children().get(parent.children().size() - 1);
-                                ret[0] = translate(new int[]{endTag.startOffset(), endTag.endOffset()}, result);
-                            }
-                        } else if (origin.type() == AstNode.NodeType.ENDTAG) {
-                            AstNode parent = origin.parent();
-                            if (parent.type() == AstNode.NodeType.UNMATCHED_TAG) {
-                                Element element = result.dtd().getElement(origin.name().toUpperCase());
-                                if (element != null && element.hasOptionalStart()) {
-                                    ret[0] = new int[]{context.getSearchOffset(), context.getSearchOffset()}; //match nothing, origin will be yellow  - workaround
+
+                                AstNode match = origin.getMatchingTag();
+                                if (match == null) {
+                                    if (origin.needsToHaveMatchingTag()) {
+                                        //error
+                                        ret[0] = null; //no match
+                                    } else {
+                                        //valid
+                                        ret[0] = new int[]{context.getSearchOffset(), context.getSearchOffset()}; //match nothing, origin will be yellow  - workaround
+                                    }
                                 } else {
-                                    ret[0] = null; //no match
+                                    //match
+
+                                    if (match.type() == AstNode.NodeType.OPEN_TAG) {
+                                        //match the '<tagname' part
+                                        int f1 = match.startOffset();
+                                        int t1 = f1 + match.name().length() + 1; /* +1 == open tag symbol '<' length */
+                                        //match the closing '>' symbol
+                                        int f2 = match.endOffset() - 1; // -1 == close tag symbol '>' length
+                                        int t2 = match.endOffset();
+
+                                        ret[0] = translate(new int[]{f1, t1, f2, t2}, result);
+                                    } else {
+                                        ret[0] = translate(new int[]{match.startOffset(), match.endOffset()}, result);
+                                    }
                                 }
-                            } else {
-                                //first element must be the matching tag
-                                AstNode openTag = parent.children().get(0);
-                                ret[0] = translate(new int[]{openTag.startOffset(), openTag.startOffset() + openTag.name().length() + 1 /* open tag symbol '<' length */, openTag.endOffset() - 1, openTag.endOffset()}, result);
                             }
                         } else if (origin.type() == AstNode.NodeType.COMMENT) {
-                            int so = origin.startOffset();
                             if (searched >= origin.startOffset() && searched <= origin.startOffset() + BLOCK_COMMENT_START.length()) {
                                 //complete end of comment
                                 ret[0] = translate(new int[]{origin.endOffset() - BLOCK_COMMENT_END.length(), origin.endOffset()}, result);
@@ -288,9 +292,9 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                         return;
                     }
                 }
-            // We might be trying to search at the end or beginning of a document. In which
-            // case there is nothing to find and/or search through, so don't create a matcher.
-            //        throw new IllegalStateException("No text/html language found on the MatcherContext's search offset! This should never happen!");
+                // We might be trying to search at the end or beginning of a document. In which
+                // case there is nothing to find and/or search through, so don't create a matcher.
+                //        throw new IllegalStateException("No text/html language found on the MatcherContext's search offset! This should never happen!");
             }
         });
         return ret[0];

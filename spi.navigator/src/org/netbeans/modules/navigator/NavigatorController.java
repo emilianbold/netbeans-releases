@@ -368,7 +368,7 @@ public final class NavigatorController implements LookupListener, ActionListener
 
         if (selPanel != null) {
             // #61334: don't deactivate previous providers if there are no new ones
-            if (!areNewProviders && !force) {
+            if (!areNewProviders && !force && null != providers) {
                 inUpdate = false;
                 LOG.fine("Exit because no new providers, force: " + force);
                 return;

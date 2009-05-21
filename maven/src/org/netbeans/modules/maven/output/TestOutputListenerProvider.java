@@ -45,7 +45,6 @@ import java.io.InputStreamReader;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputUtils;
@@ -107,10 +106,11 @@ public class TestOutputListenerProvider implements OutputProcessor {
             Matcher match = failWindowsPattern2.matcher(line);
             if (match.matches()) {
                 visitor.setOutputListener(new TestOutputListener(runningTestClass, outputDir), true);
+                visitor.setLine(delayedLine + line);
+            } else {
+                visitor.setLine(delayedLine + "\n" + line);
             }
-            visitor.setLine(delayedLine + line);
             delayedLine = null;
-            return;
         }
         Matcher match = outDirPattern.matcher(line);
         if (match.matches()) {

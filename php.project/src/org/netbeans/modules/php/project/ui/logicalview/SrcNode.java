@@ -53,6 +53,7 @@ import org.netbeans.modules.php.project.ui.actions.RunFileCommand;
 import org.netbeans.modules.php.project.ui.actions.RunTestCommand;
 import org.netbeans.modules.php.project.ui.actions.UploadCommand;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.actions.FileSystemAction;
 import org.openide.actions.FindAction;
@@ -129,8 +130,8 @@ public class SrcNode extends FilterNode {
         actions.add(CommonProjectActions.newFileAction());
         actions.add(null);
         if (!isTest) {
-            actions.add(ProjectSensitiveActions.projectCommandAction(DownloadCommand.ID, DownloadCommand.DISPLAY_NAME, null));
-            actions.add(ProjectSensitiveActions.projectCommandAction(UploadCommand.ID, UploadCommand.DISPLAY_NAME, null));
+            actions.add(FileSensitiveActions.fileCommandAction(DownloadCommand.ID, DownloadCommand.DISPLAY_NAME, null));
+            actions.add(FileSensitiveActions.fileCommandAction(UploadCommand.ID, UploadCommand.DISPLAY_NAME, null));
             actions.add(null);
         }
         actions.add(SystemAction.get(FileSystemAction.class));
@@ -147,8 +148,8 @@ public class SrcNode extends FilterNode {
 
     static final Action[] COMMON_ACTIONS = new Action[]{
         null,
-        ProjectSensitiveActions.projectCommandAction(DownloadCommand.ID, DownloadCommand.DISPLAY_NAME, null),
-        ProjectSensitiveActions.projectCommandAction(UploadCommand.ID, UploadCommand.DISPLAY_NAME, null)
+        FileSensitiveActions.fileCommandAction(DownloadCommand.ID, DownloadCommand.DISPLAY_NAME, null),
+        FileSensitiveActions.fileCommandAction(UploadCommand.ID, UploadCommand.DISPLAY_NAME, null)
     };
 
     public static Action createDownloadAction() {

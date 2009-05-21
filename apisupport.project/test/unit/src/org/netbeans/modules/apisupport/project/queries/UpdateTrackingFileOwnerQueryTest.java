@@ -59,7 +59,8 @@ public class UpdateTrackingFileOwnerQueryTest extends TestBase {
     public UpdateTrackingFileOwnerQueryTest(String name) {
         super(name);
     }
-    
+
+    // TODO fails because o.n.m.a.p.queries.UpdateTrackingFileOwnerQuery does not scan extra-compilation-units, fix
     public void testOwnershipNetBeansOrg() throws Exception {
         // Basic module:
         assertOwnership("o.apache.tools.ant.module", "nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/modules/org-apache-tools-ant-module.jar");

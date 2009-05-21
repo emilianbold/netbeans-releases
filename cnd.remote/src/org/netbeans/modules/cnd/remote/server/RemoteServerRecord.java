@@ -89,7 +89,7 @@ public class RemoteServerRecord implements ServerRecord {
         stateLock = new String("RemoteServerRecord state lock for " + toString()); // NOI18N
         reason = null;
         deleted = false;
-        this.displayName = displayName;
+        this.displayName = escape(displayName);
         
         if (env.isLocal()) {
             editable = false;
@@ -227,7 +227,16 @@ public class RemoteServerRecord implements ServerRecord {
     }
 
     public void setDisplayName(String displayName) {
-        this.displayName = displayName;
+        this.displayName = escape(displayName);
+    }
+
+    // #164242 Remote gets in trouble in the case user uses "," in host display name
+    private String escape(String text) {
+        if (text != null) {
+            text = text.replace('|', '_'); //NOI18N
+            text = text.replace(',', '_'); //NOI18N
+        }
+        return text;
     }
 
     @Override

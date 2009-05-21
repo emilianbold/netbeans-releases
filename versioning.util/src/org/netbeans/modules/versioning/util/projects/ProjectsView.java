@@ -159,7 +159,9 @@ class ProjectsView extends JPanel implements ExplorerManager.Provider, VetoableC
 
         private void setupColumns() {
             Node.Property[] columns = new Node.Property[1];
-            columns[0] = new ColumnDescriptor<String>(ProjectNode.PROPERTY_NAME_PATH, String.class, "Path", "Local path to the project");  // NOI18N
+            String columnName = NbBundle.getMessage(ProjectsView.class, "LBL_Path");
+            String columnDesc = NbBundle.getMessage(ProjectsView.class, "LBL_PathDesc");
+            columns[0] = new ColumnDescriptor<String>(ProjectNode.PROPERTY_NAME_PATH, String.class, columnName, columnDesc);  // NOI18N
 
             setProperties(columns);
         }

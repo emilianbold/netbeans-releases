@@ -40,9 +40,11 @@
 package org.netbeans.modules.php.project.ui.testrunner;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.input.LineProcessors;
 import org.netbeans.api.extexecution.print.LineConvertor;
@@ -58,6 +60,7 @@ import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestSuiteVO;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO;
 import org.netbeans.modules.php.project.util.PhpUnit;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.OutputWriter;
 
@@ -96,7 +99,11 @@ public final class UnitTestRunner {
         }
         Reader reader;
         try {
-            reader = new BufferedReader(new FileReader(PhpUnit.XML_LOG));
+            // #163633 - php unit always uses utf-8 for its xml logs
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(PhpUnit.XML_LOG), "UTF-8")); // NOI18N
+        } catch (UnsupportedEncodingException ex) {
+            Exceptions.printStackTrace(ex);
+            return;
         } catch (FileNotFoundException ex) {
             processPhpUnitError();
             return;

@@ -54,7 +54,6 @@ import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.Par
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -287,24 +286,12 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
             preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_ChangeParamsWrongType"));
             return preCheckProblem;
         }
-        
-        FileObject fo = SourceUtils.getFile(el,info.getClasspathInfo());
-        if (RetoucheUtils.isFromLibrary(el, info.getClasspathInfo())) { //NOI18N
-            preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(
-                    ChangeParametersPlugin.class, "ERR_CannotRefactorLibraryClass",
-                    el.getEnclosingElement()
-                    ));
+
+        preCheckProblem = JavaPluginUtils.isSourceElement(el, info);
+        if (preCheckProblem != null) {
             return preCheckProblem;
         }
-        
-        if (!RetoucheUtils.isElementInOpenProject(fo)) {
-            preCheckProblem =new Problem(true, NbBundle.getMessage(
-                    ChangeParametersPlugin.class,
-                    "ERR_ProjectNotOpened",
-                    FileUtil.getFileDisplayName(fo)));
-            return preCheckProblem;
-        }
-        
+
         if (info.getElementUtilities().enclosingTypeElement(el).getKind() == ElementKind.ANNOTATION_TYPE) {
             preCheckProblem =new Problem(true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_MethodsInAnnotationsNotSupported"));
             return preCheckProblem;

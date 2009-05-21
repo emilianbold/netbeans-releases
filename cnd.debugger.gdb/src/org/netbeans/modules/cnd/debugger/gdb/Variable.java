@@ -55,12 +55,15 @@ public interface Variable {
      *
      * @return type of this instance
      */
-    public abstract String getType();
+    String getType();
 
     /**
      * Text representation of current value of "this" variable.
      *
      * @return text representation of current value of "this" variable
      */
-    public abstract String getValue();
+    String getValue();
+
+    String getName();
+    void setValue(String value);
 }

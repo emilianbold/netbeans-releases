@@ -110,6 +110,7 @@ public class RepositoryPanel extends javax.swing.JPanel implements DocumentListe
         nameField.setColumns(30);
 
         org.openide.awt.Mnemonics.setLocalizedText(validateButton, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.validateButton.text_1")); // NOI18N
+        validateButton.setToolTipText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.cbEnableLocalUsers.AccessibleContext.accessibleDescription")); // NOI18N
         validateButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 validateButtonActionPerformed(evt);
@@ -142,6 +143,8 @@ public class RepositoryPanel extends javax.swing.JPanel implements DocumentListe
 
         httpPsswdField.setColumns(15);
 
+        org.openide.awt.Mnemonics.setLocalizedText(cbEnableLocalUsers, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.cbEnableLocalUsers.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -156,28 +159,32 @@ public class RepositoryPanel extends javax.swing.JPanel implements DocumentListe
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, httpPsswdField)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, httpUserField)))
-            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                    .add(validateButton)
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(validateLabel)
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(progressPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
-                    .addContainerGap())
-                .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(urlLabel)
-                        .add(psswdLabel)
-                        .add(userLabel)
-                        .add(nameLabel))
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, psswdField)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, userField))
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, urlField)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, nameField)))))
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(urlLabel)
+                    .add(psswdLabel)
+                    .add(userLabel)
+                    .add(nameLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, psswdField)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, userField))
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, urlField)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, nameField))))
+            .add(layout.createSequentialGroup()
+                .add(cbEnableLocalUsers)
+                .addContainerGap())
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(96, 96, 96)
+                .add(validateLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(progressPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(validateButton)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -207,13 +214,15 @@ public class RepositoryPanel extends javax.swing.JPanel implements DocumentListe
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(httpPsswdField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(psswdLabel1))
+                .add(18, 18, 18)
+                .add(cbEnableLocalUsers)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(validateLabel)
-                    .add(progressPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 13, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-            .add(layout.createSequentialGroup()
-                .add(239, 239, 239)
-                .add(validateButton))
+                    .add(progressPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 13, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(40, 40, 40)
+                .add(validateButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(0, 0, Short.MAX_VALUE))
         );
 
         urlField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.urlField.AccessibleContext.accessibleDescription")); // NOI18N
@@ -224,6 +233,7 @@ public class RepositoryPanel extends javax.swing.JPanel implements DocumentListe
         httpCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.httpCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
         httpUserField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.httpUserField.AccessibleContext.accessibleDescription")); // NOI18N
         httpPsswdField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.httpPsswdField.AccessibleContext.accessibleDescription")); // NOI18N
+        cbEnableLocalUsers.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.cbEnableLocalUsers.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void userFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_userFieldActionPerformed
@@ -243,6 +253,7 @@ public class RepositoryPanel extends javax.swing.JPanel implements DocumentListe
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    final javax.swing.JCheckBox cbEnableLocalUsers = new javax.swing.JCheckBox();
     final javax.swing.JCheckBox httpCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JPasswordField httpPsswdField = new javax.swing.JPasswordField();
     final javax.swing.JTextField httpUserField = new javax.swing.JTextField();
@@ -288,6 +299,7 @@ public class RepositoryPanel extends javax.swing.JPanel implements DocumentListe
         urlField.setEnabled(bl);
         urlLabel.setEnabled(bl);
         httpCheckBox.setEnabled(bl);
+        cbEnableLocalUsers.setEnabled(bl);
         enableHttpFields();
     }
 

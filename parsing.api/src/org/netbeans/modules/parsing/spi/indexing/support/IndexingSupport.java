@@ -164,7 +164,7 @@ public final class IndexingSupport {
      * @since 1.4
      */
     public void markDirtyDocuments (final Indexable indexable) {
-        LOG.fine("markDirtyDocuments: " + indexable.getURL()); //NOI18N
+        Parameters.notNull("indexable", indexable);
         spiIndex.fileModified(indexable.getRelativePath());
     }
 

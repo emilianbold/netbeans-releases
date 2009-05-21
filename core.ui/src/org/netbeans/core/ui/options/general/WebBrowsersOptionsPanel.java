@@ -29,7 +29,6 @@
 package org.netbeans.core.ui.options.general;
 
 import java.awt.CardLayout;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentListener;
@@ -37,9 +36,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Document;
-import org.netbeans.beaninfo.editors.HtmlBrowser;
 import org.netbeans.core.ui.options.general.WebBrowsersOptionsModel.PropertyPanelDesc;
-import org.openide.util.Lookup;
 
 /**
  * Panel for customization of web browser preffered property
@@ -50,17 +47,6 @@ public class WebBrowsersOptionsPanel extends JPanel implements ListSelectionList
     
     private WebBrowsersOptionsModel browsersModel;
     private DocumentListener fieldDocListener;
-    
-    private static List<String> defaultBrowsersNames;
-    
-    static {
-        HtmlBrowser.FactoryEditor editor = Lookup.getDefault().lookup(HtmlBrowser.FactoryEditor.class);
-        String[] tags = editor.getTags();
-        defaultBrowsersNames = new ArrayList<String>(tags.length);
-        for (String s : tags) {
-            defaultBrowsersNames.add(s);
-        }
-    }
     
     /** Creates new form WebBrowsersOptionsPanel */
     public WebBrowsersOptionsPanel(WebBrowsersOptionsModel mdl, String selectedItem) {
@@ -224,21 +210,18 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             String panelID = browsersModel.getPropertyPanelID(index);
             ((CardLayout) customPropertyPanel.getLayout()).show(customPropertyPanel, panelID);
             nameTextField.setText(browsersModel.getBrowserName(index));
-            checkNameTextField();
+            if (browsersModel.isDefaultBrowser(index)) {
+                // if any of default browsers is selected then browser name won't be editable and remove button disabled
+                nameTextField.setEditable(false);
+                removeButton.setEnabled(false);
+            } else {
+                nameTextField.setEditable(true);
+                removeButton.setEnabled(true);
+            }
             browsersModel.setSelectedValue(browsersList.getSelectedValue());
         }
     }
-    
-    // if any of default browsers is selected then browser name won't be editable
-    private void checkNameTextField() {
-        String text = nameTextField.getText();
-        if (defaultBrowsersNames.contains(text)) {
-            nameTextField.setEditable(false);
-        } else {
-            nameTextField.setEditable(true);
-        }
-    }
-    
+
     private class BrowsersDocListener implements DocumentListener {
         
         public void insertUpdate(DocumentEvent e) {

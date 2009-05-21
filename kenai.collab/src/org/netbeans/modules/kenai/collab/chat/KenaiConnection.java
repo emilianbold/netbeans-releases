@@ -48,17 +48,19 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.jivesoftware.smack.PacketListener;
-import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.MessageTypeFilter;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Message.Type;
 import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.Kenai;
@@ -81,7 +83,7 @@ public class KenaiConnection implements PropertyChangeListener {
     private HashMap<String, PacketListener> listeners = new HashMap<String, PacketListener>();
     private XMPPConnection connection;
     //Map <kenai project name, multi user chat>
-    private HashMap<String, MultiUserChat> chats = new HashMap<String, MultiUserChat>();
+    final private Map<String, MultiUserChat> chats = new HashMap<String, MultiUserChat>();
 
     //singleton instance
     private static KenaiConnection instance;
@@ -101,6 +103,7 @@ public class KenaiConnection implements PropertyChangeListener {
     public static synchronized KenaiConnection getDefault() {
         if (instance == null) {
             instance = new KenaiConnection();
+            ProviderManager.getInstance().addExtensionProvider("delay", "urn:xmpp:delay", new DelayExtensionProvider());//NOI18N
             Kenai.getDefault().addPropertyChangeListener(instance);
         }
         return instance;
@@ -112,11 +115,15 @@ public class KenaiConnection implements PropertyChangeListener {
     private KenaiConnection() {
     }
 
-    void leave(String name) {
+    synchronized void leave(String name) {
         listeners.remove(name);
     }
 
-    public MultiUserChat createChat(KenaiFeature prj) {
+    synchronized void tryJoinChat(MultiUserChat chat) throws XMPPException {
+        chat.join(getUserName());
+    }
+
+    private MultiUserChat createChat(KenaiFeature prj) {
         MultiUserChat multiUserChat = new MultiUserChat(connection, getChatroomName(prj));
         chats.put(prj.getName(), multiUserChat);
         messageQueue.put(prj.getName(), new LinkedList<Message>());
@@ -131,7 +138,7 @@ public class KenaiConnection implements PropertyChangeListener {
             chat.addParticipantListener(PresenceIndicator.getDefault().new PresenceListener());
             chat.join(getUserName());
         } catch (XMPPException ex) {
-            XMPPLOG.log(Level.SEVERE, null, ex);
+            XMPPLOG.log(Level.INFO, "Cannot join "  + chat.getRoom(), ex);
         }
     }
 
@@ -141,33 +148,27 @@ public class KenaiConnection implements PropertyChangeListener {
      * @param muc
      * @param lsn
      */
-    public void join(MultiUserChat muc, PacketListener lsn) {
+    public synchronized void join(MultiUserChat muc, PacketListener lsn) {
         final String name = StringUtils.parseName(muc.getRoom());
         PacketListener put = listeners.put(name, lsn);
         for (Message m : messageQueue.get(name)) {
             lsn.processPacket(m);
         }
-        assert put == null;
+        assert put == null:"Chat room " + name + " already joined";
     }
-
-    private XMPPException xmppEx;
 
     /**
      * 
      */
-    public synchronized void tryConnect() {
+    public synchronized void tryConnect()  {
         try {
             connect();
             initChats();
-            xmppEx = null;
             PresenceIndicator.getDefault().setStatus(Status.ONLINE);
+            isConnectionFailed = false;
         } catch (XMPPException ex) {
-            xmppEx = ex;
+            isConnectionFailed = true;
         }
-    }
-
-    public XMPPException getXMPPException() {
-        return xmppEx;
     }
 
     /**
@@ -184,6 +185,21 @@ public class KenaiConnection implements PropertyChangeListener {
         login();
         connection.addPacketListener(new PacketL(), new MessageTypeFilter(Type.chat));
     }
+
+    public synchronized void reconnect(MultiUserChat muc) throws XMPPException {
+        if (!connection.isConnected()) {
+            connection.connect();
+        }
+        if (muc==null) {
+            for (MultiUserChat m:getChats()) {
+                if (!muc.isJoined())
+                    tryJoinChat(m);
+            }
+        } else if (!muc.isJoined())
+            tryJoinChat(muc);
+        isConnectionFailed=false;
+    }
+
 
     private class PacketL implements PacketListener {
         public void processPacket(Packet packet) {
@@ -210,7 +226,7 @@ public class KenaiConnection implements PropertyChangeListener {
             } 
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    if (listener == null || !ChatTopComponent.isInitedAndVisible(name)) {
+                    if (chatNotifications.isEnabled(name) && (listener == null || !ChatTopComponent.isInitedAndVisible(name))) {
                         chatNotifications.addGroupMessage(msg);
                     } else {
                         chatNotifications.getMessagingHandle(name).notifyMessageReceived(msg);
@@ -230,12 +246,17 @@ public class KenaiConnection implements PropertyChangeListener {
             return;
         }
         for (KenaiFeature prj : KenaiConnection.getDefault().getMyChats()) {
-            createChat(prj);
+            try {
+                createChat(prj);
+            } catch (IllegalStateException ise) {
+                Exceptions.printStackTrace(ise);
+            }
         }
     }
 
-    public Collection<MultiUserChat> getChats() {
-        return chats.values();
+    public synchronized List<MultiUserChat> getChats() {
+        ArrayList<MultiUserChat> copy = new ArrayList<MultiUserChat>(chats.values());
+        return copy;
     }
 
     /**
@@ -243,7 +264,7 @@ public class KenaiConnection implements PropertyChangeListener {
      * @param prj
      * @return
      */
-    public MultiUserChat getChat(KenaiFeature prj) {
+    public synchronized MultiUserChat getChat(KenaiFeature prj) {
         MultiUserChat multiUserChat = chats.get(prj.getName());
         if (multiUserChat==null) {
             multiUserChat=createChat(prj);
@@ -256,18 +277,19 @@ public class KenaiConnection implements PropertyChangeListener {
      * @param name
      * @return
      */
-    public MultiUserChat getChat(String name) {
+    public synchronized MultiUserChat getChat(String name) {
         return chats.get(name);
     }
 
 
-    public Roster getRoster() {
-        return connection.getRoster();
-    }
-
     private RequestProcessor xmppProcessor = new RequestProcessor("XMPP Processor"); // NOI18N
     public RequestProcessor.Task post(Runnable run) {
         return xmppProcessor.post(run);
+    }
+
+   private boolean isConnectionFailed;
+    public boolean isConnectionFailed() {
+        return isConnectionFailed;
     }
 
     public void propertyChange(final PropertyChangeEvent e) {
@@ -275,26 +297,30 @@ public class KenaiConnection implements PropertyChangeListener {
             if (e.getNewValue() != null) {
                 post(new Runnable() {
                     public void run() {
-                        final PasswordAuthentication pa = (PasswordAuthentication) e.getNewValue();
-                        USER = pa.getUserName();
-                        PASSWORD = System.getProperty("kenai.xmpp.password", new String(pa.getPassword()));
-                        tryConnect();
+                        synchronized(instance) {
+                            final PasswordAuthentication pa = (PasswordAuthentication) e.getNewValue();
+                            USER = pa.getUserName();
+                            PASSWORD = System.getProperty("kenai.xmpp.password", new String(pa.getPassword()));
+                            tryConnect();
+                        }
                     }
                 });
             } else {
                 try {
-                    for (MultiUserChat muc : getChats()) {
-                        try {
-                            muc.leave();
-                        } catch (IllegalStateException ise) {
-                            //we can ignore exceptions on logout
-                            XMPPLOG.log(Level.FINE, null, ise);
+                    synchronized(instance) {
+                        for (MultiUserChat muc : getChats()) {
+                            try {
+                                muc.leave();
+                            } catch (IllegalStateException ise) {
+                                //we can ignore exceptions on logout
+                                XMPPLOG.log(Level.FINE, null, ise);
+                            }
                         }
+                        chats.clear();
+                        connection.disconnect();
+                        messageQueue.clear();
+                        listeners.clear();
                     }
-                    chats.clear();
-                    connection.disconnect();
-                    messageQueue.clear();
-                    listeners.clear();
                     PresenceIndicator.getDefault().setStatus(Status.OFFLINE);
                     ChatNotifications.getDefault().clearAll();
                 } catch (Exception ex) {
@@ -309,7 +335,6 @@ public class KenaiConnection implements PropertyChangeListener {
     private String USER;
     private String PASSWORD;
     
-    //TODO this should be removed when xmpp server starts working on kenai.com
     private static final String XMPP_SERVER = System.getProperty("kenai.com.url","https://kenai.com").substring(System.getProperty("kenai.com.url","https://kenai.com").lastIndexOf("/")+1);
     private static final String CHAT_ROOM = "@muc." + XMPP_SERVER; // NOI18N
 

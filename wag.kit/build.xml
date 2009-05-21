@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="wag.kit">
+    <description>Builds, tests, and runs the project org.netbeans.modules.wag.kit</description>
+    <import file="../nbbuild/templates/projectized.xml"/>
+    
+    <target name="all-wag">
+        <antcall target="netbeans"/>
+        <ant dir="../libs.wag"/>
+        <ant dir="../wag.manager"/>
+        <ant dir="../wag.codegen"/>
+        <ant dir="../wag.codegen.java"/>
+    </target>
+
+    <target name="all-wag-clean">
+        <antcall target="clean"/>
+        <ant dir="../libs.wag" target="clean"/>
+        <ant dir="../wag.manager" target="clean"/>
+        <ant dir="../wag.codegen" target="clean"/>
+        <ant dir="../wag.codegen.java" target="clean"/>
+    </target>
+    
+    <target name="all-plugin-nbms">
+        <ant dir="../wag.manager" target="nbm"/>
+        <ant dir="../libs.wag" target="nbm"/>
+        <ant dir="../wag.codegen" target="nbm"/>
+        <ant dir="../wag.codegen.java" target="nbm"/>
+        <antcall target="nbm"/>
+        <copy todir="nbms" flatten="true">
+            <fileset dir="..">
+                <include name="**/*.nbm"/>
+            </fileset>
+        </copy>
+    </target>
+</project>

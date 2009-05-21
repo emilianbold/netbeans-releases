@@ -141,7 +141,7 @@ public class TestMethodNode extends AbstractNode {
         if (INLINE_RESULTS && testcase.getTrouble() != null && testcase.getTrouble().getStackTrace() != null &&
                 testcase.getTrouble().getStackTrace().length > 0) {
             try {
-                cause = XMLUtil.toElementContent(testcase.getTrouble().getStackTrace()[0]);
+                cause = XMLUtil.toElementContent(testcase.getTrouble().getStackTrace()[0]).replace("\n", "&nbsp;"); // NOI18N
             } catch (CharConversionException ex) {
                 // We're messing with user testoutput - always risky. Don't complain
                 // here, simply fall back to the old behavior of the test runner -

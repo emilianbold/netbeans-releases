@@ -92,6 +92,12 @@ public abstract class RubyBaseActionProvider implements ActionProvider, ScriptDe
      * @see org.netbeans.spi.project.ActionProvider
      */
     public static final String COMMAND_RSPEC = "rspec"; //NOI18N
+    /**
+     * Command for running all the rspec files in the project. Specifically
+     * does not run the spec rake task (or any other rake task); runs
+     * TestRunner#runAllTests always.
+     */
+    public static final String COMMAND_RSPEC_ALL = "rspec-all"; //NOI18N
 
     /**
      * The name of the test rake task.

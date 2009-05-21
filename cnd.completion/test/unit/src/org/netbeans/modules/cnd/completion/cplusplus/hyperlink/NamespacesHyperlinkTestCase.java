@@ -285,6 +285,12 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz159242.cc", 33, 7, "iz159242.cc", 19, 9);
     }
 
+    public void testIZ159243() throws Exception {
+        // IZ#159243 : Unresolved usage of id from namespace alias
+        performTest("iz159243.cc", 10, 6, "iz159243.cc", 3, 9);
+        performTest("iz159243.cc", 25, 7, "iz159243.cc", 17, 13);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

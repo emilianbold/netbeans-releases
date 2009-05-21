@@ -60,6 +60,10 @@ class ProjectHIP extends HudsonInstanceProperties {
         super("", "", "0"); // NOI18N
     }
 
+    public @Override boolean isPersisted() {
+        return false;
+    }
+
     public void addProvider(Project prov) {
         synchronized (providers) {
             providers.add(prov);

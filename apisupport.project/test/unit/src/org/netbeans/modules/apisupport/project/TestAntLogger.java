@@ -96,7 +96,7 @@ public class TestAntLogger extends AntLogger {
                  new int[0];
     }
 
-    static TestAntLogger getDefault() {
+    public static TestAntLogger getDefault() {
         // XXX would be clearer to remove M-I/s reg and use MockLookup instead
         return (TestAntLogger) Lookup.getDefault().lookupItem(
                 new Lookup.Template<AntLogger>(AntLogger.class,

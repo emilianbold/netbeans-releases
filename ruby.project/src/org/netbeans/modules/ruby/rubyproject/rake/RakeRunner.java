@@ -241,11 +241,16 @@ public final class RakeRunner {
                 charsetName = evaluator.getProperty(SharedRubyProjectProperties.SOURCE_ENCODING);
             }
         }
+        // the original post build action to delegate to
+        final Runnable original = descriptor.getPostBuild();
         // refresh file system after the task has finished as it may have
         // created/deleted files
         descriptor.postBuild(new Runnable() {
 
             public void run() {
+                if (original != null) {
+                    original.run();
+                }
                 FileUtil.refreshFor(FileUtil.toFile(project.getProjectDirectory()));
             }
         });

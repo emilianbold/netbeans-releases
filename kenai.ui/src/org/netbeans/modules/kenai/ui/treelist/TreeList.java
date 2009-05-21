@@ -45,6 +45,8 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -95,6 +97,27 @@ public class TreeList extends JList {
         setFixedCellHeight( ROW_HEIGHT+2 );
         setCellRenderer(renderer);
         setBackground(ColorManager.getDefault().getDefaultBackground());
+        addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if( e.getClickCount() != 2 )
+                    return;
+                int index = locationToIndex(e.getPoint());
+                if( index < 0 || index >= getModel().getSize() )
+                    return;
+                Object value = getModel().getElementAt(index);
+                if( value instanceof TreeListNode ) {
+                    TreeListNode node = (TreeListNode) value;
+
+                    if( null != node ) {
+                        ActionListener al = node.getDefaultAction();
+                        if( null != al )
+                            al.actionPerformed(new ActionEvent(e.getSource(), e.getID(), e.paramString()));
+                    }
+                }
+            }
+        });
     }
 
     @Override

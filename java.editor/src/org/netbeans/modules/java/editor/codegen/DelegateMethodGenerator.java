@@ -61,6 +61,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -139,6 +140,9 @@ public class DelegateMethodGenerator implements CodeGenerator {
         dialog.setVisible(true);
         if (dialogDescriptor.getValue() == dialogDescriptor.getDefaultValue()) {
             JavaSource js = JavaSource.forDocument(component.getDocument());
+            if (panel.getDelegateField().getKind() == ElementKind.CLASS) {//#165261: exit when just class node selected
+                return;
+            }
             if (js != null) {
                 try {
                     final int caretOffset = component.getCaretPosition();

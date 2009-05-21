@@ -164,7 +164,6 @@ public class ModelSource implements SourceFileProperties {
             path = path.replace('/', File.separatorChar);
         }
         path = IpeUtils.toRelativePath(getCompilePath(), path);
-        path = FilePathAdaptor.mapToRemote(path);
         path = FilePathAdaptor.normalize(path);
         return path;
     }

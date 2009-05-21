@@ -183,11 +183,8 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
         line = line.trim();
         if( line.startsWith("/") ) {  // NOI18N
             return true;
-        }
-        else if( System.getProperty("os.name").indexOf("Windows") >= 0 ) {
-            if( Character.isLetter(line.charAt(0)) && line.charAt(1) == ':' ) {
-                return true;
-            }
+        } else if ( line.length()>2 && Character.isLetter(line.charAt(0)) && line.charAt(1) == ':' ) {
+            return true;
         }
         return false;
     }

@@ -328,7 +328,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
     }
 
     private static String wildcards2regexp(String pattern) {
-        return pattern.replace(".", "\\.").replace( "*", ".*" ).replace( '?', '.' ); //NOI18N
+        return pattern.replace(".", "\\.").replace( "*", ".*" ).replace( '?', '.' ).concat(".*"); //NOI18N
     }
 
     // Private classes ---------------------------------------------------------

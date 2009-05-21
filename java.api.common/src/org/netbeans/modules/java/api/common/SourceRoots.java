@@ -51,8 +51,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -62,8 +64,13 @@ import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -200,20 +207,17 @@ public final class SourceRoots {
                     synchronized (this) {
                         // local caching
                         if (sourceRoots == null) {
-                            String[] srcProps = getRootProperties();
-                            List<FileObject> result = new ArrayList<FileObject>();
-                            for (String p : srcProps) {
-                                String prop = evaluator.getProperty(p);
-                                if (prop != null) {
-                                    FileObject f = helper.getAntProjectHelper().resolveFileObject(prop);
-                                    if (f == null) {
-                                        continue;
-                                    }
-                                    if (FileUtil.isArchiveFile(f)) {
-                                        f = FileUtil.getArchiveRoot(f);
-                                    }
-                                    result.add(f);
+                            URL [] rootURLs = getRootURLs();
+                            List<FileObject> result = new ArrayList<FileObject>(rootURLs.length);
+                            for(URL url : rootURLs) {
+                                FileObject f = URLMapper.findFileObject(url);
+                                if (f == null) {
+                                    continue;
                                 }
+                                if (FileUtil.isArchiveFile(f)) {
+                                    f = FileUtil.getArchiveRoot(f);
+                                }
+                                result.add(f);
                             }
                             sourceRoots = Collections.unmodifiableList(result);
                         }
@@ -250,6 +254,7 @@ public final class SourceRoots {
                                             + f + " exists? " + f.exists() + " dir? " + f.isDirectory()
                                             + " file? " + f.isFile();
                                     result.add(url);
+                                    listener.add(f);
                                 } catch (MalformedURLException e) {
                                     Exceptions.printStackTrace(e);
                                 }
@@ -454,10 +459,12 @@ public final class SourceRoots {
                 sourceRootNames = null;
                 sourceRoots = null;
                 sourceRootURLs = null;
+                listener.removeFileListeners();
                 fire = true;
             } else if (propName == null || (sourceRootProperties != null && sourceRootProperties.contains(propName))) {
                 sourceRoots = null;
                 sourceRootURLs = null;
+                listener.removeFileListeners();
                 fire = true;
             }
         }
@@ -492,7 +499,25 @@ public final class SourceRoots {
         sourceRootNames = Collections.unmodifiableList(rootNames);
     }
 
-    private class ProjectMetadataListener implements PropertyChangeListener, AntProjectListener {
+    private class ProjectMetadataListener implements PropertyChangeListener, AntProjectListener, FileChangeListener {
+
+        //@GuardedBy(SourceRoots.this)
+        private final Set<File> files = new HashSet<File>();
+        private final FileChangeListener weakFilesListener = WeakListeners.create(FileChangeListener.class, this, null);
+
+        public void add(File f) {
+            if (!files.contains(f)) {
+                files.add(f);
+                FileUtil.addFileChangeListener(weakFilesListener, f);
+            }
+        }
+
+        public void removeFileListeners() {
+            for(File f : files) {
+                FileUtil.removeFileChangeListener(weakFilesListener, f);
+            }
+            files.clear();
+        }
 
         public void propertyChange(PropertyChangeEvent evt) {
             resetCache(false, evt.getPropertyName());
@@ -504,6 +529,46 @@ public final class SourceRoots {
 
         public void propertiesChanged(AntProjectEvent ev) {
             // handled by propertyChange
+        }
+
+        public void fileFolderCreated(FileEvent fe) {
+            FileObject parent = fe.getFile().getParent();
+            if (parent != null) {
+                File parentFile = FileUtil.toFile(parent);
+                assert parentFile != null : "Expecting ordinary folder: " + parent; //NOI18N
+                synchronized (SourceRoots.this) {
+                    if (files.contains(parentFile)) {
+                        // the change happened on a child and we can ignore it
+                        return;
+                    }
+                }
+            }
+
+            resetCache(false, null);
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            if (fe.getFile().isFolder()) {
+                fileFolderCreated(fe);
+            }
+        }
+
+        public void fileDataCreated(FileEvent fe) {
+            // ignore, we are only interested in folders
+        }
+
+        public void fileChanged(FileEvent fe) {
+            // ignore, we are only interested in folders
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {
+            if (fe.getFile().isFolder()) {
+                fileFolderCreated(fe);
+            }
+        }
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            // ignore
         }
     }
 }

@@ -61,25 +61,25 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = SourceFileInfoProvider.class)
 public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProvider {
 
-    public SourceFileInfo fileName(String functionName, long offset, Map<String, String> serviceInfo) throws SourceFileInfoCannotBeProvided {
+    public SourceFileInfo fileName(String functionName, long offset, Map<String, String> serviceInfo) {
         try {
             //get project current name
             String projectFolderName = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_FOLDER);
             if (projectFolderName == null) {
-                throw new SourceFileInfoCannotBeProvided();
+                return null;
             }
             Project prj = ProjectManager.getDefault().findProject(FileUtil.toFileObject(new File(projectFolderName)));
             if (prj.getLookup().lookup(NativeProject.class) == null) {
-                throw new SourceFileInfoCannotBeProvided();
+                return null;
             }
             CsmProject csmProject = CsmModelAccessor.getModel().getProject(prj);
             if (csmProject == null) {
-                throw new SourceFileInfoCannotBeProvided();
+                return null;
             }
             String name = functionName.indexOf("(") != -1 ? functionName.substring(0, functionName.indexOf("(")) : functionName; // NOI18N
             CsmFunction function = getFunction(csmProject, name);
             if (function == null){
-                throw new SourceFileInfoCannotBeProvided();
+                return null;
             }
             String sourceFile =    function.getContainingFile().getAbsolutePath().toString();
             int startOffset = function.getStartOffset();
@@ -103,9 +103,9 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
 //            }
 //            return new SourceFileInfoProvider.SourceFileInfo(((CsmOffsetable) csmDeclaration).getContainingFile().getAbsolutePath().toString(), ((CsmOffsetable) csmDeclaration).getStartOffset());
         } catch (IOException ex) {
-            throw new SourceFileInfoCannotBeProvided();
+            return null;
         } catch (IllegalArgumentException ex) {
-            throw new SourceFileInfoCannotBeProvided();
+            return null;
         }
     }
 

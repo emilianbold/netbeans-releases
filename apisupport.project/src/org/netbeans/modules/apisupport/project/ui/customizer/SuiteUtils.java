@@ -257,7 +257,7 @@ public final class SuiteUtils {
                         removeModule(suiteComponent, suiteProps);
                         suiteProps.storeProperties();
                         ProjectManager.getDefault().saveProject(suite);
-                    } else if (Util.getModuleType(suiteComponent) == NbModuleProvider.SUITE_COMPONENT) {
+                    } else {
                         removeModule(suiteComponent, null);
                     }
                     return null;
@@ -289,8 +289,9 @@ public final class SuiteUtils {
      * </p>
      */
     private static void removeModule(final NbModuleProject subModule, final SuiteProperties/*or null*/ suiteProps) {
-        NbModuleProvider.NbModuleType type = Util.getModuleType(subModule);
-        assert type == NbModuleProvider.SUITE_COMPONENT : "Not a suite component: " + subModule;
+        // #152279: used also for cleanup of standalone modules with suite.properties
+        // NbModuleProvider.NbModuleType type = Util.getModuleType(subModule);
+        // assert type == NbModuleProvider.SUITE_COMPONENT : "Not a suite component: " + subModule;
         try {
             final FileSystem.AtomicAction r = new FileSystem.AtomicAction() {
                 public void run() throws IOException {

@@ -73,4 +73,7 @@ public class CsmProgressAdapter implements CsmProgressListener {
 
     public void parserIdle() {
     }
+
+    public void fileAddedToParse(CsmFile file) {
+    }
 }

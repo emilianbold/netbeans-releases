@@ -55,10 +55,11 @@ import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.PlatformConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
@@ -141,13 +142,17 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
                     DevelopmentHostConfiguration oldDhc = mconf.getDevelopmentHost();
                     mconf.setDevelopmentHost(dhc);
                     mconf.setCompilerSet(new CompilerSet2Configuration(dhc));
-                    PlatformConfiguration platformConfiguration = mconf.getPlatform();
-                    platformConfiguration.propertyChange(new PropertyChangeEvent(
-                            jmi, DevelopmentHostConfiguration.PROP_DEV_HOST, oldDhc, dhc));
-                    Object o = jmi.getClientProperty(PROJECT);
-                    assert (o instanceof Project);
-                    NativeProjectProvider npp = ((Project) o).getLookup().lookup(NativeProjectProvider.class);
+//                    PlatformConfiguration platformConfiguration = mconf.getPlatform();
+//                    platformConfiguration.propertyChange(new PropertyChangeEvent(
+//                            jmi, DevelopmentHostConfiguration.PROP_DEV_HOST, oldDhc, dhc));
+                    Project project = (Project) jmi.getClientProperty(PROJECT);
+                    NativeProjectProvider npp = project.getLookup().lookup(NativeProjectProvider.class);
                     npp.propertyChange(new PropertyChangeEvent(this, Configurations.PROP_ACTIVE_CONFIGURATION, null, mconf));
+
+                    ConfigurationDescriptorProvider configurationDescriptorProvider =
+                            project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                    ConfigurationDescriptor configurationDescriptor = configurationDescriptorProvider.getConfigurationDescriptor();
+                    configurationDescriptor.setModified(true); 
                 }
             }
         }

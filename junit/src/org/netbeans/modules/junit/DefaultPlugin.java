@@ -888,7 +888,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                                 templateParams,
                                 doTestTempl,
                                 testClassPath,
-                                false,             //do not skip any classes
+                                true,             //skip if not testable
                                 null,              //parent suite
                                 progress);
                     } catch (CreationError ex) {

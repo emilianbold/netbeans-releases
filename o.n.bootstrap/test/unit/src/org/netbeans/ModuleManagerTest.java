@@ -2271,6 +2271,63 @@ public class ModuleManagerTest extends SetupHid {
         }
     }
 
+    public void testCyclicNeeds() throws Exception { // #161917
+        File dir = getWorkDir();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
+        ModuleManager mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        try {
+            File jar = new File(dir, "a.jar");
+            TestFileUtils.writeZipFile(jar, "META-INF/MANIFEST.MF:OpenIDE-Module: a\nOpenIDE-Module-Needs: T1\nOpenIDE-Module-Provides: T2\n\n");
+            Module a = mgr.create(jar, null, false, false, false);
+            jar = new File(dir, "b.jar");
+            TestFileUtils.writeZipFile(jar, "META-INF/MANIFEST.MF:OpenIDE-Module: b\nOpenIDE-Module-Needs: T2\nOpenIDE-Module-Provides: T1\n\n");
+            Module b = mgr.create(jar, null, false, false, false);
+            assertEquals(Collections.singleton(a), mgr.getModuleInterdependencies(b, false, false));
+            assertEquals(Collections.singleton(a), mgr.getModuleInterdependencies(b, false, true));
+            assertEquals(Collections.singleton(a), mgr.getModuleInterdependencies(b, true, false));
+            assertEquals(Collections.singleton(a), mgr.getModuleInterdependencies(b, true, true));
+            assertEquals(Collections.singleton(b), mgr.getModuleInterdependencies(a, false, false));
+            assertEquals(Collections.singleton(b), mgr.getModuleInterdependencies(a, false, true));
+            assertEquals(Collections.singleton(b), mgr.getModuleInterdependencies(a, true, false));
+            assertEquals(Collections.singleton(b), mgr.getModuleInterdependencies(a, true, true));
+            Set<Module> both = new HashSet<Module>(Arrays.asList(a, b));
+            assertEquals(both, new HashSet<Module>(mgr.simulateEnable(Collections.singleton(a))));
+            assertEquals(both, new HashSet<Module>(mgr.simulateEnable(Collections.singleton(b))));
+            mgr.enable(both);
+            assertEquals(both, mgr.getEnabledModules());
+            mgr.disable(both);
+            assertEquals(Collections.emptySet(), mgr.getEnabledModules());
+            mgr.delete(a);
+            mgr.delete(b);
+            jar = new File(dir, "a.jar");
+            TestFileUtils.writeZipFile(jar, "META-INF/MANIFEST.MF:OpenIDE-Module: a\nOpenIDE-Module-Needs: T1\nOpenIDE-Module-Provides: T2\n" +
+                    "OpenIDE-Module-Module-Dependencies: b\n");
+            a = mgr.create(jar, null, false, false, false);
+            jar = new File(dir, "b.jar");
+            TestFileUtils.writeZipFile(jar, "META-INF/MANIFEST.MF:OpenIDE-Module: b\nOpenIDE-Module-Needs: T2\nOpenIDE-Module-Provides: T1\n\n");
+            b = mgr.create(jar, null, false, false, false);
+            assertEquals(Collections.singleton(a), mgr.getModuleInterdependencies(b, false, false));
+            assertEquals(Collections.singleton(a), mgr.getModuleInterdependencies(b, false, true));
+            assertEquals(Collections.singleton(a), mgr.getModuleInterdependencies(b, true, false));
+            assertEquals(Collections.singleton(a), mgr.getModuleInterdependencies(b, true, true));
+            assertEquals(Collections.singleton(b), mgr.getModuleInterdependencies(a, false, false));
+            assertEquals(Collections.singleton(b), mgr.getModuleInterdependencies(a, false, true));
+            assertEquals(Collections.singleton(b), mgr.getModuleInterdependencies(a, true, false));
+            assertEquals(Collections.singleton(b), mgr.getModuleInterdependencies(a, true, true));
+            both = new HashSet<Module>(Arrays.asList(a, b));
+            assertEquals(both, new HashSet<Module>(mgr.simulateEnable(Collections.singleton(a))));
+            assertEquals(both, new HashSet<Module>(mgr.simulateEnable(Collections.singleton(b))));
+            mgr.enable(both);
+            assertEquals(both, mgr.getEnabledModules());
+            mgr.disable(both);
+            assertEquals(Collections.emptySet(), mgr.getEnabledModules());
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+
     public void testModuleClassLoaderWasNotReadyWhenTheChangeWasFiredIssue() throws Exception {
         doModuleClassLoaderWasNotReadyWhenTheChangeWasFiredIssue (1);
     }

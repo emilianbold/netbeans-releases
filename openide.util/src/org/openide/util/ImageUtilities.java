@@ -227,6 +227,8 @@ public final class ImageUtilities {
      * @return Image with attached tool tip 
      */    
     public static final Image assignToolTipToImage(Image image, String text) {
+        Parameters.notNull("image", image);
+        Parameters.notNull("text", text);
         ToolTipImageKey key = new ToolTipImageKey(image, text);
         Image cached;
         synchronized (imageToolTipCache) {

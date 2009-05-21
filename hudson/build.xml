@@ -7,8 +7,14 @@
         <ant dir="../hudson.maven" target="netbeans"/>
         <ant dir="../hudson.subversion" target="netbeans"/>
         <ant dir="../hudson.mercurial" target="netbeans"/>
-        <ant dir="../nbbuild" target="tryme-debug">
-            <property name="tryme.args" value="-J-Dnetbeans.full.hack=true -J-Dorg.netbeans.modules.hudson.level=FINER"/>
-        </ant>
+        <ant dir="../kenai" target="netbeans"/>
+        <ant dir="../kenai.ui" target="netbeans"/>
+        <ant dir="../hudson.kenai" target="netbeans"/>
+        <property name="tryme.args" value="
+            -J-Dnetbeans.full.hack=true
+            -J-Dorg.netbeans.modules.hudson.level=FINER
+            -J-Dkenai.com.url=https://testkenai.com
+        "/>
+        <ant dir="../nbbuild" target="tryme-debug"/>
     </target>
 </project>

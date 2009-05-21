@@ -168,7 +168,7 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
             this.operationFactory = new ProxyOperationFactory(project);
         }
         this.operationFactory.init();
-        init(false);
+        init(true);
     }
 
     public void projectClosed(PhpProject project) {

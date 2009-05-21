@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.maven.j2ee.web;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import org.netbeans.modules.maven.j2ee.J2eeMavenSourcesImpl;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -49,14 +51,19 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.POHImpl;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -123,6 +130,38 @@ public class WebModuleProviderImpl extends J2eeModuleProvider implements WebModu
         // TODO write into the private/public profile..
 
     }
+
+    @Override
+    public DeployOnSaveSupport getDeployOnSaveSupport() {
+        return super.getDeployOnSaveSupport();
+    }
+
+    @Override
+    public DeployOnSaveClassInterceptor getDeployOnSaveClassInterceptor() {
+        return new DeployOnSaveClassInterceptor() {
+            public ArtifactListener.Artifact convert(ArtifactListener.Artifact original) {
+                NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
+                FileObject targetClasses = FileUtilities.convertStringToFileObject(prj.getMavenProject().getBuild().getOutputDirectory());
+                FileObject clazz = FileUtil.toFileObject(original.getFile());
+                if (targetClasses != null && clazz != null) {
+                    String path = FileUtil.getRelativePath(targetClasses, clazz);
+                    if (path != null) {
+                        try {
+                            FileObject webBuildBase = implementation.getContentDirectory();
+                            if (webBuildBase != null) {
+                                File base = FileUtil.toFile(webBuildBase);
+                                File dist = new File(base, "WEB-INF" + File.separator + "classes" + File.separator + path.replace("/", File.separator));
+                                return original.distributionPath(dist);
+                            }
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+                return original;
+            }
+        };
+    }
     
     
     /** Id of server isntance for deployment. The default implementation returns
@@ -180,14 +219,22 @@ public class WebModuleProviderImpl extends J2eeModuleProvider implements WebModu
     }
     
 
-    // TODO
-    private class ModuleChangeReporterImpl implements ModuleChangeReporter {
+    // TODO what is this actually good for?
+    private class ModuleChangeReporterImpl implements ModuleChangeReporter, EjbChangeDescriptor {
         public EjbChangeDescriptor getEjbChanges(long param) {
-            return null;
+            return this;
         }
         
         public boolean isManifestChanged(long param) {
             return false;
+        }
+
+        public boolean ejbsChanged() {
+            return false;
+        }
+
+        public String[] getChangedEjbs() {
+            return new String[] {};
         }
         
     }

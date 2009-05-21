@@ -53,17 +53,12 @@ import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
     private int port = 22;
     private String hostName;
 
-    public CreateHostData() {
-        // TODO: ToolsCacheManager FIXUP
-        cacheManager = new ToolsCacheManager();
+    public CreateHostData(ToolsCacheManager toolsCacheManager) {
+        this.cacheManager = toolsCacheManager;
     }
 
     public ToolsCacheManager getCacheManager() {
         return cacheManager;
-    }
-
-    public void setCacheManager(ToolsCacheManager cacheManager) {
-        this.cacheManager = cacheManager;
     }
 
     public String getHostName() {

@@ -2558,7 +2558,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         ERR.log(Level.FINE, null, new Exception("Setting to modified: " + alreadyModified));
 
         this.alreadyModified = alreadyModified;
-        this.doc.setStrong(alreadyModified);
+        if (this.doc != null) {
+            this.doc.setStrong(alreadyModified);
+        }
     }
 
     private StyledDocument getDoc() {

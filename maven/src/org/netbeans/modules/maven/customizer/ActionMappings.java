@@ -822,9 +822,6 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             while (it.hasNext()) {
                 String elem = (String) it.next();
                 String val = properties.getProperty(elem);
-                if (val.indexOf(" ") > -1) { //NOI18N
-                    val = "\"" + val + "\""; //NOI18N
-                }
                 str = str + elem + "=" + val + "\n"; //NOI18N
             }
         }
@@ -872,6 +869,9 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
                 //in case the user adds -D by mistake, remove it to get a parsable xml file.
                 if (key.startsWith("-D")) { //NOI18N
                     key = key.substring("-D".length()); //NOI18N
+                }
+                if (key.startsWith("-")) { //NOI18N
+                    key = key.substring(1);
                 }
                 props.setProperty(key, prp[1]);
             }

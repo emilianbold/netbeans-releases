@@ -334,7 +334,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 }
             }
         }
-        ProjectLibraryArea pla = loadArea(pli.mainPropertiesFile.toURL());
+        ProjectLibraryArea pla = loadArea(pli.mainPropertiesFile.toURI().toURL());
         if (pla != null) {
         LP lp = getLibraries(pla);
         if (lp.libraries.remove(pli.name) != null) {

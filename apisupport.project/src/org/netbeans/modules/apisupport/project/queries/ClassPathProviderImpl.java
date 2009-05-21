@@ -106,9 +106,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         FileObject testSrcDir = project.getTestSourceDirectory("unit");
         FileObject funcTestSrcDir = project.getTestSourceDirectory("qa-functional");
         File dir = project.getClassesDirectory();
-        FileObject classesDir = dir == null ? null : FileUtil.toFileObject(FileUtil.normalizeFile(dir));
+        // #164282: workaround for not refreshed FS cache
+        dir = dir == null ? null : FileUtil.normalizeFile(dir);
+        FileObject classesDir = (dir == null || ! dir.exists()) ? null : FileUtil.toFileObject(dir);
         dir = project.getTestClassesDirectory("unit");
-        FileObject testClassesDir = dir == null ? null : FileUtil.toFileObject(FileUtil.normalizeFile(dir));
+        dir = dir == null ? null : FileUtil.normalizeFile(dir);
+        FileObject testClassesDir = (dir == null || ! dir.exists()) ? null : FileUtil.toFileObject(dir);
         File moduleJar = project.getModuleJarLocation();
         if (srcDir != null && (FileUtil.isParentOf(srcDir, file) || file == srcDir)) {
             // Regular sources.

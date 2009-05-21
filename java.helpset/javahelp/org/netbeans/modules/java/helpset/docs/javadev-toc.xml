@@ -79,6 +79,7 @@
             <tocitem text="Working with Builds" target="comp_process" />
             <tocitem text="Building Tasks: Quick Reference" target="comp_quickref" />
             <tocitem text="Building a Project" target="comp_project" />
+            <tocitem text="Using a Build Server" target="build_server"/>
             <tocitem text="Compiling a Single File" target="comp_file" />
             <tocitem text="Managing the Classpath" target="comp_classpath" />
             <tocitem text="Creating Dependencies Between Projects" target="comp_dependencies" />
@@ -198,6 +199,7 @@
             <tocitem text="Creating a Hibernate Configuration File" target="hibernate_cfg"/>
             <tocitem text="Editing the Hibernate Configuration File" target="hibernate_cfgedit"/>
             <tocitem text="Creating Hibernate Mapping Files" target="hibernate_map"/>
+            <tocitem text="Creating a Hibernate Reverse Engineering File" target="hibernate_reveng"/>
             <tocitem text="Generating Hibernate Mapping Files and POJOs from a Database" target="hibernate_fromdb"/>
             <tocitem text="Using the Hibernate Query Language Editor" target="hibernate_hql"/>
             <tocitem text="Creating a Hibernate Utility Helper File" target="hibernate_util"/>

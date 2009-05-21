@@ -58,13 +58,16 @@ public class WatchesTableModel implements TableModel, Constants {
     public Object getValueAt (Object row, String columnID) throws
     UnknownTypeException {
         if (row instanceof Watch) {
-            if (columnID.equals (WATCH_TO_STRING_COLUMN_ID))
+            if (columnID.equals (WATCH_TO_STRING_COLUMN_ID) ||
+                    columnID.equals (LOCALS_TO_STRING_COLUMN_ID))
                 return "";
             else
-            if (columnID.equals (WATCH_TYPE_COLUMN_ID))
+            if (columnID.equals (WATCH_TYPE_COLUMN_ID) ||
+                    columnID.equals (LOCALS_TYPE_COLUMN_ID))
                 return "";
             else
-            if (columnID.equals (WATCH_VALUE_COLUMN_ID))
+            if (columnID.equals (WATCH_VALUE_COLUMN_ID) ||
+                    columnID.equals (LOCALS_VALUE_COLUMN_ID))
                 return "";
         }
         throw new UnknownTypeException (row);
@@ -73,13 +76,16 @@ public class WatchesTableModel implements TableModel, Constants {
     public boolean isReadOnly (Object row, String columnID) throws 
     UnknownTypeException {
         if (row instanceof Watch) {
-            if (columnID.equals (WATCH_TO_STRING_COLUMN_ID))
+            if (columnID.equals (WATCH_TO_STRING_COLUMN_ID) ||
+                    columnID.equals (LOCALS_TO_STRING_COLUMN_ID))
                 return true;
             else
-            if (columnID.equals (WATCH_TYPE_COLUMN_ID))
+            if (columnID.equals (WATCH_TYPE_COLUMN_ID) ||
+                    columnID.equals (LOCALS_TYPE_COLUMN_ID))
                 return true;
             else
-            if (columnID.equals (WATCH_VALUE_COLUMN_ID))
+            if (columnID.equals (WATCH_VALUE_COLUMN_ID) ||
+                    columnID.equals (LOCALS_VALUE_COLUMN_ID))
                 return true;
         }
         throw new UnknownTypeException (row);

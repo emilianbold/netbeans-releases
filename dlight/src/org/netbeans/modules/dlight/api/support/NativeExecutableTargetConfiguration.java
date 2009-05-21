@@ -41,7 +41,6 @@ package org.netbeans.modules.dlight.api.support;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
@@ -63,6 +62,7 @@ public final class NativeExecutableTargetConfiguration {
     private boolean isSubstitutable;
     private ExternalTerminal externalTerminal = null;
     private InputOutput io;
+    private boolean x11forwarding;
     private final Map<String, String>  info = new ConcurrentHashMap<String, String>();
 
     /**
@@ -121,11 +121,21 @@ public final class NativeExecutableTargetConfiguration {
     }
 
     /**
+     * Enables or disables X11 forwarding.
+     *
+     * @param forwarding  pass <code>true</code> to enable X11 forwarding,
+     *      or <code>false</code> to disable
+     */
+    public void setX11Forwarding(boolean forwarding) {
+        this.x11forwarding = forwarding;
+    }
+
+    /**
      * use it to specify if you would like to run Target in external terminal
      * <p>
      * @param terminal terminal specification
      */
-    public void useExternalTerminal(@NullAllowed ExternalTerminal terminal) {
+    public void useExternalTerminal(/*@NullAllowed*/ ExternalTerminal terminal) {
         this.externalTerminal = terminal;
     }
 
@@ -175,5 +185,9 @@ public final class NativeExecutableTargetConfiguration {
 
     Map<String, String> getInfo(){
         return info;
+    }
+
+    boolean getX11Forwarding() {
+        return x11forwarding;
     }
 }

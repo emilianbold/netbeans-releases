@@ -130,6 +130,11 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
     @Override
     protected Problem preCheck(CompilationController javac) throws IOException {
         javac.toPhase(JavaSource.Phase.RESOLVED);
+        Problem preCheckProblem;
+        preCheckProblem = isElementAvail(refactoring.getSelectedObject(), javac);
+        if (preCheckProblem != null) {
+            return preCheckProblem;
+        }
         TreePath selectedField = refactoring.getSelectedObject().resolve(javac);
         if (selectedField == null) {
             return new Problem(true, NbBundle.getMessage(EncapsulateFieldsPlugin.class, "DSC_ElNotAvail"));
@@ -137,6 +142,10 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
 
         Element elm = javac.getTrees().getElement(selectedField);
         if (elm != null && ElementKind.FIELD == elm.getKind()) {
+            preCheckProblem = JavaPluginUtils.isSourceElement(elm, javac);
+            if (preCheckProblem != null) {
+                return preCheckProblem;
+            }
             TreePath source = javac.getTrees().getPath(elm);
             if (source == null) {
                 // missing sources with field declaration
@@ -153,6 +162,10 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
 
         TreePath clazz = RetoucheUtils.findEnclosingClass(javac, selectedField, true, false, true, false, false);
         TypeElement clazzElm = (TypeElement) javac.getTrees().getElement(clazz);
+        preCheckProblem = JavaPluginUtils.isSourceElement(clazzElm, javac);
+        if (preCheckProblem != null) {
+            return preCheckProblem;
+        }
         if (elm != clazzElm || clazzElm == null) {
             return new Problem(true, NbBundle.getMessage(EncapsulateFieldsPlugin.class, "ERR_EncapsulateWrongType"));
         }

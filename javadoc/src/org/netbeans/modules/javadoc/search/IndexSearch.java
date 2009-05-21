@@ -460,29 +460,32 @@ public final class IndexSearch
         }
     }//GEN-LAST:event_resultsListMouseClicked
 
-    RequestProcessor.Task task=null;    
+    private Object loadingToken;
+    private RequestProcessor.Task task=null;
     /** Invokes the browser with help */
     private void showHelp() {
 
-        if( null == task ) {
-            task = RequestProcessor.getDefault().create( new Runnable() {
-                public void run() {
-                    SwingUtilities.invokeLater( new Runnable() {
-                        public void run() {
-                            doShowHelp();
-                        }
-                    });
-                }
-            });
-        } else {
+        loadingToken = new Object();
+        if( null != task ) {
             task.cancel();
         }
-
-        task.schedule(300);
+        task = RequestProcessor.getDefault().create( new Runnable() {
+            public void run() {
+                SwingUtilities.invokeLater( new Runnable() {
+                    public void run() {
+                        doShowHelp( loadingToken );
+                    }
+                });
+            }
+        });
+        task.schedule(150);
     }
 
     private final Object LOCK = new Object();
-    private void doShowHelp() {
+    private void doShowHelp( Object token ) {
+        if( token != loadingToken )
+            return;
+
         synchronized( LOCK ) {
             if (splitPanel.getDividerLocation() == 100 )
                 return;
@@ -509,6 +512,8 @@ public final class IndexSearch
                 HtmlBrowser browser = createBrowser();
                 browser.setURL(url);
                 int splitPosition = splitPanel.getDividerLocation();
+                if( token != loadingToken )
+                    return;
                 splitPanel.setBottomComponent(browser);
                 splitPanel.setDividerLocation(splitPosition);
             }

@@ -51,25 +51,4 @@ package org.netbeans.modules.cnd.debugger.gdb;
  */
 public interface Field extends Variable {
 
-    /**
-     * Declared name of field.
-     *
-     * @return name of this field.
-     */
-    public abstract String getName();
-
-    /**
-     * Returns <code>true</code> for static fields.
-     *
-     * @return <code>true</code> for static fields
-     */
-    public abstract boolean isStatic();
-
-    /**
-     * Sets value of this field represented as text.
-     *
-     * @return sets value of this field represented as text
-     * @throws InvalidExpressionException if the expression is not correct
-     */
-    public abstract void setValue(String value) throws InvalidExpressionException;
 }

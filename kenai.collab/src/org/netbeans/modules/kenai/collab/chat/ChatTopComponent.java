@@ -56,6 +56,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
@@ -69,11 +70,13 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.jdesktop.swingx.JXBusyLabel;
+import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.Exceptions;
@@ -112,6 +115,31 @@ public class ChatTopComponent extends TopComponent {
             return false;
         }
     };
+
+    public void reconnect() {
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            public void run() {
+                synchronized (kec) {
+                    try {
+                        kec.reconnect(null);
+                    } catch (XMPPException ex) {
+                        Logger.getLogger(ChatTopComponent.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+                    }
+                }
+
+                if (kec.isConnected()) {
+                    putChatsScreen();
+                } else {
+                    if (kec.isConnectionFailed()) {
+                        putErrorScreen();
+                    } else {
+                        putLoginScreen();
+                    }
+                }
+            }
+        });
+    }
 
     @Override
     public void requestActive() {
@@ -173,7 +201,7 @@ public class ChatTopComponent extends TopComponent {
                 });
             }
         } else {
-            if (kec.getXMPPException()!=null) {
+            if (kec.isConnectionFailed()) {
                 putErrorScreen();
             } else {
                 putLoginScreen();
@@ -544,20 +572,7 @@ public class ChatTopComponent extends TopComponent {
     }// </editor-fold>//GEN-END:initComponents
 
     private void retryLinkMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_retryLinkMouseClicked
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                kec.tryConnect();
-                if (kec.isConnected()) {
-                    putChatsScreen();
-                } else {
-                    if (kec.getXMPPException()!=null) {
-                        putErrorScreen();
-                    } else {
-                        putLoginScreen();
-                    }
-                }
-            }
-        });
+        reconnect();
 }//GEN-LAST:event_retryLinkMouseClicked
 
     private void retryLinkMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_retryLinkMouseEntered
@@ -690,8 +705,12 @@ public class ChatTopComponent extends TopComponent {
                 } else {
                     kec.post(new Runnable() {
                         public void run() {
-                            kec.getMyChats();
-                            putChatsScreen();
+                            if (kec.isConnectionFailed()) {
+                                putErrorScreen();
+                            } else {
+                                kec.getMyChats();
+                                putChatsScreen();
+                            }
                         }
                     });
                 }

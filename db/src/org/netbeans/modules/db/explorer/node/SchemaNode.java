@@ -140,9 +140,9 @@ public class SchemaNode extends BaseNode {
     private void renderNames(Schema schema) {
         if (schema == null) {
             name = "";
+        } else {
+            name = schema.getName();
         }
-
-        name = schema.getName();
         if (name == null) {
             name = schema.getParent().getName();
         }

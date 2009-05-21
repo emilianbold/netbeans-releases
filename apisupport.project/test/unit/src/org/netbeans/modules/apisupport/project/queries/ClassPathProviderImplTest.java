@@ -46,19 +46,18 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import org.junit.Test;
+import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
+import org.netbeans.modules.apisupport.project.TestAntLogger;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
@@ -68,7 +67,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.openide.filesystems.FileStateInvalidException;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.openide.execution.ExecutorTask;
 
 // XXX test GPR usage
 
@@ -90,6 +90,7 @@ public class ClassPathProviderImplTest extends TestBase {
     private static final Logger LOG = Logger.getLogger(ClassPathProviderImplTest.class.getName());
     
     protected @Override void setUp() throws Exception {
+        clearWorkDir();
         super.setUp();
         copyOfSuite2 = copyFolder(resolveEEPFile("/suite2"));
         File miscF = new File(copyOfSuite2, "misc-project");
@@ -380,7 +381,6 @@ public class ClassPathProviderImplTest extends TestBase {
     private NbModuleProject modC;
     private NbModuleProject modT;
 
-    @Test
     public void testSimpleRuntimeTestDependency() throws Exception {
         generateTestingSuite();
         NbModuleProject modD = generateTestingSuiteComponent("d", "",
@@ -407,7 +407,6 @@ public class ClassPathProviderImplTest extends TestBase {
         assertEquals("correct TEST EXECUTE classpath", expectedRoots, urlsOfCp4Tests(cp));
     }
 
-    @Test
     public void testSimpleCompileTestDependency() throws Exception {
         generateTestingSuite();
         NbModuleProject modD = generateTestingSuiteComponent("d", "",
@@ -431,7 +430,6 @@ public class ClassPathProviderImplTest extends TestBase {
         assertEquals("correct TEST EXECUTE classpath", expectedRoots, urlsOfCp4Tests(cp));
     }
 
-    @Test
     public void testRecursiveRuntimeTestDependency() throws Exception {
         generateTestingSuite();
         NbModuleProject modD = generateTestingSuiteComponent("d", "",
@@ -460,7 +458,6 @@ public class ClassPathProviderImplTest extends TestBase {
         assertEquals("correct TEST EXECUTE classpath", expectedRoots, urlsOfCp4Tests(cp));
     }
 
-    @Test
     public void testRecursiveCompileTestDependency() throws Exception {
         generateTestingSuite();
         NbModuleProject modD = generateTestingSuiteComponent("d", "",
@@ -486,7 +483,6 @@ public class ClassPathProviderImplTest extends TestBase {
         assertEquals("correct TEST EXECUTE classpath", expectedRoots, urlsOfCp4Tests(cp));
     }
 
-    @Test
     public void testRecursiveCompileTestDependencyWithTests() throws Exception {
         generateTestingSuite();
         NbModuleProject modD = generateTestingSuiteComponent("d", "",
@@ -810,6 +806,26 @@ public class ClassPathProviderImplTest extends TestBase {
         // #70206: transitive deps added too:
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/lib/org-openide-util.jar"));
         assertEquals("right EXECUTE classpath after changing project.xml", expectedRoots, urlsOfCp(cp));
+    }
+
+    public void testExecuteCPOnClassesDir() throws Exception {
+        InstalledFileLocatorImpl.registerDestDir(destDirF);
+        TestAntLogger.getDefault().setEnabled(true);
+        NbModuleProject prj = TestBase.generateStandaloneModule(getWorkDir(), "testing");
+        prj.open();
+
+        FileObject buildScript = prj.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
+        assertNotNull(buildScript);
+        ExecutorTask et = ActionUtils.runTarget(buildScript, new String[]{"compile"}, null);
+        et.waitFinished();
+        assertEquals("Error during ant ...",0,et.result());
+        assertTrue("Classes dir of testing project should exist", prj.getClassesDirectory().exists());
+        TestAntLogger.getDefault().setEnabled(false);
+        
+        ClassPath cp = ClassPath.getClassPath(prj.getProjectDirectory().getFileObject("build/classes"), ClassPath.EXECUTE);
+        Set<String> expectedRoots = new TreeSet<String>();
+        expectedRoots.add(FileUtil.urlForArchiveOrDir(prj.getClassesDirectory()).toExternalForm());
+        assertEquals("right compiled EXECUTE classpath", expectedRoots, urlsOfCp(cp));
     }
 
 //    XXX: failing test, fix or delete

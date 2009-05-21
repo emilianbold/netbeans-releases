@@ -917,12 +917,7 @@ abstract class EntrySupport {
                 // forces creation of the array
                 assert !hasToExist || array.get() != null : "ChildrenArray is not initialized";
                 ChildrenArray arr = getArray(null);
-                try {
-                    return arr.nodesFor(this, hasToExist);
-                } catch (RuntimeException ex) {
-                    NodeOp.warning(ex);
-                    return Collections.<Node>emptyList();
-                }
+                return arr.nodesFor(this, hasToExist);
             }
 
             public void useNodes(Collection<Node> nodes) {

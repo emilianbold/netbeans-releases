@@ -108,8 +108,7 @@ public interface HudsonInstance extends Comparable<HudsonInstance> {
     public void removeHudsonChangeListener(HudsonChangeListener l);
 
     /**
-     *
-     * @return
+     * Checks whether this instance's configuration is persisted to disk.
      */
     boolean isPersisted();
 

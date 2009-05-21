@@ -44,9 +44,10 @@ import java.io.File;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
-import org.netbeans.modules.bugtracking.util.IssueFinder;
+import org.netbeans.modules.bugtracking.util.IssueFinderUtils;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
@@ -63,7 +64,7 @@ public class VcsHyperlinkProviderImpl extends HyperlinkProvider {
 
     @Override
     public int[] getSpans(String text) {
-        return IssueFinder.getIssueSpans(text);
+        return IssueFinderUtils.getIssueSpans(text);
     }
 
     @Override
@@ -99,7 +100,12 @@ public class VcsHyperlinkProviderImpl extends HyperlinkProvider {
     }
 
     private String getIssueId(String text, int offsetStart, int offsetEnd) {        
-        return IssueFinder.getIssueNumber(text.substring(offsetStart, offsetEnd));
+        IssueFinder issueFinder = IssueFinderUtils.determineIssueFinder(text, offsetStart, offsetEnd);
+        if (issueFinder == null) {
+            return null;
+        }
+
+        return issueFinder.getIssueId(text.substring(offsetStart, offsetEnd));
     }
 
 }

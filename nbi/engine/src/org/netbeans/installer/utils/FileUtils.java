@@ -1177,10 +1177,12 @@ public final class FileUtils {
                     SystemUtils.getUnpacker().getAbsolutePath(),
                     source.getAbsolutePath(),
                     target.getAbsolutePath());
-            if (er.getErrorCode() != 0) {
-                if(er.getErrorCode() == -1073741801) {
+            int errorCode = er.getErrorCode();
+            if (errorCode != 0) {
+                if(errorCode == -1073741801 || errorCode == -1073741502) {
                     // Workaround for the issue in lvprcsrv.exe process
                     // http://www.netbeans.org/issues/show_bug.cgi?id=117334
+                    // http://www.netbeans.org/issues/show_bug.cgi?id=165319
                     LogManager.log("\n\n");
                     LogManager.log("Attention!");
                     LogManager.log("You have run into the Issue 117334");
@@ -1191,7 +1193,7 @@ public final class FileUtils {
                 } else {
                     throw new IOException(ResourceUtils.getString(FileUtils.class,
                             ERROR_UNPACK200_FAILED_KEY,
-                            er.getErrorCode(), er.getStdOut(),er.getStdErr()));
+                            errorCode, er.getStdOut(),er.getStdErr()));
                 }
             }
         }

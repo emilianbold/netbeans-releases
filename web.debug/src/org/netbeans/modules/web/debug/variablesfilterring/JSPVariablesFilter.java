@@ -133,7 +133,10 @@ public class JSPVariablesFilter implements TreeModelFilter {
             if (refThis != null)
                 visibleChildrenList.add(0, refThis);
             visibleChildrenList.add(implicitLocals);
-            
+
+            if (to > visibleChildrenList.size()) {
+                to = visibleChildrenList.size();
+            }
             visibleChildren = visibleChildrenList.subList(from, to).toArray();
         }
 /*        

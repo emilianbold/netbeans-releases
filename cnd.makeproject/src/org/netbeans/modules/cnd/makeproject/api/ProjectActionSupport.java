@@ -467,13 +467,13 @@ public class ProjectActionSupport {
             }
             // Check existence of executable
             if (!IpeUtils.isPathAbsolute(executable) && (executable.startsWith(".") || executable.indexOf(File.separatorChar) > 0)) { // NOI18N
-                //executable is relative to project root - convert to absolute and check. Should be safe (?).
+                //executable is relative to run directory - convert to absolute and check. Should be safe (?).
                 String runDir = pae.getProfile().getRunDir();
-                if (runDir == null || runDir.length() == 0 || IpeUtils.isPathAbsolute(runDir)) {
+                if (runDir == null || runDir.length() == 0) {
                     executable = IpeUtils.toAbsolutePath(pae.getConfiguration().getBaseDir(), executable);
-                }
-                else {
-                    executable = IpeUtils.toAbsolutePath(pae.getConfiguration().getBaseDir() + "/" + runDir, executable); // NOI18N
+                } else {
+                    runDir = IpeUtils.toAbsolutePath(pae.getConfiguration().getBaseDir(), runDir);
+                    executable = IpeUtils.toAbsolutePath(runDir, executable);
                 }
                 executable = FilePathAdaptor.normalize(executable);
             }
@@ -484,10 +484,10 @@ public class ProjectActionSupport {
                 if (conf instanceof MakeConfiguration && !((MakeConfiguration) conf).getDevelopmentHost().isLocalhost()) {
                     final ExecutionEnvironment execEnv = ((MakeConfiguration) conf).getDevelopmentHost().getExecutionEnvironment();
                     PathMap mapper = HostInfoProvider.getMapper(execEnv);
-                    executable = mapper.getRemotePath(executable);
+                    executable = mapper.getRemotePath(executable,true);
                     CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
                     if (cmd != null) {
-                        ok = cmd.run(execEnv, "test -x " + executable + " -a -f " + executable, null) == 0; // NOI18N
+                        ok = cmd.run(execEnv, "test", null, "-x", executable, "-a", "-f", executable) == 0; // NOI18N
                     }
                 } else {
                     // FIXUP: getExecutable should really return fully qualified name to executable including .exe
@@ -506,6 +506,12 @@ public class ProjectActionSupport {
                     return false;
                 }
             }
+
+            // Finally set pae.executable to a real, verified file with an absolute
+            // path that reflects file location on a target host (local or remote)
+
+            pae.setExecutable(executable);
+            
             return true;
         }
 

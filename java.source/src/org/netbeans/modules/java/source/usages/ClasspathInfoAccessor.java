@@ -49,18 +49,22 @@ import org.netbeans.modules.java.source.parsing.FileObjects.InferableJavaFileObj
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
 /**
  *
  * @author Tomas Zezula
  */
 public abstract class ClasspathInfoAccessor {
-
+    private static Logger log = Logger.getLogger(ClasspathInfoAccessor.class.getName());
     public static synchronized ClasspathInfoAccessor getINSTANCE() {
         if (INSTANCE == null) {
             try {
                 Class.forName(ClasspathInfo.class.getName(), true, ClasspathInfo.class.getClassLoader());
             } catch (ClassNotFoundException cnfe) {
-                ErrorManager.getDefault().notify(cnfe);
+                if (log.isLoggable(Level.SEVERE))
+                    log.log(Level.SEVERE, cnfe.getMessage(), cnfe);
             }
         }
         

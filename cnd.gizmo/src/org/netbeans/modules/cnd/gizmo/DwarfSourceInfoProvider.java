@@ -39,7 +39,10 @@
 package org.netbeans.modules.cnd.gizmo;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
@@ -56,31 +59,31 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = SourceFileInfoProvider.class, position = 5000)
 public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
 
-    public SourceFileInfo fileName(String functionName, long offset, Map<String, String> serviceInfo) throws SourceFileInfoCannotBeProvided {
+    private WeakHashMap<String, Map<String, SourceFileInfo>> cache;
+
+    public DwarfSourceInfoProvider() {
+        cache = new WeakHashMap<String, Map<String, SourceFileInfo>>();
+    }
+
+    public SourceFileInfo fileName(String functionName, long offset, Map<String, String> serviceInfo) {
         if (serviceInfo == null){
-            throw new SourceFileInfoCannotBeProvided();
+            return null;
         }
         String executable = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE);
         if (executable != null) {
-            try {
-                Dwarf dwarf = new Dwarf(executable);
-                try {
-                    OUTER:
-                    for (CompilationUnit compilationUnit : dwarf.getCompilationUnits()) {
-                        for (DwarfEntry entry : compilationUnit.getDeclarations()) {
-                            if (entry.getKind().equals(TAG.DW_TAG_subprogram) &&
-                                    functionName.equals(entry.getQualifiedName())) {
-                                return new SourceFileInfo(
-                                        toAbsolutePath(serviceInfo, entry.getDeclarationFilePath()),
-                                        entry.getLine(), 0);
-                            }
-                        }
-                    }
-                } finally {
-                    dwarf.dispose();
+            Map<String, SourceFileInfo> sourceInfoMap = getSourceInfo(executable, serviceInfo);
+            SourceFileInfo sourceInfo = sourceInfoMap.get(functionName);
+            if (sourceInfo != null) {
+                return sourceInfo;
+            }
+
+            // try without parameters
+            int parenIdx = functionName.indexOf('(');
+            if (0 <= parenIdx) {
+                sourceInfo = sourceInfoMap.get(functionName.substring(0, parenIdx));
+                if (sourceInfo != null) {
+                    return sourceInfo;
                 }
-            } catch (IOException ex) {
-                DLightLogger.instance.log(Level.WARNING, null, ex);
             }
 
 //            Dwarf2NameFinder finder = new Dwarf2NameFinder(executable);
@@ -91,7 +94,36 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
 //                return new SourceFileInfo(sourceFile, lineNumber, 0);
 //            }
         }
-        throw new SourceFileInfoCannotBeProvided();
+        return null;
+    }
+
+    private synchronized Map<String, SourceFileInfo> getSourceInfo(String executable, Map<String, String> serviceInfo) {
+        Map<String, SourceFileInfo> sourceInfoMap = cache.get(executable);
+        if (sourceInfoMap == null) {
+            sourceInfoMap = new HashMap<String, SourceFileInfo>();
+            try {
+                Dwarf dwarf = new Dwarf(executable);
+                try {
+                    for (CompilationUnit compilationUnit : dwarf.getCompilationUnits()) {
+                        for (DwarfEntry entry : compilationUnit.getDeclarations()) {
+                            if (entry.getKind().equals(TAG.DW_TAG_subprogram)) {
+                                SourceFileInfo sourceInfo = new SourceFileInfo(
+                                        toAbsolutePath(serviceInfo, entry.getDeclarationFilePath()),
+                                        entry.getLine(), 0);
+                                sourceInfoMap.put(entry.getQualifiedName(), sourceInfo);
+                            }
+                        }
+                    }
+                } finally {
+                    dwarf.dispose();
+                }
+            } catch (IOException ex) {
+                DLightLogger.instance.log(Level.WARNING, null, ex);
+            }
+            cache.put(executable, sourceInfoMap.isEmpty()?
+                Collections.<String, SourceFileInfo>emptyMap() : sourceInfoMap);
+        }
+        return sourceInfoMap;
     }
 
     private static String toAbsolutePath(Map<String, String> serviceInfo, String path) {

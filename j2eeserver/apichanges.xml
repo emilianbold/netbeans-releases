@@ -113,6 +113,26 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+
+        <change id="filter">
+	    <api name="devmodules"/>
+	    <summary>
+                DeployOnSaveClassInterceptor added
+	    </summary>
+	    <version major="1" minor="56"/>
+	    <date day="15" month="5" year="2009"/>
+	    <author login="mkleint"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                DeployOnSaveClassInterceptor class added + gettter in J2eeModuleProvider.
+                to allow processing Artifact instances coming from java infrastructure.
+                </p>
+	    </description>
+	    <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
+            <issue number="165045"/>
+	 </change>
+
         <change id="undeploy">
 	    <api name="devmodules"/>
 	    <summary>

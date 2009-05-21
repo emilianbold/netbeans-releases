@@ -66,6 +66,7 @@ import java.util.logging.Level;
 import java.beans.PropertyVetoException;
 import java.awt.*;
 import java.awt.event.*;
+import java.lang.ref.WeakReference;
 
 /**
  * Treetable to show results of Search History action.
@@ -250,15 +251,38 @@ class DiffTreeTable extends TreeTableView implements MouseListener, MouseMotionL
         }
     }
 
+    // TODO replace TTV with OutlineView
+    WeakReference<Node> lastExpanded = new WeakReference<Node>(null);
     void setSelection(SearchHistoryPanel.DispRevision revision) {
-        RevisionNode node = (RevisionNode) getNode(rootNode, revision);
+        final RevisionNode node = (RevisionNode) getNode(rootNode, revision);
         if (node == null) return;
-        ExplorerManager em = ExplorerManager.find(this);
-        try {
-            em.setSelectedNodes(new Node [] { node });
-        } catch (PropertyVetoException e) {
-            ErrorManager.getDefault().notify(e);
+        final ExplorerManager em = ExplorerManager.find(this);
+        if (em.getRootContext() != lastExpanded.get()) {
+            for (int i = 0; i < tree.getRowCount(); ++i) {
+                tree.expandRow(i);
+            }
+            for (int i = tree.getRowCount() - 1; i >= 0; --i) {
+                tree.collapseRow(i);
+            }
+            lastExpanded = new WeakReference<Node>(em.getRootContext());
         }
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    em.setSelectedNodes(new Node[]{node});
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            int[] r = getSelection();
+                            if (r != null && r.length > 0) {
+                                tree.scrollRowToVisible(r[0]);
+                            }
+                        }
+                    });
+                } catch (PropertyVetoException ex) {
+                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, ex);
+                }
+            }
+        });
     }
 
     private Node getNode(Node node, Object obj) {
@@ -295,6 +319,7 @@ class DiffTreeTable extends TreeTableView implements MouseListener, MouseMotionL
     public void addNotify() {
         super.addNotify();
         ExplorerManager em = ExplorerManager.find(this);
+        boolean expand = rootNode != em.getRootContext();
         em.setRootContext(rootNode);
         setDefaultColumnSizes();
     }

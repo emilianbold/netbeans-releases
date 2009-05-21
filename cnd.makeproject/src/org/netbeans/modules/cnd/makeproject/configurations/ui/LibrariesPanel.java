@@ -259,7 +259,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
     class AddStandardLibraryButtonAction implements java.awt.event.ActionListener {
 
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            StdLibPanel stdLibPanel = new StdLibPanel(Platforms.getPlatform(conf.getPlatform().getValue()).getStandardLibraries());
+            StdLibPanel stdLibPanel = new StdLibPanel(Platforms.getPlatform(conf.getDevelopmentHost().getBuildPlatform()).getStandardLibraries());
             DialogDescriptor dialogDescriptor = new DialogDescriptor(stdLibPanel, getString("SELECT_STATNDARD_LIBRARY_DIALOG_TITLE"));
             DialogDisplayer.getDefault().notify(dialogDescriptor);
             if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION) {
@@ -356,9 +356,8 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
             } else if (PathPanel.getMode() == PathPanel.REL) {
                 path = IpeUtils.toRelativePath(baseDir, path);
             } else {
-                path = path;
+                // path = path;
             }
-            path = FilePathAdaptor.mapToRemote(path);
             path = FilePathAdaptor.normalize(path);
             myListEditorPanel.addObjectAction(new LibraryItem.LibFileItem(path));
         }

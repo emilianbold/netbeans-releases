@@ -260,7 +260,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
             // FIXUP: should be move to Platform...
             if (cs != null) {
                 options += cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getDynamicLibraryBasicFlag();
-                if (cs.isGnuCompiler() && getMakeConfiguration().getPlatform().getValue() == Platform.PLATFORM_MACOSX) {
+                if (cs.isGnuCompiler() && getMakeConfiguration().getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_MACOSX) {
                     options += libName + " "; // NOI18N
                 }
             }
@@ -427,7 +427,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
                 outputName = outputName.toLowerCase();
                 break;
             case MakeConfiguration.TYPE_DYNAMIC_LIB:
-                outputName = Platforms.getPlatform(getMakeConfiguration().getPlatform().getValue()).getLibraryName(outputName);
+                outputName = Platforms.getPlatform(getMakeConfiguration().getDevelopmentHost().getBuildPlatform()).getLibraryName(outputName);
                 break;
         }
         outputName = ConfigurationSupport.makeNameLegal(outputName);
@@ -470,7 +470,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
         public String getOption() {
             if (getValue()) {
                 String option;
-                if (getMakeConfiguration().getPlatform().getValue() == Platform.PLATFORM_MACOSX) {
+                if (getMakeConfiguration().getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_MACOSX) {
                     option = "-Wl,-S "; // NOI18N
                 } else {
                     option = "-s ";  // NOI18N

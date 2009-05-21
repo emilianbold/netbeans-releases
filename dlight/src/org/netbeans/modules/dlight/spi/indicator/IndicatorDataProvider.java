@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.spi.indicator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.api.execution.Validateable;
@@ -58,104 +59,102 @@ import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
  * to notify all indicators subscribed to it using {@link #subscribe(org.netbeans.modules.dlight.spi.indicator.Indicator) }
  * @param <T> indicator data provider configuration implementation that can be used to create {@link org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider} instance
  */
-public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfiguration> implements DLightTargetListener, Validateable<DLightTarget> {
+public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfiguration>
+        implements DLightTargetListener, Validateable<DLightTarget>, DataFilterListener {
 
-  private final Collection<Indicator> listeners = new ArrayList<Indicator>();
-  private ServiceInfoDataStorage serviceInfoDataStorage;
+    private final Collection<Indicator> listeners = new ArrayList<Indicator>();
+    private ServiceInfoDataStorage serviceInfoDataStorage;
 
-  
-  private void addIndicatorDataProviderListener(Indicator l) {
-    if (!listeners.contains(l)) {
-      listeners.add(l);
-    }
-  }
-
-  private void removeIndicatorDataProviderListener(Indicator l) {
-    listeners.remove(l);
-  }
-
-  /**
-   * Try to subscibe indicator to this Indicator DataProvider.
-   * To successfuly subscribe indicator {@link #getDataTablesMetadata()} should contain
-   * columns which are required by indicator(the result of
-   * {@link Indicator#getMetadataColumns()} method)
-   * @param indicator indicator to subscribe
-   * @return <code>true</code> if indicator was successfuly subscribed,
-   * <code>false</code> otherwise
-   */
-  public final boolean subscribe(Indicator indicator) {
-    List<DataTableMetadata.Column> indicatorColumns = IndicatorAccessor.getDefault().getMetadataColumns(indicator);
-
-    // if this provider provides at least one column of information
-    // that indicator can display - subscribe it.
-    // TODO: ???
-
-    for (DataTableMetadata tdm : getDataTablesMetadata()) {
-      List<DataTableMetadata.Column> providedColumns = tdm.getColumns();
-      for (DataTableMetadata.Column pcol : providedColumns) {
-        for (DataTableMetadata.Column icol : indicatorColumns) {
-          if (icol.equals(pcol)) {
-            addIndicatorDataProviderListener(indicator);
-            return true;
-          }
+    private void addIndicatorDataProviderListener(Indicator l) {
+        if (!listeners.contains(l)) {
+            listeners.add(l);
         }
-      }
     }
 
-    return false;
-  }
-
-  /**
-   * Use this method to unsubscribe from this data provider
-   * @param indicator indicator to unsubscribe
-   */
-  public final void unsubscribe(Indicator indicator) {
-    removeIndicatorDataProviderListener(indicator);
-  }
-
-  protected final void resetIndicators() {
-    for (Indicator l : listeners) {
-      l.reset();
+    private void removeIndicatorDataProviderListener(Indicator l) {
+        listeners.remove(l);
     }
 
-  }
+    /**
+     * Try to subscibe indicator to this Indicator DataProvider.
+     * To successfuly subscribe indicator {@link #getDataTablesMetadata()} should contain
+     * columns which are required by indicator(the result of
+     * {@link Indicator#getMetadataColumns()} method)
+     * @param indicator indicator to subscribe
+     * @return <code>true</code> if indicator was successfuly subscribed,
+     * <code>false</code> otherwise
+     */
+    public final boolean subscribe(Indicator indicator) {
+        List<DataTableMetadata.Column> indicatorColumns = IndicatorAccessor.getDefault().getMetadataColumns(indicator);
 
-  protected final void notifyIndicators(List<DataRow> data) {
-    for (Indicator<?> l : listeners) {
-      l.updated(data);
+        // if this provider provides at least one column of information
+        // that indicator can display - subscribe it.
+        // TODO: ???
+
+        for (DataTableMetadata tdm : getDataTablesMetadata()) {
+            List<DataTableMetadata.Column> providedColumns = tdm.getColumns();
+            for (DataTableMetadata.Column pcol : providedColumns) {
+                for (DataTableMetadata.Column icol : indicatorColumns) {
+                    if (icol.equals(pcol)) {
+                        addIndicatorDataProviderListener(indicator);
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
-  }
 
-  /**
-   * Returns the list of {@link org.netbeans.modules.dlight.api.storage.DataTableMetadata}
-   * this data provider can return information about
-   * @return list of {@link org.netbeans.modules.dlight.api.storage.DataTableMetadata}
-   * this data provider can return information about
-   */
-  public abstract Collection<DataTableMetadata> getDataTablesMetadata();
+    /**
+     * Use this method to unsubscribe from this data provider
+     * @param indicator indicator to unsubscribe
+     */
+    public final void unsubscribe(Indicator indicator) {
+        removeIndicatorDataProviderListener(indicator);
+    }
 
+    protected final void resetIndicators() {
+        for (Indicator l : listeners) {
+            l.reset();
+        }
 
-  /**
-   * Returns name which will be used to filter indicator data
-   * provider which will be currently used
-   * @return data provider name
-   */
-  public abstract String getName();
+    }
 
+    protected final void notifyIndicators(List<DataRow> data) {
+        for (Indicator<?> l : listeners) {
+            l.updated(data);
+        }
+    }
 
-  /**
-   *  Initialize with service info data storage
-   * @param infoStorage service infor data storage
-   */
-  public final void init(ServiceInfoDataStorage infoStorage){
-    this.serviceInfoDataStorage = infoStorage;
-  }
+    /**
+     * Returns the list of {@link org.netbeans.modules.dlight.api.storage.DataTableMetadata}
+     * this data provider can return information about
+     * @return list of {@link org.netbeans.modules.dlight.api.storage.DataTableMetadata}
+     * this data provider can return information about
+     */
+    public abstract Collection<DataTableMetadata> getDataTablesMetadata();
 
-  /**
-   * Returns service info storage
-   * @return service info storage
-   */
-  protected final ServiceInfoDataStorage getServiceInfoDataStorage(){
-      return serviceInfoDataStorage;
-  }
+    /**
+     * Returns name which will be used to filter indicator data
+     * provider which will be currently used
+     * @return data provider name
+     */
+    public abstract String getName();
+
+    /**
+     *  Initialize with service info data storage
+     * @param infoStorage service infor data storage
+     */
+    public final void init(ServiceInfoDataStorage infoStorage) {
+        this.serviceInfoDataStorage = infoStorage;
+    }
+
+    /**
+     * Returns service info storage
+     * @return service info storage
+     */
+    protected final ServiceInfoDataStorage getServiceInfoDataStorage() {
+        return serviceInfoDataStorage;
+    }
 }

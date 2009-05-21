@@ -42,6 +42,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.ruby.rubyproject.ui.customizer.BaseRubyCustomizerProvider;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyCompositePanelProvider;
 import org.netbeans.spi.project.ActionProvider;
@@ -100,6 +101,7 @@ public final class RubyConfigurationProvider implements ProjectConfigurationProv
             NbBundle.getMessage(RubyConfigurationProvider.class, "RubyConfigurationProvider.default.label"));
 
     private final RubyBaseProject p;
+    private final String customizerCategory;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final FileChangeListener fcl = new FileChangeAdapter() {
         public void fileFolderCreated(FileEvent fe) {
@@ -135,13 +137,16 @@ public final class RubyConfigurationProvider implements ProjectConfigurationProv
         }
     };
     private final FileChangeListener fclWeak;
+    private final FileObject nbp;
     private FileObject configDir;
     private Map<String,Config> configs;
 
-    public RubyConfigurationProvider(RubyBaseProject p) {
+    public RubyConfigurationProvider(RubyBaseProject p, String customizerCategory) {
         this.p = p;
+        this.customizerCategory = customizerCategory;
+
         fclWeak = FileUtil.weakFileChangeListener(fcl, null);
-        FileObject nbp = p.getProjectDirectory().getFileObject("nbproject"); // NOI18N
+        nbp = p.getProjectDirectory().getFileObject("nbproject"); // NOI18N
         if (nbp != null) {
             nbp.addFileChangeListener(fclWeak);
             LOGGER.log(Level.FINER, "Added listener to {0}", nbp);
@@ -236,7 +241,7 @@ public final class RubyConfigurationProvider implements ProjectConfigurationProv
     }
 
     public void customize() {
-        p.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(RubyCompositePanelProvider.RUN);
+        p.getLookup().lookup(BaseRubyCustomizerProvider.class).showCustomizer(customizerCategory);
     }
 
     public boolean configurationsAffectAction(String command) {

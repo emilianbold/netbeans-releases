@@ -165,7 +165,8 @@ public class PullUpTransformer extends RefactoringVisitor {
                     Element current = workingCopy.getTrees().getElement(getCurrentPath());
                     Element currentMember = members[i].getElementHandle().resolve(workingCopy);
                     if (currentMember.getEnclosingElement().equals(current)) {
-                        if (!members[i].isMakeAbstract()) {
+                        if (classIsAbstract || !members[i].isMakeAbstract()) {
+                            // in case of interface always remove pulled method
                             njuClass = make.removeClassMember(njuClass, workingCopy.getTrees().getTree(currentMember));
                             rewrite(tree, njuClass);
                         }

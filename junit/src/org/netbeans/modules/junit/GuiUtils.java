@@ -222,14 +222,9 @@ public final class GuiUtils {
                                                JCheckBox[] elements) {
         
         /* create a component representing the group without title: */
-        JComponent content;
-        if (elements.length == 1) {
-            content = elements[0];
-        } else {
-            content = new JPanel(new GridLayout(0, 1, 0, 5));
-            for (int i = 0; i < elements.length; i++) {
-                content.add(elements[i]);
-            }
+        JComponent content = new JPanel(new GridLayout(0, 1, 0, 5));
+        for (int i = 0; i < elements.length; i++) {
+            content.add(elements[i]);
         }
         
         /* add the title and insets to the group: */

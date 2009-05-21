@@ -1,7 +1,0 @@
-root:null<0,18>
--html:UNMATCHED_TAG<0,6>
---html:OPEN_TAG<0,6>
--p:UNMATCHED_TAG<7,10>
---p:OPEN_TAG<7,10>
--body:UNMATCHED_TAG<11,18>
---body:ENDTAG<11,18>

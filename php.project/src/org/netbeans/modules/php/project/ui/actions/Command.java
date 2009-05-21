@@ -72,6 +72,10 @@ public abstract class Command {
         return true;
     }
 
+    public boolean isFileSensitive() {
+        return false;
+    }
+
     public final PhpProject getProject() {
         return project;
     }

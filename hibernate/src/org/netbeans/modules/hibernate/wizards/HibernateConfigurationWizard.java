@@ -56,6 +56,7 @@ import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.hibernate.spi.hibernate.HibernateFileLocationProvider;
+import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
@@ -220,13 +221,11 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
         String wizardTitle = NbBundle.getMessage(HibernateConfigurationWizard.class, "LBL_ConfWizardTitle"); // NOI18N   
         descriptor =
                 new HibernateConfigurationWizardDescriptor(project, wizardTitle);
-        if (Templates.getTargetFolder(wizard) == null) {
-            HibernateFileLocationProvider provider = project != null ? project.getLookup().lookup(HibernateFileLocationProvider.class) : null;
-            FileObject location = provider != null ? provider.getSourceLocation() : null;
-            if (location != null) {
-                Templates.setTargetFolder(wizard, location);
-            }
-        }
+
+        // #164631 - the 1st java source folder is the default
+        List<SourceGroup> javaSourceGroups = HibernateUtil.getJavaSourceGroups(project);
+        assert javaSourceGroups.size() > 0 : "No Java Sources found for project " + project.getProjectDirectory();
+        Templates.setTargetFolder(wizard, javaSourceGroups.get(0).getRootFolder());
 
         // Set the targetName here. Default name for new files should be in the form : 'hibernate<i>.cfg.xml 
         // and not like : hibernate.cfg<i>.xml.

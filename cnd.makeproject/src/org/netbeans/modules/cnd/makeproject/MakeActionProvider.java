@@ -52,7 +52,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JButton;
@@ -80,7 +79,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CustomToolConfigu
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
@@ -102,6 +100,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Confi
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
@@ -561,7 +561,7 @@ public class MakeActionProvider implements ActionProvider {
                     return;
                 } else if (conf.isApplicationConfiguration()) {
                     RunProfile runProfile = null;
-                    int platform = conf.getPlatform().getValue();
+                    int platform = conf.getDevelopmentHost().getBuildPlatform();
                     if (platform == Platform.PLATFORM_WINDOWS) {
                         // On Windows we need to add paths to dynamic libraries from subprojects to PATH
                         runProfile = conf.getProfile().clone(conf);
@@ -664,7 +664,9 @@ public class MakeActionProvider implements ActionProvider {
                         if (cancelled.get()) {
                             return; // getEnv() might be costly for remote host
                         }
-                        if (HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
+                        if (conf.getDevelopmentHost().getExecutionEnvironment().isLocal() &&
+                                HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DISPLAY") == null && // NOI18N
+                                conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
                             // DISPLAY hasn't been set
                             if (runProfile == null) {
                                 runProfile = conf.getProfile().clone(conf);
@@ -679,14 +681,12 @@ public class MakeActionProvider implements ActionProvider {
                         // naturalize if relative
                         path = makeArtifact.getOutput();
                         //TODO: we also need remote aware IpeUtils..........
-                        if (conf.getDevelopmentHost().isLocalhost()) {
-                            if (!IpeUtils.isPathAbsolute(path)) {
-                                // make path relative to run working directory
-                                path = makeArtifact.getWorkingDirectory() + "/" + path; // NOI18N
-                                path = FilePathAdaptor.naturalize(path);
-                                path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
-                                path = FilePathAdaptor.naturalize(path);
-                            }
+                        if (!IpeUtils.isPathAbsolute(path)) {
+                            // make path relative to run working directory
+                            path = makeArtifact.getWorkingDirectory() + "/" + path; // NOI18N
+                            path = FilePathAdaptor.naturalize(path);
+                            path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
+                            path = FilePathAdaptor.naturalize(path);
                         }
                     } else {
                         // Always absolute
@@ -736,7 +736,7 @@ public class MakeActionProvider implements ActionProvider {
                         args = buildCommand.substring(index + 1);
                         buildCommand = buildCommand.substring(0, index);
                     }
-                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getPlatform().getValue());
+                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
                     profile.setArgs(args);
                     ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                             project,
@@ -758,7 +758,7 @@ public class MakeActionProvider implements ActionProvider {
                 }
                 String buildCommand;
                 String args;
-                if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
+                if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_WINDOWS) {
                     buildCommand = "cmd.exe"; // NOI18N
                     args = "/c sh "; // NOI18N
                 } else {
@@ -769,7 +769,7 @@ public class MakeActionProvider implements ActionProvider {
                     args += " -x "; // NOI18N
                 }
                 args += "nbproject/Package-" + conf.getName() + ".bash"; // NOI18N
-                RunProfile profile = new RunProfile(conf.getBaseDir(), conf.getPlatform().getValue());
+                RunProfile profile = new RunProfile(conf.getBaseDir(), conf.getDevelopmentHost().getBuildPlatform());
                 profile.setArgs(args);
                 ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                         project,
@@ -793,7 +793,7 @@ public class MakeActionProvider implements ActionProvider {
                         args = buildCommand.substring(index + 1);
                         buildCommand = buildCommand.substring(0, index);
                     }
-                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getPlatform().getValue());
+                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
                     profile.setArgs(args);
                     ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                             project,
@@ -849,14 +849,14 @@ public class MakeActionProvider implements ActionProvider {
                         // Clean command
                         String commandLine;
                         String args;
-                        if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
+                        if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_WINDOWS) {
                             commandLine = "cmd.exe"; // NOI18N
                             args = "/c rm -rf " + outputFile; // NOI18N
                         } else {
                             commandLine = "rm"; // NOI18N
                             args = "-rf " + outputFile; // NOI18N
                         }
-                        RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getPlatform().getValue());
+                        RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
                         profile.setArgs(args);
                         ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                                 project,
@@ -876,7 +876,7 @@ public class MakeActionProvider implements ActionProvider {
                             commandLine = commandLine.substring(0, index);
                         }
                         // Add the build commandLine
-                        profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getPlatform().getValue());
+                        profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
                         profile.setArgs(args);
                         projectActionEvent = new ProjectActionEvent(
                                 project,
@@ -1104,6 +1104,22 @@ public class MakeActionProvider implements ActionProvider {
                 runBTA = true;
             }
         // TODO: all validation below works, but it may be more efficient to make a verifying script
+        }
+
+        // Check build/run/debug platform vs. host platform
+        int buildPlatformId = conf.getDevelopmentHost().getBuildPlatform();
+        ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
+        int hostPlatformId = CompilerSetManager.getDefault(execEnv).getPlatform();
+        if (buildPlatformId != hostPlatformId) {
+            if (!conf.isMakefileConfiguration()) {
+                Platform buildPlatform = Platforms.getPlatform(buildPlatformId);
+                Platform hostPlatform = Platforms.getPlatform(hostPlatformId);
+                String errormsg = getString("WRONG_PLATFORM", hostPlatform.getDisplayName(), buildPlatform.getDisplayName());
+                if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(errormsg, NotifyDescriptor.WARNING_MESSAGE)) != NotifyDescriptor.OK_OPTION) {
+                    return false;
+                }
+            }
+            conf.getDevelopmentHost().setBuildPlatform(hostPlatformId);
         }
 
         boolean unknownCompilerSet = false;
@@ -1354,7 +1370,7 @@ public class MakeActionProvider implements ActionProvider {
 //    }
 
     private static boolean isAbsolutePath(MakeConfiguration conf, String path) {
-        if (conf.getPlatform().getValue() == PlatformTypes.PLATFORM_WINDOWS) {
+        if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
             return path.length() > 3 && path.charAt(1) == ':' && path.charAt(2) == '/';
         } else {
             return path.length() > 0 && path.charAt(0) == '/';
@@ -1363,13 +1379,11 @@ public class MakeActionProvider implements ActionProvider {
 
     // Private methods -----------------------------------------------------
     /** Look up i18n strings here */
-    private static ResourceBundle bundle;
-
     private static String getString(String s) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(MakeActionProvider.class);
-        }
-        return bundle.getString(s);
+        return NbBundle.getMessage(MakeActionProvider.class, s);
+    }
+    private static String getString(String s, String arg1, String arg2) {
+        return NbBundle.getMessage(MakeActionProvider.class, s, arg1, arg2);
     }
 
     private abstract static class CancellableTask implements Runnable, Cancellable {

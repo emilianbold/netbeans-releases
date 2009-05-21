@@ -293,18 +293,29 @@ function languageCompatible(language_list, lang_id) {
     return false;
 }
 
-function getSize(filename,lang_id) {
-	var size = "";
+function get_file_info(filename,lang_id) {
+        var file = null;
 	if(FILES.length > 0) {
             for (var i = 0; i < FILES.length; i++) {		
 		if(FILES[i].name == filename && languageCompatible(FILES[i].locales, lang_id)) {		
-			size = FILES[i].size;
+			file = FILES[i];
 			break;
 		}
             }
 	}
-	return size;
+	return file;
 }
+
+function getSize(filename, lang_id) {
+        var file = get_file_info(filename, lang_id);
+	return file!=null ? file.size : "";
+}
+
+function getMD5(filename, lang_id) {
+        var file = get_file_info(filename, lang_id);
+	return file!=null ? file.md5 : "";
+}
+
 
 function get_file_name(platform, option, language) {
     var fn = "";
@@ -314,6 +325,10 @@ function get_file_name(platform, option, language) {
         fn += "bundles/";
     }
     return fn + get_file_name_short(platform, option, language);
+}
+
+function is_file_available(platform, option, language) {
+    return get_file_info(get_file_name(platform, option, language), language) != null;
 }
 
 function get_build_location(lang_id) {

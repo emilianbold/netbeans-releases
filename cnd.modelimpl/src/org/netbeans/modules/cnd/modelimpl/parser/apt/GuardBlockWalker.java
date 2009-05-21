@@ -114,6 +114,7 @@ public class GuardBlockWalker extends APTWalker {
         hasGuard = Boolean.FALSE;
     }
 
+    @Override
     protected void onOtherNode(APT apt) {
         hasGuard = Boolean.FALSE;
     }

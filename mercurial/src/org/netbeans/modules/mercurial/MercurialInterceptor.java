@@ -46,6 +46,7 @@ import org.netbeans.modules.versioning.util.Utils;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import java.util.logging.Level;
 import java.util.List;
@@ -53,7 +54,9 @@ import java.util.ArrayList;
 import java.util.Map;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import org.netbeans.modules.mercurial.ui.status.StatusAction;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
+import org.netbeans.modules.versioning.spi.VCSContext;
 
 
 /**
@@ -300,9 +303,26 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
 
     @Override
-    public String getAttribute(File file, String attrName) {
+    public Object getAttribute(final File file, String attrName) {
         if("ProvidedExtensions.RemoteLocation".equals(attrName)) {
             return getRemoteRepository(file);
+        } else if("ProvidedExtensions.Refresh".equals(attrName)) {
+            return new Runnable() {
+                public void run() {
+                    try {
+                        File repository = Mercurial.getInstance().getRepositoryRoot(file);
+                        if (repository == null) {
+                            return;
+                        }
+                        FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
+                        cache.refreshCached(file);
+                        StatusAction.refreshFile(file, repository, null, cache);
+                    } catch (HgException ex) {
+                        ExceptionHandler eh = new ExceptionHandler(ex);
+                        eh.notifyException();
+                    }
+                }
+            };
         } else {
             return super.getAttribute(file, attrName);
         }

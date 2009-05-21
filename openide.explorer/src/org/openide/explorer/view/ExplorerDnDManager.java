@@ -110,7 +110,7 @@ final class ExplorerDnDManager {
 
     final int getNodeAllowedActions() {
         if( !isDnDActive && maybeExternalDnD )
-            return DnDConstants.ACTION_COPY;
+            return DnDConstants.ACTION_COPY_OR_MOVE;
         
         return nodeAllowed;
     }

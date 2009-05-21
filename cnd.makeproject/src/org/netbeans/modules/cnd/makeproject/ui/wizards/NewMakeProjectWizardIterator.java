@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -193,7 +194,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
         Set<FileObject> resultSet = new HashSet<FileObject>();
         File dirF = (File) wiz.getProperty("projdir"); // NOI18N
         if (dirF != null) {
-            dirF = FileUtil.normalizeFile(dirF);
+            dirF = CndFileUtils.normalizeFile(dirF);
         }
         String projectName = (String) wiz.getProperty("name"); // NOI18N
         String makefileName = (String) wiz.getProperty("makefilename"); // NOI18N

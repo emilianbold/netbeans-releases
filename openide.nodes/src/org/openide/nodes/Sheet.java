@@ -143,23 +143,16 @@ public final class Sheet extends Object {
     */
     public synchronized Set put(Set set) {
         int indx = findIndex(set.getName());
-        Set removed;
 
+        Set removed = null;
         if (indx == -1) {
             sets.add(set);
-            removed = null;
         } else {
             removed = sets.set(indx, set);
+            removed.removePropertyChangeListener(propL);
         }
-
-        set.removePropertyChangeListener(propL);
-
-        if (removed == null) {
-            set.addPropertyChangeListener(propL);
-        }
-
+        set.addPropertyChangeListener(propL);
         refresh();
-
         return removed;
     }
 

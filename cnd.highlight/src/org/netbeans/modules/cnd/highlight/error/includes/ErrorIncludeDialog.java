@@ -94,10 +94,10 @@ import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -720,8 +720,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
     }
     
     private String getRightName(String fullName){
-        File file = new File(fullName);
-        fullName = FileUtil.normalizeFile(file).getAbsolutePath();
+        fullName = CndFileUtils.normalizeAbsolutePath(fullName);
         fullName = fixFileName(fullName);
         return fullName;
     }

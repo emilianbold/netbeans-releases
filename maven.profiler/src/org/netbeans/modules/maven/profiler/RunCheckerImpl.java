@@ -44,14 +44,12 @@ import java.util.Properties;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.Profiler;
-import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -80,7 +78,9 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
     public boolean checkRunConfig(RunConfig config, ExecutionContext context) {
         Properties configProperties = config.getProperties();
 
-        if (ACTION_PROFILE.equals(config.getActionName()) || ACTION_PROFILE_SINGLE.equals(config.getActionName()) || ACTION_PROFILE_TESTS.equals(config.getActionName())) { // action "profile"
+        if (   ACTION_PROFILE.equals(config.getActionName()) ||
+               ACTION_PROFILE_TESTS.equals(config.getActionName()) ||
+              (config.getActionName() != null && config.getActionName().startsWith(ACTION_PROFILE_SINGLE))) { // action "profile"
             // Get the ProjectTypeProfiler for Maven project
             final ProjectTypeProfiler ptp = ProjectUtilities.getProjectTypeProfiler(project);
             if (!(ptp instanceof MavenProjectTypeProfiler)) return false;
@@ -123,22 +123,13 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
     }
 
     private String fixAgentArg(String agentArg) {
-        agentArg = agentArg.replace("\\", "/");
+        // !!!!!!!!!!!!!!!!!!!!!!!! Never remove this replacement !!!!!!!!!!!!!!!!!!!!!!!!!!
+        // !! It is absolutely needed for correct profiling of maven projects on Windows  !!
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        agentArg = agentArg.replace("\\", "/"); // NOI18N
 
         if (agentArg.indexOf(' ') != -1) { //NOI18N
-            if (Utilities.isUnix()) {
-                // Profiler is installed in directory with space on Unix (Linux, Solaris, Mac OS X)
-                // create temporary link in /tmp directory and use it instead of directory with space
-                String libsDir = Profiler.getDefault().getLibsDir();
-                return IntegrationUtils.fixLibsDirPath(libsDir, agentArg); //NOI18N
-            } else if (Utilities.isWindows()) {
-                // Profiler is installed in directory with space on Windows
-                // surround the whole -agentpath argument with quotes for NB source module
-
-// #164234 shall be done now for all properties directly in the CmdLine Build Executor.
-//                agentArg = "\\\"" + agentArg + "\\\""; //NOI18N
-                return agentArg; //NOI18N
-            }
+            return "\"" + agentArg + "\""; // NOI18N
         }
         return agentArg;
     }

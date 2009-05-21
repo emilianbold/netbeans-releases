@@ -314,10 +314,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
 
             final List<Product> glassfishes =
                     Registry.getInstance().queryProducts(new OrFilter(
-                    new ProductFilter("glassfish", Registry.getInstance().getTargetPlatform()),
-                    new ProductFilter("sjsas", Registry.getInstance().getTargetPlatform())));
+                    new ProductFilter("sjsas", Registry.getInstance().getTargetPlatform()),
+                    new ProductFilter("glassfish", Registry.getInstance().getTargetPlatform())));
 
-            Product productToIntegrate = null;
+                  Product productToIntegrate = null;
             for (Product glassfish : glassfishes) {
                 final Product bundledProduct = bundledRegistry.getProduct(
                         glassfish.getUid(), glassfish.getVersion());
@@ -359,8 +359,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         try {
             progress.setDetail(getString("CL.install.glassfish.integration")); // NOI18N
 
+
             final List<Product> glassfishes =
-                    Registry.getInstance().getProducts("glassfish-mod");
+                   Registry.getInstance().queryProducts(new OrFilter(
+                    new ProductFilter("glassfish-mod-sun", Registry.getInstance().getTargetPlatform()),
+                    new ProductFilter("glassfish-mod", Registry.getInstance().getTargetPlatform())));   
 
             Product productToIntegrate = null;
             for (Product glassfish : glassfishes) {

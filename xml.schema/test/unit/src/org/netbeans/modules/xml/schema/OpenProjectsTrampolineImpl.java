@@ -35,7 +35,7 @@ public class OpenProjectsTrampolineImpl  implements OpenProjectsTrampoline {
         return projects;
     }
 
-    public void openAPI(Project[] project, boolean b) {
+    public void openAPI(Project[] project, boolean b, boolean showProgress) {
     }
 
     public void closeAPI(Project[] project) {

@@ -308,7 +308,8 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
     public PropertiesOpen getOpenSupport() {
         if (openSupport == null) {
             openSupport = ((MultiBundleStructure)getBundleStructure()).getOpenSupport();
-            openSupport.addDataObject(this);
+            if (this.isValid())
+                openSupport.addDataObject(this);
         }
         return openSupport;
     }

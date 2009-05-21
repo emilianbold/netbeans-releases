@@ -58,9 +58,11 @@ import org.openide.util.NbBundle;
     }
 
     public void addData(int locks, int threads) {
-        while (graph.getUpperLimit() < threads) {
-            graph.setUpperLimit(2 * graph.getUpperLimit());
+        int upperLimit = graph.getUpperLimit();
+        while (upperLimit < threads) {
+            upperLimit *= 2;
         }
+        graph.setUpperLimit(upperLimit);
         graph.addData(threads, locks);
     }
 }

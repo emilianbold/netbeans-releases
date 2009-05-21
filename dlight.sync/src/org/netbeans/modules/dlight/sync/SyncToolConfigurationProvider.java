@@ -106,7 +106,8 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
             timeColumn,
             stackColumn);
 
-        rawTableMetadata = new DataTableMetadata("sync", rawColumns);//NOI18N
+        rawTableMetadata = new DataTableMetadata(
+                "sync", rawColumns, null); // NOI18N
     }
 
     public SyncToolConfigurationProvider() {
@@ -192,7 +193,8 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     private List<IndicatorDataProviderConfiguration> initIndicatorDataProviderConfigurations() {
 
         List<IndicatorDataProviderConfiguration> lockIndicatorDataProviders = new ArrayList<IndicatorDataProviderConfiguration>();
-        final DataTableMetadata indicatorTableMetadata = new DataTableMetadata("locks", Arrays.asList(locksColumn, threadsColumn));//NOI18N
+        final DataTableMetadata indicatorTableMetadata = new DataTableMetadata(
+                "locks", Arrays.asList(locksColumn, threadsColumn), null); // NOI18N
         List<DataTableMetadata> indicatorTablesMetadata = Arrays.asList(indicatorTableMetadata);
         CLIODCConfiguration lockConf = new CLIODCConfiguration(
             "/bin/prstat", "-mv -p @PID -c 1", // NOI18N
