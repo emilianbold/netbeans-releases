@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
@@ -76,7 +77,7 @@ public final class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 72;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 73;
 
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
@@ -125,19 +126,25 @@ public final class RepositoryUtils {
     public static void remove(CsmUID uid) {
         Key key = UIDtoKey(uid);
         if (key != null) {
-            if (TRACE_REPOSITORY_ACCESS && isTracingKey(key)) {
-                long time = System.currentTimeMillis();
-                int index = nextIndex();
-                System.err.println(index + ": " + System.identityHashCode(key) + "@removing key " + key);
+            try {
+                if (TRACE_REPOSITORY_ACCESS && isTracingKey(key)) {
+                    long time = System.currentTimeMillis();
+                    int index = nextIndex();
+                    System.err.println(index + ": " + System.identityHashCode(key) + "@removing key " + key);
+                    if (!TraceFlags.SAFE_REPOSITORY_ACCESS) {
+                        repository.remove(key);
+                    }
+                    time = System.currentTimeMillis() - time;
+                    System.err.println(index + ": " + System.identityHashCode(key) + "@removed in " + time + "ms the key " + key);
+                    return;
+                }
                 if (!TraceFlags.SAFE_REPOSITORY_ACCESS) {
                     repository.remove(key);
                 }
-                time = System.currentTimeMillis() - time;
-                System.err.println(index + ": " + System.identityHashCode(key) + "@removed in " + time + "ms the key " + key);
-                return;
-            }
-            if (!TraceFlags.SAFE_REPOSITORY_ACCESS) {
-                repository.remove(key);
+            } finally {
+                if (uid instanceof Disposable) {
+                    ((Disposable)uid).dispose();
+                }
             }
         }
     }

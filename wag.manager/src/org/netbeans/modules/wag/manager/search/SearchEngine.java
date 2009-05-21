@@ -48,10 +48,10 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.netbeans.modules.wag.manager.model.WagService;
 import org.netbeans.modules.wag.manager.model.WagServiceParameter;
-import com.sun.zembly.oauth.api.Parameter;
-import com.sun.zembly.popzcl.Zembly;
-import com.sun.zembly.popzcl.config.Configuration;
-import com.sun.zembly.popzcl.config.impl.DefaultConfiguration;
+import com.zembly.oauth.api.Parameter;
+import com.zembly.gateway.client.Zembly;
+import com.zembly.gateway.client.config.Configuration;
+import com.zembly.gateway.client.config.impl.DefaultConfiguration;
 
 /**
  *

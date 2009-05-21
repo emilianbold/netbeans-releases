@@ -55,19 +55,21 @@ public final class SunStudioLocatorCndImpl implements SunStudioLocator {
 
     private final ExecutionEnvironment env;
 
-    
     public SunStudioLocatorCndImpl(ExecutionEnvironment env) {
         this.env = env;
     }
 
     public Collection<SunStudioDescription> getSunStudioLocations() {
         Collection<SunStudioDescription> result = new ArrayList<SunStudioDescription>();
-        List<CompilerSet> compilerCollections = env.isLocal()? CompilerSetManager.getDefault().getCompilerSets() : CompilerSetManager.getDefault(env).getCompilerSets(); // NOI18N
+        List<CompilerSet> compilerCollections = env.isLocal() ? CompilerSetManager.getDefault().getCompilerSets() : CompilerSetManager.getDefault(env).getCompilerSets(); // NOI18N
         if (compilerCollections.size() == 1 && compilerCollections.get(0).getName().equals(CompilerSet.None)) {
             return result;
         }
 
         for (CompilerSet compilerSet : compilerCollections) {
+            if (!compilerSet.isSunCompiler()) {
+                continue;
+            }
             String binDir = compilerSet.getDirectory();
             String baseDir = new File(binDir).getParent();
             //collectionsDirectories.add(baseDir);

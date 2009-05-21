@@ -643,7 +643,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             List<Action> actions = new ArrayList<Action>();
             // Add standard actions
             Action[] standardActions;
-            MakeConfiguration active = (descriptor == null) ? null : (MakeConfiguration) descriptor.getConfs().getActive();
+            MakeConfiguration active = (descriptor == null) ? null : descriptor.getActiveConfiguration();
             if (descriptor == null || active == null || active.isMakefileConfiguration()) { // FIXUP: need better check
                 standardActions = getAdditionalDiskFolderActions();
             } else {
@@ -952,7 +952,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
     private MakeConfigurationDescriptor getMakeConfigurationDescriptor() {
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor) pdp.getConfigurationDescriptor();
+        MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
         return makeConfigurationDescriptor;
     }
 
@@ -1710,7 +1710,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             if (item == null || item.getFolder() == null || item.getFolder().getConfigurationDescriptor() == null || item.getFolder().getConfigurationDescriptor().getConfs() == null) {
                 return false;
             }
-            MakeConfiguration makeConfiguration = (MakeConfiguration) item.getFolder().getConfigurationDescriptor().getConfs().getActive();
+            MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
             ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
             if (itemConfiguration == null) {
                 return false;
@@ -1902,7 +1902,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 }
 
                 if (folder != null) {
-                    MakeConfigurationDescriptor mcd = (MakeConfigurationDescriptor) folder.getConfigurationDescriptor();
+                    MakeConfigurationDescriptor mcd = folder.getConfigurationDescriptor();
                     if (mcd != null && !mcd.okToChange()) {
                         return;
                     }

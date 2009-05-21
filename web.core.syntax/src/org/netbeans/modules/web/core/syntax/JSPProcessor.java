@@ -74,7 +74,7 @@ public abstract class JSPProcessor {
     protected boolean processCalled = false;
     protected boolean processingSuccessful = true;
 
-    protected String createBeanVarDeclarations() {
+    protected String createBeanVarDeclarations(List<String> localBeans) {
         //TODO: the parser data contains no information about offsets and
         //therefore it is not possible to create proper java embeddings
         //inside bean declarations. We need a similar solution to what was
@@ -88,14 +88,18 @@ public abstract class JSPProcessor {
 
             if (beanData != null) {
                 for (PageInfo.BeanData bean : beanData) {
-                    beanDeclarationsBuff.append(bean.getClassName() + " " + bean.getId() + ";\n"); //NOI18N
+                    if (!localBeans.contains(bean.getId())){
+                        beanDeclarationsBuff.append(bean.getClassName() + " " + bean.getId() + ";\n"); //NOI18N
+                    }
                 }
             }
 
             if (pageInfo.isTagFile()){
                 for (TagAttributeInfo info : pageInfo.getTagInfo().getAttributes()){
                     if (info.getTypeName() != null){ // will be null e.g. for fragment attrs
-                        beanDeclarationsBuff.append(info.getTypeName() + " " + info.getName() + ";\n"); //NOI18N
+                        if (!localBeans.contains(info.getName())){
+                            beanDeclarationsBuff.append(info.getTypeName() + "2 " + info.getName() + ";\n"); //NOI18N
+                        }
                     }
                 }
             }

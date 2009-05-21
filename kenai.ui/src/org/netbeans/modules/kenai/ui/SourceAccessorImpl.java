@@ -113,12 +113,12 @@ public class SourceAccessorImpl extends SourceAccessor {
 
     @Override
     public ActionListener getOpenSourcesAction(SourceHandle srcHandle) {
-        return new GetSourcesFromKenaiAction(handlesMap.get(srcHandle));
+        return new GetSourcesFromKenaiAction(handlesMap.get(srcHandle), srcHandle);
     }
 
     @Override
     public ActionListener getDefaultAction(SourceHandle srcHandle) {
-        return new GetSourcesFromKenaiAction(handlesMap.get(srcHandle));
+        return new GetSourcesFromKenaiAction(handlesMap.get(srcHandle), srcHandle);
     }
 
     @Override

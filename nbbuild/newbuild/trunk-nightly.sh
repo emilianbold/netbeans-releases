@@ -64,6 +64,18 @@ if [ -n $BUILD_ID ]; then
     fi
 fi
 
+if [ $UPLOAD_ML == 1 ]; then
+    cp $DIST/jnlp $DIST/ml/
+    cp $DIST/javadoc $DIST/ml/
+    cp $DIST/zip/$BASENAME-platform-src.zip $DIST/ml/zip/
+    cp $DIST/zip/$BASENAME-src.zip $DIST/ml/zip/
+    cp $DIST/zip/$BASENAME-javadoc.zip $DIST/ml/zip/
+    cp $DIST/zip/hg-l10n-$BUILDNUMBER.zip $DIST/ml/zip/
+    cp $DIST/zip/ide-l10n-$BUILDNUMBER.zip $DIST/ml/zip/
+    cp $DIST/zip/stable-UC-l10n-$BUILDNUMBER.zip $DIST/ml/zip/
+    cp $DIST/zip/testdist-$BUILDNUMBER.zip $DIST/ml/zip/
+fi
+
 cd $TRUNK_NIGHTLY_DIRNAME
 bash build-nbi.sh
 ERROR_CODE=$?
@@ -81,18 +93,6 @@ if [ -n $BUILD_ID ]; then
     if [ $UPLOAD_ML == 0 -a ML_BUILD != 0 ]; then
         rm -r $DIST/ml
     fi
-fi
-
-if [ $UPLOAD_ML == 1 ]; then
-    mv $DIST/jnlp $DIST/ml/
-    mv $DIST/javadoc $DIST/ml/
-    mv $DIST/zip/$BASENAME-platform-src.zip $DIST/ml/zip/
-    mv $DIST/zip/$BASENAME-src.zip $DIST/ml/zip/
-    mv $DIST/zip/$BASENAME-javadoc.zip $DIST/ml/zip/
-    mv $DIST/zip/hg-l10n-$BUILDNUMBER.zip $DIST/ml/zip/
-    mv $DIST/zip/ide-l10n-$BUILDNUMBER.zip $DIST/ml/zip/
-    mv $DIST/zip/stable-UC-l10n-$BUILDNUMBER.zip $DIST/ml/zip/
-    mv $DIST/zip/testdist-$BUILDNUMBER.zip $DIST/ml/zip/
 fi
 
 if [ -z $DIST_SERVER ]; then

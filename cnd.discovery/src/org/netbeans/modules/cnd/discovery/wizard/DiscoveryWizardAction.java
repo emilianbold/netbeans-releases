@@ -125,10 +125,10 @@ public final class DiscoveryWizardAction extends NodeAction {
         if (pdp == null || !pdp.gotDescriptor()){
             return null;
         }
-        MakeConfigurationDescriptor make = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
-        Configuration conf = make.getConfs().getActive();
-        if (conf instanceof MakeConfiguration){
-            String output = ((MakeConfiguration)conf).getMakefileConfiguration().getOutput().getValue();
+        MakeConfigurationDescriptor make = pdp.getConfigurationDescriptor();
+        MakeConfiguration conf = make.getActiveConfiguration();
+        if (conf != null){
+            String output = conf.getMakefileConfiguration().getOutput().getValue();
             if (output == null || output.length()==0){
                 return null;
             }
@@ -157,7 +157,7 @@ public final class DiscoveryWizardAction extends NodeAction {
         String base = getProjectDirectoryPath(project);
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         if (pdp != null && pdp.gotDescriptor()){
-            MakeConfigurationDescriptor make = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
+            MakeConfigurationDescriptor make = pdp.getConfigurationDescriptor();
             Folder folder = make.getLogicalFolders();
             Vector sources = folder.getFolders();
             List<String> roots = make.getAbsoluteSourceRoots();
@@ -230,17 +230,12 @@ public final class DiscoveryWizardAction extends NodeAction {
             if( pdp == null || !pdp.gotDescriptor()) {
                 return null;
             }
-            MakeConfigurationDescriptor make = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
+            MakeConfigurationDescriptor make = pdp.getConfigurationDescriptor();
             if( make == null ) {
                 return null;
             }
-            Configurations confs = make.getConfs();
-            if (confs == null) {
-                return null;
-            }
-            Configuration conf = confs.getActive();
-            if ((conf instanceof MakeConfiguration) && 
-                ((MakeConfiguration)conf).isMakefileConfiguration()){
+            MakeConfiguration conf = make.getActiveConfiguration();
+            if (conf != null && conf.isMakefileConfiguration()){
                 projects.add(project);
             } else {
                 return null;
