@@ -591,9 +591,15 @@ public class DomainEditor {
             Node oldNode = cpMap.values().iterator().next();
             Node cpNode = oldNode.cloneNode(false);
             NamedNodeMap cpAttrMap = cpNode.getAttributes();
-            cpAttrMap.getNamedItem(CONST_NAME).setNodeValue(SAMPLE_CONNPOOL);
-            cpAttrMap.getNamedItem(CONST_DS_CLASS).setNodeValue("org.apache.derby.jdbc.ClientDataSource"); //N0I18N
-            cpAttrMap.getNamedItem(CONST_RES_TYPE).setNodeValue("javax.sql.DataSource"); //N0I18N
+            if(cpAttrMap.getNamedItem(CONST_NAME) != null) {
+                cpAttrMap.getNamedItem(CONST_NAME).setNodeValue(SAMPLE_CONNPOOL);
+            }
+            if(cpAttrMap.getNamedItem(CONST_DS_CLASS) != null) {
+                cpAttrMap.getNamedItem(CONST_DS_CLASS).setNodeValue("org.apache.derby.jdbc.ClientDataSource"); //N0I18N
+            }
+            if(cpAttrMap.getNamedItem(CONST_RES_TYPE) != null) {
+                cpAttrMap.getNamedItem(CONST_RES_TYPE).setNodeValue("javax.sql.DataSource"); //N0I18N
+            }
             HashMap<String, String> poolProps = new HashMap<String, String>();
             poolProps.put(CONST_SERVER_NAME, "localhost"); //N0I18N
             poolProps.put(CONST_PASSWORD, "app"); //N0I18N
