@@ -60,8 +60,9 @@ public class SettingsModelImpl extends SettingsModel {
     private SettingsComponent rootComponent;
     private SettingsComponentFactory componentFactory;
     private SettingsQNames settingsQNames;
-    private QName ROOT_NS = SettingsQName.createQName("settings", true); ///NOI18N
-    private QName ROOT = SettingsQName.createQName("settings", false); ///NOI18N
+    private QName ROOT_NS = SettingsQName.createQName("settings", true, false); ///NOI18N
+    private QName ROOT_NS_OLD = SettingsQName.createQName("settings", true, true); ///NOI18N
+    private QName ROOT = SettingsQName.createQName("settings", false, false); ///NOI18N
     
     public SettingsModelImpl(ModelSource source) {
         super(source);
@@ -84,10 +85,13 @@ public class SettingsModelImpl extends SettingsModel {
         QName q = root == null ? null : AbstractDocumentComponent.getQName(root);
         if (root != null ) {
             if (ROOT.equals(q)) {
-                settingsQNames = new SettingsQNames(false);
+                settingsQNames = new SettingsQNames(false, false);
                 rootComponent = new SettingsImpl(this, root);
             } else if (ROOT_NS.equals(q)) {
-                settingsQNames = new SettingsQNames(true);
+                settingsQNames = new SettingsQNames(true, false);
+                rootComponent = new SettingsImpl(this, root);
+            } else if (ROOT_NS_OLD.equals(q)) {
+                settingsQNames = new SettingsQNames(true, true);
                 rootComponent = new SettingsImpl(this, root);
             }
         } 
