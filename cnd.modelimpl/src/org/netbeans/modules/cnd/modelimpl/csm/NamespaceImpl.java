@@ -215,6 +215,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         } finally {
             projectLock.writeLock().unlock();
         }
+        weakDeclarationContainer = null;
     }
     
     private static final String UNNAMED_PREFIX = "<unnamed>";  // NOI18N
@@ -247,7 +248,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return out;
     }
 
-    private WeakReference<DeclarationContainer> weakDeclarationContainer;
+    private WeakReference<DeclarationContainer> weakDeclarationContainer = TraceFlags.USE_WEAK_MEMORY_CACHE ?  new WeakReference<DeclarationContainer>(null) : null;
     private DeclarationContainer getDeclarationsSorage() {
         if (declarationsSorageKey == null) {
             return DeclarationContainer.empty();
@@ -267,7 +268,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         if (dc == null) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get DeclarationsSorage by key " + declarationsSorageKey)); // NOI18N
         }
-        if (TraceFlags.USE_WEAK_MEMORY_CACHE && dc != null) {
+        if (TraceFlags.USE_WEAK_MEMORY_CACHE && dc != null && weakDeclarationContainer != null) {
             weakDeclarationContainer = new WeakReference<DeclarationContainer>(dc);
         }
         return dc != null ? dc : DeclarationContainer.empty();
