@@ -86,6 +86,9 @@ public final class NavigationHistoryForwardAction extends TextAction implements 
         this.component = component;
         this.waypoint = waypoint;
         
+        putValue("menuText", NbBundle.getMessage(NavigationHistoryBackAction.class,
+                "NavigationHistoryForwardAction_Tooltip_simple")); //NOI18N
+
         if (waypoint != null) {
             putValue(NAME, actionName);
             putValue(SHORT_DESCRIPTION, NbBundle.getMessage(NavigationHistoryBackAction.class, 

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Templates">
+        <folder name="WAG">
+            <attr name="position" intvalue="3010"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wag.codegen.java.Bundle"/>
+            <file name="popzcl.properties" url="/org/netbeans/modules/wag/codegen/java/resources/zembly.properties">
+                <attr name="position" intvalue="50"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+            </file>
+        </folder>
+    </folder>
+</filesystem>
+

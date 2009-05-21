@@ -62,6 +62,7 @@ import org.netbeans.modules.glassfish.common.nodes.actions.UnregisterResourceAct
 import org.netbeans.modules.glassfish.spi.Decorator;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
+import org.netbeans.modules.glassfish.spi.ResourceDecorator;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
@@ -316,7 +317,7 @@ public class Hk2ItemNode extends AbstractNode {
     
     private static final String RESOURCES_ICON = 
             "org/netbeans/modules/glassfish/common/resources/resources.gif"; // NOI18N
-    
+        
     public static final Decorator J2EE_APPLICATION_FOLDER = new Decorator() {
         @Override public boolean isRefreshable() { return true; }
         @Override public boolean canDeployTo() { return true; }
@@ -336,6 +337,19 @@ public class Hk2ItemNode extends AbstractNode {
     public static final Decorator REFRESHABLE_FOLDER = new Decorator() {
         @Override public boolean isRefreshable() { return true; }
         @Override public boolean canDeployTo() { return true; }
+    };
+
+    public static final Decorator JDBC_MANAGED_DATASOURCES = new ResourceDecorator() {
+        @Override public boolean canUnregister() { return true; }
+        @Override public Image getIcon(int type) { return ImageUtilities.loadImage(RESOURCES_ICON); }
+        @Override public String getCmdPropertyName() { return "jdbc_resource_name"; }
+    };
+
+    public static final Decorator CONNECTION_POOLS = new ResourceDecorator() {
+        @Override public boolean canUnregister() { return true; }
+        @Override public Image getIcon(int type) { return ImageUtilities.loadImage(RESOURCES_ICON); }
+        @Override public String getCmdPropertyName() { return "jdbc_connection_pool_id"; }
+        @Override public boolean isCascadeDelete() { return true; }
     };
     
 }
