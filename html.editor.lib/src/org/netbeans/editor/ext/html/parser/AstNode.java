@@ -43,7 +43,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +54,7 @@ import org.netbeans.editor.ext.html.dtd.DTD.Element;
 
 /**
  *
- * @author Tomasz.Slota@Sun.COM, mfukala@netbeans.org
+ * @author  mfukala@netbeans.org, Tomasz.Slota@Sun.COM
  */
 public class AstNode {
 
@@ -242,7 +242,7 @@ public class AstNode {
 
    synchronized void addDescriptions(Collection<Description> messages) {
         if(descriptions == null) {
-            descriptions = new HashSet<Description>(2);
+            descriptions = new LinkedHashSet<Description>(2);
         }
         descriptions.addAll(messages);
     }

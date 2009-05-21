@@ -72,7 +72,7 @@ public class SyntaxTreeTest extends TestBase {
 
     public static Test xsuite(){
 	TestSuite suite = new TestSuite();
-        suite.addTest(new SyntaxTreeTest("testTable2"));
+        suite.addTest(new SyntaxTreeTest("testIssue162576"));
         return suite;
     }
 
@@ -106,7 +106,7 @@ public class SyntaxTreeTest extends TestBase {
         assertAST("<p>one\n<p>two</p>");
         assertAST("<p></p><div>", 1); //last DIV is unmatched
         assertAST("<p><p><p>");
-        assertAST("<html><head><title></title><script></script></head><body></body></html>");
+        assertAST("<html><head><title></title><script type=''></script></head><body></body></html>");
     }
 
     public void testEmptyFileWithOpenTag() throws Exception {
@@ -167,10 +167,10 @@ public class SyntaxTreeTest extends TestBase {
 
         //STYLE is not allowed in BODY; Issue 164903
         AstNode.Description[] expectedErrors = new AstNode.Description[]{
-            desc(SyntaxTree.UNEXPECTED_TAG_KEY, 40, 47, Description.ERROR),
-            desc(SyntaxTree.UNMATCHED_TAG, 47, 55, Description.WARNING)
+            desc(SyntaxTree.UNEXPECTED_TAG_KEY, 40, 55, Description.ERROR),
+            desc(SyntaxTree.UNMATCHED_TAG, 55, 63, Description.WARNING)
         };
-        assertAST("<html><head><title></title></head><body><style></style></body></html>", expectedErrors);
+        assertAST("<html><head><title></title></head><body><style type=''></style></body></html>", expectedErrors);
         //         0123456789012345678901234567890123456789012345678901234567890123456789
         //         0         1         2         3         4         5         6
 
@@ -179,7 +179,7 @@ public class SyntaxTreeTest extends TestBase {
     public void testIssue162576() throws Exception {
         String code = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\"" +
                 "\"http://www.w3.org/TR/html4/strict.dtd\">" +
-                "<form>" +
+                "<form action=''>" +
                 "<fieldset title=\"requestMethod\">" +
                 "<legend>requestMethod</legend>" +
                 "<input>" +
@@ -254,12 +254,12 @@ public class SyntaxTreeTest extends TestBase {
     }
 
     public void testEmptyTags() throws Exception{
-        assertAST("<html><head><meta></meta><title></title></head><body></body></html>",
-                desc(SyntaxTree.UNMATCHED_TAG, 18, 25, Description.WARNING));
+        assertAST("<html><head><meta content=''></meta><title></title></head><body></body></html>",
+                desc(SyntaxTree.UNMATCHED_TAG, 29, 36, Description.WARNING));
     }
 
     public void testEmptyXhtmlTags() throws Exception{
-        assertAST("<html><head><meta></meta><title></title></head><body></body></html>", Utils.XHTML_STRINCT_PUBLIC_ID);
+        assertAST("<html><head><meta content=''></meta><title></title></head><body></body></html>", Utils.XHTML_STRINCT_PUBLIC_ID);
     }
 
     public void testOptinalEndTagsInTable() throws Exception{
@@ -281,7 +281,27 @@ public class SyntaxTreeTest extends TestBase {
     }
 
     public void testXhtmlNamespaceAttrs() throws Exception {
-        assertAST("<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:ui=\"http://java.sun.com/jsf/facelets\"><head><meta></meta><title></title></head><body></body></html>", Utils.XHTML_STRINCT_PUBLIC_ID);
+        assertAST("<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:ui="+
+                "\"http://java.sun.com/jsf/facelets\"><head><meta content=\"\"></meta>"+
+                "<title></title></head><body></body></html>",
+                Utils.XHTML_STRINCT_PUBLIC_ID);
+    }
+
+    public void testMissingRequiredAttribute() throws Exception{
+        //missing content attribute of meta tag
+        assertAST("<html><head><title></title><meta></head><body>" +
+                "<table><tr><td>r1c1<tr><td>r2c2</table>" +
+                "</body></html>",
+                desc(SyntaxTree.MISSING_REQUIRED_ATTRIBUTES, 27, 33, Description.WARNING));
+    }
+
+    public void testUnknownAttribute() throws Exception{
+        assertAST("<html><head><title></title><body dummy='value'></body></html>",
+                desc(SyntaxTree.UNKNOWN_ATTRIBUTE_KEY, 33, 38, Description.WARNING));
+
+        //try it also in optional end tag
+        assertAST("<html><head><title></title><body><table><tr><td dummy='value'></table></body></html>",
+                desc(SyntaxTree.UNKNOWN_ATTRIBUTE_KEY, 48, 53, Description.WARNING));
     }
 
     public void testTagsMatching() throws Exception {
@@ -354,8 +374,8 @@ public class SyntaxTreeTest extends TestBase {
 
     private void assertAST(final String code, String publicId, int expectedErrorsNumber) throws Exception {
         AstNode root = parse(code, publicId);
-//        System.out.println("AST for code: " + code);
-//        AstNodeUtils.dumpTree(root);
+        System.out.println("AST for code: " + code);
+        AstNodeUtils.dumpTree(root);
 
         final int[] errors = new int[1];
         errors[0] = 0;
