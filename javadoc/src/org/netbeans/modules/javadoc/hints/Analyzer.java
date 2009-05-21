@@ -310,7 +310,9 @@ final class Analyzer {
     }
 
     private void processDeprecatedAnnotation(Element elm, Doc jDoc, List<ErrorDescription> errors) {
-        if (SourceVersion.RELEASE_5.compareTo(spec) > 0) {
+        if (SourceVersion.RELEASE_5.compareTo(spec) > 0
+                // #150550: under some unexplained conditions java.lang.Deprecated may not be available
+                || javac.getElements().getTypeElement("java.lang.Deprecated") == null) { //NOI18N
             // jdks older than 1.5 do not support annotations
             return;
         }
