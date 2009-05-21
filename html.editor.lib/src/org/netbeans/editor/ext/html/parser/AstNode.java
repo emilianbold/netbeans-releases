@@ -224,7 +224,21 @@ public class AstNode {
     }
 
     synchronized void addDescriptionToNode(String key, String message, int type) {
-        addDescription(Description.create(key, message, type, startOffset(), endOffset()));
+        //adjust the description position and length for open tag
+        //only the tag name is annotated, not the whole tag
+        int from = startOffset();
+        int to = endOffset();
+
+        if(type() == NodeType.OPEN_TAG) {
+            to = from + 1 /* "<".length() */ + name().length(); //end of the tag name
+            if(to == endOffset() - 1) {
+                //if the closing greater than '>' symbol immediately follows
+                //the tag name extend the description area to it as well
+                to++;
+            }
+        }
+        
+        addDescription(Description.create(key, message, type, from, to));
     }
 
    synchronized void addDescriptionsToNode(Collection<String[]> keys_messages, int type) {

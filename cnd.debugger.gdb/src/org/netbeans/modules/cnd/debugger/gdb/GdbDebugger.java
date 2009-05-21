@@ -1590,16 +1590,13 @@ public class GdbDebugger implements PropertyChangeListener {
         return state == State.STOPPED;
     }
 
-    /*public Boolean evaluateIn(Expression expression, final Object frame) {
-    return Boolean.FALSE;
-    }*/
     /**
      * Helper method that fires JPDABreakpointEvent on JPDABreakpoints.
      *
      * @param breakpoint a breakpoint to be changed
      * @param event a event to be fired
      */
-    public void fireBreakpointEvent(GdbBreakpoint breakpoint, GdbBreakpointEvent event) {
+    private static void fireBreakpointEvent(GdbBreakpoint breakpoint, GdbBreakpointEvent event) {
         breakpoint.fireGdbBreakpointChange(event);
     }
 
