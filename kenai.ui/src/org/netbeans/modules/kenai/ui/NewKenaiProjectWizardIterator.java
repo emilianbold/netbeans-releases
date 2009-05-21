@@ -129,6 +129,12 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
         String newPrjIssuesUrl = (String) wizard.getProperty(PROP_ISSUES_URL);
         boolean autoCommit = Boolean.valueOf((String) wizard.getProperty(PROP_AUTO_COMMIT));
         Boolean createChat = (Boolean) wizard.getProperty(PROP_CREATE_CHAT);
+
+        if (KenaiService.Names.SUBVERSION.equals(newPrjScmType)) {
+            if (!Subversion.isClientAvailable(autoCommit)) {
+                throw new IOException(Subversion.CLIENT_UNAVAILABLE_ERROR_MESSAGE);
+            }
+        }
         // Create project
         try {
             handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
