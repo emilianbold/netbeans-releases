@@ -85,6 +85,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
     private final byte arrayDepth;
     private byte flags;
     CharSequence classifierText;
+    /*package*/ static final CharSequence NON_INITIALIZED_CLASSIFIER_TEXT = CharSequenceKey.empty();
     private int parseCount;
 
     final ArrayList<CsmSpecializationParameter> instantiationParams = new ArrayList<CsmSpecializationParameter>();
@@ -117,7 +118,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         }
         if (this.classifierText == null) {
             CndUtils.assertTrueInConsole(false, "why null classifierText?"+classifier);
-            this.classifierText = CharSequenceKey.empty();
+            this.classifierText = NON_INITIALIZED_CLASSIFIER_TEXT;
         }
         instantiationParams.trimToSize();
     }
@@ -125,7 +126,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
     // package-local - for facory only
     TypeImpl(CsmFile file, int pointerDepth, boolean reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
-        this.classifierText = CharSequenceKey.empty();
+        this.classifierText = NON_INITIALIZED_CLASSIFIER_TEXT;
         this.pointerDepth = (byte) pointerDepth;
         setFlags(FLAGS_REFERENCE, reference);
         this.arrayDepth = (byte) arrayDepth;
