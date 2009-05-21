@@ -76,7 +76,6 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.Exceptions;
@@ -143,22 +142,30 @@ public class ChatTopComponent extends TopComponent {
 
     @Override
     public void requestActive() {
+        requestActive(true);
+    }
+
+    void requestActive(final boolean b) {
         super.requestActive();
         Component c = chats.getSelectedComponent();
         if (c!=null) {
             c.requestFocus();
-        } else {
+        }
+        if (chats.getTabCount()==1 && b) {
             SwingUtilities.invokeLater(new Runnable() {
+
                 public void run() {
-                    if (chats.getTabCount()==1)
+                    if (chats.getTabCount()==1 && b)
                         showPopup(null);
                 }
             });
         }
     }
 
+
     private ChatTopComponent() {
         initComponents();
+        clearChatsTabbedPane();
         newPanel.putClientProperty(TabbedPaneFactory.NO_CLOSE_BUTTON, Boolean.TRUE);
         setName(NbBundle.getMessage(ChatTopComponent.class, "CTL_ChatTopComponent"));
         setToolTipText(NbBundle.getMessage(ChatTopComponent.class, "HINT_ChatTopComponent"));
@@ -193,13 +200,6 @@ public class ChatTopComponent extends TopComponent {
         });
         if (kec.isConnected()) {
             putChatsScreen();
-            if (open.isEmpty()) {
-                SwingUtilities.invokeLater(new Runnable(){
-                    public void run() {
-                        showPopup(null);
-                    }
-                });
-            }
         } else {
             if (kec.isConnectionFailed()) {
                 putErrorScreen();
@@ -231,11 +231,17 @@ public class ChatTopComponent extends TopComponent {
         }
     }
 
+    private void clearChatsTabbedPane() {
+        chats.removeAll();
+        chats.add(newPanel);
+        chats.setDisabledIconAt(0, ImageUtilities.loadImageIcon(PLUS, true));
+        chats.setEnabledAt(0, false);
+    }
     private void putLoginScreen() {
         Runnable r = new Runnable() {
             public void run() {
                 removeAll();
-                chats.removeAll();
+                clearChatsTabbedPane();
                 open.clear();
                 add(loginScreen, BorderLayout.CENTER);
                 validate();
@@ -253,7 +259,7 @@ public class ChatTopComponent extends TopComponent {
         Runnable r = new Runnable() {
             public void run() {
                 removeAll();
-                chats.removeAll();
+                clearChatsTabbedPane();
                 open.clear();
                 add(errorScreen, BorderLayout.CENTER);
                 validate();
@@ -272,7 +278,7 @@ public class ChatTopComponent extends TopComponent {
         Runnable r = new Runnable() {
             public void run() {
                 removeAll();
-                chats.removeAll();
+                clearChatsTabbedPane();
                 open.clear();
                 ((JXBusyLabel) initLabel).setBusy(true);
                 add(initPanel, BorderLayout.CENTER);
