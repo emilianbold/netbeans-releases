@@ -49,18 +49,19 @@ import javax.xml.namespace.QName;
 public final class ProfilesQName {
 
     public static final String NS_URI = "http://maven.apache.org/POM/4.0.0";  // NOI18N
+    public static final String NS_URI_NEW = "http://maven.apache.org/PROFILES/1.0.0";  // NOI18N
     public static final String NS_PREFIX = "profile";   // NOI18N
     
-    public static QName createQName(String localName, boolean ns) {
+    public static QName createQName(String localName, boolean ns, boolean old) {
         if (ns) {
-            return new QName(NS_URI, localName, NS_PREFIX);
+            if (old) {
+                return new QName(NS_URI, localName, NS_PREFIX);
+            } else {
+                return new QName(NS_URI_NEW, localName, NS_PREFIX);
+            }
         } else {
             return new QName("", localName);
         }
-    }
-
-    public static QName createQName(String localName) {
-        return createQName(localName, true);
     }
 
     private final QName qName;
