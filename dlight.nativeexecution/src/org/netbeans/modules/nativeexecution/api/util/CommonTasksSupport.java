@@ -351,11 +351,11 @@ public final class CommonTasksSupport {
                     progress = (int) (sendBytes * workUnitFactor);
                 }
 
-                // Finally write 0 byte
-                buffer.clear();
-                buffer.put((byte) 0);
-                buffer.flip();
-                out.write(buffer);
+//                // Finally write 0 byte
+//                buffer.clear();
+//                buffer.put((byte) 0);
+//                buffer.flip();
+//                out.write(buffer);
             } catch (InterruptedException ie) {
                 interrupted = true;
             } catch (IOException ex) {
