@@ -65,28 +65,30 @@ public class RemoveItemAction extends NodeAction {
     }
 
     public void performAction(Node[] activatedNodes) {
-	for (int i = 0; i < activatedNodes.length; i++) {
-	    Node n = activatedNodes[i];
-	    Project project = (Project)n.getValue("Project"); // NOI18N
-	    Folder folder = (Folder)n.getValue("Folder"); // NOI18N
-	    Item item = (Item)n.getValue("Item"); // NOI18N
-            
-            ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
-            MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
-            if (!makeConfigurationDescriptor.okToChange()) {
-                return;
+        for (int i = 0; i < activatedNodes.length; i++) {
+            Node n = activatedNodes[i];
+            Project project = (Project)n.getValue("Project"); // NOI18N
+            Folder folder = (Folder)n.getValue("Folder"); // NOI18N
+            Item item = (Item)n.getValue("Item"); // NOI18N
+
+                ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+                MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
+                if (!makeConfigurationDescriptor.okToChange()) {
+                    return;
+                }
+
+            folder.removeItemAction(item);
+            if (IpeUtils.isPathAbsolute(item.getPath())) {
+                ((MakeSources)ProjectUtils.getSources(project)).descriptorChanged();
             }
-            
-	    folder.removeItemAction(item);
-	    if (IpeUtils.isPathAbsolute(item.getPath()))
-		((MakeSources)ProjectUtils.getSources(project)).descriptorChanged();
-	}
+        }
     }
 
     public HelpCtx getHelpCtx() {
 	return null;
     }
 
+    @Override
     protected boolean asynchronous() {
 	return false;
     }

@@ -77,6 +77,7 @@ public class GeneralSanityTest extends NbTestCase {
             addTest(
                 "testBlacklistedClassesHandler",
                 "testOrgOpenideOptionsIsDisabledAutoload",
+                "testOrgNetBeansModulesLanguagesIsDisabledAutoload",
                 "testOrgNetBeansModulesGsfIsDisabledAutoload",
                 "testInstalledPlugins"
             )
@@ -127,6 +128,16 @@ public class GeneralSanityTest extends NbTestCase {
             }
         }
         fail("No org.openide.options module found, it should be present, but disabled");
+    }
+
+    public void testOrgNetBeansModulesLanguagesIsDisabledAutoload() {
+        for (ModuleInfo m : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+            if (m.getCodeNameBase().equals("org.netbeans.modules.languages")) {
+                assertFalse("org.netbeans.modules.languages shall not be enabled", m.isEnabled());
+                return;
+            }
+        }
+        fail("No org.netbeans.modules.languages module found, it should be present, but disabled");
     }
     
     public void testOrgNetBeansModulesGsfIsDisabledAutoload() {

@@ -236,10 +236,14 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
                 }
                 component.setBorder(BorderFactory.createEtchedBorder());
                 component.setBackground(selectionColor);
-                InputMap iMap = component.getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+                JRootPane rootPane = component.getRootPane();
+                if ( rootPane== null){
+                    return;
+                }
+                InputMap iMap =rootPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
                 iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "enter");//NOI18N
 
-                ActionMap aMap = component.getRootPane().getActionMap();
+                ActionMap aMap =rootPane.getActionMap();
                 aMap.put("enter", new AbstractAction() {//NOI18N
 
                     public void actionPerformed(ActionEvent e) {

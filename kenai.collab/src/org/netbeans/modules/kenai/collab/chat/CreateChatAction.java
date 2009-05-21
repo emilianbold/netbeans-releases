@@ -94,7 +94,7 @@ public class CreateChatAction extends AbstractAction {
                         SwingUtilities.invokeLater(new Runnable() {
 
                             public void run() {
-                                JOptionPane.showMessageDialog(null, NbBundle.getMessage(CreateChatAction.class, "CTL_NotAuthorizedToCreateChat"));
+                                JOptionPane.showMessageDialog(null, NbBundle.getMessage(CreateChatAction.class, "CTL_NotAuthorizedToCreateChat",getValue(NAME)));
                                 progress.finish();
                                 mainWindow.setCursor(Cursor.getDefaultCursor());
                                 if (source!=null) source.setEnabled(true);
