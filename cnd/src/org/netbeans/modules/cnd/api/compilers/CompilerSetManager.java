@@ -781,7 +781,10 @@ public class CompilerSetManager {
             task.addTaskListener(new TaskListener() {
                 public void taskFinished(org.openide.util.Task task) {
                     log.fine("Code Model Ready for " + CompilerSetManager.this.toString());
-                    CompilerSetManagerEvents.get(executionEnvironment).runTasks();
+                    // FIXUP: this server has been probably deleted; TODO: provide return statis from loader
+                    if (!ServerList.get(executionEnvironment).isDeleted()) {
+                        CompilerSetManagerEvents.get(executionEnvironment).runTasks();
+                    }
                 }
             });
             task.schedule(0);
