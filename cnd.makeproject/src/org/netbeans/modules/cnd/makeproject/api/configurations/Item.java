@@ -263,7 +263,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             try {
                 file = new File(getAbsPath()).getCanonicalFile();
             } catch (IOException ioe) {
-                file = new File(getAbsPath());
+                file = CndFileUtils.normalizeFile(new File(getAbsPath()));
             }
         }
         return file;
