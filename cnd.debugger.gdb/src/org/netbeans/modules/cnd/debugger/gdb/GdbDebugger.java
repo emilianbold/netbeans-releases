@@ -1321,7 +1321,14 @@ public class GdbDebugger implements PropertyChangeListener {
         CallStackFrame curFrame = getCurrentCallStackFrame();
         for (String frame : frames) {
             Map<String, String> frameMap = GdbUtils.createMapFromString(frame);
-            int level = Integer.parseInt(frameMap.get("level")); // NOI18N
+            int level;
+            try {
+                level = Integer.parseInt(frameMap.get("level")); // NOI18N
+            } catch (Exception e) {
+                log.log(Level.INFO, "Unable to parse level number for frame: " + frame, e); // NOI18N
+                // unable to parse level - just continue
+                continue;
+            }
             String args = frameMap.get("args"); // NOI18N
             Collection<GdbVariable> vars = GdbUtils.createLocalsList(args);
             synchronized (callstack) {
