@@ -64,7 +64,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.ToolchainProject;
@@ -759,13 +758,13 @@ public final class MakeProject implements Project, AntProjectListener {
                     }
                 }
             }
-            if (OpenProjects.getDefault().isProjectOpen(MakeProject.this)){
-                DevelopmentHostConfiguration devHost = getDevelopmentHostConfiguration();
-                if (devHost != null && ! devHost.isLocalhost()) {
-                    name = NbBundle.getMessage(getClass(), "PRJ_DISPLAY_NAME",
-                            name, devHost.getHostDisplayName(false));
-                }
-            }
+//            if (OpenProjects.getDefault().isProjectOpen(MakeProject.this)){
+//                DevelopmentHostConfiguration devHost = getDevelopmentHostConfiguration();
+//                if (devHost != null && ! devHost.isLocalhost()) {
+//                    name = NbBundle.getMessage(getClass(), "PRJ_DISPLAY_NAME",
+//                            name, devHost.getHostDisplayName(false));
+//                }
+//            }
             return name;
         }
 
