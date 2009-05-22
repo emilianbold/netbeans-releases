@@ -306,7 +306,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
                     CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(macroName, true, true, false);
                     for (Iterator<CsmMacro> it = CsmSelect.getMacros(target, filter); it.hasNext();) {
                         CsmMacro macro = it.next();
-                        if (macro!=null && mi.startOffset == macro.getStartOffset()) {
+                        if (macro!=null && Math.abs(mi.startOffset - macro.getStartOffset()) < 9 ) {
                             ref = macro;
                         }
                     }
