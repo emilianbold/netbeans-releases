@@ -409,7 +409,7 @@ public class ChatTopComponent extends TopComponent {
 
 
     public static boolean isInitedAndVisible(String name) {
-        return instance==null?false:instance.isVisible()&&instance.isOpened()&&instance.open.contains(name) && name.equals(instance.chats.getSelectedComponent().getName());
+        return instance==null?false:instance.isShowing()&&instance.isOpened()&&instance.open.contains(name) && name.equals(instance.chats.getSelectedComponent().getName());
     }
 
     private boolean initInProgress = false;
