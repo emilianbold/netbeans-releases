@@ -88,18 +88,18 @@ public class ChatPanel extends javax.swing.JPanel {
     private MultiUserChat muc;
     private final HTMLEditorKit editorKit;
     private static final String[][] smileysMap = new String[][] {
-        {"8)", "cool"},
-        {"8-)", "cool"},
-        {":]", "grin"},
-        {":-]", "grin"},
-        {":D", "laughing"},
-        {":-D", "laughing"},
-        {":(", "sad"},
-        {":-(", "sad"},
-        {":)", "smiley"},
-        {":-)", "smiley"},
-        {";)", "wink"},
-        {";-)", "wink"}
+        {"8)", "cool"}, // NOI18N
+        {"8-)", "cool"}, // NOI18N
+        {":]", "grin"}, // NOI18N
+        {":-]", "grin"}, // NOI18N
+        {":D", "laughing"}, // NOI18N
+        {":-D", "laughing"}, // NOI18N
+        {":(", "sad"}, // NOI18N
+        {":-(", "sad"}, // NOI18N
+        {":)", "smiley"}, // NOI18N
+        {":-)", "smiley"}, // NOI18N
+        {";)", "wink"}, // NOI18N
+        {";-)", "wink"} // NOI18N
     };
 
     public ChatPanel(MultiUserChat chat) {
@@ -179,8 +179,8 @@ public class ChatPanel extends javax.swing.JPanel {
 
     private String removeTags(String body) {
         String tmp = body;
-        tmp.replaceAll("\r\n", "\n");
-        tmp.replaceAll("\r", "\n");
+        tmp.replaceAll("\r\n", "\n"); // NOI18N
+        tmp.replaceAll("\r", "\n"); // NOI18N
         return tmp.replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\n", "<br>"); // NOI18N
     }
 
@@ -190,12 +190,12 @@ public class ChatPanel extends javax.swing.JPanel {
     }
 
     private String replaceSmileys(String body) {
-        if (body.matches(".*[8:;]-?[]D()].*")) {
+        if (body.matches(".*[8:;]-?[]D()].*")) { // NOI18N
             for (int i = 0; i < smileysMap.length; i++) {
                 body = body.replace(smileysMap[i][0],
-                        "<img align=\"center\" src=\"" +
+                        "<img align=\"center\" src=\"" + // NOI18N
                         this.getClass().getResource("/org/netbeans/modules/kenai/collab/resources/emo_" + smileysMap[i][1] + "16.png") +
-                        "\"></img>");
+                        "\"></img>"); // NOI18N
             }
         }
         return body;
@@ -449,7 +449,7 @@ public class ChatPanel extends javax.swing.JPanel {
             String text = "";
             if (printheader) {
                 if (rgb != null) {
-                    text += "<div style=\"height: 3px; background-color: rgb(" + rgb + ")\"></div>";
+                    text += "<div style=\"height: 3px; background-color: rgb(" + rgb + ")\"></div>"; // NOI18N
                 }
                 text += "<table border=\"0\" borderwith=\"0\" width=\"100%\"><tbody>" + //NOI18N
                         "<tr style=\"background-color: rgb(" + headerColor.getRed() + "," + headerColor.getGreen() + "," + headerColor.getBlue() + ")\">" + //NOI18N
