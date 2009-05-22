@@ -335,12 +335,6 @@ public class HudsonConnector {
             }
 
             for (HudsonView v : instance.getViews()) {
-                // All view synchronization
-                if (v.getName().equals(HudsonView.ALL_VIEW)) {
-                    job.addView(v);
-                    continue;
-                }
-
                 if (null != cache.get(v.getName() + "/" + job.getName())) // NOI18N
                     job.addView(v);
             }
