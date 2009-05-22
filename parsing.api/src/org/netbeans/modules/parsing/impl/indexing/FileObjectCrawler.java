@@ -128,24 +128,21 @@ public final class FileObjectCrawler extends Crawler {
                     return false;
                 }
             } else {
+                String mime = fo.getMIMEType(); // XXX: this is VERY slow!!
                 if (stats != null) {
                     stats.filesCount++;
                     stats.inc(stats.extensions, fo.getExt());
+                    stats.inc(stats.mimeTypes, mime);
                 }
 
-                if (!isUpToDate(fo)) {
-                    String mime = fo.getMIMEType(); // XXX: this is VERY slow!!
-                    if (stats != null) {
-                        stats.inc(stats.mimeTypes, mime);
+                if (supportedMimeTypes == null || supportedMimeTypes.contains(mime)) {
+                    Collection<Indexable> indexable = cache.get(mime);
+                    if (indexable == null) {
+                        indexable = new HashSet<Indexable>();
+                        cache.put(mime, indexable);
                     }
-                    
-                    if (supportedMimeTypes == null || supportedMimeTypes.contains(mime)) {
-                        Collection<Indexable> indexable = cache.get(mime);
-                        if (indexable == null) {
-                            indexable = new HashSet<Indexable>();
-                            cache.put(mime, indexable);
-                        }
 
+                    if (!isUpToDate(fo)) {
                         String relativePath = FileUtil.getRelativePath(root, fo);
                         indexable.add(SPIAccessor.getInstance().create(new FileObjectIndexable(root, relativePath, mime)));
                     }
