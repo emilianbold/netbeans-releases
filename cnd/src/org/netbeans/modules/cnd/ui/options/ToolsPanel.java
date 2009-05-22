@@ -50,11 +50,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -87,9 +90,11 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -1789,10 +1794,32 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         return;
     }
     final CompilerSet selectedCS[] = new CompilerSet[] {(CompilerSet)lstDirlist.getSelectedValue()};
+    final AtomicBoolean cancelled = new AtomicBoolean(false);
     Runnable longTask = new Runnable() {
         public void run() {
+            log.finest("Restoring defaults\n");
+                try {
+                    ConnectionManager.getInstance().connectTo(execEnv);
+                } catch (IOException ex) {
+                    //TODO: report it!
+                    cancelled.set(true);
+                    return;
+                } catch (CancellationException ex) {
+                    cancelled.set(true);
+                    return;
+                }
             CompilerSetManager newCsm = CompilerSetManager.create(execEnv);
             newCsm.initialize(false, true);
+            while(newCsm.isPending()) {
+                log.finest("\twaiting for compiler manager to initialize...");
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
+                    cancelled.set(true);
+                    return;
+                }
+            }
+
             cacheManager.addCompilerSetManager(newCsm);
             List<CompilerSet> list = csm.getCompilerSets();
             for (CompilerSet cs : list) {
@@ -1823,15 +1850,18 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             if (selectedName != null) {
                 selectedCS[0] = csm.getCompilerSet(selectedName);
             }
+            log.finest("Restored defaults\n");
         }
     };
     Runnable postWork = new Runnable() {
         public void run() {
-            changed = true;
-            if (selectedCS[0] != null) {
-                update(false, selectedCS[0]);
-            } else {
-                update(false);
+            if (!cancelled.get()) {
+                changed = true;
+                if (selectedCS[0] != null) {
+                    update(false, selectedCS[0]);
+                } else {
+                    update(false);
+                }
             }
         }
     };
