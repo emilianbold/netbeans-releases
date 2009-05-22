@@ -49,14 +49,17 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
@@ -154,24 +157,58 @@ public final class CheckModuleConfigs extends Task {
         if (!s.isEmpty()) {
             throw new BuildException(buildPropertiesFile + ": platform config not equal to platform cluster modules: " + s);
         }
-    }
-    
-    @SuppressWarnings("unchecked")
-    private Set<String> split(String list, boolean warnIfUnsorted, String what) {
-        if (list.contains(" ")) {
-            throw new BuildException("remove spaces from " + what + ": " + list);
+        // Verify sorting and overlaps:
+        Pattern clusterNamePat = Pattern.compile("nb\\.cluster\\.([^.]+)");
+        Map<String,List<String>> allClusters = new HashMap<String,List<String>>();
+        for (Map.Entry<String,String> clusterDef : properties.entrySet()) {
+            Matcher m = clusterNamePat.matcher(clusterDef.getKey());
+            if (!m.matches()) {
+                continue;
+            }
+            allClusters.put(m.group(1), splitToList(clusterDef.getValue(), clusterDef.getKey()));
         }
-        List elements = Collections.list(new StringTokenizer(list, ", "));
-        if (warnIfUnsorted) {
-            List sorted = new ArrayList(elements);
+        allClusters.get("experimental").removeAll(allClusters.get("stableuc")); // intentionally a superset
+        for (Map.Entry<String,List<String>> entry : allClusters.entrySet()) {
+            String name = entry.getKey();
+            List<String> modules = entry.getValue();
+            Set<String> modulesS = new HashSet<String>(modules);
+            if (modulesS.size() < modules.size()) {
+                throw new BuildException("duplicates found in " + name + ": " + modules);
+            }
+            for (Map.Entry<String,List<String>> entry2 : allClusters.entrySet()) {
+                String other = entry.getKey();
+                if (other.equals(name)) {
+                    continue;
+                }
+                if (modulesS.removeAll(entry2.getValue())) {
+                    throw new BuildException("some entries in " + name + " also found in " + other);
+                }
+            }
+            List<String> sorted = new ArrayList<String>(modules);
             Collections.sort(sorted);
-            if (!sorted.equals(elements)) {
-                throw new BuildException("unsorted list: " + elements);
+            if (!sorted.equals(modules)) {
+                throw new BuildException("unsorted list for " + name + ": " + modules);
             }
         }
-        HashSet set = new HashSet(elements);
-        for (Object o : set) {
-            elements.remove(o);
+    }
+    
+    private List<String> splitToList(String list, String what) {
+        if (list.length() == 0) {
+            return Collections.emptyList();
+        }
+        if (!list.matches("[^\\s,]+(,[^\\s,]+)*")) {
+            throw new BuildException("remove whitespaces or fix leading/trailing commas in " + what + ": " + list);
+        }
+        List<String> r = new ArrayList<String>(Arrays.asList(list.split(",")));
+        assert !r.contains(null) : r;
+        assert !r.contains("") : r;
+        return r;
+    }
+    private Set<String> splitToSet(String list, String what) {
+        List<String> elements = splitToList(list, what);
+        Set<String> set = new HashSet<String>(elements);
+        for (String s : set) {
+            elements.remove(s);
         }
         if (!elements.isEmpty()) { // #147690
             throw new BuildException("duplicates found in " + what + ": " + elements);
@@ -187,11 +224,11 @@ public final class CheckModuleConfigs extends Task {
                 continue;
             }
             String config = k.substring(prefix.length());
-            Set<String> modules = new TreeSet<String>(split(buildProperties.get(k), false, k));
+            Set<String> modules = new TreeSet<String>(splitToSet(buildProperties.get(k), k));
             String fixedK = "config.fixedmodules." + config;
             String fixed = buildProperties.get(fixedK);
             if (fixed != null) {
-                modules.addAll(split(fixed, false, fixedK));
+                modules.addAll(splitToSet(fixed, fixedK));
             } else {
                 throw new BuildException(buildPropertiesFile + ": have " + k + " but no " + fixedK);
             }
@@ -225,12 +262,12 @@ public final class CheckModuleConfigs extends Task {
             throw new BuildException(clusterPropertiesFile + ": no definition for clusters.config.full.list");
         }
         Map<String,Set<String>> clusters = new TreeMap<String,Set<String>>();
-        for (String cluster : split(l, false,fullConfig)) {
+        for (String cluster : splitToSet(l, fullConfig)) {
             l = clusterProperties.get(cluster);
             if (l == null) {
                 throw new BuildException(clusterPropertiesFile + ": no definition for " + cluster);
             }
-            clusters.put(cluster, new TreeSet<String>(split(l, true,fullConfig)));
+            clusters.put(cluster, new TreeSet<String>(splitToSet(l, fullConfig)));
         }
         return clusters;
     }
