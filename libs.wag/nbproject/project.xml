@@ -10,6 +10,7 @@
                 <package>com.zembly.gateway.client</package>
                 <package>com.zembly.gateway.client.config</package>
                 <package>com.zembly.gateway.client.config.impl</package>
+                <package>com.zembly.gateway.client.spi.config</package>
                 <package>com.zembly.oauth.api</package>
                 <package>com.zembly.oauth.core</package>
             </public-packages>

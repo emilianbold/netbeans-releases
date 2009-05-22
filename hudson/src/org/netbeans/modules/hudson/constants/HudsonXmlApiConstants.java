@@ -60,8 +60,6 @@ public class HudsonXmlApiConstants {
     public static final String XML_API_URL_ELEMENT = "url"; // NOI18N
     public static final String XML_API_COLOR_ELEMENT = "color"; // NOI18N
     
-    // Hudson Job Elements
-    public static final String XML_API_DESCRIPTION_ELEMENT = "description"; // NOI18N
     public static final String XML_API_DISPLAY_NAME_ELEMENT = "displayName"; // NOI18N
     public static final String XML_API_BUILDABLE_ELEMENT = "buildable"; // NOI18N
     public static final String XML_API_INQUEUE_ELEMENT = "inQueue"; // NOI18N
