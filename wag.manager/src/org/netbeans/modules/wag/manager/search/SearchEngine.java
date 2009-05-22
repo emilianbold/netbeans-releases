@@ -80,9 +80,10 @@ public class SearchEngine {
     private Zembly zembly;
 
     private SearchEngine() {
-        try {
+        try {        
             zembly = Zembly.getInstance();
         } catch (Exception ex) {
+            ex.printStackTrace();
             // ignore
         }
     }
