@@ -1305,16 +1305,24 @@ public class CasualDiff {
     }
 
     protected int diffUnary(JCUnary oldT, JCUnary newT, int[] bounds) {
-        int localPointer = bounds[0];
         int[] argBounds = getBounds(oldT.arg);
-        copyTo(localPointer, argBounds[0]);
-        localPointer = diffTree(oldT.arg, newT.arg, argBounds);
-        if (oldT.getTag() != newT.getTag()) {
-            copyTo(localPointer, oldT.pos);
-            printer.print(operatorName(newT.getTag()));
-            localPointer = oldT.pos + operatorName(oldT.getTag()).length();
+        boolean newOpOnLeft = newT.getKind() != Kind.POSTFIX_DECREMENT && newT.getKind() != Kind.POSTFIX_INCREMENT;
+        if (newOpOnLeft) {
+            if (oldT.getTag() != newT.getTag()) {
+                printer.print(operatorName(newT.getTag()));
+            } else {
+                copyTo(bounds[0], argBounds[0]);
+            }
         }
-        copyTo(localPointer, bounds[1]);
+        int localPointer = diffTree(oldT.arg, newT.arg, argBounds);
+        copyTo(localPointer, argBounds[1]);
+        if (!newOpOnLeft) {
+            if (oldT.getTag() != newT.getTag()) {
+                printer.print(operatorName(newT.getTag()));
+            } else {
+                copyTo(argBounds[1], bounds[1]);
+            }
+        }
         return bounds[1];
     }
 
