@@ -194,11 +194,15 @@ public class GdbProxyEngine {
                     while ((line = fromGdb.readLine()) != null) {
                         line = line.trim();
                         if (line.length() > 0) {
-                            processMessage(line);
+                            try {
+                                processMessage(line);
+                            } catch (Exception e) {
+                                log.log(Level.SEVERE, "Exception in processMessage", e); // NOI18N
+                            }
                         }
                     }
                 } catch (IOException ioe) {
-                    log.log(Level.WARNING, "Exception in gdbReader", ioe); // NOI18N
+                    log.log(Level.WARNING, "IOException in gdbReader", ioe); // NOI18N
                 }
             }
         });
