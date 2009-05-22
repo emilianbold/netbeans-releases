@@ -62,6 +62,10 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
             throw new IllegalArgumentException("ExecutionEnvironment should not be null"); //NOI18N
         }
         this.env = env;
+    }
+
+    @Override
+    public void init() {
         manager = new CompilerSetScriptManager(env);
         manager.runScript();
     }
