@@ -40,6 +40,7 @@
 package org.netbeans.modules.hudson.ui.notification;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -84,17 +85,29 @@ public class ProblemNotificationController {
             case yellow_anime:
                 n = new ProblemNotification(job, build, false);
                 break;
+            case blue:
+            case blue_anime:
+                removeFormerNotifications(job, null);
+                n = null;
+                break;
             default:
                 n = null;
             }
             if (n != null && notifications.add(n)) {
                 prefs.putInt(job.getName(), build);
                 n.add();
-                for (ProblemNotification former : notifications) {
-                    if (former.job.getName().equals(job.getName()) && !former.equals(n)) {
-                        former.remove();
-                    }
-                }
+                removeFormerNotifications(job, n);
+            }
+        }
+    }
+
+    private void removeFormerNotifications(HudsonJob job, ProblemNotification except) {
+        Iterator<ProblemNotification> i = notifications.iterator();
+        while (i.hasNext()) {
+            ProblemNotification former = i.next();
+            if (former.job.getName().equals(job.getName()) && !former.equals(except)) {
+                former.remove();
+                i.remove();
             }
         }
     }
