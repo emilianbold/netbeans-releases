@@ -43,8 +43,11 @@ package org.netbeans.modules.kenai.collab.chat;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -58,6 +61,8 @@ import java.util.Random;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollBar;
+import javax.swing.JTextPane;
 import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
@@ -86,6 +91,7 @@ import org.openide.util.NbBundle;
 public class ChatPanel extends javax.swing.JPanel {
 
     private MultiUserChat muc;
+    private boolean disableAutoScroll = false;
     private final HTMLEditorKit editorKit;
     private static final String[][] smileysMap = new String[][] {
         {"8)", "cool"}, // NOI18N
@@ -143,6 +149,24 @@ public class ChatPanel extends javax.swing.JPanel {
         NotificationsEnabledAction bubbleEnabled = new NotificationsEnabledAction();
         inbox.addMouseListener(bubbleEnabled);
         outbox.addMouseListener(bubbleEnabled);
+
+        inboxScrollPane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
+
+            public void adjustmentValueChanged(AdjustmentEvent event) {
+                JScrollBar vbar = (JScrollBar) event.getSource();
+
+                if (!event.getValueIsAdjusting()) {
+                    return;
+                }
+
+                if ((vbar.getValue() + vbar.getVisibleAmount()) == vbar.getMaximum()) {
+                    disableAutoScroll = false;
+                } else if (!disableAutoScroll) {
+                    disableAutoScroll = true;
+                }
+            }
+        });
+
 //        setUpPrivateMessages();
     }
 
@@ -311,7 +335,12 @@ public class ChatPanel extends javax.swing.JPanel {
         outbox = new javax.swing.JTextPane();
         inboxPanel = new javax.swing.JPanel();
         inboxScrollPane = new javax.swing.JScrollPane();
-        inbox = new javax.swing.JTextPane();
+        inbox = new JTextPane() {
+            public void scrollRectToVisible(Rectangle aRect) {
+                if (!disableAutoScroll)
+                super.scrollRectToVisible(aRect);
+            }
+        };
         online = new javax.swing.JLabel();
 
         splitter.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
@@ -506,7 +535,7 @@ public class ChatPanel extends javax.swing.JPanel {
     protected void setEndSelection() {
         inbox.setSelectionStart(inbox.getDocument().getLength());
         inbox.setSelectionEnd(inbox.getDocument().getLength());
-    }
+        }
 
 //    void setUsersListVisible(boolean visible) {
 //        usersScrollPane.setVisible(visible);
