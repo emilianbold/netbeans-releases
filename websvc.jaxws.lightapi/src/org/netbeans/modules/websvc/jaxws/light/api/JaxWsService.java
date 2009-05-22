@@ -52,6 +52,7 @@ public class JaxWsService {
     private String implementationClass;
     private boolean serviceProvider = true;
     private String handlerBindingFile;
+    private String id;
 
     /** Constructor useful to create web service based on @WebService annotation (WS from Java).
      *
@@ -190,6 +191,14 @@ public class JaxWsService {
      */
     public void setHandlerBindingFile(String handlerBindingFile) {
         this.handlerBindingFile = handlerBindingFile;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
 }
