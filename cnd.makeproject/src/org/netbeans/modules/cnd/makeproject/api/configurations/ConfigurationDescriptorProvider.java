@@ -99,7 +99,7 @@ public class ConfigurationDescriptorProvider {
                     if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
                         System.err.println("Start of reading project descriptor for project "+projectDirectory.getName()+" in ConfigurationDescriptorProvider@"+System.identityHashCode(this)); // NOI18N
                         if (projectDescriptor != null) {
-                            System.err.println("Previous project MakeConfigurationDescriptor@"+System.identityHashCode(projectDescriptor)); // NOI18N
+                            new Exception("Previous project MakeConfigurationDescriptor@"+System.identityHashCode(projectDescriptor)).printStackTrace(); // NOI18N
                         }
                     }
                     // It's important to set needReload=false before calling
@@ -153,6 +153,7 @@ public class ConfigurationDescriptorProvider {
                                 System.err.println("Created project descriptor MakeConfigurationDescriptor@"+System.identityHashCode(projectDescriptor)+" for project "+projectDirectory.getName()+" in ConfigurationDescriptorProvider@"+System.identityHashCode(this)); // NOI18N
                             }
                         } else {
+                            (newDescriptor).waitInitTask();
                             projectDescriptor.assign(newDescriptor);
                             if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
                                 System.err.println("Reassigned project descriptor MakeConfigurationDescriptor@"+System.identityHashCode(projectDescriptor)+" for project "+projectDirectory.getName()+" in ConfigurationDescriptorProvider@"+System.identityHashCode(this)); // NOI18N
@@ -343,14 +344,15 @@ public class ConfigurationDescriptorProvider {
     private class ConfigurationXMLChangeListener implements FileChangeListener {
 
         private void resetConfiguration() {
-            if (projectDescriptor != null && projectDescriptor.getModified()) {
-                // Don't reload if descriptor is modified in memory.
-                // This also prevents reloading when descriptor is being saved.
-                return;
-            }
-            synchronized (readLock) {
-                needReload = true;
-                hasTried = false;
+            if (projectDescriptor == null || !projectDescriptor.getModified()) {
+                synchronized (readLock) {
+                    if (projectDescriptor == null || !projectDescriptor.getModified()) {
+                        // Don't reload if descriptor is modified in memory.
+                        // This also prevents reloading when descriptor is being saved.
+                        needReload = true;
+                        hasTried = false;
+                    }
+                }
             }
         }
 
