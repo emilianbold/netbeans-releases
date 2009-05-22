@@ -547,12 +547,16 @@ public class CompilerSetManager {
      */
     private ArrayList<String> appendDefaultLocations(int platform, ArrayList<String> dirlist) {
         for (ToolchainDescriptor d : ToolchainManager.getImpl().getToolchains(platform)) {
-            Map<String, String> map = d.getDefaultLocations();
+            Map<String, List<String>> map = d.getDefaultLocations();
             if (map != null) {
                 String pname = getPlatformName(platform);
-                String dir = map.get(pname);
-                if (dir != null && !dirlist.contains(dir)) {
-                    dirlist.add(dir);
+                List<String> list = map.get(pname);
+                if (list != null ) {
+                    for (String dir : list){
+                        if (!dirlist.contains(dir)){
+                            dirlist.add(dir);
+                        }
+                    }
                 }
             }
         }
