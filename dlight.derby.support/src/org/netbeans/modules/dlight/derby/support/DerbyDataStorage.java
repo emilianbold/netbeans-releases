@@ -116,7 +116,7 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
                     return dir.isDirectory() && name.startsWith("DerbyDlight"); // NOI18N
                 }
             });
-            int generalNameLength = "DerbyDlight".length();
+            int generalNameLength = "DerbyDlight".length();//NOI18N
             int newValue = 0;
             for (int i = 0; i < files.length; i++) {
                 String suffix = files[i].getName().substring(generalNameLength);
@@ -159,7 +159,7 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
     public boolean shutdown() {
         //remove folder
         boolean result = stackStorage.shutdown() && super.shutdown();
-        String dbName = dbURL.substring(dbURL.lastIndexOf(":") + 1, dbURL.indexOf(";"));
+        String dbName = dbURL.substring(dbURL.lastIndexOf(":") + 1, dbURL.indexOf(";"));//NOI18N
         //and now get number
         result = result && Util.deleteLocalDirectory(new File(tmpDir + "/derby_dlight/" + dbName)); // NOI18N
         return result;

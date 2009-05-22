@@ -165,7 +165,7 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
     public boolean shutdown() {
         boolean result = stackStorage.shutdown() && super.shutdown();
         //find current DB folder we are placing H2 database files
-        final String folderToDelete = dbURL.substring(dbURL.lastIndexOf(":") + 1, dbURL.lastIndexOf("/") + 1);
+        final String folderToDelete = dbURL.substring(dbURL.lastIndexOf(":") + 1, dbURL.lastIndexOf("/") + 1);//NOI18N
         result = result && Util.deleteLocalDirectory(new File(folderToDelete));
         return result;
     }
