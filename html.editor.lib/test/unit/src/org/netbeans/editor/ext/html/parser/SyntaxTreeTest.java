@@ -72,7 +72,7 @@ public class SyntaxTreeTest extends TestBase {
 
     public static Test xsuite(){
 	TestSuite suite = new TestSuite();
-        suite.addTest(new SyntaxTreeTest("testUnexpectedContentAfterBody"));
+        suite.addTest(new SyntaxTreeTest("testLogicalRangesOfBrokenSource"));
         return suite;
     }
 
@@ -150,7 +150,7 @@ public class SyntaxTreeTest extends TestBase {
 
     public void testOptionalEndTag() throws Exception {
         //HEAD has optional end tag
-//        assertAST("<html><head><title></title><body></body></html>");
+        assertAST("<html><head><title></title><body></body></html>");
 
         //test invalid element after optional end
         assertAST("<html><head><title></title><div><body></body></html>",
@@ -274,6 +274,54 @@ public class SyntaxTreeTest extends TestBase {
                 desc(SyntaxTree.UNRESOLVED_TAG_KEY, 71, 75, Description.ERROR));
     }
 
+    public void testOptinalHtmlEndTags() throws Exception{
+        String code = "<html><head><title></title></head><body></body>";
+        AstNode root = assertAST(code);
+
+        //check the logical range e.g. end offset which should be the end of the code
+        //(html unterminated, but optional end tag)
+        assertLogicalRange(root, "html", 0, code.length());
+        
+    }
+
+    public void testLogicalRanges() throws Exception {
+        String code = "<html><head><title></title></head><body><table><tr><td><tr><td></table></body></html>";
+        //             012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+        //             0         1         2         3         4         5         6         7         8
+        AstNode root = assertAST(code);
+        AstNodeUtils.dumpTree(root);
+
+        assertLogicalRange(root, "html", 0, code.length());
+        assertLogicalRange(root, "html/head", 6, 34);
+        assertLogicalRange(root, "html/body", 34, 78);
+        assertLogicalRange(root, "html/body/table", 40, 71);
+        assertLogicalRange(root, "html/body/table/tr", 47, 55); //closed by next <tr> open tag
+        assertLogicalRange(root, "html/body/table/tr|1", 55, 63); //closed by next </table> open tag
+
+    }
+
+    public void testLogicalRangesOfBrokenSource() throws Exception {
+        String code = "<html><head><title></title></head><body><table><tr><td><p><style></style><tr></table></body></html>";
+        //             012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+        //             0         1         2         3         4         5         6         7         8
+        AstNode root = assertAST(code,
+                desc(SyntaxTree.MISSING_REQUIRED_ATTRIBUTES, 58, 65, Description.WARNING), //style attr type required
+                desc(SyntaxTree.UNEXPECTED_TAG_KEY, 58, 65, Description.ERROR), //style should be here
+                desc(SyntaxTree.UNMATCHED_TAG, 65, 73, Description.WARNING), // </style> is unmatched
+                desc(SyntaxTree.UNRESOLVED_TAG_KEY, 73, 77, Description.ERROR)); //<tr> doesn't contain required content
+        
+        AstNodeUtils.dumpTree(root);
+
+        assertLogicalRange(root, "html", 0, code.length());
+        assertLogicalRange(root, "html/head", 6, 34);
+        assertLogicalRange(root, "html/body", 34, 92);
+        assertLogicalRange(root, "html/body/table", 40, 85);
+        assertLogicalRange(root, "html/body/table/tr", 47, 73); //closed by next <tr> open tag
+        assertLogicalRange(root, "html/body/table/tr/td", 51, 73); //closed by next <tr> open tag
+        assertLogicalRange(root, "html/body/table/tr|1", 73, 77); //closed by next </table> open tag
+
+    }
+
     public void testTable2() throws Exception {
         String code = "<table><tr><td>r1c1<tr><td>r2c1</table>";
 
@@ -287,7 +335,6 @@ public class SyntaxTreeTest extends TestBase {
 
 //        assertAST(code, 1);
     }
-
 
 
     public void testXhtmlNamespaceAttrs() throws Exception {
@@ -355,6 +402,10 @@ public class SyntaxTreeTest extends TestBase {
 
     }
 
+
+    //------------------------ private methods ---------------------------
+
+    
     private void testSyntaxTree(String testFile) throws Exception {
         FileObject source = getTestFile(DATA_DIR_BASE + testFile);
         BaseDocument doc = getDocument(source);
@@ -385,18 +436,31 @@ public class SyntaxTreeTest extends TestBase {
         return buf.toString();
     }
 
-    private void assertAST(final String code) throws Exception {
-        assertAST(code,0);
+    private void assertLogicalRange(AstNode base, String pathToTheNode, int logicalStart, int logicalEnd) {
+        AstNode node = AstNodeUtils.query(base, pathToTheNode);
+        assertNotNull("Node " + pathToTheNode + " couldn't be found!", node);
+
+        //probably not correct assumption, but ok for testing
+        assertEquals(AstNode.NodeType.OPEN_TAG, node.type()); 
+
+        int[] logicalRange = node.getLogicalRange();
+        assertNotNull(logicalRange);        
+        assertEquals(logicalStart, logicalRange[0]); //assert the start offset
+        assertEquals(logicalEnd, logicalRange[1]); //assert the end offset
     }
 
-    private void assertAST(final String code, int expectedErrorsNumber) throws Exception {
-        assertAST(code, null, expectedErrorsNumber);
+    private AstNode assertAST(final String code) throws Exception {
+        return assertAST(code,0);
     }
 
-    private void assertAST(final String code, String publicId, int expectedErrorsNumber) throws Exception {
+    private AstNode assertAST(final String code, int expectedErrorsNumber) throws Exception {
+        return assertAST(code, null, expectedErrorsNumber);
+    }
+
+    private AstNode assertAST(final String code, String publicId, int expectedErrorsNumber) throws Exception {
         AstNode root = parse(code, publicId);
-        System.out.println("AST for code: " + code);
-        AstNodeUtils.dumpTree(root);
+//        System.out.println("AST for code: " + code);
+//        AstNodeUtils.dumpTree(root);
 
         final int[] errors = new int[1];
         errors[0] = 0;
@@ -413,13 +477,14 @@ public class SyntaxTreeTest extends TestBase {
 
         assertEquals("Unexpected number of errors, current errors: " + errorsAsString(errorslist) ,expectedErrorsNumber, errors[0]);
 
+        return root;
     }
 
-    private void assertAST(final String code, AstNode.Description... expectedErrors) throws Exception {
-        assertAST(code, null, expectedErrors);
+    private AstNode assertAST(final String code, AstNode.Description... expectedErrors) throws Exception {
+        return assertAST(code, null, expectedErrors);
     }
 
-    private void assertAST(final String code, String publicId, AstNode.Description... expectedErrors) throws Exception {
+    private AstNode assertAST(final String code, String publicId, AstNode.Description... expectedErrors) throws Exception {
         AstNode root = parse(code, publicId);
 //        System.out.println("AST for code: " + code);
 //        AstNodeUtils.dumpTree(root);
@@ -441,6 +506,8 @@ public class SyntaxTreeTest extends TestBase {
             missing.add(errorsItr.next());
         }
         assertEquals("Some expected errors are missing: " + errorsAsString(missing), expectedErrors.length, expectedErrors.length - missing.size());
+
+        return root;
 
     }
 
