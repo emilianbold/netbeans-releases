@@ -74,6 +74,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import static org.netbeans.api.jsp.lexer.JspTokenId.JavaCodeType;
 
@@ -146,40 +147,19 @@ public class SimplifiedJspServlet extends JSPProcessor {
         this.snapshot = snapshot;
     }
 
-    public void process() throws BadLocationException{
-        process(false);
-    }
-
-    public void process(final boolean processAsIncluded) throws BadLocationException {
-        processCalled = true;
-
-        if( fobj == null) {
-            //do not handle non fileobject documents like coloring properties preview document
-            processingSuccessful = false;
-            return;
-        }
-
+    /* process under document readlock */
+    @Override
+    protected void renderProcess() throws BadLocationException{
+        //check servlet API on classpath
         if (!isServletAPIOnClasspath()){
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     displayServletAPIMissingWarning();
                 }
             });
-
             processingSuccessful = false;
             return;
         }
-         //Workaround of issue #120195 - Deadlock in jspparser while reformatting JSP
-        //Needs to be removed after properly fixing the issue
-        if (!DocumentUtilities.isWriteLocked(doc)) {
-            JspParserAPI.ParseResult parseResult = JspUtils.getCachedParseResult(fobj, false, false);
-            if (parseResult == null || !parseResult.isParsingSuccess()) {
-                processingSuccessful = false;
-                return;
-            }
-        }
-
-        final BadLocationException[] ex = new BadLocationException[1];
 
         processIncludes();
 
@@ -200,31 +180,22 @@ public class SimplifiedJspServlet extends JSPProcessor {
                 int blockStart = token.offset(tokenHierarchy);
 
                 JavaCodeType blockType = (JavaCodeType) token.getProperty(JspTokenId.SCRIPTLET_TOKEN_TYPE_PROPERTY);
-
-//                String blockBody = charSequence.subSequence(blockStart, blockEnd).toString(); //doc.getText(blockStart, blockEnd - blockStart);
                 List<Embedding> buff = blockType == JavaCodeType.DECLARATION ? declarations : scriptlets;
 
                 if (blockType == JavaCodeType.EXPRESSION) {
-                    // ignore JSP expressions in included files
-                    if (!processAsIncluded){
-                        // the "" + (...) construction is used to preserve compatibility with pre-autoboxing java
-                        // see issue #116598
-                        buff.add(snapshot.create(String.format("\t\tObject expr%1$d = \"\" + (", expressionIndex++), "text/x-java")); //NOI18N
-                        buff.add(snapshot.create(blockStart, token.length(), "text/x-java"));
-                        buff.add(snapshot.create(");\n", "text/x-java")); //NOI18N
-                    }
+                    // the "" + (...) construction is used to preserve compatibility with pre-autoboxing java
+                    // see issue #116598
+                    buff.add(snapshot.create(String.format("\t\tObject expr%1$d = \"\" + (", expressionIndex++), "text/x-java")); //NOI18N
+                    buff.add(snapshot.create(blockStart, token.length(), "text/x-java"));
+                    buff.add(snapshot.create(");\n", "text/x-java")); //NOI18N
                 } else {
-                        buff.add(snapshot.create(blockStart, token.length(), "text/x-java"));
-                        buff.add(snapshot.create("\n", "text/x-java")); //NOI18N
+                    buff.add(snapshot.create(blockStart, token.length(), "text/x-java"));
+                    buff.add(snapshot.create("\n", "text/x-java")); //NOI18N
                 }
             }
         } while (tokenSequence.moveNext());
 
         processImportsAndBeanDeclarations();
-
-        if (ex[0] != null) {
-            throw ex[0];
-        }
 
         header = snapshot.create(getClassHeader(), "text/x-java");
         implicitImports.add(snapshot.create(createImplicitImportStatements(localImportsFound), "text/x-java"));
@@ -356,6 +327,7 @@ public class SimplifiedJspServlet extends JSPProcessor {
         return false;
     }
 
+    @Override
     protected void processIncludedFile(IncludedJSPFileProcessor includedJSPFileProcessor) {
         implicitImports.add(snapshot.create(includedJSPFileProcessor.getImports(), "text/x-java"));
         declarations.add(snapshot.create(includedJSPFileProcessor.getDeclarations(), "text/x-java"));
