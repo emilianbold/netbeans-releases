@@ -50,6 +50,8 @@ import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -150,6 +152,15 @@ public class ChatPanel extends javax.swing.JPanel {
         inbox.addMouseListener(bubbleEnabled);
         outbox.addMouseListener(bubbleEnabled);
 
+        inboxScrollPane.addMouseWheelListener(new MouseWheelListener() {
+
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                JScrollBar vbar = inboxScrollPane.getVerticalScrollBar();
+                if (vbar==null)
+                    return;
+                disableAutoScroll = ((vbar.getValue() + vbar.getVisibleAmount()) != vbar.getMaximum());
+            }
+        });
         inboxScrollPane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
 
             public void adjustmentValueChanged(AdjustmentEvent event) {
@@ -158,12 +169,7 @@ public class ChatPanel extends javax.swing.JPanel {
                 if (!event.getValueIsAdjusting()) {
                     return;
                 }
-
-                if ((vbar.getValue() + vbar.getVisibleAmount()) == vbar.getMaximum()) {
-                    disableAutoScroll = false;
-                } else if (!disableAutoScroll) {
-                    disableAutoScroll = true;
-                }
+                disableAutoScroll = ((vbar.getValue() + vbar.getVisibleAmount()) != vbar.getMaximum());
             }
         });
 
