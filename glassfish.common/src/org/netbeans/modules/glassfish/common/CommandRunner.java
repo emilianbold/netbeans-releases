@@ -152,9 +152,9 @@ public class CommandRunner extends BasicTask<OperationState> {
 
     private Map<String, List<AppDesc>> processApplications(Map<String, List<String>> appsList, Map<String, String> properties){
         Map<String, List<AppDesc>> result = new HashMap<String, List<AppDesc>>();
-        Iterator appsItr = appsList.keySet().iterator();
+        Iterator<String> appsItr = appsList.keySet().iterator();
         while (appsItr.hasNext()) {
-            String engine = appsItr.next().toString();
+            String engine = appsItr.next();
             List<String> apps = appsList.get(engine);
             for (int i = 0; i < apps.size(); i++) {
                 String name = apps.get(i).trim();
