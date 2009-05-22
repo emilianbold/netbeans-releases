@@ -178,7 +178,17 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     public MakeConfiguration getActiveConfiguration() {
         Configurations confs = getConfs();
         if (confs != null) {
-            return (MakeConfiguration) confs.getActive();
+            MakeConfiguration conf = (MakeConfiguration) confs.getActive();
+            if (conf == null) {
+                if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
+                    new Exception("There are no active configuration in the project descriptor MakeConfigurationDescriptor@"+System.identityHashCode(this)+" for project "+getBaseDir()).printStackTrace(); // NOI18N
+                }
+            }
+            return conf;
+        } else {
+            if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
+                new Exception("There are no configurations in the project descriptor MakeConfigurationDescriptor@"+System.identityHashCode(this)+" for project "+getBaseDir()).printStackTrace(); // NOI18N
+            }
         }
         return null;
     }
@@ -676,9 +686,15 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         FileObject fo = null;
         fo = FileUtil.toFileObject(new File(getBaseDir()));
         if (fo != null) {
+            if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
+                System.err.println("Start of writting project descriptor MakeConfigurationDescriptor@"+System.identityHashCode(this)+" for project "+fo.getName()+" @"+System.identityHashCode(this)); // NOI18N
+            }
             new ConfigurationXMLWriter(fo, this).write();
             new ConfigurationMakefileWriter(this).write();
             ConfigurationProjectXMLWriter();
+            if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
+                System.err.println("End of writting project descriptor MakeConfigurationDescriptor@"+System.identityHashCode(this)+" for project "+fo.getName()+" @"+System.identityHashCode(this)); // NOI18N
+            }
         }
 
         // Clear flag
