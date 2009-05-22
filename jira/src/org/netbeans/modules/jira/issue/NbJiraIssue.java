@@ -636,7 +636,12 @@ public class NbJiraIssue extends Issue {
 
         // resolved attrs
         if(close) {
-            resolve(JiraUtils.getResolutionByName(repository, FIXED), comment); // XXX constant, what about setting in options?
+            try {
+                resolve(JiraUtils.getResolutionByName(repository, FIXED), comment); // XXX constant, what about setting in options?
+            } catch (IllegalStateException ise) {
+                // so do not set to close if already closed
+                Jira.LOG.log(Level.INFO, "Close not permitted, current status is " + getStatus().getName() + ", leaving status the same", ise);
+            }
         }
 
         JiraCommand submitCmd = new JiraCommand() {
