@@ -78,6 +78,9 @@ public class RefreshAction extends BaseAction {
 
     @Override
     public void performAction(Node[] activatedNodes) {
+        if (activatedNodes[0] == null) {
+            return;
+        }
         final BaseNode baseNode = activatedNodes[0].getLookup().lookup(BaseNode.class);
         RequestProcessor.getDefault().post(
             new Runnable() {

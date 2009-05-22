@@ -47,7 +47,8 @@ made subject to such option by the copyright holder.
 <filesystem>
   <folder name="org-netbeans-api-project-libraries">
     <folder name="Libraries">
-      <file name="wag.xml" url="wag.xml"/>
+      <file name="wag4j.xml" url="wag4j.xml"/>
+      <file name="wagfx.xml" url="wagfx.xml"/>
     </folder>
   </folder>
 </filesystem>

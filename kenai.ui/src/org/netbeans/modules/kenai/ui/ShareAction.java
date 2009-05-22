@@ -43,6 +43,7 @@ import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.CreatedProjectInfo;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
+import org.netbeans.modules.subversion.api.Subversion;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -93,21 +94,22 @@ public final class ShareAction extends CookieAction {
     }
 
     public static void actionPerformed(Node e) {
+        if (Subversion.isClientAvailable(true)) {
 
-        WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(e));
-        // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
-        wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
-        wizardDescriptor.setTitle(NbBundle.getMessage(NewKenaiProjectAction.class,
-                "ShareAction.dialogTitle")); // NOI18N
+            WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(e));
+            // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
+            wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
+            wizardDescriptor.setTitle(NbBundle.getMessage(NewKenaiProjectAction.class,
+                    "ShareAction.dialogTitle")); // NOI18N
 
-        DialogDisplayer.getDefault().notify(wizardDescriptor);
+            DialogDisplayer.getDefault().notify(wizardDescriptor);
 
-        boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
-        if (!cancelled) {
-            Set<CreatedProjectInfo> createdProjects = wizardDescriptor.getInstantiatedObjects();
-            showDashboard(createdProjects);
+            boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
+            if (!cancelled) {
+                Set<CreatedProjectInfo> createdProjects = wizardDescriptor.getInstantiatedObjects();
+                showDashboard(createdProjects);
+            }
         }
-
     }
 
     private static void showDashboard(Set<CreatedProjectInfo> projects) {

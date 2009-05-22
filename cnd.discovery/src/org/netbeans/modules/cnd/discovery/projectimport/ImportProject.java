@@ -671,7 +671,7 @@ public class ImportProject implements PropertyChangeListener {
 
     private void saveMakeConfigurationDescriptor() {
         ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        final MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor) pdp.getConfigurationDescriptor();
+        final MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
         makeConfigurationDescriptor.setModified();
         makeConfigurationDescriptor.save();
         SwingUtilities.invokeLater(new Runnable() {
@@ -792,7 +792,7 @@ public class ImportProject implements PropertyChangeListener {
             normalizedItems = new HashMap<String,Item>();
             ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
             if (pdp != null) {
-                MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor) pdp.getConfigurationDescriptor();
+                MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
                 if (makeConfigurationDescriptor != null) {
                     for(Item item : makeConfigurationDescriptor.getProjectItems()){
                         normalizedItems.put(item.getNormalizedFile().getAbsolutePath(),item);
