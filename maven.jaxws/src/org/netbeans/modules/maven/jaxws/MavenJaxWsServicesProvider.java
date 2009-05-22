@@ -107,10 +107,10 @@ public class MavenJaxWsServicesProvider implements WebServiceDataProvider, Prope
                     }
                 }
             } else {
-                String wsdlFile = jaxWsService.getLocalWsdl();
-                for (WebService service : consumers) {
-                    if (wsdlFile.equals(service.getIdentifier())) {
-                        consumers.remove(service);
+                String clientId = jaxWsService.getId();
+                for (WebService client : consumers) {
+                    if (clientId != null && clientId.equals(client.getIdentifier())) {
+                        consumers.remove(client);
                         break;
                     }
                 }

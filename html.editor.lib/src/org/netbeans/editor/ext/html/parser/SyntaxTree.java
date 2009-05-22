@@ -375,19 +375,28 @@ public class SyntaxTree {
         for (int i = stack.size() - 1; i > 0; i--) { // (i > 0) == do not process the very first (root) node
             AstNode node = stack.get(i);
 
+            boolean nodeOk = true;
+
             if (!hasOptionalEndTag(node)) {
                 //unclosed tag, mark
                 String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNMATCHED_TAG"); //NOI18N
                 node.addDescriptionToNode(UNMATCHED_TAG, errorMessage, Description.WARNING);
+                nodeOk = false;
             }
 
             if (!node.isResolved()) {
                 //unresolved, mark
                 String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNRESOLVED_TAG", //NOI18N
                         new Object[]{elementsToString(node.getAllPossibleElements())});
-
                 node.addDescriptionToNode(UNRESOLVED_TAG_KEY, errorMessage, Description.ERROR);
+                nodeOk = false;
             }
+
+            if(nodeOk) {
+                //if the tag is ok, then close it by the end of the file
+                node.setLogicalEndOffset(lastEndOffset);
+            }
+
         }
 
         return rootNode;
