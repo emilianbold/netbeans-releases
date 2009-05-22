@@ -50,11 +50,11 @@ import static org.junit.Assert.*;
  */
 public class HgURLTest {
 
-    private Method testIsWindowsAbsolutePathMethod;
+    private Method isWindowsAbsolutePathMethod;
 
     @After
     public void cleanup() {
-        testIsWindowsAbsolutePathMethod = null;
+        isWindowsAbsolutePathMethod = null;
     }
 
     @Test
@@ -77,7 +77,7 @@ public class HgURLTest {
 
     @Test
     public void testIsWindowsAbsolutePath() throws Exception {
-        initTestIsWindowsAbsolutePathMethod();
+        initIsWindowsAbsolutePathMethod();
 
         testIsWindowsAbsolutePath("C",        false);
         testIsWindowsAbsolutePath("/",        false);
@@ -150,16 +150,16 @@ public class HgURLTest {
     }
 
     private void testIsWindowsAbsolutePath(String path, boolean expected) throws Exception {
-        assert testIsWindowsAbsolutePathMethod != null;
+        assert isWindowsAbsolutePathMethod != null;
 
-        Object resultObj = testIsWindowsAbsolutePathMethod.invoke(null, path);
+        Object resultObj = isWindowsAbsolutePathMethod.invoke(null, path);
         assert resultObj instanceof Boolean;
         assertTrue(Boolean.TRUE.equals(resultObj) == expected);
     }
 
-    private void initTestIsWindowsAbsolutePathMethod() throws Exception {
-        testIsWindowsAbsolutePathMethod = HgURL.class.getDeclaredMethod("isWindowsAbsolutePath", String.class);
-        testIsWindowsAbsolutePathMethod.setAccessible(true);
+    private void initIsWindowsAbsolutePathMethod() throws Exception {
+        isWindowsAbsolutePathMethod = HgURL.class.getDeclaredMethod("isWindowsAbsolutePath", String.class);
+        isWindowsAbsolutePathMethod.setAccessible(true);
     }
 
 }
