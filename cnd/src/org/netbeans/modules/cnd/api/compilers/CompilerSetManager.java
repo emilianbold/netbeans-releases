@@ -518,7 +518,7 @@ public class CompilerSetManager {
                 continue;
             }
             if (!IpeUtils.isPathAbsolute(path)) {
-                path = CndFileUtils.normalizeFile(new File(path)).getAbsolutePath();
+                path = CndFileUtils.normalizeAbsolutePath(new File(path).getAbsolutePath());
             }
             File dir = new File(path);
             if (dir.isDirectory()) {
