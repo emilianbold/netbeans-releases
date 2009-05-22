@@ -140,8 +140,8 @@ public class GdbProxyEngine {
 
         if (execEnv.isLocal()) {
             String pathname = Path.getPathName();
-            npb = npb.addEnvironmentVariable(pathname, cspath);
-            npb = npb.setWorkingDirectory(workingDirectory);
+            npb.addEnvironmentVariable(pathname, cspath);
+            npb.setWorkingDirectory(workingDirectory);
         }
 
         final NativeProcess proc = npb.call();
