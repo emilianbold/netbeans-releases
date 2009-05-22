@@ -87,6 +87,20 @@ public class ChatPanel extends javax.swing.JPanel {
 
     MultiUserChat muc;
     private final HTMLEditorKit editorKit;
+    private String[][] smileysMap = new String[][] {
+        {"8)", "cool"},
+        {"8-)", "cool"},
+        {":]", "grin"},
+        {":-]", "grin"},
+        {":D", "laughing"},
+        {":-D", "laughing"},
+        {":(", "sad"},
+        {":-(", "sad"},
+        {":)", "smiley"},
+        {":-)", "smiley"},
+        {";)", "wink"},
+        {";-)", "wink"}
+    };
 
     public ChatPanel(MultiUserChat chat) {
         this.muc=chat;
@@ -170,9 +184,21 @@ public class ChatPanel extends javax.swing.JPanel {
         return tmp.replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\n", "<br>"); // NOI18N
     }
 
-    private String replaceLinks(String removeTags) {
+    private String replaceLinks(String body) {
         // This regexp works quite nice, should be OK in most cases (does not handle [.,?!] in the end of the URL)
-        return removeTags.replaceAll("(http|https|ftp)://([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,4}(/[^ ]*)*", "<a href=\"$0\">$0</a>"); //NOI18N
+        return body.replaceAll("(http|https|ftp)://([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,4}(/[^ ]*)*", "<a href=\"$0\">$0</a>"); //NOI18N
+    }
+
+    private String replaceSmileys(String body) {
+        if (body.matches(".*[8:;]-?[]D()].*")) {
+            for (int i = 0; i < smileysMap.length; i++) {
+                body = body.replace(smileysMap[i][0],
+                        "<img align=\"center\" src=\"" +
+                        this.getClass().getResource("/org/netbeans/modules/kenai/collab/resources/emo_" + smileysMap[i][1] + "16.png") +
+                        "\"></img>");
+            }
+        }
+        return body;
     }
 
 //    void setUpPrivateMessages() {
@@ -431,7 +457,7 @@ public class ChatPanel extends javax.swing.JPanel {
                         DateFormat.getTimeInstance(DateFormat.SHORT).format(getTimestamp(message)) + "</td></tr></tbody></table>"; // NOI18N
             }
             rgb = messageColor.getRed() + "," + messageColor.getGreen() + "," + messageColor.getBlue(); // NOI18N
-            text += "<div class=\"message\" style=\"background-color: rgb(" + rgb + ")\">" + replaceLinks(removeTags(message.getBody())) + "</div>"; // NOI18N
+            text += "<div class=\"message\" style=\"background-color: rgb(" + rgb + ")\">" + replaceSmileys(replaceLinks(removeTags(message.getBody()))) + "</div>"; // NOI18N
 
             editorKit.insertHTML(doc, doc.getLength(), text, 0, 0, null);
         } catch (IOException ex) {

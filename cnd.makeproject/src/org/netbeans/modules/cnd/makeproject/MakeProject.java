@@ -505,10 +505,10 @@ public final class MakeProject implements Project, AntProjectListener {
         }
 
         public String[] getPrivilegedTemplates() {
-            ConfigurationDescriptor configurationDescriptor =
+            MakeConfigurationDescriptor configurationDescriptor =
                     configurationProvider.getConfigurationDescriptor(false);
             if (configurationDescriptor != null) {
-                MakeConfiguration conf = (MakeConfiguration)configurationDescriptor.getConfs().getActive();
+                MakeConfiguration conf = configurationDescriptor.getActiveConfiguration();
                 if (conf != null && conf.isQmakeConfiguration()) {
                     return PRIVILEGED_NAMES_QT;
                 }
@@ -598,12 +598,9 @@ public final class MakeProject implements Project, AntProjectListener {
     /** NPE-safe method for getting active configuration */
     public MakeConfiguration getActiveConfiguration() {
         if (projectDescriptorProvider.gotDescriptor()) {
-            MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
+            MakeConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
             if (projectDescriptor != null) {
-                Configurations confs = projectDescriptor.getConfs();
-                if (confs != null) {
-                    return (MakeConfiguration) confs.getActive();
-                }
+                return projectDescriptor.getActiveConfiguration();
             }
         }
         return null;
@@ -906,7 +903,7 @@ public final class MakeProject implements Project, AntProjectListener {
         public MakeArtifact[] getBuildArtifacts() {
             List<MakeArtifact> artifacts = new ArrayList<MakeArtifact>();
 
-            MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
+            MakeConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
             Configuration[] confs = projectDescriptor.getConfs().getConfs();
 
 //            String projectLocation = null;
@@ -940,7 +937,7 @@ public final class MakeProject implements Project, AntProjectListener {
         }
 
         public Iterator<DataObject> objectsToSearch() {
-            MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
+            MakeConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
             Folder rootFolder = projectDescriptor.getLogicalFolders();
             return rootFolder.getAllItemsAsDataObjectSet(false, "text/").iterator(); // NOI18N
         }

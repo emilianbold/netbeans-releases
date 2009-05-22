@@ -77,7 +77,7 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
         for (Project project : OpenProjects.getDefault().getOpenProjects()) {
             ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             if (provider != null && provider.gotDescriptor()) {
-                MakeConfigurationDescriptor descriptor = (MakeConfigurationDescriptor)provider.getConfigurationDescriptor();
+                MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
                 if (descriptor != null && (descriptor.findProjectItemByPath(path) != null
                             || descriptor.findExternalItemByPath(path) != null)) {
                     return project;

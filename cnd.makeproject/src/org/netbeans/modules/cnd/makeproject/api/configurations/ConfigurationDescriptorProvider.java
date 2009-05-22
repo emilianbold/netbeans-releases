@@ -66,7 +66,7 @@ public class ConfigurationDescriptorProvider {
     public static final String USG_PROJECT_CONFIG_CND = "USG_PROJECT_CONFIG_CND"; // NOI18N
     public static final String USG_PROJECT_OPEN_CND = "USG_PROJECT_OPEN_CND"; // NOI18N
     private FileObject projectDirectory;
-    private ConfigurationDescriptor projectDescriptor = null;
+    private MakeConfigurationDescriptor projectDescriptor = null;
     boolean hasTried = false;
     private String relativeOffset = null;
 
@@ -82,10 +82,10 @@ public class ConfigurationDescriptorProvider {
     }
     
     private final Object readLock = new Object();
-    public ConfigurationDescriptor getConfigurationDescriptor() {
+    public MakeConfigurationDescriptor getConfigurationDescriptor() {
         return getConfigurationDescriptor(true);
     }
-    public ConfigurationDescriptor getConfigurationDescriptor(boolean waitReading) {
+    public MakeConfigurationDescriptor getConfigurationDescriptor(boolean waitReading) {
         if (projectDescriptor == null || needReload) {
             // attempt to read configuration descriptor
             if (!hasTried) {
@@ -125,16 +125,16 @@ public class ConfigurationDescriptorProvider {
 
                         ConfigurationXMLReader reader = new ConfigurationXMLReader(projectDirectory);
 
-                        if (waitReading && SwingUtilities.isEventDispatchThread()) {
-                            new Exception("Not allowed to use EDT for reading XML descriptor of project!" + projectDirectory).printStackTrace(System.err); // NOI18N
-                            // PLEASE DO NOT ADD HACKS like Task.waitFinished()
-                            // CHANGE YOUR LOGIC INSTEAD
-                        
-                            // FIXUP for IZ#146696: cannot open projects: Not allowed to use EDT...
-                            // return null;
-                        }
+//                        if (waitReading && SwingUtilities.isEventDispatchThread()) {
+//                            new Exception("Not allowed to use EDT for reading XML descriptor of project!" + projectDirectory).printStackTrace(System.err); // NOI18N
+//                            // PLEASE DO NOT ADD HACKS like Task.waitFinished()
+//                            // CHANGE YOUR LOGIC INSTEAD
+//
+//                            // FIXUP for IZ#146696: cannot open projects: Not allowed to use EDT...
+//                            // return null;
+//                        }
                         try {
-                            ConfigurationDescriptor newDescriptor = reader.read(relativeOffset);
+                            MakeConfigurationDescriptor newDescriptor = reader.read(relativeOffset);
                             if (projectDescriptor == null || newDescriptor == null) {
                                 projectDescriptor = newDescriptor;
                             } else {
@@ -150,8 +150,8 @@ public class ConfigurationDescriptorProvider {
                 }
             }
         }
-        if (waitReading && (projectDescriptor instanceof MakeConfigurationDescriptor)) {
-            ((MakeConfigurationDescriptor)projectDescriptor).waitInitTask();
+        if (waitReading && projectDescriptor != null) {
+            (projectDescriptor).waitInitTask();
         }
         return projectDescriptor;
     }
@@ -173,7 +173,7 @@ public class ConfigurationDescriptorProvider {
         return auxObjectProviders.toArray(new ConfigurationAuxObjectProvider[auxObjectProviders.size()]);
     }
 
-    public static void recordMetrics(String msg, ConfigurationDescriptor descr) {
+    public static void recordMetrics(String msg, MakeConfigurationDescriptor descr) {
         if (!(descr instanceof MakeConfigurationDescriptor)) {
             return;
         }
@@ -183,12 +183,12 @@ public class ConfigurationDescriptorProvider {
                 if (descr.getConfs() == null || descr.getConfs().getActive() == null){
                     return;
                 }
-                Item[] projectItems = ((MakeConfigurationDescriptor) descr).getProjectItems();
+                Item[] projectItems = (descr).getProjectItems();
                 if (projectItems == null || projectItems.length == 0) {
                     // do not track empty applications
                     return;
                 }
-                MakeConfiguration makeConfiguration = (MakeConfiguration) descr.getConfs().getActive();
+                MakeConfiguration makeConfiguration = descr.getActiveConfiguration();
                 String type;
                 switch (makeConfiguration.getConfigurationType().getValue()) {
                     case MakeConfiguration.TYPE_MAKEFILE:
@@ -253,7 +253,7 @@ public class ConfigurationDescriptorProvider {
                 } else {
                     platform = "UNKNOWN_PLATFORM"; // NOI18N
                 }
-                makeConfiguration.reCountLanguages((MakeConfigurationDescriptor) descr);
+                makeConfiguration.reCountLanguages(descr);
                 int size = 0;
                 int allItems = projectItems.length;
                 boolean cLang = false;

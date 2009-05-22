@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -285,7 +286,18 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
             ((ModelListener) listeners[i]).modelChanged(me);
         }
     }
-    
+
+    private void fireChildrenChange(Object row) {
+        Object[] listeners;
+        synchronized (modelListeners) {
+            listeners = modelListeners.toArray();
+        }
+        for (int i = 0; i < listeners.length; i++) {
+            ((ModelListener) listeners[i]).modelChanged (
+                new ModelEvent.NodeChanged(this, row, ModelEvent.NodeChanged.CHILDREN_MASK)
+            );
+        }
+    }
     
     // NodeModelFilter
     
@@ -412,6 +424,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
             value = original.getValueAt (row, columnID);
         } else {
             value = vf.getValueAt (original, (Variable) row, columnID);
+            fireChildrenChange(row);
         }
         return value;
     }

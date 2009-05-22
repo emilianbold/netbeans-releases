@@ -102,12 +102,7 @@ public class CodeUtils {
                 FieldAccess fld = (FieldAccess) name;
                 name = fld.getField().getName();
             }
-        }
-        
-        assert name instanceof Identifier :
-            "unsupported type of ClassName.getClassName().getName(): "
-            + name.getClass().getName() + " : " + name.toString();
-
+        }        
         return (name instanceof Identifier) ? ((Identifier) name).getName() : "";//NOI18N
     }
 
