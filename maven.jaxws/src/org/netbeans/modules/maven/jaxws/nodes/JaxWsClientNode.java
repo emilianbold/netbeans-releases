@@ -56,6 +56,7 @@ import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.maven.jaxws.MavenJAXWSSupportImpl;
 import org.netbeans.modules.maven.jaxws.MavenModelUtils;
 import org.netbeans.modules.maven.jaxws.MavenWebService;
 import org.netbeans.modules.maven.jaxws.WSUtils;
@@ -477,7 +478,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
                     try {
                         wsdlFo = WSUtils.retrieveResource(
                                 localWsdlFolder,
-                                jaxWsSupport.getCatalog().toURI(),
+                                new URI(MavenJAXWSSupportImpl.CATALOG_PATH),
                                 new URI(newWsdlUrl));
                     } catch (URISyntaxException ex) {
                         //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);

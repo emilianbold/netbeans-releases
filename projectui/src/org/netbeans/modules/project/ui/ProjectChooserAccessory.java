@@ -100,8 +100,8 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
         modelUpdater = new ModelUpdater();
         //#98080
-        RP = new RequestProcessor(ModelUpdater.class.getName(), 1, true);
-        RP2 = new RequestProcessor(ModelUpdater.class.getName(), 1, true);
+        RP = new RequestProcessor(ModelUpdater.class.getName(), 1);
+        RP2 = new RequestProcessor(ModelUpdater.class.getName(), 1);
         updateSubprojectsTask = RP.create(modelUpdater);
         updateSubprojectsTask.setPriority( Thread.MIN_PRIORITY );
 
