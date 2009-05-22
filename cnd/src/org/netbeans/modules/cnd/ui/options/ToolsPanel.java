@@ -1798,16 +1798,24 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     Runnable longTask = new Runnable() {
         public void run() {
             log.finest("Restoring defaults\n");
-                try {
-                    ConnectionManager.getInstance().connectTo(execEnv);
-                } catch (IOException ex) {
-                    //TODO: report it!
-                    cancelled.set(true);
-                    return;
-                } catch (CancellationException ex) {
+            ServerRecord record = ServerList.get(execEnv);
+            if (record.isOffline()) {
+                record.validate(true);
+                if (record.isOffline()) {
                     cancelled.set(true);
                     return;
                 }
+            }
+//            try {
+//                ConnectionManager.getInstance().connectTo(execEnv);
+//            } catch (IOException ex) {
+//                //TODO: report it!
+//                cancelled.set(true);
+//                return;
+//            } catch (CancellationException ex) {
+//                cancelled.set(true);
+//                return;
+//            }
             CompilerSetManager newCsm = CompilerSetManager.create(execEnv);
             newCsm.initialize(false, true);
             while(newCsm.isPending()) {
