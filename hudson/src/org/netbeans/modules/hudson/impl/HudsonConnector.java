@@ -151,18 +151,36 @@ public class HudsonConnector {
     Collection<? extends HudsonJobBuild> getBuilds(HudsonJobImpl job) {
         Document docBuild = getDocument(job.getUrl() + XML_API_URL +
                 // XXX no good way to only include what you _do_ want without using XSLT
-                "?depth=1&xpath=/*/build&wrapper=root&exclude=//artifact&exclude=//action&exclude=//changeSet&exclude=//culprit");
+                "?depth=1&xpath=/*/build&wrapper=root&exclude=//artifact&exclude=//action&exclude=//changeSet&exclude=//culprit" +
+                "&exclude=//duration&exclude=//fullDisplayName&exclude=//keepLog&exclude=//timestamp&exclude=//url&exclude=//builtOn");
         if (docBuild == null) {
             return Collections.emptySet();
         }
         List<HudsonJobBuildImpl> builds = new ArrayList<HudsonJobBuildImpl>();
-        NodeList buildDetails = docBuild.getElementsByTagName("build"); // NOI18N // HUDSON-3267: might be root elt
-        for (int i = 0; i < buildDetails.getLength(); i++) {
-            Element build = (Element) buildDetails.item(i);
-            // XXX do not use Utilities.xpath here, too slow...
-            int number = Integer.parseInt(Utilities.xpath("number", build)); // NOI18N
-            boolean building = Boolean.valueOf(Utilities.xpath("building", build)); // NOI18N
-            Result result = building ? Result.NOT_BUILT : Result.valueOf(Utilities.xpath("result", build)); // NOI18N
+        NodeList buildNodes = docBuild.getElementsByTagName("build"); // NOI18N // HUDSON-3267: might be root elt
+        for (int i = 0; i < buildNodes.getLength(); i++) {
+            Node build = buildNodes.item(i);
+            int number = 0;
+            boolean building = false;
+            Result result = null;
+            NodeList details = build.getChildNodes();
+            for (int j = 0; j < details.getLength(); j++) {
+                Node detail = details.item(j);
+                if (detail.getNodeType() != Node.ELEMENT_NODE) {
+                    continue;
+                }
+                String nodeName = detail.getNodeName();
+                String text = detail.getFirstChild().getTextContent();
+                if (nodeName.equals("number")) { // NOI18N
+                    number = Integer.parseInt(text);
+                } else if (nodeName.equals("building")) { // NOI18N
+                    building = Boolean.valueOf(text);
+                } else if (nodeName.equals("result")) { // NOI18N
+                    result = Result.valueOf(text);
+                } else {
+                    LOG.fine("unexpected <build> child: " + nodeName);
+                }
+            }
             builds.add(new HudsonJobBuildImpl(this, job, number, building, result));
         }
         return builds;
