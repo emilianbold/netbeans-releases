@@ -219,10 +219,10 @@
 
 
 <!--CSH for plain text editor-->
-<mapID target="text.plain" url="pending.html" />
+<mapID target="text.plain" url="editing/editor_quickref.html" />
 
 <!--CSH for css text editor-->
-<mapID target="text.x-css" url="pending.html" />
+<mapID target="text.x-css" url="xml/css/css_edit.html" />
 
 <!--Add New Class dialog box-->
 <mapID target="org.netbeans.modules.java.ui.nodes.elements.SourceEditSupport$AddNewClass" url="pending.html"/>

@@ -108,13 +108,6 @@ public interface HudsonJob extends Comparable<HudsonJob> {
     public String getName();
     
     /**
-     * Description of the Hudson Job
-     *
-     * @return job's description
-     */
-    public String getDescription();
-    
-    /**
      * URL of the Hudson Job
      *
      * @return job url

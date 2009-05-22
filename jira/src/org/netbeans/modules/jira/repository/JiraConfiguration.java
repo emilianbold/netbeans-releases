@@ -111,6 +111,7 @@ public class JiraConfiguration extends JiraClientCache {
     }
 
     private void refreshData () throws JiraException {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
         
         data.projects = client.getProjects(nullProgressMonitor);
@@ -414,15 +415,23 @@ public class JiraConfiguration extends JiraClientCache {
         String repoUrl = repository.getUrl();
         ConfigurationData cached = Jira.getInstance().getConfigurationCacheManager().getCachedData(repoUrl);
         if (cached != null) {
-            for(Project p :cached.projects) {
-                if(p.getComponents() != null) {
-                    loadedProjects.add(p.getId());
-                }
-            }
+            setLoadedProjects(cached);
             cached.serverInfo = null; // download this from the repo at the first access
             cached.initialized = true;
         }
         return cached;
+    }
+
+    /**
+     * Scans projects in data and sets a flag for those already initialized (means the project has not-null components)
+     * @param data
+     */
+    protected void setLoadedProjects(ConfigurationData data) {
+        for (Project p : data.projects) {
+            if (p.getComponents() != null) {
+                loadedProjects.add(p.getId());
+            }
+        }
     }
 
     protected static class ConfigurationData extends JiraClientData {

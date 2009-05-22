@@ -42,6 +42,7 @@ package org.netbeans.modules.ruby.platform.execution;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -417,8 +418,12 @@ public class RubyExecutionDescriptor {
         this.additionalEnv.putAll(additionalEnv);
     }
 
+    /**
+     * @return the additional env or an empty map if no additional was defined; 
+     * never <code>null</code>.
+     */
     public Map<String, String> getAdditionalEnvironment() {
-        return additionalEnv;
+        return additionalEnv != null ? additionalEnv : Collections.<String, String>emptyMap();
     }
 
     public boolean useInterpreter() {

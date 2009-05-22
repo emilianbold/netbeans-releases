@@ -261,7 +261,7 @@ public class AnalyzeModel implements DiscoveryProvider {
             this.progress = progress;
             langProject = CsmModelAccessor.getModel().getProject(makeProject);
             ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-            makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
+            makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
         }
         
         public List<ProjectProperties> getProjectConfiguration() {
@@ -273,7 +273,7 @@ public class AnalyzeModel implements DiscoveryProvider {
         }
         
         public boolean isExcluded(Item item){
-            MakeConfiguration makeConfiguration = (MakeConfiguration)item.getFolder().getConfigurationDescriptor().getConfs().getActive();
+            MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
             ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
             if (itemConfiguration == null) {
                 return true;
