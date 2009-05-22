@@ -87,8 +87,8 @@ public class CNDProjectRootNodeTest extends CNDTestCase
     /** Find node. */
     protected void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
-        openTestProject();
         if(projectRootNode == null) {
+            createAndOpenTestProject();
             projectRootNode = CNDProjectsTabOperator.invoke().getCNDProjectRootNode(getTestProjectName()); // NOI18N
         }
     }

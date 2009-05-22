@@ -38,8 +38,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.jellytools;
+package org.netbeans.test.php.operators;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.*;
 

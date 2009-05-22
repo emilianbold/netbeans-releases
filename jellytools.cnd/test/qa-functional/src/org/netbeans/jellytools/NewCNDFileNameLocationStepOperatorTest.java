@@ -82,31 +82,13 @@ public class NewCNDFileNameLocationStepOperatorTest extends CNDTestCase {
     
     /** Test of invoke method. Opens New File wizard and waits for the dialog. */
     public void testInvoke() throws Throwable {
-        NewProjectWizardOperator pop = NewProjectWizardOperator.invoke();
-        // Standard
-        pop.selectCategory(Bundle.getString("org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle",
-                "Templates/Project/Native"));
-        // C/C++ Application
-        pop.selectProject(Bundle.getString("org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle", "Templates/Project/Native/newApplication.xml"));
-        pop.next();
-        NewCNDProjectNameLocationStepOperator stpop = new NewCNDProjectNameLocationStepOperator();
-        stpop.txtProjectName().setText("NewTestProject");   // NOI18N
-        stpop.btBrowseProjectLocation().pushNoBlock();
-        //Select Project Location
-        String selectProjectLocation = Bundle.getString("org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle",
-                "LBL_NWP1_SelectProjectLocation");
-        new NbDialogOperator(selectProjectLocation).cancel(); //I18N
-        stpop.txtProjectLocation().setText(getWorkDir().getAbsolutePath()); //NOI18N
-        stpop.txtProjectFolder().getText();
-        stpop.cbCreateMainFile().setSelected(false);
-        stpop.cbSetAsMainProject().setSelected(false);
-        stpop.btFinish().pushNoBlock();
+        createAndOpenTestProject();
 
         CNDProjectsTabOperator tab = CNDProjectsTabOperator.invoke();
-        tab.getCNDProjectRootNode("NewTestProject");
+        tab.getCNDProjectRootNode(getTestProjectName());
 
         NewFileWizardOperator wop = NewFileWizardOperator.invoke();
-        wop.selectProject("NewTestProject"); //NOI18N
+        wop.selectProject(getTestProjectName()); //NOI18N
         // C++
         String javaClassesLabel = "C++"; //TODO: find appropriate bundle (unable to locate it so far)
         // C++ Source File
@@ -119,11 +101,11 @@ public class NewCNDFileNameLocationStepOperatorTest extends CNDTestCase {
     
     public void testComponents() {
         op.txtObjectName().setText("NewObject"); // NOI18N
-        assertEquals("Project name not propagated from previous step", "NewTestProject", op.txtProject().getText()); // NOI18N
+        assertEquals("Project name not propagated from previous step", getTestProjectName(), op.txtProject().getText()); // NOI18N
         op.selectExtension("cpp"); //NOI18N
         
         String filePath = op.txtCreatedFile().getText();
-        assertTrue("Created file path doesn't contain " + getTestProjectName() + ".", filePath.indexOf("NewTestProject") > 0);  // NOI18N
+        assertTrue("Created file path doesn't contain " + getTestProjectName() + ".", filePath.indexOf(getTestProjectName()) > 0);  // NOI18N
         assertTrue("Created file path doesn't contain NewObject name.", filePath.indexOf("NewObject") > 0);  //NOI18N
         op.cancel();
     }

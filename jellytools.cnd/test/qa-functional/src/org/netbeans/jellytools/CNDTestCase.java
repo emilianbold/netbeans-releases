@@ -47,22 +47,7 @@ import java.io.IOException;
  */
 public class CNDTestCase extends JellyTestCase {
 
-    private static final String projectName;
-    static
-    {
-        String lsOsType = System.getProperty("os.name");
-        String lsProj = "SampleCNDProject";
-
-        if (lsOsType.toLowerCase().contains("linux"))
-            projectName = lsProj + "-Linux";
-        else if (lsOsType.toLowerCase().contains("sun"))
-            projectName = lsProj + "-Solaris";
-       /* else if (lsOsType.toLowerCase().contains("win"))
-            projectName = lsProj + "-Windows";*/
-        //TODO: add Windows sample project
-        else projectName = lsProj;
-    }
-    //TODO: add support for mac
+    private static final String projectName = "NewTestProject";
 
     public CNDTestCase(String testName) {
         super(testName);
@@ -74,9 +59,27 @@ public class CNDTestCase extends JellyTestCase {
      *
      * @throws java.io.IOException
      */
-    public void openTestProject() throws IOException
+    public void createAndOpenTestProject() throws IOException
     {
-        openDataProjects(projectName);
+        NewProjectWizardOperator pop = NewProjectWizardOperator.invoke();
+        // Standard
+        pop.selectCategory(Bundle.getString("org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle",
+                "Templates/Project/Native"));
+        // C/C++ Application
+        pop.selectProject(Bundle.getString("org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle", "Templates/Project/Native/newApplication.xml"));
+        pop.next();
+        NewCNDProjectNameLocationStepOperator stpop = new NewCNDProjectNameLocationStepOperator();
+        stpop.txtProjectName().setText(projectName);   // NOI18N
+        stpop.btBrowseProjectLocation().pushNoBlock();
+        //Select Project Location
+        String selectProjectLocation = Bundle.getString("org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle",
+                "LBL_NWP1_SelectProjectLocation");
+        new NbDialogOperator(selectProjectLocation).cancel(); //I18N
+        stpop.txtProjectLocation().setText(getWorkDir().getAbsolutePath()); //NOI18N
+        stpop.txtProjectFolder().getText();
+        stpop.cbCreateMainFile().setSelected(true);
+        stpop.cbSetAsMainProject().setSelected(true);
+        stpop.btFinish().pushNoBlock();
     }
 
     /**
