@@ -139,7 +139,12 @@ public final class CommonTasksSupport {
                     String errorLine;
 
                     while ((errorLine = br.readLine()) != null) {
-                        error.append(errorLine);
+                        if (error != null) {
+                            try {
+                                error.append(errorLine);
+                            } catch (IOException ex) {
+                            }
+                        }
                     }
 
                     result += np.waitFor();
