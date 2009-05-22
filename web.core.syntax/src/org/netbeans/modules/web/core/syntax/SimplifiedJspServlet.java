@@ -233,15 +233,34 @@ public class SimplifiedJspServlet extends JSPProcessor {
                     Arrays.asList("import"));     //NOI18N
 
             if (pieceOfCode != null){
-                localImports.add(snapshot.create("import ", "text/x-java")); //NOI18N
-                
-                localImports.add(snapshot.create(pieceOfCode.getStartOffset(),
-                        pieceOfCode.getLength(),
-                        "text/x-java")); //NOI18N
+                String importContent = pieceOfCode.getContent();
+                int startOffset = 0;
+                boolean moreToProcess = true;
 
-                localImports.add(snapshot.create(";\n", "text/x-java")); //NOI18N
+                int endOffset;
 
-                localImportsFound.add(pieceOfCode.getContent());
+                do {
+                    // the JSP directive can take a comma separated list of imports
+                    endOffset = importContent.indexOf(',', startOffset);
+
+                    if (endOffset == -1) {
+                        endOffset = importContent.length();
+                        moreToProcess = false;
+                    }
+
+                    localImports.add(snapshot.create("import ", "text/x-java")); //NOI18N
+
+                    localImports.add(snapshot.create(pieceOfCode.getStartOffset() + startOffset,
+                            endOffset - startOffset,
+                            "text/x-java")); //NOI18N
+
+                    localImports.add(snapshot.create(";\n", "text/x-java")); //NOI18N
+
+                    String singleImport = importContent.substring(startOffset, endOffset).trim();
+                    localImportsFound.add(singleImport);
+                    startOffset = endOffset + 1;
+                    
+                } while (moreToProcess);
             } else {
                 pieceOfCode = extractCodeFromTagAttribute(tokenSequence,
                     Arrays.asList("jsp:useBean"), //NOI18N
