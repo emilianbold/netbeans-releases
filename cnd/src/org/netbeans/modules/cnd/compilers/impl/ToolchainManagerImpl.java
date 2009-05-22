@@ -604,11 +604,13 @@ public final class ToolchainManagerImpl {
                         if (descriptor.getDefaultLocations() != null) {
                             element = doc.createElement("default_locations"); // NOI18N
                             root.appendChild(element);
-                            for (Map.Entry<String, String> e : descriptor.getDefaultLocations().entrySet()) {
-                                Element p = doc.createElement("platform"); // NOI18N
-                                p.setAttribute("os", e.getKey()); // NOI18N
-                                p.setAttribute("directory", e.getValue()); // NOI18N
-                                element.appendChild(p);
+                            for (Map.Entry<String, List<String>> e : descriptor.getDefaultLocations().entrySet()) {
+                                for (String st : e.getValue()){
+                                    Element p = doc.createElement("platform"); // NOI18N
+                                    p.setAttribute("os", e.getKey()); // NOI18N
+                                    p.setAttribute("directory", st); // NOI18N
+                                    element.appendChild(p);
+                                }
                             }
                         }
                         CompilerDescriptor compiler;
@@ -1142,7 +1144,7 @@ public final class ToolchainManagerImpl {
         final String toolChainFileName;
         String toolChainName;
         String toolChainDisplay;
-        Map<String, String> default_locations;
+        Map<String, List<String>> default_locations;
         String family;
         String platforms;
         String driveLetterPrefix;
@@ -1580,9 +1582,14 @@ public final class ToolchainManagerImpl {
                     String dir_attr = getValue(attributes, "directory"); // NOI18N
                     if (os_attr != null && dir_attr != null) {
                         if (v.default_locations == null) {
-                            v.default_locations = new HashMap<String, String>();
+                            v.default_locations = new HashMap<String, List<String>>();
                         }
-                        v.default_locations.put(os_attr, dir_attr);
+                        List<String> value = v.default_locations.get(os_attr);
+                        if (value == null){
+                            value = new ArrayList<String>();
+                        }
+                        value.add(dir_attr);
+                        v.default_locations.put(os_attr, value);
                     }
                 }
                 return;
@@ -2068,7 +2075,7 @@ public final class ToolchainManagerImpl {
             return make;
         }
 
-        public Map<String, String> getDefaultLocations() {
+        public Map<String, List<String>> getDefaultLocations() {
             return v.default_locations;
         }
 

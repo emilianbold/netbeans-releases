@@ -66,7 +66,7 @@ public class ConfigurationDescriptorProvider {
     public static final String USG_PROJECT_CONFIG_CND = "USG_PROJECT_CONFIG_CND"; // NOI18N
     public static final String USG_PROJECT_OPEN_CND = "USG_PROJECT_OPEN_CND"; // NOI18N
     private FileObject projectDirectory;
-    private MakeConfigurationDescriptor projectDescriptor = null;
+    private volatile MakeConfigurationDescriptor projectDescriptor = null;
     private volatile boolean hasTried = false;
     private String relativeOffset = null;
 
@@ -349,6 +349,9 @@ public class ConfigurationDescriptorProvider {
                     if (projectDescriptor == null || !projectDescriptor.getModified()) {
                         // Don't reload if descriptor is modified in memory.
                         // This also prevents reloading when descriptor is being saved.
+                        if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
+                            new Exception("Mark to reload project descriptor MakeConfigurationDescriptor@"+System.identityHashCode(projectDescriptor)+" for project "+projectDirectory.getName()+" in ConfigurationDescriptorProvider@"+System.identityHashCode(this)).printStackTrace(); // NOI18N
+                        }
                         needReload = true;
                         hasTried = false;
                     }
