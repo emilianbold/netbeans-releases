@@ -317,6 +317,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
                             ref = MacroImpl.createSystemMacro(macroName, "", target, CsmMacro.Kind.USER_SPECIFIED);
                         } else {
                             ref = new MacroImpl(macroName, null, "", target, new OffsetableBase(target, mi.startOffset, mi.startOffset+macroName.length()), CsmMacro.Kind.DEFINED);
+                            org.netbeans.modules.cnd.modelimpl.csm.core.Utils.setSelfUID(ref);
                         }
                     }
                 }
