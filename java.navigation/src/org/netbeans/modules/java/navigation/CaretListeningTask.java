@@ -161,7 +161,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
             return;
         }
     
-        if ( element == null ) {
+        if ( element == null || inJavadoc ) {
             element = outerElement(compilationInfo, tp);
         }
         
