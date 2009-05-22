@@ -425,12 +425,7 @@ public class WSUtils {
         Preferences prefs = ProjectUtils.getPreferences(prj, MavenWebService.class,true);
         if (prefs != null) {
             // if client exists return true
-            if (prefs.get(MavenWebService.CLIENT_PREFIX+candidate.getId(), null) != null) {
-                return true;
-            // if service doesn't exist return true
-            } else if (prefs.get(MavenWebService.SERVICE_PREFIX+candidate.getId(), null) == null) {
-                return true;
-            } else {
+            if (prefs.get(MavenWebService.SERVICE_PREFIX+candidate.getId(), null) != null) {
                 return false;
             }
         }
