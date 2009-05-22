@@ -164,7 +164,7 @@ ExplorerManager.Provider, PropertyChangeListener {
                         int corder = getColumnOrder(columns[columnIndex]);
                         for (int i = 0; i < columnVisibleMap.length; i++) {
                             if (columnVisibleMap[i] == prefferedVisibleIndex) {
-                                if (corder > getColumnOrder(columns[i])) {
+                                if (corder > getColumnOrder(columns[i]) && !columns[i].isHidden()) {
                                     prefferedVisibleIndex++;
                                     break;
                                 }
@@ -208,7 +208,7 @@ ExplorerManager.Provider, PropertyChangeListener {
                     if (columnIndex != -1) {
                         columns[columnIndex].setHidden(true);
                         for (int i = 0; i < columnVisibleMap.length; i++) {
-                            if (columnVisibleMap[i] >= visibleIndex) {
+                            if (columnVisibleMap[i] >= visibleIndex && columnVisibleMap[i] > 0) {
                                 columnVisibleMap[i]--;
                             }
                         }
@@ -487,7 +487,7 @@ ExplorerManager.Provider, PropertyChangeListener {
             if (columns[i].isHidden()) {
                 int order = columnOrder[i];
                 for (int j = 0; j < columnVisibleMap.length; j++) {
-                    if (columnOrder[j] >= order) {
+                    if (columnOrder[j] >= order && columnVisibleMap[j] > 0) {
                         columnVisibleMap[j]--;
                     }
                 }
