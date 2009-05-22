@@ -2635,6 +2635,8 @@ public class CasualDiff {
           case JCTree.VARDEF:
               return diffVarDef((JCVariableDecl)oldT, (JCVariableDecl)newT, elementBounds);
           case JCTree.SKIP:
+              copyTo(elementBounds[0], elementBounds[1]);
+              retVal = elementBounds[1];
               break;
           case JCTree.BLOCK:
               retVal = diffBlock((JCBlock)oldT, (JCBlock)newT, elementBounds);
