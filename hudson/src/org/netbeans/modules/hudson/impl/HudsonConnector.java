@@ -107,7 +107,7 @@ public class HudsonConnector {
         Document docInstance = getDocument(instance.getUrl() + XML_API_URL + "?depth=1&xpath=/&exclude=//primaryView&exclude=//view[name='All']" +
                 "&exclude=//view/job/url&exclude=//view/job/color&exclude=//description&exclude=//job/build&exclude=//healthReport" +
                 "&exclude=//firstBuild&exclude=//keepDependencies&exclude=//nextBuildNumber&exclude=//property&exclude=//action" +
-                "&exclude=//upstreamProject&exclude=//downstreamProject"); // NOI18N
+                "&exclude=//upstreamProject&exclude=//downstreamProject&exclude=//queueItem"); // NOI18N
         
         if (null == docInstance)
             return new ArrayList<HudsonJob>();
@@ -242,7 +242,7 @@ public class HudsonConnector {
                         if (nodeName.equals(XML_API_NAME_ELEMENT)) {
                             cache.put(view.getName() + "/" + e.getFirstChild().getTextContent(), view); // NOI18N
                         } else {
-                            LOG.fine("unexpected <job> child: " + nodeName);
+                            LOG.fine("unexpected view <job> child: " + nodeName);
                         }
                     }
                 }
@@ -330,7 +330,7 @@ public class HudsonConnector {
                     }
                     job.addModule(name, displayName, color, url);
                 } else {
-                    LOG.fine("unexpected <job> child: " + nodeName);
+                    LOG.fine("unexpected global <job> child: " + nodeName);
                 }
             }
 
