@@ -50,6 +50,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import java.io.File;
 import java.io.IOException;
@@ -395,6 +396,59 @@ public class IfTest extends GeneratorTest {
         assertEquals(golden, res);
     }
     
+    public void test158154() throws Exception {
+        String test = "class Test {\n" +
+                      "    void m2(boolean b) {\n" +
+                      "        i|f (b); else \n" +
+                      "            System.out.println(\"hi\");\n" +
+                      "        \n" +
+                      "        i|f (b); else \n" +
+                      "            System.out.println(\"hi\");\n" +
+                      "        \n" +
+                      "    }\n" +
+                      "}";
+        String golden = "class Test {\n" +
+                      "    void m2(boolean b) {\n" +
+                      "        if (!(b)) {\n" +
+                      "            System.out.println(\"hi\");\n" +
+                      "        }\n" +
+                      "        if (!(b)) {\n" +
+                      "            System.out.println(\"hi\");\n" +
+                      "        }\n" +
+                      "    }\n" +
+                      "}";
+        testFile = new File(getWorkDir(), "Test.java");
+        final int indexA = test.indexOf("|");
+        final int indexB = test.lastIndexOf("|") - 1;
+        assertTrue(indexA != -1);
+        assertTrue(indexB != -1);
+        TestUtilities.copyStringToFile(testFile, test.replace("|", ""));
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy copy) throws Exception {
+                if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                    return;
+                }
+                Tree nodeA = copy.getTreeUtilities().pathFor(indexA).getLeaf();
+                Tree nodeB = copy.getTreeUtilities().pathFor(indexB).getLeaf();
+                for (Tree n : new Tree[]{nodeA, nodeB}) {
+                    assertEquals(Kind.IF, n.getKind());
+                    TreeMaker make = copy.getTreeMaker();
+                    IfTree original = (IfTree) n;
+                    IfTree modified = make.If(
+                            make.Parenthesized(
+                            make.Unary(Kind.LOGICAL_COMPLEMENT, original.getCondition())),
+                            original.getElseStatement(), null);
+                    copy.rewrite(n, modified);
+                }
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }
