@@ -85,9 +85,9 @@ import org.openide.util.NbBundle;
  */
 public class ChatPanel extends javax.swing.JPanel {
 
-    MultiUserChat muc;
+    private MultiUserChat muc;
     private final HTMLEditorKit editorKit;
-    private String[][] smileysMap = new String[][] {
+    private static final String[][] smileysMap = new String[][] {
         {"8)", "cool"},
         {"8-)", "cool"},
         {":]", "grin"},
