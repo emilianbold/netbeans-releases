@@ -155,7 +155,7 @@ public class ChatTopComponent extends TopComponent {
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
-                    if (chats.getTabCount()==1 && b)
+                    if (chats.getTabCount()==1 && b && chats.isShowing())
                         showPopup(null);
                 }
             });
