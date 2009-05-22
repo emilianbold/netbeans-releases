@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
     </default_locations>
     <c>
         <compiler name="cc"/>
-        <recognizer pattern="/opt/SunStudioExpress"/>
+        <recognizer pattern=".*(SunStudioExpress|/prod/bin)" or_exist_folder="../prod"/>
         <version flags="-V" pattern=".*Sun Ceres C 5.10"/>
         <system_include_paths flags="-xdryrun -E" parser="Sun"/>
         <system_macros flags="-xdryrun -E" parser="Sun"/>
@@ -102,7 +102,7 @@ made subject to such option by the copyright holder.
     </c>
     <cpp>
         <compiler name="CC"/>
-        <recognizer pattern="/opt/SunStudioExpress"/>
+        <recognizer pattern=".*(SunStudioExpress|/prod/bin)" or_exist_folder="../prod"/>
         <version flags="-V" pattern=".*Sun Ceres C++ 5.10"/>
         <system_include_paths flags="-xdryrun -E" parser="Sun"/>
         <system_macros flags="c" parser="Sun"/>
@@ -158,7 +158,7 @@ made subject to such option by the copyright holder.
     </cpp>
     <fortran>
         <compiler name="ffortran,f95,f90,f77"/>
-        <recognizer pattern="/opt/SunStudioExpress"/>
+        <recognizer pattern=".*(SunStudioExpress|/prod/bin)" or_exist_folder="../prod"/>
         <version flags="-V" pattern=".*Sun Ceres Fortran 95 8.3"/>
         <development_mode>
             <fast_build flags=""/>
