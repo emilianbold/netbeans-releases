@@ -41,8 +41,7 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import java.util.Collection;
-import java.util.List;
+import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 
@@ -62,6 +61,6 @@ public interface APTMacroMap extends APTMacroCallback {
     /** 
      * APTWalker context methods to (un)define macros 
      */    
-    public void define(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType);
+    public void define(APTFile file, APTDefine define, Kind macroType);
     public void undef(APTFile file, APTToken name);
 }

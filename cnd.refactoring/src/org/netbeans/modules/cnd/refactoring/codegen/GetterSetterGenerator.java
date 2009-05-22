@@ -91,17 +91,24 @@ public class GetterSetterGenerator implements CodeGenerator {
             Map<CsmClass, List<ElementNode.Description>> gDescriptions = new LinkedHashMap<CsmClass, List<ElementNode.Description>>();
             Map<CsmClass, List<ElementNode.Description>> sDescriptions = new LinkedHashMap<CsmClass, List<ElementNode.Description>>();
             Map<CsmClass, List<ElementNode.Description>> gsDescriptions = new LinkedHashMap<CsmClass, List<ElementNode.Description>>();
+            Boolean isUpperCase = null;
             for (CsmMember member : GeneratorUtils.getAllMembers(typeElement)) {
                 if (CsmKindUtilities.isMethod(member)) {
                     CsmMethod method = (CsmMethod)member;
-                    List<CsmMethod> l = methods.get(method.getName().toString());
+                    String name = method.getName().toString();
+                    List<CsmMethod> l = methods.get(name);
                     if (l == null) {
                         l = new ArrayList<CsmMethod>();
                         methods.put(method.getName().toString(), l);
                     }
                     l.add(method);
+                    if (isUpperCase == null) {
+                        isUpperCase = GeneratorUtils.checkStartWithUpperCase(method);
+                    }
                 }
             }
+            isUpperCase = isUpperCase != null ? isUpperCase : Boolean.TRUE;
+            
             ElementNode.Description theFirstDescription = null;
             for (CsmMember member : GeneratorUtils.getAllMembers(typeElement)) {
                 if (CsmKindUtilities.isField(member)) {
@@ -110,8 +117,8 @@ public class GetterSetterGenerator implements CodeGenerator {
                     if (theFirstDescription == null) {
                         theFirstDescription = description;
                     }
-                    boolean hasGetter = GeneratorUtils.hasGetter(variableElement, methods);
-                    boolean hasSetter = GeneratorUtils.isConstant(variableElement) || GeneratorUtils.hasSetter(variableElement, methods);
+                    boolean hasGetter = GeneratorUtils.hasGetter(variableElement, methods, isUpperCase);
+                    boolean hasSetter = GeneratorUtils.isConstant(variableElement) || GeneratorUtils.hasSetter(variableElement, methods, isUpperCase);
                     if (!hasGetter) {
                         List<ElementNode.Description> descriptions = gDescriptions.get(variableElement.getContainingClass());
                         if (descriptions == null) {
@@ -140,15 +147,15 @@ public class GetterSetterGenerator implements CodeGenerator {
             }
             if (!gDescriptions.isEmpty()) {
                 List<ElementNode.Description> descriptions = prepareDescriptions(gDescriptions);
-                ret.add(new GetterSetterGenerator(component, path, ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.Kind.GETTERS_ONLY));
+                ret.add(new GetterSetterGenerator(component, path, ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.Kind.GETTERS_ONLY, isUpperCase));
             }
             if (!sDescriptions.isEmpty()) {
                 List<ElementNode.Description> descriptions = prepareDescriptions(sDescriptions);
-                ret.add(new GetterSetterGenerator(component, path, ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.Kind.SETTERS_ONLY));
+                ret.add(new GetterSetterGenerator(component, path, ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.Kind.SETTERS_ONLY, isUpperCase));
             }
             if (!gsDescriptions.isEmpty()) {
                 List<ElementNode.Description> descriptions = prepareDescriptions(gsDescriptions);
-                ret.add(new GetterSetterGenerator(component, path, ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.Kind.GETTERS_SETTERS));
+                ret.add(new GetterSetterGenerator(component, path, ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.Kind.GETTERS_SETTERS, isUpperCase));
             }
             return ret;
         }
@@ -174,13 +181,15 @@ public class GetterSetterGenerator implements CodeGenerator {
     private final ElementNode.Description description;
     private final GeneratorUtils.Kind type;
     private final CsmContext contextPath;
+    private final boolean isUpperCase;
 
     /** Creates a new instance of GetterSetterGenerator */
-    private GetterSetterGenerator(JTextComponent component, CsmContext path, ElementNode.Description description, GeneratorUtils.Kind type) {
+    private GetterSetterGenerator(JTextComponent component, CsmContext path, ElementNode.Description description, GeneratorUtils.Kind type, boolean isUpperCase) {
         this.component = component;
         this.contextPath = path;
         this.description = description;
         this.type = type;
+        this.isUpperCase = isUpperCase;
     }
 
     public String getDisplayName() {
@@ -200,7 +209,7 @@ public class GetterSetterGenerator implements CodeGenerator {
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.setVisible(true);
         if (dialogDescriptor.getValue() == dialogDescriptor.getDefaultValue()) {
-            GeneratorUtils.generateGettersAndSetters(contextPath, panel.getVariables(), panel.isMethodInline(), type);
+            GeneratorUtils.generateGettersAndSetters(contextPath, panel.getVariables(), panel.isMethodInline(), type, isUpperCase);
         }
     }
 }

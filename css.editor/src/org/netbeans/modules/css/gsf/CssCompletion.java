@@ -109,7 +109,13 @@ public class CssCompletion implements CodeCompletionHandler {
 
         assert ts != null;
 
-        ts.move(caretOffset - prefix.length());
+        int offset = caretOffset - prefix.length();
+        int astOffset = snapshot.getEmbeddedOffset(offset);
+        if(astOffset == -1) {
+            return null;
+        }
+
+        ts.move(astOffset);
         boolean hasNext = ts.moveNext();
 
         SimpleNode root = info.root();
@@ -173,12 +179,14 @@ public class CssCompletion implements CodeCompletionHandler {
             }
         } else if (node.kind() == CssParserTreeConstants.JJTIMPORTRULE || node.kind() == CssParserTreeConstants.JJTMEDIARULE || node.kind() == CssParserTreeConstants.JJTPAGERULE || node.kind() == CssParserTreeConstants.JJTCHARSETRULE || node.kind() == CssParserTreeConstants.JJTFONTFACERULE) {
             //complete at keywords with prefix - parse tree OK
-            TokenId id = ts.token().id();
-            if (id == CssTokenId.IMPORT_SYM || id == CssTokenId.MEDIA_SYM || id == CssTokenId.PAGE_SYM || id == CssTokenId.CHARSET_SYM || id == CssTokenId.FONT_FACE_SYM) {
-                //we are on the right place in the node
+            if(hasNext) {
+                TokenId id = ts.token().id();
+                if (id == CssTokenId.IMPORT_SYM || id == CssTokenId.MEDIA_SYM || id == CssTokenId.PAGE_SYM || id == CssTokenId.CHARSET_SYM || id == CssTokenId.FONT_FACE_SYM) {
+                    //we are on the right place in the node
 
-                Collection<String> possibleValues = filterStrings(AT_RULES, prefix);
-                return wrapRAWValues(possibleValues, CompletionItemKind.VALUE, snapshot.getOriginalOffset(node.startOffset()));
+                    Collection<String> possibleValues = filterStrings(AT_RULES, prefix);
+                    return wrapRAWValues(possibleValues, CompletionItemKind.VALUE, snapshot.getOriginalOffset(node.startOffset()));
+                }
             }
 
         } else if (node.kind() == CssParserTreeConstants.JJTPROPERTY && (prefix.length() > 0 || astCaretOffset == node.startOffset())) {

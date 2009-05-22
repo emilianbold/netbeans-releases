@@ -386,7 +386,7 @@ class LineTranslations {
         private synchronized void update() {
             updatingLine = true;
             try {
-                lb.setLineNumber(line.getLineNumber() + 1);
+                lb.setLineNumberNoOld(line.getLineNumber() + 1);
             } finally {
                 updatingLine = false;
             }
