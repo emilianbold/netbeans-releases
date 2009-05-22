@@ -102,7 +102,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
         APTDefine defineNode = (APTDefine) apt;
         APTToken name = defineNode.getName();
         if (name != null) {
-            MacroInfo mi = new MacroInfo(csmFile, defineNode.getOffset(), defineNode.getEndOffset(), null);
+            MacroInfo mi = new MacroInfo(csmFile, defineNode.getOffset(), null);
             CsmReference mf = new MacroReference(csmFile, name, mi);
             references.add(mf);
         }
@@ -178,7 +178,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
                         if (mi == null) {
                             CsmFile macroContainter = getMacroFile(m);
                             if (macroContainter != null) {
-                                mi = new MacroInfo(macroContainter, m.getName().getOffset(), m.getName().getEndOffset(), m.getFile());
+                                mi = new MacroInfo(macroContainter, m.getDefineNode().getOffset(), m.getFile());
                             }
                         }
                         if (mi != null) {
@@ -306,7 +306,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
                     CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(macroName, true, true, false);
                     for (Iterator<CsmMacro> it = CsmSelect.getMacros(target, filter); it.hasNext();) {
                         CsmMacro macro = it.next();
-                        if (macro!=null && Math.abs(mi.startOffset - macro.getStartOffset()) < 9 ) {
+                        if (macro!=null && mi.startOffset == macro.getStartOffset()) {
                             ref = macro;
                         }
                     }
@@ -316,7 +316,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
                         if (target instanceof Unresolved.UnresolvedFile) {
                             ref = MacroImpl.createSystemMacro(macroName, "", target, CsmMacro.Kind.USER_SPECIFIED);
                         } else {
-                            ref = new MacroImpl(macroName, null, "", target, new OffsetableBase(target, mi.startOffset, mi.endOffset), CsmMacro.Kind.DEFINED);
+                            ref = new MacroImpl(macroName, null, "", target, new OffsetableBase(target, mi.startOffset, mi.startOffset+macroName.length()), CsmMacro.Kind.DEFINED);
                         }
                     }
                 }

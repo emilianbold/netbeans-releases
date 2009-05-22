@@ -52,6 +52,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
+import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
@@ -111,11 +112,12 @@ public class APTFileMacroMap extends APTBaseMacroMap {
     }
 
     @Override
-    public void define(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
+    public void define(APTFile file, APTDefine define, Kind macroType) {
+        APTToken name = define.getName();
         if (false && sysMacroMap != null && sysMacroMap.isDefined(name)) { // disable for IZ#124635
             // TODO: report error about redefining system macros
         } else {
-            super.define(file, name, params, value, Kind.DEFINED);
+            super.define(file, define, Kind.DEFINED);
             macroCache.remove(name.getTextID());
         }
     }
@@ -129,8 +131,8 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         macroCache.remove(name.getTextID());
     }
 
-    protected APTMacro createMacro(CharSequence file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
-        APTMacro macro = new APTMacroImpl(file, name, params, value, macroType);
+    protected APTMacro createMacro(CharSequence file, APTDefine define, Kind macroType) {
+        APTMacro macro = new APTMacroImpl(file, define, macroType);
         APTMacro prev = null;
         if (APTTraceFlags.APT_SHARE_MACROS) {
             ConcurrentMap<APTMacro, APTMacro> sharedMap = getSharedMap();
