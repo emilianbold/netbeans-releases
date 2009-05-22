@@ -125,14 +125,14 @@ public class ConfigurationDescriptorProvider {
 
                         ConfigurationXMLReader reader = new ConfigurationXMLReader(projectDirectory);
 
-                        if (waitReading && SwingUtilities.isEventDispatchThread()) {
-                            new Exception("Not allowed to use EDT for reading XML descriptor of project!" + projectDirectory).printStackTrace(System.err); // NOI18N
-                            // PLEASE DO NOT ADD HACKS like Task.waitFinished()
-                            // CHANGE YOUR LOGIC INSTEAD
-                        
-                            // FIXUP for IZ#146696: cannot open projects: Not allowed to use EDT...
-                            // return null;
-                        }
+//                        if (waitReading && SwingUtilities.isEventDispatchThread()) {
+//                            new Exception("Not allowed to use EDT for reading XML descriptor of project!" + projectDirectory).printStackTrace(System.err); // NOI18N
+//                            // PLEASE DO NOT ADD HACKS like Task.waitFinished()
+//                            // CHANGE YOUR LOGIC INSTEAD
+//
+//                            // FIXUP for IZ#146696: cannot open projects: Not allowed to use EDT...
+//                            // return null;
+//                        }
                         try {
                             MakeConfigurationDescriptor newDescriptor = reader.read(relativeOffset);
                             if (projectDescriptor == null || newDescriptor == null) {
