@@ -695,8 +695,6 @@ public class CompilerSetManager {
         if (remoteInitialization != null) {
             return;
         }
-        final CompilerSetProvider provider = CompilerSetProviderFactory.createNew(executionEnvironment);
-        assert provider != null;
         ServerRecord record = ServerList.get(executionEnvironment);
         assert record != null;
 
@@ -720,6 +718,9 @@ public class CompilerSetManager {
                     //            CompilerSetReporter.canReport(),System.identityHashCode(CompilerSetManager.this));
                     //}
                     try {
+                        final CompilerSetProvider provider = CompilerSetProviderFactory.createNew(executionEnvironment);
+                        assert provider != null;
+                        provider.init();
                         platform = provider.getPlatform();
                         CompilerSetReporter.report("CSM_ValPlatf", true, PlatformTypes.toString(platform)); //NOI18N
                         CompilerSetReporter.report("CSM_LFTC"); //NOI18N
