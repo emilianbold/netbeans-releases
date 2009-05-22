@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.cnd.gizmo;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -53,6 +52,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  */
 public final class SunStudioLocatorCndImpl implements SunStudioLocator {
 
+    private static final String BIN = "/bin"; // NOI18N
     private final ExecutionEnvironment env;
 
     public SunStudioLocatorCndImpl(ExecutionEnvironment env) {
@@ -71,11 +71,10 @@ public final class SunStudioLocatorCndImpl implements SunStudioLocator {
                 continue;
             }
             String binDir = compilerSet.getDirectory();
-            String baseDir = new File(binDir).getParent();
-            //collectionsDirectories.add(baseDir);
-            result.add(new SunStudioDescription(baseDir));
+            if (binDir.endsWith(BIN)) {
+                result.add(new SunStudioDescription(binDir.substring(0, binDir.length() - BIN.length())));
+            }
         }
         return result;
-    //throw new UnsupportedOperationException("Not supported yet.");
     }
 }
