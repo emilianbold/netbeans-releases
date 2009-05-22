@@ -84,7 +84,7 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
     static {
         try {
             Class driver = Class.forName("org.h2.Driver"); // NOI18N
-            logger.info("Driver for H2DB (" + driver.getName() + ") Loaded "); // NOI18N
+            logger.fine("Driver for H2DB (" + driver.getName() + ") Loaded "); // NOI18N
         } catch (ClassNotFoundException ex) {
             logger.log(Level.SEVERE, null, ex);
         }
