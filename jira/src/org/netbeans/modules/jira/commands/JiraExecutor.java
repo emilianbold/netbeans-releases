@@ -123,7 +123,7 @@ public class JiraExecutor {
             if(handleExceptions) {
                 if(handler.handle()) {
                     // execute again
-                    execute(cmd);
+                    execute(cmd, handleExceptions, ensureConfiguration);
                 }
             }
             return;
