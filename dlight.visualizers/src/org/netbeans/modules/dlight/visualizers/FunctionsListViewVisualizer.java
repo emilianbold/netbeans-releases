@@ -144,8 +144,10 @@ public class FunctionsListViewVisualizer extends JPanel implements
 //    private final FocusTraversalPolicy focusPolicy = new FocusTraversalPolicyImpl() ;
     private JComponent lastFocusedComponent = null;
     private Map<Integer, Boolean> ascColumnValues = new HashMap<Integer, Boolean>();
+    private final SourceSupportProvider sourceSupportProvider;
 
     public FunctionsListViewVisualizer(FunctionsListDataProvider dataProvider, FunctionsListViewVisualizerConfiguration configuration) {
+        sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
         visSupport = new VisualizersSupport(new VisualizerImplSessionStateListener());
         explorerManager = new ExplorerManager();
         this.configuration = configuration;
@@ -697,7 +699,6 @@ public class FunctionsListViewVisualizer extends JPanel implements
         private boolean goToSource() {
             SourceFileInfo source = getSource();
             if (source != null && source.isSourceKnown()) {
-                SourceSupportProvider sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
                 sourceSupportProvider.showSource(source);
                 return true;
             } else {

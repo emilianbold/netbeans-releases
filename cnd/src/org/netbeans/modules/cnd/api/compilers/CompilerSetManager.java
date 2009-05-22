@@ -695,8 +695,6 @@ public class CompilerSetManager {
         if (remoteInitialization != null) {
             return;
         }
-        final CompilerSetProvider provider = CompilerSetProviderFactory.createNew(executionEnvironment);
-        assert provider != null;
         ServerRecord record = ServerList.get(executionEnvironment);
         assert record != null;
 
@@ -720,6 +718,9 @@ public class CompilerSetManager {
                     //            CompilerSetReporter.canReport(),System.identityHashCode(CompilerSetManager.this));
                     //}
                     try {
+                        final CompilerSetProvider provider = CompilerSetProviderFactory.createNew(executionEnvironment);
+                        assert provider != null;
+                        provider.init();
                         platform = provider.getPlatform();
                         CompilerSetReporter.report("CSM_ValPlatf", true, PlatformTypes.toString(platform)); //NOI18N
                         CompilerSetReporter.report("CSM_LFTC"); //NOI18N
@@ -781,7 +782,10 @@ public class CompilerSetManager {
             task.addTaskListener(new TaskListener() {
                 public void taskFinished(org.openide.util.Task task) {
                     log.fine("Code Model Ready for " + CompilerSetManager.this.toString());
-                    CompilerSetManagerEvents.get(executionEnvironment).runTasks();
+                    // FIXUP: this server has been probably deleted; TODO: provide return statis from loader
+                    if (!ServerList.get(executionEnvironment).isDeleted()) {
+                        CompilerSetManagerEvents.get(executionEnvironment).runTasks();
+                    }
                 }
             });
             task.schedule(0);

@@ -123,6 +123,15 @@ public class VectorConfiguration<E> {
     }
 
     @Override
+    public int hashCode() {
+        int code = 3;
+        for (Object obj : getValue()) {
+            code = 17 * code + obj.hashCode();
+        }
+        return code;
+    }
+
+    @Override
     public VectorConfiguration<E> clone() {
         VectorConfiguration<E> clone = new VectorConfiguration<E>(master);
         clone.setValue(new ArrayList<E>(getValue()));

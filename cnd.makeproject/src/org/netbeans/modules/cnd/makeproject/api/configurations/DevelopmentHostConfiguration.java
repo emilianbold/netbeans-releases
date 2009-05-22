@@ -146,12 +146,19 @@ public class DevelopmentHostConfiguration {
         // User will be asked about connection after choosing action like build for this particular project
         // or after click on brand-new "..." button!
         addDevelopmentHost(v);
-        servers = ServerList.getEnvironments();
         setValueImpl(v, firePC);
     }
 
     public boolean setHost(ExecutionEnvironment execEnv) {
         CndUtils.assertTrue(execEnv != null);
+        if (setHostImpl(execEnv)) {
+            return true;
+        }
+        addDevelopmentHost(execEnv);
+        return setHostImpl(execEnv);
+    }
+
+    private boolean setHostImpl(ExecutionEnvironment execEnv) {
         for (int i = 0; i < servers.size(); i++) {
             if (servers.get(i).equals(execEnv)) {
                 value = i;
@@ -190,7 +197,12 @@ public class DevelopmentHostConfiguration {
     }
 
     private boolean addDevelopmentHost(String host) {
-        final ServerRecord record = ServerList.addServer(ExecutionEnvironmentFactory.fromUniqueID(host), null, RemoteSyncFactory.getDefault(), false, false);
+        return addDevelopmentHost(ExecutionEnvironmentFactory.fromUniqueID(host));
+    }
+
+    private boolean addDevelopmentHost(ExecutionEnvironment execEnv) {
+        final ServerRecord record = ServerList.addServer(execEnv, null, RemoteSyncFactory.getDefault(), false, false);
+        servers = ServerList.getEnvironments();
         return record != null;
     }
 

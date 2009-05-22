@@ -208,6 +208,22 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
         }
     }
 
+    @Override
+    protected void handleDelete() throws IOException {
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("handleDelete()");
+        }
+        PropertiesOpen openCookie = (PropertiesOpen) getCookie(OpenCookie.class);
+        if (openCookie != null) {
+            openCookie.removeModifiedListener(this);
+//            openCookie.close();
+            bundleStructure = null;
+            openSupport = null;
+        }
+        super.handleDelete();
+    }
+
+
     /** Moves primary and secondary files to a new folder.
      * Overrides superclass method.
      * @param df the new folder

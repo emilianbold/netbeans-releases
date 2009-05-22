@@ -262,7 +262,9 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
     private static final Set<String> UNDERLINE_IDENTIFIER = new HashSet<String>(Arrays.asList(
             "compiler.err.local.var.accessed.from.icls.needs.final",
             "compiler.err.var.might.not.have.been.initialized",
-            "compiler.err.report.access"
+            "compiler.err.report.access",
+            "compiler.err.does.not.override.abstract",
+            "compiler.err.abstract.cant.be.instantiated"
     ));
     
     private static final Set<JavaTokenId> WHITESPACE = EnumSet.of(JavaTokenId.BLOCK_COMMENT, JavaTokenId.JAVADOC_COMMENT, JavaTokenId.LINE_COMMENT, JavaTokenId.WHITESPACE);
@@ -352,6 +354,12 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
                     t = ts.token();
                 }
                 
+                if (t.id() == JavaTokenId.CLASS) {
+                    while (ts.moveNext() && WHITESPACE.contains(ts.token().id()))
+                        ;
+                    t = ts.token();
+                }
+
                 if (t.id() == JavaTokenId.IDENTIFIER) {
                     int[] span = translatePositions(info, new int[] {ts.offset(), ts.offset() + t.length()});
                     

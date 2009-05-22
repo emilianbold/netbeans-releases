@@ -64,7 +64,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.ToolchainProject;
@@ -78,7 +77,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
@@ -134,6 +132,8 @@ import org.w3c.dom.Text;
 )
 public final class MakeProject implements Project, AntProjectListener {
 
+    public static final boolean TRACE_MAKE_PROJECT_CREATION = Boolean.getBoolean("cnd.make.project.creation.trace"); // NOI18N
+
 //    private static final Icon MAKE_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif")); // NOI18N
     private static final String HEADER_EXTENSIONS = "header-extensions"; // NOI18N
     private static final String C_EXTENSIONS = "c-extensions"; // NOI18N
@@ -156,11 +156,17 @@ public final class MakeProject implements Project, AntProjectListener {
     private final MutableCP sourcepath;
 
     public MakeProject(AntProjectHelper helper) throws IOException {
+        if (TRACE_MAKE_PROJECT_CREATION){
+            System.err.println("Start of creation MakeProject@"+System.identityHashCode(this)+" "+helper.getProjectDirectory().getName()); // NOI18N
+        }
         this.helper = helper;
         eval = createEvaluator();
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, eval);
         projectDescriptorProvider = new ConfigurationDescriptorProvider(helper.getProjectDirectory());
+        if (TRACE_MAKE_PROJECT_CREATION){
+            System.err.println("Create ConfigurationDescriptorProvider@"+System.identityHashCode(projectDescriptorProvider)+" for MakeProject@"+System.identityHashCode(this)+" "+helper.getProjectDirectory().getName()); // NOI18N
+        }
         genFilesHelper = new GeneratedFilesHelper(helper);
         sources = new MakeSources(this, helper);
         sourcepath = new MutableCP(sources);
@@ -183,6 +189,9 @@ public final class MakeProject implements Project, AntProjectListener {
 
         if (templateListener == null) {
             DataLoaderPool.getDefault().addOperationListener(templateListener = new MakeTemplateListener());
+        }
+        if (TRACE_MAKE_PROJECT_CREATION){
+            System.err.println("End of creation MakeProject@"+System.identityHashCode(this)+" "+helper.getProjectDirectory().getName()); // NOI18N
         }
     }
 
@@ -505,10 +514,10 @@ public final class MakeProject implements Project, AntProjectListener {
         }
 
         public String[] getPrivilegedTemplates() {
-            ConfigurationDescriptor configurationDescriptor =
+            MakeConfigurationDescriptor configurationDescriptor =
                     configurationProvider.getConfigurationDescriptor(false);
             if (configurationDescriptor != null) {
-                MakeConfiguration conf = (MakeConfiguration)configurationDescriptor.getConfs().getActive();
+                MakeConfiguration conf = configurationDescriptor.getActiveConfiguration();
                 if (conf != null && conf.isQmakeConfiguration()) {
                     return PRIVILEGED_NAMES_QT;
                 }
@@ -598,12 +607,9 @@ public final class MakeProject implements Project, AntProjectListener {
     /** NPE-safe method for getting active configuration */
     public MakeConfiguration getActiveConfiguration() {
         if (projectDescriptorProvider.gotDescriptor()) {
-            MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
+            MakeConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
             if (projectDescriptor != null) {
-                Configurations confs = projectDescriptor.getConfs();
-                if (confs != null) {
-                    return (MakeConfiguration) confs.getActive();
-                }
+                return projectDescriptor.getActiveConfiguration();
             }
         }
         return null;
@@ -752,13 +758,13 @@ public final class MakeProject implements Project, AntProjectListener {
                     }
                 }
             }
-            if (OpenProjects.getDefault().isProjectOpen(MakeProject.this)){
-                DevelopmentHostConfiguration devHost = getDevelopmentHostConfiguration();
-                if (devHost != null && ! devHost.isLocalhost()) {
-                    name = NbBundle.getMessage(getClass(), "PRJ_DISPLAY_NAME",
-                            name, devHost.getHostDisplayName(false));
-                }
-            }
+//            if (OpenProjects.getDefault().isProjectOpen(MakeProject.this)){
+//                DevelopmentHostConfiguration devHost = getDevelopmentHostConfiguration();
+//                if (devHost != null && ! devHost.isLocalhost()) {
+//                    name = NbBundle.getMessage(getClass(), "PRJ_DISPLAY_NAME",
+//                            name, devHost.getHostDisplayName(false));
+//                }
+//            }
             return name;
         }
 
@@ -906,7 +912,7 @@ public final class MakeProject implements Project, AntProjectListener {
         public MakeArtifact[] getBuildArtifacts() {
             List<MakeArtifact> artifacts = new ArrayList<MakeArtifact>();
 
-            MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
+            MakeConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
             Configuration[] confs = projectDescriptor.getConfs().getConfs();
 
 //            String projectLocation = null;
@@ -940,7 +946,7 @@ public final class MakeProject implements Project, AntProjectListener {
         }
 
         public Iterator<DataObject> objectsToSearch() {
-            MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
+            MakeConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
             Folder rootFolder = projectDescriptor.getLogicalFolders();
             return rootFolder.getAllItemsAsDataObjectSet(false, "text/").iterator(); // NOI18N
         }

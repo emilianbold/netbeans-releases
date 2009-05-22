@@ -120,7 +120,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                         "last-v3ee6-install-root",  // NOI18N
                         new String[] { "lib"+File.separator+"schemas"+File.separator+"web-app_3_0.xsd" }, // NOI18N
                         new String[0],
-                        true);
+                        true, new String[] { "docs/javadocee6.jar"} );
             }
         }
         return ee6Provider;
@@ -158,7 +158,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     "last-install-root", // NOI18N
                     new String[0],
                     new String[] { "lib"+File.separator+"schemas"+File.separator+"web-app_3_0.xsd" }, // NOI18N
-                    false);
+                    false,
+                    new String[] { "docs/javaee5-doc-api.zip" });
         }
         return preludeProvider;
     }
@@ -180,11 +181,13 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     private String[] requiredFiles;
     private String[] excludedFiles;
     private boolean needsJdk6;
+    private String[] javadocFilenames;
 
     private GlassfishInstanceProvider(String[] uriFragments, String[] instancesDirNames,
             String displayName, String propName, String defaultName, String personalName,
             String installName, String direct, String indirect, String prefKey,
-            String[] requiredFiles, String[] excludedFiles, boolean needsJdk6) {
+            String[] requiredFiles, String[] excludedFiles, boolean needsJdk6,
+            String[] javadocFilenames) {
         this.instancesDirNames = instancesDirNames;
         this.displayName = displayName;
         this.uriFragments = uriFragments;
@@ -198,6 +201,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         this.requiredFiles = requiredFiles;
         this.excludedFiles = excludedFiles;
         this.needsJdk6 = needsJdk6;
+        this.javadocFilenames = javadocFilenames;
         //init();
     }
 
@@ -218,6 +222,10 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         if (null != firstInstance) {
             catalog.refreshRunTimeDDCatalog(gip, firstInstance.getGlassfishRoot());
         }
+    }
+
+    public String[] getAssociatedJavaDoc() {
+        return javadocFilenames.clone();
     }
 
     private GlassfishInstance getFirstServerInstance() {
