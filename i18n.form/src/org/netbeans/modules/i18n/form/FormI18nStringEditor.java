@@ -157,8 +157,8 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
         if (value instanceof String || value == null) {
             return (String) value;
         }
-        
-        updateValue((FormI18nString) value);
+//        Commented to get rid of regression appeared #164369
+//        updateValue((FormI18nString) value);
         FormI18nString i18nString = (FormI18nString) value;
         return i18nString.getValue();
     }

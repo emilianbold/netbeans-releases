@@ -200,11 +200,22 @@ public class RetoucheUtils {
 
     /** Return the most distant method in the hierarchy that is overriding the given method, or null */
     public static IndexedMethod getOverridingMethod(RubyElementCtx element, ParserResult info) {
-        RubyIndex index = RubyIndex.get(info);
-        String fqn = AstUtilities.getFqnName(element.getPath());
+        return getOverridingMethod(element, RubyIndex.get(info));
+    }
 
+    /** Return the most distant method in the hierarchy that is overriding the given method, or null */
+    public static IndexedMethod getOverridingMethod(RubyElementCtx element, FileObject fo) {
+        return getOverridingMethod(element, RubyIndex.get(fo));
+    }
+
+    private static IndexedMethod getOverridingMethod(RubyElementCtx element, RubyIndex index) {
+        if (index == null) {
+            return null;
+        }
+        String fqn = AstUtilities.getFqnName(element.getPath());
         return index.getOverridingMethod(fqn, element.getName());
     }
+
 
     public static String getHtml(String text) {
         StringBuffer buf = new StringBuffer();
