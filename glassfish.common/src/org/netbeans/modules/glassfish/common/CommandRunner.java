@@ -52,8 +52,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -125,17 +127,64 @@ public class CommandRunner extends BasicTask<OperationState> {
     public Map<String, List<AppDesc>> getApplications(String container) {
         Map<String, List<AppDesc>> result = Collections.emptyMap();
         try {
-            Commands.ListAppsCommand cmd = new Commands.ListAppsCommand(container);
+            Map<String, List<String>> apps = Collections.emptyMap();
+            Commands.ListComponentsCommand cmd = new Commands.ListComponentsCommand(container);
             serverCmd = cmd;
             Future<OperationState> task = executor().submit(this);
             OperationState state = task.get();
             if (state == OperationState.COMPLETED) {
-                result = cmd.getApplicationMap();
+                apps = cmd.getApplicationMap();
+            }
+            ServerCommand.GetPropertyCommand getCmd = new ServerCommand.GetPropertyCommand("applications.application.*");
+            serverCmd = getCmd;
+            task = executor().submit(this);
+            state = task.get();
+            if (state == OperationState.COMPLETED) {
+                result = processApplications(apps, getCmd.getData());
             }
         } catch (InterruptedException ex) {
             Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
         } catch (ExecutionException ex) {
             Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
+        }
+        return result;
+    }
+
+    private Map<String, List<AppDesc>> processApplications(Map<String, List<String>> appsList, Map<String, String> properties){
+        Map<String, List<AppDesc>> result = new HashMap<String, List<AppDesc>>();
+        Iterator<String> appsItr = appsList.keySet().iterator();
+        while (appsItr.hasNext()) {
+            String engine = appsItr.next();
+            List<String> apps = appsList.get(engine);
+            for (int i = 0; i < apps.size(); i++) {
+                String name = apps.get(i).trim();
+                String appname = "applications.application." + name; // NOI18N
+                String contextKey = appname + ".context-root"; // NOI18N
+                String pathKey = appname + ".location"; // NOI18N
+
+                String contextRoot = properties.get(contextKey);
+                if (contextRoot == null) {
+                    contextRoot = name;
+                }
+                if (contextRoot.startsWith("/")) {  // NOI18N
+                    contextRoot = contextRoot.substring(1);
+                }
+
+                String path = properties.get(pathKey);
+                if (path == null) {
+                    path = "unknown"; //NOI18N
+                }
+                if (path.startsWith("file:")) {  // NOI18N
+                    path = path.substring(5);
+                }
+
+                List<AppDesc> appList = result.get(engine);
+                if(appList == null) {
+                    appList = new ArrayList<AppDesc>();
+                    result.put(engine, appList);
+                }
+                appList.add(new AppDesc(name, path, contextRoot));
+            }
         }
         return result;
     }
