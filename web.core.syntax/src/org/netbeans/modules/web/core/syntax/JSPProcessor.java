@@ -98,7 +98,7 @@ public abstract class JSPProcessor {
                 for (TagAttributeInfo info : pageInfo.getTagInfo().getAttributes()){
                     if (info.getTypeName() != null){ // will be null e.g. for fragment attrs
                         if (!localBeans.contains(info.getName())){
-                            beanDeclarationsBuff.append(info.getTypeName() + "2 " + info.getName() + ";\n"); //NOI18N
+                            beanDeclarationsBuff.append(info.getTypeName() + " " + info.getName() + ";\n"); //NOI18N
                         }
                     }
                 }
