@@ -103,8 +103,8 @@ public class WagJavaClientCodeGenerator extends WagClientCodeGenerator {
 
         try {
             System.out.println("targetFolder= " + getTargetFolder());
-            Util.createDataObjectFromTemplate("Templates/WAG/popzcl.properties",
-                    getDefaultFolder(), "popzcl");
+            Util.createDataObjectFromTemplate("Templates/WAG/zcl.properties",
+                    getDefaultFolder(), "zcl");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -137,7 +137,7 @@ public class WagJavaClientCodeGenerator extends WagClientCodeGenerator {
     }
 
     protected void addImportsToTargetFile() throws IOException {
-        List<String> imports = Arrays.asList("com.sun.zembly.popzcl.Zembly");
+        List<String> imports = Arrays.asList("com.zembly.gateway.client.Zembly");
         JavaUtil.addImportsToSource(getTargetSource(), imports);
     }
 

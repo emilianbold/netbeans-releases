@@ -58,6 +58,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -269,7 +270,11 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
                         } else {
                             service.setLocalWsdl(wsdlLocation);
                         }
-                        service.setWsdlUrl(WSUtils.getOriginalWsdlUrl(prj, jaxWsSupport, service.getLocalWsdl(), true));
+                        FileObject wsdlFo = WSUtils.getLocalWsdl(jaxWsSupport, service.getLocalWsdl());
+                        if (wsdlFo != null) {
+                            service.setId(WSUtils.getUniqueId(wsdlFo.getName(), oldJaxWsServices));
+                        }
+                        service.setWsdlUrl(WSUtils.getOriginalWsdlUrl(prj, service.getId(), true));
                     }
                     service.setPortName(serviceInfo.getPortName());
                     jaxWsSupport.addService(service);

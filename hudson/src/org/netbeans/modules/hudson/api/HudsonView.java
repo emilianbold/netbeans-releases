@@ -62,13 +62,6 @@ public interface HudsonView {
     public String getName();
     
     /**
-     * Returns description of the hudson view
-     *
-     * @return Hudson's view description
-     */
-    public String getDescription();
-    
-    /**
      * Returns url of the hudson view
      *
      * @return Hudson's view url

@@ -68,7 +68,7 @@ public final class DataStorageManager {
 
     private DataStorageManager() {
         dataStorageFactories = Lookup.getDefault().lookupAll(DataStorageFactory.class);
-        log.info(dataStorageFactories.size() + " data storage(s) found!"); // NOI18N
+        log.fine(dataStorageFactories.size() + " data storage(s) found!"); // NOI18N
     }
 
     public static DataStorageManager getInstance() {

@@ -1712,7 +1712,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
             }
 
             TreePath nestedClassPath = new TreePath(tstClassPath, nestedClass);
-            TypeMirror nestedClassType = trees.getTypeMirror(nestedClassPath);
+            TypeMirror nestedClassType = trees.getElement(nestedClassPath).asType();
             if (srcClassType == null) {
                 srcClassType = srcClass.asType();
             }

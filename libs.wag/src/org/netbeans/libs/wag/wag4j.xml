@@ -44,13 +44,13 @@ made subject to such option by the copyright holder.
 
 <!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
 <library version="1.0">
-    <name>wag</name>
+    <name>wag4j</name>
     <type>j2se</type>
     <localizing-bundle>org/netbeans/libs/wag/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
         <resource>jar:nbinst:///modules/ext/wag/JSON.org.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/wag/popzcl-oauth.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/wag/popzcl4j.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/wag/zclcore-0.5.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/wag/zcl4j_min-0.5.jar!/</resource>
     </volume>
 </library>

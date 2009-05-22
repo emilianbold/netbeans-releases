@@ -268,4 +268,27 @@ public final class APTDefineNode extends APTMacroBaseNode
         }
         return ret + paramStr + bodyStr;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)) {
+            return false;
+        }
+        final APTDefineNode other = (APTDefineNode) obj;
+        if (this.params != other.params && (this.params == null || !this.params.equals(other.params))) {
+            return false;
+        }
+        if (this.bodyTokens != other.bodyTokens && (this.bodyTokens == null || !this.bodyTokens.equals(other.bodyTokens))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = super.hashCode();
+        hash = 37 * hash + (this.params != null ? this.params.hashCode() : 0);
+        hash = 37 * hash + (this.bodyTokens != null ? this.bodyTokens.hashCode() : 0);
+        return hash;
+    }
 }

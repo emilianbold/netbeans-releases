@@ -41,7 +41,9 @@ package org.netbeans.modules.maven.jaxws;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
@@ -78,7 +80,7 @@ import org.openide.util.RequestProcessor;
  */
 public final class MavenModelUtils {
 
-    private static final String WSIPMORT_GENERATE_PREFIF = "wsimport-generate-"; //NOI18N
+    private static final String WSIPMORT_GENERATE_PREFIX = "wsimport-generate-"; //NOI18N
     private static final String STALE_FILE_DIRECTORY = "${project.build.directory}/jaxws/stale/"; //NOI18N
     private static final String STALE_FILE_EXTENSION = ".stale"; //NOI18N
     private static final String JAXWS_GROUP_ID = "org.codehaus.mojo"; //NOI18N
@@ -266,7 +268,8 @@ public final class MavenModelUtils {
         assert model.isIntransaction();
 
         PluginExecution exec = model.getFactory().createExecution();
-        exec.setId(WSIPMORT_GENERATE_PREFIF+id);
+        String uniqueId = getUniqueId(plugin, id);
+        exec.setId(WSIPMORT_GENERATE_PREFIX+uniqueId);
         exec.setPhase("generate-sources"); //NOI18N
         exec.addGoal("wsimport"); //NOI18N
         plugin.addExecution(exec);
@@ -285,7 +288,7 @@ public final class MavenModelUtils {
 
         qname = POMQName.createQName("staleFile", model.getPOMQNames().isNSAware()); //NOI18N
         POMExtensibilityElement staleFile = model.getFactory().createPOMExtensibilityElement(qname);
-        staleFile.setElementText(STALE_FILE_DIRECTORY+id+STALE_FILE_EXTENSION);
+        staleFile.setElementText(STALE_FILE_DIRECTORY+uniqueId+STALE_FILE_EXTENSION);
         config.addExtensibilityElement(staleFile);
     }
 
@@ -298,7 +301,7 @@ public final class MavenModelUtils {
         Plugin plugin = bld.findPluginById(JAXWS_GROUP_ID, JAXWS_ARTIFACT_ID);
         if (plugin != null) {
             List<PluginExecution> executions = plugin.getExecutions();
-            String execId = WSIPMORT_GENERATE_PREFIF+id;
+            String execId = WSIPMORT_GENERATE_PREFIX+id;
             for (PluginExecution exec : executions) {
                 if (execId.equals(exec.getId())) {
                     Configuration config = exec.getConfiguration();
@@ -342,7 +345,7 @@ public final class MavenModelUtils {
         if (plugin != null) {
             List<PluginExecution> executions = plugin.getExecutions();
             for (PluginExecution exec : executions) {
-                String execId = WSIPMORT_GENERATE_PREFIF+id;
+                String execId = WSIPMORT_GENERATE_PREFIX+id;
                 if (execId.equals(exec.getId())) {
                     plugin.removeExecution(exec);
                     break;
@@ -360,7 +363,7 @@ public final class MavenModelUtils {
         Plugin plugin = bld.findPluginById(JAXWS_GROUP_ID, JAXWS_ARTIFACT_ID);
         if (plugin != null) {
             List<PluginExecution> executions = plugin.getExecutions();
-            String execId = WSIPMORT_GENERATE_PREFIF+oldId;
+            String execId = WSIPMORT_GENERATE_PREFIX+oldId;
             for (PluginExecution exec : executions) {
                 Configuration config = exec.getConfiguration();
                 if (config != null && execId.equals(exec.getId())) {
@@ -382,7 +385,7 @@ public final class MavenModelUtils {
                         staleFile.setElementText(STALE_FILE_DIRECTORY+newId+STALE_FILE_EXTENSION);
                     }
                     // replace exec id
-                    exec.setId(WSIPMORT_GENERATE_PREFIF+newId);
+                    exec.setId(WSIPMORT_GENERATE_PREFIX+newId);
                     break;
                 }
             }
@@ -519,6 +522,14 @@ public final class MavenModelUtils {
                                         pomInfo.setHandlerFile(bindingPath);
                                     }
                                 }
+                                String execId = exec.getId();
+                                if (execId != null) {
+                                    if (execId.startsWith(WSIPMORT_GENERATE_PREFIX)) {
+                                        pomInfo.setId(execId.substring(WSIPMORT_GENERATE_PREFIX.length()));
+                                    } else {
+                                        pomInfo.setId(execId);
+                                    }
+                                }
                                 wsdlList.add(pomInfo);
                             }
                         }
@@ -614,4 +625,27 @@ public final class MavenModelUtils {
         return false;
     }
 
+    public static String getUniqueId(Plugin plugin, String id) {
+        String result = id;
+        List<PluginExecution> executions = plugin.getExecutions();
+        if (executions != null) {
+            Set<String> execIdSet = new HashSet<String>();
+            for (PluginExecution ex : executions) {
+                String execId = ex.getId();
+                if (execId != null) {
+                    if (execId.startsWith(WSIPMORT_GENERATE_PREFIX)) {
+                        execIdSet.add(execId.substring(WSIPMORT_GENERATE_PREFIX.length()));
+                    } else {
+                        execIdSet.add(execId);
+                    }
+                }
+            }
+
+            int i=1;
+            while (execIdSet.contains(result)) {
+                result = id+"_"+String.valueOf(i++); //NOI18N
+            }
+        }
+        return result;
+    }
 }

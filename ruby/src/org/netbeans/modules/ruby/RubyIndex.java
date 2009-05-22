@@ -133,8 +133,11 @@ public final class RubyIndex {
     }
 
     public static RubyIndex get(final Parser.Result result) {
-        FileObject fo = RubyUtils.getFileObject(result);
-        return fo == null ? null : RubyIndex.get(QuerySupport.findRoots(fo,
+        return get(RubyUtils.getFileObject(result));
+    }
+
+    public static RubyIndex get(final FileObject fo) {
+        return fo == null ? null : get(QuerySupport.findRoots(fo,
                 Collections.singleton(RubyLanguage.SOURCE),
                 Collections.singleton(RubyLanguage.BOOT),
                 Collections.<String>emptySet()));

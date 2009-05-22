@@ -58,6 +58,8 @@
 <mapID target="debug.window" url="debug/CSH/debug_window.html" />
 <!-- Debugging window id -->
 <mapID target="DebuggingView" url="debug/debug_debuggingwindow.html" /> 
+<!-- Options window Java Debugger tab -->
+<mapID target="JavaDebuggerOptions" url="debug/CSH/debug_options.html" /> 
 <!-- Topic for Debugger Instances view - need help id -->
 <!-- <mapID target="" url="debug/CSH/instances_view.html" /> --> 
 
