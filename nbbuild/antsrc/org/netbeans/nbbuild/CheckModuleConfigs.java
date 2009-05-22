@@ -196,7 +196,8 @@ public final class CheckModuleConfigs extends Task {
         if (list.length() == 0) {
             return Collections.emptyList();
         }
-        if (!list.matches("[^\\s,]+(,[^\\s,]+)*")) {
+        // !list.matches("[^\\s,]+(,[^\\s,]+)*") exhausts stack for long module lists
+        if (list.matches(".*\\s.*|^,.*|.*,$|.*,,.*")) {
             throw new BuildException("remove whitespaces or fix leading/trailing commas in " + what + ": " + list);
         }
         List<String> r = new ArrayList<String>(Arrays.asList(list.split(",")));
