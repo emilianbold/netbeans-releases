@@ -1825,6 +1825,8 @@ public class CasualDiff {
     protected boolean nameChanged(Name oldName, Name newName) {
         if (oldName == newName)
             return false;
+        if (oldName == null || newName == null)
+            return true;
         byte[] arr1 = oldName.toUtf();
         byte[] arr2 = newName.toUtf();
         int len = arr1.length;
