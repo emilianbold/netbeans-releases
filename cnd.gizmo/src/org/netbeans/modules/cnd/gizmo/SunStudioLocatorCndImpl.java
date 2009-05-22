@@ -71,6 +71,9 @@ public final class SunStudioLocatorCndImpl implements SunStudioLocator {
                 continue;
             }
             String binDir = compilerSet.getDirectory();
+            if (binDir.endsWith("/")) { // NOI18N
+                binDir = binDir.substring(0, binDir.length() - 1);
+            }
             if (binDir.endsWith(BIN)) {
                 result.add(new SunStudioDescription(binDir.substring(0, binDir.length() - BIN.length())));
             }
