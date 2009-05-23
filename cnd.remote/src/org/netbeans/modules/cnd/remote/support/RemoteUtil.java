@@ -107,7 +107,7 @@ public class RemoteUtil {
             return false; 
         } else {
             // there is a protocol and it equals to ssh
-            return ! id.startsWith("ssh" + protocolSeparator);
+            return ! id.startsWith("ssh" + protocolSeparator); //NOI18N
         }
     }
 }
