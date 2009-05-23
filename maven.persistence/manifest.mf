@@ -3,5 +3,5 @@ OpenIDE-Module: org.netbeans.modules.maven.persistence/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/maven/persistence/Bundle.properties
 OpenIDE-Module-Public-Packages: -
 AutoUpdate-Show-In-Client: false
-OpenIDE-Module-Specification-Version: 1.1.1
+OpenIDE-Module-Specification-Version: 1.1.2
 
