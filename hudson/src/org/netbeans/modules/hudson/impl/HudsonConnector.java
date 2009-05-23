@@ -53,6 +53,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.hudson.api.HudsonJob;
@@ -105,7 +107,7 @@ public class HudsonConnector {
         Document docInstance = getDocument(instance.getUrl() + XML_API_URL + "?depth=1&xpath=/&exclude=//primaryView&exclude=//view[name='All']" +
                 "&exclude=//view/job/url&exclude=//view/job/color&exclude=//description&exclude=//job/build&exclude=//healthReport" +
                 "&exclude=//firstBuild&exclude=//keepDependencies&exclude=//nextBuildNumber&exclude=//property&exclude=//action" +
-                "&exclude=//upstreamProject&exclude=//downstreamProject"); // NOI18N
+                "&exclude=//upstreamProject&exclude=//downstreamProject&exclude=//queueItem"); // NOI18N
         
         if (null == docInstance)
             return new ArrayList<HudsonJob>();
@@ -219,7 +221,7 @@ public class HudsonConnector {
                 if (o.getNodeName().equals(XML_API_NAME_ELEMENT)) {
                     name = o.getFirstChild().getTextContent();
                 } else if (o.getNodeName().equals(XML_API_URL_ELEMENT)) {
-                    url = o.getFirstChild().getTextContent();
+                    url = normalizeUrl(o.getFirstChild().getTextContent(), "view/[^/]+/"); // NOI18N
                 }
             }
             
@@ -240,7 +242,7 @@ public class HudsonConnector {
                         if (nodeName.equals(XML_API_NAME_ELEMENT)) {
                             cache.put(view.getName() + "/" + e.getFirstChild().getTextContent(), view); // NOI18N
                         } else {
-                            LOG.fine("unexpected <job> child: " + nodeName);
+                            LOG.fine("unexpected view <job> child: " + nodeName);
                         }
                     }
                 }
@@ -275,7 +277,7 @@ public class HudsonConnector {
                 if (nodeName.equals(XML_API_NAME_ELEMENT)) {
                     job.putProperty(JOB_NAME, d.getFirstChild().getTextContent());
                 } else if (nodeName.equals(XML_API_URL_ELEMENT)) {
-                    job.putProperty(JOB_URL, d.getFirstChild().getTextContent());
+                    job.putProperty(JOB_URL, normalizeUrl(d.getFirstChild().getTextContent(), "job/[^/]+/")); // NOI18N
                 } else if (nodeName.equals(XML_API_COLOR_ELEMENT)) {
                     String color = d.getFirstChild().getTextContent().trim();
                     try {
@@ -319,7 +321,7 @@ public class HudsonConnector {
                         } else if (nodeName2.equals("displayName")) { // NOI18N
                             displayName = text;
                         } else if (nodeName2.equals("url")) { // NOI18N
-                            url = text;
+                            url = normalizeUrl(text, "job/[^/]+/[^/]+/"); // NOI18N
                         } else if (nodeName2.equals("color")) { // NOI18N
                             color = Color.valueOf(text);
                         } else {
@@ -328,17 +330,11 @@ public class HudsonConnector {
                     }
                     job.addModule(name, displayName, color, url);
                 } else {
-                    LOG.fine("unexpected <job> child: " + nodeName);
+                    LOG.fine("unexpected global <job> child: " + nodeName);
                 }
             }
 
             for (HudsonView v : instance.getViews()) {
-                // All view synchronization
-                if (v.getName().equals(HudsonView.ALL_VIEW)) {
-                    job.addView(v);
-                    continue;
-                }
-
                 if (null != cache.get(v.getName() + "/" + job.getName())) // NOI18N
                     job.addView(v);
             }
@@ -348,6 +344,35 @@ public class HudsonConnector {
         
         return jobs;
     }
+
+    /**
+     * Try to fix up a URL as returned by Hudson's XML API.
+     * @param suggested whatever {@code .../api/xml#//url} offered, e.g. {@code http://localhost:9999/job/My%20Job/}
+     * @param relativePattern regex for the expected portion of the URL relative to server root, e.g. {@code job/[^/]+/}
+     * @return analogous URL constructed from instance root, e.g. {@code https://my.facade/hudson/job/My%20Job/}
+     * @see "#165735"
+     */
+    private String normalizeUrl(String suggested, String relativePattern) {
+        Pattern tailPattern;
+        synchronized (tailPatterns) {
+            tailPattern = tailPatterns.get(relativePattern);
+            if (tailPattern == null) {
+                tailPatterns.put(relativePattern, tailPattern = Pattern.compile(".+/(" + relativePattern + ")"));
+            }
+        }
+        Matcher m = tailPattern.matcher(suggested);
+        if (m.matches()) {
+            String result = instance.getUrl() + m.group(1);
+            if (!result.equals(suggested)) {
+                LOG.log(Level.FINER, "Normalizing {0} -> {1}", new Object[] {suggested, result});
+            }
+            return result;
+        } else {
+            LOG.warning("Anomalous URL " + suggested + " not ending with " + relativePattern + " from " + instance);
+            return suggested;
+        }
+    }
+    private static final Map<String,Pattern> tailPatterns = new HashMap<String,Pattern>();
     
     private synchronized HudsonVersion retrieveHudsonVersion() {
         HudsonVersion v = null;

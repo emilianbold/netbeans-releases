@@ -50,11 +50,15 @@ import static org.junit.Assert.*;
  */
 public class HgURLTest {
 
-    private Method testIsWindowsAbsolutePathMethod;
+    private Method isWindowsAbsolutePathMethod;
+    private Method stripUserInfoFromInvalidUriMethod;
+    private Method trimDupliciteInitialSlashesMethod;
 
     @After
     public void cleanup() {
-        testIsWindowsAbsolutePathMethod = null;
+        isWindowsAbsolutePathMethod = null;
+        stripUserInfoFromInvalidUriMethod = null;
+        trimDupliciteInitialSlashesMethod = null;
     }
 
     @Test
@@ -77,7 +81,7 @@ public class HgURLTest {
 
     @Test
     public void testIsWindowsAbsolutePath() throws Exception {
-        initTestIsWindowsAbsolutePathMethod();
+        initIsWindowsAbsolutePathMethod();
 
         testIsWindowsAbsolutePath("C",        false);
         testIsWindowsAbsolutePath("/",        false);
@@ -150,16 +154,108 @@ public class HgURLTest {
     }
 
     private void testIsWindowsAbsolutePath(String path, boolean expected) throws Exception {
-        assert testIsWindowsAbsolutePathMethod != null;
+        assert isWindowsAbsolutePathMethod != null;
 
-        Object resultObj = testIsWindowsAbsolutePathMethod.invoke(null, path);
+        Object resultObj = isWindowsAbsolutePathMethod.invoke(null, path);
         assert resultObj instanceof Boolean;
         assertTrue(Boolean.TRUE.equals(resultObj) == expected);
     }
 
-    private void initTestIsWindowsAbsolutePathMethod() throws Exception {
-        testIsWindowsAbsolutePathMethod = HgURL.class.getDeclaredMethod("isWindowsAbsolutePath", String.class);
-        testIsWindowsAbsolutePathMethod.setAccessible(true);
+    @Test
+    public void testStripUserInfoFromInvalidUri() throws Exception {
+        initStripUserInfoFromInvalidUriMethod();
+
+        assertEquals("", stripUserInfoFromInvalidURI(""));
+        assertEquals("a", stripUserInfoFromInvalidURI("a"));
+        assertEquals("abcd", stripUserInfoFromInvalidURI("abcd"));
+        assertEquals("abcd:", stripUserInfoFromInvalidURI("abcd:"));
+        assertEquals(":efgh", stripUserInfoFromInvalidURI(":efgh"));
+        assertEquals("abcd:efgh", stripUserInfoFromInvalidURI("abcd:efgh"));
+        assertEquals("world", stripUserInfoFromInvalidURI("hello@world"));
+        assertEquals("abcd:/kuku", stripUserInfoFromInvalidURI("abcd:/kuku"));
+        assertEquals("hehe",  stripUserInfoFromInvalidURI(":kuku@hehe"));
+        assertEquals("hehe/", stripUserInfoFromInvalidURI(":kuku@hehe/"));
+        assertEquals("hehe",  stripUserInfoFromInvalidURI("://kuku@hehe"));
+        assertEquals("//hehe",  stripUserInfoFromInvalidURI("//kuku@hehe"));
+        assertEquals("kuku:tam",   stripUserInfoFromInvalidURI("kuku:hehe@tam"));
+        assertEquals("http://s",   stripUserInfoFromInvalidURI("http://h:p@s"));
+        assertEquals("http://s/p", stripUserInfoFromInvalidURI("http://h:p@s/p"));
+        assertEquals("file:",  stripUserInfoFromInvalidURI("file:"));
+        assertEquals("file:/", stripUserInfoFromInvalidURI("file:/"));
+        assertEquals("file:thefile",      stripUserInfoFromInvalidURI("file:thefile"));
+        assertEquals("file:thefile.txt",  stripUserInfoFromInvalidURI("file:thefile.txt"));
+        assertEquals("file:/thefile",     stripUserInfoFromInvalidURI("file:/thefile"));
+        assertEquals("file:/thefile.txt", stripUserInfoFromInvalidURI("file:/thefile.txt"));
+        assertEquals("file://thefile",     stripUserInfoFromInvalidURI("file://thefile"));
+        assertEquals("file://thefile.txt", stripUserInfoFromInvalidURI("file://thefile.txt"));
+        assertEquals("file:///thefile",     stripUserInfoFromInvalidURI("file:///thefile"));
+        assertEquals("file:///thefile.txt", stripUserInfoFromInvalidURI("file:///thefile.txt"));
+    }
+
+    @Test
+    public void testBug163731() throws Exception {
+        initStripUserInfoFromInvalidUriMethod();
+
+        assertEquals("http://server/path", stripUserInfoFromInvalidURI("http://user:password@with-at-sign@server/path"));
+    }
+
+    private String stripUserInfoFromInvalidURI(String invalidUri) throws Exception {
+        assert stripUserInfoFromInvalidUriMethod != null;
+        return (String) stripUserInfoFromInvalidUriMethod.invoke(null, invalidUri);
+    }
+
+    @Test
+    public void testTrimDupliciteInitialSlashes() throws Exception {
+        initTrimDupliciteInitialSlashesMethod();
+
+        assertEquals("",        trimDupliciteInitialSlashes(""));
+        assertEquals("a",       trimDupliciteInitialSlashes("a"));
+        assertEquals("ab",      trimDupliciteInitialSlashes("ab"));
+        assertEquals("abc",     trimDupliciteInitialSlashes("abc"));
+        assertEquals("a/",      trimDupliciteInitialSlashes("a/"));
+        assertEquals("a/b",     trimDupliciteInitialSlashes("a/b"));
+        assertEquals("a//",     trimDupliciteInitialSlashes("a//"));
+        assertEquals("a//b",    trimDupliciteInitialSlashes("a//b"));
+        assertEquals("a/b/c",   trimDupliciteInitialSlashes("a/b/c"));
+        assertEquals("/",       trimDupliciteInitialSlashes("/"));
+        assertEquals("/a",      trimDupliciteInitialSlashes("/a"));
+        assertEquals("/a/",     trimDupliciteInitialSlashes("/a/"));
+        assertEquals("/aa",     trimDupliciteInitialSlashes("/aa"));
+        assertEquals("/aa/",    trimDupliciteInitialSlashes("/aa/"));
+        assertEquals("/a/b/",   trimDupliciteInitialSlashes("/a/b/"));
+        assertEquals("/",       trimDupliciteInitialSlashes("//"));
+        assertEquals("/a",      trimDupliciteInitialSlashes("//a"));
+        assertEquals("/ab",     trimDupliciteInitialSlashes("//ab"));
+        assertEquals("/ab/",    trimDupliciteInitialSlashes("//ab/"));
+        assertEquals("/a//",    trimDupliciteInitialSlashes("//a//"));
+        assertEquals("/ab//",   trimDupliciteInitialSlashes("//ab//"));
+        assertEquals("/a/b",    trimDupliciteInitialSlashes("//a/b"));
+        assertEquals("/a//b",   trimDupliciteInitialSlashes("//a//b"));
+        assertEquals("/",       trimDupliciteInitialSlashes("///"));
+        assertEquals("/a",      trimDupliciteInitialSlashes("///a"));
+        assertEquals("/ab",     trimDupliciteInitialSlashes("///ab"));
+        assertEquals("/abc",    trimDupliciteInitialSlashes("///abc"));
+        assertEquals("/abc///", trimDupliciteInitialSlashes("///abc///"));
+    }
+
+    private String trimDupliciteInitialSlashes(String text) throws Exception {
+        assert trimDupliciteInitialSlashesMethod != null;
+        return (String) trimDupliciteInitialSlashesMethod.invoke(null, text);
+    }
+
+    private void initIsWindowsAbsolutePathMethod() throws Exception {
+        isWindowsAbsolutePathMethod = HgURL.class.getDeclaredMethod("isWindowsAbsolutePath", String.class);
+        isWindowsAbsolutePathMethod.setAccessible(true);
+    }
+
+    private void initStripUserInfoFromInvalidUriMethod() throws Exception {
+       stripUserInfoFromInvalidUriMethod = HgURL.class.getDeclaredMethod("stripUserInfoFromInvalidURI", String.class);
+       stripUserInfoFromInvalidUriMethod.setAccessible(true);
+    }
+
+    private void initTrimDupliciteInitialSlashesMethod() throws Exception {
+        trimDupliciteInitialSlashesMethod = HgURL.class.getDeclaredMethod("trimDupliciteInitialSlashes", String.class);
+        trimDupliciteInitialSlashesMethod.setAccessible(true);
     }
 
 }

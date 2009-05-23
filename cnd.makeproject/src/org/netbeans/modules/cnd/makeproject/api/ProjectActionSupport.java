@@ -283,7 +283,7 @@ public class ProjectActionSupport {
             return tab;
         }
 
-        public void reRun() {
+        private void reRun() {
             currentAction = 0;
             getTab().closeInputOutput();
             synchronized (lock) {
@@ -298,7 +298,7 @@ public class ProjectActionSupport {
             go();
         }
 
-        public void go() {
+        private void go() {
             currentHandler = null;
             sa.setEnabled(false);
             ra.setEnabled(false);
