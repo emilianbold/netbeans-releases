@@ -44,6 +44,7 @@ import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 /**
  * Misc. utiliy finctions
@@ -88,5 +89,25 @@ public class RemoteUtil {
             homeDirs.put(execEnv, dir);            
         }
         return dir;
+    }
+
+    /**
+     * FIXUP: * Need this hack for Cloud stuff:
+     * we have to distinguish "normal", i.e. CND environments
+     * from "foreign", i.e. "cloud" ones.
+     */
+    public static boolean isForeign(ExecutionEnvironment execEnv ) {
+        if (execEnv == null) {
+            return false;
+        }
+        String id = ExecutionEnvironmentFactory.toUniqueID(execEnv);
+        String protocolSeparator = "://"; //NOI18N
+        if (id.indexOf(protocolSeparator) < 0) {
+            // old-style environment - no protocol
+            return false; 
+        } else {
+            // there is a protocol and it equals to ssh
+            return ! id.startsWith("ssh" + protocolSeparator); //NOI18N
+        }
     }
 }
