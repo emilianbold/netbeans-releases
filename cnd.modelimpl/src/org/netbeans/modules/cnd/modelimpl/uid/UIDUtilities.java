@@ -365,8 +365,8 @@ public class UIDUtilities {
     /**
      * Base UID for cached objects
      */
-    /* package */ static class CachedUID<T> extends KeyBasedUID<T> {
-        private WeakReference<T> weakT;
+    /* package */ static class CachedUID<T> extends KeyBasedUID<T> implements Disposable {
+        private WeakReference<T> weakT = TraceFlags.USE_WEAK_MEMORY_CACHE ? new WeakReference<T>(null) : null;
 
         protected CachedUID(Key key) {
             super(key);
@@ -390,10 +390,14 @@ public class UIDUtilities {
                 }
             }
             out = RepositoryUtils.get(this);
-            if (TraceFlags.USE_WEAK_MEMORY_CACHE && out != null) {
+            if (TraceFlags.USE_WEAK_MEMORY_CACHE && out != null && weak != null) {
                 weakT = new WeakReference<T>(out);
             }
             return out;
+        }
+
+        public void dispose() {
+            weakT = null;
         }
     }
 

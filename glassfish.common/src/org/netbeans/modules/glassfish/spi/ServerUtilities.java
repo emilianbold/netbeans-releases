@@ -335,4 +335,8 @@ public final class ServerUtilities {
         return jarList;
     }
 
+    public String[] getAssociatedJavaDoc() {
+        return gip.getAssociatedJavaDoc();
+    }
+
 }

@@ -598,24 +598,42 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
     @Override
     public void destroy() throws java.io.IOException {
 
-        if (service.getLocalWsdl() != null) {
+        if (service.getLocalWsdl() != null) {           
+            final String serviceId = service.getId();
+
             // remove execution from pom file
-            final FileObject wsdlFileObject = getLocalWsdl();
-            if (wsdlFileObject != null) {
-                ModelOperation<POMModel> oper = new ModelOperation<POMModel>() {
-                    public void performOperation(POMModel model) {
-                        MavenModelUtils.removeWsimportExecution(model, wsdlFileObject.getName());
-                    }
-                };
-                FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
-                Utilities.performPOMModelOperations(pom, Collections.singletonList(oper));
-            }
+            ModelOperation<POMModel> oper = new ModelOperation<POMModel>() {
+                public void performOperation(POMModel model) {
+                    MavenModelUtils.removeWsimportExecution(model, serviceId);
+                }
+            };
+            FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
+            Utilities.performPOMModelOperations(pom, Collections.singletonList(oper));
+
             // remove stale file
             try {
-                removeStaleFile(wsdlFileObject.getName());
+                removeStaleFile(serviceId);
             } catch (IOException ex) {
                 Logger.getLogger(JaxWsClientNode.class.getName()).log(
                         Level.FINE, "Cannot remove stale file", ex); //NOI18N
+            }
+            //remove wsdl file
+            FileObject wsdlFileObject = getLocalWsdl();
+            JAXWSLightSupport jaxWsSupport = JAXWSLightSupport.getJAXWSLightSupport(implBeanClass);
+            if (wsdlFileObject != null && jaxWsSupport != null) {
+                // check if there are other clients/services with the same wsdl
+                boolean hasOtherServices = false;
+                List<JaxWsService> services = jaxWsSupport.getServices();
+                for (JaxWsService s : services) {
+                    if (serviceId != null && !serviceId.equals(s.getId()) && service.getLocalWsdl().equals(s.getLocalWsdl())) {
+                        hasOtherServices = true;
+                        break;
+                    }
+                }
+                if (!hasOtherServices) {
+                    // remove wsdl file
+                    wsdlFileObject.delete();
+                }
             }
         }
 

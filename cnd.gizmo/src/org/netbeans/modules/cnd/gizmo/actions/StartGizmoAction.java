@@ -104,7 +104,7 @@ public final class StartGizmoAction implements ActionListener {
     }
 
     private Configuration getActiveConfiguration(Project project) {
-        return ConfigurationSupport.getProjectDescriptor(project).getConfs().getActive();
+        return ConfigurationSupport.getProjectActiveConfiguration(project);
     }
 
     private Project getCurrentProject() {

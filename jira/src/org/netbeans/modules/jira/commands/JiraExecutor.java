@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
+import org.eclipse.mylyn.internal.jira.core.service.JiraServiceUnavailableException;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.Jira;
@@ -64,12 +65,14 @@ import org.openide.util.NbBundle;
  */
 public class JiraExecutor {
 
-    private static final String HTTP_ERROR_NOT_FOUND         = "http error: not found";         // NOI18N
-    private static final String INVALID_USERNAME_OR_PASSWORD = "invalid username or password";  // NOI18N
-    private static final String REPOSITORY_LOGIN_FAILURE     = "unable to login to";            // NOI18N
-    private static final String COULD_NOT_BE_FOUND           = "could not be found";            // NOI18N
-    private static final String REPOSITORY                   = "repository";                    // NOI18N
-    private static final String MIDAIR_COLLISION             = "mid-air collision occurred while submitting to"; // NOI18N
+    private static final String HTTP_ERROR_NOT_FOUND                    = "http error: not found";         // NOI18N
+    private static final String INVALID_USERNAME_OR_PASSWORD            = "invalid username or password";  // NOI18N
+    private static final String INVALID_USERNAME_OR_PASSWORD_NO_SPACES  = INVALID_USERNAME_OR_PASSWORD.replace(" ", "");  // NOI18N
+    private static final String REPOSITORY_LOGIN_FAILURE                = "unable to login to";            // NOI18N
+    private static final String COULD_NOT_BE_FOUND                      = "could not be found";            // NOI18N
+    private static final String REPOSITORY                              = "repository";                    // NOI18N
+    private static final String MIDAIR_COLLISION                        = "mid-air collision occurred while submitting to"; // NOI18N
+    private static final String HOST_NOT_FOUND_ERROR                    = "host not found"; //NOI18N
 
     private final JiraRepository repository;
 
@@ -87,25 +90,29 @@ public class JiraExecutor {
 
     public void execute(JiraCommand cmd, boolean handleExceptions, boolean ensureConfiguration) {
         try {
+            try {
 
-            if(ensureConfiguration) {
-               repository.getConfiguration(); // XXX hack
+                if (ensureConfiguration) {
+                    repository.getConfiguration(); // XXX hack
+                }
+
+                cmd.setFailed(true);
+
+                cmd.execute();
+
+                cmd.setFailed(false);
+                cmd.setErrorMessage(null);
+
+            } catch (JiraException je) {
+                // XXX
+                Jira.LOG.log(Level.FINE, null, je);
+                throw new WrapperException(je.getMessage(), je);
+            } catch (CoreException ce) {
+                Jira.LOG.log(Level.FINE, null, ce);
+                throw new WrapperException(ce.getMessage(), ce);
             }
-
-            cmd.setFailed(true);
-
-            cmd.execute();
-
-            cmd.setFailed(false);
-            cmd.setErrorMessage(null);
-
-        } catch (JiraException je) {
-            // XXX
-            Jira.LOG.log(Level.SEVERE, null, je);
-        } catch (CoreException ce) {
-            Jira.LOG.log(Level.FINE, null, ce);
-
-            ExceptionHandler handler = ExceptionHandler.createHandler(ce, this, repository);
+        } catch (WrapperException we) {
+            ExceptionHandler handler = ExceptionHandler.createHandler(we, this, repository);
             assert handler != null;
 
             String msg = handler.getMessage();
@@ -116,7 +123,7 @@ public class JiraExecutor {
             if(handleExceptions) {
                 if(handler.handle()) {
                     // execute again
-                    execute(cmd);
+                    execute(cmd, handleExceptions, ensureConfiguration);
                 }
             }
             return;
@@ -151,42 +158,45 @@ public class JiraExecutor {
     private static abstract class ExceptionHandler {
 
         protected String errroMsg;
-        protected CoreException ce;
+        protected WrapperException ex;
         protected JiraExecutor executor;
         protected JiraRepository repository;
 
-        protected ExceptionHandler(CoreException ce, String msg, JiraExecutor executor, JiraRepository repository) {
+        protected ExceptionHandler(WrapperException ex, String msg, JiraExecutor executor, JiraRepository repository) {
             this.errroMsg = msg;
-            this.ce = ce;
+            this.ex = ex;
             this.executor = executor;
             this.repository = repository;
         }
 
-        static ExceptionHandler createHandler(CoreException ce, JiraExecutor executor, JiraRepository repository) {
-            String errormsg = getLoginError(ce);
+        static ExceptionHandler createHandler(WrapperException ex, JiraExecutor executor, JiraRepository repository) {
+            String errormsg = getLoginError(ex);
             if(errormsg != null) {
-                return new LoginHandler(ce, errormsg, executor, repository);
+                return new LoginHandler(ex, errormsg, executor, repository);
             }
-            errormsg = getNotFoundError(ce);
+            errormsg = getNotFoundError(ex);
             if(errormsg != null) {
-                return new NotFoundHandler(ce, errormsg, executor, repository);
+                return new NotFoundHandler(ex, errormsg, executor, repository);
             }
-            errormsg = getMidAirColisionError(ce);
+            errormsg = getMidAirColisionError(ex);
             if(errormsg != null) {
                 errormsg = MessageFormat.format(errormsg, repository.getDisplayName());
-                return new DefaultHandler(ce, errormsg, executor, repository);
+                return new DefaultHandler(ex, errormsg, executor, repository);
             }
-            return new DefaultHandler(ce, null, executor, repository);
+            return new DefaultHandler(ex, null, executor, repository);
         }
 
         abstract boolean handle();
 
-        private static String getLoginError(CoreException ce) {
-            String msg = getMessage(ce);
+        private static String getLoginError(WrapperException we) {
+            String msg = getMessage(we);
             if(msg != null) {
                 msg = msg.trim().toLowerCase();
+                String msgNoSpaces;
                 if(INVALID_USERNAME_OR_PASSWORD.equals(msg) ||
-                   msg.contains(INVALID_USERNAME_OR_PASSWORD))
+                   msg.contains(INVALID_USERNAME_OR_PASSWORD)
+                   || INVALID_USERNAME_OR_PASSWORD_NO_SPACES.equals(msgNoSpaces = msg.replace(" ", "")) || //NOI18N
+                   msgNoSpaces.contains(INVALID_USERNAME_OR_PASSWORD_NO_SPACES))
                 {
                     return NbBundle.getMessage(JiraExecutor.class, "MSG_INVALID_USERNAME_OR_PASSWORD");
                 } else if(msg.startsWith(REPOSITORY_LOGIN_FAILURE) ||
@@ -198,8 +208,8 @@ public class JiraExecutor {
             return null;
         }
 
-        private static String getMidAirColisionError(CoreException ce) {
-            String msg = getMessage(ce);
+        private static String getMidAirColisionError(WrapperException ex) {
+            String msg = getMessage(ex);
             if(msg != null) {
                 msg = msg.trim().toLowerCase();
                 if(msg.startsWith(MIDAIR_COLLISION)) {
@@ -209,29 +219,39 @@ public class JiraExecutor {
             return null;
         }
 
-        private static String getNotFoundError(CoreException ce) {
-            IStatus status = ce.getStatus();
-            Throwable t = status.getException();
-            if(t instanceof UnknownHostException) {
-                return NbBundle.getMessage(JiraExecutor.class, "MSG_HOST_NOT_FOUND");
-            }
-            String msg = getMessage(ce);
-            if(msg != null) {
-                msg = msg.trim().toLowerCase();
-                if(HTTP_ERROR_NOT_FOUND.equals(msg)) {
+        private static String getNotFoundError(WrapperException ex) {
+            if (ex.getStatus() != null) {
+                IStatus status = ex.getStatus();
+                Throwable t = status.getException();
+                if (t instanceof UnknownHostException) {
                     return NbBundle.getMessage(JiraExecutor.class, "MSG_HOST_NOT_FOUND");
                 }
+                String msg = getMessage(ex);
+                if (msg != null) {
+                    msg = msg.trim().toLowerCase();
+                    if (HTTP_ERROR_NOT_FOUND.equals(msg)) {
+                        return NbBundle.getMessage(JiraExecutor.class, "MSG_HOST_NOT_FOUND");
+                    }
+                }
+            }
+            String msg = ex.getMessage();
+            if (msg != null) {
+                msg = msg.toLowerCase();
+            }
+            if (ex.getCause() instanceof JiraServiceUnavailableException
+                    || HOST_NOT_FOUND_ERROR.equals(msg)) {
+                return ex.getMessage();
             }
             return null;
         }
 
 
-        static String getMessage(CoreException ce) {
-            String msg = ce.getMessage();
+        static String getMessage(WrapperException ex) {
+            String msg = ex.getMessage();
             if(msg != null && !msg.trim().equals("")) {                             // NOI18N
                 return msg;
             }
-            IStatus status = ce.getStatus();
+            IStatus status = ex.getStatus();
             msg = status != null ? status.getMessage() : null;
             return msg != null ? msg.trim() : null;
         }
@@ -240,9 +260,9 @@ public class JiraExecutor {
             return errroMsg;
         }
 
-        private static void notifyError(CoreException ce, JiraRepository repository) {
-            IStatus status = ce.getStatus();
-            if (status instanceof RepositoryStatus) {
+        private static void notifyError(WrapperException ex, JiraRepository repository) {
+            IStatus status = ex.getStatus();
+            if (status != null && status instanceof RepositoryStatus) {
                 RepositoryStatus rs = (RepositoryStatus) status;
                 String html = rs.getHtmlMessage();
                 if(html != null && !html.trim().equals("")) {                   // NOI18N
@@ -264,7 +284,7 @@ public class JiraExecutor {
                     return;
                 }
             }
-            String msg = getMessage(ce);
+            String msg = getMessage(ex);
             notifyErrorMessage(msg);
         }
 
@@ -281,8 +301,8 @@ public class JiraExecutor {
         }
 
         private static class LoginHandler extends ExceptionHandler {
-            public LoginHandler(CoreException ce, String msg, JiraExecutor executor, JiraRepository repository) {
-                super(ce, msg, executor, repository);
+            public LoginHandler(WrapperException ex, String msg, JiraExecutor executor, JiraRepository repository) {
+                super(ex, msg, executor, repository);
             }
             @Override
             String getMessage() {
@@ -290,7 +310,7 @@ public class JiraExecutor {
             }
             @Override
             protected boolean handle() {
-                boolean ret = repository.authenticate(errroMsg);                
+                boolean ret = repository.authenticate(errroMsg);
                 if(!ret) {
                     notifyErrorMessage(NbBundle.getMessage(JiraExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
                 }
@@ -298,8 +318,8 @@ public class JiraExecutor {
             }
         }
         private static class NotFoundHandler extends ExceptionHandler {
-            public NotFoundHandler(CoreException ce, String msg, JiraExecutor executor, JiraRepository repository) {
-                super(ce, msg, executor, repository);
+            public NotFoundHandler(WrapperException ex, String msg, JiraExecutor executor, JiraRepository repository) {
+                super(ex, msg, executor, repository);
             }
             @Override
             String getMessage() {
@@ -315,8 +335,8 @@ public class JiraExecutor {
             }
         }
         private static class DefaultHandler extends ExceptionHandler {
-            public DefaultHandler(CoreException ce, String msg, JiraExecutor executor, JiraRepository repository) {
-                super(ce, msg, executor, repository);
+            public DefaultHandler(WrapperException ex, String msg, JiraExecutor executor, JiraRepository repository) {
+                super(ex, msg, executor, repository);
             }
             @Override
             String getMessage() {
@@ -327,10 +347,30 @@ public class JiraExecutor {
                 if(errroMsg != null) {
                     notifyErrorMessage(errroMsg);
                 } else {
-                    notifyError(ce, repository);
+                    notifyError(ex, repository);
                 }
                 return false;
             }
+        }
+    }
+
+    private static class WrapperException extends Exception {
+        IStatus status;
+
+        public WrapperException (String message, Throwable cause) {
+            super(message, cause);
+            assert cause != null;
+            if (cause instanceof CoreException) {
+                status = ((CoreException)cause).getStatus();
+            }
+        }
+
+        /**
+         * 
+         * @return status of the wrapped CoreException or null if the wrapped exception is not a CoreException
+         */
+        public IStatus getStatus () {
+            return status;
         }
     }
 }

@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -55,6 +56,7 @@ import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.maven.jaxws.MavenJAXWSSupportImpl;
 import org.netbeans.modules.maven.jaxws.MavenModelUtils;
 import org.netbeans.modules.maven.jaxws.MavenWebService;
 import org.netbeans.modules.maven.jaxws.WSUtils;
@@ -103,6 +105,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -155,12 +158,14 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
 
     @Override
     public String getName() {
-        return wsdlFileObject.getName();
+        //return wsdlFileObject.getName();
+        return client.getId();
     }
     
     @Override
     public String getDisplayName() {
-        return wsdlFileObject.getName();
+        //return wsdlFileObject.getName();
+        return client.getId();
     }
     
     @Override
@@ -294,27 +299,52 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
 
     @Override
     public void destroy() throws java.io.IOException {
-        if (wsdlFileObject != null) {
-            // remove entry in wsimport configuration
-            Project project = FileOwnerQuery.getOwner(wsdlFileObject);
-            if (project != null) {
-                ModelOperation<POMModel> oper = new ModelOperation<POMModel>() {
-                    public void performOperation(POMModel model) {
-                        MavenModelUtils.removeWsimportExecution(model, wsdlFileObject.getName());
+        Project project = FileOwnerQuery.getOwner(wsdlFileObject);
+        if (project != null) {
+            final String clientId = client.getId();
+            
+            // remove entry from wsimport configuration
+            final ModelOperation<POMModel> oper = new ModelOperation<POMModel>() {
+                public void performOperation(POMModel model) {
+                    MavenModelUtils.removeWsimportExecution(model, clientId);
+                }
+            };
+            final FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                public void run() {
+                    Utilities.performPOMModelOperations(pom, Collections.singletonList(oper));
+                }
+
+            });
+            
+            // remove wsdl file
+            if (wsdlFileObject != null) {
+                // check if there are other clients/services with the same wsdl
+                boolean hasOtherServices = false;
+                List<JaxWsService> services = jaxWsSupport.getServices();
+                for (JaxWsService s : services) {
+                    if (clientId != null && !clientId.equals(s.getId()) && client.getLocalWsdl().equals(s.getLocalWsdl())) {
+                        hasOtherServices = true;
+                        break;
                     }
-                };
-                FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
-                Utilities.performPOMModelOperations(pom, Collections.singletonList(oper));
+                }
+                if (!hasOtherServices) {
+                    // remove wsdl file
+                    wsdlFileObject.delete();
+                }
             }
+
             // remove stale file
             try {
-                removeStaleFile(project, wsdlFileObject.getName());
+                removeStaleFile(project, clientId);
             } catch (IOException ex) {
                 Logger.getLogger(JaxWsClientNode.class.getName()).log(
                         Level.FINE, "Cannot remove stale file", ex); //NOI18N
             }
-            // remove wsdl file
-            wsdlFileObject.delete();
+
+            super.destroy();
+
         }
     }
     
@@ -423,7 +453,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
                     Project project = FileOwnerQuery.getOwner(wsdlFileObject);
                     Preferences prefs = ProjectUtils.getPreferences(project, MavenWebService.class,true);
                     if (prefs != null) {
-                        wsdlUrl = prefs.get(MavenWebService.CLIENT_PREFIX+wsdlFileObject.getName(), null);
+                        wsdlUrl = prefs.get(MavenWebService.CLIENT_PREFIX+client.getId(), null);
                         if (wsdlUrl != null) {
                             client.setWsdlUrl(wsdlUrl);
                         }
@@ -448,7 +478,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
                     try {
                         wsdlFo = WSUtils.retrieveResource(
                                 localWsdlFolder,
-                                jaxWsSupport.getCatalog().toURI(),
+                                new URI(MavenJAXWSSupportImpl.CATALOG_PATH),
                                 new URI(newWsdlUrl));
                     } catch (URISyntaxException ex) {
                         //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -470,8 +500,15 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
                         final String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
                         Project project = FileOwnerQuery.getOwner(wsdlFo);
 
-                        final String oldId = wsdlFileObject.getName();
-                        final String newId = wsdlFo.getName();
+                        final String oldId = client.getId();
+                        List<JaxWsService> servicesToCheck = new ArrayList<JaxWsService>();
+                        for (JaxWsService s : jaxWsSupport.getServices()) {
+                            String serviceId = s.getId();
+                            if (serviceId != null && !serviceId.equals(oldId)) {
+                                servicesToCheck.add(s);
+                            }
+                        }
+                        final String newId = WSUtils.getUniqueId(wsdlFo.getName(), servicesToCheck);
 
                         // update wsdl URL property
                         if (wsdlUrlChanged) {

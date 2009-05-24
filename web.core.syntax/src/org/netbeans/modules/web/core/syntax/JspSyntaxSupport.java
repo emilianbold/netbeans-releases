@@ -258,7 +258,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
             PageInfo pi = result.getPageInfo();
             if(pi == null) {
                 //report error but do not break the entire CC
-                err.log(Level.WARNING, null, new NullPointerException("PageInfo obtained from JspParserAPI.ParseResult is null"));
+                err.log(Level.INFO, null, new NullPointerException("PageInfo obtained from JspParserAPI.ParseResult is null"));
                 return null;
             } else {
                 return pi.getTagLibraries();

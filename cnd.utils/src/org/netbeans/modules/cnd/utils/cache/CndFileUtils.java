@@ -88,7 +88,7 @@ public final class CndFileUtils {
      */
     public static File normalizeFile(File file) {
         if (CndUtils.isDebugMode()) {
-            CndUtils.assertTrueInConsole(file.isAbsolute(), "Is it OK to normalize not absolute file? " + file);
+            CndUtils.assertTrueInConsole(file.isAbsolute(), "Is it OK to normalize not absolute file? [" + file + "] during this session it is [" + file.getAbsolutePath() + "] but will be different if start IDE from another folder");
         }
         String path = file.getPath();
         String normPath = normalizeAbsolutePath(file.getAbsolutePath());

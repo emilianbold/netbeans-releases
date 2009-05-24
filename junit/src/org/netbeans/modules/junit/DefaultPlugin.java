@@ -888,7 +888,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                                 templateParams,
                                 doTestTempl,
                                 testClassPath,
-                                true,             //skip if not testable
+                                TestabilityResult.NO_TESTEABLE_METHODS.getReasonValue(),
                                 null,              //parent suite
                                 progress);
                     } catch (CreationError ex) {
@@ -1691,7 +1691,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                 final Map<String, ? extends Object> templateParams,
                 DataObject templateDataObj,
                 ClassPath testClassPath,
-                boolean skipNonTestable,
+                long skipTestabilityResultMask,
                 List<String> parentSuite,
                 ProgressIndicator progress) throws CreationError {
         
@@ -1702,11 +1702,12 @@ public final class DefaultPlugin extends JUnitPlugin {
             //issue 161598
             if (javaSource == null)
                 return CreationResults.EMPTY;
-            if (skipNonTestable) {
+            if (skipTestabilityResultMask != 0) {
                 nonTestable = new ArrayList<SkippedClass>();
                 testable = TopClassFinder.findTestableTopClasses(javaSource,
                                                                  testCreator,
-                                                                 nonTestable);
+                                                                 nonTestable,
+                                                                 skipTestabilityResultMask);
             } else {
                 nonTestable = Collections.<SkippedClass>emptyList();
                 testable = TopClassFinder.findTopClasses(javaSource);
@@ -1835,7 +1836,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                                        templateParams,
                                        doTestT,
                                        testClassPath,
-                                       true,
+                                       TestabilityResult.NO_TESTEABLE_METHODS.getReasonValue(),
                                        parentSuite,
                                        progress);
         } else {
