@@ -83,23 +83,15 @@
     <target name="build-all">
         <antcall target="build-platform">
             <param name="product.platforms" value="windows"/>
-            <param name="product.data.1.uri" value="${product.data.1.uri.windows}"/>
-	    <param name="sources.params.2.value" value="${sources.params.2.value.windows}"/>
         </antcall>
         <antcall target="build-platform">
             <param name="product.platforms" value="linux"/>
-            <param name="product.data.1.uri" value="${product.data.1.uri.linux}"/>
-	    <param name="sources.params.2.value" value="${sources.params.2.value.linux}"/>
         </antcall>
         <antcall target="build-platform">
             <param name="product.platforms" value="solaris-x86"/>
-            <param name="product.data.1.uri" value="${product.data.1.uri.solaris-x86}"/>
-            <param name="sources.params.2.value" value="${sources.params.2.value.solaris-x86}"/>
         </antcall>
         <antcall target="build-platform">
             <param name="product.platforms" value="solaris-sparc"/>
-            <param name="product.data.1.uri" value="${product.data.1.uri.solaris-sparc}"/>
-	    <param name="sources.params.2.value" value="${sources.params.2.value.solaris-sparc}"/>
         </antcall>
     </target>
     
@@ -112,23 +104,15 @@
     <target name="release-all">
         <antcall target="release-platform">
             <param name="product.platforms" value="windows"/>
-            <param name="product.data.1.uri" value="${product.data.1.uri.windows}"/>
-	    <param name="sources.params.2.value" value="${sources.params.2.value.windows}"/>
         </antcall>
         <antcall target="release-platform">
             <param name="product.platforms" value="linux"/>
-            <param name="product.data.1.uri" value="${product.data.1.uri.linux}"/>
-            <param name="sources.params.2.value" value="${sources.params.2.value.linux}"/>
         </antcall>
         <antcall target="release-platform">
             <param name="product.platforms" value="solaris-x86"/>
-            <param name="product.data.1.uri" value="${product.data.1.uri.solaris-x86}"/>
-            <param name="sources.params.2.value" value="${sources.params.2.value.solaris-x86}"/>
         </antcall>
         <antcall target="release-platform">
             <param name="product.platforms" value="solaris-sparc"/>
-            <param name="product.data.1.uri" value="${product.data.1.uri.solaris-sparc}"/>
-	    <param name="sources.params.2.value" value="${sources.params.2.value.solaris-sparc}"/>
         </antcall>
     </target>
     
