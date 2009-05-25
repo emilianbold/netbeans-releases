@@ -169,7 +169,6 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
                     (String) wizard.getProperty("ServInstWizard_displayName"), // NOI18N
                     installRoot, glassfishRoot, domainsDir, domainName, httpPort, adminPort,
                     formatUri(glassfishRoot,"localhost",adminPort),gip.getUriFragment(),gip);
-            gip.addServerInstance(instance);
             result.add(instance.getCommonInstance());
         }
         // lookup the javadb register service here and use it.
