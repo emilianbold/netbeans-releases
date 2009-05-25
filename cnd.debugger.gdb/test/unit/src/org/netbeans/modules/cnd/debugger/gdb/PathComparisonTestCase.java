@@ -71,6 +71,11 @@ public class PathComparisonTestCase extends TestCase {
     }
 
     @Test
+    public void testWinPathComparisonSpace() {
+        assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_WINDOWS, "C:\\dir space\\a", "/cygdrive/c/dir space/a");
+    }
+
+    @Test
     public void testUnixPathComparisonNormal() {
         assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_SOLARIS_INTEL, "/tmp/./a", "/tmp/../tmp/a");
     }
