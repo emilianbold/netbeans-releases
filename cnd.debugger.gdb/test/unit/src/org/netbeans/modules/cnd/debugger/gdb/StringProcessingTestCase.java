@@ -39,23 +39,69 @@
 
 package org.netbeans.modules.cnd.debugger.gdb;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import junit.framework.TestCase;
+import org.junit.Test;
+import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 
 /**
  *
  * @author Egor Ushakov
  */
-public class GdbUnitTest extends TestSuite {
+public class StringProcessingTestCase extends TestCase {
 
-    public GdbUnitTest() {
-        super("Gdb unit tests");
-        addTestSuite(PathComparisonTestCase.class);
-        addTestSuite(StringProcessingTestCase.class);
+    @Test
+    public void testFindMatchingCurly1() {
+        assertEquals(1, GdbUtils.findMatchingCurly("{}", 0));
     }
 
-    public static Test suite() {
-        TestSuite suite = new GdbUnitTest();
-        return suite;
+    @Test
+    public void testFindMatchingCurly2() {
+        assertEquals(4, GdbUtils.findMatchingCurly("{asd}", 1));
     }
+
+    @Test
+    public void testFindMatchingCurly3() {
+        assertEquals(5, GdbUtils.findMatchingCurly("{{}{}}", 0));
+    }
+
+    @Test
+    public void testFindMatchingCurly4() {
+        assertEquals(2, GdbUtils.findMatchingCurly("{{}{}}", 1));
+    }
+
+    @Test
+    public void testFindMatchingCurly5() {
+        assertEquals(8, GdbUtils.findMatchingCurly("{{'{'}{}}", 0));
+    }
+
+    @Test
+    public void testFindMatchingCurly6() {
+        assertEquals(8, GdbUtils.findMatchingCurly("{{'}'}{}}", 0));
+    }
+
+    @Test
+    public void testFindMatchingCurly7() {
+        assertEquals(8, GdbUtils.findMatchingCurly("{{\"}\"}{}}", 0));
+    }
+
+    @Test
+    public void testFindEndOfString1() {
+        assertEquals(4, GdbUtils.findEndOfString("\"asd\"", 1));
+    }
+
+    @Test
+    public void testFindEndOfString2() {
+        assertEquals(5, GdbUtils.findEndOfString("asd\\\"\"", 0));
+    }
+
+    @Test
+    public void testFindEndOfString3() {
+        try {
+            GdbUtils.findEndOfString("asd", 1);
+            fail("Should throw IllegalStateException");
+        } catch (IllegalStateException e) {
+            //ok
+        }
+    }
+    
 }
