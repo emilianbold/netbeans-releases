@@ -47,6 +47,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
@@ -63,6 +65,7 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  * First panel of <code>NewNbModuleWizardIterator</code>. Allow user to enter
@@ -90,6 +93,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel
     /** Creates new form BasicInfoVisualPanel */
     BasicInfoVisualPanel(final NewModuleProjectData data) {
         super(data);
+        validityId = ++validityCounter;
         initComponents();
         initPlatformCombo(suitePlatformValue);
         initPanels();
@@ -144,29 +148,30 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (ModuleTypePanel.isPanelUpdated(evt)){
-            moduleTypePanelUpdated();
+        if (ModuleTypePanel.isPanelUpdated(evt) && !internalUpdate && validityCounter == validityId) {
+            try {
+                internalUpdate = true;
+                boolean isStandAlone = ModuleTypePanel.isStandalone(getSettings());
+                boolean isSuiteComponent = ModuleTypePanel.isSuiteComponent(getSettings());
+                // both radio buttons are deselected and disaled
+                if (!isStandAlone && !isSuiteComponent){
+                    return;
+                }
+
+                if (!mainProjectTouched) {
+                    mainProject.setSelected(isStandAlone);
+                }
+                if (!locationUpdated) {
+                    setInitialLocation();
+                }
+                if (!nameUpdated) {
+                    setInitialProjectName();
+                }
+            } finally {
+                internalUpdate = false;
+            }
+            updateAndCheck();   // call only once after all changes
         }
-    }
-    
-    private void moduleTypePanelUpdated() {
-        boolean isStandAlone = ModuleTypePanel.isStandalone(getSettings());
-        boolean isSuiteComponent = ModuleTypePanel.isSuiteComponent(getSettings());
-        // both radio buttons are deselected and disaled
-        if (!isStandAlone && !isSuiteComponent){
-            return;
-        }
-        
-        if (!mainProjectTouched) {
-            mainProject.setSelected(isStandAlone);
-        }
-        if (!locationUpdated) {
-            setInitialLocation();
-        }
-        if (!nameUpdated) {
-            setInitialProjectName();
-        }
-        updateAndCheck();
     }
     
     private void setInitialLocation() {
@@ -223,10 +228,20 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel
     private File getLocationFile() {
         return new File(getLocationValue());
     }
-    
+
+
+    // #164567, #165777: we're updating ModuleTypePanel, panel is updating us --> SOE;
+    // this ensures that only last valid instance communicates through getSettings() even after user
+    // returns back to 1-st page of New Project Wizard, there's no API in openide.dialogs
+    // to detach panels from property changes
+    private static int validityCounter = 0;
+    private int validityId;
+    // this guards against property changes fired from inside our code
+    private boolean internalUpdate = false;
+
     void updateAndCheck() {
         updateGUI();
-        
+
         if ("".equals(getNameValue())) {
             setInfo(NbBundle.getMessage(
                     BasicInfoVisualPanel.class, "MSG_NameCannotBeEmpty"), false);//NOI18N
@@ -239,7 +254,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel
         } else if (!ModuleTypePanel.validate(getSettings())) {
             setError((String)getSettings().getProperty(WizardDescriptor.PROP_ERROR_MESSAGE));
         } else if (isSuiteWizard() &&
-                (suitePlatformValue.getSelectedItem() == null || !((NbPlatform) suitePlatformValue.getSelectedItem()).isValid())) 
+                (suitePlatformValue.getSelectedItem() == null || !((NbPlatform) suitePlatformValue.getSelectedItem()).isValid()))
         {
             setError(NbBundle.getMessage(
                     BasicInfoVisualPanel.class, "MSG_ChosenPlatformIsInvalid"));//NOI18N
@@ -256,14 +271,16 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel
             markValid();
         }
     }
-    
+
     private void updateGUI() {
+        if (internalUpdate) return;
         // update project folder
         folderValue.setText(getFolder().getPath());
-
+        Logger.getLogger(BasicInfoVisualPanel.class.getName()).log(Level.FINE,
+                "(" + validityId + ") Setting project folder to '" + getFolder().getPath() + "'");
         ModuleTypePanel.setProjectFolder(getSettings(), getFolder());
     }
-    
+
     /** Set <em>next</em> free project name. */
     private void setProjectName(String formater, int counter) {
         String name;
@@ -351,7 +368,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel
             }
         };
         suitePlatformValue.addActionListener(plafAL);
-        getSettings().addPropertyChangeListener(this);
+        getSettings().addPropertyChangeListener(WeakListeners.propertyChange(this, getSettings()));
     }
     
     private File getFolder() {
