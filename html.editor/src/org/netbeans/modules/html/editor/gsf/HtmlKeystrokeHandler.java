@@ -74,7 +74,6 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
         return false;
     }
 
-    //not used. HTMLKit coveres this functionality
     @Override
     public boolean afterCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
         HtmlAutoCompletion.charInserted((BaseDocument)doc, caretOffset, target.getCaret(), ch);
@@ -111,12 +110,8 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
             return false;
         }
         final Indent indent = Indent.get(doc);
-        indent.lock();
-        try {
-            indent.reindent(lineStart, caretOffset);
-        } finally {
-            indent.unlock();
-        }
+        indent.reindent(lineStart, caretOffset); //caled under Indent lock && atomic lock
+
         return false;
     }
 
