@@ -249,6 +249,9 @@ public final class Product extends RegistryNode implements StatusInterface {
                         ERROR_CANNOT_WRAP_FOR_MACOS_KEY), e);
             }
         }
+
+        // check for cancel status
+        if (progress.isCanceled()) return;
         
         if(dataUris.size()>0) {
         LogManager.log("... extracting files from the data archives");
@@ -312,6 +315,8 @@ public final class Product extends RegistryNode implements StatusInterface {
                         dataFile),
                         e);
             }
+            // check for cancel status
+            if (progress.isCanceled()) break;
         }
         } else {
             LogManager.log("... no data archives assigned to this product");
