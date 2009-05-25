@@ -112,12 +112,12 @@ import org.openide.util.RequestProcessor.Task;
  * @author Tomas Stupka
  */
 public class QueryController extends BugtrackingController implements DocumentListener, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
-    protected QueryPanel panel;
+    private QueryPanel panel;
 
-    protected RequestProcessor rp = new RequestProcessor("Jira query", 1, true);  // NOI18N
+    private RequestProcessor rp = new RequestProcessor("Jira query", 1, true);  // NOI18N
     private Task task;
 
-    protected final JiraRepository repository;
+    private final JiraRepository repository;
     protected JiraQuery query;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // NOI18N
