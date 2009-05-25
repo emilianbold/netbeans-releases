@@ -100,6 +100,7 @@ public class JiraRepository extends Repository {
     private RequestProcessor refreshProcessor;
     private JiraExecutor executor;
     private JiraConfiguration configuration;
+    private final Object REPOSITORY_LOCK = new Object();
 
     public JiraRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
@@ -299,7 +300,7 @@ public class JiraRepository extends Repository {
 
     protected void setTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
-        resetRepository(); // only on url, user or passwd change        
+        resetRepository(); // only on url, user or passwd change
         Jira.getInstance().addRepository(this);
     }
 
@@ -343,12 +344,14 @@ public class JiraRepository extends Repository {
         return c != null ? c.getPassword() : ""; // NOI18N
     }
     
-    synchronized void resetRepository() {
+    void resetRepository() {
         // XXX
-        configuration = null;
-        TaskRepository taskRepo = getTaskRepository();
-        if(taskRepo != null) {
-            Jira.getInstance().removeClient(taskRepo);
+        synchronized (REPOSITORY_LOCK) {
+            configuration = null;
+            TaskRepository taskRepo = getTaskRepository();
+            if (taskRepo != null) {
+                Jira.getInstance().removeClient(taskRepo);
+            }
         }
     }
 
@@ -374,8 +377,6 @@ public class JiraRepository extends Repository {
     }
 
     private JiraConfiguration getConfigurationIntern(final boolean forceRefresh) {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-
         // XXX need logging incl. consumed time
 
         class ConfigurationCommand extends JiraCommand {

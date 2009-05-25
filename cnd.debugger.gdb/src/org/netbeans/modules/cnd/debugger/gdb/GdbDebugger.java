@@ -1321,7 +1321,14 @@ public class GdbDebugger implements PropertyChangeListener {
         CallStackFrame curFrame = getCurrentCallStackFrame();
         for (String frame : frames) {
             Map<String, String> frameMap = GdbUtils.createMapFromString(frame);
-            int level = Integer.parseInt(frameMap.get("level")); // NOI18N
+            int level;
+            try {
+                level = Integer.parseInt(frameMap.get("level")); // NOI18N
+            } catch (Exception e) {
+                log.log(Level.INFO, "Unable to parse level number for frame: " + frame, e); // NOI18N
+                // unable to parse level - just continue
+                continue;
+            }
             String args = frameMap.get("args"); // NOI18N
             Collection<GdbVariable> vars = GdbUtils.createLocalsList(args);
             synchronized (callstack) {
@@ -1590,16 +1597,13 @@ public class GdbDebugger implements PropertyChangeListener {
         return state == State.STOPPED;
     }
 
-    /*public Boolean evaluateIn(Expression expression, final Object frame) {
-    return Boolean.FALSE;
-    }*/
     /**
      * Helper method that fires JPDABreakpointEvent on JPDABreakpoints.
      *
      * @param breakpoint a breakpoint to be changed
      * @param event a event to be fired
      */
-    public void fireBreakpointEvent(GdbBreakpoint breakpoint, GdbBreakpointEvent event) {
+    private static void fireBreakpointEvent(GdbBreakpoint breakpoint, GdbBreakpointEvent event) {
         breakpoint.fireGdbBreakpointChange(event);
     }
 
@@ -2067,10 +2071,10 @@ public class GdbDebugger implements PropertyChangeListener {
     private static void attach2Target(Object target, ProjectInformation pinfo) throws DebuggerStartException {
         Project project = pinfo.getProject();
         ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        MakeConfigurationDescriptor mcd = (MakeConfigurationDescriptor) cdp.getConfigurationDescriptor();
+        MakeConfigurationDescriptor mcd = cdp.getConfigurationDescriptor();
         
         if (mcd != null) {
-            MakeConfiguration conf = (MakeConfiguration) mcd.getConfs().getActive();
+            MakeConfiguration conf = mcd.getActiveConfiguration();
             String path = getExecutableOrSharedLibrary(pinfo, conf);
 
             if (path != null) {

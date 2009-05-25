@@ -106,17 +106,20 @@ final class TopClassFinder {
 
         private final TestabilityJudge testabilityJudge;
         private final Collection<SkippedClass> nonTestable;
+        private final long skipTestabilityResultMask;
 
         ExtendedTestabilityFilter(TestabilityJudge testabilityJudge,
-                                  Collection<SkippedClass> nonTestable) {
+                                  Collection<SkippedClass> nonTestable,
+                                  long skipTestabilityResultMask) {
             this.testabilityJudge = testabilityJudge;
             this.nonTestable = nonTestable;
+            this.skipTestabilityResultMask = skipTestabilityResultMask;
         }
         public boolean passes(TypeElement topClass,
                               CompilationInfo compInfo) {
             TestabilityResult testabilityStatus
                     = testabilityJudge.isClassTestable(compInfo,
-                                                       topClass);
+                                                       topClass, skipTestabilityResultMask);
             if (testabilityStatus.isTestable()) {
                 return true;
             } else {
@@ -202,9 +205,10 @@ final class TopClassFinder {
     static List<ElementHandle<TypeElement>> findTestableTopClasses(
                                                 JavaSource javaSource,
                                                 TestabilityJudge testabilityJudge,
-                                                Collection<SkippedClass> nonTestable)
+                                                Collection<SkippedClass> nonTestable,
+                                                long skipTestabilityResultMask)
                                                         throws IOException {
-        TopClassFinderTask analyzer = new TopClassFinderTask(new ExtendedTestabilityFilter(testabilityJudge, nonTestable));
+        TopClassFinderTask analyzer = new TopClassFinderTask(new ExtendedTestabilityFilter(testabilityJudge, nonTestable, skipTestabilityResultMask));
         javaSource.runUserActionTask(analyzer, true);
         return analyzer.topClassElems;
     }

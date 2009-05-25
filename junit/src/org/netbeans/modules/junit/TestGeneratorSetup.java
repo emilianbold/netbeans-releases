@@ -57,10 +57,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
 import static javax.lang.model.element.Modifier.ABSTRACT;
 import static javax.lang.model.element.Modifier.PRIVATE;
-import static javax.lang.model.element.Modifier.PROTECTED;
-import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
-import static org.openide.NotifyDescriptor.WARNING_MESSAGE;
 import static org.netbeans.modules.junit.TestCreator.ACCESS_MODIFIERS;
 
 /**
@@ -621,10 +618,10 @@ public final class TestGeneratorSetup implements TestabilityJudge {
      *          the information why the class is not testable
      */
     public TestabilityResult isClassTestable(CompilationInfo compInfo,
-                                             TypeElement classElem) {
+                                             TypeElement classElem, long skipTestabilityResultMask) {
         assert classElem != null;
         
-        TestabilityResult result = isClassTestableSingle(compInfo, classElem);
+        TestabilityResult result = isClassTestableSingle(compInfo, classElem, skipTestabilityResultMask);
 
         if (result.isTestable()) {
             return TestabilityResult.OK;
@@ -663,7 +660,7 @@ public final class TestGeneratorSetup implements TestabilityJudge {
             }
 
             TestabilityResult resultSingle
-                                = isClassTestableSingle(compInfo, classToCheck);
+                                = isClassTestableSingle(compInfo, classToCheck, skipTestabilityResultMask);
             if (resultSingle.isTestable()) {
                 return TestabilityResult.OK;
             } else {
@@ -689,7 +686,7 @@ public final class TestGeneratorSetup implements TestabilityJudge {
      *          the information why the class is not testable
      */
     private TestabilityResult isClassTestableSingle(CompilationInfo compInfo,
-                                                    TypeElement classElem) {
+                                                    TypeElement classElem, long skipTestabilityResultMask) {
         assert classElem != null;
         
         TestabilityResult result = TestabilityResult.OK;
@@ -715,6 +712,9 @@ public final class TestGeneratorSetup implements TestabilityJudge {
             result = TestabilityResult.combine(result, TestabilityResult.NO_TESTEABLE_METHODS);
         if (isSkipExceptionClasses() && TestUtil.isClassException(compInfo, classElem)) 
             result = TestabilityResult.combine(result, TestabilityResult.EXCEPTION_CLASS);
+
+        //apply filter mask
+        result = TestabilityResult.filter(result, skipTestabilityResultMask);
 
         return result;
     }

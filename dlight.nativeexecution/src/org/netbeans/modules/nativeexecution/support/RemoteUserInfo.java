@@ -102,7 +102,6 @@ final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         private final static PasswordManager pm = PasswordManager.getInstance();
         private final Component parent;
         private final ExecutionEnvironment env;
-        private volatile boolean cancelled = false;
         private volatile Component parentWindow = null;
 
         public Interractive(ExecutionEnvironment env) {
@@ -128,10 +127,6 @@ final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
 
         public boolean promptPassword(String message) {
             synchronized (lock) {
-                if (cancelled) {
-                    return false;
-                }
-
                 boolean result;
                 PasswordDlg pwdDlg = new PasswordDlg();
 
@@ -147,7 +142,6 @@ final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
                     return true;
                 } else {
                     pm.clearPassword(env);
-                    cancelled = true;
                     return false;
                 }
             }

@@ -54,11 +54,7 @@ public class HudsonJobConstants {
     
     public static final String JOB_NAME = "job_name"; // NOI18N
     
-    public static final String JOB_DESCRIPTION = "job_description"; // NOI18N
-    
     public static final String JOB_URL = "job_url"; // NOI18N
-    
-    public static final String JOB_VCS_ROOT = "job_vcs_root"; // NOI18N
     
     public static final String JOB_COLOR = "job_color"; // NOI18N
     

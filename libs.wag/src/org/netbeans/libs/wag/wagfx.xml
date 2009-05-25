@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -40,12 +42,15 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<html>
-<head>
-	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-</head>
-<BODY>
-Creates empty NBS file. You can edit the file in the IDE's Source Editor.
-To change this template, choose Tools | Template Manager
-and open the template in the editor.
-</BODY></HTML>
+<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
+<library version="1.0">
+    <name>wagfx</name>
+    <type>j2se</type>
+    <localizing-bundle>org/netbeans/libs/wag/Bundle</localizing-bundle>
+    <volume>
+        <type>classpath</type>
+        <resource>jar:nbinst:///modules/ext/wag/JSON.org.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/wag/zclcore-0.5.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/wag/zclfx_min-0.5.jar!/</resource>
+    </volume>
+</library>

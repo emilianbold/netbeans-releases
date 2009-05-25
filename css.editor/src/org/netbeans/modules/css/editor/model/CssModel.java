@@ -75,7 +75,11 @@ public final class CssModel {
 
     private CssModel(Snapshot snapshot, SimpleNode root) {
         this.snapshot = snapshot;
-        updateModel(snapshot, root);
+        //check for null which may happen if the source is severely broken
+        //if it happens, the model contains just empty list of rules
+        if(root != null) {
+            updateModel(snapshot, root);
+        }
     }
 
     //--- API methods ---

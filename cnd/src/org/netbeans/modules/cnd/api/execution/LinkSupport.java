@@ -80,7 +80,7 @@ public class LinkSupport {
 
     public static boolean isLinkFile(String linkPath) {
         try {
-            LinkReader lr = new LinkReader(linkPath);
+            new LinkReader(linkPath);
             return true;
         } catch (FileNotFoundException ex) {
             return false;

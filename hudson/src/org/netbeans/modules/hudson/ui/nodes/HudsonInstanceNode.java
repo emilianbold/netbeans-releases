@@ -144,7 +144,7 @@ public class HudsonInstanceNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
-        if (instance.getViews().size() > 1) {
+        if (!instance.getViews().isEmpty()) {
             actions.add(new ViewSwitcher());
             actions.add(null);
         }
@@ -301,9 +301,6 @@ public class HudsonInstanceNode extends AbstractNode {
                     add(item);
                     addSeparator();
                     for (final HudsonView view : instance.getViews()) {
-                        if (view.getName().equals(HudsonView.ALL_VIEW)) {
-                            continue;
-                        }
                         item = new JRadioButtonMenuItem(view.getName());
                         item.setSelected(view.getName().equals(selectedView));
                         item.addActionListener(new ActionListener() {
