@@ -261,9 +261,6 @@ public class FunctionsListViewVisualizer extends JPanel implements
         }
         outline.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         outlineView.setProperties(result.toArray(new Property[0]));
-        if (isMacLaf) {
-            buttonsToolbar.setBackground(macBackground);
-        }
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
 
         KeyStroke returnKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true);
@@ -451,6 +448,9 @@ public class FunctionsListViewVisualizer extends JPanel implements
         this.removeAll();
         this.setLayout(new BorderLayout());
         buttonsToolbar = new JToolBar();
+        if (isMacLaf) {
+            buttonsToolbar.setBackground(macBackground);
+        }
         refresh = new JButton();
 
         buttonsToolbar.setFloatable(false);

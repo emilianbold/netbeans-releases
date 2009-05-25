@@ -129,6 +129,8 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
         commonSupport = new CommonServerSupport(lookup, ip, instanceProvider);
         ic.add(commonSupport); // Common action support, e.g start/stop, etc.
 
+        commonInstance = ServerInstanceFactory.createServerInstance(this);
+        instanceProvider.addServerInstance(this);
         updateModuleSupport();
     }
 
@@ -209,13 +211,11 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
         ip.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(adminPort));
         ip.put(GlassfishModule.URL_ATTR, url);
         GlassfishInstance result = new GlassfishInstance(ip, gip);
-        result.commonInstance = ServerInstanceFactory.createServerInstance(result);
         return result;
     }
     
     public static GlassfishInstance create(Map<String, String> ip,GlassfishInstanceProvider gip) {
         GlassfishInstance result = new GlassfishInstance(ip, gip);
-        result.commonInstance = ServerInstanceFactory.createServerInstance(result);
         return result;
     }
     

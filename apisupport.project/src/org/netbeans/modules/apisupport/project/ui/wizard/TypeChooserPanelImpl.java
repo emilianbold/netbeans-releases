@@ -63,12 +63,13 @@ import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author  akorostelev
  */
-public class TypeChooserPanelImpl  extends javax.swing.JPanel{
+public class TypeChooserPanelImpl  extends javax.swing.JPanel implements PropertyChangeListener {
 
     public final static String IS_STANDALONE_OR_SUITE_COMPONENT 
                                                 = "tc_isStandaloneOrSuiteComp"; // NOI18N
@@ -121,6 +122,7 @@ public class TypeChooserPanelImpl  extends javax.swing.JPanel{
     }
 
     TypeChooserPanelImpl() {
+        validityId = ++validityCounter;
         initComponents();
         init();
     }
@@ -174,13 +176,12 @@ public class TypeChooserPanelImpl  extends javax.swing.JPanel{
     
     private boolean isNetBeansOrgFolder() {
         File folder = ModuleTypePanelExtended.getProjectFolder(getSettings());
-        final Logger logger = Logger.getLogger(this.getClass().getName());
         if (folder != null){
             boolean ret = BasicInfoVisualPanel.isNetBeansOrgFolder(folder);
-            logger.log(Level.FINE, "isNetBeansOrgFolder '" + folder + "'? " + (ret ? "YES" : "NO"));
+            LOG.log(Level.FINER, "isNetBeansOrgFolder '" + folder + "'? " + (ret ? "YES" : "NO"));
             return ret;
         }
-        logger.log(Level.FINE, "isNetBeansOrgFolder 'null'? NO");
+        LOG.log(Level.FINER, "isNetBeansOrgFolder 'null'? NO");
         return false;
     }
     
@@ -232,18 +233,36 @@ public class TypeChooserPanelImpl  extends javax.swing.JPanel{
         moduleSuiteValue.setEnabled(suiteModuleSelected && !isOneSuiteDedicatedMode());
         browseSuiteButton.setEnabled(suiteModuleSelected && !isOneSuiteDedicatedMode());
     }
-    
+
+    private static final Logger LOG = Logger.getLogger(TypeChooserPanelImpl.class.getName());
+
+    // #164567, #165777: we're updating ModuleTypePanel, panel is updating us --> SOE;
+    // this ensures that only last valid instance communicates through getSettings() even after user
+    // returns back to 1-st page of New Project Wizard, there's no API in openide.dialogs
+    // to detach panels from property changes
+    private static int validityCounter = 0;
+    private int validityId;
+    // this guards against property changes fired from inside our code
+    private boolean internalUpdate = false;
+
     private void projectFolderIsUpdated() {
-        
-        if (isSuiteWizard(getWizardType()) || isNetBeansOrgFolder()) {
-            detachModuleTypeGroup();
-        } else {
-            attachModuleTypeGroup();
+        if (internalUpdate || validityCounter != validityId) return;
+        try {
+            internalUpdate = true;
+            if (isSuiteWizard(getWizardType()) || isNetBeansOrgFolder()) {
+                LOG.log(Level.FINE, "projectFolderIsUpdated detaching module type group");
+                detachModuleTypeGroup();
+            } else {
+                LOG.log(Level.FINE, "projectFolderIsUpdated attaching module type group");
+                attachModuleTypeGroup();
+            }
+            updateEnabled();
+            boolean nbOrg = isNetBeansOrgFolder();
+            ModuleTypePanelExtended.setIsNetBeansOrg(getSettings(), nbOrg);
+            ModuleTypePanelExtended.setIsStandaloneOrSuiteComponent(getSettings(), nbOrg ? null : isStandAlone());
+        } finally {
+            internalUpdate = false;
         }
-        updateEnabled();
-        boolean nbOrg = isNetBeansOrgFolder();
-        ModuleTypePanelExtended.setIsNetBeansOrg(getSettings(), nbOrg);
-        ModuleTypePanelExtended.setIsStandaloneOrSuiteComponent(getSettings(), nbOrg ? null : isStandAlone());
     }
 
     private void storeInitialValuesToWD(WizardDescriptor settings){
@@ -255,14 +274,14 @@ public class TypeChooserPanelImpl  extends javax.swing.JPanel{
     }
 
     private void attachPropertyChangeListener(WizardDescriptor settings){
-        settings.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                String name = evt.getPropertyName();
-                if (PROJECT_FOLDER.equals(name)) {
-                    projectFolderIsUpdated();
-                }
-            }
-        });
+        settings.addPropertyChangeListener(WeakListeners.propertyChange(this, settings));
+    }
+    
+    public void propertyChange(PropertyChangeEvent evt) {
+        String name = evt.getPropertyName();
+        if (PROJECT_FOLDER.equals(name)) {
+            projectFolderIsUpdated();
+        }
     }
         
     private void detachModuleTypeGroup() {
@@ -598,12 +617,14 @@ JFileChooser chooser = ProjectChooser.projectChooser();
         {
             if (settings != null && (value != null ||
                     settings.getProperty(IS_STANDALONE_OR_SUITE_COMPONENT) != null)) { // #164567 JDK 6 doesn't check for null->null prop. change
+                LOG.log(Level.FINE, "setIsStandaloneOrSuiteComponent: " + (value == null ? "NULL" : value ? "TRUE" : "FALSE"));
                 settings.putProperty(IS_STANDALONE_OR_SUITE_COMPONENT, value);
             }
         }
         
         static void setIsNetBeansOrg( WizardDescriptor settings, Boolean value) {
             if (settings != null){
+                LOG.log(Level.FINE, "setIsNetBeansOrg: " + (value == null ? "NULL" : value ? "TRUE" : "FALSE"));
                 settings.putProperty(IS_NETBEANS_ORG, value);
             }
         }
