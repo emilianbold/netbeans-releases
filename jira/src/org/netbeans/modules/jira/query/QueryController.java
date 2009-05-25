@@ -60,11 +60,8 @@ import java.util.MissingResourceException;
 import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JList;
-import javax.swing.JTextField;
-import javax.swing.ListModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -77,17 +74,13 @@ import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ContentFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.CurrentUserFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.eclipse.mylyn.internal.jira.core.model.filter.IssueTypeFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.NobodyFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.PriorityFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ResolutionFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.SpecificUserFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.StatusFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.UserFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.UserInGroupFilter;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -119,7 +112,7 @@ import org.openide.util.RequestProcessor.Task;
  * @author Tomas Stupka
  */
 public class QueryController extends BugtrackingController implements DocumentListener, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
-    protected QueryPanel panel;
+    private QueryPanel panel;
 
     private RequestProcessor rp = new RequestProcessor("Jira query", 1, true);  // NOI18N
     private Task task;
@@ -130,10 +123,18 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // NOI18N
     private QueryTask searchTask;
     private QueryTask refreshTask;
+    private final boolean modifiable;
+    private final JiraFilter jiraFilter;
 
-    public QueryController(JiraRepository repository, JiraQuery query, JiraFilter jiraFilter) {
+    public QueryController(JiraRepository repository, JiraQuery query, FilterDefinition fd) {
+        this(repository, query, fd, true);
+    }
+
+    public QueryController(JiraRepository repository, JiraQuery query, JiraFilter jiraFilter, boolean modifiable) {
         this.repository = repository;
         this.query = query;
+        this.modifiable = modifiable;
+        this.jiraFilter = jiraFilter;
 
         panel = new QueryPanel(query.getTableComponent(), this);
 
@@ -168,78 +169,24 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(query.isSaved()) {
             setAsSaved();
         }
-        postPopulate((FilterDefinition) jiraFilter, false);
-    }
-
-    @Override
-    public void opened() {
-        boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
-        if(autoRefresh) {
-            scheduleForRefresh();
-        }
-        if(query.isSaved()) {
-            setIssueCount(query.getSize()); // XXX this probably won't work
-                                            // if the query is alredy open and
-                                            // a refresh is invoked on kenai
-            if(!query.wasRun()) {
-                onRefresh();
+        if(modifiable) {
+            if(jiraFilter != null) {
+                 assert jiraFilter instanceof FilterDefinition;
             }
+            postPopulate((FilterDefinition) jiraFilter, false);
         }
     }
 
-    private void setIssueCount(final int count) {
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                panel.tableSummaryLabel.setText(
-                        NbBundle.getMessage(
-                            QueryController.class,
-                            NbBundle.getMessage(QueryController.class, "LBL_MATCHINGISSUES"),                           // NOI18N
-                            new Object[] { count }
-                        )
-                );
-            }
-        });
-    }
-
-
-    @Override
-    public void closed() {
-        onCancelChanges();
-        if(task != null) {
-            task.cancel();
+    protected JiraFilter getJiraFilter() {
+        if(modifiable) {
+            return getFilterDefinition();
+        } else {
+            return jiraFilter;
         }
-        if(query.isSaved()) {
-            repository.stopRefreshing(query);
-        }
-    }
-
-    protected void scheduleForRefresh() {
-        if(query.isSaved()) {
-            repository.scheduleForRefresh(query);
-        }
-    }
-
-    @Override
-    public JComponent getComponent() {
-        return panel;
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(JiraQuery.class);
-    }
-
-    @Override
-    public boolean isValid() {
-        return true;
-    }
-
-    @Override
-    public void applyChanges() {
-        
     }
 
     public FilterDefinition getFilterDefinition() {
+        assert modifiable;
         FilterDefinition fd = new FilterDefinition();
 
         // text search
@@ -333,7 +280,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private UserSearch reporterUserSearch;
     private UserSearch assigneeUserSearch;
-    public void populate(final FilterDefinition filterDefinition) {
+    private void populate(final FilterDefinition filterDefinition) {
         if(Jira.LOG.isLoggable(Level.FINE)) {
             Jira.LOG.fine("Starting populate query controller" + (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
         }
@@ -346,7 +293,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                         // XXX nice errro msg?
                         return;
                     }
-                    
+
                     populateList(panel.projectList, jc.getProjects());
                     if (jc.getProjects().length == 1) {
                         panel.setIssuePrefixText(jc.getProjects()[0].getKey() + "-"); //NOI18N
@@ -368,46 +315,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     }
 
                     panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
-//
-//                    if(query.isSaved()) {
-//                        final boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
-//                        panel.refreshCheckBox.setSelected(autoRefresh);
-//                    }
-
-//                    JiraConfiguration bc = repository.getConfiguration();
-//                    if(bc == null) {
-//                        // XXX nice errro msg?
-//                        return;
-//                    }
-//                    productParameter.setParameterValues(toParameterValues(bc.getProducts()));
-//                    if (panel.productList.getModel().getSize() > 0) {
-//                        panel.productList.setSelectedIndex(0);
-//                        populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
-//                    }
-//                    severityParameter.setParameterValues(toParameterValues(bc.getSeverities()));
-//                    statusParameter.setParameterValues(toParameterValues(bc.getStatusValues()));
-//                    resolutionParameter.setParameterValues(toParameterValues(bc.getResolutions()));
-//                    priorityParameter.setParameterValues(toParameterValues(bc.getPriorities()));
-//                    changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
-//                    summaryParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
-//                    commentsParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
-//                    keywordsParameter.setParameterValues(QueryParameter.PV_KEYWORDS_VALUES);
-//                    peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
-//                    panel.changedToTextField.setText(CHANGED_NOW);
-//
-//                    // XXX
-//                    if (urlParameters != null) {
-//                        setParameters(urlParameters);
-//                    }
-//
-//                    panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
-//
-//                    if(query.isSaved()) {
-//                        final boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
-//                        panel.refreshCheckBox.setSelected(autoRefresh);
-//                    }
                 }
-
             };
             repository.getExecutor().execute(cmd);
         } finally {
@@ -425,12 +333,153 @@ public class QueryController extends BugtrackingController implements DocumentLi
         list.setModel(model);
     }
 
+    private void setFilterDefinition(FilterDefinition fd) {
+        if(fd == null) {
+            return;
+        }
+        // lists
+        ProjectFilter pf = fd.getProjectFilter();
+        if(pf != null) {
+            setSelected(panel.projectList, pf.getProjects());
+        }
+        IssueTypeFilter itf = fd.getIssueTypeFilter();
+        if(itf != null) {
+            setSelected(panel.typeList, itf.getIsueTypes());
+        }
+        StatusFilter sf = fd.getStatusFilter();
+        if(sf != null) {
+            setSelected(panel.statusList, sf.getStatuses());
+        }
+        ResolutionFilter rf = fd.getResolutionFilter();
+        if(rf != null) {
+            setSelected(panel.resolutionList, rf.getResolutions());
+        }
+        PriorityFilter prf = fd.getPriorityFilter();
+        if(prf != null) {
+            setSelected(panel.priorityList, prf.getPriorities());
+        }
+        // find by text
+        ContentFilter cf = fd.getContentFilter();
+        if (cf != null) {
+            panel.queryTextField.setText(cf.getQueryString());
+            panel.summaryCheckBox.setSelected(cf.isSearchingSummary());
+            panel.descriptionCheckBox.setSelected(cf.isSearchingDescription());
+            panel.commentsCheckBox.setSelected(cf.isSearchingComments());
+            panel.environmentCheckBox.setSelected(cf.isSearchingEnvironment());
+        }
+        // user filters
+        UserFilter uf = fd.getReportedByFilter();
+        if (uf != null) {
+            reporterUserSearch.setFilter(uf);
+        }
+        uf = fd.getAssignedToFilter();
+        if (uf != null) {
+            assigneeUserSearch.setFilter(uf);
+        }
+        // find by last change
+        // XXX finish me
+       
+    }
+
+    private void setSelected (JList list, Object[] selectedItems) {
+        if(selectedItems != null) {
+            List<Integer> toSelect = new ArrayList<Integer>();
+            DefaultListModel model = (DefaultListModel) list.getModel();
+            for (Object p : selectedItems) {
+                int idx = model.indexOf(p);
+                if (idx > -1) {
+                    toSelect.add(idx);
+                }
+            }
+            int[] idx = new int[toSelect.size()];
+            for (int i = 0; i < idx.length; i++) {
+                idx[i] = toSelect.get(i);
+            }
+            list.setSelectedIndices(idx);
+        }
+    }
+
+    @Override
+    public void opened() {
+        boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
+        if(autoRefresh) {
+            scheduleForRefresh();
+        }
+        if(query.isSaved()) {
+            setIssueCount(query.getSize()); // XXX this probably won't work
+                                            // if the query is alredy open and
+                                            // a refresh is invoked on kenai
+            if(!query.wasRun()) {
+                onRefresh();
+            }
+        }
+    }   
+
+    protected void setIssueCount(final int count) {
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                panel.tableSummaryLabel.setText(
+                        NbBundle.getMessage(
+                            QueryController.class,
+                            NbBundle.getMessage(QueryController.class, "LBL_MATCHINGISSUES"),                           // NOI18N
+                            new Object[] { count }
+                        )
+                );
+            }
+        });
+    }
+
+
+    @Override
+    public void closed() {
+        onCancelChanges();
+        if(task != null) {
+            task.cancel();
+        }
+        if(query.isSaved()) {
+            repository.stopRefreshing(query);
+        }
+    }
+
+    protected void scheduleForRefresh() {
+        if(query.isSaved()) {
+            repository.scheduleForRefresh(query);
+        }
+    }
+
+    @Override
+    public JComponent getComponent() {
+        return panel;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(JiraQuery.class);
+    }
+
+    @Override
+    public boolean isValid() {
+        return true;
+    }
+
+    @Override
+    public void applyChanges() {
+        
+    }
+
     protected void enableFields(boolean bl) {
         // set all non parameter fields
         panel.enableFields(bl);
+        if(!modifiable) {
+            // can't change the controllers data
+            // so alwasy keep those fields disabled
+            panel.modifyButton.setEnabled(false);
+            panel.removeButton.setEnabled(false);
+            panel.reloadAttributesButton.setEnabled(false);
+        }
     }
 
-    public void disableProject() {
+    protected void disableProject() {
         panel.projectList.setEnabled(false);
         panel.projectLabel.setEnabled(false);
     }
@@ -632,7 +681,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.refreshCheckBox.setVisible(true);
     } 
 
-    private String getLastRefresh() throws MissingResourceException {
+    protected String getLastRefresh() throws MissingResourceException {
         long l = query.getLastRefresh();
         return l > -1 ?
             dateFormat.format(new Date(l)) :
@@ -759,7 +808,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void refreshIntern(boolean autoRefresh) {
-        query.refresh(getFilterDefinition(), autoRefresh);
+        query.refresh(getJiraFilter(), autoRefresh);
     }
 
     private void post(Runnable r) {
@@ -831,74 +880,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
         query.remove();
     }
 
-    private void setFilterDefinition(FilterDefinition fd) {
-        if(fd == null) {
-            return;
+    protected void onReloadAttributes() {
+        if(modifiable) {
+            postPopulate(getFilterDefinition(), true);
         }
-        // lists
-        ProjectFilter pf = fd.getProjectFilter();
-        if(pf != null) {
-            setSelected(panel.projectList, pf.getProjects());
-        }
-        IssueTypeFilter itf = fd.getIssueTypeFilter();
-        if(itf != null) {
-            setSelected(panel.typeList, itf.getIsueTypes());
-        }
-        StatusFilter sf = fd.getStatusFilter();
-        if(sf != null) {
-            setSelected(panel.statusList, sf.getStatuses());
-        }
-        ResolutionFilter rf = fd.getResolutionFilter();
-        if(rf != null) {
-            setSelected(panel.resolutionList, rf.getResolutions());
-        }
-        PriorityFilter prf = fd.getPriorityFilter();
-        if(prf != null) {
-            setSelected(panel.priorityList, prf.getPriorities());
-        }
-        // find by text
-        ContentFilter cf = fd.getContentFilter();
-        if (cf != null) {
-            panel.queryTextField.setText(cf.getQueryString());
-            panel.summaryCheckBox.setSelected(cf.isSearchingSummary());
-            panel.descriptionCheckBox.setSelected(cf.isSearchingDescription());
-            panel.commentsCheckBox.setSelected(cf.isSearchingComments());
-            panel.environmentCheckBox.setSelected(cf.isSearchingEnvironment());
-        }
-        // user filters
-        UserFilter uf = fd.getReportedByFilter();
-        if (uf != null) {
-            reporterUserSearch.setFilter(uf);
-        }
-        uf = fd.getAssignedToFilter();
-        if (uf != null) {
-            assigneeUserSearch.setFilter(uf);
-        }
-        // find by last change
-        // XXX finish me
-       
-    }
-
-    private void setSelected (JList list, Object[] selectedItems) {
-        if(selectedItems != null) {
-            List<Integer> toSelect = new ArrayList<Integer>();
-            DefaultListModel model = (DefaultListModel) list.getModel();
-            for (Object p : selectedItems) {
-                int idx = model.indexOf(p);
-                if (idx > -1) {
-                    toSelect.add(idx);
-                }
-            }
-            int[] idx = new int[toSelect.size()];
-            for (int i = 0; i < idx.length; i++) {
-                idx[i] = toSelect.get(i);
-            }
-            list.setSelectedIndices(idx);
-        }
-    }
-
-    private void onReloadAttributes() {
-        postPopulate(getFilterDefinition(), true);
     }
 
     private abstract class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
@@ -971,181 +956,5 @@ public class QueryController extends BugtrackingController implements DocumentLi
         public void finished() { }
 
     }
-
-    private class UserSearch implements ItemListener{
-        private String savedText;
-        private final JTextField txt;
-        private final JComboBox combo;
-        public UserSearch(JComboBox combo, JTextField txt, String nobodyDisplayName) {
-            this.txt = txt;
-            this.combo = combo;
-            combo.addItemListener(this);
-
-            DefaultComboBoxModel model = new DefaultComboBoxModel();
-            AnyUserSearch anyUser = new AnyUserSearch();
-            model.addElement(anyUser);
-            model.addElement(new NobodySearch(nobodyDisplayName));
-            model.addElement(new CurrentUserSearch());
-            model.addElement(new SpecificUserSearch());
-            model.addElement(new SpecificGroupSearch());
-            combo.setModel(model);
-            ((UserSearchItem)combo.getSelectedItem()).selected(this);
-
-        }
-        public void itemStateChanged(ItemEvent e) {
-            if(e.getStateChange() == ItemEvent.SELECTED) {
-                ((UserSearchItem)e.getItem()).selected(this);
-            }
-        }
-        void disable() {
-            if(!txt.getText().equals("")) {
-                savedText = txt.getText();
-            }
-            txt.setText("");
-            txt.setEnabled(false);
-        }
-        void enable() {
-            txt.setText(savedText);
-            txt.setEnabled(true);
-        }
-        public JTextField getTextField() {
-            return txt;
-        }
-        public UserFilter getFilter() {
-            Object item = combo.getSelectedItem();
-            if(item == null) {
-                return null;
-            }
-            return ((UserSearchItem)item).getFilter(this);
-        }
-        public void setFilter (UserFilter filter) {
-            ListModel model = combo.getModel();
-            for (int i = 0; i < model.getSize(); ++i) {
-                UserSearchItem usItem = (UserSearchItem) model.getElementAt(i);
-                if (usItem.reconstructFrom(filter, this)) {
-                    combo.setSelectedItem(usItem);
-                    break;
-                }
-            }
-        }
-    }
-
-    abstract class UserSearchItem  {
-        private final String displayName;
-        public UserSearchItem(String displayName) {
-            this.displayName = displayName;
-        }
-        public abstract UserFilter getFilter(UserSearch us);
-        public abstract void selected(UserSearch us);
-        public String getDisplayName() {
-            return displayName;
-        }
-        /**
-         * Reconstructs itself from the given filter if is owner of the filter
-         * @param filter
-         * @return true if is owner of the filter and successfully reconstructed
-         */
-        protected abstract boolean reconstructFrom (UserFilter filter, UserSearch us);
-    }
-
-    private class AnyUserSearch extends UserSearchItem {
-        public AnyUserSearch() {
-            super("Any User");
-        }
-        @Override
-        public UserFilter getFilter(UserSearch us) {
-            return null;
-        }
-        @Override
-        public void selected(UserSearch us) {
-            us.disable();
-        }
-        @Override
-        protected boolean reconstructFrom(UserFilter filter, UserSearch us) {
-            return false;
-        }
-    }
-
-    private class NobodySearch extends UserSearchItem {
-        private UserFilter filter = new NobodyFilter();
-        public NobodySearch(String displayName) {
-            super(displayName);
-        }
-        @Override
-        public UserFilter getFilter(UserSearch us) {
-            return filter;
-        }
-        @Override
-        public void selected(UserSearch us) {
-            us.disable();
-        }
-        @Override
-        protected boolean reconstructFrom(UserFilter filter, UserSearch us) {
-            return filter instanceof NobodyFilter;
-        }
-    }
-    private class CurrentUserSearch extends UserSearchItem {
-        private UserFilter filter = new CurrentUserFilter();
-        public CurrentUserSearch() {
-            super("Current User");
-        }        
-        @Override
-        public UserFilter getFilter(UserSearch us) {
-            return filter;
-        }
-        @Override
-        public void selected(UserSearch us) {
-            us.disable();
-        }
-        @Override
-        protected boolean reconstructFrom(UserFilter filter, UserSearch us) {
-            return filter instanceof CurrentUserFilter;
-        }
-    }
-    private class SpecificUserSearch extends UserSearchItem {
-        public SpecificUserSearch() {
-            super("Specify User");
-        }
-        @Override
-        public UserFilter getFilter(UserSearch us) {
-            return new SpecificUserFilter(us.getTextField().getText());
-        }
-        @Override
-        public void selected(UserSearch us) {
-            us.enable();
-        }
-        @Override
-        protected boolean reconstructFrom(UserFilter filter, UserSearch us) {
-            boolean retval = false;
-            if (filter instanceof SpecificUserFilter) {
-                us.savedText = ((SpecificUserFilter) filter).getUser();
-                retval = true;
-            }
-            return retval;
-        }
-    }
-    private class SpecificGroupSearch extends UserSearchItem {
-        public SpecificGroupSearch() {
-            super("Specify Group");
-        }
-        @Override
-        public UserFilter getFilter(UserSearch us) {
-            return new UserInGroupFilter(us.getTextField().getText());
-        }
-        @Override
-        public void selected(UserSearch us) {
-            us.enable();
-        }
-        @Override
-        protected boolean reconstructFrom(UserFilter filter, UserSearch us) {
-            boolean retval = false;
-            if (filter instanceof UserInGroupFilter) {
-                us.savedText = ((UserInGroupFilter) filter).getGroup();
-                retval = true;
-            }
-            return retval;
-        }
-    }
-
 
 }
