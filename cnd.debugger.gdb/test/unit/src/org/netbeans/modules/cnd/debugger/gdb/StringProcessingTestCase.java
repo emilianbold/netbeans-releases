@@ -37,54 +37,80 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.query.kenai;
+package org.netbeans.modules.cnd.debugger.gdb;
 
-import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.jira.JiraConfig;
-import org.netbeans.modules.jira.JiraConnector;
-import org.netbeans.modules.jira.query.JiraQuery;
-import org.netbeans.modules.jira.query.QueryController;
-import org.netbeans.modules.jira.repository.JiraRepository;
+import java.util.Map;
+import junit.framework.TestCase;
+import org.junit.Test;
+import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Egor Ushakov
  */
-public class KenaiQuery extends JiraQuery {
-    private boolean predefinedQuery = false;
-    private String project;
+public class StringProcessingTestCase extends TestCase {
 
-    public KenaiQuery(String name, JiraRepository repository, JiraFilter jf, String project, boolean saved, boolean predefined) {
-        super(name, repository, jf, saved);
-        this.predefinedQuery = predefined;
-        this.project = project;
-        controller = createControler(repository, this, jf);
-        boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(getDisplayName());
-        if(autoRefresh) {
-            getRepository().scheduleForRefresh(this);
+    @Test
+    public void testFindMatchingCurly1() {
+        assertEquals(1, GdbUtils.findMatchingCurly("{}", 0));
+    }
+
+    @Test
+    public void testFindMatchingCurly2() {
+        assertEquals(4, GdbUtils.findMatchingCurly("{asd}", 1));
+    }
+
+    @Test
+    public void testFindMatchingCurly3() {
+        assertEquals(5, GdbUtils.findMatchingCurly("{{}{}}", 0));
+    }
+
+    @Test
+    public void testFindMatchingCurly4() {
+        assertEquals(2, GdbUtils.findMatchingCurly("{{}{}}", 1));
+    }
+
+    @Test
+    public void testFindMatchingCurly5() {
+        assertEquals(8, GdbUtils.findMatchingCurly("{{'{'}{}}", 0));
+    }
+
+    @Test
+    public void testFindMatchingCurly6() {
+        assertEquals(8, GdbUtils.findMatchingCurly("{{'}'}{}}", 0));
+    }
+
+    @Test
+    public void testFindMatchingCurly7() {
+        assertEquals(8, GdbUtils.findMatchingCurly("{{\"}\"}{}}", 0));
+    }
+
+    @Test
+    public void testFindEndOfString1() {
+        assertEquals(4, GdbUtils.findEndOfString("\"asd\"", 1));
+    }
+
+    @Test
+    public void testFindEndOfString2() {
+        assertEquals(5, GdbUtils.findEndOfString("asd\\\"\"", 0));
+    }
+
+    @Test
+    public void testFindEndOfString3() {
+        try {
+            GdbUtils.findEndOfString("asd", 1);
+            fail("Should throw IllegalStateException");
+        } catch (IllegalStateException e) {
+            //ok
         }
     }
 
-    @Override
-    protected QueryController createControler(JiraRepository r, JiraQuery q, JiraFilter jiraFilter) {
-        KenaiQueryController c = new KenaiQueryController(r, q, jiraFilter, project, predefinedQuery);
-        return c;
+    @Test
+    public void testCreateMapFromString1() {
+        Map<String, String> map = GdbUtils.createMapFromString("a=\"1\",b={x},c=[\"xyz\"]");
+        assertEquals("1", map.get("a"));
+        assertEquals("x", map.get("b"));
+        assertEquals("\"xyz\"", map.get("c"));
     }
-
-    @Override
-    protected void logQueryEvent(int count, boolean autoRefresh) {
-        BugtrackingUtil.logQueryEvent(
-            JiraConnector.getConnectorName(),
-            getDisplayName(),
-            count,
-            true,
-            autoRefresh);
-    }
-
-    @Override
-    protected String getStoredQueryName() {
-        return super.getStoredQueryName() + "-" + project;
-    }
-
+    
 }

@@ -298,6 +298,12 @@ public class ProjectBridge {
     public void setupProject(List<String> includes, List<String> macros, boolean isCPP){
         Configuration c = makeConfigurationDescriptor.getActiveConfiguration();
         if (c instanceof MakeConfiguration) {
+            for(int i = 0; i < includes.size(); i++) {
+                includes.set(i, getString(includes.get(i)));
+            }
+            for(int i = 0; i < macros.size(); i++) {
+                macros.set(i, getString(macros.get(i)));
+            }
             MakeConfiguration extConf = (MakeConfiguration)c;
             if (isCPP) {
                 extConf.getCCCompilerConfiguration().getIncludeDirectories().setValue(includes);
@@ -332,6 +338,12 @@ public class ProjectBridge {
         CCCCompilerConfiguration cccc = getFolderConfiguration(isCPP, folder);
         if (cccc == null) {
             return;
+        }
+        for(int i = 0; i < includes.size(); i++) {
+            includes.set(i, getString(includes.get(i)));
+        }
+        for(int i = 0; i < macros.size(); i++) {
+            macros.set(i, getString(macros.get(i)));
         }
         cccc.getIncludeDirectories().setValue(includes);
         cccc.getInheritIncludes().setValue(inheriteIncludes);
@@ -403,6 +415,12 @@ public class ProjectBridge {
         if (excl.getValue()){
             excl.setValue(false);
         }
+        for(int i = 0; i < includes.size(); i++) {
+            includes.set(i, getString(includes.get(i)));
+        }
+        for(int i = 0; i < macros.size(); i++) {
+            macros.set(i, getString(macros.get(i)));
+        }
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration)compilerConfiguration;
@@ -447,6 +465,20 @@ public class ProjectBridge {
             }
             cccCompilerConfiguration.getPreprocessorConfiguration().setValue(list);
         }
+    }
+
+    private Map<String, String> cache = new HashMap<String, String>();
+    private String getString(String s) {
+        String res = cache.get(s);
+        if (res == null) {
+            cache.put(s, s);
+            return s;
+        }
+        return res;
+    }
+
+    void dispose(){
+        cache.clear();
     }
     
     private CompilerSet getCompilerSet(){
