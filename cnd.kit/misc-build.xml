@@ -148,6 +148,7 @@ made subject to such option by the copyright holder.
         <subant target="test" buildpath="../cnd.makeproject" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../cnd.remote" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../cnd.gotodeclaration" inheritrefs="false" inheritall="false" failonerror="false"/>
+        <subant target="test" buildpath="../cnd.debugger.gdb" inheritrefs="false" inheritall="false" failonerror="false"/>
     </target>
 
     <target name="test-build" description="Compile all tests">
@@ -168,9 +169,9 @@ made subject to such option by the copyright holder.
         <subant target="test-build" buildpath="../cnd.makeproject"/>
         <subant target="test-build" buildpath="../cnd.remote"/>
         <subant target="test-build" buildpath="../cnd.gotodeclaration"/>
+        <subant target="test-build" buildpath="../cnd.debugger.gdb"/>
         <!-- not included in tests -->
         <subant target="test-build" buildpath="../cnd.utils"/>
-        <subant target="test-build" buildpath="../cnd.debugger.gdb"/>
     </target>
 
     <target name="xref-test" description="Run XRef tests">
