@@ -39,44 +39,78 @@
 
 package org.netbeans.modules.cnd.debugger.gdb;
 
+import java.util.Map;
 import junit.framework.TestCase;
 import org.junit.Test;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 
 /**
  *
  * @author Egor Ushakov
  */
-public class PathComparisonTestCase extends TestCase {
+public class StringProcessingTestCase extends TestCase {
 
     @Test
-    public void testPathComparisonCase() {
-        assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_WINDOWS, "C:\\a", "c:\\A");
+    public void testFindMatchingCurly1() {
+        assertEquals(1, GdbUtils.findMatchingCurly("{}", 0));
     }
 
     @Test
-    public void testWinPathComparisonTrim() {
-        assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_WINDOWS, "   /cygdrive/c/a   ", " /cygdrive/c/a      ");
+    public void testFindMatchingCurly2() {
+        assertEquals(4, GdbUtils.findMatchingCurly("{asd}", 1));
     }
 
     @Test
-    public void testWinPathComparisonNormal() {
-        assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_WINDOWS, "/cygdrive/c/./a", "c:\\a");
+    public void testFindMatchingCurly3() {
+        assertEquals(5, GdbUtils.findMatchingCurly("{{}{}}", 0));
     }
 
     @Test
-    public void testWinPathComparisonNormal2() {
-        assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_WINDOWS, "/cygdrive/c/../c/a", "c:\\temp\\..\\a");
+    public void testFindMatchingCurly4() {
+        assertEquals(2, GdbUtils.findMatchingCurly("{{}{}}", 1));
     }
 
     @Test
-    public void testWinPathComparisonSpace() {
-        assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_WINDOWS, "C:\\dir space\\a", "/cygdrive/c/dir space/a");
+    public void testFindMatchingCurly5() {
+        assertEquals(8, GdbUtils.findMatchingCurly("{{'{'}{}}", 0));
     }
 
     @Test
-    public void testUnixPathComparisonNormal() {
-        assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_SOLARIS_INTEL, "/tmp/./a", "/tmp/../tmp/a");
+    public void testFindMatchingCurly6() {
+        assertEquals(8, GdbUtils.findMatchingCurly("{{'}'}{}}", 0));
     }
+
+    @Test
+    public void testFindMatchingCurly7() {
+        assertEquals(8, GdbUtils.findMatchingCurly("{{\"}\"}{}}", 0));
+    }
+
+    @Test
+    public void testFindEndOfString1() {
+        assertEquals(4, GdbUtils.findEndOfString("\"asd\"", 1));
+    }
+
+    @Test
+    public void testFindEndOfString2() {
+        assertEquals(5, GdbUtils.findEndOfString("asd\\\"\"", 0));
+    }
+
+    @Test
+    public void testFindEndOfString3() {
+        try {
+            GdbUtils.findEndOfString("asd", 1);
+            fail("Should throw IllegalStateException");
+        } catch (IllegalStateException e) {
+            //ok
+        }
+    }
+
+    @Test
+    public void testCreateMapFromString1() {
+        Map<String, String> map = GdbUtils.createMapFromString("a=\"1\",b={x},c=[\"xyz\"]");
+        assertEquals("1", map.get("a"));
+        assertEquals("x", map.get("b"));
+        assertEquals("\"xyz\"", map.get("c"));
+    }
+    
 }
