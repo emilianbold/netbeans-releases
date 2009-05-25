@@ -255,12 +255,15 @@ public class JiraRepository extends Repository {
 
         if(keywords.length == 1) {
             // only one search criteria -> might be we are looking for the bug with id=keywords[0]
-            TaskData taskData = JiraUtils.getTaskDataByKey(this, keywords[0], false);
-            if(taskData != null) {
-                NbJiraIssue issue = new NbJiraIssue(taskData, JiraRepository.this);
-                issues.add(issue); // we don't cache this issues
-                                   // - the retured taskdata are partial
-                                   // - and we need an as fast return as possible at this place
+            keywords[0] = repairKeyIfNeeded(keywords[0]);
+            if (keywords[0] != null) {
+                TaskData taskData = JiraUtils.getTaskDataByKey(this, keywords[0], false);
+                if (taskData != null) {
+                    NbJiraIssue issue = new NbJiraIssue(taskData, JiraRepository.this);
+                    issues.add(issue); // we don't cache this issues
+                    // - the retured taskdata are partial
+                    // - and we need an as fast return as possible at this place
+                }
             }
         }
 
@@ -530,4 +533,21 @@ public class JiraRepository extends Repository {
         return executor;
     }
 
+    /**
+     * Returns null if key is not a valid Jira issue key
+     * @param key
+     * @return
+     */
+    protected String repairKeyIfNeeded (String key) {
+        String retval = null;
+        try {
+            Long.parseLong(key);
+            // problem
+            // mylyn will interpret this key as an ID
+        } catch (NumberFormatException ex) {
+            // this is good, no InsufficientRightsException will be thrown in mylyn
+            retval = key;
+        }
+        return retval;
+    }
 }
