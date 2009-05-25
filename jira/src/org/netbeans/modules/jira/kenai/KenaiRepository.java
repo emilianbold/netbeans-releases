@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.query.kenai;
+package org.netbeans.modules.jira.kenai;
 
 import java.awt.Image;
 import java.net.PasswordAuthentication;
