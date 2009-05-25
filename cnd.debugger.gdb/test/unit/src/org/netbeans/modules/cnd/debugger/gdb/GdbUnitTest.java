@@ -39,39 +39,22 @@
 
 package org.netbeans.modules.cnd.debugger.gdb;
 
-import junit.framework.TestCase;
-import org.junit.Test;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
-import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
  *
  * @author Egor Ushakov
  */
-public class PathComparisonTest extends TestCase {
+public class GdbUnitTest extends TestSuite {
 
-    @Test
-    public void testPathComparisonCase() {
-        assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_WINDOWS, "C:\\a", "c:\\A");
+    public GdbUnitTest() {
+        super("Gdb unit tests");
+        addTestSuite(PathComparisonTestCase.class);
     }
 
-    @Test
-    public void testWinPathComparisonTrim() {
-        assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_WINDOWS, "   /cygdrive/c/a   ", " /cygdrive/c/a      ");
-    }
-
-    @Test
-    public void testWinPathComparisonNormal() {
-        assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_WINDOWS, "/cygdrive/c/./a", "c:\\a");
-    }
-
-    @Test
-    public void testWinPathComparisonNormal2() {
-        assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_WINDOWS, "/cygdrive/c/../c/a", "c:\\temp\\..\\a");
-    }
-
-    @Test
-    public void testUnixPathComparisonNormal() {
-        assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_SOLARIS_INTEL, "/tmp/./a", "/tmp/../tmp/a");
+    public static Test suite() {
+        TestSuite suite = new GdbUnitTest();
+        return suite;
     }
 }
