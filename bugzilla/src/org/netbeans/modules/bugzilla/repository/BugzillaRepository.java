@@ -343,7 +343,9 @@ public class BugzillaRepository extends Repository {
     protected void setTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword, boolean shortLoginEnabled) {
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword, shortLoginEnabled);
         Bugzilla.getInstance().addRepository(this);
-        resetRepository(); // only on url, user or passwd change        
+        resetRepository(); // XXX only on url, user or passwd change
+                           // XXX reset the configuration only if the host changed
+                           //     on psswd and user change reset only taskrepository
     }
 
     static TaskRepository createTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword, boolean shortLoginEnabled) {
