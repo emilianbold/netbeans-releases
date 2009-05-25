@@ -724,25 +724,16 @@ public class NbJiraIssue extends Issue {
 
     @Override
     public Map<String, String> getAttributes() {
-//        if(attributes == null) {
-//            attributes = new HashMap<String, String>();
-//            String value;
-//            for (IssueField field : IssueField.values()) {
-//                switch(field) {
-//                    case REPORTER_NAME:
-//                    case QA_CONTACT_NAME:
-//                    case ASSIGNED_TO_NAME:
-//                        continue;
-//                    default:
-//                        value = getFieldValue(field);
-//                }
-//                if(value != null && !value.trim().equals("")) {                 // NOI18N
-//                    attributes.put(field.key, value);
-//                }
-//            }
-//        }
-//        return attributes;
-        return Collections.emptyMap();
+        if(attributes == null) {
+            attributes = new HashMap<String, String>();
+            for (IssueField field : IssueField.values()) {
+                String value = getFieldValue(field);
+                if(value != null && !value.trim().equals("")) {                 // NOI18N
+                    attributes.put(field.key, value);
+                }
+            }
+        }
+        return attributes;
     }   
 
     public static ColumnDescriptor[] getColumnDescriptors() {
