@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb;
 
+import java.util.Map;
 import junit.framework.TestCase;
 import org.junit.Test;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
@@ -102,6 +103,14 @@ public class StringProcessingTestCase extends TestCase {
         } catch (IllegalStateException e) {
             //ok
         }
+    }
+
+    @Test
+    public void testCreateMapFromString1() {
+        Map<String, String> map = GdbUtils.createMapFromString("a=\"1\",b={x},c=[\"xyz\"]");
+        assertEquals("1", map.get("a"));
+        assertEquals("x", map.get("b"));
+        assertEquals("\"xyz\"", map.get("c"));
     }
     
 }
