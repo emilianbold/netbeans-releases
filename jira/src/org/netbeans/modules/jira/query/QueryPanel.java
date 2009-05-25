@@ -170,13 +170,10 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         tablePanel.addFocusListener(this);
         tableSummaryLabel.addFocusListener(this);
         webButton.addFocusListener(this);
-<<<<<<< local
-
+        
         byLastChangeLabel.setVisible(false);
         byLastChangeContainer.setVisible(false);
-=======
         lblIssueKeyWarning.setVisible(false);
->>>>>>> other
 
         validate();
         repaint();
