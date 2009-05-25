@@ -60,45 +60,45 @@ import org.netbeans.modules.vmd.game.model.SceneListener;
 public class ScenePreviewPanel extends JComponent implements SceneListener {
 
     private Scene scene;
-	private ScenePanel scenePanel;
+    private ScenePanel scenePanel;
 
-	public ScenePreviewPanel(Scene scene) {
-		this.scene = scene;
-		this.scenePanel = new ScenePanel(scene);
-		this.addComponentListener(new ComponentAdapter() {
-			public void componentResized(ComponentEvent e) {
-				//System.out.println("ScenePreviewPanel resized - updating preview");
-				ScenePreviewPanel.this.repaint();
-			}
-		});
-		this.scene.addSceneListener(this);
+    public ScenePreviewPanel(Scene scene) {
+        this.scene = scene;
+        this.scenePanel = new ScenePanel(scene);
+        this.addComponentListener(new ComponentAdapter() {
+
+            public void componentResized(ComponentEvent e) {
+                //System.out.println("ScenePreviewPanel resized - updating preview");
+                ScenePreviewPanel.this.repaint();
+            }
+        });
+        this.scene.addSceneListener(this);
     }
 
     @Override
     protected void paintComponent(Graphics graphics) {
-		Graphics2D g = (Graphics2D) graphics;
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g.setColor(Color.WHITE);
-		g.fillRect(0, 0, this.getWidth(), this.getHeight());
-		
-		Rectangle bounds = scene.getAllLayersBounds();
-		double ratioW = (double) this.getWidth() / bounds.getWidth();
-		double ratioH = (double) this.getHeight() / bounds.getHeight();
-		double ratio = Math.min(ratioW, ratioH);
-		
-		//center
-		double x = 0;
-		double y = 0;
-		if (ratio == ratioW) {
-			double newHeight = bounds.getHeight() * ratio;
-			y = (this.getHeight() - newHeight) / 2;
-		}
-		else {
-			double newWidth = bounds.getWidth() * ratio;
-			x = (this.getWidth() - newWidth) / 2;
-		}
-		g.translate(x, y);
-		g.scale(ratio, ratio);
+        Graphics2D g = (Graphics2D) graphics;
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, this.getWidth(), this.getHeight());
+
+        Rectangle bounds = scene.getAllLayersBounds();
+        double ratioW = (double) this.getWidth() / bounds.getWidth();
+        double ratioH = (double) this.getHeight() / bounds.getHeight();
+        double ratio = Math.min(ratioW, ratioH);
+
+        //center
+        double x = 0;
+        double y = 0;
+        if (ratio == ratioW) {
+            double newHeight = bounds.getHeight() * ratio;
+            y = (this.getHeight() - newHeight) / 2;
+        } else {
+            double newWidth = bounds.getWidth() * ratio;
+            x = (this.getWidth() - newWidth) / 2;
+        }
+        g.translate(x, y);
+        g.scale(ratio, ratio);
         scenePanel.drawLayers(g);
     }
 	
@@ -116,21 +116,20 @@ public class ScenePreviewPanel extends JComponent implements SceneListener {
 	
     public void layerPositionChanged(Scene sourceScene, Layer layer, Point oldPosition, Point newPosition, boolean inTransition) {
         if (inTransition) {
-			return;
-		}
-		this.sceneChangedVisualy();
+            return;
+        }
+        this.sceneChangedVisualy();
     }
-	
+
     public void layerLockChanged(Scene sourceScene, Layer layer, boolean locked) {
         this.sceneChangedVisualy();
     }
-	
+
     public void layerVisibilityChanged(Scene sourceScene, Layer layer, boolean visible) {
         this.sceneChangedVisualy();
     }
-	
-	private void sceneChangedVisualy() {
-		this.repaint();
-	}
-	
+
+    private void sceneChangedVisualy() {
+        this.repaint();
+    }
 }
