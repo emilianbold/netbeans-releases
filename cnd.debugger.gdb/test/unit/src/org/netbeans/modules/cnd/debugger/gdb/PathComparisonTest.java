@@ -37,69 +37,41 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb.utils;
+package org.netbeans.modules.cnd.debugger.gdb;
+
+import junit.framework.TestCase;
+import org.junit.Test;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 
 /**
- * Utilities to work with paths on Windows (cygwin, mingw)
+ *
  * @author Egor Ushakov
  */
-public class WinPath {
-    public static final String CYGDRIVE_PREFIX = "/cygdrive/"; // NOI18N
+public class PathComparisonTest extends TestCase {
 
-    private WinPath() {
+    @Test
+    public void testPathComparisonCase() {
+        assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_WINDOWS, "C:\\a", "c:\\A");
     }
 
-    /**
-     * Converts path from cygwin type into regular window (/cygdrive/c/... -> c:\...)
-     * @param path
-     * @return
-     */
-    public static String cyg2win(String path) {
-        if (path.startsWith(CYGDRIVE_PREFIX)) {
-            return path.charAt(CYGDRIVE_PREFIX.length())
-                    + ":" // NOI18N
-                    + path.substring(CYGDRIVE_PREFIX.length()+1).replace('/', '\\');
-        }
-        return path;
+    @Test
+    public void testWinPathComparisonTrim() {
+        assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_WINDOWS, "   /cygdrive/c/a   ", " /cygdrive/c/a      ");
     }
 
-    /**
-     * * Converts path from regular windows type into cygwin type (c:\... -> /cygdrive/c/...)
-     * @param path
-     * @return
-     */
-    public static String win2cyg(String path) {
-        if (isWinPath(path)) {
-            return CYGDRIVE_PREFIX + path.charAt(0) + path.substring(2).replace('\\', '/'); // NOI18N
-        }
-        return path;
+    @Test
+    public void testWinPathComparisonNormal() {
+        assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_WINDOWS, "/cygdrive/c/./a", "c:\\a");
     }
 
-    /**
-     * Converts path from mingw type into regular window (/c/... -> c:\...)
-     * @param path
-     * @return
-     */
-    public static String ming2win(String path) {
-        if (path.charAt(0) == '/' && path.charAt(2) == '/') {
-            return path.charAt(1) + ":" + path.substring(2).replace('/', '\\'); // NOI18N
-        }
-        return path;
+    @Test
+    public void testWinPathComparisonNormal2() {
+        assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_WINDOWS, "/cygdrive/c/../c/a", "c:\\temp\\..\\a");
     }
 
-    /**
-      * Converts path from regular windows type into mingw type (c:\... -> /c/...)
-     * @param path
-     * @return
-     */
-    public static String win2ming(String path) {
-        if (isWinPath(path)) {
-            return "/" + path.charAt(0) + "/" + path.substring(2).replace('\\', '/'); // NOI18N
-        }
-        return path;
-    }
-
-    public static boolean isWinPath(String path) {
-        return path.length() >= 2 && Character.isLetter(path.charAt(0)) && path.charAt(1) == ':';
+    @Test
+    public void testUnixPathComparisonNormal() {
+        assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_SOLARIS_INTEL, "/tmp/./a", "/tmp/../tmp/a");
     }
 }
