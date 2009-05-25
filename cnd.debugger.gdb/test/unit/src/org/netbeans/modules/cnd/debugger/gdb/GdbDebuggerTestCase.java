@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger.State;
  *
  * @author gordonp
  */
-public class GdbDebuggerTest extends GdbTestCase {
+public class GdbDebuggerTestCase extends GdbTestCase {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -69,7 +69,7 @@ public class GdbDebuggerTest extends GdbTestCase {
     public void tearDown() {
     }
 
-    public GdbDebuggerTest(String name) {
+    public GdbDebuggerTestCase(String name) {
         super(name);
     }
 

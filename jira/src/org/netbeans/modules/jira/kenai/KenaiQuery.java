@@ -37,69 +37,54 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb.utils;
+package org.netbeans.modules.jira.kenai;
+
+import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.jira.JiraConfig;
+import org.netbeans.modules.jira.JiraConnector;
+import org.netbeans.modules.jira.query.JiraQuery;
+import org.netbeans.modules.jira.query.QueryController;
+import org.netbeans.modules.jira.repository.JiraRepository;
 
 /**
- * Utilities to work with paths on Windows (cygwin, mingw)
- * @author Egor Ushakov
+ *
+ * @author Tomas Stupka
  */
-public class WinPath {
-    public static final String CYGDRIVE_PREFIX = "/cygdrive/"; // NOI18N
+public class KenaiQuery extends JiraQuery {
+    private boolean predefinedQuery = false;
+    private String project;
 
-    private WinPath() {
-    }
-
-    /**
-     * Converts path from cygwin type into regular window (/cygdrive/c/... -> c:\...)
-     * @param path
-     * @return
-     */
-    public static String cyg2win(String path) {
-        if (path.startsWith(CYGDRIVE_PREFIX)) {
-            return path.charAt(CYGDRIVE_PREFIX.length())
-                    + ":" // NOI18N
-                    + path.substring(CYGDRIVE_PREFIX.length()+1).replace('/', '\\');
+    public KenaiQuery(String name, JiraRepository repository, JiraFilter jf, String project, boolean saved, boolean predefined) {
+        super(name, repository, jf, saved);
+        this.predefinedQuery = predefined;
+        this.project = project;
+        controller = createControler(repository, this, jf);
+        boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(getDisplayName());
+        if(autoRefresh) {
+            getRepository().scheduleForRefresh(this);
         }
-        return path;
     }
 
-    /**
-     * * Converts path from regular windows type into cygwin type (c:\... -> /cygdrive/c/...)
-     * @param path
-     * @return
-     */
-    public static String win2cyg(String path) {
-        if (isWinPath(path)) {
-            return CYGDRIVE_PREFIX + path.charAt(0) + path.substring(2).replace('\\', '/'); // NOI18N
-        }
-        return path;
+    @Override
+    protected QueryController createControler(JiraRepository r, JiraQuery q, JiraFilter jiraFilter) {
+        KenaiQueryController c = new KenaiQueryController(r, q, jiraFilter, project, predefinedQuery);
+        return c;
     }
 
-    /**
-     * Converts path from mingw type into regular window (/c/... -> c:\...)
-     * @param path
-     * @return
-     */
-    public static String ming2win(String path) {
-        if (path.charAt(0) == '/' && path.charAt(2) == '/') {
-            return path.charAt(1) + ":" + path.substring(2).replace('/', '\\'); // NOI18N
-        }
-        return path;
+    @Override
+    protected void logQueryEvent(int count, boolean autoRefresh) {
+        BugtrackingUtil.logQueryEvent(
+            JiraConnector.getConnectorName(),
+            getDisplayName(),
+            count,
+            true,
+            autoRefresh);
     }
 
-    /**
-      * Converts path from regular windows type into mingw type (c:\... -> /c/...)
-     * @param path
-     * @return
-     */
-    public static String win2ming(String path) {
-        if (isWinPath(path)) {
-            return "/" + path.charAt(0) + "/" + path.substring(2).replace('\\', '/'); // NOI18N
-        }
-        return path;
+    @Override
+    protected String getStoredQueryName() {
+        return super.getStoredQueryName() + "-" + project;
     }
 
-    public static boolean isWinPath(String path) {
-        return path.length() >= 2 && Character.isLetter(path.charAt(0)) && path.charAt(1) == ':';
-    }
 }
