@@ -100,7 +100,7 @@ final class ResultDisplayHandler {
     }
 
     void createIO(IOContainer ioContainer) {
-        inOut = IOProvider.getDefault().getIO("product_test", null, ioContainer);
+        inOut = IOProvider.getDefault().getIO("test-results", null, ioContainer); //NOI18N
     }
 
 
@@ -186,6 +186,9 @@ final class ResultDisplayHandler {
         if (inOut != null) {
             OutputWriter out = error ? inOut.getErr() : inOut.getOut();
             session.getOutputLineHandler().handleLine(out, text);
+        } else {
+            // log a warning - should rather throw an exception, but we're too close to release now
+            LOGGER.log(Level.WARNING, "Tried to display output before inOut was initialized. Output text: {0}", text);
         }
     }
 
