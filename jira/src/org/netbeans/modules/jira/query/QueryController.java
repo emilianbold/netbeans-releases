@@ -134,7 +134,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     public QueryController(JiraRepository repository, JiraQuery query, JiraFilter jiraFilter) {
         this.repository = repository;
         this.query = query;
-        
+
         panel = new QueryPanel(query.getTableComponent(), this);
 
         panel.projectList.addListSelectionListener(this);
@@ -163,6 +163,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.queryTextField.addActionListener(this);
         panel.assigneeTextField.addActionListener(this);
         panel.reporterTextField.addActionListener(this);
+        panel.idTextField.getDocument().addDocumentListener(this);
 
         if(query.isSaved()) {
             setAsSaved();
@@ -347,6 +348,14 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     }
                     
                     populateList(panel.projectList, jc.getProjects());
+                    if (jc.getProjects().length == 1) {
+                        panel.setIssuePrefixText(jc.getProjects()[0].getKey() + "-"); //NOI18N
+                    } else if (filterDefinition != null) {
+                        ProjectFilter pf = filterDefinition.getProjectFilter();
+                        if (pf != null && pf.getProjects().length == 1) {
+                            panel.setIssuePrefixText(pf.getProjects()[0].getKey() + "-"); //NOI18N
+                        }
+                    }
                     populateList(panel.typeList, jc.getIssueTypes());
                     populateList(panel.statusList, jc.getStatuses());
                     populateList(panel.resolutionList, jc.getResolutions());
@@ -418,7 +427,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     protected void enableFields(boolean bl) {
         // set all non parameter fields
-        panel.enableFields(bl);        
+        panel.enableFields(bl);
     }
 
     public void disableProject() {
@@ -427,15 +436,15 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
     
     public void insertUpdate(DocumentEvent e) {
-        fireDataChanged();
+        documentChanged(e);
     }
 
     public void removeUpdate(DocumentEvent e) {
-        fireDataChanged();
+        documentChanged(e);
     }
 
     public void changedUpdate(DocumentEvent e) {
-        fireDataChanged();
+        documentChanged(e);
     }
 
     public void itemStateChanged(ItemEvent e) {
@@ -607,6 +616,16 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
+    /**
+     * Returns a modified id entered by user.
+     * e.g.: adds prefix, suffix or whatever
+     * @param id pure id from the textfield
+     * @return
+     */
+    protected String getIdTextField () {
+        return panel.getIssuePrefixText() + panel.idTextField.getText().trim();
+    }
+
     private void setAsSaved() {
         panel.setSaved(query.getDisplayName(), getLastRefresh());
         panel.setModifyVisible(false);
@@ -620,9 +639,33 @@ public class QueryController extends BugtrackingController implements DocumentLi
             NbBundle.getMessage(QueryController.class, "LBL_Never"); // NOI18N
     }
 
+    private boolean validateIssueKey (String key) {
+        boolean retval = false;
+        // TODO more sofisticated: e.g. with a JiraIssueFinder?
+        try {
+            Long.parseLong(key);
+        } catch (NumberFormatException e) {
+            // not a number, will not cause an InsufficientRightsException in mylyn
+            retval = true;
+        }
+        if (!retval) {
+            panel.lblIssueKeyWarning.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "MSG_InvalidIssueKey", new Object[] {key})); //NOI18N
+            panel.lblIssueKeyWarning.setVisible(true);
+        }
+        return retval;
+    }
+
+    private void documentChanged (DocumentEvent e) {
+        if (e.getDocument() == panel.idTextField.getDocument()) {
+            panel.lblIssueKeyWarning.setVisible(false);
+        } else {
+            fireDataChanged();
+        }
+    }
+
     private void onGotoIssue() {
-        final String key = panel.idTextField.getText().trim();
-        if(key == null || key.trim().equals("") ) {                               // NOI18N
+        final String key = getIdTextField();
+        if(key == null || key.trim().equals("") || !validateIssueKey(key)) { //NOI18N
             return;
         }
         final Task[] t = new Task[1];
