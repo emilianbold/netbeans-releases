@@ -54,33 +54,17 @@ import org.netbeans.modules.jira.repository.JiraRepository;
 public class KenaiQueryController extends QueryController
 {
     private String projectName; // XXX don't need this - already set in filterDef
-    private boolean predefinedQuery;
     private FilterDefinition filter;
 
     public KenaiQueryController(JiraRepository repository, JiraQuery query, JiraFilter jf, String projectName, boolean predefinedQuery) {
-        super(repository, query, jf);
+        super(repository, query, jf, !predefinedQuery);
         this.projectName = projectName;
-        this.predefinedQuery = predefinedQuery;
         this.filter = (FilterDefinition) jf;
-    }
-
-    @Override
-    public FilterDefinition getFilterDefinition() {
-        if(predefinedQuery) {
-            return this.filter;
-        }
-        return super.getFilterDefinition();
     }
 
     @Override
     protected void enableFields(boolean bl) {
         super.enableFields(bl);
-
-        if(predefinedQuery) {
-            // override - for predefined kenai queries are those always disabled
-            panel.modifyButton.setEnabled(false);
-            panel.removeButton.setEnabled(false);
-        }
         super.disableProject();
     }
 
@@ -91,6 +75,7 @@ public class KenaiQueryController extends QueryController
         scheduleForRefresh();
     }
 
+    @Override
     protected void logAutoRefreshEvent(boolean autoRefresh) {
         BugtrackingUtil.logAutoRefreshEvent(
             JiraConnector.getConnectorName(),

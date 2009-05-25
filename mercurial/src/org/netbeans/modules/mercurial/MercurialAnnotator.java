@@ -334,6 +334,7 @@ public class MercurialAnnotator extends VCSAnnotator {
         if (!isVersioned) {
             return null;
         }
+        HgModuleConfig config = HgModuleConfig.getDefault();
         boolean allExcluded = true;
         boolean modified = false;
         Map<File, FileInformation> locallyChangedFiles = getLocallyChangedFiles();
@@ -354,7 +355,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                             return ImageUtilities.mergeImages(icon, badge, 16, 9);
                         }
                         modified = true;
-                        allExcluded &= isExcludedFromCommit(mf.getAbsolutePath());
+                        allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
                     }
                 }
             } else {
@@ -372,7 +373,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                             return ImageUtilities.mergeImages(icon, badge, 16, 9);
                         }
                         modified = true;
-                        allExcluded &= isExcludedFromCommit(mf.getAbsolutePath());
+                        allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
                     }
                 }
             }
@@ -718,10 +719,6 @@ public class MercurialAnnotator extends VCSAnnotator {
         } else {
             throw new IllegalArgumentException("Uncomparable status: " + status); // NOI18N
         }
-    }
-    
-    private boolean isExcludedFromCommit(String absolutePath) {
-        return false;
     }
     
     private boolean isNothingVersioned(File[] files) {

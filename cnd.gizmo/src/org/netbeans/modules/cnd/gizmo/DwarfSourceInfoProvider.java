@@ -118,7 +118,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
                     dwarf.dispose();
                 }
             } catch (IOException ex) {
-                DLightLogger.instance.log(Level.WARNING, null, ex);
+                DLightLogger.instance.log(Level.INFO, null, ex);
             }
             cache.put(executable, sourceInfoMap.isEmpty()?
                 Collections.<String, SourceFileInfo>emptyMap() : sourceInfoMap);
