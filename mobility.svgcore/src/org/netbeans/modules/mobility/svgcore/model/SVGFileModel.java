@@ -385,7 +385,7 @@ public final class SVGFileModel {
         if (m_model == null) {
             try {
                 BaseDocument doc = getDoc();
-                if (doc != null) {
+                if (doc != null && doc.getLength() > 0) {
                     m_model = DocumentModel.getDocumentModel(doc);
                     m_model.addDocumentModelListener(m_modelListener);
                     m_model.addDocumentModelStateListener(m_modelStateListener);
