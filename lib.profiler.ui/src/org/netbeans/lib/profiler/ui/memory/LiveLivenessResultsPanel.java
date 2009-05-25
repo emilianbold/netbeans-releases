@@ -91,7 +91,6 @@ public class LiveLivenessResultsPanel extends LivenessResultsPanel implements Li
     private ClassHistoryDataManager classHistoryManager;
     private JMenuItem popupRemoveProfForClass;
     private JMenuItem popupRemoveProfForClassesBelow;
-    private JMenuItem popupShowSource;
     private JMenuItem popupShowStacks;
     private JMenuItem startHisto;
     private JPopupMenu popup;
@@ -176,8 +175,6 @@ public class LiveLivenessResultsPanel extends LivenessResultsPanel implements Li
 
             deinstrumentMemoryProfiledClasses(newlyUnprofiledClasses);
             prepareResults();
-        } else if (source == popupShowSource) {
-            showSourceForClass(selectedClassId);
         } else if (source == popupShowStacks) {
             actionsHandler.showStacksForClass(selectedClassId, getSortingColumn(), getSortingOrder());
         } else if (e.getSource() == startHisto) {
@@ -355,16 +352,11 @@ public class LiveLivenessResultsPanel extends LivenessResultsPanel implements Li
 
             Font boldfont = popup.getFont().deriveFont(Font.BOLD);
 
-            popupShowSource = new JMenuItem();
             popupRemoveProfForClass = new JMenuItem();
             popupRemoveProfForClassesBelow = new JMenuItem();
 
-            popupShowSource.setText(GO_SOURCE_POPUP_ITEM_NAME);
-            popupShowSource.setFont(boldfont);
             popupRemoveProfForClass.setText(STOP_CLASS_POPUP_ITEM_NAME);
             popupRemoveProfForClassesBelow.setText(STOP_BELOW_LINE_POPUP_ITEM_NAME);
-
-            popup.add(popupShowSource);
 
             if (runner.getProfilerEngineSettings().getAllocStackTraceLimit() != 0) {
                 popup.addSeparator();
@@ -378,7 +370,6 @@ public class LiveLivenessResultsPanel extends LivenessResultsPanel implements Li
             popup.add(popupRemoveProfForClass);
             popup.add(popupRemoveProfForClassesBelow);
 
-            popupShowSource.addActionListener(this);
             popupRemoveProfForClass.addActionListener(this);
             popupRemoveProfForClassesBelow.addActionListener(this);
 
@@ -429,7 +420,6 @@ public class LiveLivenessResultsPanel extends LivenessResultsPanel implements Li
     }
 
     protected void performDefaultAction(int classId) {
-        showSourceForClass(classId);
     }
 
     /**

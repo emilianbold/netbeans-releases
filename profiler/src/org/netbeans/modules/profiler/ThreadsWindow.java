@@ -45,6 +45,7 @@ import org.netbeans.lib.profiler.common.event.ProfilingStateEvent;
 import org.netbeans.lib.profiler.common.event.ProfilingStateListener;
 import org.netbeans.lib.profiler.global.Platform;
 import org.netbeans.lib.profiler.ui.UIUtils;
+import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
 import org.netbeans.lib.profiler.ui.threads.ThreadsDetailsPanel;
 import org.netbeans.lib.profiler.ui.threads.ThreadsPanel;
 import org.netbeans.modules.profiler.utils.IDEUtils;
@@ -113,10 +114,14 @@ public final class ThreadsWindow extends TopComponent implements ProfilingStateL
     public ThreadsWindow() {
         setName(THREADS_WINDOW_NAME);
         setIcon(windowIcon);
+        setOpaque(true);
+ 	    setBackground(new HTMLTextArea().getBackground());
         getAccessibleContext().setAccessibleDescription(THREADS_ACCESS_DESCR);
         setLayout(new BorderLayout());
         tabs = new JTabbedPane();
-
+        tabs.setOpaque(true);
+ 	    tabs.setBackground(new HTMLTextArea().getBackground());
+        
         tabs.setTabPlacement(JTabbedPane.BOTTOM);
         add(tabs, BorderLayout.CENTER);
 
@@ -303,8 +308,8 @@ public final class ThreadsWindow extends TopComponent implements ProfilingStateL
 
     public void showThreads() {
         tabs.setSelectedComponent(threadsTimelinePanelContainer);
-        open();
-        requestActive();
+//        open();
+//        requestActive();
     }
 
     public void stateChanged(ChangeEvent e) {

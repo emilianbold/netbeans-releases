@@ -40,7 +40,6 @@
 
 package org.netbeans.modules.profiler;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.global.CommonConstants;
 import org.netbeans.lib.profiler.results.ResultsSnapshot;
 import org.netbeans.lib.profiler.results.memory.AllocMemoryResultsDiff;
@@ -98,17 +97,17 @@ public final class SnapshotsDiffWindow extends TopComponent {
      * @param ls The diff to display
      */
     public SnapshotsDiffWindow(ResultsSnapshot ls, LoadedSnapshot snapshot1, LoadedSnapshot snapshot2, int sortingColumn,
-                               boolean sortingOrder, Project project) {
+                               boolean sortingOrder) {
         setLayout(new BorderLayout());
         setFocusable(true);
         setRequestFocusEnabled(true);
 
         if (ls instanceof AllocMemoryResultsDiff) {
             getAccessibleContext().setAccessibleDescription(ALLOC_ACCESS_DESCR);
-            displayMemoryAllocDiff((AllocMemoryResultsDiff) ls, snapshot1, snapshot2, sortingColumn, sortingOrder, project);
+            displayMemoryAllocDiff((AllocMemoryResultsDiff) ls, snapshot1, snapshot2, sortingColumn, sortingOrder);
         } else if (ls instanceof LivenessMemoryResultsDiff) {
             getAccessibleContext().setAccessibleDescription(LIVENESS_ACCESS_DESCR);
-            displayMemoryLivenessDiff((LivenessMemoryResultsDiff) ls, snapshot1, snapshot2, sortingColumn, sortingOrder, project);
+            displayMemoryLivenessDiff((LivenessMemoryResultsDiff) ls, snapshot1, snapshot2, sortingColumn, sortingOrder);
         }
     }
 
@@ -116,12 +115,12 @@ public final class SnapshotsDiffWindow extends TopComponent {
 
     public static synchronized SnapshotsDiffWindow get(ResultsSnapshot ls, LoadedSnapshot snapshot1, LoadedSnapshot snapshot2) {
         // target component decides which column will be used for sorting
-        return SnapshotsDiffWindow.get(ls, snapshot1, snapshot2, CommonConstants.SORTING_COLUMN_DEFAULT, false, null);
+        return SnapshotsDiffWindow.get(ls, snapshot1, snapshot2, CommonConstants.SORTING_COLUMN_DEFAULT, false);
     }
 
     public static synchronized SnapshotsDiffWindow get(ResultsSnapshot ls, LoadedSnapshot snapshot1, LoadedSnapshot snapshot2,
-                                                       int sortingColumn, boolean sortingOrder, Project project) {
-        return new SnapshotsDiffWindow(ls, snapshot1, snapshot2, sortingColumn, sortingOrder, project);
+                                                       int sortingColumn, boolean sortingOrder) {
+        return new SnapshotsDiffWindow(ls, snapshot1, snapshot2, sortingColumn, sortingOrder);
     }
 
     public int getPersistenceType() {
@@ -144,8 +143,8 @@ public final class SnapshotsDiffWindow extends TopComponent {
 
     // -- Private methods --------------------------------------------------------------------------------------------------
     private void displayMemoryAllocDiff(MemoryResultsSnapshot diff, LoadedSnapshot snapshot1, LoadedSnapshot snapshot2,
-                                        int sortingColumn, boolean sortingOrder, Project project) {
-        MemoryDiffPanel allocDiffPanel = new MemoryDiffPanel(diff, snapshot1, snapshot2, sortingColumn, sortingOrder, project);
+                                        int sortingColumn, boolean sortingOrder) {
+        MemoryDiffPanel allocDiffPanel = new MemoryDiffPanel(diff, snapshot1, snapshot2, sortingColumn, sortingOrder);
         updateFind(true, allocDiffPanel);
         add(allocDiffPanel, BorderLayout.CENTER);
         setName(ALLOC_CAPTION);
@@ -153,8 +152,8 @@ public final class SnapshotsDiffWindow extends TopComponent {
     }
 
     private void displayMemoryLivenessDiff(MemoryResultsSnapshot diff, LoadedSnapshot snapshot1, LoadedSnapshot snapshot2,
-                                           int sortingColumn, boolean sortingOrder, Project project) {
-        MemoryDiffPanel livenessDiffPanel = new MemoryDiffPanel(diff, snapshot1, snapshot2, sortingColumn, sortingOrder, project);
+                                           int sortingColumn, boolean sortingOrder) {
+        MemoryDiffPanel livenessDiffPanel = new MemoryDiffPanel(diff, snapshot1, snapshot2, sortingColumn, sortingOrder);
         updateFind(true, livenessDiffPanel);
         add(livenessDiffPanel, BorderLayout.CENTER);
         setName(LIVENESS_CAPTION);
