@@ -47,6 +47,7 @@ import java.awt.Image;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -56,6 +57,7 @@ import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
+import org.eclipse.mylyn.internal.jira.core.model.NamedFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ContentFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
@@ -70,6 +72,7 @@ import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.commands.JiraExecutor;
+import org.netbeans.modules.jira.commands.NamedFiltersCommand;
 import org.netbeans.modules.jira.commands.PerformQueryCommand;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
@@ -225,8 +228,33 @@ public class JiraRepository extends Repository {
         if(queries == null) {
             JiraStorageManager manager = Jira.getInstance().getStorageManager();
             queries = manager.getQueries(this);
+            Jira.getInstance().getRequestProcessor().post(new Runnable() {
+                public void run() {
+                    synchronized(queries) {
+                        queries.addAll(getServerQueries());
+                    }
+                    fireQueryListChanged();
+                }
+            });
+
         }
-        return queries;
+        synchronized(queries) {
+            return queries;
+        }
+    }
+
+    protected Collection<Query> getServerQueries() {
+        List<Query> ret = new ArrayList<Query>();
+        NamedFiltersCommand cmd = new NamedFiltersCommand(taskRepository);
+        getExecutor().execute(cmd);
+        if(!cmd.hasFailed()) {
+            NamedFilter[] filters = cmd.getNamedFilters();
+            for (NamedFilter nf : filters) {
+                JiraQuery q = new JiraQuery(nf.getName(), this, nf, -1);
+                ret.add(q);
+            }
+        }
+        return ret;
     }
 
     @Override
