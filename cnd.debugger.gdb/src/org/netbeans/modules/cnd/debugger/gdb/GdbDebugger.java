@@ -444,7 +444,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     gdb.exec_run(pae.getProfile().getArgsFlat() + inRedir);
                 } catch (Exception ex) {
                     ErrorManager.getDefault().notify(ex);
-                    (lookupProvider.lookupFirst(null, Session.class)).kill();
+                    killSession();
                 }
                 if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                     String msg = gdb.info_threads().getResponse(); // we get the PID from this...
@@ -892,14 +892,14 @@ public class GdbDebugger implements PropertyChangeListener {
                         firePropertyChange(PROP_KILLTERM, true, false);
                     }
                     if (gdb != null) {
-                        ProjectActionEvent pae = lookupProvider.lookupFirst(null, ProjectActionEvent.class);
+                        ProjectActionEvent.Type type = lookupProvider.lookupFirst(null, ProjectActionEvent.class).getType();
                         if (state == State.RUNNING) {
                             gdb.exec_interrupt();
-                            if (pae.getType() != DEBUG_ATTACH) {
+                            if (type != DEBUG_ATTACH) {
                                 gdb.exec_abort();
                             }
                         }
-                        if (pae.getType() == DEBUG_ATTACH) {
+                        if (type == DEBUG_ATTACH) {
                             gdb.target_detach();
                         }
                         gdb.gdb_exit();
@@ -1057,7 +1057,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
                         "ERR_CantAttach"))); // NOI18N
-                (lookupProvider.lookupFirst(null, Session.class)).kill();
+                killSession();
             } else if (msg.startsWith("\"No symbol ") && msg.endsWith(" in current context.\"")) { // NOI18N
                 String type = msg.substring(13, msg.length() - 23);
                 log.warning("Failed type lookup for " + type);
@@ -1068,7 +1068,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
                         "ERR_CorruptedStack"))); // NOI18N
-                (lookupProvider.lookupFirst(null, Session.class)).kill();
+                killSession();
             } else if (msg.contains("error reading line numbers")) { // NOI18N
                 DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
@@ -1077,7 +1077,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
                         "ERR_NoSymbolTable"))); // NOI18N
-                (lookupProvider.lookupFirst(null, Session.class)).kill();
+                killSession();
             } else if (msg.contains("Cannot access memory at address")) { // NOI18N
                 // ignore - probably dereferencing an uninitialized pointer
             } else if (msg.contains("mi_cmd_break_insert: Garbage following <location>")) { // NOI18N
@@ -2588,6 +2588,10 @@ public class GdbDebugger implements PropertyChangeListener {
     private boolean isAttaching() {
         ProjectActionEvent pae = lookupProvider.lookupFirst(null, ProjectActionEvent.class);
         return pae.getType() == DEBUG_ATTACH;
+    }
+
+    private void killSession() {
+        lookupProvider.lookupFirst(null, Session.class).kill();
     }
 
     private static double parseGdbVersionString(String msg) {
