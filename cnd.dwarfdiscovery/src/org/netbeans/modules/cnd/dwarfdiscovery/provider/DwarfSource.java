@@ -736,7 +736,7 @@ public class DwarfSource implements SourceFileProperties{
                                         line = line.substring(i+2).trim();
                                     }
                                 }
-                                StringTokenizer st = new StringTokenizer(line,"\t (");
+                                StringTokenizer st = new StringTokenizer(line,"\t ("); // NOI18N
                                 while(st.hasMoreTokens()) {
                                     res.firstMacroLine = lineNo;
                                     res.firstMacro = st.nextToken();
