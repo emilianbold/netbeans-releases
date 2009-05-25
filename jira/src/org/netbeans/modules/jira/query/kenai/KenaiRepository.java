@@ -219,4 +219,25 @@ public class KenaiRepository extends JiraRepository {
         return "";                                                              // NOI18N
     }
 
+    /**
+     * Returns null if key is not a valid Jira issue key or tries to add a project prefix to the key if the key is a number
+     * @param key
+     * @return
+     */
+    @Override
+    protected String repairKeyIfNeeded (String key) {
+        String retval = null;
+        try {
+            Long.parseLong(key);
+            // problem
+            // mylyn will interpret this key as an ID
+            assert projectName != null;
+            assert !"".equals(projectName);                             //NOI18N
+            retval = projectName + "-" + key;                           //NOI18N
+        } catch (NumberFormatException ex) {
+            // this is good, no InsufficientRightsException will be thrown in mylyn
+            retval = key;
+        }
+        return retval;
+    }
 }
