@@ -37,52 +37,36 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.kenai;
+package org.netbeans.modules.jira.commands;
 
-import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.jira.JiraConnector;
-import org.netbeans.modules.jira.query.JiraQuery;
-import org.netbeans.modules.jira.query.QueryController;
-import org.netbeans.modules.jira.repository.JiraRepository;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.internal.jira.core.model.NamedFilter;
+import org.eclipse.mylyn.internal.jira.core.service.JiraException;
+import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.netbeans.modules.jira.Jira;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class KenaiQueryController extends QueryController
-{
-    private String projectName; // XXX don't need this - already set in filterDef
-    private FilterDefinition filter;
+public class NamedFiltersCommand extends JiraCommand {
+    private NamedFilter[] namedFilters;
+    private final TaskRepository taskRepository;
 
-    public KenaiQueryController(JiraRepository repository, JiraQuery query, JiraFilter jf, String projectName, boolean predefinedQuery) {
-        super(repository, query, jf, !predefinedQuery);
-        this.projectName = projectName;
-        this.filter = (FilterDefinition) jf;
+    public NamedFiltersCommand(TaskRepository taskRepository) {
+        this.taskRepository = taskRepository;
     }
 
     @Override
-    protected void enableFields(boolean bl) {
-        super.enableFields(bl);
-        super.disableProject();
+    public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
+        namedFilters = Jira.getInstance().getClient(taskRepository).getNamedFilters(new NullProgressMonitor());
     }
 
-    @Override
-    public void closed() {
-        super.closed();
-        // override
-        scheduleForRefresh();
-    }
-
-    @Override
-    protected void logAutoRefreshEvent(boolean autoRefresh) {
-        BugtrackingUtil.logAutoRefreshEvent(
-            JiraConnector.getConnectorName(),
-            query.getDisplayName(),
-            true,
-            autoRefresh
-        );
+    public NamedFilter[] getNamedFilters() {
+        return namedFilters;
     }
 
 }
