@@ -37,11 +37,11 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.query.kenai;
+package org.netbeans.modules.jira.kenai;
 
 import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.query.QueryController;
@@ -51,53 +51,40 @@ import org.netbeans.modules.jira.repository.JiraRepository;
  *
  * @author Tomas Stupka
  */
-public class KenaiQueryController extends QueryController
-{
-    private String projectName; // XXX don't need this - already set in filterDef
-    private boolean predefinedQuery;
-    private FilterDefinition filter;
+public class KenaiQuery extends JiraQuery {
+    private boolean predefinedQuery = false;
+    private String project;
 
-    public KenaiQueryController(JiraRepository repository, JiraQuery query, JiraFilter jf, String projectName, boolean predefinedQuery) {
-        super(repository, query, jf);
-        this.projectName = projectName;
-        this.predefinedQuery = predefinedQuery;
-        this.filter = (FilterDefinition) jf;
-    }
-
-    @Override
-    public FilterDefinition getFilterDefinition() {
-        if(predefinedQuery) {
-            return this.filter;
+    public KenaiQuery(String name, JiraRepository repository, JiraFilter jf, String project, boolean saved, boolean predefined) {
+        super(name, repository, jf, saved);
+        this.predefinedQuery = predefined;
+        this.project = project;
+        controller = createControler(repository, this, jf);
+        boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(getDisplayName());
+        if(autoRefresh) {
+            getRepository().scheduleForRefresh(this);
         }
-        return super.getFilterDefinition();
     }
 
     @Override
-    protected void enableFields(boolean bl) {
-        super.enableFields(bl);
-
-        if(predefinedQuery) {
-            // override - for predefined kenai queries are those always disabled
-            panel.modifyButton.setEnabled(false);
-            panel.removeButton.setEnabled(false);
-        }
-        super.disableProject();
+    protected QueryController createControler(JiraRepository r, JiraQuery q, JiraFilter jiraFilter) {
+        KenaiQueryController c = new KenaiQueryController(r, q, jiraFilter, project, predefinedQuery);
+        return c;
     }
 
     @Override
-    public void closed() {
-        super.closed();
-        // override
-        scheduleForRefresh();
-    }
-
-    protected void logAutoRefreshEvent(boolean autoRefresh) {
-        BugtrackingUtil.logAutoRefreshEvent(
+    protected void logQueryEvent(int count, boolean autoRefresh) {
+        BugtrackingUtil.logQueryEvent(
             JiraConnector.getConnectorName(),
-            query.getDisplayName(),
+            getDisplayName(),
+            count,
             true,
-            autoRefresh
-        );
+            autoRefresh);
+    }
+
+    @Override
+    protected String getStoredQueryName() {
+        return super.getStoredQueryName() + "-" + project;
     }
 
 }
