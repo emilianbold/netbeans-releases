@@ -37,69 +37,25 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb.utils;
+package org.netbeans.modules.cnd.debugger.gdb;
+
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
- * Utilities to work with paths on Windows (cygwin, mingw)
+ *
  * @author Egor Ushakov
  */
-public class WinPath {
-    public static final String CYGDRIVE_PREFIX = "/cygdrive/"; // NOI18N
+public class GdbFunctionalTest extends TestSuite {
 
-    private WinPath() {
+    public GdbFunctionalTest() {
+        super("Gdb functional tests");
+
+        //addTestSuite(GdbDebuggerTestCase.class);
     }
 
-    /**
-     * Converts path from cygwin type into regular window (/cygdrive/c/... -> c:\...)
-     * @param path
-     * @return
-     */
-    public static String cyg2win(String path) {
-        if (path.startsWith(CYGDRIVE_PREFIX)) {
-            return path.charAt(CYGDRIVE_PREFIX.length())
-                    + ":" // NOI18N
-                    + path.substring(CYGDRIVE_PREFIX.length()+1).replace('/', '\\');
-        }
-        return path;
-    }
-
-    /**
-     * * Converts path from regular windows type into cygwin type (c:\... -> /cygdrive/c/...)
-     * @param path
-     * @return
-     */
-    public static String win2cyg(String path) {
-        if (isWinPath(path)) {
-            return CYGDRIVE_PREFIX + path.charAt(0) + path.substring(2).replace('\\', '/'); // NOI18N
-        }
-        return path;
-    }
-
-    /**
-     * Converts path from mingw type into regular window (/c/... -> c:\...)
-     * @param path
-     * @return
-     */
-    public static String ming2win(String path) {
-        if (path.charAt(0) == '/' && path.charAt(2) == '/') {
-            return path.charAt(1) + ":" + path.substring(2).replace('/', '\\'); // NOI18N
-        }
-        return path;
-    }
-
-    /**
-      * Converts path from regular windows type into mingw type (c:\... -> /c/...)
-     * @param path
-     * @return
-     */
-    public static String win2ming(String path) {
-        if (isWinPath(path)) {
-            return "/" + path.charAt(0) + "/" + path.substring(2).replace('\\', '/'); // NOI18N
-        }
-        return path;
-    }
-
-    public static boolean isWinPath(String path) {
-        return path.length() >= 2 && Character.isLetter(path.charAt(0)) && path.charAt(1) == ':';
+    public static Test suite() {
+        TestSuite suite = new GdbFunctionalTest();
+        return suite;
     }
 }

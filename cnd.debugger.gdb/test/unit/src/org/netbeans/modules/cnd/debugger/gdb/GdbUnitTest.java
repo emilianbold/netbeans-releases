@@ -37,67 +37,24 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.query.kenai;
+package org.netbeans.modules.cnd.debugger.gdb;
 
-import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.jira.JiraConnector;
-import org.netbeans.modules.jira.query.JiraQuery;
-import org.netbeans.modules.jira.query.QueryController;
-import org.netbeans.modules.jira.repository.JiraRepository;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Egor Ushakov
  */
-public class KenaiQueryController extends QueryController
-{
-    private String projectName; // XXX don't need this - already set in filterDef
-    private boolean predefinedQuery;
-    private FilterDefinition filter;
+public class GdbUnitTest extends TestSuite {
 
-    public KenaiQueryController(JiraRepository repository, JiraQuery query, JiraFilter jf, String projectName, boolean predefinedQuery) {
-        super(repository, query, jf);
-        this.projectName = projectName;
-        this.predefinedQuery = predefinedQuery;
-        this.filter = (FilterDefinition) jf;
+    public GdbUnitTest() {
+        super("Gdb unit tests");
+        addTestSuite(PathComparisonTestCase.class);
     }
 
-    @Override
-    public FilterDefinition getFilterDefinition() {
-        if(predefinedQuery) {
-            return this.filter;
-        }
-        return super.getFilterDefinition();
+    public static Test suite() {
+        TestSuite suite = new GdbUnitTest();
+        return suite;
     }
-
-    @Override
-    protected void enableFields(boolean bl) {
-        super.enableFields(bl);
-
-        if(predefinedQuery) {
-            // override - for predefined kenai queries are those always disabled
-            panel.modifyButton.setEnabled(false);
-            panel.removeButton.setEnabled(false);
-        }
-        super.disableProject();
-    }
-
-    @Override
-    public void closed() {
-        super.closed();
-        // override
-        scheduleForRefresh();
-    }
-
-    protected void logAutoRefreshEvent(boolean autoRefresh) {
-        BugtrackingUtil.logAutoRefreshEvent(
-            JiraConnector.getConnectorName(),
-            query.getDisplayName(),
-            true,
-            autoRefresh
-        );
-    }
-
 }
