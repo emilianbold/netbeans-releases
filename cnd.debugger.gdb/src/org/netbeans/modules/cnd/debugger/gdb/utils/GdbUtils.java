@@ -59,32 +59,6 @@ import org.openide.util.Utilities;
  * @author Gordon Prieur
  */
 public class GdbUtils {
-    
-    /**
-     * Extract gdb version. We're only interested in major/minor release information so we ignore any
-     * micro release information.
-     *
-     * @param verstring The version string returned by gdb (with extra stuff...)
-     * @return ver The version in the form of major/minor
-     */
-    protected static double extractGdbVersion(String verstring) {
-        double ver;
-        int last = verstring.lastIndexOf('.');
-        int first = verstring.indexOf('.');
-        
-        if (last != first) {
-            verstring = verstring.substring(0, last); // Strip off micro
-        }
-        
-        try {
-            ver = Double.parseDouble(verstring);
-        } catch (NumberFormatException ex) {
-            ver = 0.0;
-        }
-        
-        return ver;
-    }
-
     /**
      *  Ignoring array and pointer information, is this type a keyword type? We may check more
      *  than one type here as a function type will have all argument types checked.
