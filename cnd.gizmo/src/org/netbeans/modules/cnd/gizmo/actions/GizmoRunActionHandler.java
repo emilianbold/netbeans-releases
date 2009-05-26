@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.gizmo.GizmoServiceInfo;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
@@ -115,6 +114,8 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
             runDirectory = mapper.getRemotePath(runDirectory, true);
         }
 
+        targetConf.setExecutionEnvironment(execEnv);
+
         if (execEnv.isRemote() && !envVars.containsKey("DISPLAY")) { // NOI18N
             targetConf.setX11Forwarding(true);
         }
@@ -136,10 +137,6 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         String dem_util_path = binDir + "/" + demangle_utility; //NOI18N BTW: isn't it better to use File.Separator?
         targetConf.putInfo(GizmoServiceInfo.GIZMO_DEMANGLE_UTILITY, dem_util_path);
 
-        if (execEnv.isRemote()) {
-            targetConf.setHost(execEnv.getHost());
-            targetConf.setUser(execEnv.getUser());
-        }
         targetConf.setWorkingDirectory(runDirectory);
         int consoleType = pae.getProfile().getConsoleType().getValue();
         if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {

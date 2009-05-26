@@ -55,15 +55,13 @@ public final class NativeExecutableTargetConfiguration {
     private final String cmd;
     private final String[] args;
     private final Map<String, String> env;
-    private String host = null;
     private String workingDirectory;
-    private String user = null;
-    private int port = 0;
     private boolean isSubstitutable;
     private ExternalTerminal externalTerminal = null;
     private InputOutput io;
     private boolean x11forwarding;
-    private final Map<String, String>  info = new ConcurrentHashMap<String, String>();
+    private final Map<String, String> info = new ConcurrentHashMap<String, String>();
+    private ExecutionEnvironment execEnv;
 
     /**
      * Creates new configuration for {@link org.netbeans.modules.dlight.api.support.NativeExecutableTarget}
@@ -93,31 +91,12 @@ public final class NativeExecutableTargetConfiguration {
      * if host is not set up, localhost is used
      * @param host host to run target at
      */
-    public void setHost(String host) {
-        this.host = host;
+    public void setExecutionEnvironment(ExecutionEnvironment execEnv) {
+        this.execEnv = execEnv;
     }
 
-    public String putInfo(String name, String value){
+    public String putInfo(String name, String value) {
         return info.put(name, value);
-    }
-
-    /**
-     * Sets user to run executable target for,
-     * if not set <code>System.getProperty("user.name")</code> is used as user name
-     * @param user user name
-     */
-    public void setUser(String user) {
-        this.user = user;
-    }
-
-    /**
-     * Sets port which will be used to set up SSH connection,
-     * in case it is set to <code>0</code> and host is remote
-     * default <code>22</code> port will be used to set up SSH connection.
-     * @param port port to set up SSH connection
-     */
-    public void setSSHPort(int port) {
-        this.port = port;
     }
 
     /**
@@ -135,7 +114,7 @@ public final class NativeExecutableTargetConfiguration {
      * <p>
      * @param terminal terminal specification
      */
-    public void useExternalTerminal(/*@NullAllowed*/ ExternalTerminal terminal) {
+    public void useExternalTerminal(/*@NullAllowed*/ExternalTerminal terminal) {
         this.externalTerminal = terminal;
     }
 
@@ -156,10 +135,10 @@ public final class NativeExecutableTargetConfiguration {
     }
 
     ExecutionEnvironment getExecutionEvnitoment() {
-        return ExecutionEnvironmentFactory.createNew(user, host, port);
+        return execEnv == null ? ExecutionEnvironmentFactory.getLocal() : execEnv;
     }
 
-    ExternalTerminal getExternalTerminal(){
+    ExternalTerminal getExternalTerminal() {
         return externalTerminal;
     }
 
@@ -183,7 +162,7 @@ public final class NativeExecutableTargetConfiguration {
         return isSubstitutable;
     }
 
-    Map<String, String> getInfo(){
+    Map<String, String> getInfo() {
         return info;
     }
 
