@@ -471,7 +471,11 @@ final class QueryTopComponent extends TopComponent
         } else if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED) ||
                   evt.getPropertyName().equals(Kenai.PROP_LOGIN))
         {
-            updateSavedQueries((Repository) repositoryComboBox.getSelectedItem());
+            rp.post(new Runnable() {
+                public void run() {
+                    updateSavedQueries((Repository) repositoryComboBox.getSelectedItem());
+                }
+            });
         } else if(evt.getPropertyName().equals(BugtrackingManager.EVENT_REPOSITORIES_CHANGED)) {
             if(!repositoryComboBox.isEnabled()) {
                 // well, looks like there shuold be only one repository available

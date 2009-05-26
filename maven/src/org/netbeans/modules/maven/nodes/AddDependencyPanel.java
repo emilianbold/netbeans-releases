@@ -973,7 +973,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                 } else if (index2 < 0) {
                     return -1;
                 }
-                return index1 - index2;
+                return s1.compareTo(s2);
             } else {
                 return s1.compareTo(s2);
             }

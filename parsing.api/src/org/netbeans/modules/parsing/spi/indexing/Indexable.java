@@ -40,8 +40,8 @@
 package org.netbeans.modules.parsing.spi.indexing;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
+import org.netbeans.modules.parsing.impl.indexing.CancelRequest;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexableImpl;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
@@ -77,13 +77,13 @@ public final class Indexable {
         return delegate.getRelativePath();
     }
 
-    /**
-     * Returns a name of represented file.
-     * @return a name
-     */
-    public String getName () {
-        return this.delegate.getName();
-    }
+//    /**
+//     * Returns a name of represented file.
+//     * @return a name
+//     */
+//    public String getName () {
+//        return this.delegate.getName();
+//    }
 
     /**
      * Returns absolute URL of the represented file
@@ -94,24 +94,32 @@ public final class Indexable {
     }
 
     /**
-     * Returns a time when the file was last modified
-     * @return A long value representing the time the file was last modified,
-     * measured in milliseconds since the epoch (00:00:00 GMT, January 1, 1970),
-     * or 0L if the file does not exist or if an I/O error occurs
+     * @return
+     * @since 1.13
      */
-    public long getLastModified () {
-        return this.delegate.getLastModified();
+    public String getMimeType() {
+        return delegate.getMimeType();
     }
+    
+//    /**
+//     * Returns a time when the file was last modified
+//     * @return A long value representing the time the file was last modified,
+//     * measured in milliseconds since the epoch (00:00:00 GMT, January 1, 1970),
+//     * or 0L if the file does not exist or if an I/O error occurs
+//     */
+//    public long getLastModified () {
+//        return this.delegate.getLastModified();
+//    }
 
-    /**
-     * Returns {@link InputStream} of represented file.
-     * The caller is responsible to correctly close the stream.
-     * @return the {@link InputStream} to read the content
-     * @throws java.io.IOException
-     */
-    public InputStream openInputStream () throws IOException {
-        return this.delegate.openInputStream();
-    }
+//    /**
+//     * Returns {@link InputStream} of represented file.
+//     * The caller is responsible to correctly close the stream.
+//     * @return the {@link InputStream} to read the content
+//     * @throws java.io.IOException
+//     */
+//    public InputStream openInputStream () throws IOException {
+//        return this.delegate.openInputStream();
+//    }
 
     @Override
     public boolean equals(Object obj) {
@@ -160,8 +168,9 @@ public final class Indexable {
         @Override
         public Context createContext(FileObject indexFolder, URL rootURL, 
                 String indexerName, int indexerVersion, IndexFactoryImpl factory,
-                boolean followUpJob, boolean checkForEditorModifications) throws IOException {
-            return new Context(indexFolder, rootURL, indexerName, indexerVersion, factory, followUpJob, checkForEditorModifications);
+                boolean followUpJob, boolean checkForEditorModifications,
+                CancelRequest cancelRequest) throws IOException {
+            return new Context(indexFolder, rootURL, indexerName, indexerVersion, factory, followUpJob, checkForEditorModifications, cancelRequest);
         }
 
         @Override

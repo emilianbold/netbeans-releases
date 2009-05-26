@@ -828,9 +828,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
     @Override
     public void dispose() {
+        super.dispose();
         _clearMembers();
         _clearFriends();
-        super.dispose();
     }
 
     private void _clearMembers() {

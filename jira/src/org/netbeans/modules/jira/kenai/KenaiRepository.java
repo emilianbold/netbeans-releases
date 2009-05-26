@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.query.kenai;
+package org.netbeans.modules.jira.kenai;
 
 import java.awt.Image;
 import java.net.PasswordAuthentication;
@@ -185,7 +185,7 @@ public class KenaiRepository extends JiraRepository {
     }
 
     protected void setCredentials(String user, String password) {
-        super.setTaskRepository(getDisplayName(), getUrl(), user, password, null, null);
+        super.setCredentials(user, password, null, null);
     }
 
     @Override
@@ -219,4 +219,37 @@ public class KenaiRepository extends JiraRepository {
         return "";                                                              // NOI18N
     }
 
+    /**
+     * Returns null if key is not a valid Jira issue key or tries to add a project prefix to the key if the key is a number
+     * @param key
+     * @return
+     */
+    @Override
+    protected String repairKeyIfNeeded (String key) {
+        String retval = null;
+        try {
+            Long.parseLong(key);
+            // problem
+            // mylyn will interpret this key as an ID
+            assert projectName != null;
+            assert !"".equals(projectName);                             //NOI18N
+            retval = projectName + "-" + key;                           //NOI18N
+        } catch (NumberFormatException ex) {
+            // this is good, no InsufficientRightsException will be thrown in mylyn
+            retval = key;
+        }
+        return retval;
+    }
+
+    @Override
+    protected ProjectFilter getProjectFilter() {
+        ProjectFilter pf = null;
+        JiraConfiguration config = getConfiguration();
+        if (config != null) {
+            Project p = config.getProjectByKey(projectName);
+            assert p != null;
+            pf = new ProjectFilter(p);
+        }
+        return pf;
+    }
 }

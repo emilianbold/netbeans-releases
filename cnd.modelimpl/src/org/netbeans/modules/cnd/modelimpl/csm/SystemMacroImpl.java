@@ -47,8 +47,11 @@ import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMacroParameter;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
+import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 
@@ -57,13 +60,14 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
  *
  * @author Sergey Grinev
  */
-public class SystemMacroImpl implements CsmMacro {
+public final class SystemMacroImpl implements CsmMacro, CsmIdentifiable {
     
     private final CharSequence macroName;
     private final CharSequence macroBody;
     private final Kind macroKind;
     private final List<CharSequence> params;
     private CsmFile containingFile;
+    private final CsmUID<CsmMacro> uid;
 
     public SystemMacroImpl(CharSequence macroName, String macroBody, List<CharSequence> macroParams, CsmFile containingFile, Kind macroKind) {
         this.macroName = NameCache.getManager().getString(macroName);
@@ -76,6 +80,7 @@ public class SystemMacroImpl implements CsmMacro {
         }
         assert containingFile instanceof Unresolved.UnresolvedFile;
         this.containingFile = containingFile;
+        this.uid = UIDProviderIml.createSelfUID((CsmMacro)this);
     }
     
     public List<CharSequence> getParameters() {
@@ -163,5 +168,9 @@ public class SystemMacroImpl implements CsmMacro {
 
     public CsmParameterList<CsmMacroParameter> getParameterList() {
         return null;
+    }
+
+    public CsmUID<?> getUID() {
+        return uid;
     }
 }
