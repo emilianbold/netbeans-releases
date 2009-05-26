@@ -300,7 +300,8 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
 
 
             doc.insertString(pos.getOffset(), completeInsertString, null);
-            pos = doc.createPosition(pos.getOffset() - completeInsertString.length());
+            // Positions at offset 0 do not move - swing anomally :-( so do Math.max()
+            pos = doc.createPosition(Math.max(pos.getOffset() - completeInsertString.length(), 0));
             // #132615
             // Insert a special undoable-edit marker that - once undone will release CT editing.
             if (bdoc != null) {
