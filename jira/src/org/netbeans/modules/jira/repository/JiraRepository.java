@@ -60,6 +60,7 @@ import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.jira.core.model.NamedFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ContentFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
+import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
 import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
@@ -104,6 +105,7 @@ public class JiraRepository extends Repository {
     private JiraExecutor executor;
     private JiraConfiguration configuration;
     private final Object REPOSITORY_LOCK = new Object();
+    private final Object CONFIGURATION_LOCK = new Object();
 
     public JiraRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
@@ -312,6 +314,7 @@ public class JiraRepository extends Repository {
 
         final ContentFilter cf = new ContentFilter(sb.toString(), true, false, false, false);
         fd.setContentFilter(cf);
+        fd.setProjectFilter(getProjectFilter());
         PerformQueryCommand queryCmd = new PerformQueryCommand(this, fd, collector);
         getExecutor().execute(queryCmd);
         return issues.toArray(new NbJiraIssue[issues.size()]);
@@ -335,11 +338,11 @@ public class JiraRepository extends Repository {
         Jira.getInstance().addRepository(this);
     }
 
-    static TaskRepository createTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
-        TaskRepository repository =
-                new TaskRepository(
-                    Jira.getInstance().getRepositoryConnector().getConnectorKind(),
-                    url);
+    public void setCredentials(String user, String password, String httpUser, String httpPassword) {
+        setCredentials(taskRepository, user, password, httpUser, httpPassword);
+    }
+
+    protected static void setCredentials (TaskRepository repository, String user, String password, String httpUser, String httpPassword) {
         AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user, password);
         repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
 
@@ -349,7 +352,14 @@ public class JiraRepository extends Repository {
             authenticationCredentials = new AuthenticationCredentials(httpUser, httpPassword);
             repository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
         }
+    }
 
+    static TaskRepository createTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
+        TaskRepository repository =
+                new TaskRepository(
+                    Jira.getInstance().getRepositoryConnector().getConnectorKind(),
+                    url);
+        setCredentials(repository, user, password, httpUser, httpPassword);
         // XXX need proxy settings from the IDE
 
         return repository;
@@ -376,9 +386,9 @@ public class JiraRepository extends Repository {
     }
     
     void resetRepository() {
-        // XXX
+        // XXX synchronization
+        configuration = null;
         synchronized (REPOSITORY_LOCK) {
-            configuration = null;
             TaskRepository taskRepo = getTaskRepository();
             if (taskRepo != null) {
                 Jira.getInstance().removeClient(taskRepo);
@@ -391,16 +401,20 @@ public class JiraRepository extends Repository {
      *
      * @return
      */
-    public synchronized JiraConfiguration getConfiguration() {
-        if(configuration == null) {
-            configuration = getConfigurationIntern(false);
+    public JiraConfiguration getConfiguration() {
+        synchronized (CONFIGURATION_LOCK) {
+            if (configuration == null) {
+                configuration = getConfigurationIntern(false);
+            }
+            return configuration;
         }
-        return configuration;
     }
 
-    public synchronized void refreshConfiguration() {
+    public void refreshConfiguration() {
         JiraConfiguration c = getConfigurationIntern(true);
-        configuration = c;
+        synchronized (CONFIGURATION_LOCK) {
+            configuration = c;
+        }
     }
 
     protected JiraConfiguration createConfiguration(JiraClient client) {
@@ -577,5 +591,14 @@ public class JiraRepository extends Repository {
             retval = key;
         }
         return retval;
+    }
+
+    /**
+     * Returns <code>null</code> for a general repository.
+     * Override this to provide a valid project filter for a repository which is limited to a subset of all projects (e.g. kenai).
+     * @return a project filter - <code>null</code> for this implementation.
+     */
+    protected ProjectFilter getProjectFilter () {
+        return null;
     }
 }
