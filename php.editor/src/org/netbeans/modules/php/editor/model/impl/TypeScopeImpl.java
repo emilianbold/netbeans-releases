@@ -216,7 +216,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
 
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpKind().equals(PhpKind.CLASS_CONSTANT) &&
-                        queryName.length == 0 || ModelElementImpl.nameKindMatch(element.getName(), nameKind, queryName);
+                        (queryName.length == 0 || ModelElementImpl.nameKindMatch(element.getName(), nameKind, queryName));
             }
         });
     }
