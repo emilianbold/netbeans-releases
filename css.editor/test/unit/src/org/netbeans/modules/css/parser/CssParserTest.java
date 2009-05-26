@@ -45,7 +45,6 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.junit.Assert;
 import org.netbeans.modules.css.editor.test.TestBase;
-import org.netbeans.spi.lexer.LexerInput;
 
 /**
  *
