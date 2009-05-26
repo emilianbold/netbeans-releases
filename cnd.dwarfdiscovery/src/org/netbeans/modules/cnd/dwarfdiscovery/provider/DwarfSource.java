@@ -593,9 +593,7 @@ public class DwarfSource implements SourceFileProperties{
         }
         int firstMacroLine = grepSourceFile(fullName).firstMacroLine;
         ArrayList<DwarfMacinfoEntry> table = dwarfTable.getCommandLineMarcos();
-        int lineNo = 0;
         for (Iterator<DwarfMacinfoEntry> it = table.iterator(); it.hasNext();) {
-            lineNo++;
             DwarfMacinfoEntry entry = it.next();
             String def = entry.definition;
             int i = def.indexOf(' ');
@@ -607,7 +605,7 @@ public class DwarfSource implements SourceFileProperties{
             } else {
                 macro = PathCache.getString(def);
             }
-            if (firstMacroLine == lineNo) {
+            if (firstMacroLine == entry.lineNum) {
                 if (macro.equals(grepSourceFile(fullName).firstMacro)){
                     break;
                 }
