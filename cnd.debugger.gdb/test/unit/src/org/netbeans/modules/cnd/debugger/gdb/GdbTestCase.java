@@ -49,6 +49,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger.State;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -76,7 +77,6 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
     protected static final Logger tlog = Logger.getLogger("gdb.testlogger"); // NOI18N
     private final StateListener stateListener = new StateListener();
     private final StackListener stackListener = new StackListener();
-    private boolean stackUpdate = false;
 
     public GdbTestCase(String name) {
         super(name);
@@ -168,28 +168,28 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
         }
     }
 
-    private final Object STACK_WAIT_LOCK = new String("Stack Wait Lock");
+    private final Object BP_WAIT_LOCK = new String("Breakpoint Wait Lock");
 
-    protected void waitForStackUpdate() {
+    protected void waitForBreakpoint(LineBreakpoint lb) {
         long timeout = WAIT_TIMEOUT;
         long start = System.currentTimeMillis();
 
-        System.out.println("    waitForStackUpdate: Waiting for stack");
-        synchronized (STACK_WAIT_LOCK) {
-            stackUpdate = false;
+        System.out.println("    waitForBreakpoint: Waiting for breakpoint" + lb);
+        synchronized (BP_WAIT_LOCK) {
             for (;;) {
                 try {
-                    STACK_WAIT_LOCK.wait(timeout);
+                    BP_WAIT_LOCK.wait(timeout);
                 } catch (InterruptedException ie) {
                 }
 
                 timeout = timeout - (System.currentTimeMillis() - start);
-                if (stackUpdate) {
-                    System.out.println("    waitForStackUpdate: Got expected stack update");
+                CallStackFrame csf = debugger.getCurrentCallStackFrame();
+                if (csf != null && lb.getPath().equals(csf.getFullname()) && lb.getLineNumber() == csf.getLineNumber()) {
+                    System.out.println("    waitForBreakpoint: Got expected stop position");
                     return;
                 } else if (timeout < 0) {
-                    System.out.println("    waitForStackUpdate: Timeout exceeded");
-                    fail("Timeout while waiting for Stack update");
+                    System.out.println("    waitForBreakpoint: Timeout exceeded");
+                    fail("Timeout while waiting for breakpoint");
                     return;
                 }
             }
@@ -229,9 +229,8 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
 
     private class StackListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
-            synchronized (STACK_WAIT_LOCK) {
-                stackUpdate = true;
-                STACK_WAIT_LOCK.notifyAll();
+            synchronized (BP_WAIT_LOCK) {
+                BP_WAIT_LOCK.notifyAll();
             }
         }
     }
