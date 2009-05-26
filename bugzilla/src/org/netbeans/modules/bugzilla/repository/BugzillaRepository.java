@@ -69,6 +69,7 @@ import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
 import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
 import org.netbeans.modules.bugzilla.query.QueryController;
+import org.netbeans.modules.bugzilla.query.QueryParameter;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.ImageUtilities;
@@ -281,6 +282,10 @@ public class BugzillaRepository extends Repository {
             if(i < keywords.length - 1) {
                 url.append("+");                                                // NOI18N
             }
+        }
+        QueryParameter[] additionalParams = getSimpleSearchParameters();
+        for (QueryParameter qp : additionalParams) {
+            url.append(qp.get());
         }
         PerformQueryCommand queryCmd = new PerformQueryCommand(this, url.toString(), collector);
         getExecutor().execute(queryCmd);
@@ -566,4 +571,7 @@ public class BugzillaRepository extends Repository {
         return super.toString() + " (" + getDisplayName() + ')';        //NOI18N
     }
 
+    protected QueryParameter[] getSimpleSearchParameters () {
+        return new QueryParameter[] {};
+    }
 }
