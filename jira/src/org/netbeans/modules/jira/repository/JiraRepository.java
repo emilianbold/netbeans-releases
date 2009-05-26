@@ -58,6 +58,7 @@ import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ContentFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
+import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
 import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
@@ -285,6 +286,7 @@ public class JiraRepository extends Repository {
 
         final ContentFilter cf = new ContentFilter(sb.toString(), true, false, false, false);
         fd.setContentFilter(cf);
+        fd.setProjectFilter(getProjectFilter());
         PerformQueryCommand queryCmd = new PerformQueryCommand(this, fd, collector);
         getExecutor().execute(queryCmd);
         return issues.toArray(new NbJiraIssue[issues.size()]);
@@ -561,5 +563,14 @@ public class JiraRepository extends Repository {
             retval = key;
         }
         return retval;
+    }
+
+    /**
+     * Returns <code>null</code> for a general repository.
+     * Override this to provide a valid project filter for a repository which is limited to a subset of all projects (e.g. kenai).
+     * @return a project filter - <code>null</code> for this implementation.
+     */
+    protected ProjectFilter getProjectFilter () {
+        return null;
     }
 }

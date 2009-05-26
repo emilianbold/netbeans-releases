@@ -240,4 +240,16 @@ public class KenaiRepository extends JiraRepository {
         }
         return retval;
     }
+
+    @Override
+    protected ProjectFilter getProjectFilter() {
+        ProjectFilter pf = null;
+        JiraConfiguration config = getConfiguration();
+        if (config != null) {
+            Project p = config.getProjectByKey(projectName);
+            assert p != null;
+            pf = new ProjectFilter(p);
+        }
+        return pf;
+    }
 }
