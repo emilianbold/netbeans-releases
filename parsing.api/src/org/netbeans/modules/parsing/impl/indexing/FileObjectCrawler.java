@@ -41,10 +41,12 @@ package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -91,20 +93,24 @@ public final class FileObjectCrawler extends Crawler {
 
         final long tm2 = System.currentTimeMillis();
         if (LOG.isLoggable(Level.FINE)) {
+            String rootUrl;
             try {
-                LOG.log(Level.FINE, "Up-to-date check of {0} files under {1} took {2} ms", new Object[]{ stats.filesCount, root.getURL(), tm2 - tm1 }); //NOI18N
-                LOG.log(Level.FINE, "File extensions histogram for {0}", root.getURL());
-                for(String ext : new TreeSet<String>(stats.extensions.keySet())) {
-                    LOG.log(Level.FINE, "{0}: {1}", new Object [] { ext, stats.extensions.get(ext) }); //NOI18N
-                }
-                LOG.fine("----");
-                LOG.log(Level.FINE, "Mime types histogram for {0}", root.getURL());
-                for(String mimeType : new TreeSet<String>(stats.mimeTypes.keySet())) {
-                    LOG.log(Level.FINE, "{0}: {1}", new Object [] { mimeType, stats.mimeTypes.get(mimeType) }); //NOI18N
-                }
-                LOG.fine("----");
+                rootUrl = root.getURL().toString();
             } catch (FileStateInvalidException ex) {
                 // ignore
+                rootUrl = root.toString();
+            }
+
+            LOG.log(Level.FINE, "Up-to-date check of {0} files under {1} took {2} ms", new Object[]{ stats.filesCount, rootUrl, tm2 - tm1 }); //NOI18N
+
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.log(Level.FINER, "File extensions histogram for {0}:", rootUrl);
+                Stats.logHistogram(Level.FINER, stats.extensions);
+                LOG.finer("----");
+
+                LOG.log(Level.FINER, "Mime types histogram for {0}:", rootUrl);
+                Stats.logHistogram(Level.FINER, stats.mimeTypes);
+                LOG.finer("----");
             }
         }
 
@@ -165,5 +171,27 @@ public final class FileObjectCrawler extends Crawler {
                 m.put(k, i.intValue() + 1);
             }
         }
+        public static void logHistogram(Level level, Map<String, Integer> data) {
+            Map<Integer, Set<String>> sortedMap = new TreeMap<Integer, Set<String>>(REVERSE);
+            for(String item : data.keySet()) {
+                Integer freq = data.get(item);
+                Set<String> items = sortedMap.get(freq);
+                if (items == null) {
+                    items = new TreeSet<String>();
+                    sortedMap.put(freq, items);
+                }
+                items.add(item);
+            }
+            for(Integer freq : sortedMap.keySet()) {
+                for(String item : sortedMap.get(freq)) {
+                    LOG.log(level, "{0}: {1}", new Object [] { item, freq }); //NOI18N
+                }
+            }
+        }
+        private static final Comparator<Integer> REVERSE = new Comparator<Integer>() {
+            public int compare(Integer o1, Integer o2) {
+                return -1 * o1.compareTo(o2);
+            }
+        };
     } // End of Stats class
 }

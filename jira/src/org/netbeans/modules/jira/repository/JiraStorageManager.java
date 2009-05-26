@@ -132,29 +132,29 @@ public class JiraStorageManager {
     }
 
     private void loadQueries () {
-        Jira.LOG.fine("loadQueris: loading queries");                   //NOI18N
+        Jira.LOG.fine("loadQueries: loading queries");                   //NOI18N
 
         File f = new File(getNBConfigPath());
         try {
             ObjectInputStream ois = null;
             File file = new File(f, QUERIES_STORAGE_FILE);
             if (!file.canRead()) {
-                Jira.LOG.info("loadQueris: no saved data");             //NOI18N
+                Jira.LOG.info("loadQueries: no saved data");             //NOI18N
                 return;
             }
             try {
                 ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
                 String version = ois.readUTF();
                 if (!JiraQueryData.VERSION.equals(version)) {
-                    Jira.LOG.info("loadQueris: old data format: " + version); //NOI18N
+                    Jira.LOG.info("loadQueries: old data format: " + version); //NOI18N
                     return;
                 }
                 int size = ois.readInt();
-                Jira.LOG.fine("loadQueris: loading " + size + " queries"); //NOI18N
+                Jira.LOG.fine("loadQueries: loading " + size + " queries"); //NOI18N
                 queriesData = new HashMap<String, JiraQueryData>(size + 5);
                 while (size-- > 0) {
                     String queryIdent = ois.readUTF();
-                    Jira.LOG.fine("loadQueris: loading data for " + queryIdent); //NOI18N
+                    Jira.LOG.fine("loadQueries: loading data for " + queryIdent); //NOI18N
                     JiraQueryData data = (JiraQueryData) ois.readObject();
                     queriesData.put(queryIdent, data);
                 }

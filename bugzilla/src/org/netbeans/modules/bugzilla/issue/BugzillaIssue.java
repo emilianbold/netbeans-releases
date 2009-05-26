@@ -310,10 +310,7 @@ public class BugzillaIssue extends Issue {
             attributes = new HashMap<String, String>();
             String value;
             for (IssueField field : IssueField.values()) {
-                switch(field) {
-                    default:
-                        value = getFieldValue(field);
-                }
+                value = getFieldValue(field);
                 if(value != null && !value.trim().equals("")) {                 // NOI18N
                     attributes.put(field.key, value);
                 }

@@ -218,7 +218,7 @@ public class PathRegistryTest extends NbTestCase {
         assertTrue(l.await());        
         result = PathRegistry.getDefault().getSources();
         assertNotNull (result);
-        assertEquals(1,result.size());
+        assertEquals("Wrong source roots: " + result, 1, result.size());
         assertEquals(new FileObject[] {srcRoot2},result);
         result = PathRegistry.getDefault().getLibraries();
         assertNotNull (result);
