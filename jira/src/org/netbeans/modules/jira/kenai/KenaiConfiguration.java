@@ -99,4 +99,10 @@ public class KenaiConfiguration extends JiraConfiguration {
     static class KenaiConfigurationData extends ConfigurationData {
         
     }
+
+    @Override
+    protected void clearCached() {
+        super.clearCached();
+        projects = null;
+    }
 }

@@ -185,7 +185,7 @@ public class KenaiRepository extends JiraRepository {
     }
 
     protected void setCredentials(String user, String password) {
-        super.setTaskRepository(getDisplayName(), getUrl(), user, password, null, null);
+        super.setCredentials(user, password, null, null);
     }
 
     @Override
@@ -239,5 +239,17 @@ public class KenaiRepository extends JiraRepository {
             retval = key;
         }
         return retval;
+    }
+
+    @Override
+    protected ProjectFilter getProjectFilter() {
+        ProjectFilter pf = null;
+        JiraConfiguration config = getConfiguration();
+        if (config != null) {
+            Project p = config.getProjectByKey(projectName);
+            assert p != null;
+            pf = new ProjectFilter(p);
+        }
+        return pf;
     }
 }
