@@ -48,9 +48,11 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JEditorPane;
-import javax.swing.JFrame;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import junit.framework.AssertionFailedError;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.HtmlSyntaxSupport;
@@ -76,9 +78,6 @@ public class HtmlCompletionQueryTest extends TestBase {
         EXACT, CONTAINS, DOES_NOT_CONTAIN, EMPTY, NOT_EMPTY;
     }
 
-    public HtmlCompletionQueryTest() throws IOException, BadLocationException {
-        this("htmlsyntaxsupporttest");
-    }
 
     public HtmlCompletionQueryTest(String name) throws IOException, BadLocationException {
         super(name);
@@ -91,6 +90,13 @@ public class HtmlCompletionQueryTest extends TestBase {
         MockServices.setServices(MockMimeLookup.class);
     }
 
+
+    public static Test xsuite() throws IOException, BadLocationException {
+	TestSuite suite = new TestSuite();
+        suite.addTest(new HtmlCompletionQueryTest("testFileAttrValue"));
+        return suite;
+    }
+
     //test methods -----------
 //    public void testIndexHtml() throws IOException, BadLocationException {
 //        testCompletionResults("index.html");
@@ -100,7 +106,7 @@ public class HtmlCompletionQueryTest extends TestBase {
 //        testCompletionResults("netbeans.org.html");
 //    }
 
-    public void testTags() {
+    public void testTags() throws BadLocationException {
         assertItems("<|", arr("div"), Match.CONTAINS, 1);
         assertItems("<|", arr("jindra"), Match.DOES_NOT_CONTAIN);
         assertItems("<d|", arr("div"), Match.CONTAINS, 1);
@@ -122,7 +128,7 @@ public class HtmlCompletionQueryTest extends TestBase {
         assertCompletedText("<div></div|", "div", "<div></div>|");
     }
 
-    public void testTagAttributes() {
+    public void testTagAttributes() throws BadLocationException {
         //           012345
         assertItems("<col |", arr("align"), Match.CONTAINS, 5);
         assertItems("<col |", arr("jindra"), Match.DOES_NOT_CONTAIN);
@@ -134,7 +140,7 @@ public class HtmlCompletionQueryTest extends TestBase {
         assertCompletedText("<col a|", "align", "<col align=\"|\"");
     }
 
-    public void testTagAttributeValues() {
+    public void testTagAttributeValues() throws BadLocationException {
         assertItems("<col align=\"|\"", arr("center"), Match.CONTAINS, 12);
         //           01234567890 12
         assertItems("<col align=\"ce|\"", arr("center"), Match.CONTAINS, 12);
@@ -171,6 +177,91 @@ public class HtmlCompletionQueryTest extends TestBase {
         assertCompletedText("<input d|", "disabled", "<input disabled|");
     }
 
+    public void testFileAttrValue() throws BadLocationException {
+        String code = "<a href='|'";
+        //             01234567890
+        //we need a fileobject backed document here
+        Document doc = createDocuments("test.html", "another.html", "image.png")[0]; //use test.html
+        doc.insertString(0, code, null);
+        assertItems(doc, arr("../", "another.html", "image.png"), Match.CONTAINS, 9);
+
+        //double quotes
+        code = "<a href=\"|\"";
+        //             01234567890
+        //we need a fileobject backed document here
+        doc = createDocuments("test.html", "another.html", "image.png")[0]; //use test.html
+        doc.insertString(0, code, null);
+        assertItems(doc, arr("../", "another.html", "image.png"), Match.CONTAINS, 9);
+
+        //unquoted
+        code = "<a href=|";
+        //             01234567890
+        //we need a fileobject backed document here
+        doc = createDocuments("test.html", "another.html", "image.png")[0]; //use test.html
+        doc.insertString(0, code, null);
+        assertItems(doc, arr("../", "another.html", "image.png"), Match.CONTAINS, 8);
+    }
+
+     public void testFileAttrValueAllTags() throws BadLocationException {
+        String code = "<link href='|'";
+        //             01234567890
+        //we need a fileobject backed document here
+        Document doc = createDocuments("test.html", "another.html", "image.png")[0]; //use test.html
+        doc.insertString(0, code, null);
+        assertItems(doc, arr("../", "another.html", "image.png"), Match.CONTAINS, 12);
+
+        code = "<base href='|'";
+        //             01234567890
+        //we need a fileobject backed document here
+        doc = createDocuments("test.html", "another.html", "image.png")[0]; //use test.html
+        doc.insertString(0, code, null);
+        assertItems(doc, arr("../", "another.html", "image.png"), Match.CONTAINS, 12);
+
+     }
+
+    public void testFileAttrValueFolders() throws BadLocationException {
+        String code = "<a href='|'";
+        //             01234567890
+        //we need a fileobject backed document here
+        Document doc = createDocuments("test.html", "folder1/another.html", "images/image.png")[0]; //use test.html
+        doc.insertString(0, code, null);
+        assertItems(doc, arr("folder1/", "images/", "../"), Match.CONTAINS, 9);
+
+        //complete in folder
+        code = "<a href='folder1/|'";
+        //             01234567890
+        //we need a fileobject backed document here
+        doc = createDocuments("test.html", "folder1/another.html", "images/image.png")[0]; //use test.html
+        doc.insertString(0, code, null);
+        assertItems(doc, arr("another.html"), Match.CONTAINS, 9);
+    }
+
+    public void testFileAttrValueWithPrefix() throws BadLocationException {
+        String code = "<a href='ima|'";
+        //             01234567890
+        //we need a fileobject backed document here
+        Document doc = createDocuments("test.html", "another.html", "image.png")[0]; //use test.html
+        doc.insertString(0, code, null);
+        assertItems(doc, arr("image.png"), Match.CONTAINS, 9);
+
+        //unquoted
+        code = "<a href=ima|";
+        //             01234567890
+        //we need a fileobject backed document here
+        doc = createDocuments("test.html", "another.html", "image.png")[0]; //use test.html
+        doc.insertString(0, code, null);
+        assertItems(doc, arr("image.png"), Match.CONTAINS, 8);
+    }
+
+    public void testFileAttrValueUppercase() throws BadLocationException {
+        String code = "<A HREF='|'";
+        //             01234567890
+        //we need a fileobject backed document here
+        Document doc = createDocuments("test.html", "another.html", "image.png")[0]; //use test.html
+        doc.insertString(0, code, null);
+        assertItems(doc, arr("../", "another.html", "image.png"), Match.CONTAINS, 9);
+    }
+
     //helper methods ------------
 
     //test HTML 4.01
@@ -178,19 +269,22 @@ public class HtmlCompletionQueryTest extends TestBase {
         return "-//W3C//DTD HTML 4.01 Transitional//EN";
     }
 
-    private void assertItems(String documentText, final String[] expectedItemsNames, final Match type) {
+    private void assertItems(String documentText, final String[] expectedItemsNames, final Match type) throws BadLocationException {
         assertItems(documentText, expectedItemsNames, type, -1);
     }
 
-    private void assertItems(String documentText, final String[] expectedItemsNames, final Match type, int expectedAnchor) {
-        StringBuffer content = new StringBuffer(documentText);
+    private void assertItems(String documentText, final String[] expectedItemsNames, final Match type, int expectedAnchor) throws BadLocationException {
+        assertItems(getDocument(documentText), expectedItemsNames, type, expectedAnchor);
+    }
+
+    private void assertItems(Document doc, final String[] expectedItemsNames, final Match type, int expectedAnchor) throws BadLocationException {
+        String content = doc.getText(0, doc.getLength());
 
         final int pipeOffset = content.indexOf("|");
         assert pipeOffset >= 0 : "define caret position by pipe character in the document source!";
 
         //remove the pipe
-        content.deleteCharAt(pipeOffset);
-        Document doc = getDocument(content.toString());
+        doc.remove(pipeOffset, 1);
 
         HtmlCompletionQuery query = new HtmlCompletionQuery();
         JEditorPane component = new JEditorPane();
@@ -215,7 +309,14 @@ public class HtmlCompletionQueryTest extends TestBase {
             assertEquals(expectedAnchor, result.getAnchor());
         }
 
-        assertCompletionItemNames(expectedItemsNames, items, type);
+        try {
+            assertCompletionItemNames(expectedItemsNames, items, type);
+        } catch(AssertionFailedError e) {
+            for(CompletionItem item : items) {
+                System.out.println(((HtmlCompletionItem)item).getItemText());
+            }
+            throw e;
+        }
 
     }
 
@@ -289,7 +390,7 @@ public class HtmlCompletionQueryTest extends TestBase {
             assertEquals(exp, real);
         } else if (type == Match.CONTAINS) {
             exp.removeAll(real);
-            assertEquals(Collections.EMPTY_LIST, exp);
+            assertEquals(exp, Collections.EMPTY_LIST);
         } else if (type == Match.EMPTY) {
             assertEquals(0, real.size());
         } else if (type == Match.NOT_EMPTY) {

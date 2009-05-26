@@ -432,10 +432,10 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
                     adoc.runAtomic(new Runnable() {
                         public void run() {
                             //trigger JavaDKTAction
-                            triggerJavaDefaultKeyTypedAction(e, target);
-                            
-                            //run super impl under indent lock and atomic lock
-                            JspDefaultKeyTypedAction.super.actionPerformed(e, target);
+                            if(!triggerJavaDefaultKeyTypedAction(e, target)) {
+                                //delegate to jsp default action if java didn't handle this keystroke
+                                JspDefaultKeyTypedAction.super.actionPerformed(e, target);
+                            }
                         }
                     });
                 } finally {
@@ -449,7 +449,7 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
 
         }
 
-        private void triggerJavaDefaultKeyTypedAction(ActionEvent e, JTextComponent target) {
+        private boolean triggerJavaDefaultKeyTypedAction(ActionEvent e, JTextComponent target) {
             TokenSequence javaTokenSequence = JspSyntaxSupport.tokenSequence(TokenHierarchy.get(target.getDocument()), JavaTokenId.language(), target.getCaret().getDot() - 1);
             if (javaTokenSequence != null) {
                 JavaKit jkit = (JavaKit) getKit(JavaKit.class);
@@ -457,10 +457,11 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
                     Action action = jkit.getActionByName(DefaultEditorKit.defaultKeyTypedAction);
                     if (action != null && action instanceof JavaKit.JavaDefaultKeyTypedAction) {
                         ((JavaKit.JavaDefaultKeyTypedAction) action).actionPerformed(e, target);
-                        return;
+                        return true;
                     }
                 }
             }
+            return false;
         }
 
         /** called under document atomic lock */
