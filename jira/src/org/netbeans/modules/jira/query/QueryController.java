@@ -946,6 +946,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         public void notifyData(final Issue issue) {
             setIssueCount(++counter);
+            if(counter == 1) {
+                panel.showNoContentPanel(false);
+            }
         }
 
         public void started() {
