@@ -505,6 +505,10 @@
 	     <property name="javafx.full.version"
 		       value="1.0.0.0.${javafx.build.number}"/>
          </if>
+
+        <!-- fake JavaFX version just to be shown on the d/l page -->
+        <property name="javafx.full.version" value="1.0.0.0.0"/>
+
         <delete file="${temp.file}" failonerror="false"/>
     </target>
     
@@ -793,7 +797,7 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-netbeans-components" if="do.build.netbeans">
 	<set property="netbeans.group.uid" value=""/>
 	<antcall target="build-list">
-	    <param name="build.list" value="nb-base nb-javase nb-webcommon nb-javaee nb-javame nb-ruby nb-groovy nb-cnd nb-php nb-ergonomics runtimes-group ${server-uid} glassfish-mod-sun tomcat openesb"/>
+	    <param name="build.list" value="nb-base nb-javase nb-webcommon nb-javaee nb-javame nb-javafx nb-ruby nb-groovy nb-cnd nb-php nb-ergonomics runtimes-group ${server-uid} glassfish-mod-sun tomcat openesb"/>
         </antcall>
      </target>
 

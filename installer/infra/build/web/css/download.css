@@ -160,6 +160,16 @@ table.components_table td.over {
     background:        #eeeeee;
 }
 
+table.components_table td.info_icon {
+    padding: 0px 4px 0px 3px; 
+    vertical-align:	top;
+    text-align: left;
+}
+
+table.components_table td.display_name {
+    text-align: left; 
+    padding: 0px 5px 1px 0px; 
+}
 
 table.components_table .header {
     border-width:       0px;
@@ -230,12 +240,12 @@ table.components_table .product_note {
 }
 
 table.components_table .product_display_name {
-    padding:		0px 0px 0px 8px;
+    padding:		0px 0px 0px 0px;
     color:              #333333;
 }
 
 table.components_table .product_display_name_no {
-    padding:   0px 0px 0px 8px;
+    padding:   0px 0px 0px 0px;
     color:              #808080;    
 }
 
@@ -307,4 +317,7 @@ div.files_list {
 
 .download_tab_active {
      color: #999999;
+}
+.download_tab_delimeter {
+     color: #777777;
 }

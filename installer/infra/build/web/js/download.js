@@ -158,15 +158,17 @@ function write_components() {
             
 		document.write('<tr class="row_hover"' + (j % 2 ? ' class="even"' : '') + '>');
 		
-		document.write('    <td class="onhover_change left">');			
-
+		document.write('    <td class="onhover_change left" style="padding: 0px 0px 0px 0px;">');			
+                document.write('<table><td class="info_icon no_border">');
 		document.write('<div id="product_' + index + '_description" class="pop_up">' + '<span style="font-weight:bold">'+ product_display_names[index] + '</span><br><br>' + product_descriptions[index] + '</div>');			
 		document.write('<img src="' + INFO_ICON + '" onmouseover="this.src=&quot;' + INFO_ICON_H + '&quot;;show_description(' + index + ');" onmouseout="this.src=&quot;' + INFO_ICON +  '&quot;;hide_description(' + index + ');"></img>');
+		document.write('</td><td class="display_name no_border" ');
 		//document.write('<span id="product_' + index + '_display_name" onmouseover="show_description(' + index + ');" onmouseout="hide_description(' + index + ');"><a class="product_display_name">' + product_display_names[index] + '</a></span>');
 		document.write('<span id="product_' + index + '_display_name""><a class="product_display_name">' + product_display_names[index] + '</a></span>');
 		if (product_notes[j] != '') {
 			document.write('<br><span class="product_note">' + product_notes[index] + '</span>');
 		}
+                document.write('	</td></table>');
 		document.write('	</td>');
 		
 		for(var k=0;k<BUNDLE_IDS.length;k++) {
@@ -480,7 +482,11 @@ function update() {
         product_messages[i] = null;
         
         if (!is_compatible(i, platform)) {
-	     product_messages[i] = product_display_names[i];
+	     product_messages[i] = "";//product_display_names[i];
+        }
+
+        if(product_uids[i] == "nb-javafx") {
+             product_messages[i] = NOTE_JAVAFX.replace('{0}', "http://www.netbeans.org/downloads");
         }
 		
         for(var k=0;k<BUNDLE_IDS.length;k++) {
@@ -501,7 +507,7 @@ function update() {
 	if (product_messages[i] == null) {
 		document.getElementById("product_" + i + "_display_name").innerHTML = '<a class="product_display_name">' + product_display_names[i] + "</a>";
 	} else {
-		document.getElementById("product_" + i + "_display_name").innerHTML = '<a class="product_display_name_no">' + product_display_names[i] + "</a>";
+		document.getElementById("product_" + i + "_display_name").innerHTML = '<a class="product_display_name_no">' + product_display_names[i] + (product_messages[i]!=null && product_messages[i].length > 0 ? (" - " + product_messages[i]) : "") + "</a>";
 	}
     }
     
@@ -672,7 +678,7 @@ function get_file_size_mb(name,lang_id, defaultValue) {
 
 function add_download_tab(name, url) {
    if(download_tabs_number!=0) {
-       document.write(" | ");
+       document.write("<span class=\"download_tab_delimeter\"> | </span>");
    }
    if(url) {
 	writeUrl(url,name);
