@@ -338,7 +338,19 @@ public class JiraConfiguration extends JiraClientCache {
             if (!loadedProjects.contains(project.getId())) {
                 initProject(project);
                 loadedProjects.add(project.getId());
+            } else if (project.getComponents() == null) {
+                // XXX This is ugly, but required, find a better way
+                // there can be more than one instances of a project with the same id
+                ensureProjectHasInitializedFields(project, data.projectsById.get(project.getId()));
             }
+        }
+    }
+
+    private void ensureProjectHasInitializedFields (Project project, Project initialized) {
+        if (initialized != project) {
+            project.setComponents(initialized.getComponents());
+            project.setVersions(initialized.getVersions());
+            // XXX what else !!!
         }
     }
 
@@ -352,8 +364,12 @@ public class JiraConfiguration extends JiraClientCache {
 
                 Version[] versions = client.getVersions(project.getKey(), new NullProgressMonitor());
                 project.setVersions(versions);
-                
                 // XXX what else !!!
+
+                Project p = data.projectsById.get(project.getId());
+                if (p.getComponents() == null) {
+                    ensureProjectHasInitializedFields(p, project);
+                }
 
             }
         };
