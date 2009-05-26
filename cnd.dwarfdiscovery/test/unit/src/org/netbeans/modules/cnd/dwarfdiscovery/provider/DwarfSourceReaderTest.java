@@ -38,14 +38,15 @@
  */
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import junit.framework.TestCase;
 import org.netbeans.api.project.Project;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.GrepEntry;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
@@ -57,7 +58,11 @@ import org.openide.util.Exceptions;
  *
  * @author Alexander Simon
  */
-public class DwarfSourceReaderTest extends TestCase {
+public class DwarfSourceReaderTest extends NbTestCase {
+
+    public DwarfSourceReaderTest() {
+        super("DwarfSourceReaderTest");
+    }
 
     public void testLeopard(){
         TreeMap<String, String> golden = new TreeMap<String, String>();
@@ -496,7 +501,8 @@ public class DwarfSourceReaderTest extends TestCase {
     }
 
     private DwarfSource getDwarfSource(String resource, final Map<String, String> ignore, final Map<String,GrepEntry> grepBase){
-        String objFileName = DwarfSourceReaderTest.class.getResource(resource).getFile();
+        File dataDir = getDataDir();
+        String objFileName = dataDir.getAbsolutePath()+resource;
         try {
             Dwarf dump = new Dwarf(objFileName);
             List <CompilationUnit> units = dump.getCompilationUnits();
