@@ -43,11 +43,13 @@ package org.netbeans.core.output2;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.openide.util.Exceptions;
 
 /** Tests the OutWriter class
  *
@@ -227,13 +229,7 @@ public class OutWriterTest extends NbTestCase {
         ow.println (third);
         
         ow.flush();
-        try {
-        SwingUtilities.invokeAndWait (new Runnable() {
-            public void run() {
-                System.currentTimeMillis();
-             }
-        });
-        } catch (Exception e) {}
+        processEQ();
         Thread.yield();
         
         assertTrue ("Linecount should be 4 after printing 3 lines, not " +
@@ -247,7 +243,7 @@ public class OutWriterTest extends NbTestCase {
                 ow.getLines().getLineCount(), ow.getLines().getLineCount() == 4);
 
     }
-
+    
     public void testAddChangeListener() {
         System.out.println("testAddChangeListener");
         OutWriter ow = new OutWriter ();
@@ -267,8 +263,8 @@ public class OutWriterTest extends NbTestCase {
         ow.println(first);
         ow.println (second);
         ow.println (third);
-        ow.flush();        
-
+        ow.flush();
+        processEQ();
         cl.assertChanged();
     }
 
@@ -509,15 +505,21 @@ public class OutWriterTest extends NbTestCase {
         
     }
     
+    void processEQ() {
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
 
+                public void run() {
+                    System.currentTimeMillis();
+                }
+            });
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 
-   
-    
-    // TODO add test methods here, they have to start with 'test' name.
-    // for example:
-    // public void testHello() {}
-    
-    
     private class CL implements ChangeListener {
         
         public void assertChanged () {
@@ -541,6 +543,4 @@ public class OutWriterTest extends NbTestCase {
             ce = null;
         }
     }
-     
-    
 }

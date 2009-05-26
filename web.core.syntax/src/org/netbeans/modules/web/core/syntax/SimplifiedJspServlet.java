@@ -233,15 +233,34 @@ public class SimplifiedJspServlet extends JSPProcessor {
                     Arrays.asList("import"));     //NOI18N
 
             if (pieceOfCode != null){
-                localImports.add(snapshot.create("import ", "text/x-java")); //NOI18N
-                
-                localImports.add(snapshot.create(pieceOfCode.getStartOffset(),
-                        pieceOfCode.getLength(),
-                        "text/x-java")); //NOI18N
+                String importContent = pieceOfCode.getContent();
+                int startOffset = 0;
+                boolean moreToProcess = true;
 
-                localImports.add(snapshot.create(";\n", "text/x-java")); //NOI18N
+                int endOffset;
 
-                localImportsFound.add(pieceOfCode.getContent());
+                do {
+                    // the JSP directive can take a comma separated list of imports
+                    endOffset = importContent.indexOf(',', startOffset);
+
+                    if (endOffset == -1) {
+                        endOffset = importContent.length();
+                        moreToProcess = false;
+                    }
+
+                    localImports.add(snapshot.create("import ", "text/x-java")); //NOI18N
+
+                    localImports.add(snapshot.create(pieceOfCode.getStartOffset() + startOffset,
+                            endOffset - startOffset,
+                            "text/x-java")); //NOI18N
+
+                    localImports.add(snapshot.create(";\n", "text/x-java")); //NOI18N
+
+                    String singleImport = importContent.substring(startOffset, endOffset).trim();
+                    localImportsFound.add(singleImport);
+                    startOffset = endOffset + 1;
+                    
+                } while (moreToProcess);
             } else {
                 pieceOfCode = extractCodeFromTagAttribute(tokenSequence,
                     Arrays.asList("jsp:useBean"), //NOI18N
@@ -253,22 +272,23 @@ public class SimplifiedJspServlet extends JSPProcessor {
                         Arrays.asList("jsp:useBean"), //NOI18N
                         Arrays.asList("id"));     //NOI18N
 
-                    assert id != null;
+                    // id may be null in broken (incomplete) code
+                    if (id != null){
+                        beanDeclarations.add(snapshot.create(
+                                pieceOfCode.getStartOffset(),
+                                pieceOfCode.getLength(), "text/x-java")); //NOI18N
 
-                    beanDeclarations.add(snapshot.create(
-                            pieceOfCode.getStartOffset(),
-                            pieceOfCode.getLength(), "text/x-java")); //NOI18N
+                        beanDeclarations.add(snapshot.create(" ", "text/x-java")); //NOI18N
 
-                    beanDeclarations.add(snapshot.create(" ", "text/x-java")); //NOI18N
+                        beanDeclarations.add(snapshot.create(
+                                id.getStartOffset(),
+                                id.getLength(), "text/x-java")); //NOI18N
 
-                    beanDeclarations.add(snapshot.create(
-                            id.getStartOffset(),
-                            id.getLength(), "text/x-java")); //NOI18N
+                        beanDeclarations.add(snapshot.create(";\n", "text/x-java")); //NOI18N
 
-                    beanDeclarations.add(snapshot.create(";\n", "text/x-java")); //NOI18N
-
-                    String beanId = id.getContent();
-                    localBeansFound.add(beanId);
+                        String beanId = id.getContent();
+                        localBeansFound.add(beanId);
+                    }
                 }
 
             }
@@ -295,7 +315,11 @@ public class SimplifiedJspServlet extends JSPProcessor {
 
                             String val = tokenSequence.token().text().toString();
 
-                            if (val.length() > 2 && val.charAt(0) == '"' && val.charAt(val.length() - 1) == '"') {
+                            // extract the content of quoted string
+                            if (val.length() > 2
+                                    // attr values can be specified using double or single quotes
+                                    && (val.charAt(0) == '"' || val.charAt(0) == '\'')
+                                    && val.charAt(val.length() - 1) == val.charAt(0)) {
 
                                 int startOffset = tokenSequence.offset() + 1;
                                 int len = val.length() - 1;

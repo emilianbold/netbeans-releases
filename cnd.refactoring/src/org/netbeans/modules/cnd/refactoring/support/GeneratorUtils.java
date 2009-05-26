@@ -504,8 +504,16 @@ public class GeneratorUtils {
         }
         return out;
     }
-    
-    public static void generateGettersAndSetters(CsmContext path, Collection<? extends CsmField> fields, boolean inlineMethods, GeneratorUtils.Kind type) {
+
+    public static Boolean checkStartWithUpperCase(CsmMethod method) {
+        String name = ""; // NOI18N
+        if (!CsmKindUtilities.isConstructor(method) && !CsmKindUtilities.isOperator(method) && !CsmKindUtilities.isDestructor(method)) {
+            name = method.getName().toString();
+        }
+        return name.length() == 0 ? null : Boolean.valueOf(Character.isUpperCase(name.charAt(0)));
+    }
+
+    public static void generateGettersAndSetters(CsmContext path, Collection<? extends CsmField> fields, boolean inlineMethods, GeneratorUtils.Kind type, boolean isUpperCase) {
         CsmClass enclosingClass = Utilities.extractEnclosingClass(path);
         if (enclosingClass == null) {
             System.err.println("why enclosing class is null? " + path); // NOI18N
@@ -524,11 +532,11 @@ public class GeneratorUtils {
             for (CsmField field : fields) {
                 if (type != GeneratorUtils.Kind.SETTERS_ONLY) {
                     result.append("\n"); // NOI18N
-                    result.append(DeclarationGenerator.createGetter(field, computeGetterName(field), DeclarationGenerator.Kind.INLINE_DEFINITION));
+                    result.append(DeclarationGenerator.createGetter(field, computeGetterName(field, isUpperCase), DeclarationGenerator.Kind.INLINE_DEFINITION));
                 }
                 if (type != GeneratorUtils.Kind.GETTERS_ONLY) {
                     result.append("\n"); // NOI18N
-                    result.append(DeclarationGenerator.createSetter(field, computeSetterName(field), DeclarationGenerator.Kind.INLINE_DEFINITION));
+                    result.append(DeclarationGenerator.createSetter(field, computeSetterName(field, isUpperCase), DeclarationGenerator.Kind.INLINE_DEFINITION));
                 }
             }
             final Document doc = path.getDocument();
@@ -561,8 +569,8 @@ public class GeneratorUtils {
 
             Collection<EncapsulateFieldsRefactoring.EncapsulateFieldInfo> refFields = new ArrayList<EncapsulateFieldsRefactoring.EncapsulateFieldInfo>();
             for (CsmField field : fields) {
-                String gName = (type != Kind.SETTERS_ONLY) ? computeGetterName(field) : null;
-                String sName = (type != Kind.GETTERS_ONLY) ? computeSetterName(field) : null;
+                String gName = (type != Kind.SETTERS_ONLY) ? computeGetterName(field, isUpperCase) : null;
+                String sName = (type != Kind.GETTERS_ONLY) ? computeSetterName(field, isUpperCase) : null;
                 refFields.add(new EncapsulateFieldsRefactoring.EncapsulateFieldInfo(field, gName, sName, null, null));
             }
             refactoring.setRefactorFields(refFields);
@@ -585,8 +593,8 @@ public class GeneratorUtils {
         }
     }
 
-    public static boolean hasGetter(CsmField field, Map<String, List<CsmMethod>> methods) {
-        String getter = computeGetterName(field);
+    public static boolean hasGetter(CsmField field, Map<String, List<CsmMethod>> methods, boolean isUpperCase) {
+        String getter = computeGetterName(field, isUpperCase);
         List<CsmMethod> candidates = methods.get(getter);
         if (candidates != null) {
             CsmType type = field.getType();
@@ -636,23 +644,22 @@ public class GeneratorUtils {
         return name;
     }
 
-    public static String computeSetterName(CsmField field) {
+    public static String computeSetterName(CsmField field, boolean isUpperCase) {
         StringBuilder name = getCapitalizedName(field);
 
-        name.insert(0, toPrefix("set")); //NOI18N
+        name.insert(0, toPrefix("set", isUpperCase)); //NOI18N
         return name.toString();
     }
 
-    public static String computeGetterName(CsmField field) {
+    public static String computeGetterName(CsmField field, boolean isUpperCase) {
         StringBuilder name = getCapitalizedName(field);
         CsmType type = field.getType();
-        name.insert(0, toPrefix(getTypeKind(type) == TypeKind.BOOLEAN ? "is" : "get")); //NOI18N
+        name.insert(0, toPrefix(getTypeKind(type) == TypeKind.BOOLEAN ? "is" : "get", isUpperCase)); //NOI18N
         return name.toString();
     }
 
-    private static String toPrefix(String str) {
+    private static String toPrefix(String str, boolean isUpperCase) {
         StringBuilder pref = new StringBuilder(str);
-        boolean isUpperCase = true;
         char first = pref.charAt(0);
         if (isUpperCase) {
             first = Character.toUpperCase(first);
@@ -690,8 +697,8 @@ public class GeneratorUtils {
         }
     }
 
-    public static boolean hasSetter(CsmField field, Map<String, List<CsmMethod>> methods) {
-        String setter = computeSetterName(field);
+    public static boolean hasSetter(CsmField field, Map<String, List<CsmMethod>> methods, boolean isUpperCase) {
+        String setter = computeSetterName(field, isUpperCase);
         List<CsmMethod> candidates = methods.get(setter);
         if (candidates != null) {
             CsmType type = field.getType();

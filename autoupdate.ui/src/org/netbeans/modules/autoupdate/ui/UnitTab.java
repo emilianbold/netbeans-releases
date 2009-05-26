@@ -1266,7 +1266,7 @@ public class UnitTab extends javax.swing.JPanel {
             String category = u.getCategoryName();
             List<Unit> units = model.getUnits();
             for (Unit unit : units) {
-                if (unit != null && category.equals(unit.getCategoryName()) && !unit.isMarked()) {
+                if (unit != null && category.equals(unit.getCategoryName()) && !unit.isMarked() && unit.canBeMarked()) {
                     retval = true;
                     break;
                 }

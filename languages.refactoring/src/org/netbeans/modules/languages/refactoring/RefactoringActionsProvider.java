@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.languages.refactoring;
 
-import java.util.Collections;
 import javax.swing.text.Document;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,13 +48,9 @@ import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
-import org.netbeans.api.languages.ParserResult;
+import org.netbeans.api.languages.ParseException;
+import org.netbeans.api.languages.ParserManager;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.UI;
@@ -122,40 +117,26 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         return dob.getPrimaryFile();
     }
     
-    private static Object[] getASTPathAndDocument (
-        Lookup              lookup
-    ) throws ParseException {
-        EditorCookie ec = lookup.lookup (EditorCookie.class);
-        final JTextComponent component = ec.getOpenedPanes () [0];
-        NbEditorDocument document = (NbEditorDocument) component.getDocument ();
-        final String selectedText = component.getSelectedText ();
-        Source source = Source.create (document);
-        final Object[] result = new Object[] {null, document};
-        ParserManager.parse (
-            Collections.<Source>singleton (source), 
-            new UserTask() {
-
-                @Override
-                public void run (ResultIterator resultIterator) throws Exception {
-                    ASTNode node = ((ParserResult) resultIterator.getParserResult ()).getRootNode ();
-                    int position = 0;
-                    if (selectedText != null) {
-                        position = component.getSelectionStart();
-                        for (int x = 0; x < selectedText.length(); x++) {
-                            if (Character.isWhitespace(selectedText.charAt(x))) {
-                                position++;
-                            } else {
-                                break;
-                            }
-                        }
-                    } else {
-                        position = component.getCaretPosition();
-                    }
-                    result [0] = node.findPath (position);
+    private static Object[] getASTPathAndDocument(Lookup lookup) throws ParseException {
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        JTextComponent textComp = ec.getOpenedPanes()[0];
+        NbEditorDocument doc = (NbEditorDocument)textComp.getDocument();
+        String selectedText = textComp.getSelectedText();
+        ASTNode node = ParserManager.get (doc).getAST ();
+        int position = 0;
+        if (selectedText != null) {
+            position = textComp.getSelectionStart();
+            for (int x = 0; x < selectedText.length(); x++) {
+                if (Character.isWhitespace(selectedText.charAt(x))) {
+                    position++;
+                } else {
+                    break;
                 }
             }
-        );
-        return result;
+        } else {
+            position = textComp.getCaretPosition();
+        }
+        return new Object[] {node.findPath(position), doc};
     }
     
     private static boolean canRefactor(Lookup lookup) {

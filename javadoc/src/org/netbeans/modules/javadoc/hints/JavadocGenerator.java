@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.javadoc.hints;
 
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
+import java.util.List;
 import java.util.Map;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -119,12 +122,18 @@ public final class JavadocGenerator {
         if (method.getReturnType().getKind() != TypeKind.VOID) {
             builder.append("@return \n"); // NOI18N
         }
-        
+
+        MethodTree tree = javac.getTrees().getTree(method);
+        List<? extends ExpressionTree> throwTrees = tree != null ? tree.getThrows() : null;
+        int i = 0;
         for (TypeMirror exceptionType : method.getThrownTypes()) {
             CharSequence name;
             if (TypeKind.DECLARED == exceptionType.getKind() || TypeKind.ERROR == exceptionType.getKind()) {
                 TypeElement exception = (TypeElement) ((DeclaredType) exceptionType).asElement();
                 name = exception.getQualifiedName();
+                if (throwTrees != null) {
+                    name = Analyzer.resolveThrowsName(exception, name.toString(), throwTrees.get(i));
+                }
             } else if (TypeKind.TYPEVAR == exceptionType.getKind()) {
                 // ExceptionType of throws clause may contain TypeVariable see JLS 8.4.6
                 TypeParameterElement exception = (TypeParameterElement) ((TypeVariable) exceptionType).asElement();
@@ -133,6 +142,7 @@ public final class JavadocGenerator {
                 throw new IllegalStateException("Illegal kind: " + exceptionType.getKind()); // NOI18N
             }
             builder.append("@throws ").append(name).append(" \n"); // NOI18N
+            i++;
         }
         
         if (SourceVersion.RELEASE_5.compareTo(srcVersion) <= 0 &&

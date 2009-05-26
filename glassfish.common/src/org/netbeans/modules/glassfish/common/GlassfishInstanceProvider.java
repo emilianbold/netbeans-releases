@@ -646,7 +646,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                             ip.put(GlassfishModule.ADMINPORT_ATTR,
                                     Integer.toString(4848));
                             GlassfishInstance gi = GlassfishInstance.create(ip,this);
-                            addServerInstance(gi);
                             NbPreferences.forModule(this.getClass()).putBoolean(ServerUtilities.PROP_FIRST_RUN, true);
                         } else {
                             ip.put(GlassfishModule.DISPLAY_NAME_ATTR, defaultPersonalDomainName);

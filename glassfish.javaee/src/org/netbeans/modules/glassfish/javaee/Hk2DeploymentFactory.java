@@ -153,6 +153,10 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
             throw new DeploymentManagerCreationException("Invalid URI:" + uri); // NOI18N
         }
         finishInit();
+        // prevent registry mismatches
+        if (null == su.getServerInstance(uri)) {
+            throw new DeploymentManagerCreationException("Registry mismatch for "+uri);
+        }
         return new Hk2DeploymentManager(uri, uname, passwd, su);
     }
 
@@ -167,6 +171,10 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
             throw new DeploymentManagerCreationException("Invalid URI:" + uri); // NOI18N
         }
         finishInit();
+        // prevent registry mismatches
+        if (null == su.getServerInstance(uri)) {
+            throw new DeploymentManagerCreationException("Registry mismatch for "+uri);
+        }
         return new Hk2DeploymentManager(uri, null, null, su);
     }
 
