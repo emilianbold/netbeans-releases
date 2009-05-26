@@ -68,12 +68,10 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
-import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.spi.tasklist.Task;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex.ExceptionAction;
 
 /**
@@ -115,14 +113,19 @@ public class TaskCache {
     }
     
     public List<Task> getErrors(FileObject file) {
-        return getErrors(file, false);
+        List<Task> result = new LinkedList<Task>();
+        
+        result.addAll(getErrors(file, true));
+        result.addAll(getErrors(file, false));
+
+        return result;
     }
     
-    private List<Task> getErrors(FileObject file, boolean onlyErrors) {
-        LOG.log(Level.FINE, "getErrors, file={0}", FileUtil.getFileDisplayName(file));
+    private List<Task> getErrors(FileObject file, boolean errors) {
+        LOG.log(Level.FINE, "getErrors, file={0}, errors={1}", new Object[] {FileUtil.getFileDisplayName(file), errors});
         
         try {
-            File input = computePersistentFile(file);
+            File input = computePersistentFile(file, errors ? ERR_EXT : WARN_EXT);
             
             LOG.log(Level.FINE, "getErrors, error file={0}", input == null ? "null" : input.getAbsolutePath());
             
@@ -131,7 +134,7 @@ public class TaskCache {
             
             input.getParentFile().mkdirs();
             
-            return loadErrors(input, file, onlyErrors);
+            return loadErrors(input, file);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -260,7 +263,7 @@ public class TaskCache {
         c.rootsToRefresh.add(root);
     }
 
-    private List<Task> loadErrors(File input, FileObject file, boolean onlyErrors) throws IOException {
+    private List<Task> loadErrors(File input, FileObject file) throws IOException {
         List<Task> result = new LinkedList<Task>();
         BufferedReader pw = new BufferedReader(new InputStreamReader(new FileInputStream(input), "UTF-8"));
         String line;
@@ -283,7 +286,7 @@ public class TaskCache {
 
             String severity = getTaskType(kind);
 
-            if (null != severity && (!onlyErrors || kind == Kind.ERROR)) {
+            if (null != severity) {
                 Task err = Task.create(file, severity, message, lineNumber);
                 result.add(err);
             }
@@ -435,7 +438,7 @@ public class TaskCache {
         }
     }
     
-    private File computePersistentFile(FileObject file) throws IOException {
+    private File computePersistentFile(FileObject file, String extension) throws IOException {
         ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
         
         if (cp == null)
@@ -450,7 +453,7 @@ public class TaskCache {
         
         String resourceName = cp.getResourceName(file, File.separatorChar, false);
         File cacheRoot = JavaIndex.getClassFolder(root.getURL());
-        File cacheFile = new File(new File(cacheRoot.getParentFile(), "errors"), resourceName + ".err");
+        File cacheFile = new File(new File(cacheRoot.getParentFile(), "errors"), resourceName + "." + extension);
         
         return cacheFile;
     }

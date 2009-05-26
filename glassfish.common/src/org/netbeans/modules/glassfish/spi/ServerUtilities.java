@@ -82,6 +82,9 @@ public final class ServerUtilities {
     private ServerUtilities(GlassfishInstanceProvider gip) {
         assert null != gip;
         this.gip = gip;
+        // make sure the instance list is initiallized for the downstream modules
+        // like the glassfish.javaee
+        gip.getInstances();
     }
 
     public static ServerUtilities getPreludeUtilities() {

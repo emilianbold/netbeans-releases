@@ -469,7 +469,7 @@ public final class CodeTemplateParameterImpl {
     @Override
     public String toString() {
         return "name=" + getName() + ", slave=" + isSlave() // NOI18N
-            + ", value=" + getValue(); // NOI18N
+            + ", value=\"" + getValue() + '"'; // NOI18N
     }
 
 }

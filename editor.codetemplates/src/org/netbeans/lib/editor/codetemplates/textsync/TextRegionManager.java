@@ -250,6 +250,10 @@ public final class TextRegionManager {
         return doc;
     }
 
+    void markIgnoreDocModifications() {
+        ignoreDocModifications++;
+    }
+
     /**
      * Add a sync group to the manager of text regions which will cause
      * the regions to be updated by the changes performed in the document.
@@ -426,6 +430,10 @@ public final class TextRegionManager {
         }
         // Fire focus change event
         TextRegionManagerEvent evt = createEvent(true, removedGroups, previousTextSync);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Firing event - focusing of activeTextSync:\n" + activeTextSync + // NOI18N
+                    "previousTextSync=" + previousTextSync + ", removedGroups=" + removedGroups + '\n'); // NOI18N
+        }
         fireEvent(evt);
         if (removedGroups != null) {
             removeGroupsUpdate();
@@ -489,6 +497,9 @@ public final class TextRegionManager {
 
     void activeTextSyncModified() {
         TextRegionManagerEvent evt = createEvent(false, Collections.<TextSyncGroup<?>>emptyList(), activeTextSync);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Firing event - mod of activeTextSync=" + activeTextSync + '\n'); // NOI18N
+        }
         fireEvent(evt);
         highlighting.requestRepaint();
     }
