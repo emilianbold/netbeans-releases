@@ -63,10 +63,13 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.jira.core.IJiraConstants;
 import org.eclipse.mylyn.internal.jira.core.JiraAttribute;
+import org.eclipse.mylyn.internal.jira.core.model.Component;
 import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
 import org.eclipse.mylyn.internal.jira.core.model.Priority;
+import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
+import org.eclipse.mylyn.internal.jira.core.model.Version;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
@@ -86,6 +89,7 @@ import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.jira.commands.JiraCommand;
+import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.filesystems.FileUtil;
@@ -134,45 +138,41 @@ public class NbJiraIssue extends Issue {
     static final int FIELD_STATUS_MODIFIED = 4;
 
     enum IssueField {
-        KEY(JiraAttribute.ISSUE_KEY.id()),
-        SUMMARY(JiraAttribute.SUMMARY.id()),
-        DESCRIPTION(JiraAttribute.DESCRIPTION.id()),
-        STATUS(TaskAttribute.STATUS),
-        PRIORITY(JiraAttribute.PRIORITY.id()),
-        RESOLUTION(JiraAttribute.RESOLUTION.id()),
-        PROJECT(JiraAttribute.PROJECT.id()),
-        COMPONENT(JiraAttribute.COMPONENTS.id()),
-        AFFECTSVERSIONS(JiraAttribute.AFFECTSVERSIONS.id()),
-        FIXVERSIONS(JiraAttribute.FIXVERSIONS.id()),
-        ENVIRONMENT(JiraAttribute.ENVIRONMENT.id()),
-        REPORTER(JiraAttribute.USER_REPORTER.id()),
-        ASSIGNEE(JiraAttribute.USER_ASSIGNED.id()),
-//        NEWCC(JiraAttribute.NEWCC.getName()),
-//        REMOVECC(JiraAttribute.REMOVECC.getName()),
-//        CC(JiraAttribute.CC.getName()),
-//        DEPENDS_ON(JiraAttribute.DEPENDSON.getName()),
-//        BLOCKS(JiraAttribute.BLOCKED.getName()),
-//        URL(JiraAttribute.BUG_FILE_LOC.getName()),
-//        KEYWORDS(JiraAttribute.KEYWORDS.getName()),
-        TYPE(JiraAttribute.TYPE.id()),
-        CREATION(JiraAttribute.CREATION_DATE.id()),
-        MODIFICATION(JiraAttribute.MODIFICATION_DATE.id()),
-        DUE(JiraAttribute.DUE_DATE.id()),
-        ESTIMATE(JiraAttribute.ESTIMATE.id()),
-        INITIAL_ESTIMATE(JiraAttribute.INITIAL_ESTIMATE.id()),
-        ACTUAL(JiraAttribute.ACTUAL.id());
-//        COMMENT_COUNT(TaskAttribute.TYPE_COMMENT, false),
-//        ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, false);
+        KEY(JiraAttribute.ISSUE_KEY.id(), "LBL_KEY"),
+        SUMMARY(JiraAttribute.SUMMARY.id(), "LBL_SUMMARY"),
+        DESCRIPTION(JiraAttribute.DESCRIPTION.id(), "LBL_DESCRIPTION"),
+        STATUS(TaskAttribute.STATUS, "LBL_STATUS"),
+        PRIORITY(JiraAttribute.PRIORITY.id(), "LBL_PRIORITY"),
+        RESOLUTION(JiraAttribute.RESOLUTION.id(), "LBL_RESOLUTION"),
+        PROJECT(JiraAttribute.PROJECT.id(), "LBL_PROJECT"),
+        COMPONENT(JiraAttribute.COMPONENTS.id(), "LBL_COMPONENT"),
+        AFFECTSVERSIONS(JiraAttribute.AFFECTSVERSIONS.id(),"LBL_AFFECTSVERSIONS"),
+        FIXVERSIONS(JiraAttribute.FIXVERSIONS.id(), "LBL_FIXVERSIONS"),
+        ENVIRONMENT(JiraAttribute.ENVIRONMENT.id(), "LBL_ENVIRONMENT"),
+        REPORTER(JiraAttribute.USER_REPORTER.id(), "LBL_REPORTER"),
+        ASSIGNEE(JiraAttribute.USER_ASSIGNED.id(), "LBL_ASSIGNEE"),
+        TYPE(JiraAttribute.TYPE.id(), "LBL_TYPE"),
+        CREATION(JiraAttribute.CREATION_DATE.id(), null),
+        MODIFICATION(JiraAttribute.MODIFICATION_DATE.id(), null),
+        DUE(JiraAttribute.DUE_DATE.id(), "LBL_DUE"),
+        ESTIMATE(JiraAttribute.ESTIMATE.id(), "LBL_ESTIMATE"),
+        INITIAL_ESTIMATE(JiraAttribute.INITIAL_ESTIMATE.id(), "LBL_INITIAL_ESTIMATE"),
+        ACTUAL(JiraAttribute.ACTUAL.id(), "LBL_ACTUALL"),
+        COMMENT_COUNT(TaskAttribute.TYPE_COMMENT, null, false),
+        ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, null, false);
 
         private final String key;
         private boolean singleAttribute;
+        private final String displayNameKey;
 
-        IssueField(String key) {
-            this(key, true);
+        IssueField(String key, String displayNameKey) {
+            this(key, displayNameKey, true);
         }
-        IssueField(String key, boolean singleAttribute) {
+
+        IssueField(String key, String displayNameKey, boolean singleAttribute) {
             this.key = key;
             this.singleAttribute = singleAttribute;
+            this.displayNameKey = displayNameKey;
         }
         public String getKey() {
             return key;
@@ -182,6 +182,10 @@ public class NbJiraIssue extends Issue {
         }
         public boolean isReadOnly() {
             return !singleAttribute;
+        }
+        public String getDisplayName() {
+            assert displayNameKey != null; // shouldn't be called for a field with a null display name
+            return NbBundle.getMessage(NbJiraIssue.class, displayNameKey);
         }
     }
 
@@ -719,7 +723,109 @@ public class NbJiraIssue extends Issue {
 
     @Override
     public String getRecentChanges() {
-        return ""; // XXX implement me
+        if(wasSeen()) {
+            return "";                                                          // NOI18N
+        }
+        int status = repository.getIssueCache().getStatus(getID());
+        if(status == Issue.ISSUE_STATUS_NEW) {
+            return NbBundle.getMessage(NbJiraIssue.class, "LBL_NEW_STATUS");
+        } else if(status == Issue.ISSUE_STATUS_MODIFIED) {
+            List<IssueField> changedFields = new ArrayList<IssueField>();
+            Map<String, String> seenAtributes = getSeenAttributes();
+            assert seenAtributes != null;
+            for (IssueField f : IssueField.values()) {
+                switch(f) {
+                    case MODIFICATION :
+                        continue;
+                }
+                String value = getFieldValue(f);
+                String seenValue = seenAtributes.get(f.key);
+                if(seenValue == null) {
+                    seenValue = "";                                             // NOI18N
+                }
+                if(!value.trim().equals(seenValue)) {
+                    changedFields.add(f);
+                }
+            }
+            int changedCount = changedFields.size();
+            if(changedCount == 1) {
+                String ret = null;
+                for (IssueField changedField : changedFields) {
+                    switch(changedField) {
+                        case SUMMARY :
+                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_SUMMARY_CHANGED_STATUS");
+                            break;
+//                        XXX
+//                        case DEPENDS_ON :
+//                        case BLOCKS :
+//                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_DEPENDENCE_CHANGED_STATUS");
+//                            break;
+                        case COMMENT_COUNT :
+                            String value = getFieldValue(changedField);
+                            String seenValue = seenAtributes.get(changedField.key);
+                            if(seenValue == null || seenValue.trim().equals("")) {
+                                seenValue = "0";
+                            }
+                            int count = 0;
+                            try {
+                                count = Integer.parseInt(value) - Integer.parseInt(seenValue);
+                            } catch(NumberFormatException ex) {
+                                Jira.LOG.log(Level.WARNING, ret, ex);
+                            }
+                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_COMMENTS_CHANGED", new Object[] {count});
+                            break;
+                        case ATTACHEMENT_COUNT :
+                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_ATTACHMENTS_CHANGED");
+                            break;
+                        default :
+                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGED_TO", new Object[] {changedField.getDisplayName(), getFieldDisplayValue(changedField)});
+                    }
+                }
+                return ret;
+            } else {
+                String ret = null;
+                for (IssueField changedField : changedFields) {
+                    switch(changedField) {
+                        case SUMMARY :
+                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_SUMMARY", new Object[] {changedCount});
+                            break;
+                        case PRIORITY :
+                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_PRIORITY", new Object[] {changedCount});
+                            break;
+                        case TYPE :
+                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_TYPE", new Object[] {changedCount});
+                            break;
+                        case PROJECT :
+                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_PROJECT", new Object[] {changedCount});
+                            break;
+                        case COMPONENT :
+                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_COMPONENT", new Object[] {changedCount});
+                            break;
+                        case ENVIRONMENT :
+                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_ENVIRONMENT", new Object[] {changedCount});
+                            break;
+// XXX
+//                        case VERSION :
+//                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_VERSION", new Object[] {changedCount});
+//                            break;
+//                        case MILESTONE :
+//                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_MILESTONE", new Object[] {changedCount});
+//                            break;
+                        case ASSIGNEE :
+                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_ASSIGNEE", new Object[] {changedCount});
+                            break;                        
+//                        case DEPENDS_ON :
+//                        case BLOCKS :
+//                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCLUSIVE_DEPENDENCE", new Object[] {changedCount});
+//                            break;
+                        default :
+                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES", new Object[] {changedCount});
+                    }
+                    return ret;
+                }
+            }
+        }
+        return "";
     }
 
     @Override
@@ -785,6 +891,48 @@ public class NbJiraIssue extends Issue {
     String getFieldValue(IssueField f) {
         return getFieldValue(taskData, f);
     }
+
+    /**
+     * Returns the given fields diplay value
+     * @param f
+     * @return
+     */
+    private String getFieldDisplayValue(IssueField f) {
+        String value = getFieldValue(taskData, f);
+        if(value == null || value.trim().equals("")) {
+            return "";                                                          // NOI18N
+        }
+        JiraConfiguration config = repository.getConfiguration();
+        switch(f) {
+            case STATUS:
+                JiraStatus status = config != null ? config.getStatusById(value) : null;
+                return status != null ? status.getName() : "";                  // NOI18N
+            case PRIORITY:
+                Priority prio = config != null ? config.getPriorityById(value) : null;
+                return prio != null ? prio.getName() : "";                      // NOI18N
+            case RESOLUTION:
+                Resolution res = config != null ? config.getResolutionById(value) : null;
+                return res != null ? res.getName() : "";                        // NOI18N
+            case PROJECT:
+                Project project = config != null ? config.getProjectById(value) : null;
+                return project != null ? project.getName() : "";                // NOI18N
+            case COMPONENT:
+                String projectId = getFieldValue(IssueField.PROJECT);
+                Component comp = config != null ? config.getComponentById(projectId, value) : null;
+                return comp != null ? comp.getName() : "";                      // NOI18N
+            case AFFECTSVERSIONS:
+            case FIXVERSIONS:
+                projectId = getFieldValue(IssueField.PROJECT);
+                Version version = config != null ? config.getVersionById(projectId, value) : null;
+                return version != null ? version.getName() : "";                // NOI18N
+            case TYPE:
+                IssueType type = config != null ? config.getIssueTypeById(value) : null;
+                return type != null ? type.getName() : "";                      // NOI18N
+            default:
+                return value;
+        }
+    }
+
 
     static String getFieldValue(TaskData taskData, IssueField f) {
         if(f.isSingleAttribute()) {
