@@ -46,6 +46,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger.State;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpointImpl;
 
 /**
  *
@@ -62,11 +64,17 @@ public class GdbDebuggerTestCase extends GdbTestCase {
     }
 
     @Before
-    public void setUp() {
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        startTest(getName());
     }
 
     @After
-    public void tearDown() {
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
+        doFinish();
     }
 
     public GdbDebuggerTestCase(String name) {
@@ -76,18 +84,14 @@ public class GdbDebuggerTestCase extends GdbTestCase {
     /** Test of startDebugger method, of class GdbDebugger */
     @Test
     public void testStartDebugger1() {
-        startTest("testStartDebugger1");
         String tfile = System.getProperty("java.io.tmpdir") + "test" + System.currentTimeMillis();
         File file = new File(tfile);
         if (file.exists()) {
             file.delete();
         }
 
-        startDebugger("TmpTouch_1", "TmpTouch_1/tmptouch");
-        gdb.exec_run(tfile);
-        waitForStateChange(State.STOPPED);
+        startDebugger("TmpTouch_1", "TmpTouch_1/tmptouch", tfile);
         gdb.exec_continue();
-        int i = 0;
         tlog("Tmp file is " + tfile);
         waitForStateChange(State.EXITED);
         file = new File(tfile);
@@ -96,19 +100,43 @@ public class GdbDebuggerTestCase extends GdbTestCase {
         }
         assert file.exists();
         file.delete();
-        doFinish();
     }
 
     /** Test of startDebugger method, of class GdbDebugger */
     @Test
     public void testGetGdbVersion() {
-        startTest("testGetGdbVersion");
-        startDebugger("Args_1", "Args_1/args");
-        gdb.exec_run("1111 2222 3333");
+        startDebugger("Args_1", "Args_1/args", "1111 2222 3333");
         double version = debugger.getGdbVersion();
         gdb.exec_continue();
         tlog("gdbVersion is " + version);
         waitForStateChange(State.EXITED);
-        doFinish();
+    }
+
+    /** Test of setting a breakpoint */
+    @Test
+    public void testBreakpoint1() {
+        startDebugger("BpTestProject", "BpTestProject/main", "");
+
+        File proj = getProjectDir("BpTestProject");
+        String bp1Path = new File(proj, "bp.h").getAbsolutePath();
+        LineBreakpoint lb1 = LineBreakpoint.create(bp1Path, 31);
+        LineBreakpointImpl bi1 = new LineBreakpointImpl(lb1, debugger);
+
+        String bp2Path = new File(proj, "testf/bp.h").getAbsolutePath();
+        LineBreakpoint lb2 = LineBreakpoint.create(bp2Path, 31);
+        LineBreakpointImpl bi2 = new LineBreakpointImpl(lb2, debugger);
+
+        debugger.resume();
+
+        // should stop on the first breakpoint
+        waitForBreakpoint(lb1);
+
+        debugger.resume();
+        
+        // should stop on the second breakpoint
+        waitForBreakpoint(lb2);
+
+        gdb.exec_continue();
+        waitForStateChange(State.EXITED);
     }
 }

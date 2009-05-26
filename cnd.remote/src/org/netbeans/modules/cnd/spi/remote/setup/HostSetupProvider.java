@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.spi.remote.setup;
 
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * Allows to plug in a different way of setting up a remote host.
@@ -50,6 +51,8 @@ import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
  * @author Vladimir Kvashin
  */
 public interface HostSetupProvider {
+
+    // TODO: should support the notion of protocol
 
     /**
      * Gets a string that identifies this provider;
@@ -79,4 +82,10 @@ public interface HostSetupProvider {
      * @return true if this provider is applicable, otherwise false
      */
     boolean isApplicable();
+
+    public boolean canCheckSetup(ExecutionEnvironment execEnv);
+
+    public boolean isSetUp(ExecutionEnvironment execEnv);
+
+    public boolean setUp(ExecutionEnvironment execEnv);
 }

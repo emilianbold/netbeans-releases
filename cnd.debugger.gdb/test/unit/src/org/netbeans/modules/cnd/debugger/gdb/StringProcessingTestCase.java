@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb;
 
+import java.util.List;
 import java.util.Map;
 import junit.framework.TestCase;
 import org.junit.Test;
@@ -111,6 +112,15 @@ public class StringProcessingTestCase extends TestCase {
         assertEquals("1", map.get("a"));
         assertEquals("x", map.get("b"));
         assertEquals("\"xyz\"", map.get("c"));
+    }
+
+    @Test
+    public void testCreateListFromString1() {
+        List<String> list = GdbUtils.createListFromString("a=\"1\",b={x},c=[\"xyz\"]");
+        assertEquals("1", list.get(0));
+        assertEquals("x", list.get(1));
+        assertEquals("\"xyz\"", list.get(2));
+        assertEquals(3, list.size());
     }
     
 }

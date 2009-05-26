@@ -28,18 +28,18 @@
 #
 
 
-TESTAPPS = \
-	Args_1 \
-	TmpTouch_1
+TESTAPPS = Args_1 TmpTouch_1 BpTestProject
 
 all:
 	@echo "**** Making all *************************************************"
 	@cd Args_1; $(MAKE)
 	@cd TmpTouch_1; $(MAKE)
+	@cd BpTestProject; $(MAKE)
 	@echo ""
 
 clean:
 	@echo "**** Cleaning all ***********************************************"
 	@cd Args_1; $(MAKE) clean
 	@cd TmpTouch_1; $(MAKE) clean
+	@cd BpTestProject; $(MAKE) clean
 	@echo ""

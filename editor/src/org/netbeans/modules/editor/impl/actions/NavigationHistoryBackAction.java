@@ -75,7 +75,6 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 
@@ -128,14 +127,16 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
     }
 
     public void actionPerformed(ActionEvent evt) {
-        JTextComponent target = component != null ? component : getTextComponent(evt);
         NavigationHistory history = NavigationHistory.getNavigations();
         if (null == history.getCurrentWaypoint()) {
             // Haven't navigated back yet
-            try {
-                history.markWaypoint(target, target.getCaret().getDot(), true, false);
-            } catch (BadLocationException ble) {
-                LOG.log(Level.WARNING, "Can't mark current position", ble); //NOI18N
+            JTextComponent target = component != null ? component : getTextComponent(evt);
+            if (target != null) {
+                try {
+                    history.markWaypoint(target, target.getCaret().getDot(), true, false);
+                } catch (BadLocationException ble) {
+                    LOG.log(Level.WARNING, "Can't mark current position", ble); //NOI18N
+                }
             }
         }
         
