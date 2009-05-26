@@ -143,12 +143,14 @@ public class GdbDebuggerTestCase extends GdbTestCase {
         debugger.resume();
 
         waitForStateChange(State.STOPPED);
+        waitForStackUpdate();
         // should stop on the first breakpoint
         assertEquals(lb1.getPath(), debugger.getCurrentCallStackFrame().getFullname());
 
         debugger.resume();
         
         waitForStateChange(State.STOPPED);
+        waitForStackUpdate();
         // should stop on the second breakpoint
         assertEquals(lb2.getPath(), debugger.getCurrentCallStackFrame().getFullname());
 
