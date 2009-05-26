@@ -530,6 +530,10 @@ public class GdbDebugger implements PropertyChangeListener {
         tlog.setLevel(Level.FINE);
         this.gdb = gdb;
         initGdbVersion();
+        
+        // For now only local is supported
+        execEnv = ExecutionEnvironmentFactory.getLocal();
+        pathMap = HostInfoProvider.getMapper(execEnv);
     }
 
     public static boolean isUnitTest() {
@@ -1530,7 +1534,7 @@ public class GdbDebugger implements PropertyChangeListener {
         setState(State.READY);
     }
 
-    private void setRunning() {
+    public void setRunning() {
         setState(State.RUNNING);
     }
 

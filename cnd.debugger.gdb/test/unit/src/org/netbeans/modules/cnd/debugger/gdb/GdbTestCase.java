@@ -68,7 +68,7 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
     protected String testapp = null;
     protected String testproj = null;
     private String testapp_dir = null;
-    private String path = "";
+    private String executable = "";
     protected GdbDebugger debugger;
     protected GdbProxy gdb;
     protected static final Logger tlog = Logger.getLogger("gdb.testlogger"); // NOI18N
@@ -77,6 +77,7 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
         super(name);
         System.setProperty("gdb.testsuite", "true");
         tlog.setLevel(Level.FINE);
+        // TODO: need to get test apps dir from the environment
         String workdir = System.getProperty("nbjunit.workdir"); // NOI18N
         if (workdir != null && workdir.endsWith("/build/test/unit/work")) { // NOI18N
             testapp_dir = workdir.substring(0, workdir.length() - 21) + "/build/testapps"; // NOI18N
@@ -85,6 +86,10 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
                 assert false : "Missing testapps directory";
             }
         }
+    }
+
+    protected File getProjectDir(String project) {
+        return new File(testapp_dir, project);
     }
 
     protected void startTest(String testapp) {
@@ -96,13 +101,14 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
         System.out.println("    " + testapp + ": " + msg); // NOI18N
     }
 
-    protected void startDebugger(String testproj, String path) {
+    protected void startDebugger(String testproj, String executable) {
         this.testproj = testproj;
-        this.path = testapp_dir + '/' + path;
+        this.executable = testapp_dir + '/' + executable;
         debugger = new GdbDebugger(this);
         String[] denv = new String[] { "GDBUnitTest=True" };
         try {
-            gdb = new GdbProxy(debugger, "gdb", denv, testapp_dir, null, "");
+            // TODO: need to get gdb command from the toolchain or environment
+            gdb = new GdbProxy(debugger, "/opt/csw/bin/gdb", denv, testapp_dir, null, "");
         } catch (Exception ex) {
             gdb = null;
         }
@@ -112,8 +118,7 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
             debugger.testSuiteInit(gdb);
             gdb.gdb_show("language"); // NOI18N
             gdb.gdb_set("print repeat", "10"); // NOI18N
-            gdb.file_exec_and_symbols(path);
-            gdb.break_insert_temporary("main"); // NOI18N
+            gdb.file_exec_and_symbols(executable);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -124,7 +129,7 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
         pae = null;
         debugger = null;
         testapp = null;
-        path = null;
+        executable = null;
     }
 
     protected void waitForStateChange(State state, int max) {
@@ -157,7 +162,7 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
         if (service == ProjectActionEvent.class) {
             if (pae == null) {
                 conf = new TestConfiguration();
-                pae = new ProjectActionEvent(project, ProjectActionEvent.Type.DEBUG, testapp, path, null, null, false);
+                pae = new ProjectActionEvent(project, ProjectActionEvent.Type.DEBUG, testapp, executable, null, null, false);
             }
             return (T) pae;
         } else {

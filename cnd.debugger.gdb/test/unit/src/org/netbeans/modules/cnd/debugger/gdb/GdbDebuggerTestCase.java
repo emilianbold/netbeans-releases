@@ -46,6 +46,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger.State;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpointImpl;
 
 /**
  *
@@ -84,10 +86,11 @@ public class GdbDebuggerTestCase extends GdbTestCase {
         }
 
         startDebugger("TmpTouch_1", "TmpTouch_1/tmptouch");
+        gdb.break_insert_temporary("main"); // NOI18N
+        debugger.setRunning();
         gdb.exec_run(tfile);
         waitForStateChange(State.STOPPED);
         gdb.exec_continue();
-        int i = 0;
         tlog("Tmp file is " + tfile);
         waitForStateChange(State.EXITED);
         file = new File(tfile);
@@ -104,10 +107,52 @@ public class GdbDebuggerTestCase extends GdbTestCase {
     public void testGetGdbVersion() {
         startTest("testGetGdbVersion");
         startDebugger("Args_1", "Args_1/args");
+        gdb.break_insert_temporary("main"); // NOI18N
+        debugger.setRunning();
         gdb.exec_run("1111 2222 3333");
+        waitForStateChange(State.STOPPED);
         double version = debugger.getGdbVersion();
         gdb.exec_continue();
         tlog("gdbVersion is " + version);
+        waitForStateChange(State.EXITED);
+        doFinish();
+    }
+
+    /** Test of setting a breakpoint */
+    @Test
+    public void testBreakpoint1() {
+        startTest("testBreakpoint1");
+        startDebugger("BpTestProject", "BpTestProject/main");
+
+        File proj = getProjectDir("BpTestProject");
+
+        gdb.break_insert_temporary("main"); // NOI18N
+        debugger.setRunning();
+        gdb.exec_run();
+
+        waitForStateChange(State.STOPPED);
+
+        String bp1Path = new File(proj, "bp.h").getAbsolutePath();
+        LineBreakpoint lb1 = LineBreakpoint.create(bp1Path, 31);
+        LineBreakpointImpl bi1 = new LineBreakpointImpl(lb1, debugger);
+
+        String bp2Path = new File(proj, "testf/bp.h").getAbsolutePath();
+        LineBreakpoint lb2 = LineBreakpoint.create(bp2Path, 31);
+        LineBreakpointImpl bi2 = new LineBreakpointImpl(lb2, debugger);
+
+        debugger.resume();
+
+        waitForStateChange(State.STOPPED);
+        // should stop on the first breakpoint
+        assertEquals(lb1.getPath(), debugger.getCurrentCallStackFrame().getFullname());
+
+        debugger.resume();
+        
+        waitForStateChange(State.STOPPED);
+        // should stop on the second breakpoint
+        assertEquals(lb2.getPath(), debugger.getCurrentCallStackFrame().getFullname());
+
+        gdb.exec_continue();
         waitForStateChange(State.EXITED);
         doFinish();
     }
