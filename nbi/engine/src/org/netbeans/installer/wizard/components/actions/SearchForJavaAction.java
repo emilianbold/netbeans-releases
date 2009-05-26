@@ -180,11 +180,7 @@ public class SearchForJavaAction extends WizardAction {
                 }
                 
                 // add the location to the list if it's not already there
-                javaHome = getCanonicalFile(javaHome);
-                if (!javaLocations.contains(javaHome)) {
-                    javaLocations.add(javaHome);
-                    javaLabels.add(getLabel(javaHome));
-                }
+                addJavaLocation(javaHome);
             } else {
                 LogManager.unindent();
             }
