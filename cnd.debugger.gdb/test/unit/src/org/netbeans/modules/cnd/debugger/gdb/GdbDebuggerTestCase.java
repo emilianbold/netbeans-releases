@@ -85,11 +85,7 @@ public class GdbDebuggerTestCase extends GdbTestCase {
             file.delete();
         }
 
-        startDebugger("TmpTouch_1", "TmpTouch_1/tmptouch");
-        gdb.break_insert_temporary("main"); // NOI18N
-        debugger.setRunning();
-        gdb.exec_run(tfile);
-        waitForStateChange(State.STOPPED);
+        startDebugger("TmpTouch_1", "TmpTouch_1/tmptouch", tfile);
         gdb.exec_continue();
         tlog("Tmp file is " + tfile);
         waitForStateChange(State.EXITED);
@@ -106,11 +102,7 @@ public class GdbDebuggerTestCase extends GdbTestCase {
     @Test
     public void testGetGdbVersion() {
         startTest("testGetGdbVersion");
-        startDebugger("Args_1", "Args_1/args");
-        gdb.break_insert_temporary("main"); // NOI18N
-        debugger.setRunning();
-        gdb.exec_run("1111 2222 3333");
-        waitForStateChange(State.STOPPED);
+        startDebugger("Args_1", "Args_1/args", "1111 2222 3333");
         double version = debugger.getGdbVersion();
         gdb.exec_continue();
         tlog("gdbVersion is " + version);
@@ -122,16 +114,9 @@ public class GdbDebuggerTestCase extends GdbTestCase {
     @Test
     public void testBreakpoint1() {
         startTest("testBreakpoint1");
-        startDebugger("BpTestProject", "BpTestProject/main");
+        startDebugger("BpTestProject", "BpTestProject/main", "");
 
         File proj = getProjectDir("BpTestProject");
-
-        gdb.break_insert_temporary("main"); // NOI18N
-        debugger.setRunning();
-        gdb.exec_run();
-
-        waitForStateChange(State.STOPPED);
-
         String bp1Path = new File(proj, "bp.h").getAbsolutePath();
         LineBreakpoint lb1 = LineBreakpoint.create(bp1Path, 31);
         LineBreakpointImpl bi1 = new LineBreakpointImpl(lb1, debugger);
@@ -142,13 +127,11 @@ public class GdbDebuggerTestCase extends GdbTestCase {
 
         debugger.resume();
 
-        //waitForStateChange(State.STOPPED);
         // should stop on the first breakpoint
         waitForBreakpoint(lb1);
 
         debugger.resume();
         
-        //waitForStateChange(State.STOPPED);
         // should stop on the second breakpoint
         waitForBreakpoint(lb2);
 

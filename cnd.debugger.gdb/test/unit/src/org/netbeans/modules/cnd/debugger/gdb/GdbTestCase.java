@@ -106,7 +106,7 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
         System.out.println("    " + testapp + ": " + msg); // NOI18N
     }
 
-    protected void startDebugger(String testproj, String executable) {
+    protected void startDebugger(String testproj, String executable, String args) {
         this.testproj = testproj;
         this.executable = testapp_dir + '/' + executable;
         debugger = new GdbDebugger(this);
@@ -126,9 +126,13 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
             gdb.gdb_show("language"); // NOI18N
             gdb.gdb_set("print repeat", "10"); // NOI18N
             gdb.file_exec_and_symbols(executable);
+            gdb.break_insert_temporary("main"); // NOI18N
+            debugger.setRunning();
+            gdb.exec_run(args);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+        waitForStateChange(State.STOPPED);
     }
 
     public void doFinish() {
