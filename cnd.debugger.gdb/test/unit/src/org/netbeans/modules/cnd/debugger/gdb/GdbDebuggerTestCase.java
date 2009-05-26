@@ -64,11 +64,17 @@ public class GdbDebuggerTestCase extends GdbTestCase {
     }
 
     @Before
-    public void setUp() {
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        startTest(getName());
     }
 
     @After
-    public void tearDown() {
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
+        doFinish();
     }
 
     public GdbDebuggerTestCase(String name) {
@@ -78,7 +84,6 @@ public class GdbDebuggerTestCase extends GdbTestCase {
     /** Test of startDebugger method, of class GdbDebugger */
     @Test
     public void testStartDebugger1() {
-        startTest("testStartDebugger1");
         String tfile = System.getProperty("java.io.tmpdir") + "test" + System.currentTimeMillis();
         File file = new File(tfile);
         if (file.exists()) {
@@ -95,25 +100,21 @@ public class GdbDebuggerTestCase extends GdbTestCase {
         }
         assert file.exists();
         file.delete();
-        doFinish();
     }
 
     /** Test of startDebugger method, of class GdbDebugger */
     @Test
     public void testGetGdbVersion() {
-        startTest("testGetGdbVersion");
         startDebugger("Args_1", "Args_1/args", "1111 2222 3333");
         double version = debugger.getGdbVersion();
         gdb.exec_continue();
         tlog("gdbVersion is " + version);
         waitForStateChange(State.EXITED);
-        doFinish();
     }
 
     /** Test of setting a breakpoint */
     @Test
     public void testBreakpoint1() {
-        startTest("testBreakpoint1");
         startDebugger("BpTestProject", "BpTestProject/main", "");
 
         File proj = getProjectDir("BpTestProject");
@@ -137,6 +138,5 @@ public class GdbDebuggerTestCase extends GdbTestCase {
 
         gdb.exec_continue();
         waitForStateChange(State.EXITED);
-        doFinish();
     }
 }
