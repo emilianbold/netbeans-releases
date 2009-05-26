@@ -40,18 +40,15 @@
 package org.netbeans.modules.csl.core;
 
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author vita
  */
-@ServiceProvider(service=PathRecognizer.class)
 public final class PathRecognizerImpl extends PathRecognizer {
 
     // ------------------------------------------------------------------------
@@ -60,50 +57,38 @@ public final class PathRecognizerImpl extends PathRecognizer {
 
     @Override
     public Set<String> getSourcePathIds() {
-        if (sourcePathIds == null) {
-            collectInfo();
-        }
-        Set<String> spids = sourcePathIds;
-        assert spids != null;
-        return spids;
+        Language l = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+        return l != null ? l.getSourcePathIds() : null;
     }
 
     @Override
     public Set<String> getBinaryLibraryPathIds() {
-        if (binaryLibraryPathIds == null) {
-            collectInfo();
-        }
-        Set<String> blpids = binaryLibraryPathIds;
-        assert blpids != null;
-        return blpids;
+        Language l = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+        return l != null ? l.getBinaryLibraryPathIds() : null;
     }
 
     @Override
     public Set<String> getLibraryPathIds() {
-        if (libraryPathIds == null) {
-            collectInfo();
-        }
-        Set<String> lpids = libraryPathIds;
-        assert lpids != null;
-        return lpids;
+        Language l = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+        return l != null ? l.getLibraryPathIds() : null;
     }
 
     @Override
     public Set<String> getMimeTypes() {
-        if (mimeTypes == null) {
-            collectInfo();
-        }
-        Set<String> mts = mimeTypes;
-        assert mts != null;
-        return mts;
+        return Collections.singleton(mimeType);
     }
 
     // ------------------------------------------------------------------------
     // Public implementation
     // ------------------------------------------------------------------------
 
-    public static synchronized PathRecognizerImpl getInstance() {
-        return Lookup.getDefault().lookup(PathRecognizerImpl.class);
+    public static PathRecognizer createInstance(Map fileAttributes) {
+        Object v = fileAttributes.get("mimeType"); //NOI18N
+        if (v instanceof String) {
+            return new PathRecognizerImpl((String) v);
+        } else {
+            return null;
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -112,58 +97,19 @@ public final class PathRecognizerImpl extends PathRecognizer {
 
     private static final Logger LOG = Logger.getLogger(PathRecognizerImpl.class.getName());
 
-    private volatile Set<String> sourcePathIds = null;
-    private volatile Set<String> libraryPathIds = null;
-    private volatile Set<String> binaryLibraryPathIds = null;
-    private volatile Set<String> mimeTypes = null;
+    private final String mimeType;
 
     /**
      * Use {@link #getInstance()} to get the cached instance of this class. This
      * constructor is public only for @ServiceProvider registration.
      */
-    public PathRecognizerImpl() {
-        // no-op
+    public PathRecognizerImpl(String mimeType) {
+        this.mimeType = mimeType;
     }
 
-    private void collectInfo() {
-        Set<String> collectedSpids = new HashSet<String>();
-        Set<String> collectedLpids = new HashSet<String>();
-        Set<String> collectedBlpids = new HashSet<String>();
-        Set<String> collectedMimetypes = new HashSet<String>();
-
-        for(Language l : LanguageRegistry.getInstance()) {
-            Set<String> spids = l.getSourcePathIds();
-            if (spids != null && !spids.isEmpty()) {
-                LOG.fine("Language: " + l.getMimeType() + " adds spids: " + spids); //NOI18N
-                collectedSpids.addAll(spids);
-            }
-
-            Set<String> lpids = l.getLibraryPathIds();
-            if (lpids != null && !lpids.isEmpty()) {
-                LOG.fine("Language: " + l.getMimeType() + " adds lpids: " + lpids); //NOI18N
-                collectedLpids.addAll(lpids);
-            }
-
-            Set<String> blpids = l.getBinaryLibraryPathIds();
-            if (blpids != null && !blpids.isEmpty()) {
-                LOG.fine("Language: " + l.getMimeType() + " adds blpids: " + blpids); //NOI18N
-                collectedBlpids.addAll(blpids);
-            }
-
-            collectedMimetypes.add(l.getMimeType());
-        }
-
-        synchronized (this) {
-            if (sourcePathIds == null) {
-                assert libraryPathIds == null;
-                assert binaryLibraryPathIds == null;
-                assert mimeTypes == null;
-
-                sourcePathIds = Collections.unmodifiableSet(collectedSpids);
-                libraryPathIds = Collections.unmodifiableSet(collectedLpids);
-                binaryLibraryPathIds = Collections.unmodifiableSet(collectedBlpids);
-                mimeTypes = Collections.unmodifiableSet(collectedMimetypes);
-            }
-        }
+    @Override
+    public String toString() {
+        return super.toString() + "[mimeType=" + mimeType; //NOI18N
     }
+
 }
