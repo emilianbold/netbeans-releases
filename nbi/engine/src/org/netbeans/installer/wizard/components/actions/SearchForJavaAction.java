@@ -243,20 +243,6 @@ public class SearchForJavaAction extends WizardAction {
         }
     }
 
-    private static File getCanonicalFile(final File path) {
-        File location = path;
-        if (SystemUtils.isWindows() && location.getAbsolutePath().matches(".*~[0-9]+.*")) {
-            //Issue #166036
-            try {
-                // if C:\Program Files == C:\Progra~1, get canonical representation
-                location = location.getCanonicalFile();
-                LogManager.log("... using " + location + " instead of " + path);
-            } catch (IOException e) {
-            }
-        }
-        return location;
-    }
-    
     public static void addJavaLocation(File location) {
         File javaHome = getCanonicalFile(location);
         if (!javaLocations.contains(javaHome)) {
@@ -272,6 +258,22 @@ public class SearchForJavaAction extends WizardAction {
         return javaLabels;
     }
     
+    private static File getCanonicalFile(final File file) {
+        File location = file;
+        if (SystemUtils.isWindows() && location.getAbsolutePath().matches(".*~[0-9]+.*")) {
+            //Issue #166036
+            try {
+                // if C:\Program Files == C:\Progra~1, get canonical representation
+                location = location.getCanonicalFile();
+                if(location!=file) {
+                    LogManager.log("... using " + location + " instead of " + file);
+                }
+            } catch (IOException e) {
+            }
+        }
+        return location;
+    }
+
     private void fetchLocationsFromFilesystem(final List<File> locations) {
         final List<String> candidateLocations = new ArrayList<String>();
         
