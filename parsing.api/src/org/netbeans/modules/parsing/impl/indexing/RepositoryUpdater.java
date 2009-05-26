@@ -1610,6 +1610,16 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     final Map<URL,List<URL>> addedOrChanged = new HashMap<URL,List<URL>>();
                     diff(depCtx.initialRoots2Deps, depCtx.newRoots2Deps, addedOrChanged, removed);
 
+                    if (LOGGER.isLoggable(Level.FINE) && (addedOrChanged.size() > 0 || removed.size() > 0)) {
+                        LOGGER.fine("Changes in dependencies detected:"); //NOI18N
+                        LOGGER.fine("initialRoots2Deps="); //NOI18N
+                        printMap(depCtx.initialRoots2Deps, Level.FINE);
+                        LOGGER.fine("newRoots2Deps="); //NOI18N
+                        printMap(depCtx.newRoots2Deps, Level.FINE);
+                        LOGGER.fine("addedOrChanged="); //NOI18N
+                        printMap(addedOrChanged, Level.FINE);
+                    }
+
                     depCtx.oldRoots.clear();
                     depCtx.oldRoots.addAll(removed.keySet());
                     depCtx.newRootsToScan.retainAll(addedOrChanged.keySet());
