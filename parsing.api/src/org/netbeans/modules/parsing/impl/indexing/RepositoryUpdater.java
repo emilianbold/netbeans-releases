@@ -53,6 +53,7 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -61,6 +62,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -1590,12 +1592,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
                 newRoots.addAll(PathRegistry.getDefault().getUnknownRoots());
 
-                Set<String> libraryIds = PathRecognizerRegistry.getDefault().getLibraryIds();
-                Set<String> binaryLibraryIds = PathRecognizerRegistry.getDefault().getBinaryLibraryIds();
-                LOGGER.log(Level.FINE, "LibraryIds: {0}", libraryIds);
-                LOGGER.log(Level.FINE, "BinaryLibraryIds: {0}", binaryLibraryIds);
                 for (URL url : newRoots) {
-                    findDependencies(url, depCtx, libraryIds, binaryLibraryIds);
+                    findDependencies(url, depCtx, null, null);
                 }
 
                 try {
@@ -1623,8 +1621,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 depCtx.scannedBinaries.clear();
             }
 
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "Resolving dependencies took: {0} ms", System.currentTimeMillis() - tm1); //NOI18N
+            if (LOGGER.isLoggable(Level.INFO)) {
+                LOGGER.log(Level.INFO, "Resolving dependencies took: {0} ms", System.currentTimeMillis() - tm1); //NOI18N
             }
 
             if (LOGGER.isLoggable(Level.FINE)) {
@@ -1647,7 +1645,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine(this + " " + (isCancelled() ? "cancelled" : "finished") + ": {"); //NOI18N
-                LOGGER.fine("  scannedRoots2Dependencies=" + scannedRoots2Dependencies); //NOI18N
+                LOGGER.fine("  scannedRoots2Dependencies="); //NOI18N
+                printMap(scannedRoots2Dependencies, Level.FINE);
                 LOGGER.fine("  scannedBinaries=" + scannedBinaries); //NOI18N
                 LOGGER.fine("} ===="); //NOI18N
             }
@@ -1679,8 +1678,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         private static void findDependencies(
                 final URL rootURL,
                 final DependenciesContext ctx,
-                final Set<String> libraryClassPathIds,
-                final Set<String> binaryLibraryClassPathIds)
+                Set<String> libraryIds,
+                Set<String> binaryLibraryIds)
         {
             if (ctx.useInitialState && ctx.initialRoots2Deps.containsKey(rootURL)) {
                 ctx.oldRoots.remove(rootURL);
@@ -1697,54 +1696,86 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             final List<URL> deps = new LinkedList<URL>();
             ctx.cycleDetector.push(rootURL);
             try {
-                { // libraries
-                    final List<ClassPath> libraryPathToResolve = new ArrayList<ClassPath>(libraryClassPathIds.size());
-                    for (String id : libraryClassPathIds) {
-                        ClassPath cp = ClassPath.getClassPath(rootFo, id);
-                        if (cp != null) {
-                            libraryPathToResolve.add(cp);
+                if (libraryIds == null || binaryLibraryIds == null) {
+                    Set<String> ids;
+                    if (null != (ids = PathRegistry.getDefault().getSourceIdsFor(rootURL)) && !ids.isEmpty()) {
+                        LOGGER.log(Level.FINER, "Resolving Ids based on sourceIds for {0}: {1}", new Object [] { rootURL, ids }); //NOI18N
+                        Set<String> lids = new HashSet<String>();
+                        Set<String> blids = new HashSet<String>();
+                        for(String id : ids) {
+                            lids.addAll(PathRecognizerRegistry.getDefault().getLibraryIdsForSourceId(id));
+                            blids.addAll(PathRecognizerRegistry.getDefault().getBinaryLibraryIdsForSourceId(id));
+                        }
+                        if (libraryIds == null) {
+                            libraryIds = lids;
+                        }
+                        if (binaryLibraryIds == null) {
+                            binaryLibraryIds = blids;
+                        }
+                    } else if (null != (ids = PathRegistry.getDefault().getLibraryIdsFor(rootURL)) && !ids.isEmpty()) {
+                        LOGGER.log(Level.FINER, "Resolving Ids based on libraryIds for {0}: {1}", new Object [] { rootURL, ids }); //NOI18N
+                        Set<String> blids = new HashSet<String>();
+                        for(String id : ids) {
+                            blids.addAll(PathRecognizerRegistry.getDefault().getBinaryLibraryIdsForLibraryId(id));
+                        }
+                        if (libraryIds == null) {
+                            libraryIds = ids;
+                        }
+                        if (binaryLibraryIds == null) {
+                            binaryLibraryIds = blids;
                         }
                     }
+                }
 
-                    for (ClassPath cp : libraryPathToResolve) {
-                        for (ClassPath.Entry entry : cp.entries()) {
-                            final URL sourceRoot = entry.getURL();
-                            if (!sourceRoot.equals(rootURL) && !ctx.cycleDetector.contains(sourceRoot)) {
-                                deps.add(sourceRoot);
-                                findDependencies(sourceRoot, ctx, libraryClassPathIds, binaryLibraryClassPathIds);
+                LOGGER.log(Level.FINER, "LibraryIds for {0}: {1}", new Object [] { rootURL, libraryIds }); //NOI18N
+                LOGGER.log(Level.FINER, "BinaryLibraryIds for {0}: {1}", new Object [] { rootURL, binaryLibraryIds }); //NOI18N
+
+                { // libraries
+                    final Set<String> ids = libraryIds == null ? PathRecognizerRegistry.getDefault().getLibraryIds() : libraryIds;
+                    for (String id : ids) {
+                        ClassPath cp = ClassPath.getClassPath(rootFo, id);
+                        if (cp != null) {
+                            for (ClassPath.Entry entry : cp.entries()) {
+                                final URL sourceRoot = entry.getURL();
+                                if (!sourceRoot.equals(rootURL) && !ctx.cycleDetector.contains(sourceRoot)) {
+                                    deps.add(sourceRoot);
+//                                    LOGGER.log(Level.FINEST, "#1- {0}: adding dependency on {1}, from {2} with id {3}", new Object [] {
+//                                        rootURL, sourceRoot, cp, id
+//                                    });
+                                    findDependencies(sourceRoot, ctx, libraryIds, binaryLibraryIds);
+                                }
                             }
                         }
                     }
                 }
 
                 { // binary libraries
-                    final List<ClassPath> binaryLibraryPathToResolve = new ArrayList<ClassPath>(binaryLibraryClassPathIds.size());
-                    for (String id : binaryLibraryClassPathIds) {
+                    final Set<String> ids = binaryLibraryIds == null ? PathRecognizerRegistry.getDefault().getLibraryIds() : binaryLibraryIds;
+                    for (String id : ids) {
                         ClassPath cp = ClassPath.getClassPath(rootFo, id);
                         if (cp != null) {
-                            binaryLibraryPathToResolve.add(cp);
-                        }
-                    }
-
-                    for (ClassPath cp : binaryLibraryPathToResolve) {
-                        for (ClassPath.Entry entry : cp.entries()) {
-                            final URL url = entry.getURL();
-                            final URL[] sourceRoots = PathRegistry.getDefault().sourceForBinaryQuery(url, cp, false);
-                            if (sourceRoots != null) {
-                                for (URL sourceRoot : sourceRoots) {
-                                    if (!sourceRoot.equals(rootURL) && !ctx.cycleDetector.contains(sourceRoot)) {
-                                        deps.add(sourceRoot);
-                                        findDependencies(sourceRoot, ctx, libraryClassPathIds, binaryLibraryClassPathIds);
+                            for (ClassPath.Entry entry : cp.entries()) {
+                                final URL url = entry.getURL();
+                                final URL[] sourceRoots = PathRegistry.getDefault().sourceForBinaryQuery(url, cp, false);
+                                if (sourceRoots != null) {
+                                    for (URL sourceRoot : sourceRoots) {
+                                        if (!sourceRoot.equals(rootURL) && !ctx.cycleDetector.contains(sourceRoot)) {
+                                            deps.add(sourceRoot);
+//                                            LOGGER.log(Level.FINEST, "#2- {0}: adding dependency on {1}, from {2} with id {3}", new Object [] {
+//                                                rootURL, sourceRoot, cp, id
+//                                            });
+                                            findDependencies(sourceRoot, ctx, libraryIds, binaryLibraryIds);
+                                        }
                                     }
                                 }
-                            }
-                            else {
-                                //What does it mean?
-                                if (ctx.useInitialState) {
-                                    if (!ctx.initialBinaries.contains(url)) {
-                                        ctx.newBinariesToScan.add (url);
+                                else {
+                                    //What does it mean?
+                                    if (ctx.useInitialState) {
+                                        if (!ctx.initialBinaries.contains(url)) {
+                                            ctx.newBinariesToScan.add (url);
+                                        }
+                                        ctx.oldBinaries.remove(url);
                                     }
-                                    ctx.oldBinaries.remove(url);
                                 }
                             }
                         }
@@ -1789,8 +1820,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
             }
 
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine(String.format("Complete indexing of %d binary roots took: %d ms", scannedRootsCnt, completeTime)); //NOI18N
+            if (LOGGER.isLoggable(Level.INFO)) {
+                LOGGER.info(String.format("Complete indexing of %d binary roots took: %d ms", scannedRootsCnt, completeTime)); //NOI18N
             }
             TEST_LOGGER.log(Level.FINEST, "scanBinary", ctx.newBinariesToScan);       //NOI18N
 
@@ -1833,8 +1864,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
             }
 
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine(String.format("Complete indexing of %d source roots took: %d ms", scannedRootsCnt, completeTime)); //NOI18N
+            if (LOGGER.isLoggable(Level.INFO)) {
+                LOGGER.info(String.format("Complete indexing of %d source roots took: %d ms", scannedRootsCnt, completeTime)); //NOI18N
             }
             TEST_LOGGER.log(Level.FINEST, "scanSources", ctx.newRootsToScan); //NOI18N
 
@@ -1936,6 +1967,22 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
         }
 
+        private static void printMap(Map<URL, List<URL>> deps, Level level) {
+            Set<URL> sortedRoots = new TreeSet<URL>(C);
+            sortedRoots.addAll(deps.keySet());
+            for(URL url : sortedRoots) {
+                LOGGER.log(level, "  {0}:\n", url); //NOI18N
+                for(URL depUrl : deps.get(url)) {
+                    LOGGER.log(level, "  -> {0}\n", depUrl); //NOI18N
+                }
+            }
+        }
+
+        private static final Comparator<URL> C = new Comparator<URL>() {
+            public int compare(URL o1, URL o2) {
+                return o1.toString().compareTo(o2.toString());
+            }
+        };
     } // End of RootsWork class
 
     private final class InitialRootsWork extends RootsWork {
