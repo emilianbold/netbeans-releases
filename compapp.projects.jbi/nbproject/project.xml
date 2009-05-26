@@ -60,7 +60,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.6</specification-version>
+                        <specification-version>1.1.21</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -114,24 +114,6 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>2.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.libs.httpunit</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.10</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.libs.jaxb</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -219,7 +201,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.31</specification-version>
+                        <specification-version>1.11.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -259,6 +241,15 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.libs.jaxb</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.3</specification-version>
+                    </run-dependency>
+                </dependency>
+                <!--dependency>
                     <code-name-base>org.netbeans.modules.websvc.jaxws21</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -275,7 +266,7 @@ made subject to such option by the copyright holder.
                         <release-version>1</release-version>
                         <specification-version>1.1</specification-version>
                     </run-dependency>
-                </dependency>
+                </dependency-->
                 <dependency>
                     <code-name-base>org.netbeans.modules.xml.retriever</code-name-base>
                     <build-prerequisite/>
@@ -310,12 +301,30 @@ made subject to such option by the copyright holder.
                         <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
+                <!--dependency>
+                    <code-name-base>org.netbeans.soa.libs.httpunit</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.10</specification-version>
+                    </run-dependency>
+                </dependency-->
                 <dependency>
                     <code-name-base>org.netbeans.soa.libs.jbiadmincommon</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.xdm</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -381,7 +390,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.19</specification-version>
+                        <specification-version>6.3.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -429,7 +438,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.22</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -498,10 +507,6 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.libs.xerces</code-name-base>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.xml.text</code-name-base>
-                        <compile-dependency/>
                     </test-dependency>
                 </test-type>
             </test-dependencies>
