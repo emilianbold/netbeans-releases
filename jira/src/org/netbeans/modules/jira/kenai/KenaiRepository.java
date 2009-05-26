@@ -185,7 +185,7 @@ public class KenaiRepository extends JiraRepository {
     }
 
     protected void setCredentials(String user, String password) {
-        super.setTaskRepository(getDisplayName(), getUrl(), user, password, null, null);
+        super.setCredentials(user, password, null, null);
     }
 
     @Override

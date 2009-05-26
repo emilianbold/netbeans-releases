@@ -308,11 +308,11 @@ public class JiraRepository extends Repository {
         Jira.getInstance().addRepository(this);
     }
 
-    static TaskRepository createTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
-        TaskRepository repository =
-                new TaskRepository(
-                    Jira.getInstance().getRepositoryConnector().getConnectorKind(),
-                    url);
+    public void setCredentials(String user, String password, String httpUser, String httpPassword) {
+        setCredentials(taskRepository, user, password, httpUser, httpPassword);
+    }
+
+    protected static void setCredentials (TaskRepository repository, String user, String password, String httpUser, String httpPassword) {
         AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user, password);
         repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
 
@@ -322,7 +322,14 @@ public class JiraRepository extends Repository {
             authenticationCredentials = new AuthenticationCredentials(httpUser, httpPassword);
             repository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
         }
+    }
 
+    static TaskRepository createTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
+        TaskRepository repository =
+                new TaskRepository(
+                    Jira.getInstance().getRepositoryConnector().getConnectorKind(),
+                    url);
+        setCredentials(repository, user, password, httpUser, httpPassword);
         // XXX need proxy settings from the IDE
 
         return repository;
