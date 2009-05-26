@@ -53,6 +53,7 @@ made subject to such option by the copyright holder.
                 <package>com.sun.jersey.api</package>
                 <package>com.sun.jersey.api.client</package>
                 <package>com.sun.jersey.api.client.config</package>
+                <package>com.sun.jersey.api.client.filter</package>
                 <package>com.sun.jersey.api.container</package>
                 <package>com.sun.jersey.api.container.grizzly</package>
                 <package>com.sun.jersey.api.container.httpserver</package>
