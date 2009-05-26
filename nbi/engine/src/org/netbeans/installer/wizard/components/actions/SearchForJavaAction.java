@@ -38,6 +38,7 @@ package org.netbeans.installer.wizard.components.actions;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -179,6 +180,7 @@ public class SearchForJavaAction extends WizardAction {
                 }
                 
                 // add the location to the list if it's not already there
+                javaHome = getCanonicalFile(javaHome);
                 if (!javaLocations.contains(javaHome)) {
                     javaLocations.add(javaHome);
                     javaLabels.add(getLabel(javaHome));
@@ -237,17 +239,33 @@ public class SearchForJavaAction extends WizardAction {
     }
     
     public static void addJavaLocation(File location, Version version, String vendor) {
-        if (!javaLocations.contains(location)) {
-            javaLocations.add(location);
-            javaLabels.add(getLabel(location, version, vendor));
-            JavaUtils.addJavaInfo(location, new JavaInfo(version, vendor));
+        File javaHome = getCanonicalFile(location);
+        if (!javaLocations.contains(javaHome)) {
+            javaLocations.add(javaHome);
+            javaLabels.add(getLabel(javaHome, version, vendor));
+            JavaUtils.addJavaInfo(javaHome, new JavaInfo(version, vendor));
         }
+    }
+
+    private static File getCanonicalFile(final File path) {
+        File location = path;
+        if (SystemUtils.isWindows() && location.getAbsolutePath().matches(".*~[0-9]+.*")) {
+            //Issue #166036
+            try {
+                // if C:\Program Files == C:\Progra~1, get canonical representation
+                location = location.getCanonicalFile();
+                LogManager.log("... using " + location + " instead of " + path);
+            } catch (IOException e) {
+            }
+        }
+        return location;
     }
     
     public static void addJavaLocation(File location) {
-        if (!javaLocations.contains(location)) {
-            javaLocations.add(location);
-            javaLabels.add(getLabel(location));
+        File javaHome = getCanonicalFile(location);
+        if (!javaLocations.contains(javaHome)) {
+            javaLocations.add(javaHome);
+            javaLabels.add(getLabel(javaHome));
         }
     }
     public static List <File> getJavaLocations() {
