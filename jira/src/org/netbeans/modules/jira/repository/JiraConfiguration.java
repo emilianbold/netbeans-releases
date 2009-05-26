@@ -79,7 +79,7 @@ public class JiraConfiguration extends JiraClientCache {
     private JiraClient client;
     private JiraRepository repository;
     private ConfigurationData data;
-    private Set<String> loadedProjects = new HashSet<String>();
+    private final Set<String> loadedProjects = new HashSet<String>();
 
     private static final Object USER_LOCK = new Object();
     private static final Object PROJECT_LOCK = new Object();
@@ -104,16 +104,24 @@ public class JiraConfiguration extends JiraClientCache {
                     return;
                 }
             }
+            clearCached();
             refreshData();
             putToCache();
             hackJiraCache();
         }
     }
 
+    /**
+     * Clears whatever is needed after a configuration refresh
+     */
+    protected void clearCached () {
+        loadedProjects.clear();
+    }
+
     private void refreshData () throws JiraException {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
-        
+
         data.projects = client.getProjects(nullProgressMonitor);
         data.projectsById = new HashMap<String, Project>(data.projects.length);
         data.projectsByKey = new HashMap<String, Project>(data.projects.length);
@@ -330,7 +338,19 @@ public class JiraConfiguration extends JiraClientCache {
             if (!loadedProjects.contains(project.getId())) {
                 initProject(project);
                 loadedProjects.add(project.getId());
+            } else if (project.getComponents() == null) {
+                // XXX This is ugly, but required, find a better way
+                // there can be more than one instances of a project with the same id
+                ensureProjectHasInitializedFields(project, data.projectsById.get(project.getId()));
             }
+        }
+    }
+
+    private void ensureProjectHasInitializedFields (Project project, Project initialized) {
+        if (initialized != project) {
+            project.setComponents(initialized.getComponents());
+            project.setVersions(initialized.getVersions());
+            // XXX what else !!!
         }
     }
 
@@ -344,8 +364,12 @@ public class JiraConfiguration extends JiraClientCache {
 
                 Version[] versions = client.getVersions(project.getKey(), new NullProgressMonitor());
                 project.setVersions(versions);
-
                 // XXX what else !!!
+
+                Project p = data.projectsById.get(project.getId());
+                if (p.getComponents() == null) {
+                    ensureProjectHasInitializedFields(p, project);
+                }
 
             }
         };
@@ -357,6 +381,7 @@ public class JiraConfiguration extends JiraClientCache {
         JiraCommand cmd = new JiraCommand() {
             @Override
             public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
+                loadedProjects.clear(); // XXX what about KenaiConfiguration.projects?
                 data.projects = client.getProjects(new NullProgressMonitor());
             }
         };
@@ -427,6 +452,7 @@ public class JiraConfiguration extends JiraClientCache {
      * @param data
      */
     protected void setLoadedProjects(ConfigurationData data) {
+        loadedProjects.clear();
         for (Project p : data.projects) {
             if (p.getComponents() != null) {
                 loadedProjects.add(p.getId());
