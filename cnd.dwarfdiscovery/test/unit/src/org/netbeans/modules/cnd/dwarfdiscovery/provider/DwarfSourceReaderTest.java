@@ -150,10 +150,12 @@ public class DwarfSourceReaderTest extends TestCase {
         ignore.put("__strong", "");
         ignore.put("__weak", "");
         ignore.put("i386", "1");
-        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/cpu-g3-gdwarf-2.leopard.o", ignore);
+        Map<String,GrepEntry> grepBase = new HashMap<String, GrepEntry>();
+        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/cpu-g3-gdwarf-2.leopard.o", ignore, grepBase);
         assertNotNull(source);
         TreeMap<String, String> map = new TreeMap<String, String>(source.getUserMacros());
         assertTrue(compareMap(map, golden));
+        printInclidePaths(source);
     }
 
     public void testCygwin(){
@@ -166,9 +168,11 @@ public class DwarfSourceReaderTest extends TestCase {
         golden.put("AAA", "1");
         golden.put("BBB", "11");
         TreeMap<String, String> ignore = new TreeMap<String, String>();
-        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/quote.cygwin.o", ignore);
+        Map<String,GrepEntry> grepBase = new HashMap<String, GrepEntry>();
+        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/quote.cygwin.o", ignore, grepBase);
         TreeMap<String, String> map = new TreeMap<String, String>(source.getUserMacros());
         assertTrue(compareMap(map, golden));
+        printInclidePaths(source);
     }
 
     public void testCygwin2(){
@@ -180,10 +184,12 @@ public class DwarfSourceReaderTest extends TestCase {
         golden.put("__unix", "1");
         golden.put("HAVE_CONFIG_H", "1");
         TreeMap<String, String> ignore = new TreeMap<String, String>();
-        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/string.cygwin.o", ignore);
+        Map<String,GrepEntry> grepBase = new HashMap<String, GrepEntry>();
+        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/string.cygwin.o", ignore, grepBase);
         assertNotNull(source);
         TreeMap<String, String> map = new TreeMap<String, String>(source.getUserMacros());
         assertTrue(compareMap(map, golden));
+        printInclidePaths(source);
     }
 
     public void testGento43(){
@@ -327,16 +333,17 @@ public class DwarfSourceReaderTest extends TestCase {
         ignore.put("__x86_64__", "1");
         ignore.put("linux", "1");
         ignore.put("unix", "1");
-        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/cpu.gento.4.3.o", ignore);
+        Map<String,GrepEntry> grepBase = new HashMap<String, GrepEntry>();
+        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/cpu.gento.4.3.o", ignore, grepBase);
         assertNotNull(source);
         TreeMap<String, String> map = new TreeMap<String, String>(source.getUserMacros());
         assertTrue(compareMap(map, golden));
+        printInclidePaths(source);
     }
 
     public void testRedhat(){
         TreeMap<String, String> golden = new TreeMap<String, String>();
         golden.put("HAVE_CONFIG_H", "1");
-        golden.put("HTIOP_ACCEPTOR_IMPL_CPP", "");
         golden.put("HTIOP_BUILD_DLL", "1");
         golden.put("PIC", "1");
         TreeMap<String, String> ignore = new TreeMap<String, String>();
@@ -436,10 +443,16 @@ public class DwarfSourceReaderTest extends TestCase {
         ignore.put("__x86_64__", "1");
         ignore.put("linux", "1");
         ignore.put("unix", "1");
-        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/x86_64-redhat-4.1.2.o", ignore);
+        Map<String,GrepEntry> grepBase = new HashMap<String, GrepEntry>();
+        GrepEntry grep =new GrepEntry();
+        grep.firstMacro="HTIOP_ACCEPTOR_IMPL_CPP";
+        grep.firstMacroLine=4;
+        grepBase.put("/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/orbsvcs/orbsvcs/HTIOP/HTIOP_Acceptor_Impl.cpp", grep);
+        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/x86_64-redhat-4.1.2.o", ignore, grepBase);
         assertNotNull(source);
         TreeMap<String, String> map = new TreeMap<String, String>(source.getUserMacros());
         assertTrue(compareMap(map, golden));
+        printInclidePaths(source);
     }
 
     private boolean compareMap(TreeMap<String, String> result, TreeMap<String, String> golden) {
@@ -473,7 +486,16 @@ public class DwarfSourceReaderTest extends TestCase {
         }
     }
 
-    private DwarfSource getDwarfSource(String resource, final Map<String, String> ignore){
+    private void printInclidePaths(DwarfSource source){
+        if (false) {
+            System.err.println("Include paths for file "+source.getItemPath());
+            for(String p : source.getUserInludePaths()){
+                System.err.println("\t"+p);
+            }
+        }
+    }
+
+    private DwarfSource getDwarfSource(String resource, final Map<String, String> ignore, final Map<String,GrepEntry> grepBase){
         String objFileName = DwarfSourceReaderTest.class.getResource(resource).getFile();
         try {
             Dwarf dump = new Dwarf(objFileName);
@@ -493,7 +515,6 @@ public class DwarfSourceReaderTest extends TestCase {
                             return ignore;
                         }
                     };
-                    Map<String,GrepEntry> grepBase = new HashMap<String, GrepEntry>();
                     DwarfSource source = new DwarfSource(cu, false, settings, grepBase);
                     source.process(cu);
                     return source;
