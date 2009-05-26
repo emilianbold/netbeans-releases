@@ -162,6 +162,8 @@ public final class WatchesModel extends VariablesModel {
                 return super.getValueAt(var, LOCALS_VALUE_COLUMN_ID);
             } else if(WATCH_TYPE_COLUMN_ID.equals(columnID)) {
                 return super.getValueAt(var, LOCALS_TYPE_COLUMN_ID);
+            } else if(WATCH_TO_STRING_COLUMN_ID.equals(columnID)) {
+                return super.getValueAt(var, LOCALS_TO_STRING_COLUMN_ID);
             }
         } else {
             if (WATCH_VALUE_COLUMN_ID.equals(columnID)) {
