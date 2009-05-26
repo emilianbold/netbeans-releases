@@ -41,7 +41,9 @@ package org.netbeans.modules.parsing.impl.indexing;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -88,6 +90,34 @@ public final class PathRecognizerRegistry {
         return (Set<String>) data[3];
     }
 
+    @SuppressWarnings("unchecked")
+    public Set<String> getLibraryIdsForSourceId(String id) {
+        final Object [] data = getData();
+        Set<String>[] arr = ((Map<String, Set<String>[]>) data[4]).get(id);
+        return arr != null ? arr[0] : Collections.<String>emptySet();
+    }
+
+    @SuppressWarnings("unchecked")
+    public Set<String> getBinaryLibraryIdsForSourceId(String id) {
+        final Object [] data = getData();
+        Set<String>[] arr = ((Map<String, Set<String>[]>) data[4]).get(id);
+        return arr != null ? arr[1] : Collections.<String>emptySet();
+    }
+
+    @SuppressWarnings("unchecked")
+    public Set<String> getLibraryIdsForLibraryId(String id) {
+        final Object [] data = getData();
+        Set<String>[] arr = ((Map<String, Set<String>[]>) data[5]).get(id);
+        return arr != null ? arr[0] : Collections.<String>emptySet();
+    }
+
+    @SuppressWarnings("unchecked")
+    public Set<String> getBinaryLibraryIdsForLibraryId(String id) {
+        final Object [] data = getData();
+        Set<String>[] arr = ((Map<String, Set<String>[]>) data[5]).get(id);
+        return arr != null ? arr[1] : Collections.<String>emptySet();
+    }
+
     // -----------------------------------------------------------------------
     // private implementation
     // -----------------------------------------------------------------------
@@ -119,20 +149,43 @@ public final class PathRecognizerRegistry {
             Set<String> libraryIds = new HashSet<String>();
             Set<String> binaryLibraryIds = new HashSet<String>();
             Set<String> mimeTypes = new HashSet<String>();
+            Map<String, Set<String>[]> sidsMap = new HashMap<String, Set<String>[]>();
+            Map<String, Set<String>[]> lidsMap = new HashMap<String, Set<String>[]>();
 
             Collection<? extends PathRecognizer> recognizers = lookupResult.allInstances();
             for(PathRecognizer r : recognizers) {
                 Set<String> sids = r.getSourcePathIds();
+                Set<String> lids = r.getLibraryPathIds();
+                Set<String> blids = r.getBinaryLibraryPathIds();
+
                 if (sids != null) {
                     sourceIds.addAll(sids);
+                    for(String sid : sids) {
+                        if (!sidsMap.containsKey(sid)) {
+                            @SuppressWarnings("unchecked") //NOI18N
+                            Set<String> [] set = new Set[] {
+                                lids == null ? Collections.<String>emptySet() : Collections.unmodifiableSet(lids),
+                                blids == null ? Collections.<String>emptySet() : Collections.unmodifiableSet(blids),
+                            };
+                            sidsMap.put(sid, set);
+                        }
+                    }
                 }
 
-                Set<String> lids = r.getLibraryPathIds();
                 if (lids != null) {
                     libraryIds.addAll(lids);
+                    for(String lid : lids) {
+                        if (!lidsMap.containsKey(lid)) {
+                            @SuppressWarnings("unchecked") //NOI18N
+                            Set<String> [] set = new Set[] {
+                                lids == null ? Collections.<String>emptySet() : Collections.unmodifiableSet(lids),
+                                blids == null ? Collections.<String>emptySet() : Collections.unmodifiableSet(blids),
+                            };
+                            lidsMap.put(lid, set);
+                        }
+                    }
                 }
 
-                Set<String> blids = r.getBinaryLibraryPathIds();
                 if (blids != null) {
                     binaryLibraryIds.addAll(blids);
                 }
@@ -152,6 +205,8 @@ public final class PathRecognizerRegistry {
                 Collections.unmodifiableSet(libraryIds),
                 Collections.unmodifiableSet(binaryLibraryIds),
                 Collections.unmodifiableSet(mimeTypes),
+                Collections.unmodifiableMap(sidsMap),
+                Collections.unmodifiableMap(lidsMap),
             };
         }
 
