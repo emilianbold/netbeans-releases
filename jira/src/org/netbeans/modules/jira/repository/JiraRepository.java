@@ -101,6 +101,7 @@ public class JiraRepository extends Repository {
     private JiraExecutor executor;
     private JiraConfiguration configuration;
     private final Object REPOSITORY_LOCK = new Object();
+    private final Object CONFIGURATION_LOCK = new Object();
 
     public JiraRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
@@ -348,9 +349,9 @@ public class JiraRepository extends Repository {
     }
     
     void resetRepository() {
-        // XXX
+        // XXX synchronization
+        configuration = null;
         synchronized (REPOSITORY_LOCK) {
-            configuration = null;
             TaskRepository taskRepo = getTaskRepository();
             if (taskRepo != null) {
                 Jira.getInstance().removeClient(taskRepo);
@@ -363,16 +364,20 @@ public class JiraRepository extends Repository {
      *
      * @return
      */
-    public synchronized JiraConfiguration getConfiguration() {
-        if(configuration == null) {
-            configuration = getConfigurationIntern(false);
+    public JiraConfiguration getConfiguration() {
+        synchronized (CONFIGURATION_LOCK) {
+            if (configuration == null) {
+                configuration = getConfigurationIntern(false);
+            }
+            return configuration;
         }
-        return configuration;
     }
 
-    public synchronized void refreshConfiguration() {
+    public void refreshConfiguration() {
         JiraConfiguration c = getConfigurationIntern(true);
-        configuration = c;
+        synchronized (CONFIGURATION_LOCK) {
+            configuration = c;
+        }
     }
 
     protected JiraConfiguration createConfiguration(JiraClient client) {
