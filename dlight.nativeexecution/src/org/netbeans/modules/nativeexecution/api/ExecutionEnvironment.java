@@ -38,6 +38,9 @@
  */
 package org.netbeans.modules.nativeexecution.api;
 
+import java.io.IOException;
+import java.util.concurrent.CancellationException;
+
 /**
  * The configuration of the environment for a {@link NativeProcess} execution.
  * ExecutionEnvirenment is about "<b>where</b>" to start a native proccess.
@@ -125,4 +128,6 @@ public interface ExecutionEnvironment {
      */
     @Override
     public boolean equals(Object obj);
+
+    public void prepareForConnection() throws IOException, CancellationException;
 }

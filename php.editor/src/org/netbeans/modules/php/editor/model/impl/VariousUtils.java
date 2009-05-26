@@ -221,7 +221,7 @@ public class VariousUtils {
                             semiTypeName = null;
                             break;
                         }
-                        MethodScope meth = ModelUtils.getFirst(CachingSupport.getMethods(cls, frag, topScope, PHPIndex.ANY_ATTR));
+                        MethodScope meth = ModelUtils.getFirst(CachingSupport.getInheritedMethods(cls, frag, topScope, PHPIndex.ANY_ATTR));
                         if (meth == null) {
                             semiTypeName = null;
                             break;
@@ -259,7 +259,7 @@ public class VariousUtils {
                             semiTypeName = null;
                             break;
                         }
-                        MethodScope meth = ModelUtils.getFirst(CachingSupport.getMethods(cls, frgs[1],topScope, PHPIndex.ANY_ATTR));
+                        MethodScope meth = ModelUtils.getFirst(CachingSupport.getInheritedMethods(cls, frgs[1],topScope, PHPIndex.ANY_ATTR));
                                 //ModelUtils.getFirst(cls.getMethods(frgs[1], PhpModifiers.STATIC));
                         if (meth == null) {
                             semiTypeName = null;

@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
@@ -173,22 +174,43 @@ public class DevelopmentHostConfiguration {
         return false;
     }
 
-    private boolean setValueImpl(final String v, boolean firePC) {
+    /**
+     * @return true in the case host is found (even it is not yet set up);
+     * in other words, returning false means that we should add this host
+     * to ServerList
+     */
+    private boolean setValueImpl(final String v, final boolean firePC) {
         for (int i = 0; i < servers.size(); i++) {
             final ExecutionEnvironment currEnv = servers.get(i);
             final ServerRecord currRecord = ServerList.get(currEnv);
             //TODO: could we use something straightforward here?
             if (currRecord.getDisplayName().equals(v)) {
-                value = i;
-                setBuildPlatform(CompilerSetManager.getDefault(currEnv).getPlatform());
-                if (getBuildPlatform() == -1) {
-                    // TODO: CompilerSet is not reliable about platform; it must be.
-                    setBuildPlatform(PlatformTypes.PLATFORM_NONE);
-                }
-                if (firePC) {
-                    pcs.firePropertyChange(PROP_DEV_HOST, 
-                            ExecutionEnvironmentFactory.toUniqueID(currRecord.getExecutionEnvironment()),
-                            this);
+                final int newValue = i;
+                final Runnable setter = new Runnable() {
+                    public void run() {
+                        value = newValue;
+                        setBuildPlatform(CompilerSetManager.getDefault(currEnv).getPlatform());
+                        if (getBuildPlatform() == -1) {
+                            // TODO: CompilerSet is not reliable about platform; it must be.
+                            setBuildPlatform(PlatformTypes.PLATFORM_NONE);
+                        }
+                        if (firePC) {
+                            pcs.firePropertyChange(PROP_DEV_HOST,
+                                    ExecutionEnvironmentFactory.toUniqueID(currRecord.getExecutionEnvironment()),
+                                    DevelopmentHostConfiguration.this);
+                        }
+                    }
+                };
+                if (currRecord.isSetUp()) {
+                    setter.run();
+                } else {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            if (currRecord.setUp()) {
+                                setter.run();
+                            }
+                        }
+                    });
                 }
                 return true;
             }
