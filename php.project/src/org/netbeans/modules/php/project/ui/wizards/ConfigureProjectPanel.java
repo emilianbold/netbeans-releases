@@ -45,7 +45,7 @@ import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import java.awt.Component;
 import java.io.File;
-import java.io.FilenameFilter;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -54,6 +54,8 @@ import javax.swing.MutableComboBoxModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.Utils;
@@ -78,12 +80,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     static final String LOCAL_SERVERS = "localServers"; // NOI18N
     static final String ENCODING = "encoding"; // NOI18N
     static final String ROOTS = "roots"; // NOI18N
-
-    private static final FilenameFilter NB_FILENAME_FILTER = new FilenameFilter() {
-        public boolean accept(File dir, String name) {
-            return "nbproject".equals(name); // NOI18N
-        }
-    };
 
     private final String[] steps;
     private final NewPhpProjectWizardIterator.WizardType wizardType;
@@ -434,13 +430,23 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         return null;
     }
 
-    // #137230
+    // #137230, #165918
     private boolean isProjectAlready(File projectFolder) {
         if (!projectFolder.exists()) {
             return false;
         }
-        File[] kids = projectFolder.listFiles(NB_FILENAME_FILTER);
-        return kids != null && kids.length > 0;
+
+        Project prj = null;
+        boolean foundButBroken = false;
+        try {
+            prj = ProjectManager.getDefault().findProject(FileUtil.toFileObject(projectFolder));
+        } catch (IOException ex) {
+            foundButBroken = true;
+        } catch (IllegalArgumentException ex) {
+            // we have passed non-folder - should be already handled
+            assert false : "Should not get here";
+        }
+        return prj != null || foundButBroken;
     }
 
     private String validateSources(boolean children) {
