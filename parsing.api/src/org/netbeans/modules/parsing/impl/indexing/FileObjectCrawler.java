@@ -184,7 +184,7 @@ public final class FileObjectCrawler extends Crawler {
             }
             for(Integer freq : sortedMap.keySet()) {
                 for(String item : sortedMap.get(freq)) {
-                    LOG.log(Level.FINER, "{0}: {1}", new Object [] { item, freq }); //NOI18N
+                    LOG.log(level, "{0}: {1}", new Object [] { item, freq }); //NOI18N
                 }
             }
         }
