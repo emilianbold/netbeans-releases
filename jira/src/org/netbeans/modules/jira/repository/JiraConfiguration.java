@@ -337,7 +337,6 @@ public class JiraConfiguration extends JiraClientCache {
         synchronized(PROJECT_LOCK) {
             if (!loadedProjects.contains(project.getId())) {
                 initProject(project);
-                loadedProjects.add(project.getId());
             } else if (project.getComponents() == null) {
                 // XXX This is ugly, but required, find a better way
                 // there can be more than one instances of a project with the same id
@@ -370,7 +369,7 @@ public class JiraConfiguration extends JiraClientCache {
                 if (p.getComponents() == null) {
                     ensureProjectHasInitializedFields(p, project);
                 }
-
+                loadedProjects.add(project.getId());
             }
         };
         repository.getExecutor().execute(cmd);
