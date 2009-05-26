@@ -1575,6 +1575,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
 
             updateProgress(NbBundle.getMessage(RepositoryUpdater.class, "MSG_ProjectDependencies")); //NOI18N
+            long tm1 = System.currentTimeMillis();
             if (depCtx == null) {
                 depCtx = new DependenciesContext(scannedRoots2Dependencies, scannedBinaries, useInitialState);
                 final List<URL> newRoots = new LinkedList<URL>();
@@ -1620,6 +1621,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 depCtx.scannedRoots.clear();
                 depCtx.newBinariesToScan.removeAll(depCtx.scannedBinaries);
                 depCtx.scannedBinaries.clear();
+            }
+
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Resolving dependencies took: {0} ms", System.currentTimeMillis() - tm1); //NOI18N
             }
 
             if (LOGGER.isLoggable(Level.FINE)) {
