@@ -1177,19 +1177,17 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      */
     public final FileImpl onFileIncluded(ProjectBase base, CharSequence file, APTPreprocHandler preprocHandler, APTMacroMap.State postIncludeState, int mode, boolean triggerParsingActivity) throws IOException {
         FileImpl csmFile = null;
-        try {
-            disposeLock.readLock().lock();
-            if (disposing) {
-                return null;
-            }
-            csmFile = findFile(new File(file.toString()), true, FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
-        } finally {
-            disposeLock.readLock().unlock();
+        if (disposing) {
+            return null;
         }
+        csmFile = findFile(new File(file.toString()), true, FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
 
         if (postIncludeState != null) {
             // we have post include state => no need to spend time in include walkers
             preprocHandler.getMacroMap().setState(postIncludeState);
+            return csmFile;
+        }
+        if (disposing) {
             return csmFile;
         }
         APTPreprocHandler.State newState = preprocHandler.getState();
@@ -1221,9 +1219,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         boolean updateFileContainer = false;
         try {
-            disposeLock.readLock().lock();
             if (disposing) {
-                return null;
+                return csmFile;
             }
             if (triggerParsingActivity) {
                 FileContainer.FileEntry
@@ -1318,8 +1315,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
             return csmFile;
         } finally {
-            disposeLock.readLock().unlock();
-            if (updateFileContainer) {
+            if (!disposing && updateFileContainer) {
                 getFileContainer().put();
             }
         }
