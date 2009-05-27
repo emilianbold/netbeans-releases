@@ -246,6 +246,9 @@ public final class ConnectionManager {
             }
             }
              */
+
+            env.prepareForConnection();
+
             final char[] passwd = PasswordManager.getInstance().get(env);
 
             if (passwd == null || passwd.length == 0) {
@@ -279,7 +282,7 @@ public final class ConnectionManager {
 
                 public Session call() throws Exception {
                     final String user = env.getUser();
-                    final String host = env.getHost();
+                    final String host = env.getHostAddress();
                     final int sshPort = env.getSSHPort();
 
                     try {
