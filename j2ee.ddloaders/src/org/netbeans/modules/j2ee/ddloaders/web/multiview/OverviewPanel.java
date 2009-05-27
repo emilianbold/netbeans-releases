@@ -262,7 +262,6 @@ public class OverviewPanel extends SectionInnerPanel implements java.awt.event.I
     // End of variables declaration//GEN-END:variables
  
     public void itemStateChanged(java.awt.event.ItemEvent evt) {                                            
-        // TODO add your handling code here:
         if (evt.getSource() == jCheckBox1) {
             dObj.modelUpdatedFromUI();
             dObj.setChangedFromUI(true);

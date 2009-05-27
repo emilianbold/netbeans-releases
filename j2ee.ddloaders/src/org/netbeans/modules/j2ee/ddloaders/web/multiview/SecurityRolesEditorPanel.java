@@ -205,7 +205,6 @@ public class SecurityRolesEditorPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
-// TODO add your handling code here:
         int[] selectedRows = selectedRolesTable.getSelectedRows();
         DefaultTableModel allRolesTableModel = (DefaultTableModel) allRolesTable.getModel();
         DefaultTableModel selectedRolesTableModel = (DefaultTableModel) selectedRolesTable.getModel();
@@ -223,7 +222,6 @@ public class SecurityRolesEditorPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_removeButtonActionPerformed
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-// TODO add your handling code here:
         int[] selectedRows = allRolesTable.getSelectedRows();
         DefaultTableModel allRolesTableModel = (DefaultTableModel) allRolesTable.getModel();
         DefaultTableModel selectedRolesTableModel = (DefaultTableModel) selectedRolesTable.getModel();

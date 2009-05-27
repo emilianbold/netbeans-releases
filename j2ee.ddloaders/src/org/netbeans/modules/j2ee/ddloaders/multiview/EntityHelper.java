@@ -310,7 +310,6 @@ public class EntityHelper extends EntityAndSessionHelper {
             firePropertyChange(new PropertyChangeEvent(source, propertyName, oldValue, newValue));
         }
         
-        //todo
         public Query[] getQuery() {
             return entity.getQuery();
         }

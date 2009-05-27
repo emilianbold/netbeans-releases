@@ -212,7 +212,6 @@ public class WelcomeFilesPanel extends SectionInnerPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        // TODO add your handling code here:
         try {
             SourceGroup[] groups = DDUtils.getDocBaseGroups(dObj);
             org.openide.filesystems.FileObject fo = BrowseFolders.showDialog(groups);
