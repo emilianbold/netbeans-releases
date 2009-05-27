@@ -121,6 +121,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
     private GlassfishInstanceProvider instanceProvider;
     
     private GlassfishInstance(Map<String, String> ip, GlassfishInstanceProvider instanceProvider) {
+        String deployerUri = null;
         try {
             ic = new InstanceContent();
             lookup = new AbstractLookup(ic);
@@ -131,7 +132,8 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
             ic.add(commonSupport); // Common action support, e.g start/stop, etc.
 
             // Flag this server URI as under construction
-            GlassfishInstanceProvider.activeRegistrationSet.add(commonSupport.getDeployerUri());
+            deployerUri = commonSupport.getDeployerUri();
+            GlassfishInstanceProvider.activeRegistrationSet.add(deployerUri);
 
             commonInstance = ServerInstanceFactory.createServerInstance(this);
             updateModuleSupport();
@@ -139,7 +141,9 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
             // make this instance publicly accessible
             instanceProvider.addServerInstance(this);
         } finally {
-            GlassfishInstanceProvider.activeRegistrationSet.remove(commonSupport.getDeployerUri());
+            if(deployerUri != null) {
+                GlassfishInstanceProvider.activeRegistrationSet.remove(deployerUri);
+            }
         }
     }
 
