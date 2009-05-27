@@ -191,9 +191,9 @@ public final class CndFileUtils {
     
     private static Reference<Map<String, Flags>> mapRef = new SoftReference<Map<String, Flags>>(new ConcurrentHashMap<String, Flags>());
     private static Reference<Map<String, String>> normalizedRef = new SoftReference<Map<String, String>>(new ConcurrentHashMap<String, String>());
-    private static class Flags {
-        private boolean exist;
-        private boolean directory;
+    private final static class Flags {
+        private final boolean exist;
+        private final boolean directory;
         private Flags(boolean exist, boolean directory){
             this.exist = exist;
             this.directory = directory;
