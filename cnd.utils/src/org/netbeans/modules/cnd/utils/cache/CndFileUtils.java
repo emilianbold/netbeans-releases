@@ -90,7 +90,9 @@ public final class CndFileUtils {
      */
     public static File normalizeFile(File file) {
         if (CndUtils.isDebugMode()) {
-            CndUtils.assertTrueInConsole(file.isAbsolute(), "Is it OK to normalize not absolute file? [" + file + "] during this session it is [" + file.getAbsolutePath() + "] but will be different if start IDE from another folder");
+            if (!file.isAbsolute()) {
+                CndUtils.assertTrueInConsole(false, "Is it OK to normalize not absolute file? [" + file + "] during this session it is [" + file.getAbsolutePath() + "] but will be different if start IDE from another folder");
+            }
         }
         String path = file.getPath();
         String normPath = normalizeAbsolutePath(file.getAbsolutePath());
@@ -104,7 +106,9 @@ public final class CndFileUtils {
      */
     public static String normalizeAbsolutePath(String path) {
         if (CndUtils.isDebugMode()) {
-            CndUtils.assertTrueInConsole(new File(path).isAbsolute(), "path for normalization must be absolute " + path);
+            if (!new File(path).isAbsolute()) {
+                CndUtils.assertTrueInConsole(false, "path for normalization must be absolute " + path);
+            }
         }
         //calls++;
         Map<String, String> normalizedPaths = getNormalizedFilesMap();
