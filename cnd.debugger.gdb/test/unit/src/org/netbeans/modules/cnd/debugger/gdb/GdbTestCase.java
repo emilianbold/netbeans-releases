@@ -49,7 +49,11 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger.State;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpoint;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpointImpl;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpointImpl;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -93,8 +97,8 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
         }
     }
 
-    protected File getProjectDir(String project) {
-        return new File(testapp_dir, project);
+    protected File getProjectDir() {
+        return new File(testapp_dir, testproj);
     }
 
     protected void startTest(String testapp) {
@@ -132,7 +136,7 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        waitForStateChange(State.STOPPED);
+        waitForState(State.STOPPED);
     }
 
     public void doFinish() {
@@ -146,7 +150,7 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
     private final Object STATE_WAIT_LOCK = new String("State Wait Lock");
     private final long WAIT_TIMEOUT = 5000;
 
-    protected void waitForStateChange(State state) {
+    protected void waitForState(State state) {
         long timeout = WAIT_TIMEOUT;
         long start = System.currentTimeMillis();
 
@@ -174,11 +178,11 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
 
     private final Object BP_WAIT_LOCK = new String("Breakpoint Wait Lock");
 
-    protected void waitForBreakpoint(LineBreakpoint lb) {
+    protected void waitForBreakpoint(GdbBreakpoint breakpoint) {
         long timeout = WAIT_TIMEOUT;
         long start = System.currentTimeMillis();
 
-        System.out.println("    waitForBreakpoint: Waiting for breakpoint" + lb);
+        System.out.println("    waitForBreakpoint: Waiting for breakpoint" + breakpoint);
         synchronized (BP_WAIT_LOCK) {
             for (;;) {
                 try {
@@ -188,7 +192,7 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
 
                 timeout = timeout - (System.currentTimeMillis() - start);
                 CallStackFrame csf = debugger.getCurrentCallStackFrame();
-                if (csf != null && lb.getPath().equals(csf.getFullname()) && lb.getLineNumber() == csf.getLineNumber()) {
+                if (csf != null && breakpoint.getPath().equals(csf.getFullname()) && breakpoint.getLineNumber() == csf.getLineNumber()) {
                     System.out.println("    waitForBreakpoint: Got expected stop position");
                     return;
                 } else if (timeout < 0) {
@@ -198,6 +202,19 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
                 }
             }
         }
+    }
+
+    protected GdbBreakpoint setLineBreakpoint(String filename, int lineNo) {
+        String bpPath = new File(getProjectDir(), filename).getAbsolutePath();
+        LineBreakpoint lb = LineBreakpoint.create(bpPath, lineNo);
+        new LineBreakpointImpl(lb, debugger);
+        return lb;
+    }
+
+    protected GdbBreakpoint setFunctionBreakpoint(String function) {
+        FunctionBreakpoint fb = FunctionBreakpoint.create(function);
+        new FunctionBreakpointImpl(fb, debugger);
+        return fb;
     }
 
     public <T> List<? extends T> lookup(String folder, Class<T> service) {
