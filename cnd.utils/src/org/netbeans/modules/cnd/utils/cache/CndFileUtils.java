@@ -128,7 +128,22 @@ public final class CndFileUtils {
         return getFlags(file).exist;
     }
 
-    public static boolean isDirectory(File file) {
+    /**
+     * Tests whether the file exists and not directory.
+     * @param file
+     * @return
+     */
+    public static boolean isExistingFile(File file) {
+        Flags flags = getFlags(file);
+        return flags.exist && !flags.directory;
+    }
+
+    /**
+     * Tests whether the file is an existing directory.
+     * @param file
+     * @return
+     */
+    public static boolean isExistingDirectory(File file) {
         return getFlags(file).directory;
     }
 

@@ -65,7 +65,7 @@ public class APTIncludeUtils {
         if (baseFile != null) {
             String folder = new File(baseFile.toString()).getParent();
             File fileFromBasePath = new File(folder, inclString);
-            if (exists(fileFromBasePath) && !isDirectory(fileFromBasePath)) {
+            if (isExistingFile(fileFromBasePath)) {
                 String absolutePath = fileFromBasePath.getAbsolutePath();
                 return new ResolvedPath(folder, normalize(absolutePath), absolutePath, true, 0);
             }
@@ -76,7 +76,7 @@ public class APTIncludeUtils {
     public static ResolvedPath resolveAbsFilePath(String file) {
         if (APTTraceFlags.APT_ABSOLUTE_INCLUDES) {
             File absFile = new File(file);
-            if (absFile.isAbsolute() && exists(absFile)&& !isDirectory(absFile) ) {
+            if (absFile.isAbsolute() && isExistingFile(absFile) ) {
                 return new ResolvedPath(absFile.getParent(), normalize(file), file, false, 0);
             }
         }   
@@ -88,9 +88,9 @@ public class APTIncludeUtils {
             CharSequence sysPrefix = searchPaths.next();
             String sysPrefixString = sysPrefix.toString();
             File dir = new File(sysPrefixString);
-            if (exists(dir) && isDirectory(dir)) {
+            if (isExistingDirectory(dir)) {
                 File fileFromPath = new File(dir,includedFile);
-                if (exists(fileFromPath) && !isDirectory(fileFromPath)) {
+                if (isExistingFile(fileFromPath)) {
                     String absolutePath = fileFromPath.getAbsolutePath();
                     return new ResolvedPath(sysPrefix, normalize(absolutePath), absolutePath, false, dirOffset);
                 } else {
@@ -104,7 +104,7 @@ public class APTIncludeUtils {
                             // So convert framework path
                             String fileName = sysPrefixString+"/"+includedFile.substring(0,i)+".framework/Headers"+includedFile.substring(i); // NOI18N
                             fileFromPath = new File(fileName);
-                            if (exists(fileFromPath) && !isDirectory(fileFromPath)) {
+                            if (isExistingFile(fileFromPath)) {
                                 String absolutePath = fileFromPath.getAbsolutePath();
                                 return new ResolvedPath(sysPrefix, normalize(absolutePath), absolutePath, false, dirOffset);
                             }
@@ -121,11 +121,11 @@ public class APTIncludeUtils {
         return CndFileUtils.normalizeAbsolutePath(path);
     }
 
-    private static boolean exists(File file) {
-        return CndFileUtils.exists(file);
+    private static boolean isExistingDirectory(File file) {
+        return CndFileUtils.isExistingDirectory(file);
     }
-    
-    private static boolean isDirectory(File file) {
-        return CndFileUtils.isDirectory(file);
-    }    
+
+    private static boolean isExistingFile(File file) {
+        return CndFileUtils.isExistingFile(file);
+    }
 }
