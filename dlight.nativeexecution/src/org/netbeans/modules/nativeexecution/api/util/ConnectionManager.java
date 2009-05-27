@@ -156,7 +156,8 @@ public final class ConnectionManager {
                 if (session == null || session.isConnected()) {
                     break;
                 }
-
+                //notify SolarisPrivilegesSupport that connection  lost
+                SolarisPrivilegesSupportProvider.getSupportFor(env).invalidate();
                 if (restoreLostConnection) {
                     // Session is not null and at the same time is not connected...
                     // This means that it was connected before and RemoteUserInfoProvider

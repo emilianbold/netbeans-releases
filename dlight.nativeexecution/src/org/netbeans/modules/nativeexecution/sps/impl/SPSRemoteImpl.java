@@ -128,6 +128,14 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
         return pid;
     }
 
+    @Override
+    public void invalidate() {
+        super.invalidate();
+        pid = null;
+    }
+
+
+
     public synchronized void requestPrivileges(List<String> requestedPrivileges, String user, char[] passwd) throws NotOwnerException {
         ConnectionManager mgr = ConnectionManager.getInstance();
 

@@ -176,7 +176,7 @@ public final class RootNode extends AbstractNode {
 
                         registry.addChangeListener(
                             WeakListeners.create(ChangeListener.class, ChildFactory.this, registry));
-                        stateChanged(new ChangeEvent(registry));
+                        updateState(new ChangeEvent(registry));
                     }
                 }
             });
@@ -186,22 +186,24 @@ public final class RootNode extends AbstractNode {
             RequestProcessor.getDefault().post(new Runnable() {
 
                 public void run() {
-                    synchronized (ChildFactory.this) {
-                        if (e.getSource() instanceof ServerRegistry) {
-                            for (ServerInstanceProvider type : types) {
-                                type.removeChangeListener(ChildFactory.this);
-                            }
-
-                            types.clear();
-                            types.addAll(((ServerRegistry) e.getSource()).getProviders());
-                            for (ServerInstanceProvider type : types) {
-                                type.addChangeListener(ChildFactory.this);
-                            }
-                        }
-                        refresh();
-                    }
+                    updateState(e);
                 }
             });
+        }
+
+        private synchronized void updateState(final ChangeEvent e) {
+            if (e.getSource() instanceof ServerRegistry) {
+                for (ServerInstanceProvider type : types) {
+                    type.removeChangeListener(ChildFactory.this);
+                }
+
+                types.clear();
+                types.addAll(((ServerRegistry) e.getSource()).getProviders());
+                for (ServerInstanceProvider type : types) {
+                    type.addChangeListener(ChildFactory.this);
+                }
+            }
+            refresh();
         }
 
         protected final void refresh() {
