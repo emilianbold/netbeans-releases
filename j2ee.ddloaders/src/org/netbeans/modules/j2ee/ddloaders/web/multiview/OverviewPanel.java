@@ -41,13 +41,11 @@
 
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.web.JspPropertyGroup;
 import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.netbeans.modules.j2ee.ddloaders.web.*;
 import org.netbeans.modules.xml.multiview.ui.*;
 import org.netbeans.modules.xml.multiview.Utils;
 import org.netbeans.modules.xml.multiview.Error;
-import org.netbeans.api.project.SourceGroup;
 
 /**
  * @author  mkuchtiak
@@ -108,6 +106,7 @@ public class OverviewPanel extends SectionInnerPanel implements java.awt.event.I
         return null;
     }
 
+    @Override
     public void documentChanged(javax.swing.text.JTextComponent comp, String value) {
         if (comp==stTF) {
             String text = value.trim();
@@ -138,6 +137,7 @@ public class OverviewPanel extends SectionInnerPanel implements java.awt.event.I
         }
     }
     
+    @Override
     public void rollbackValue(javax.swing.text.JTextComponent source) {
         if (source==stTF) {
             stTF.setText(getSessionTimeout());
@@ -272,12 +272,14 @@ public class OverviewPanel extends SectionInnerPanel implements java.awt.event.I
     
     /** This will be called before model is changed from this panel
      */
+    @Override
     protected void startUIChange() {
         dObj.setChangedFromUI(true);
     }
     
     /** This will be called after model is changed from this panel
      */
+    @Override
     protected void endUIChange() {
         dObj.modelUpdatedFromUI();
         dObj.setChangedFromUI(false);

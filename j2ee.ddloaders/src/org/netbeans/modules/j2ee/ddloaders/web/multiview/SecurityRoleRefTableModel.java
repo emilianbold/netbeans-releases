@@ -42,7 +42,6 @@
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
-import org.netbeans.modules.j2ee.dd.api.common.SecurityRole;
 import org.netbeans.modules.j2ee.dd.api.common.SecurityRoleRef;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
@@ -73,6 +72,7 @@ public class SecurityRoleRefTableModel extends DDBeanTableModel{
         this.webApp = webApp;
     }
     
+    @Override
     public void setValueAt(Object value, int row, int column) {
         SecurityRoleRef roleRef = getSecurityRoleRef(row);
         

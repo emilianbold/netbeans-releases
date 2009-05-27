@@ -487,6 +487,7 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
         return null;
     }
     
+    @Override
     public void documentChanged(javax.swing.text.JTextComponent comp, String value) {
         if (comp==servletNameTF) {
             String val = (String)value;
@@ -598,6 +599,7 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
         }
     }
     
+    @Override
     public void rollbackValue(javax.swing.text.JTextComponent source) {
         if (source==servletNameTF) {
             servletNameTF.setText(servlet.getServletName());
@@ -616,12 +618,14 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
     
     /** This will be called before model is changed from this panel
      */
+    @Override
     protected void startUIChange() {
         dObj.setChangedFromUI(true);
     }
     
     /** This will be called after model is changed from this panel
      */
+    @Override
     protected void endUIChange() {
         dObj.modelUpdatedFromUI();
         dObj.setChangedFromUI(false);

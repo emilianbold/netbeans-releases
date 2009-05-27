@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.web.JspPropertyGroup;
 import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.netbeans.modules.j2ee.ddloaders.web.*;
 import org.netbeans.modules.xml.multiview.ui.*;
@@ -77,12 +76,14 @@ public class WelcomeFilesPanel extends SectionInnerPanel {
     
     /** This will be called before model is changed from this panel
      */
+    @Override
     protected void startUIChange() {
         dObj.setChangedFromUI(true);
     }
     
     /** This will be called after model is changed from this panel
      */
+    @Override
     protected void endUIChange() {
         dObj.modelUpdatedFromUI();
         dObj.setChangedFromUI(false);

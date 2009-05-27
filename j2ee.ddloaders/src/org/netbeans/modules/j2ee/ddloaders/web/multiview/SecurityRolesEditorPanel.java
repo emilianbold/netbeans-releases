@@ -45,7 +45,6 @@ package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 import java.util.ArrayList;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 import org.openide.util.NbBundle;
 
 /**
@@ -79,6 +78,7 @@ public class SecurityRolesEditorPanel extends javax.swing.JPanel {
     
     private void initTable(JTable table, String[] data, String columnName) {
         DefaultTableModel model = new DefaultTableModel() {
+            @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
