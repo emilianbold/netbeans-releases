@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.completion.csm.CsmContextUtilities;
 import org.netbeans.modules.cnd.completion.csm.CsmProjectContentResolver;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  *
@@ -78,7 +79,7 @@ public final class FileReferencesContext {
     private Map<String,Collection<CsmEnumerator>> libEnumerators;
     private List<Offsets> fileObjectOffsets;
     private List<Offsets> fileDeclarationsOffsets;
-    private Map<String,CsmUID<CsmMacro>> projectMacros;
+    private Map<CharSequence,CsmUID<CsmMacro>> projectMacros;
     private SymTabCache symTabCache = new SymTabCache();
     
     FileReferencesContext(CsmScope csmScope){
@@ -215,10 +216,10 @@ public final class FileReferencesContext {
             return null;
         }
         if (projectMacros == null) {
-            projectMacros = new HashMap<String,CsmUID<CsmMacro>>();
+            projectMacros = new HashMap<CharSequence,CsmUID<CsmMacro>>();
             fillProjectMacros();
         }
-        CsmUID<CsmMacro> uid = projectMacros.get(name);
+        CsmUID<CsmMacro> uid = projectMacros.get(CharSequenceKey.create(name));
         if (uid != null) {
             return uid.getObject();
         }
@@ -320,7 +321,7 @@ public final class FileReferencesContext {
 
     private void getFileLocalMacros(CsmFile file){
         for (CsmMacro macro : file.getMacros()) {
-            String name = macro.getName().toString();
+            CharSequence name = macro.getName();
             CsmUID<CsmMacro> uid = projectMacros.get(name);
             if (uid == null) {
                 projectMacros.put(name, UIDs.get(macro));
