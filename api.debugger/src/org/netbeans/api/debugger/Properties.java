@@ -339,7 +339,7 @@ public abstract class Properties {
      * adding/removing listeners.
      */
     public void addPropertyChangeListener(PropertyChangeListener l) {
-        throw new UnsupportedOperationException("Unsupported listening on "+getClass()+" properties.");
+        throw new UnsupportedOperationException("Unsupported listening on "+getClass()+" properties."); // NOI18N
     }
 
     /**
@@ -358,7 +358,7 @@ public abstract class Properties {
      * adding/removing listeners.
      */
     public void removePropertyChangeListener(PropertyChangeListener l) {
-        throw new UnsupportedOperationException("Unsupported listening on "+getClass()+" properties.");
+        throw new UnsupportedOperationException("Unsupported listening on "+getClass()+" properties."); // NOI18N
     }
 
 
@@ -479,7 +479,7 @@ public abstract class Properties {
 
         private synchronized void save () {
             if (task == null) {
-                task = new RequestProcessor("Debugger Properties Save RP", 1).create(
+                task = new RequestProcessor("Debugger Properties Save RP", 1).create(  // NOI18N
                         new Runnable() {
                             public void run () {
                                 saveIn ();
@@ -509,14 +509,14 @@ public abstract class Properties {
                     if (value != null) {
                         // Do not write null values
                         value = translateMultiLineStringToSingleLine(value.toString());
-                        pw.println ("" + key + ":" + value);
+                        pw.println ("" + key + ":" + value); // NOI18N
                     }
                 }
                 pw.flush ();
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(
                         ErrorManager.getDefault().annotate(ex,
-                        "Can not save debugger settings."));
+                        "Can not save debugger settings.")); // NOI18N
             } finally {
                 try {
                     if (pw != null) {
@@ -542,7 +542,7 @@ public abstract class Properties {
                     if (sb == null) {
                         sb = new StringBuilder(line.substring(0, i));
                     }
-                    sb.append("\\n"); // Replaces "\n" with "\\n" or "\\n" with "\\\\n"
+                    sb.append("\\n");  // Replaces "\n" with "\\n" or "\\n" with "\\\\n"  // NOI18N
                 } else if (sb != null) {
                     sb.append(c);
                 }
@@ -566,9 +566,9 @@ public abstract class Properties {
                         sb.delete(l - 1, l); // Delete the last slash
                     }
                     if (i > 1 && line.charAt(i-2) == '\\') {
-                        sb.append("n"); // Replaces "\\\\n" to "\\n"
+                        sb.append("n"); // Replaces "\\\\n" to "\\n" // NOI18N
                     } else {
-                        sb.append("\n"); // Replaces "\\n" to "\n"
+                        sb.append("\n"); // Replaces "\\n" to "\n" // NOI18N
                     }
                 } else if (sb != null) {
                     sb.append(c);
@@ -600,7 +600,7 @@ public abstract class Properties {
     static class PropertiesImpl extends Properties {
 
         private static final Object BAD_OBJECT = new Object ();
-        private static final String BAD_STRING = "";
+        private static final String BAD_STRING = ""; // NOI18N
         private static final Map BAD_MAP = new HashMap ();
         private static final Collection BAD_COLLECTION = new ArrayList ();
         private static final Object[] BAD_ARRAY = new Object [0];
@@ -753,8 +753,8 @@ public abstract class Properties {
                 Object value = initializer.getDefaultPropertyValue(propertyName);
                 if (value != null && !clazz.isAssignableFrom(value.getClass())) {
                     Exceptions.printStackTrace(new IllegalStateException(
-                            "Value ("+value+") of a bad type ("+value.getClass()+") returned by "+initializer+
-                            " for property '"+propertyName+"'. It can not be cast to "+clazz));
+                            "Value ("+value+") of a bad type ("+value.getClass()+") returned by "+initializer+ // NOI18N
+                            " for property '"+propertyName+"'. It can not be cast to "+clazz));                // NOI18N
                     value = null;
                 }
                 return (T) value;
@@ -774,8 +774,8 @@ public abstract class Properties {
                 }
                 return initialValue;
             }
-            if (!value.startsWith ("\"")) {
-                ErrorManager.getDefault().log("Can not read string " + value + ".");
+            if (!value.startsWith ("\"")) { // NOI18N
+                ErrorManager.getDefault().log("Can not read string " + value + "."); // NOI18N
                 return defaultValue;
             }
             return value.substring (1, value.length () - 1);
@@ -783,7 +783,7 @@ public abstract class Properties {
 
         public void setString (String propertyName, String value) {
             if (value != null) {
-                impl.setProperty (propertyName, "\"" + value + "\"");
+                impl.setProperty (propertyName, "\"" + value + "\""); // NOI18N
             } else {
                 impl.setProperty (propertyName, value);
             }
@@ -905,12 +905,12 @@ public abstract class Properties {
                 }
                 return initialValue;
             }
-            boolean val = value.equals ("true");
+            boolean val = value.equals ("true"); // NOI18N
             return val;
         }
 
         public void setBoolean (String propertyName, boolean value) {
-            impl.setProperty (propertyName, value ? "true" : "false");
+            impl.setProperty (propertyName, value ? "true" : "false"); // NOI18N
             pcs.firePropertyChange(propertyName, null, value);
         }
 
@@ -968,15 +968,15 @@ public abstract class Properties {
                     }
                     return initialValue;
                 }
-                if (typeID.equals ("# null"))
+                if (typeID.equals ("# null")) // NOI18N
                     return null;
-                if (!typeID.startsWith ("# ")) {
-                    if (typeID.startsWith ("\"")) {
+                if (!typeID.startsWith ("# ")) { // NOI18N
+                    if (typeID.startsWith ("\"")) { // NOI18N
                         String s = getString (propertyName, BAD_STRING);
                         if (s == BAD_STRING) return defaultValue;
                         return s;
                     }
-                    ErrorManager.getDefault().log("Can not read object " + typeID + ". No reader registered for type " + typeID + ".");
+                    ErrorManager.getDefault().log("Can not read object " + typeID + ". No reader registered for type " + typeID + "."); // NOI18N
                     return defaultValue;
                 }
                 typeID = typeID.substring (2);
@@ -1004,7 +1004,7 @@ public abstract class Properties {
                 }
                 Reader r = readers.find(typeID);
                 if (r == null) {
-                    ErrorManager.getDefault().log("Can not read object. No reader registered for type " + typeID + ".");
+                    ErrorManager.getDefault().log("Can not read object. No reader registered for type " + typeID + "."); // NOI18N
                     return defaultValue;
                 }
                 return r.read (typeID, getProperties (propertyName));
@@ -1014,7 +1014,7 @@ public abstract class Properties {
         public void setObject (String propertyName, Object value) {
             synchronized(impl) {
                 if (value == null) {
-                    impl.setProperty (propertyName, "# null");
+                    impl.setProperty (propertyName, "# null"); // NOI18N
                 } else if (value instanceof String) {
                     setString (propertyName, (String) value);
                 } else if (value instanceof Map) {
@@ -1028,13 +1028,13 @@ public abstract class Properties {
                     // find register
                     Reader r = readers.find(value.getClass ().getName ());
                     if (r == null) {
-                        ErrorManager.getDefault().log ("Can not write object " + value);
+                        ErrorManager.getDefault().log ("Can not write object " + value); // NOI18N
                         return;
                     }
 
                     // write
                     r.write (value, getProperties (propertyName));
-                    impl.setProperty (propertyName, "# " + value.getClass ().getName ());
+                    impl.setProperty (propertyName, "# " + value.getClass ().getName ()); // NOI18N
 
                 }
             }
@@ -1043,7 +1043,7 @@ public abstract class Properties {
 
         public Object[] getArray (String propertyName, Object[] defaultValue) {
             synchronized(impl) {
-                String arrayType = impl.getProperty (propertyName + ".array_type", null);
+                String arrayType = impl.getProperty (propertyName + ".array_type", null); // NOI18N
                 if (arrayType == null) {
                     Object[] initialValue = getInitialValue(propertyName, Object[].class);
                     if (initialValue == null) {
@@ -1052,7 +1052,7 @@ public abstract class Properties {
                     return initialValue;
                 }
                 Properties p = getProperties (propertyName);
-                int l = p.getInt ("length", -1);
+                int l = p.getInt ("length", -1); // NOI18N
                 if (l < 0) return defaultValue;
                 Object[] os = null;
                 try {
@@ -1065,7 +1065,7 @@ public abstract class Properties {
                     os = new Object [l];
                 }
                 for (int i = 0; i < l; i++) {
-                    Object o = p.getObject ("" + i, BAD_OBJECT);
+                    Object o = p.getObject ("" + i, BAD_OBJECT); // NOI18N
                     if (o == BAD_OBJECT) return defaultValue;
                     os [i] = o;
                 }
@@ -1075,13 +1075,13 @@ public abstract class Properties {
 
         public void setArray (String propertyName, Object[] value) {
             synchronized (impl) {
-                impl.setProperty (propertyName, "# array");
-                impl.setProperty (propertyName + ".array_type", value.getClass ().getComponentType ().getName ());
+                impl.setProperty (propertyName, "# array"); // NOI18N
+                impl.setProperty (propertyName + ".array_type", value.getClass ().getComponentType ().getName ()); // NOI18N
                 Properties p = getProperties (propertyName);
                 int i, k = value.length;
-                p.setInt ("length", k);
+                p.setInt ("length", k); // NOI18N
                 for (i = 0; i < k; i++)
-                    p.setObject ("" + i, value [i]);
+                    p.setObject ("" + i, value [i]); // NOI18N
             }
             pcs.firePropertyChange(propertyName, null, value);
         }
@@ -1096,7 +1096,7 @@ public abstract class Properties {
                     }
                     return initialValue;
                 }
-                if (!typeID.startsWith ("# ")) return defaultValue;
+                if (!typeID.startsWith ("# ")) return defaultValue; // NOI18N
                 Collection c = null;
                 try {
                     c = (Collection) Class.forName (typeID.substring (2)).newInstance ();
@@ -1117,9 +1117,9 @@ public abstract class Properties {
                     return defaultValue;
                 }
                 Properties p = getProperties (propertyName);
-                int i, k = p.getInt ("length", 0);
+                int i, k = p.getInt ("length", 0); // NOI18N
                 for (i = 0; i < k; i++) {
-                    Object o = p.getObject ("" + i, BAD_OBJECT);
+                    Object o = p.getObject ("" + i, BAD_OBJECT); // NOI18N
                     if (o == BAD_OBJECT) return defaultValue;
                     c.add (o);
                 }
@@ -1132,13 +1132,13 @@ public abstract class Properties {
                 if (value == null) {
                     impl.setProperty (propertyName, null);
                 } else {
-                    impl.setProperty (propertyName, "# " + value.getClass ().getName ());
+                    impl.setProperty (propertyName, "# " + value.getClass ().getName ()); // NOI18N
                     Properties p = getProperties (propertyName);
                     Iterator it = value.iterator ();
                     int i = 0;
-                    p.setInt ("length", value.size ());
+                    p.setInt ("length", value.size ()); // NOI18N
                     while (it.hasNext ()) {
-                        p.setObject ("" + i, it.next ());
+                        p.setObject ("" + i, it.next ()); // NOI18N
                         i++;
                     }
                 }
@@ -1156,7 +1156,7 @@ public abstract class Properties {
                     }
                     return initialValue;
                 }
-                if (!typeID.startsWith ("# ")) return defaultValue;
+                if (!typeID.startsWith ("# ")) return defaultValue; // NOI18N
                 Map m = null;
                 try {
                     m = (Map) Class.forName (typeID.substring (2)).newInstance ();
@@ -1171,11 +1171,11 @@ public abstract class Properties {
                     return defaultValue;
                 }
                 Properties p = getProperties (propertyName);
-                int i, k = p.getInt ("length", 0);
+                int i, k = p.getInt ("length", 0); // NOI18N
                 for (i = 0; i < k; i++) {
-                    Object key = p.getObject ("" + i + "-key", BAD_OBJECT);
+                    Object key = p.getObject ("" + i + "-key", BAD_OBJECT); // NOI18N
                     if (key == BAD_OBJECT) return defaultValue;
-                    Object value = p.getObject ("" + i + "-value", BAD_OBJECT);
+                    Object value = p.getObject ("" + i + "-value", BAD_OBJECT); // NOI18N
                     if (value == BAD_OBJECT) return defaultValue;
                     m.put (key, value);
                 }
@@ -1188,15 +1188,15 @@ public abstract class Properties {
                 if (value == null) {
                     impl.setProperty (propertyName, null);
                 } else {
-                    impl.setProperty (propertyName, "# " + value.getClass ().getName ());
+                    impl.setProperty (propertyName, "# " + value.getClass ().getName ()); // NOI18N
                     Properties p = getProperties (propertyName);
                     Iterator it = value.keySet ().iterator ();
                     int i = 0;
-                    p.setInt ("length", value.size ());
+                    p.setInt ("length", value.size ()); // NOI18N
                     while (it.hasNext ()) {
                         Object o = it.next ();
-                        p.setObject ("" + i + "-key", o);
-                        p.setObject ("" + i + "-value", value.get (o));
+                        p.setObject ("" + i + "-key", o); // NOI18N
+                        p.setObject ("" + i + "-value", value.get (o)); // NOI18N
                         i++;
                     }
                 }
