@@ -182,19 +182,26 @@ public final class RootNode extends AbstractNode {
             });
         }
 
-        public synchronized void stateChanged(ChangeEvent e) {
-            if (e.getSource() instanceof ServerRegistry) {
-                for (ServerInstanceProvider type : types) {
-                    type.removeChangeListener(this);
-                }
+        public void stateChanged(final ChangeEvent e) {
+            RequestProcessor.getDefault().post(new Runnable() {
 
-                types.clear();
-                types.addAll(((ServerRegistry) e.getSource()).getProviders());
-                for (ServerInstanceProvider type : types) {
-                    type.addChangeListener(this);
+                public void run() {
+                    synchronized (ChildFactory.this) {
+                        if (e.getSource() instanceof ServerRegistry) {
+                            for (ServerInstanceProvider type : types) {
+                                type.removeChangeListener(ChildFactory.this);
+                            }
+
+                            types.clear();
+                            types.addAll(((ServerRegistry) e.getSource()).getProviders());
+                            for (ServerInstanceProvider type : types) {
+                                type.addChangeListener(ChildFactory.this);
+                            }
+                        }
+                        refresh();
+                    }
                 }
-            }
-            refresh();
+            });
         }
 
         protected final void refresh() {
