@@ -130,7 +130,6 @@ public class InstanceRenameAction extends SystemAction implements ActionContext 
                         }
                         else if (presenter.isCodeGenerated())
                         {
-                            System.out.println("@@@@@@@@@@@@@ code is generated");
                             proceed[0] = true;
                         }
                     }
@@ -225,6 +224,8 @@ public class InstanceRenameAction extends SystemAction implements ActionContext 
                                     visitor.getInfo(), oldName, myComponent.get(),
                                     visitor.getMethod() != null && names[1] != null);
                             UI.openRefactoringUI(ui, activetc);
+
+                            LifecycleManager.getDefault().saveAll();
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                         }
