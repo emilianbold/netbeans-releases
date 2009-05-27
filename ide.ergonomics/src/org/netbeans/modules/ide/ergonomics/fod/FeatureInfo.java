@@ -76,6 +76,8 @@ public final class FeatureInfo {
     private final Map<Object[],String> files = new HashMap<Object[],String>();
     private Properties properties;
     final String clusterName;
+    private Boolean cacheEnabled;
+    private Boolean cachePresent;
 
     private FeatureInfo(String clusterName, Set<String> cnbs, URL delegateLayer, Properties p) {
         this.cnbs = cnbs;
@@ -153,15 +155,20 @@ public final class FeatureInfo {
     }
 
     public final boolean isEnabled() {
+        Boolean e = cacheEnabled;
+        if (e != null) {
+            return e;
+        }
+
         for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
             if (cnbs.contains(mi.getCodeNameBase())) {
                 if (!FeatureManager.showInAU(mi)) {
                     continue;
                 }
-                return mi.isEnabled();
+                return cacheEnabled = mi.isEnabled();
             }
         }
-        return false;
+        return cacheEnabled = false;
     }
 
     public final URL getLayerURL() {
@@ -241,11 +248,21 @@ public final class FeatureInfo {
     }
 
     public boolean isPresent() {
+        Boolean p = cachePresent;
+        if (p != null) {
+            return p;
+        }
+
         Set<String> codeNames = new HashSet<String>(getCodeNames());
         for (ModuleInfo moduleInfo : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
             codeNames.remove(moduleInfo.getCodeNameBase());
         }
-        return codeNames.isEmpty();
+        return cachePresent = codeNames.isEmpty();
+    }
+
+    void clearCache() {
+        cachePresent = null;
+        cacheEnabled = null;
     }
 
     @Override
