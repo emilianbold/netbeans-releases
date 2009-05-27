@@ -118,9 +118,6 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
                 mapper.addMapping(localParent, remoteParent);
             }
         }
-        plainFilesCount = dirCount = 0;
-        totalSize = 0;
-        long time = System.currentTimeMillis();
         boolean success = false;
         try {
             boolean same;
@@ -148,24 +145,45 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         } catch (IOException ex) {
             logger.log(Level.FINE, null, ex);
         }
-        time = System.currentTimeMillis() - time;
-        logger.fine("Uploading " + plainFilesCount + " files in " + dirCount + " directories to "  //NOI18N
-                + executionEnvironment + " took " + time + " ms. " + //NOI18N
-                " Total size: " + (totalSize/1024) + "K. Success: " + success); //NOI18N
         return success;
     }
 
     /*package-local (for testing purposes, otherwise would be private) */
     void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
-        CommonTasksSupport.mkDir(executionEnvironment, remoteDir, err);
-        dirCount++;
-        File[] files = localDir.listFiles(sharabilityFilter);
-        if (files == null) {
-            throw new IOException("Failed to get children of " + localDir); // NOI18N
-        } else {
-            for (File file : files) {
-                synchronizeImpl(file, remoteDir);
+
+        plainFilesCount = dirCount = 0;
+        totalSize = 0;
+        long time = 0;
+        
+        if (logger.isLoggable(Level.FINE)) {
+            System.out.printf("Uploading %s ...\n", localDir.getAbsolutePath());
+            time = System.currentTimeMillis();
+        }
+
+        boolean success = false;
+        try {
+            CommonTasksSupport.mkDir(executionEnvironment, remoteDir, err);
+            dirCount++;
+            File[] files = localDir.listFiles(sharabilityFilter);
+            if (files == null) {
+                throw new IOException("Failed to get children of " + localDir); // NOI18N
+            } else {
+                for (File file : files) {
+                    synchronizeImpl(file, remoteDir);
+                }
             }
+            success = true;
+        } finally {
+            
+        }
+
+        if (logger.isLoggable(Level.FINE)) {
+            time = System.currentTimeMillis() - time;
+            long bps = (long) totalSize * 1000L / time;
+            String speed = (bps < 1024*8) ? (bps + " b/s") : ((bps/1024) + " Kb/s");
+            String size = (totalSize < 1024 ? (totalSize + " bytes") : ((totalSize/1024) + " K"));
+            System.out.printf("Uploading %s in %d files in %d directories to %s took %d ms. %s. Avg. speed: %s\n",
+                    size, plainFilesCount, dirCount, executionEnvironment, time, success ? "OK" : "FAILURE", speed);
         }
     }
 
