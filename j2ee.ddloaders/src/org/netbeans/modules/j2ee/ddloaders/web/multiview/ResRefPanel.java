@@ -210,7 +210,7 @@ public class ResRefPanel extends javax.swing.JPanel {
         add(descriptionLabel, gridBagConstraints);
 
         descriptionTA.setColumns(20);
-        descriptionTA.setRows(4);
+        descriptionTA.setRows(3);
         descriptionSP.setViewportView(descriptionTA);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

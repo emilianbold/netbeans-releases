@@ -41,6 +41,7 @@
 
 package org.netbeans.api.debugger;
 
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.spi.debugger.ContextProvider;
 
@@ -129,6 +130,7 @@ public final class DebuggerEngine implements ContextProvider {
     private Lookup                  privateLookup;
     private Lookup                  lookup;
     private ActionsManager          actionsManager;
+    private Session                 s;
 
     
     DebuggerEngine (
@@ -148,6 +150,7 @@ public final class DebuggerEngine implements ContextProvider {
             privateLookup,
             sessionLookup
         );
+        this.s = s;
     }
 
     Lookup getLookup() {
@@ -185,6 +188,9 @@ public final class DebuggerEngine implements ContextProvider {
      * @return list of services of given type
      */
     public <T> List<? extends T> lookup(String folder, Class<T> service) {
+        if (service.equals(Session.class)) {
+            return (List<? extends T>) Collections.singletonList(s);
+        }
         return lookup.lookup (folder, service);
     }
     
@@ -195,6 +201,9 @@ public final class DebuggerEngine implements ContextProvider {
      * @return ne service of given type
      */
     public <T> T lookupFirst(String folder, Class<T> service) {
+        if (service.equals(Session.class)) {
+            return (T) s;
+        }
         return lookup.lookupFirst (folder, service);
     }
     

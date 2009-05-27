@@ -45,8 +45,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
@@ -163,6 +165,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         }
         return preludeProvider;
     }
+
+    public static final Set<String> activeRegistrationSet = Collections.synchronizedSet(new HashSet<String>());
     
     private final Map<String, GlassfishInstance> instanceMap =
             Collections.synchronizedMap(new HashMap<String, GlassfishInstance>());
