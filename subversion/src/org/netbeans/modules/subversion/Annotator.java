@@ -571,6 +571,7 @@ public class Annotator {
             FileInformation status = cache.getCachedStatus(file);
             if (status == null) {
                 filesToRefresh.add(file);
+                nothingVersioned = false; // must assume the file is managed - up to date files are not stored in cache
             } else if ((status.getStatus() & FileInformation.STATUS_MANAGED) != 0) {
                 nothingVersioned = false;
                 break;
