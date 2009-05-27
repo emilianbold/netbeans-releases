@@ -73,6 +73,7 @@ import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtCaret;
 import org.netbeans.spi.debugger.jpda.EditorContext;
@@ -145,7 +146,8 @@ public class WatchPanel {
             }
         }
         if (csf != null) {
-            String language = DebuggerManager.getDebuggerManager ().getCurrentSession().getCurrentLanguage();
+            Session session = en.lookupFirst(null, Session.class);
+            String language = session.getCurrentLanguage();
             SourcePath sp = en.lookupFirst(null, SourcePath.class);
             Context c = new Context();
             c.url = sp.getURL(csf, language);

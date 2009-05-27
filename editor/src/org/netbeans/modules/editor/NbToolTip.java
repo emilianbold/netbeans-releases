@@ -376,15 +376,29 @@ public class NbToolTip extends FileChangeAdapter {
                 return;
             }
 
-            if (tts!=null) tts.addPropertyChangeListener(this);
-            
+            if (tts != null) tts.addPropertyChangeListener(this);
+
+            final String tooltipText = resolveTooltipText();
+            if (tooltipText != null && tooltipText.length() > 0 && isRequestValid()) {
+                Utilities.runInEventDispatchThread(new Runnable() {
+                    public void run() {
+                        final ToolTipSupport ftts = tts;
+                        if (ftts != null) {
+                            ftts.setToolTipText(tooltipText);
+                        }
+                    }
+                });
+            }
+        }
+
+        private String resolveTooltipText() {
             kit.toolTipAnnotationsLock(doc);
             try {
                 doc.readLock();
                 try {
 
                     if (!isRequestValid()) {
-                        return;
+                        return null;
                     }
 
                     // Read tooltip from annotations
@@ -413,13 +427,7 @@ public class NbToolTip extends FileChangeAdapter {
                     
                     // Set tooltip text, if any
                     if (tooltipFromAnnotations != null) {
-                        // Ignore empty strings, but do not use highlight layers tooltip,
-                        // the annotation will compute its tooltip asynchronously
-                        if (tooltipFromAnnotations.length() > 0 && tts != null) {
-                            tts.setToolTipText(tooltipFromAnnotations);
-                        }
-
-                        return;
+                        return tooltipFromAnnotations;
                     }
                 } finally {
                     doc.readUnlock();
@@ -429,7 +437,7 @@ public class NbToolTip extends FileChangeAdapter {
             }
 
             if (!isRequestValid()) {
-                return;
+                return null;
             }
             
             // Read tooltip from highlighting layers attribute
@@ -448,9 +456,8 @@ public class NbToolTip extends FileChangeAdapter {
                     }
                 }
             }
-            if (tooltipFromHighlightingLayers != null && tts != null && isRequestValid()) {
-                tts.setToolTipText(tooltipFromHighlightingLayers);
-            }
+
+            return tooltipFromHighlightingLayers;
         }
           
         private boolean isRequestValid() {
@@ -499,8 +506,9 @@ public class NbToolTip extends FileChangeAdapter {
                     Utilities.runInEventDispatchThread( // ensure to run in AWT thread
                         new Runnable() {
                             public void run() {
-                                if (tts != null) {
-                                    tts.setToolTipText(tipText);
+                                final ToolTipSupport ftts = tts;
+                                if (ftts != null) {
+                                    ftts.setToolTipText(tipText);
                                 }
                             }
                         }
