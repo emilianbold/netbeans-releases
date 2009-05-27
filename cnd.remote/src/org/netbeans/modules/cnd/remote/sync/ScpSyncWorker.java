@@ -156,7 +156,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         long time = 0;
         
         if (logger.isLoggable(Level.FINE)) {
-            System.out.printf("Uploading %s ...\n", localDir.getAbsolutePath());
+            System.out.printf("Uploading %s ...\n", localDir.getAbsolutePath()); // NOI18N
             time = System.currentTimeMillis();
         }
 
@@ -180,10 +180,10 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         if (logger.isLoggable(Level.FINE)) {
             time = System.currentTimeMillis() - time;
             long bps = (long) totalSize * 1000L / time;
-            String speed = (bps < 1024*8) ? (bps + " b/s") : ((bps/1024) + " Kb/s");
-            String size = (totalSize < 1024 ? (totalSize + " bytes") : ((totalSize/1024) + " K"));
-            System.out.printf("Uploading %s in %d files in %d directories to %s took %d ms. %s. Avg. speed: %s\n",
-                    size, plainFilesCount, dirCount, executionEnvironment, time, success ? "OK" : "FAILURE", speed);
+            String speed = (bps < 1024*8) ? (bps + " b/s") : ((bps/1024) + " Kb/s"); // NOI18N
+            String size = (totalSize < 1024 ? (totalSize + " bytes") : ((totalSize/1024) + " K")); // NOI18N
+            System.out.printf("Uploading %s in %d files in %d directories to %s took %d ms. %s. Avg. speed: %s\n", // NOI18N
+                    size, plainFilesCount, dirCount, executionEnvironment, time, success ? "OK" : "FAILURE", speed); // NOI18N
         }
     }
 
