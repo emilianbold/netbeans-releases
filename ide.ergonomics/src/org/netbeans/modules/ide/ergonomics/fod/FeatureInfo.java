@@ -154,10 +154,10 @@ public final class FeatureInfo {
 
     public final boolean isEnabled() {
         for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
-            if (!FeatureManager.showInAU(mi)) {
-                continue;
-            }
             if (cnbs.contains(mi.getCodeNameBase())) {
+                if (!FeatureManager.showInAU(mi)) {
+                    continue;
+                }
                 return mi.isEnabled();
             }
         }
