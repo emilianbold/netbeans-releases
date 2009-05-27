@@ -53,12 +53,31 @@ import org.netbeans.modules.cnd.apt.support.APTMacroMap.State;
  * @author Vladimir Voskresensky
  */
 public final class APTFileCacheEntry {
-    private final ConcurrentMap<Integer, IncludeData> cache = new ConcurrentHashMap<Integer, IncludeData>();
+    private final Map<Integer, IncludeData> cache;
     private final Map<Integer, Boolean> evalData = new HashMap<Integer, Boolean>();
     private final CharSequence filePath;
-    public APTFileCacheEntry(CharSequence filePath) {
+    private final boolean serial;
+    private APTFileCacheEntry(CharSequence filePath, boolean concurrent, Map<Integer, IncludeData> storage) {
         assert (filePath != null);
         this.filePath = filePath;
+        this.serial = concurrent;
+        this.cache = storage;
+    }
+
+    public static APTFileCacheEntry toSerial(APTFileCacheEntry entry) {
+        return !entry.isSerial() ? entry : new APTFileCacheEntry(entry.filePath, true, new HashMap<Integer, IncludeData>(entry.cache));
+    }
+
+    public static APTFileCacheEntry createConcurrentEntry(CharSequence filePath) {
+        return new APTFileCacheEntry(filePath, false, new ConcurrentHashMap<Integer, IncludeData>());
+    }
+
+    public static APTFileCacheEntry createSerialEntry(CharSequence filePath) {
+        return new APTFileCacheEntry(filePath, true, new HashMap<Integer, IncludeData>());
+    }
+
+    public boolean isSerial() {
+        return serial;
     }
 
     private static volatile int includeHits = 0;
@@ -106,7 +125,7 @@ public final class APTFileCacheEntry {
         IncludeData data = cache.get(key);
         if (data == null) {
             data = new IncludeData(null);
-            IncludeData prev = cache.putIfAbsent(key, data);
+            IncludeData prev = serial ? cache.put(key, data) : ((ConcurrentMap<Integer, IncludeData>)cache).putIfAbsent(key, data);
             if (prev != null) {
                 data = prev;
             }
