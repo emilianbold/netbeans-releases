@@ -59,6 +59,7 @@ import java.util.List;
 import antlr.*;
 import antlr.collections.*;
 
+import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.*;
@@ -213,7 +214,7 @@ public class TraceModel extends TraceModelBase {
     private boolean testFolding = false;
     private Map<String, Long> cacheTimes = new HashMap<String, Long>();
     private int lap = 0;
-    private final Map<CsmFile, APTPreprocHandler> states = new HashMap<CsmFile, APTPreprocHandler>();
+    private final Map<CsmFile, APTPreprocHandler> states = new ConcurrentHashMap<CsmFile, APTPreprocHandler>();
     FileImpl.Hook hook = new FileImpl.Hook() {
 
         public void parsingFinished(CsmFile file, APTPreprocHandler preprocHandler) {

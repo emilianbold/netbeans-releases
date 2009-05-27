@@ -47,7 +47,7 @@
     
     <!-- unit test -->
     <target name="unit-test">
-        <ant target="test" dir="${home}/print"/>
+        <!-- ant target="test" dir="${home}/print"/-->
         <ant target="test" dir="${home}/xml.search"/>
         <ant target="test" dir="${home}/bpel.model"/>
     </target>
@@ -310,13 +310,15 @@
         <antcall target="do-jbi-test"><param name="dir" value="misc/MiscBpel"/></antcall>
 
         <!-- nmproperty 1 -->
+        <antcall target="do-jbi-test"><param name="dir" value="nmproperty/AccessToSubject/BasicAuthEcho"/></antcall>
+        <antcall target="do-jbi-test"><param name="dir" value="nmproperty/AccessToSubject/SyncSampleWithSAML/SyncSampleWithSAML"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="nmproperty/dynamicaddressingNMproperty"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="nmproperty/FromToPropertySpec"/></antcall>
-        <antcall target="do-jbi-test"><param name="dir" value="nmproperty/HttpOutBoundHeaderTest_bpel"/></antcall>
     </target>
 
     <target name="test-19">
         <!-- nmproperty 2 -->
+        <antcall target="do-jbi-test"><param name="dir" value="nmproperty/HttpOutBoundHeaderTest_bpel"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="nmproperty/Server/Server"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="nmproperty/SOAPHeader"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="nmproperty/TestBasicAuth/TestBasicAuth"/></antcall>
