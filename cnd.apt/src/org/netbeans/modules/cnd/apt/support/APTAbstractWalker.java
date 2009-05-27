@@ -114,16 +114,12 @@ public abstract class APTAbstractWalker extends APTWalker {
             if (!startPath.equals(cacheEntry.getFilePath())) {
                 System.err.println("using not expected entry " + cacheEntry + " when work with file " + startPath);
             }
-            Object lock = cacheEntry.getIncludeLock(aptInclude);
-            synchronized (lock) {
-                APTMacroMap.State postIncludeState = cacheEntry.getPostIncludeMacroState(aptInclude);
-                if (postIncludeState != null && !hasIncludeActionSideEffects()) {
-                    getPreprocHandler().getMacroMap().setState(postIncludeState);
-                    return;
-                }
-                if (include(resolvedPath, aptInclude, postIncludeState)) {
-                    postIncludeState = getPreprocHandler().getMacroMap().getState();
-                    cacheEntry.setPostIncludeMacroState(aptInclude, postIncludeState);
+            if (cacheEntry.isSerial()) {
+                serialIncludeImpl(aptInclude, resolvedPath);
+            } else {
+                Object lock = cacheEntry.getIncludeLock(aptInclude);
+                synchronized (lock) {
+                    serialIncludeImpl(aptInclude, resolvedPath);
                 }
             }
         } else {
@@ -220,5 +216,17 @@ public abstract class APTAbstractWalker extends APTWalker {
         }
         onEval(apt, res);
         return res;
+    }
+
+    private void serialIncludeImpl(APTInclude aptInclude, ResolvedPath resolvedPath) {
+        APTMacroMap.State postIncludeState = cacheEntry.getPostIncludeMacroState(aptInclude);
+        if (postIncludeState != null && !hasIncludeActionSideEffects()) {
+            getPreprocHandler().getMacroMap().setState(postIncludeState);
+            return;
+        }
+        if (include(resolvedPath, aptInclude, postIncludeState)) {
+            postIncludeState = getPreprocHandler().getMacroMap().getState();
+            cacheEntry.setPostIncludeMacroState(aptInclude, postIncludeState);
+        }
     }
 }
