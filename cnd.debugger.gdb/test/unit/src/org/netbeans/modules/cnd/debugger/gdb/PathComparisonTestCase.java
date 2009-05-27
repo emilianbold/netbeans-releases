@@ -76,6 +76,11 @@ public class PathComparisonTestCase extends TestCase {
     }
 
     @Test
+    public void testWinPathComparisonSeparators() {
+        assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_WINDOWS, "C:/temp/test/SubProjects/hello3lib/hello3.cc", "c:\\temp\\test\\SubProjects\\hello3lib/hello3.cc");
+    }
+
+    @Test
     public void testUnixPathComparisonNormal() {
         assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_SOLARIS_INTEL, "/tmp/./a", "/tmp/../tmp/a");
     }
