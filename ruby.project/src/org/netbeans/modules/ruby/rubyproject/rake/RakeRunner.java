@@ -364,6 +364,8 @@ public final class RakeRunner {
         desc.addOutConvertor(new RakeErrorLineConvertor(desc, charsetName, displayName));
         desc.addErrConvertor(new RakeErrorLineConvertor(desc, charsetName, displayName));
 
+        desc.debug(debug);
+
     }
 
     private void computeAndSetDisplayName(final List<? extends RakeTask> tasks) {

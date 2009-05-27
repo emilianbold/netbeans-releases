@@ -62,8 +62,12 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  */
 public class APTPredefinedMacroMap implements APTMacroMap {
        
-    private static String []preMacro = new String [] { 
-         "__FILE__", "__LINE__", "__DATE__", "__TIME__", "__FUNCTION__"  // NOI18N
+    private static CharSequence []preMacro = new CharSequence [] {
+         CharSequenceKey.create("__FILE__"),  // NOI18N
+         CharSequenceKey.create("__LINE__"),  // NOI18N
+         CharSequenceKey.create("__DATE__"),  // NOI18N
+         CharSequenceKey.create("__TIME__"),  // NOI18N
+         CharSequenceKey.create("__FUNCTION__")  // NOI18N
     };
 
     public APTPredefinedMacroMap() {
@@ -83,7 +87,7 @@ public class APTPredefinedMacroMap implements APTMacroMap {
         if (token.length() < 2 || token.charAt(0) != '_' || token.charAt(1) != '_') {
             return false;
         }
-        String tokenText = token.toString();
+        CharSequence tokenText = CharSequenceKey.create(token);
                     
         for (i = 0; i < preMacro.length; i++) {
             if(preMacro[i].equals(tokenText)) {
