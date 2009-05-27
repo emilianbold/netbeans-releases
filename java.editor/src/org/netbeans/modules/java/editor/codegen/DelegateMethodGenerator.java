@@ -140,7 +140,8 @@ public class DelegateMethodGenerator implements CodeGenerator {
         dialog.setVisible(true);
         if (dialogDescriptor.getValue() == dialogDescriptor.getDefaultValue()) {
             JavaSource js = JavaSource.forDocument(component.getDocument());
-            if (panel.getDelegateField().getKind() == ElementKind.CLASS) {//#165261: exit when just class node selected
+            ElementHandle<? extends Element> delegateField = panel.getDelegateField();
+            if (delegateField != null && delegateField.getKind() == ElementKind.CLASS) {//#165261: exit when just class node selected
                 return;
             }
             if (js != null) {
