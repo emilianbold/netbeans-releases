@@ -27,7 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-void foo1() {
-    int a =5;
-    return;
+int foo1() {
+    int a = 1;
+    return a;
 }
