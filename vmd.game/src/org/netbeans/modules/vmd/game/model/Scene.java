@@ -141,6 +141,14 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener,
         this.listenerList.remove(SceneListener.class, l);
     }
 
+    public synchronized void addSceneListener(SceneSelectionListener l) {
+        this.listenerList.add(SceneSelectionListener.class, l);
+    }
+
+    public synchronized void removeSceneListener(SceneSelectionListener l) {
+        this.listenerList.remove(SceneSelectionListener.class, l);
+    }
+
     public Rectangle getAllLayersBounds() {
         return this.allLayersBounds;
     }
@@ -162,7 +170,6 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener,
             xMax = xMax > right ? xMax : right;
 
             int bottom = point.y + layer.getHeight();
-            ;
             yMax = yMax > bottom ? yMax : bottom;
         }
         Rectangle newBounds = new Rectangle(xMin, yMin, xMax - xMin, yMax - yMin);
@@ -323,6 +330,16 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener,
         }
     }
 
+    private void fireLayerSelectionModified(Layer layer, int index, boolean selected) {
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] == SceneSelectionListener.class) {
+                ((SceneSelectionListener) listeners[i + 1])
+                        .layerSelectionChanged(this, layer, selected);
+            }
+        }
+    }
+
     private void fireLayerVisibilityModified(Layer layer, int index, boolean visible) {
         Object[] listeners = listenerList.getListenerList();
         for (int i = listeners.length - 2; i >= 0; i -= 2) {
@@ -459,11 +476,28 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener,
         this.fireLayerLockModified(layer, this.layers.indexOf(layer), locked);
     }
 
+    public boolean isLayerSelected(Layer layer) {
+        return ((LayerInfo) this.getLayerInfo(layer)).isSelected();
+    }
+
+    public void setLayerSelected(Layer layer, boolean selected) {
+        if (DEBUG) {
+            System.out.println(layer + " set selected " + selected); // NOI18N
+        }
+        boolean old = this.getLayerInfo(layer).isSelected();
+        if (old == selected) {
+            return;
+        }
+        this.getLayerInfo(layer).setSelected(selected);
+        this.fireLayerSelectionModified(layer, this.layers.indexOf(layer), selected);
+    }
+
     public static class LayerInfo {
 
         private Point position;
         private boolean visible;
         private boolean locked;
+        private boolean selected;
 
         public LayerInfo() {
             this.position = new Point();
@@ -505,6 +539,14 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener,
                 System.out.println("setting layer locked = " + locked); // NOI18N
             }
             this.locked = locked;
+        }
+
+        public boolean isSelected() {
+            return this.selected;
+        }
+
+        public void setSelected(boolean selected) {
+            this.selected = selected;
         }
     }
 
