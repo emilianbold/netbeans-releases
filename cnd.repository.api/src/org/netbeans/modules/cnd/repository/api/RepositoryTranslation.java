@@ -54,4 +54,5 @@ public interface RepositoryTranslation {
     String getFileNameByIdSafe(final int unitId, final int fileId);
     int getUnitId(String unitName);
     String getUnitName(int unitId);    
+    String getUnitNameSafe(int unitId);
 }

@@ -1305,16 +1305,24 @@ public class CasualDiff {
     }
 
     protected int diffUnary(JCUnary oldT, JCUnary newT, int[] bounds) {
-        int localPointer = bounds[0];
         int[] argBounds = getBounds(oldT.arg);
-        copyTo(localPointer, argBounds[0]);
-        localPointer = diffTree(oldT.arg, newT.arg, argBounds);
-        if (oldT.getTag() != newT.getTag()) {
-            copyTo(localPointer, oldT.pos);
-            printer.print(operatorName(newT.getTag()));
-            localPointer = oldT.pos + operatorName(oldT.getTag()).length();
+        boolean newOpOnLeft = newT.getKind() != Kind.POSTFIX_DECREMENT && newT.getKind() != Kind.POSTFIX_INCREMENT;
+        if (newOpOnLeft) {
+            if (oldT.getTag() != newT.getTag()) {
+                printer.print(operatorName(newT.getTag()));
+            } else {
+                copyTo(bounds[0], argBounds[0]);
+            }
         }
-        copyTo(localPointer, bounds[1]);
+        int localPointer = diffTree(oldT.arg, newT.arg, argBounds);
+        copyTo(localPointer, argBounds[1]);
+        if (!newOpOnLeft) {
+            if (oldT.getTag() != newT.getTag()) {
+                printer.print(operatorName(newT.getTag()));
+            } else {
+                copyTo(argBounds[1], bounds[1]);
+            }
+        }
         return bounds[1];
     }
 
@@ -1825,6 +1833,8 @@ public class CasualDiff {
     protected boolean nameChanged(Name oldName, Name newName) {
         if (oldName == newName)
             return false;
+        if (oldName == null || newName == null)
+            return true;
         byte[] arr1 = oldName.toUtf();
         byte[] arr2 = newName.toUtf();
         int len = arr1.length;
@@ -2625,6 +2635,8 @@ public class CasualDiff {
           case JCTree.VARDEF:
               return diffVarDef((JCVariableDecl)oldT, (JCVariableDecl)newT, elementBounds);
           case JCTree.SKIP:
+              copyTo(elementBounds[0], elementBounds[1]);
+              retVal = elementBounds[1];
               break;
           case JCTree.BLOCK:
               retVal = diffBlock((JCBlock)oldT, (JCBlock)newT, elementBounds);

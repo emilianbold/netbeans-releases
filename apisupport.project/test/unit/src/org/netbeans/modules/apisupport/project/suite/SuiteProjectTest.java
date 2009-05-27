@@ -74,7 +74,7 @@ public class SuiteProjectTest extends NbTestCase {
     protected @Override void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
-        MockLookup.setLayersAndInstances(getClass().getClassLoader());
+        MockLookup.setLayersAndInstances();
         TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
     }
     
@@ -140,5 +140,5 @@ public class SuiteProjectTest extends NbTestCase {
         assertEquals("nbplatform.active change took effect", "default", eval.getProperty("nbplatform.active"));
         assertEquals("#67628: netbeans.dest.dir change did as well", NbPlatform.getDefaultPlatform().getDestDir(), suite.getHelper().resolveFile(eval.getProperty("netbeans.dest.dir")));
     }
-    
+
 }

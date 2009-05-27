@@ -88,6 +88,38 @@ public class AstNodeUtilsTest extends TestBase {
 
     }
 
+    public void testQuery() throws Exception {
+        String code = "<html><body><table><tr></tr><tr><td></tr></body></html>";
+        //             0123456789012345678
+
+        AstNode root = parse(code, null);
+        assertNotNull(root);
+
+        AstNode node = AstNodeUtils.query(root, "html");
+        assertNotNull(node);
+        assertEquals("html", node.name());
+
+        node = AstNodeUtils.query(root, "html/body");
+        assertNotNull(node);
+        assertEquals("body", node.name());
+
+        node = AstNodeUtils.query(root, "html/body/table");
+        assertNotNull(node);
+        assertEquals("table", node.name());
+
+        node = AstNodeUtils.query(root, "html/body/table/tr");
+        assertNotNull(node);
+        assertEquals("tr", node.name());
+
+        node = AstNodeUtils.query(root, "html/body/table/tr|1");
+        assertNotNull(node);
+        assertEquals("tr", node.name());
+
+        node = AstNodeUtils.query(root, "html/body/table/tr|1/td");
+        assertNotNull(node);
+        assertEquals("td", node.name());
+    }
+
     private AstNode assertDescendant(AstNode searchedNode, int searchOffset, String name, AstNode.NodeType type, int from, int to) {
         AstNode node = AstNodeUtils.findDescendant(searchedNode, searchOffset);
         assertNotNull(node);

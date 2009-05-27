@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfStatementList;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.CompilerSettings;
+import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.GrepEntry;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
@@ -94,9 +95,9 @@ public class DwarfSource implements SourceFileProperties{
     private boolean haveSystemMacros;
     private Set<String> includedFiles;
     private CompilerSettings normilizeProvider;
-    private Map<String,List<String>> grepBase;
+    private Map<String,GrepEntry> grepBase;
     
-    DwarfSource(CompilationUnit cu, boolean isCPP, CompilerSettings compilerSettings, Map<String,List<String>> grepBase){
+    DwarfSource(CompilationUnit cu, boolean isCPP, CompilerSettings compilerSettings, Map<String,GrepEntry> grepBase){
         initCompilerSettings(compilerSettings, isCPP);
         this.grepBase = grepBase;
         initSourceSettings(cu, isCPP);
@@ -411,7 +412,7 @@ public class DwarfSource implements SourceFileProperties{
                 if (path.equals(cp)) {
                     return true;
                 }
-                for(String sub : grepSystemFolder(cp)){
+                for(String sub : grepSystemFolder(cp).includes){
                     bits.add(sub);
                 }
             }
@@ -475,7 +476,7 @@ public class DwarfSource implements SourceFileProperties{
         for (Iterator<String> it = dwarfTable.getIncludeDirectories().iterator(); it.hasNext();) {
             addpath(it.next());
         }
-        List<String> list = grepSourceFile(fullName);
+        List<String> list = grepSourceFile(fullName).includes;
         for(String path : list){
             cutFolderPrefix(path, dwarfTable);
         }
@@ -497,7 +498,7 @@ public class DwarfSource implements SourceFileProperties{
                 includeFullName = includeFullName.replace('\\', '/');
             }
             if (!isSystemPath(includeFullName)) {
-                list = grepSourceFile(includeFullName);
+                list = grepSourceFile(includeFullName).includes;
                 for(String included : list){
                     cutFolderPrefix(included, dwarfTable);
                 }
@@ -590,6 +591,7 @@ public class DwarfSource implements SourceFileProperties{
             if (FULL_TRACE) {System.out.println("Macros not found");} // NOI18N
             return;
         }
+        int firstMacroLine = grepSourceFile(fullName).firstMacroLine;
         ArrayList<DwarfMacinfoEntry> table = dwarfTable.getCommandLineMarcos();
         for (Iterator<DwarfMacinfoEntry> it = table.iterator(); it.hasNext();) {
             DwarfMacinfoEntry entry = it.next();
@@ -602,6 +604,11 @@ public class DwarfSource implements SourceFileProperties{
                 value = PathCache.getString(def.substring(i+1).trim());
             } else {
                 macro = PathCache.getString(def);
+            }
+            if (firstMacroLine == entry.lineNum) {
+                if (macro.equals(grepSourceFile(fullName).firstMacro)){
+                    break;
+                }
             }
             if (haveSystemMacros && systemMacros.containsKey(macro)){
                 String sysValue = systemMacros.get(macro);
@@ -624,17 +631,17 @@ public class DwarfSource implements SourceFileProperties{
         return value.equals(sysValue); // NOI18N
     }
   
-    private List<String> grepSystemFolder(String path) {
-        List<String> res = grepBase.get(path);
+    private GrepEntry grepSystemFolder(String path) {
+        GrepEntry res = grepBase.get(path);
         if (res != null) {
             return res;
         }
-        res = new ArrayList<String>();
+        res = new GrepEntry();
         File folder = new File(path);
         if (folder.exists() && folder.canRead() && folder.isDirectory()) {
             for(File f: folder.listFiles()){
                 if (f.exists() && f.canRead() && !f.isDirectory()){
-                    List<String> l = grepSourceFile(f.getAbsolutePath());
+                    List<String> l = grepSourceFile(f.getAbsolutePath()).includes;
                     for (String i : l){
                         if (i.indexOf("..")>0 || i.startsWith("/") || i.indexOf(":")>0) { // NOI18N
                             continue;
@@ -643,8 +650,8 @@ public class DwarfSource implements SourceFileProperties{
                             int n = i.lastIndexOf('/'); // NOI18N
                             String relativeDir = i.substring(0,n);
                             String dir = "/"+relativeDir; // NOI18N
-                            if (!res.contains(dir)){
-                                res.add(dir);
+                            if (!res.includes.contains(dir)){
+                                res.includes.add(dir);
                             }
                         }
                     }
@@ -652,11 +659,11 @@ public class DwarfSource implements SourceFileProperties{
             }
         }
         List<String> secondLevel = new ArrayList<String>();
-        for(String sub : res) {
+        for(String sub : res.includes) {
             File subFolder = new File(path+sub);
             try {
                 if (subFolder.getCanonicalFile().getAbsolutePath().startsWith(path + sub)) {
-                    for (String s : grepSystemFolder(path + sub)) {
+                    for (String s : grepSystemFolder(path + sub).includes) {
                         secondLevel.add(s);
                     }
                 }
@@ -665,26 +672,28 @@ public class DwarfSource implements SourceFileProperties{
             }
         }
         for(String s: secondLevel){
-            if (!res.contains(s)){
-                res.add(s);
+            if (!res.includes.contains(s)){
+                res.includes.add(s);
             }
         }
         grepBase.put(path, res);
         return res;
     }
     
-    private List<String> grepSourceFile(String fileName){
-        List<String> res = grepBase.get(fileName);
+    private GrepEntry grepSourceFile(String fileName){
+        GrepEntry res = grepBase.get(fileName);
         if (res != null) {
             return res;
         }
-        res = new ArrayList<String>();
+        res = new GrepEntry();
         File file = new File(fileName);
         if (file.exists() && file.canRead() && !file.isDirectory()){
             try {
                 BufferedReader in = new BufferedReader(new FileReader(file));
+                int lineNo = 0;
                 while(true){
                     String line = in.readLine();
+                    lineNo++;
                     if (line == null){
                         break;
                     }
@@ -705,13 +714,31 @@ public class DwarfSource implements SourceFileProperties{
                             char c = line.charAt(0);
                             if (c == '"') {
                                 if (line.indexOf('"',1)>0){
-                                    res.add(line.substring(1,line.indexOf('"',1)));
+                                    res.includes.add(line.substring(1,line.indexOf('"',1)));
                                     if (FULL_TRACE) {System.out.println("find in source:"+line.substring(1,line.indexOf('"',1)));} // NOI18N
                                 }
                             } else if (c == '<'){
                                 if (line.indexOf('>')>0){
-                                    res.add(line.substring(1,line.indexOf('>')));
+                                    res.includes.add(line.substring(1,line.indexOf('>')));
                                     if (FULL_TRACE) {System.out.println("find in source:"+line.substring(1,line.indexOf('>')));} // NOI18N
+                                }
+                            }
+                        }
+                    } else if (line.startsWith("define")){ // NOI18N
+                        if (res.firstMacroLine == -1) {
+                            line = line.substring(6).trim();
+                            if (line.length()>0) {
+                                if (line.startsWith("/*")) { // NOI18N
+                                    int i = line.indexOf("*/"); // NOI18N
+                                    if (i > 0) {
+                                        line = line.substring(i+2).trim();
+                                    }
+                                }
+                                StringTokenizer st = new StringTokenizer(line,"\t ("); // NOI18N
+                                while(st.hasMoreTokens()) {
+                                    res.firstMacroLine = lineNo;
+                                    res.firstMacro = st.nextToken();
+                                    break;
                                 }
                             }
                         }

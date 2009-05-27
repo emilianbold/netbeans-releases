@@ -103,10 +103,10 @@ public class NativeExecutionTest extends NbTestCase {
     protected static ExecutionEnvironment getTestExecutionEnvironment() throws IOException, CancellationException {
         synchronized(NativeExecutionTest.class) {
             if (testExecutionEnvironment == null) {
-                String ui = System.getProperty("cnd.remote.testuserinfo");
+                String ui = System.getProperty("cnd.remote.testuserinfo"); // NOI18N
                 char[] passwd = null;
                 if( ui == null ) {
-                    ui = System.getenv("CND_REMOTE_TESTUSERINFO");
+                    ui = System.getenv("CND_REMOTE_TESTUSERINFO"); // NOI18N
                 }
                 if (ui != null) {
                     int m = ui.indexOf(':');
@@ -121,7 +121,7 @@ public class NativeExecutionTest extends NbTestCase {
                         testExecutionEnvironment = ExecutionEnvironmentFactory.fromUniqueID(remoteHKey);
                     }
                 } else {
-                    testExecutionEnvironment = ExecutionEnvironmentFactory.createNew(System.getProperty("user.name"), "127.0.0.1");
+                    testExecutionEnvironment = ExecutionEnvironmentFactory.createNew(System.getProperty("user.name"), "127.0.0.1"); // NOI18N
                 }
                 if (testExecutionEnvironment != null) {
                     ConnectionManager.getInstance().connectTo(testExecutionEnvironment, passwd, false);
@@ -205,10 +205,10 @@ public class NativeExecutionTest extends NbTestCase {
         File tmpFile = File.createTempFile(prefix, suffix);
         if (directory) {
             if(!(tmpFile.delete())) {
-                throw new IOException("Could not delete temp file: " + tmpFile.getAbsolutePath());
+                throw new IOException("Could not delete temp file: " + tmpFile.getAbsolutePath()); // NOI18N
             }
             if (!(tmpFile.mkdir())) {
-                throw new IOException("Could not create temp directory: " + tmpFile.getAbsolutePath());
+                throw new IOException("Could not create temp directory: " + tmpFile.getAbsolutePath()); // NOI18N
             }
         }
         tmpFile.deleteOnExit();

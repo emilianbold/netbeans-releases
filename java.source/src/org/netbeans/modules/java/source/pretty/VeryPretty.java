@@ -232,6 +232,8 @@ public final class VeryPretty extends JCTree.Visitor {
     }           
 
     public final void print(Name n) {
+        if (n == null)
+            return;
 	out.appendUtf8(n.getByteArray(), n.getByteOffset(), n.getByteLength());
     }
 

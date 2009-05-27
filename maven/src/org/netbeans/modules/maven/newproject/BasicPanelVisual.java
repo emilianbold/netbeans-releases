@@ -782,10 +782,9 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
             
         }
         
-        if (projectNameTextField.getDocument() == doc && 
-                (txtArtifactId.getText().trim().length() == 0 || lastProjectName.equals(txtArtifactId.getText().trim()))) {
-            txtArtifactId.setText(projectNameTextField.getText());
-            lastProjectName = projectNameTextField.getText().trim();
+        if (projectNameTextField.getDocument() == doc) {
+            String projName = projectNameTextField.getText().trim();
+            txtArtifactId.setText(projName.replaceAll(" ", ""));
         }
         
         if (!changedPackage && (projectNameTextField.getDocument() == doc || txtGroupId.getDocument() == doc)) {

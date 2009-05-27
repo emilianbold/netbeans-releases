@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
@@ -939,8 +940,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (out == null) {
             out = new APTFileCacheEntry(getAbsolutePath());
         } else {
-            if (false && traceFile(getAbsolutePath())) {
-                System.err.printf("APT CACHE for %s\nsize %d, key: %s\ncache state:%s\n", getAbsolutePath(), cache.size(), key, "");
+            if (APTTraceFlags.TRACE_APT_CACHE && traceFile(getAbsolutePath())) {
+                System.err.printf("APT CACHE for %s\nsize %d, key: %s\ncache state:%s\n", getAbsolutePath(), cache.size(), "", "");
             }
         }
         assert out != null;
@@ -1260,12 +1261,14 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public boolean hasDeclarations() {
-        try {
-            declarationsLock.readLock().lock();
-            return !declarations.isEmpty();
-        } finally {
-            declarationsLock.readLock().unlock();
-        }
+        // due to unblocking size() - use it
+        return declarations.size() != 0;
+//        try {
+//            declarationsLock.readLock().lock();
+//            return !declarations.isEmpty();
+//        } finally {
+//            declarationsLock.readLock().unlock();
+//        }
     }
     
     public Collection<CsmOffsetableDeclaration> getDeclarations() {
@@ -1298,12 +1301,14 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      * @return number of declarations
      */
     public int getDeclarationsSize(){
-        try {
-            declarationsLock.readLock().lock();
-            return declarations.size();
-        } finally {
-            declarationsLock.readLock().unlock();
-        }
+//        try {
+//            declarationsLock.readLock().lock();
+        // NOTE: in the current implementation declarations is TreeMap based
+        // no need to syn here
+        return declarations.size();
+//        } finally {
+//            declarationsLock.readLock().unlock();
+//        }
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> findDeclarations(CsmDeclaration.Kind[] kinds, CharSequence prefix) {
@@ -1790,8 +1795,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         output.writeInt(lastParseTime);
         State curState = state;
         if (curState != State.PARSED && curState != State.INITIAL) {
-            curState = State.PARSED;
             System.err.printf("file is written in intermediate state %s, switching to PARSED\n", curState);
+            curState = State.PARSED;
         }
         output.writeByte(curState.ordinal());
         try {

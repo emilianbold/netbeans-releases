@@ -82,6 +82,9 @@ public final class ServerUtilities {
     private ServerUtilities(GlassfishInstanceProvider gip) {
         assert null != gip;
         this.gip = gip;
+        // make sure the instance list is initiallized for the downstream modules
+        // like the glassfish.javaee
+        gip.getInstances();
     }
 
     public static ServerUtilities getPreludeUtilities() {
@@ -104,6 +107,19 @@ public final class ServerUtilities {
     public ServerInstance getServerInstance(String uri) {
         ServerInstance retVal = gip.getInstance(uri);
         return retVal;
+    }
+
+    /**
+     * Returns true if this server is registered or is in the process of being
+     * registered.
+     *
+     * @param uri uri identifying the server instance.
+     *
+     * @return True if this server is or is being registered, false otherwise.
+     */
+    public boolean isRegisteredUri(String uri) {
+        return gip.getInstance(uri) != null ||
+                GlassfishInstanceProvider.activeRegistrationSet.contains(uri);
     }
 
     /**
@@ -333,6 +349,10 @@ public final class ServerUtilities {
                             "Null FileObject passed in as the parent parameter. Returning the original list");
         }
         return jarList;
+    }
+
+    public String[] getAssociatedJavaDoc() {
+        return gip.getAssociatedJavaDoc();
     }
 
 }

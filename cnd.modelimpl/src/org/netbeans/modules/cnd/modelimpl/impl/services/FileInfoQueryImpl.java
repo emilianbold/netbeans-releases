@@ -349,10 +349,10 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                 if (startFile != null) {
                     List<CsmInclude> res = new ArrayList<CsmInclude>();
                     for(APTIncludeHandler.IncludeInfo info : reverseInclStack){
-                        int line = info.getIncludeDirectiveLine();
+                        int offset = info.getIncludeDirectiveOffset();
                         CsmInclude find = null;
                         for(CsmInclude inc : startFile.getIncludes()){
-                            if (line == inc.getEndPosition().getLine()){
+                            if (offset == inc.getStartOffset()){
                                 find = inc;
                                 break;
                             }

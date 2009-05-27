@@ -58,6 +58,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
+import org.netbeans.modules.jira.commands.ValidateCommand;
 import org.openide.util.Cancellable;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -288,8 +289,7 @@ public class RepositoryController extends BugtrackingController implements Docum
                 panel.validateLabel.setVisible(true);
                 panel.enableFields(false);
                 panel.validateLabel.setText(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating")); // NOI18N
-                try {
-                    repository.resetRepository(); // reset mylyns caching
+                try {                    
                     TaskRepository taskRepo = JiraRepository.createTaskRepository(
                             getName(),
                             getUrl(),
@@ -298,21 +298,18 @@ public class RepositoryController extends BugtrackingController implements Docum
                             getHttpUser(),
                             getHttpPassword());
 
-// XXX
-//                    ValidateCommand cmd = new ValidateCommand(taskRepo);
-//                    repository.getExecutor().execute(cmd, false);
-//                    if(cmd.hasFailed()) {
-//                        if(cmd.getErrorMessage() == null) {
-//                            Jira.LOG.warning("validate command has failed, yet the returned error message is null."); // NOI18N
-//                            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_VALIDATION_FAILED");
-//                        } else {
-//                            errorMessage = cmd.getErrorMessage();
-//                        }
-//                        validateError = true;
-//                        fireDataChanged();
-//
-//                    }
-                    
+                    ValidateCommand cmd = new ValidateCommand(taskRepo);
+                    repository.getExecutor().execute(cmd, false);
+                    if(cmd.hasFailed()) {
+                        if(cmd.getErrorMessage() == null) {
+                            Jira.LOG.warning("validate command has failed, yet the returned error message is null."); // NOI18N
+                            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_VALIDATION_FAILED");  // NOI18N
+                        } else {
+                            errorMessage = cmd.getErrorMessage();
+                        }
+                        validateError = true;
+                        fireDataChanged();
+                    }
                 } finally {
                     panel.enableFields(true);
                     panel.progressPanel.setVisible(false);
