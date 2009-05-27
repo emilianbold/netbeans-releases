@@ -627,8 +627,14 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             else if (ELEMENT_RESOURCE.equals(qName)) {
                 try {
                     //make sure, that after install URL is resolved correctly
-                    File f = new File(new URL(this.buffer.toString()).getPath());
-                    this.path.add (f.toURI().toURL());
+                    URL url = new URL(this.buffer.toString());
+                    try {
+                        URLMapper.findFileObject(url);
+                        this.path.add (new URL(this.buffer.toString()));
+                    } catch(Exception urie){
+                        File f = new File(new URL(this.buffer.toString()).getPath());
+                        this.path.add (f.toURI().toURL());
+                    }
                 } catch (MalformedURLException mue) {
                     ErrorManager.getDefault().notify(mue); 
                 }
