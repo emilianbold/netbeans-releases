@@ -116,7 +116,7 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
     public boolean hasPrivileges(
             final List<String> privs) {
         if (!ConnectionManager.getInstance().isConnectedTo(execEnv)){
-            invalidateCache();
+            invalidate();
             return false;
         }
         List<String> real_privs = getExecutionPrivileges();
