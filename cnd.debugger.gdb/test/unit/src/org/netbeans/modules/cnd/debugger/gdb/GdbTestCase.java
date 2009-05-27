@@ -45,21 +45,26 @@ import java.io.File;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger.State;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpointImpl;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpointImpl;
+import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * Base class for each gdb test case should extend this class. It provides a handle
@@ -71,16 +76,25 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
 
     protected ProjectActionEvent pae = null;
     protected Project project = null;
-    protected Configuration conf = null;
+    protected MakeConfiguration conf = null;
     protected String testapp = null;
     protected String testproj = null;
     private String testapp_dir = null;
+    private String project_dir = null;
     private String executable = "";
     protected GdbDebugger debugger;
     protected GdbProxy gdb;
     protected static final Logger tlog = Logger.getLogger("gdb.testlogger"); // NOI18N
-    private final StateListener stateListener = new StateListener();
-    private final StackListener stackListener = new StackListener();
+
+
+    private final Object STATE_WAIT_LOCK = new String("State Wait Lock");
+    private final Object BP_WAIT_LOCK = new String("Breakpoint Wait Lock");
+    private final long WAIT_TIMEOUT = 5000;
+
+    private final NotifyingListener stateListener = new NotifyingListener(STATE_WAIT_LOCK);
+    private final NotifyingListener stackListener = new NotifyingListener(BP_WAIT_LOCK);
+
+    protected static final DebuggerManager dm = DebuggerManager.getDebuggerManager();
 
     public GdbTestCase(String name) {
         super(name);
@@ -97,10 +111,6 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
         }
     }
 
-    protected File getProjectDir() {
-        return new File(testapp_dir, testproj);
-    }
-
     protected void startTest(String testapp) {
         this.testapp = testapp;
         System.out.println("\n" + testapp); // NOI18N
@@ -111,6 +121,21 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
     }
 
     protected void startDebugger(String testproj, String executable, String args) {
+        this.testproj = testproj;
+        this.executable = testapp_dir + '/' + executable;
+        project_dir = new File(testapp_dir, testproj).getAbsolutePath();
+        conf = new TestConfiguration(args);
+        pae = new ProjectActionEvent(project, ProjectActionEvent.Type.DEBUG_STEPINTO, testapp, executable, conf, null, false);
+        CompilerSetManager.getDefault().getCompilerSet(0).getTool(Tool.DebuggerTool).setPath("/opt/csw/bin/gdb");
+        dm.startDebugging(DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID,
+            new Object[]{pae}));
+        debugger = GdbDebugger.getGdbDebugger();
+        debugger.addPropertyChangeListener(GdbDebugger.PROP_STATE, stateListener);
+        debugger.addPropertyChangeListener(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME, stackListener);
+        waitForState(State.STOPPED);
+    }
+
+    protected void startDebuggerOld(String testproj, String executable, String args) {
         this.testproj = testproj;
         this.executable = testapp_dir + '/' + executable;
         debugger = new GdbDebugger(this);
@@ -140,15 +165,15 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
     }
 
     public void doFinish() {
+        debugger.finish(false);
         project = null;
         pae = null;
         debugger = null;
         testapp = null;
         executable = null;
+        dm.removeAllWatches();
+        removeAllBreakpoints();
     }
-
-    private final Object STATE_WAIT_LOCK = new String("State Wait Lock");
-    private final long WAIT_TIMEOUT = 5000;
 
     protected void waitForState(State state) {
         long timeout = WAIT_TIMEOUT;
@@ -157,26 +182,23 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
         System.out.println("    waitForStateChange: Waiting for state " + state + " [current is " + debugger.getState() + "]");
         synchronized (STATE_WAIT_LOCK) {
             for (;;) {
+                timeout = timeout - (System.currentTimeMillis() - start);
+
+                if (debugger.getState() == state) {
+                    System.out.println("    waitForStateChange: Got expected state " + state + ", wait time is :" + (WAIT_TIMEOUT - timeout));
+                    return;
+                } else if (timeout < 0) {
+                    System.out.println("    waitForStateChange: Timeout exceeded");
+                    fail("Timeout while waiting for State " + state + "(Current: " + debugger.getState() + ")");
+                    return;
+                }
                 try {
                     STATE_WAIT_LOCK.wait(timeout);
                 } catch (InterruptedException ie) {
                 }
-
-                timeout = timeout - (System.currentTimeMillis() - start);
-
-                if (debugger.getState() == state) {
-                    System.out.println("    waitForStateChange: Got expected state " + state);
-                    return;
-                } else if (timeout < 0) {
-                    System.out.println("    waitForStateChange: Timeout exceeded");
-                    fail("Timeout while waiting for State " + state);
-                    return;
-                }
             }
         }
     }
-
-    private final Object BP_WAIT_LOCK = new String("Breakpoint Wait Lock");
 
     protected void waitForBreakpoint(GdbBreakpoint breakpoint) {
         long timeout = WAIT_TIMEOUT;
@@ -185,65 +207,118 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
         System.out.println("    waitForBreakpoint: Waiting for breakpoint" + breakpoint);
         synchronized (BP_WAIT_LOCK) {
             for (;;) {
-                try {
-                    BP_WAIT_LOCK.wait(timeout);
-                } catch (InterruptedException ie) {
-                }
-
                 timeout = timeout - (System.currentTimeMillis() - start);
                 CallStackFrame csf = debugger.getCurrentCallStackFrame();
                 if (csf != null && breakpoint.getPath().equals(csf.getFullname()) && breakpoint.getLineNumber() == csf.getLineNumber()) {
-                    System.out.println("    waitForBreakpoint: Got expected stop position");
+                    System.out.println("    waitForBreakpoint: Got expected stop position, wait time is :" + (WAIT_TIMEOUT - timeout));
                     return;
                 } else if (timeout < 0) {
                     System.out.println("    waitForBreakpoint: Timeout exceeded");
-                    fail("Timeout while waiting for breakpoint");
+                    if (csf != null) {
+                        fail("Timeout while waiting for breakpoint (Current position is " + csf.getFullname() + ":" + csf.getLineNumber() + ")");
+                    } else {
+                        fail("Timeout while waiting for breakpoint (Current position is nowhere)");
+                    }
                     return;
+                }
+                try {
+                    BP_WAIT_LOCK.wait(timeout);
+                } catch (InterruptedException ie) {
                 }
             }
         }
     }
 
+    protected void waitForBPValid(GdbBreakpoint breakpoint) {
+        long timeout = WAIT_TIMEOUT;
+        long start = System.currentTimeMillis();
+
+        final Object lock = new String("Validity wait lock " + breakpoint);
+        
+        PropertyChangeListener listener = new NotifyingListener(lock);
+
+        breakpoint.addPropertyChangeListener(listener);
+
+        System.out.println("    waitForBPValid: Waiting for breakpoint " + breakpoint + " to be valid");
+        synchronized (lock) {
+            for (;;) {
+                timeout = timeout - (System.currentTimeMillis() - start);
+
+                if (breakpoint.getValidity() == Breakpoint.VALIDITY.VALID) {
+                    System.out.println("    waitForBPValid: Got expected validity, wait time is :" + (WAIT_TIMEOUT - timeout));
+                    break;
+                } else if (timeout < 0) {
+                    System.out.println("    waitForBPValid: Timeout exceeded");
+                    fail("Timeout while waiting for breakpoint valid " + breakpoint);
+                }
+                try {
+                    lock.wait(timeout);
+                } catch (InterruptedException ie) {
+                }
+            }
+        }
+        breakpoint.removePropertyChangeListener(listener);
+    }
+
     protected GdbBreakpoint setLineBreakpoint(String filename, int lineNo) {
-        String bpPath = new File(getProjectDir(), filename).getAbsolutePath();
+        String bpPath = new File(project_dir, filename).getAbsolutePath();
         LineBreakpoint lb = LineBreakpoint.create(bpPath, lineNo);
-        new LineBreakpointImpl(lb, debugger);
+        //new LineBreakpointImpl(lb, debugger);
+        dm.addBreakpoint(lb);
+        waitForBPValid(lb);
         return lb;
     }
 
     protected GdbBreakpoint setFunctionBreakpoint(String function) {
         FunctionBreakpoint fb = FunctionBreakpoint.create(function);
-        new FunctionBreakpointImpl(fb, debugger);
+        //new FunctionBreakpointImpl(fb, debugger);
+        dm.addBreakpoint(fb);
+        waitForBPValid(fb);
         return fb;
     }
 
+    private void removeAllBreakpoints() {
+        for (Breakpoint bp : dm.getBreakpoints()) {
+            dm.removeBreakpoint(bp);
+	}
+    }
+
     public <T> List<? extends T> lookup(String folder, Class<T> service) {
-        return DebuggerManager.getDebuggerManager().lookup(folder, service);
+        return dm.lookup(folder, service);
     }
 
     @SuppressWarnings("unchecked")
     public <T> T lookupFirst(String folder, Class<T> service) {
         if (service == ProjectActionEvent.class) {
             if (pae == null) {
-                conf = new TestConfiguration();
-                pae = new ProjectActionEvent(project, ProjectActionEvent.Type.DEBUG, testapp, executable, null, null, false);
+                conf = new TestConfiguration("");
+                pae = new ProjectActionEvent(project, ProjectActionEvent.Type.DEBUG_STEPINTO, testapp, executable, null, null, false);
             }
             return (T) pae;
         } else {
-            return DebuggerManager.getDebuggerManager().lookupFirst(folder, service);
+            return dm.lookupFirst(folder, service);
         }
     }
 
     class TestConfiguration extends MakeConfiguration {
-        public TestConfiguration() {
-            super(testapp_dir, testproj, MakeConfiguration.TYPE_APPLICATION, CompilerSetManager.LOCALHOST);
+        public TestConfiguration(String args) {
+            super(project_dir, testproj, MakeConfiguration.TYPE_APPLICATION, CompilerSetManager.LOCALHOST);
+            RunProfile profile = getProfile();
+            profile.getConsoleType().setValue(RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW);
+            profile.setArgs(args);
         }
     }
 
-    private class StateListener implements PropertyChangeListener {
+    private class NotifyingListener implements PropertyChangeListener {
+        private final Object lock;
+
+        public NotifyingListener(Object lock) {
+            this.lock = lock;
+        }
+
         public void propertyChange(PropertyChangeEvent evt) {
-            synchronized (STATE_WAIT_LOCK) {
-                STATE_WAIT_LOCK.notifyAll();
+            synchronized (lock) {
+                lock.notifyAll();
             }
         }
     }
