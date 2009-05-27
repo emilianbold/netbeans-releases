@@ -263,18 +263,6 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
             return findConfigureScript(path);
         }
 
-        public boolean isNbProjectFolder(){
-            if (path.length() == 0) {
-                return false;
-            }
-            File file = new File(path);
-            if (!(file.isDirectory() && file.canRead() && file.canWrite())) {
-                return false;
-            }
-            file = new File(path+"/nbproject/project.xml"); // NOI18N
-            return file.exists();
-        }
-
         public String getMake(){
             if (path.length() == 0) {
                 return null;

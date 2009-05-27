@@ -86,7 +86,6 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     private volatile Future<Integer> targetFutureResult;
     private volatile int pid = -1;
     private volatile Integer status = null;
-    private volatile boolean execServiceDone = false;
     private final Object stateLock = new String(NativeExecutableTarget.class.getName() + " - state lock"); // NOI18N
     private volatile State state;
 
@@ -156,7 +155,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         NativeProcess process = (NativeProcess) event.getSource();
 
         State newState = null;
-        boolean waitExecutionServiceIsDone = false;
+        boolean doNotify = true;
 
         synchronized (stateLock) {
             switch (event.state) {
@@ -171,18 +170,18 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
                     pid = event.pid;
                     break;
                 case CANCELLED:
-                    waitExecutionServiceIsDone = true;
+                    doNotify = false;
                     state = State.TERMINATED;
                     log.fine("NativeTask " + process.toString() + " cancelled!"); // NOI18N
                     break;
                 case ERROR:
-                    waitExecutionServiceIsDone = true;
+                    doNotify = false;
                     state = State.FAILED;
                     log.fine("NativeTask " + process.toString() + // NOI18N
                             " finished with error! "); // NOI18N
                     break;
                 case FINISHED:
-                    waitExecutionServiceIsDone = true;
+                    doNotify = false;
                     state = State.DONE;
                     status = process.exitValue();
                     break;
@@ -198,28 +197,12 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         //    descr = descr.postExecution(new Runnable() {...})
         // and don't notify listeners until it is invoked.
         //
-        //
-        // It is not allowable to stay in the same thread while waiting for
-        // postExecution invocation...
+        // So, in case we are in final state (DONE, FAILED, TERMINATED, ... )
+        // We will not notify listeners here, but rather will do this from
+        // a runnable passed to an execution service as a postExecution parameter.
 
-        if (waitExecutionServiceIsDone) {
-            final State s = newState;
-
-            DLightExecutorService.submit(new Runnable() {
-
-                public void run() {
-                    while (!execServiceDone) {
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException ex) {
-                        }
-                    }
-
-                    notifyListeners(new DLightTargetChangeEvent(NativeExecutableTarget.this, s, status));
-                }
-            }, "Waiting post execution..."); // NOI18N
-        } else {
-            notifyListeners(new DLightTargetChangeEvent(this, newState, status));
+        if (doNotify) {
+            notifyListeners(new DLightTargetChangeEvent(NativeExecutableTarget.this, newState, status));
         }
     }
 
@@ -308,7 +291,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
             descr = descr.postExecution(new Runnable() {
 
                 public void run() {
-                    execServiceDone = true;
+                    notifyListeners(new DLightTargetChangeEvent(NativeExecutableTarget.this, state, status));
                 }
             });
 

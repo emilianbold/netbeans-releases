@@ -86,12 +86,7 @@ public class APTWalkerTest extends APTAbstractWalker {
 
     protected boolean include(ResolvedPath resolvedPath, APTInclude aptInclude, APTMacroMap.State postIncludeState) {
         resolvingTime += System.currentTimeMillis() - lastTime;
-        if (resolvedPath != null && 
-                getIncludeHandler().pushInclude(
-                                                resolvedPath.getPath(), 
-                                                aptInclude.getToken().getLine(), 
-                                                resolvedPath.getIndex())
-                                                ) {
+        if (resolvedPath != null && getIncludeHandler().pushInclude(resolvedPath.getPath(), aptInclude, resolvedPath.getIndex())) {
             APTFile apt;
             boolean res = false;
             try {

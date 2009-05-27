@@ -65,7 +65,7 @@ public class APTSelfWalker extends APTAbstractWalker {
     }
     
     protected boolean include(ResolvedPath resolvedPath, APTInclude aptInclude, APTMacroMap.State postIncludeState) {
-        if (resolvedPath != null && getIncludeHandler().pushInclude(resolvedPath.getPath(), aptInclude.getToken().getLine(), resolvedPath.getIndex())) {
+        if (resolvedPath != null && getIncludeHandler().pushInclude(resolvedPath.getPath(), aptInclude, resolvedPath.getIndex())) {
             try {
                 APTFile apt = APTDriver.getInstance().findAPTLight(new FileBufferFile(new File(resolvedPath.getPath().toString())));
                 createIncludeWalker(apt, this, resolvedPath.getPath()).visit();

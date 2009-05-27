@@ -60,7 +60,7 @@ public abstract class TokenInputUtils {
         CharInput       input
     ) {
         return new TokenInputImpl (
-            new TokenReader (language, parser),
+            new TokenReader (language, parser, input),
             input
         );
     }
@@ -80,17 +80,19 @@ public abstract class TokenInputUtils {
         
         private Language        language;
         private Parser          parser;
+        private CharInput       input;
         private int             state = -1;
         private Cookie          cookie = new MyCookie ();
 
 
         private TokenReader (
             Language            language,
-            Parser              parser
+            Parser              parser, 
+            CharInput           input
         ) {
             this.language = language;
             this.parser = parser;
-            if (parser == null) throw new NullPointerException ();
+            this.input = input;
         }
 
         private ASTToken next;

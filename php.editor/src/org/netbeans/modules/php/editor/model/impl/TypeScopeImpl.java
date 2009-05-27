@@ -216,7 +216,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
 
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpKind().equals(PhpKind.CLASS_CONSTANT) &&
-                        queryName.length == 0 || ModelElementImpl.nameKindMatch(element.getName(), nameKind, queryName);
+                        (queryName.length == 0 || ModelElementImpl.nameKindMatch(element.getName(), nameKind, queryName));
             }
         });
     }
@@ -345,7 +345,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
                 while (clz != null && allMethods.isEmpty()) {
                     clz = ModelUtils.getFirst(clz.getSuperClasses());
                     if (clz != null) {
-                        Collection<IndexedFunction> indexedFunctions = index.getMethods(null, clz.getName(), queryName, QuerySupport.Kind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
+                        Collection<IndexedFunction> indexedFunctions = index.getMethods(null, clz.getName(), queryName, QuerySupport.Kind.EXACT, Modifier.PUBLIC | Modifier.PROTECTED);
                         for (IndexedFunction indexedFunction : indexedFunctions) {
                             allMethods.add(new MethodScopeImpl((TypeScopeImpl) clz, indexedFunction, PhpKind.METHOD));
                         }

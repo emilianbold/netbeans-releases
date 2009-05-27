@@ -41,6 +41,8 @@ package org.netbeans.modules.css.parser;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.junit.Assert;
 import org.netbeans.modules.css.editor.test.TestBase;
 
@@ -50,13 +52,19 @@ import org.netbeans.modules.css.editor.test.TestBase;
  */
 public class CssParserTest extends TestBase {
 
-    public CssParserTest() {
-        super(CssParserTest.class.getName());
+    public CssParserTest(String testName) {
+        super(testName);
+    }
+
+       public static Test suite(){
+	TestSuite suite = new TestSuite();
+        suite.addTest(new CssParserTest("testPropertyValueWithComment"));
+        return suite;
     }
 
     private SimpleNode parse(String source) throws ParseException {
         CssParser parser = new CssParser();
-        CssParserTokenManager tokenManager = new CssParserTokenManager(new ASCII_CharStream(new StringReader(source)));
+        CssParserTokenManager tokenManager = new PatchedCssParserTokenManager(new ASCII_CharStream(new StringReader(source)));
         parser.ReInit(tokenManager);
 
         return parser.styleSheet();
@@ -110,10 +118,11 @@ public class CssParserTest extends TestBase {
         assertNoErrors(parse("/* c */ h1 {  color: red; } /* c2 */"));
     }
 
-    private void check(String source) throws ParseException {
+    private SimpleNode check(String source) throws ParseException {
         SimpleNode node = parse(source);
         Assert.assertNotNull(node);
         assertNoErrors(node);
+        return node;
     }
 
     // @@@ represents a gap from the css perspective in reality filled with 
@@ -167,4 +176,31 @@ public class CssParserTest extends TestBase {
     public void testTemplatingInComment() throws ParseException {
         check("EXAMPLE { /* @@@ */ }");
     }
+
+    public void testPropertyValueWithComment() throws ParseException {
+        //fails - issue http://www.netbeans.org/issues/show_bug.cgi?id=162844
+        //the problem is that the SimpleNode for property value contains also the whitespace and comment
+
+//        String code = "h3 { color: red /*.....*/ }";
+//
+//        //tokens
+//        System.out.println("code='" + code + "'");
+//        System.out.println("Tokens: ");
+//        CssParserTokenManager tm = new PatchedCssParserTokenManager(new ASCII_CharStream(new StringReader(code)));
+//        Token t;
+//        while((t = tm.getNextToken()) != null && t.image.length() > 0) {
+//            System.out.print("<" + t.offset + "," + t.image + "> ");
+//        }
+//        System.out.println(".");
+//
+//        SimpleNode root = check(code);
+//        System.out.println(root.dump());
+//
+//        SimpleNode node = SimpleNodeUtil.query(root, "styleSheetRuleList/rule/styleRule/declaration/expr/term");
+//        assertNotNull(node);
+//        assertEquals("red", node.image());
+ 
+    }
+    
 }
+

@@ -65,7 +65,7 @@ public class BasicPanelProvider implements ProjectCustomizer.CompositeCategoryPr
     
     public JComponent createComponent(Category category, Lookup context) {
         ModelHandle handle = context.lookup(ModelHandle.class);
-        return new BasicInfoPanel(handle);
+        return new BasicInfoPanel(handle, category);
     }
     
 }

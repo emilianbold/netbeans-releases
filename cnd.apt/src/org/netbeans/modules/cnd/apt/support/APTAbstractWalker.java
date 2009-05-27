@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.apt.support;
 
 import antlr.TokenStreamException;
 import java.io.File;
-import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.structure.APT;
@@ -145,8 +144,7 @@ public abstract class APTAbstractWalker extends APTWalker {
     protected void onDefine(APT apt) {
         APTDefine define = (APTDefine)apt;
         if (define.isValid()) {
-            List<APTToken> body = define.getBody();
-            getMacroMap().define(getRootFile(), define.getName(), define.getParams(), body, Kind.DEFINED);
+            getMacroMap().define(getRootFile(), define, Kind.DEFINED);
         } else {
             if (DebugUtils.STANDALONE) {
                 if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
