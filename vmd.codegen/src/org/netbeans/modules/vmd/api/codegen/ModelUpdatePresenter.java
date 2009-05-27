@@ -38,47 +38,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.vmd.game.integration;
 
-import org.netbeans.modules.vmd.api.codegen.JavaCodeGenerator;
-import org.netbeans.modules.vmd.api.io.CodeGenerator;
-import org.netbeans.modules.vmd.api.io.DataObjectContext;
-import org.netbeans.modules.vmd.api.io.providers.DataObjectInterface;
-import org.netbeans.modules.vmd.api.io.providers.IOSupport;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.game.GameController;
-import org.openide.loaders.DataObject;
+package org.netbeans.modules.vmd.api.codegen;
 
-import javax.swing.text.StyledDocument;
+import org.netbeans.modules.vmd.api.model.Presenter;
 
 /**
- * @author David Kaspar
+ *
+ * @author ads
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.io.CodeGenerator.class)
-public class GameCodeGenerator implements CodeGenerator {
+public abstract class ModelUpdatePresenter extends Presenter {
 
-    public void validateModelForCodeGeneration (DataObjectContext context, DesignDocument document) {
-//        if (GameController.PROJECT_TYPE_GAME.equals (context.getProjectType ())) {
-//        }
-    }
-
-    public void updateModelFromCode (DataObjectContext context, DesignDocument document) {
-        if (GameController.PROJECT_TYPE_GAME.equals (context.getProjectType ())) {
-            DataObject dataObject = context.getDataObject ();
-            StyledDocument styledDocument = IOSupport.getDataObjectInteface (dataObject).getEditorDocument ();
-            JavaCodeGenerator.getDefault ().updateUserCodesFromEditor (styledDocument,
-                    document);
-        }
-    }
-
-    public void updateCodeFromModel (DataObjectContext context, DesignDocument document) {
-        if (GameController.PROJECT_TYPE_GAME.equals (context.getProjectType ())) {
-            DataObject dataObject = context.getDataObject ();
-            DataObjectInterface dataObjectInteface = IOSupport.getDataObjectInteface (dataObject);
-            StyledDocument styledDocument = dataObjectInteface.getEditorDocument ();
-            JavaCodeGenerator.getDefault ().generateCode (styledDocument, document);
-            dataObjectInteface.discardAllEditorSupportEdits ();
-        }
-    }
+    public abstract void modelUpdated();
 
 }

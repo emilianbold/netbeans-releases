@@ -72,7 +72,7 @@ public class MidpCodeGenerator implements CodeGenerator {
 //            System.out.println ("MidpCodeGenerator.updateModelFromCode");
             DataObject dataObject = context.getDataObject ();
             StyledDocument styledDocument = IOSupport.getDataObjectInteface (dataObject).getEditorDocument ();
-            JavaCodeGenerator.getDefault ().updateUserCodesFromEditor (styledDocument);
+            JavaCodeGenerator.getDefault ().updateUserCodesFromEditor (styledDocument, document);
         }
     }
 
