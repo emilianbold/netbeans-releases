@@ -293,7 +293,7 @@ public final class FilePreprocessorConditionState {
             for (int i = 0; i < pcState.offsets.length; i++) {
                 if (i + 1 < pcState.offsets.length) {
                     if (!(pcState.offsets[i] < pcState.offsets[i + 1])) {
-                        CndUtils.assertTrue(pcState.offsets[i] < pcState.offsets[i + 1], "inconsistent state " + pcState);  // NOI18N
+                        CndUtils.assertTrue(false, "inconsistent state " + pcState);  // NOI18N
                     }
                 }
             }
