@@ -301,8 +301,10 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     public static CharSequence getFileKey(File file, boolean sharedText) {
         if (CndUtils.isDebugMode()) {
             File normFile = CndFileUtils.normalizeFile(file);
-            CndUtils.assertTrueInConsole(file.equals(normFile), "Parameter file was not " + // NOI18N
-                        "normalized. Was " + file + " instead of " + normFile); // NOI18N
+            if (!file.equals(normFile)) {
+                CndUtils.assertTrueInConsole(false, "Parameter file was not " + // NOI18N
+                            "normalized. Was " + file + " instead of " + normFile); // NOI18N
+            }
         }
         String key = null;
         if (TraceFlags.USE_CANONICAL_PATH) {
