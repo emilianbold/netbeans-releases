@@ -43,6 +43,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.openide.util.Lookup;
@@ -140,6 +141,10 @@ public final class PathRecognizerRegistry {
                 if (mts != null) {
                     mimeTypes.addAll(mts);
                 }
+
+                LOG.log(Level.FINE, "PathRecognizer {0} supplied sids={1}, lids={2}, blids={3}, mts={4}", new Object [] { //NOI18N
+                    r.toString(), sids, lids, blids, mts
+                });
             }
 
             cachedData = new Object [] {
