@@ -38,7 +38,8 @@
  */
 
 package org.netbeans.modules.nativeexecution;
-
+import java.io.IOException;
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -236,5 +237,8 @@ final public class ExecutionEnvironmentImpl implements ExecutionEnvironment {
         hash = 97 * hash + (this.host != null ? this.host.hashCode() : 0);
         hash = 97 * hash + this.sshPort;
         return hash;
+    }
+
+    public void prepareForConnection() throws IOException, CancellationException {
     }
 }
