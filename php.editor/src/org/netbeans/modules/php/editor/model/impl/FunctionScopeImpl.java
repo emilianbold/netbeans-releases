@@ -111,9 +111,14 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
     
 
     public final Collection<? extends TypeScope> getReturnTypes() {
-        return (returnType != null && returnType.length() > 0) ?
-            CachingSupport.getTypes(returnType.split("\\|")[0], this) :
-            Collections.<TypeScopeImpl>emptyList();
+        Collection<TypeScope> retval = Collections.<TypeScope>emptyList();
+        if (returnType != null && returnType.length() > 0) {
+            retval = new ArrayList<TypeScope>();
+            for (String typeName : returnType.split("\\|")) {
+                retval.addAll(CachingSupport.getTypes(typeName, this));
+            }
+        }
+        return retval;
     }
 
     @NonNull
