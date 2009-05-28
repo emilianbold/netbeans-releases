@@ -39,25 +39,20 @@
 
 package org.netbeans.modules.cnd.debugger.gdb;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import junit.framework.TestCase;
+import org.junit.Test;
+import org.netbeans.modules.cnd.debugger.gdb.models.ValuePresenter;
 
 /**
  *
  * @author Egor Ushakov
  */
-public class GdbUnitTest extends TestSuite {
+public class ValuePresenterTestCase extends TestCase {
 
-    public GdbUnitTest() {
-        super("Gdb unit tests");
-        addTestSuite(PathComparisonTestCase.class);
-        addTestSuite(StringProcessingTestCase.class);
-        addTestSuite(VariablesTestCase.class);
-        addTestSuite(ValuePresenterTestCase.class);
+    @Test
+    public void testStdString() {
+        String value = "abc";
+        assertEquals("\"" + value + "\"", ValuePresenter.getValue("string", VariableInfo.getStDStringValue(value)));
     }
 
-    public static Test suite() {
-        TestSuite suite = new GdbUnitTest();
-        return suite;
-    }
 }
