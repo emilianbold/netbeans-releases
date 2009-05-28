@@ -41,20 +41,35 @@
 
 package org.netbeans.modules.j2ee.ddloaders.common.xmlutils;
 
-import org.openide.cookies.*;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
 import org.openide.nodes.CookieSet;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.XMLDataObject;
 import org.openide.text.Line;
-import org.openide.windows.*;
 import org.openide.util.NbBundle;
-import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.xml.sax.*;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
-import org.netbeans.spi.xml.cookies.*;
+import org.netbeans.spi.xml.cookies.CheckXMLSupport;
+import org.netbeans.spi.xml.cookies.DataObjectAdapters;
+import org.openide.cookies.CloseCookie;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
+import org.openide.cookies.PrintCookie;
+import org.openide.cookies.SaveCookie;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
+import org.openide.windows.OutputWriter;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /** Represents a XMLJ2eeDataObject in the Repository.
  *

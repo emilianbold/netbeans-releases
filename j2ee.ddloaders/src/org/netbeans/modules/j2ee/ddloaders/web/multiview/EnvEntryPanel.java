@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
-import org.openide.util.NbBundle;
-
 /**
  * EnvEntryPanel.java
  * Panel for adding/editing env entries
