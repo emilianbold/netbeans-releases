@@ -37,8 +37,9 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla;
+package org.netbeans.modules.bugzilla.kenai;
 
+import org.netbeans.modules.bugzilla.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
