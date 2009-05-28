@@ -166,16 +166,17 @@ public class SceneLayerNavigator extends JTable {
             if (e.getValueIsAdjusting()) {
                 return;
             }
-
-            int minIndex = e.getFirstIndex();
-            int maxIndex = e.getLastIndex();
+            int minIndex = getSelectionModel().getMinSelectionIndex();
+            int maxIndex = getSelectionModel().getMaxSelectionIndex();
+            if (minIndex == -1){
+                return;
+            }
             Layer layer;
             for (int i = minIndex; i <= maxIndex; i++) {
                 layer = scene.getLayerAt(i);
                 scene.setLayerSelected(layer, getSelectionModel().isSelectedIndex(i));
                 //layer.getGameDesign().getMainView().requestPreview(layer);
             }
-
         }
     }
 

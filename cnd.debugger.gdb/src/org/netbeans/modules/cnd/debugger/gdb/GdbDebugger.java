@@ -165,7 +165,7 @@ public class GdbDebugger implements PropertyChangeListener {
 
     private GdbProxy gdb;
     private final ContextProvider lookupProvider;
-    private State state = State.NONE;
+    protected State state = State.NONE;
     private final PropertyChangeSupport pcs;
     private String runDirectory;
     private String baseDir;
