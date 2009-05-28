@@ -86,7 +86,7 @@ public class ModelTest extends ModelTestBase {
         VariableName varD = ModelUtils.getFirst(ModelUtils.filter(fncScope.getDeclaredVariables(),"$d"));
         assertNotNull(varD);
         TypeScope varCType = ModelUtils.getFirst(varC.getTypes(varD.getOffset()));
-        assertNull(varCType);
+        assertNotNull(varCType);
         VariableName varParam = ModelUtils.getFirst(ModelUtils.filter(fncScope.getDeclaredVariables(),"$param"));
         assertNotNull(varParam);
         TypeScope vParamType = ModelUtils.getFirst(varParam.getTypes(varD.getOffset()));

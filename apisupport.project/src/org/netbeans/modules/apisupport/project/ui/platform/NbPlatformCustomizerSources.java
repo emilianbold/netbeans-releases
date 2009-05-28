@@ -262,10 +262,15 @@ public final class NbPlatformCustomizerSources extends JPanel {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                         getMessage("MSG_NotValidNBSrcZIP")));
             } else {
-                ModuleUISettings.getDefault().setLastUsedNbPlatformLocation(file.getParentFile().getAbsolutePath());
                 URL newUrl = FileUtil.urlForArchiveOrDir(file);
-                model.addSourceRoot(newUrl);
-                sourceList.setSelectedValue(newUrl, true);
+                if (model.containsRoot(newUrl)) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        getMessage("MSG_ExistingNBSrcZIP")));
+                } else {
+                    ModuleUISettings.getDefault().setLastUsedNbPlatformLocation(file.getParentFile().getAbsolutePath());
+                    model.addSourceRoot(newUrl);
+                    sourceList.setSelectedValue(newUrl, true);
+                }
             }
         }
     }//GEN-LAST:event_addZipOrFolder

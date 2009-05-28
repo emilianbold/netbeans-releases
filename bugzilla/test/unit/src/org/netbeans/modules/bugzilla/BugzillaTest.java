@@ -118,82 +118,7 @@ public class BugzillaTest extends NbTestCase implements TestConstants {
         trm.addRepository(repository);
         trm.addRepositoryConnector(brc);
 
-            WebUtil.init();
-//			WebClientLog.setLoggingEnabled(DEBUG_HTTPCLIENT);
-//			initializePreferences(getPreferenceStore());
-
-			// initialize CommonFonts from UI thread: bug 240076
-//			if (CommonFonts.BOLD == null) {
-				// ignore
-//			}
-
-//			File dataDir = new File("/tmp/em");
-//			dataDir.mkdirs();
-//
-//			// create data model
-//			ExternalizationManager externalizationManager = new ExternalizationManager(dataDir);
-//
-////			TaskRepositoryManager repositoryManager = new TaskRepositoryManager();
-//			IExternalizationParticipant repositoryParticipant = new RepositoryExternalizationParticipant(
-//					externalizationManager, trm);
-//			externalizationManager.addParticipant(repositoryParticipant);
-//
-//			TaskList taskList = new TaskList();
-//			RepositoryModel repositoryModel = new RepositoryModel(taskList, trm);
-//			TaskListExternalizer taskListExternalizer = new TaskListExternalizer(repositoryModel, trm);
-////			TaskListElementImporter taskListImporter = new TaskListElementImporter(trm, repositoryModel);
-//
-//			TaskListExternalizationParticipant taskListSaveParticipant = new TaskListExternalizationParticipant(repositoryModel, taskList,
-//					taskListExternalizer, externalizationManager, trm);
-//			//externalizationManager.load(taskListSaveParticipant);
-//			externalizationManager.addParticipant(taskListSaveParticipant);
-//			taskList.addChangeListener(taskListSaveParticipant);
-//
-//			TaskActivityManager taskActivityManager = new TaskActivityManager(trm, taskList);
-//			taskActivityManager.addActivationListener(taskListSaveParticipant);
-//
-////			TaskListManager taskListManager = new TaskListManager(taskList, taskListSaveParticipant, taskListImporter);
-//
-//			// initialize
-////			updateTaskActivityManager();
-////
-////			proxyServiceReference = context.getServiceReference(IProxyService.class.getName());
-////			if (proxyServiceReference != null) {
-////				IProxyService proxyService = (IProxyService) context.getService(proxyServiceReference);
-////				if (proxyService != null) {
-////					proxyChangeListener = new IProxyChangeListener() {
-////						public void proxyInfoChanged(IProxyChangeEvent event) {
-////							List<TaskRepository> repos = repositoryManager.getAllRepositories();
-////							for (TaskRepository repo : repos) {
-////								if (repo.isDefaultProxyEnabled()) {
-////									repositoryManager.notifyRepositorySettingsChanged(repo);
-////								}
-////							}
-////						}
-////					};
-////					proxyService.addProxyChangeListener(proxyChangeListener);
-////				}
-////			}
-//
-//			RepositoryTemplateManager repositoryTemplateManager = new RepositoryTemplateManager();
-//
-//			// NOTE: initializing extensions in start(..) has caused race
-//			// conditions previously
-////			TasksUiExtensionReader.initStartupExtensions(taskListExternalizer, taskListImporter);
-//
-//			// instantiates taskDataManager
-//			File root = new File("/tmp/em/offline");
-////			OfflineFileStorage storage = new OfflineFileStorage(root);
-////			OfflineCachingStorage cachedStorage = new OfflineCachingStorage(storage);
-////			taskDataStorageManager = new TaskDataStorageManager(repositoryManager, cachedStorage);
-////			taskDataStorageManager.start();
-//
-//			TaskDataStore taskDataStore = new TaskDataStore(trm);
-//
-//			taskDataManager = new TaskDataManager(taskDataStorageManager, taskDataStore, repositoryManager,
-//					taskListManager.getTaskList(), taskActivityManager);
-//			taskDataManager.setDataPath(getDataDirectory());
-
+        WebUtil.init();
     }
 
     public void testBugzilla() throws Throwable {
@@ -206,36 +131,8 @@ public class BugzillaTest extends NbTestCase implements TestConstants {
 
             TaskDataStore tds = new TaskDataStore(trm);
 
-//            tds.putTaskData(new File("/tmp/em/1.zip"), data, true, true);
-
             // update issue
             updateTaskData(data, brc, repository);
-
-
-//            TaskAttributeMapper attributeMapper = brc.getTaskDataHandler().getAttributeMapper(repository);
-//            TaskData localData = new TaskData(attributeMapper, repository.getConnectorKind(), repository.getRepositoryUrl(), "");
-//            TaskData d = tds.getTaskDataState(new File("/tmp/em/1.zip")).getLocalData();// setTaskData(new File("/tmp/em/1.zip"), data);
-//
-//            TaskData repoData = brc.getTaskData(repository, data.getTaskId(), nullProgressMonitor);
-//
-////            state = tds.getTaskDataState(new File("/tmp/em/1.zip"));
-////            state.refresh(nullProgressMonitor);
-////
-////            TaskData lastReadData = state.getLastReadData();
-////            TaskData localData = state.getLocalData();
-////            TaskData repoData = state.getRepositoryData();
-////
-////
-//
-//            TaskAttribute reporta = repoData.getRoot();
-//            TaskAttribute ta = reporta.getMappedAttribute(TaskAttribute.SUMMARY);
-//            String val = ta.getValue();
-////            assertEquals("ta", val);
-//
-//            TaskAttribute lastrta = localData.getRoot();
-//            ta = lastrta.getMappedAttribute(TaskAttribute.SUMMARY);
-//            val = ta.getValue();
-////            assertEquals("ta", val);
 
             // list
             listIssues(brc, repository, data);

@@ -256,10 +256,6 @@ public final class PaletteItem implements Node.Cookie {
 
     private Class loadComponentClass() {
         try {
-            return FormUtils.loadSystemClass(getComponentClassName());   
-        } catch (ClassNotFoundException cnfex) {}
-
-        try {
             if (cpRepresentative != null) {
                 return ClassPathUtils.loadClass(getComponentClassSource().getClassName(), cpRepresentative);
             } else {
