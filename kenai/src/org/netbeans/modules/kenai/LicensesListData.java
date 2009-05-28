@@ -39,10 +39,13 @@
 
 package org.netbeans.modules.kenai;
 
+import org.codeviation.pojson.Pojson.IgnoreNonExisting;
+
 /**
  *
  * @author Jan Becicka
  */
+@IgnoreNonExisting
 public class LicensesListData extends ListData {
 
     public LicensesListItem licenses[];
@@ -52,6 +55,7 @@ public class LicensesListData extends ListData {
         return licenses.length;
     }
 
+    @IgnoreNonExisting
     public static class LicensesListItem {
 
         public String href;
