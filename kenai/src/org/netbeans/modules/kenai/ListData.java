@@ -39,10 +39,13 @@
 
 package org.netbeans.modules.kenai;
 
+import org.codeviation.pojson.Pojson.IgnoreNonExisting;
+
 /**
  *
  * @author beci
  */
+@IgnoreNonExisting
 public abstract class ListData {
     public String prev;
     public String next;
