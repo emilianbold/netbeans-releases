@@ -40,7 +40,6 @@
 package org.netbeans.modules.cnd.debugger.gdb;
 
 import java.io.File;
-import java.util.Date;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
