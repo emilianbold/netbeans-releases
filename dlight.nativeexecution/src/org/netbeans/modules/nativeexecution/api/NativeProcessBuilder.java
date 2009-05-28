@@ -273,6 +273,9 @@ public final class NativeProcessBuilder implements Callable<Process> {
      * @return this
      */
     public NativeProcessBuilder setX11Forwarding(boolean x11forwarding) {
+        if (Boolean.getBoolean("cnd.remote.noX11")) {
+            return this; //
+        }
         info.setX11Forwarding(x11forwarding);
         return this;
     }

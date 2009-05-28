@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,48 +37,18 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.csl.core;
+package org.netbeans.modules.vmd.api.codegen;
 
-import java.util.Collection;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.ParserFactory;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.vmd.api.model.Presenter;
 
 /**
- * Registers parsers provided by GSF-based languages with the Parsing API.
- * 
- * @author Vita Stejskal
+ *
+ * @author ads
  */
-public final class GsfParserFactory extends ParserFactory {
+public abstract class ModelUpdatePresenter extends Presenter {
 
-    public static ParserFactory create(FileObject f) {
-        String mimeType = f.getParent().getPath().substring("Editors/".length()); //NOI18N
-        return new GsfParserFactory(mimeType);
-    }
-
-    public @Override Parser createParser(Collection<Snapshot> snapshots) {
-        for(Snapshot s : snapshots) {
-            if (!s.getMimeType().equals(mimeType)) {
-                return null;
-            }
-        }
-
-        Language l = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
-        assert l != null : "No CSL language registered for " + mimeType; //NOI18N
-        return l == null ? null : l.getParser(snapshots);
-    }
-
-    private final String mimeType;
-
-    private GsfParserFactory(String mimeType) {
-        this.mimeType = mimeType;
-    }
+    public abstract void modelUpdated();
 
 }
