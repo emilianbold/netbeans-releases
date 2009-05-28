@@ -154,7 +154,7 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
         }
         finishInit();
         // prevent registry mismatches
-        if (null == su.getServerInstance(uri)) {
+        if (!su.isRegisteredUri(uri)) {
             throw new DeploymentManagerCreationException("Registry mismatch for "+uri);
         }
         return new Hk2DeploymentManager(uri, uname, passwd, su);
@@ -172,7 +172,7 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
         }
         finishInit();
         // prevent registry mismatches
-        if (null == su.getServerInstance(uri)) {
+        if (!su.isRegisteredUri(uri)) {
             throw new DeploymentManagerCreationException("Registry mismatch for "+uri);
         }
         return new Hk2DeploymentManager(uri, null, null, su);
