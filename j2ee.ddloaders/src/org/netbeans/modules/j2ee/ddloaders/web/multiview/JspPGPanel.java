@@ -139,6 +139,7 @@ public class JspPGPanel extends SectionInnerPanel implements java.awt.event.Item
         return null;
     }
     
+    @Override
     public void documentChanged(javax.swing.text.JTextComponent comp, String value) {
         if (comp==urlPatternsTF) {
             String val = (String)value;
@@ -190,6 +191,7 @@ public class JspPGPanel extends SectionInnerPanel implements java.awt.event.Item
         String[] codas = DDUtils.getStringArray(text);
         group.setIncludeCoda(codas);
     }
+    @Override
     public void rollbackValue(javax.swing.text.JTextComponent source) {
         if (source==urlPatternsTF) {
             urlPatternsTF.setText(DDUtils.urlPatternList(group.getUrlPattern()));
@@ -554,12 +556,14 @@ public class JspPGPanel extends SectionInnerPanel implements java.awt.event.Item
     }
     /** This will be called before model is changed from this panel
      */
+    @Override
     protected void startUIChange() {
         dObj.setChangedFromUI(true);
     }
     
     /** This will be called after model is changed from this panel
      */
+    @Override
     protected void endUIChange() {
         dObj.modelUpdatedFromUI();
         dObj.setChangedFromUI(false);
