@@ -36,28 +36,15 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.vmd.game.model;
 
-package org.netbeans.modules.cnd.debugger.gdb;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import java.util.EventListener;
 
 /**
  *
- * @author Egor Ushakov
+ * @author akorostelev
  */
-public class GdbUnitTest extends TestSuite {
+public interface SceneSelectionListener extends EventListener {
 
-    public GdbUnitTest() {
-        super("Gdb unit tests");
-        addTestSuite(PathComparisonTestCase.class);
-        addTestSuite(StringProcessingTestCase.class);
-        addTestSuite(VariablesTestCase.class);
-        addTestSuite(ValuePresenterTestCase.class);
-    }
-
-    public static Test suite() {
-        TestSuite suite = new GdbUnitTest();
-        return suite;
-    }
+    public void layerSelectionChanged(Scene sourceScene, Layer layer, boolean selected);
 }
