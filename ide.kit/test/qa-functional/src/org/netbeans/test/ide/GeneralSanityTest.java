@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.editor;
+package org.netbeans.test.ide;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,6 +48,7 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import javax.swing.Action;
 import junit.framework.Test;
 import org.netbeans.Module;
 import org.netbeans.junit.Manager;
@@ -57,8 +58,13 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.permanentUI.utils.Utilities;
 import org.netbeans.test.ide.BlacklistedClassesHandler;
 import org.netbeans.test.ide.BlacklistedClassesHandlerSingleton;
+import org.openide.explorer.ExplorerManager;
 import org.openide.modules.ModuleInfo;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 public class GeneralSanityTest extends NbTestCase {
 
@@ -75,6 +81,7 @@ public class GeneralSanityTest extends NbTestCase {
             ).gui(true).clusters(".*").enableModules(".*").
             honorAutoloadEager(true).
             addTest(
+//                "testWaitForUIReady",
                 "testBlacklistedClassesHandler",
                 "testOrgOpenideOptionsIsDisabledAutoload",
                 "testOrgNetBeansModulesLanguagesIsDisabledAutoload",
@@ -98,6 +105,26 @@ public class GeneralSanityTest extends NbTestCase {
         }
     }
 
+    public void testWaitForUIReady() throws Exception {
+        class R implements Runnable {
+            int countDown = 10;
+
+            public synchronized void run() {
+                notifyAll();
+                countDown--;
+            }
+
+            synchronized final void waitForAWT() throws InterruptedException {
+                while (countDown > 0) {
+                    WindowManager.getDefault().invokeWhenUIReady(this);
+                    wait();
+                }
+            }
+        }
+        R r = new R();
+        r.waitForAWT();
+
+    }
 
     public void testBlacklistedClassesHandler() throws Exception {
         BlacklistedClassesHandler bcHandler = BlacklistedClassesHandlerSingleton.getBlacklistedClassesHandler();
