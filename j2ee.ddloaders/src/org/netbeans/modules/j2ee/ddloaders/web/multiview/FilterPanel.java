@@ -255,6 +255,7 @@ public class FilterPanel extends SectionInnerPanel {
         return null;
     }
     
+    @Override
     public void documentChanged(javax.swing.text.JTextComponent comp, String value) {
         if (comp==filterNameTF) {
             String val = (String)value;
@@ -303,6 +304,7 @@ public class FilterPanel extends SectionInnerPanel {
         }
     }
     
+    @Override
     public void rollbackValue(javax.swing.text.JTextComponent source) {
         if (source==filterNameTF) {
             filterNameTF.setText(filter.getFilterName());
@@ -313,12 +315,14 @@ public class FilterPanel extends SectionInnerPanel {
     
     /** This will be called before model is changed from this panel
      */
+    @Override
     protected void startUIChange() {
         dObj.setChangedFromUI(true);
     }
     
     /** This will be called after model is changed from this panel
      */
+    @Override
     protected void endUIChange() {
         dObj.modelUpdatedFromUI();
         dObj.setChangedFromUI(false);
