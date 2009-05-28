@@ -166,6 +166,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.reporterTextField.addActionListener(this);
         panel.idTextField.getDocument().addDocumentListener(this);
 
+        panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
+                    
         if(query.isSaved()) {
             setAsSaved();
         }
@@ -313,8 +315,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     if(filterDefinition != null && filterDefinition instanceof FilterDefinition) {
                         setFilterDefinition(filterDefinition);
                     }
-
-                    panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
                 }
             };
             repository.getExecutor().execute(cmd);

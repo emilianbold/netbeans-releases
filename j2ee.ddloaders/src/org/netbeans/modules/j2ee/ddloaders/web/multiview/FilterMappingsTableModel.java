@@ -91,7 +91,7 @@ public class FilterMappingsTableModel extends DDBeanTableModel
             try {
                 FilterMapping map = (FilterMapping)((WebApp)getParent()).createBean("FilterMapping"); //NOI18N
                 map.setFilterName((String)values[0]);
-                if (values[1]!=null) map.setUrlPattern((String)values[1]);;
+                if (values[1]!=null) map.setUrlPattern((String)values[1]);
                 if (values[2]!=null) map.setServletName((String)values[2]);
                 try {
                     if (values[3]!=null) map.setDispatcher((String[])values[3]);
