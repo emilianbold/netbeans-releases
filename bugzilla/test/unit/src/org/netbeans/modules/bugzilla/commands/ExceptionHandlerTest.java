@@ -37,24 +37,26 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla;
+package org.netbeans.modules.bugzilla.commands;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import org.netbeans.modules.bugzilla.*;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
-import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.commons.net.WebUtil;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
-import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 
 /**
  *
  * @author tomas
  */
 public class ExceptionHandlerTest extends NbTestCase implements TestConstants {
+    public static final String EXCEPTION_HANDLER_CLASS_NAME = "org.netbeans.modules.bugzilla.commands.BugzillaExecutor$ExceptionHandler";
     private TaskRepositoryManager trm;
     private BugzillaRepositoryConnector brc;
     
@@ -85,22 +87,45 @@ public class ExceptionHandlerTest extends NbTestCase implements TestConstants {
         WebUtil.init();
     }
 
-    public void testIsAuthenticate() throws Throwable {
-        TaskRepository repository = new TaskRepository("bugzilla", REPO_URL);
-        AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials("XXX", REPO_PASSWD);
-        repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
-        repository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
-        trm.addRepository(repository);
+    public void testIsLoginHandler() throws Throwable {
+        BugzillaRepository repository = new BugzillaRepository("bgzll", REPO_URL, "XXX", "XXX", null, null);
+        assertHandler(repository, "LoginHandler");
 
+        repository = new BugzillaRepository("bgzll", REPO_URL, REPO_USER, "XXX", null, null);
+        assertHandler(repository, "LoginHandler");
+        
+    }
+
+    public void testIsNotFoundHandler() throws Throwable {
+        BugzillaRepository repository = new BugzillaRepository("bgzll", "http://crap", null, null, null, null);
+        assertHandler(repository, "NotFoundHandler");
+    }
+
+    public void testIsDefaultHandler() throws Throwable {
+        BugzillaRepository repository = new BugzillaRepository("bgzll", null, null, null, null, null);
+        assertHandler(repository, "DefaultHandler");
+
+        repository = new BugzillaRepository("bgzll", "crap", null, null, null, null);
+        assertHandler(repository, "DefaultHandler");
+
+        // XXX need more tests
+    }
+
+    private void assertHandler(BugzillaRepository repository, String name) throws Throwable {
         try {
-            brc.getClientManager().getClient(repository, NULL_PROGRESS_MONITOR).validate(NULL_PROGRESS_MONITOR);
+            brc.getClientManager().getClient(repository.getTaskRepository(), NULL_PROGRESS_MONITOR).validate(NULL_PROGRESS_MONITOR);
         } catch (CoreException ex) {
-//            assertTrue(ExceptionHandler.isAuthenticate(ex));
+            assertEquals(EXCEPTION_HANDLER_CLASS_NAME + "$" + name, getHandler(repository, ex).getClass().getName());
         } catch (Exception ex) {
             TestUtil.handleException(ex);
         }
-
     }
 
-
+    private Object getHandler(BugzillaRepository repository, CoreException ce) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, ClassNotFoundException {
+        BugzillaExecutor executor = repository.getExecutor();
+        Class c = Class.forName(EXCEPTION_HANDLER_CLASS_NAME);
+        Method m = c.getDeclaredMethod("createHandler", CoreException.class, BugzillaExecutor.class, BugzillaRepository.class);
+        m.setAccessible(true);
+        return  m.invoke(executor, new Object[]{ce, executor, repository});
+    }
 }
