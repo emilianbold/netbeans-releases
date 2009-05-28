@@ -47,11 +47,9 @@ import org.netbeans.modules.j2ee.dd.api.web.Filter;
 import org.netbeans.modules.j2ee.ddloaders.web.DDDataObject;
 import org.netbeans.modules.xml.multiview.ui.DefaultTablePanel;
 import org.netbeans.modules.xml.multiview.ui.EditDialog;
-import org.netbeans.modules.xml.multiview.ui.SimpleDialogPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.ui.SectionPanel;
 import org.openide.util.NbBundle;
-import org.openide.DialogDescriptor;
 
 /**
  *

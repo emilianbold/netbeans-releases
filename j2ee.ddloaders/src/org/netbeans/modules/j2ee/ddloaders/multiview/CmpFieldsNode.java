@@ -44,13 +44,12 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
-
-import javax.swing.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.LinkedList;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import javax.swing.ListSelectionModel;
 
 /**
  * @author pfiala
