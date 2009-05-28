@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,48 +39,41 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.ruby.modules.project.rake;
+package org.netbeans.modules.php.editor;
+
 import java.io.File;
-
-import java.util.EventObject;
-
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
-
 import org.openide.filesystems.FileUtil;
 
 /**
- * Event indicating that a file named by a given path was created, deleted, or changed.
- * @author Jesse Glick
+ *
+ * @author Radek Matous
  */
-public final class FileChangeSupportEvent extends EventObject {
+public class PHPCodeCompletion159970Test extends PHPTestBase {
 
-    public static final int EVENT_CREATED = 0;
-    public static final int EVENT_DELETED = 1;
-    public static final int EVENT_MODIFIED = 2;
+    public PHPCodeCompletion159970Test(String testName) {
+        super(testName);
+    }
 
-    private final int type;
-    private final File path;
-    
-    FileChangeSupportEvent(FileChangeSupport support, int type, File path) {
-        super(support);
-        this.type = type;
-        this.path = path;
+    public void testCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests159970/issue159970.php", "/*test 1*/$fooObject->^", false);
     }
-    
-    public int getType() {
-        return type;
+    public void testCase2() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests159970/issue159970.php", "/*test 2*/$fooObject->^", false);
     }
-    
-    public File getPath() {
-        return path;
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/tests159970"))
+            })
+        );
     }
-    
-    public FileObject getFileObject() {
-        return FileUtil.toFileObject(path);
-    }
-    
-    public String toString() {
-        return "FCSE[" + "CDM".charAt(type) + ":" + path + "]"; // NOI18N
-    }
-    
 }
