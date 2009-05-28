@@ -123,7 +123,7 @@ public class KenaiConnection implements PropertyChangeListener {
         chat.join(getUserName());
     }
 
-    private MultiUserChat createChat(KenaiFeature prj) {
+    private synchronized  MultiUserChat createChat(KenaiFeature prj) {
         MultiUserChat multiUserChat = new MultiUserChat(connection, getChatroomName(prj));
         chats.put(prj.getName(), multiUserChat);
         messageQueue.put(prj.getName(), new LinkedList<Message>());
@@ -216,24 +216,26 @@ public class KenaiConnection implements PropertyChangeListener {
 
     private class MessageL implements PacketListener {
         public void processPacket(Packet packet) {
-            final Message msg = (Message) packet;
-            final String name = StringUtils.parseName(msg.getFrom());
-            final LinkedList<Message> thisQ = messageQueue.get(name);
-            thisQ.add(msg);
-            final PacketListener listener = listeners.get(name);
-            if (listener != null) {
-                listener.processPacket(msg);
-            } 
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    if (chatNotifications.isEnabled(name) && (listener == null || !ChatTopComponent.isInitedAndVisible(name))) {
-                        chatNotifications.addGroupMessage(msg);
-                    } else {
-                        chatNotifications.getMessagingHandle(name).notifyMessageReceived(msg);
-                        chatNotifications.getMessagingHandle(name).notifyMessagesRead();
-                    }
+            synchronized (KenaiConnection.this) {
+                final Message msg = (Message) packet;
+                final String name = StringUtils.parseName(msg.getFrom());
+                final LinkedList<Message> thisQ = messageQueue.get(name);
+                thisQ.add(msg);
+                final PacketListener listener = listeners.get(name);
+                if (listener != null) {
+                    listener.processPacket(msg);
                 }
-            });
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        if (chatNotifications.isEnabled(name) && (listener == null || !ChatTopComponent.isInitedAndVisible(name))) {
+                            chatNotifications.addGroupMessage(msg);
+                        } else {
+                            chatNotifications.getMessagingHandle(name).notifyMessageReceived(msg);
+                            chatNotifications.getMessagingHandle(name).notifyMessagesRead();
+                        }
+                    }
+                });
+            }
         }
     }
 
@@ -297,7 +299,7 @@ public class KenaiConnection implements PropertyChangeListener {
             if (e.getNewValue() != null) {
                 post(new Runnable() {
                     public void run() {
-                        synchronized(instance) {
+                        synchronized(KenaiConnection.this) {
                             final PasswordAuthentication pa = (PasswordAuthentication) e.getNewValue();
                             USER = pa.getUserName();
                             PASSWORD = System.getProperty("kenai.xmpp.password", new String(pa.getPassword()));
@@ -307,7 +309,7 @@ public class KenaiConnection implements PropertyChangeListener {
                 });
             } else {
                 try {
-                    synchronized(instance) {
+                    synchronized(KenaiConnection.this) {
                         for (MultiUserChat muc : getChats()) {
                             try {
                                 muc.leave();

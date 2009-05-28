@@ -44,8 +44,8 @@ package org.netbeans.modules.cnd.apt.impl.support;
 import antlr.TokenStream;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
@@ -62,8 +62,12 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  */
 public class APTPredefinedMacroMap implements APTMacroMap {
        
-    private static String []preMacro = new String [] { 
-         "__FILE__", "__LINE__", "__DATE__", "__TIME__", "__FUNCTION__"  // NOI18N
+    private static CharSequence []preMacro = new CharSequence [] {
+         CharSequenceKey.create("__FILE__"),  // NOI18N
+         CharSequenceKey.create("__LINE__"),  // NOI18N
+         CharSequenceKey.create("__DATE__"),  // NOI18N
+         CharSequenceKey.create("__TIME__"),  // NOI18N
+         CharSequenceKey.create("__FUNCTION__")  // NOI18N
     };
 
     public APTPredefinedMacroMap() {
@@ -83,7 +87,7 @@ public class APTPredefinedMacroMap implements APTMacroMap {
         if (token.length() < 2 || token.charAt(0) != '_' || token.charAt(1) != '_') {
             return false;
         }
-        String tokenText = token.toString();
+        CharSequence tokenText = CharSequenceKey.create(token);
                     
         for (i = 0; i < preMacro.length; i++) {
             if(preMacro[i].equals(tokenText)) {
@@ -105,7 +109,7 @@ public class APTPredefinedMacroMap implements APTMacroMap {
         APTUtils.LOG.log(Level.SEVERE, "setState is not supported", new IllegalAccessException()); // NOI18N
     }
 
-    public void define(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
+    public void define(APTFile file, APTDefine define, Kind macroType) {
         APTUtils.LOG.log(Level.SEVERE, "define is not supported", new IllegalAccessException()); // NOI18N
     }
 
@@ -152,6 +156,10 @@ public class APTPredefinedMacroMap implements APTMacroMap {
 
         public Collection<APTToken> getParams() {
             return Collections.<APTToken>emptyList();
+        }
+
+        public APTDefine getDefineNode() {
+            throw new UnsupportedOperationException("Not supported operation."); // NOI18N
         }
 
         public TokenStream getBody() {

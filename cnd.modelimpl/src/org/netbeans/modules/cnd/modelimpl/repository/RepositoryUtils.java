@@ -46,8 +46,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
@@ -228,7 +228,7 @@ public final class RepositoryUtils {
         return uids;
     }
 
-    public static <T extends CsmDeclaration> void setSelfUIDs(Collection<T> decls) {
+    public static <T extends CsmObject> void setSelfUIDs(Collection<T> decls) {
         assert decls != null;
         for (T decl : decls) {
             org.netbeans.modules.cnd.modelimpl.csm.core.Utils.setSelfUID(decl);

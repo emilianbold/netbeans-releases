@@ -104,6 +104,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
     private CsmClass csmClassContainer;
     private ChangeListener parent;
     private String classname;
+    private boolean isUpperCase;
     private boolean hasOutOfClassMemberDefinitions = false;
     private static boolean ALWAYS_USE_ACCESSORS = false;
     private static int FIELD_ACCESS_INDEX = 2;
@@ -195,8 +196,8 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         for (CsmField field : initFields(selectedResolvedObject)) {
             boolean createGetter = field.equals(selectedResolvedObject);
             boolean createSetter = createGetter && !isConstant(field);
-            String getName = GeneratorUtils.computeGetterName(field);
-            String setName = GeneratorUtils.computeSetterName(field);
+            String getName = GeneratorUtils.computeGetterName(field, isUpperCase);
+            String setName = GeneratorUtils.computeSetterName(field, isUpperCase);
             model.addRow(new Object[] {
                 MemberInfo.create(field),
                 createGetter ? Boolean.TRUE : Boolean.FALSE,
@@ -573,12 +574,15 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
             csmClassContainer = ((CsmField)selectedResolvedObject).getContainingClass();
         }
         List<CsmField> result = new ArrayList<CsmField>();
+        Boolean anIsUpperCase = null;
         for (CsmMember member : csmClassContainer.getMembers()) {
             if (CsmKindUtilities.isField(member)) {
                 result.add((CsmField) member);
+            } else if (anIsUpperCase == null && CsmKindUtilities.isMethod(member)) {
+                anIsUpperCase = GeneratorUtils.checkStartWithUpperCase((CsmMethod) member);
             }
         }
-
+        this.isUpperCase = anIsUpperCase != null ? anIsUpperCase.booleanValue() : true;
         this.classname = csmClassContainer.getQualifiedName().toString();
         final String title = " - " + classname; // NOI18N
         setName(getName() + title);

@@ -215,7 +215,7 @@ public class MessageAuthenticationProfile extends ProfileBase
                 stmh.setTokenType(tb, ComboConstants.TRANSPORT, ComboConstants.HTTPS);
                 securityPolicyModelHelper.setLayout(tb, ComboConstants.STRICT);
                 securityPolicyModelHelper.enableIncludeTimestamp(tb, true);
-                asmh.setAlgorithmSuite(tb, ComboConstants.BASIC128SHA256);
+                asmh.setAlgorithmSuite(tb, ComboConstants.BASIC128);
 
                 stmh.setSupportingTokens(p, 
                         ComboConstants.USERNAME, SecurityTokensModelHelper.SIGNED_SUPPORTING);

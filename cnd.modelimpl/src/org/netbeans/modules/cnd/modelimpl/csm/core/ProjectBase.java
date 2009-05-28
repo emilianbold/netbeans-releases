@@ -53,6 +53,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
@@ -1176,19 +1177,17 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      */
     public final FileImpl onFileIncluded(ProjectBase base, CharSequence file, APTPreprocHandler preprocHandler, APTMacroMap.State postIncludeState, int mode, boolean triggerParsingActivity) throws IOException {
         FileImpl csmFile = null;
-        try {
-            disposeLock.readLock().lock();
-            if (disposing) {
-                return null;
-            }
-            csmFile = findFile(new File(file.toString()), true, FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
-        } finally {
-            disposeLock.readLock().unlock();
+        if (disposing) {
+            return null;
         }
+        csmFile = findFile(new File(file.toString()), true, FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
 
         if (postIncludeState != null) {
             // we have post include state => no need to spend time in include walkers
             preprocHandler.getMacroMap().setState(postIncludeState);
+            return csmFile;
+        }
+        if (disposing) {
             return csmFile;
         }
         APTPreprocHandler.State newState = preprocHandler.getState();
@@ -1220,9 +1219,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         boolean updateFileContainer = false;
         try {
-            disposeLock.readLock().lock();
             if (disposing) {
-                return null;
+                return csmFile;
             }
             if (triggerParsingActivity) {
                 FileContainer.FileEntry
@@ -1317,33 +1315,34 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
             return csmFile;
         } finally {
-            disposeLock.readLock().unlock();
-            if (updateFileContainer) {
+            if (!disposing && updateFileContainer) {
                 getFileContainer().put();
             }
         }
     }
 
     private void entryNotFoundMessage(CharSequence file) {
-        // since file container can return empty container the entry can be null.
-        StringBuilder buf = new StringBuilder("File container does not have file "); //NOI18N
-        buf.append("[" + file + "]"); //NOI18N
-        if (getFileContainer() == FileContainer.empty()) {
-            buf.append(" because file container is EMPTY."); //NOI18N
-        } else {
-            buf.append("."); //NOI18N
+        if (Utils.LOG.isLoggable(Level.INFO)) {
+            // since file container can return empty container the entry can be null.
+            StringBuilder buf = new StringBuilder("File container does not have file "); //NOI18N
+            buf.append("[" + file + "]"); //NOI18N
+            if (getFileContainer() == FileContainer.empty()) {
+                buf.append(" because file container is EMPTY."); //NOI18N
+            } else {
+                buf.append("."); //NOI18N
+            }
+            if (isDisposing()) {
+                buf.append("\n\tIt is very strange but project is disposing."); //NOI18N
+            }
+            if (!isValid()) {
+                buf.append("\n\tIt is very strange but project is invalid."); //NOI18N
+            }
+            Status st = getStatus();
+            if (st != null) {
+                buf.append("\n\tProject " + toString() + " has status " + st + "."); //NOI18N
+            }
+            Utils.LOG.info(buf.toString());
         }
-        if (isDisposing()) {
-            buf.append("\n\tIt is very strange but project is disposing."); //NOI18N
-        }
-        if (!isValid()) {
-            buf.append("\n\tIt is very strange but project is invalid."); //NOI18N
-        }
-        Status st = getStatus();
-        if (st != null) {
-            buf.append("\n\tProject " + toString() + " has status " + st + "."); //NOI18N
-        }
-        Utils.LOG.info(buf.toString());
     }
 
     private static void traceIncludeStates(CharSequence title,

@@ -42,9 +42,6 @@
 
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
-import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
-import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.common.SecurityRole;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.ddloaders.web.DDDataObject;

@@ -194,7 +194,6 @@ public class CreateDomain extends Thread {
             if (0 == retVal) {
                 // The create was successful... create the instance and register it.
                 GlassfishInstance gi = GlassfishInstance.create(ip,gip);
-                gip.addServerInstance(gi);
                 NbPreferences.forModule(this.getClass()).putBoolean(ServerUtilities.PROP_FIRST_RUN, true);
             }
         }
