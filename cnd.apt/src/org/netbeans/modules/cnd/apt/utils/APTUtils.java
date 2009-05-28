@@ -181,7 +181,7 @@ public class APTUtils {
                 }
             }
         } catch (TokenStreamException ex) {
-            LOG.log(Level.SEVERE, "error on converting token stream to text", ex); // NOI18N
+            LOG.log(Level.SEVERE, "error on converting token stream to text\n{0}", new Object[] { ex }); // NOI18N
         }
         return retValue.toString();
     }
@@ -201,7 +201,7 @@ public class APTUtils {
                 token = next;
             }
         } catch (TokenStreamException ex) {
-            LOG.log(Level.SEVERE, "error on stringizing token stream", ex); // NOI18N
+            LOG.log(Level.SEVERE, "error on stringizing token stream\n{0}", new Object[] { ex }); // NOI18N
         }
         return retValue.toString();
     }

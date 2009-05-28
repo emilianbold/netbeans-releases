@@ -216,7 +216,7 @@ public abstract class APTAbstractWalker extends APTWalker {
                 }
             }
         } catch (TokenStreamException ex) {
-            APTUtils.LOG.log(Level.SEVERE, "error on evaluating condition node " + apt, ex);// NOI18N
+            APTUtils.LOG.log(Level.SEVERE, "error on evaluating condition node {0}\n{1}", new Object[] { apt, ex });// NOI18N
         }
         onEval(apt, res);
         return res;
