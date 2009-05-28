@@ -399,12 +399,10 @@ public class WebResourceCollectionPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void subsetHttpMethodsRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_subsetHttpMethodsRBActionPerformed
-// TODO add your handling code here:
         updateVisualState();
     }//GEN-LAST:event_subsetHttpMethodsRBActionPerformed
 
     private void allHttpMethodsRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_allHttpMethodsRBActionPerformed
-// TODO add your handling code here:
         updateVisualState();
     }//GEN-LAST:event_allHttpMethodsRBActionPerformed
     
