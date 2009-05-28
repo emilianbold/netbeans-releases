@@ -44,10 +44,13 @@ package org.netbeans.modules.apisupport.project.queries;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.jar.Manifest;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.api.support.ActionUtils;
@@ -55,6 +58,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
+import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.TestAntLogger;
@@ -66,6 +70,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.execution.ExecutorTask;
@@ -86,10 +91,14 @@ public class ClassPathProviderImplTest extends TestBase {
     private FileObject copyOfMiscDir;
     private NbModuleProject copyOfMiscProject;
     private ProjectXMLManager copyOfMiscXMLManager;
+    private File fooJar;
+    private File barJar;
+    private File libsJunitJar;
     
     private static final Logger LOG = Logger.getLogger(ClassPathProviderImplTest.class.getName());
     
     protected @Override void setUp() throws Exception {
+        noDataDir = true;
         clearWorkDir();
         super.setUp();
         copyOfSuite2 = copyFolder(resolveEEPFile("/suite2"));
@@ -225,6 +234,141 @@ public class ClassPathProviderImplTest extends TestBase {
 //        // XXX test BOOT
 //    }
 
+    /**
+     * Generates following platfrom:
+     * * Binary platform labelled "custom"
+     *   * harness
+     *     * org-netbeans-modules-nbjunit.jar
+     *     * org-netbeans-insane.jar
+     *     * org-netbeans-modules-apisupport-harness.jar
+     *   * platform
+     *     * core/core.jar
+     *     * ext/junit-4.5.jar (not a NBM module)
+     *     * org-netbeans-libs-junit4.jar (with junit 4.5 on CP)
+     *   * somecluster
+     *     * foo.jar (CNB foo)
+     *     * bar.jar (CNB org.example.bar, runtime dep on foo.jar)
+     */
+    private void generateTestingPlatform() throws Exception {
+        File install = new File(getWorkDir(), "install");
+        TestBase.makePlatform(install);
+        // MODULE foo
+        Manifest mani = new Manifest();
+        mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE, "foo/1");
+        mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE_SPECIFICATION_VERSION, "1.0");
+        mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE_IMPLEMENTATION_VERSION, "foo-1");
+        mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE_LOCALIZING_BUNDLE, "foo/Bundle.properties");
+        Map<String,String> contents = new HashMap<String,String>();
+        contents.put("foo/Bundle.properties", "OpenIDE-Module-Name=Foo Module");
+        fooJar = new File(new File(new File(install, "somecluster"), "modules"), "foo.jar");
+        TestBase.createJar(fooJar, contents, mani);
+        // MODULE bar
+        mani = new Manifest();
+        mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE, "org.example.bar");
+        mani.getMainAttributes().putValue("OpenIDE-Module-Module-Dependencies", "foo/1 > 1.0");
+        barJar = new File(new File(new File(install, "somecluster"), "modules"), "bar.jar");
+        TestBase.createJar(barJar, Collections.EMPTY_MAP, mani);
+        // add testlibs to platform, so that test CP isn't full of obsolete backward-compatibility entries
+        mani = new Manifest();
+        File junitJar = new File(install, "platform/modules/ext/junit-4.5.jar");
+        TestBase.createJar(junitJar, Collections.EMPTY_MAP, mani);
+        mani = new Manifest();
+        mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE, "org.netbeans.libs.junit4");
+        mani.getMainAttributes().putValue(ManifestManager.CLASS_PATH, "ext/junit-4.5.jar");
+        libsJunitJar = new File(install, "platform/modules/org-netbeans-libs-junit4.jar");
+        TestBase.createJar(libsJunitJar, Collections.EMPTY_MAP, mani);
+        mani = new Manifest();
+        mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE, "org.netbeans.modules.nbjunit");
+        File nbjunitJar = new File(install, "harness/modules/org-netbeans-modules-nbjunit.jar");
+        TestBase.createJar(nbjunitJar, Collections.EMPTY_MAP, mani);
+        mani = new Manifest();
+        mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE, "org.netbeans.insane");
+        File insaneJar = new File(install, "harness/modules/org-netbeans-insane.jar");
+        TestBase.createJar(insaneJar, Collections.EMPTY_MAP, mani);
+        NbPlatform.addPlatform("custom", install, "custom");
+    }
+
+    /**
+     * Testing that whole moudule.run.classpath is present on both compile and runtime test CPs
+     * @throws Exception
+     */
+    public void testUnitTestClasspaths165446() throws Exception {
+        // PLATFORM SETUP
+        generateTestingPlatform();
+
+        // SUITE setup
+        SuiteProject suite = TestBase.generateSuite(getWorkDir(), "suite", "custom");
+        // MODULE org.example.module1
+        NbModuleProject module1 = generateTestingSuiteComponent(suite, "module1",
+                "<dependency>\n" +
+                "<code-name-base>org.example.bar</code-name-base>" +
+                "<build-prerequisite/>\n<compile-dependency/>\n<run-dependency/>\n" +
+                "</dependency>", "", "");
+
+        Set<String> expectedRoots = new TreeSet<String>();
+        expectedRoots.addAll(TESTLIBS);
+        expectedRoots.add(urlForJar(module1.getModuleJarLocation().getPath()));
+        expectedRoots.add(urlForJar(fooJar.getAbsolutePath()));
+        expectedRoots.add(urlForJar(barJar.getAbsolutePath()));
+
+        ClassPathProvider cpp = module1.getLookup().lookup(ClassPathProvider.class);
+        ClassPath cp = cpp.findClassPath(module1.getTestSourceDirectory("unit"), ClassPath.COMPILE);
+        // path to compiled tests is a bit tricky, evaluator won't tell us path to testdist dir
+        assertEquals("correct UNIT TEST COMPILE classpath", expectedRoots, urlsOfCp4Tests(cp));
+        assertEquals("UNIT TEST COMPILE cp too big, probably duplicate entries", expectedRoots.size(), cp.entries().size());
+        cp = cpp.findClassPath(module1.getTestSourceDirectory("unit"), ClassPath.EXECUTE);
+        expectedRoots.add(FileUtil.urlForArchiveOrDir(module1.getTestClassesDirectory("unit")).toExternalForm());
+        assertEquals("correct UNIT TEST EXECUTE classpath", expectedRoots, urlsOfCp4Tests(cp));
+        assertEquals("UNIT TEST EXECUTE cp too big, probably duplicate entries", expectedRoots.size(), cp.entries().size());
+    }
+
+    /**
+     * #52354: interpret <class-path-extension>s both in myself and in dependent modules.
+     */
+    public void testClasspathExtensions() throws Exception {
+        SuiteProject suite = generateSuite("testSuite2");
+        NbModuleProject prjFoo = generateTestingSuiteComponent(suite, "foo",
+                "", "",
+                "<class-path-extension>\n" +
+                "<runtime-relative-path>ext/foolib.jar</runtime-relative-path>\n" +
+                "<binary-origin>external/foolib.jar</binary-origin>\n" +
+                "</class-path-extension>");
+        File ext = new File(prjFoo.getProjectDirectoryFile(), "external");
+        assertTrue(ext.mkdirs());
+        Manifest mani = new Manifest();
+        File foolibJar = new File(ext, "/foolib.jar");
+        TestBase.createJar(foolibJar, Collections.EMPTY_MAP, mani);
+
+        NbModuleProject prjBar = generateTestingSuiteComponent(suite,"bar",
+                "<dependency>\n" +
+                "<code-name-base>org.example.foo</code-name-base>" +
+                "<build-prerequisite/>\n<compile-dependency/>\n<run-dependency/>\n" +
+                "</dependency>", "", "");
+
+        Set<String> expectedRootsFoo = new TreeSet<String>();
+        expectedRootsFoo.add(urlForJar(foolibJar.getPath()));
+        Set<String> expectedRootsBar = new TreeSet<String>(expectedRootsFoo);
+
+        ClassPathProvider cpp = prjFoo.getLookup().lookup(ClassPathProvider.class);
+        ClassPath cp = cpp.findClassPath(prjFoo.getSourceDirectory(), ClassPath.COMPILE);
+        assertEquals("correct COMPILE classpath", expectedRootsFoo, urlsOfCp4Tests(cp));
+        assertEquals("COMPILE cp too big, probably duplicate entries", expectedRootsFoo.size(), cp.entries().size());
+        expectedRootsFoo.add(FileUtil.urlForArchiveOrDir(prjFoo.getClassesDirectory()).toExternalForm());
+        cp = ClassPath.getClassPath(prjFoo.getSourceDirectory(), ClassPath.EXECUTE);
+        assertEquals("correct EXECUTE classpath", expectedRootsFoo, urlsOfCp4Tests(cp));
+        assertEquals("EXECUTE cp too big, probably duplicate entries", expectedRootsFoo.size(), cp.entries().size());
+
+        expectedRootsBar.add(urlForJar(prjFoo.getModuleJarLocation().getPath()));
+        cpp = prjBar.getLookup().lookup(ClassPathProvider.class);
+        cp = cpp.findClassPath(prjBar.getSourceDirectory(), ClassPath.COMPILE);
+        assertEquals("correct COMPILE classpath", expectedRootsBar, urlsOfCp4Tests(cp));
+        assertEquals("COMPILE cp too big, probably duplicate entries", expectedRootsBar.size(), cp.entries().size());
+        expectedRootsBar.add(FileUtil.urlForArchiveOrDir(prjBar.getClassesDirectory()).toExternalForm());
+        cp = cpp.findClassPath(prjBar.getSourceDirectory(), ClassPath.EXECUTE);
+        assertEquals("correct EXECUTE classpath", expectedRootsBar, urlsOfCp4Tests(cp));
+        assertEquals("EXECUTE cp too big, probably duplicate entries", expectedRootsBar.size(), cp.entries().size());
+    }
+
     public void testMainClasspathExternalModules() throws Exception {
         FileObject src = resolveEEP("suite3/dummy-project/src");
         assertNotNull("have .../dummy-project/src", src);
@@ -323,58 +467,6 @@ public class ClassPathProviderImplTest extends TestBase {
     }
      */
 
-    /* XXX failing, should be rewritten to use generated module:
-    public void testUnitTestClasspaths() throws Exception {
-        FileObject src = nbCVSRoot().getFileObject("autoupdate/test/unit/src");
-        assertNotNull("have autoupdate/test/unit/src", src);
-        ClassPath cp = ClassPath.getClassPath(src, ClassPath.COMPILE);
-        assertNotNull("have a COMPILE classpath", cp);
-        Set<String> expectedRoots = new TreeSet<String>();
-        // Keep up to date w/ changes in autoupdate/nbproject/project.{xml,properties}:
-        // module.classpath:
-        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/core/org-openide-filesystems.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/lib/org-openide-util.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/lib/org-openide-modules.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/lib/boot.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-nodes.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-explorer.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-awt.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-dialogs.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-options.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-windows.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-actions.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-loaders.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-netbeans-core.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-netbeans-api-progress.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/core/core.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-netbeans-modules-editor-mimelookup.jar"));
-        // cp.extra:
-        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/ext/updater.jar"));
-        // module JAR:
-        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-netbeans-modules-autoupdate.jar"));
-        expectedRoots.add("junit.jar");
-        expectedRoots.add("nbjunit.jar");
-        expectedRoots.add("nbjunit-ide.jar");
-        expectedRoots.add("insanelib.jar");
-        // recursive dependencies
-        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-netbeans-swing-plaf.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-text.jar"));
-        
-        assertSets("right COMPILE classpath", expectedRoots, urlsOfCp4Tests(cp));
-        
-        cp = ClassPath.getClassPath(src, ClassPath.EXECUTE);
-        assertNotNull("have an EXECUTE classpath", cp);
-        expectedRoots.add(urlForDir("autoupdate/build/test/unit/classes"));
-        // test.unit.run.cp.extra:
-        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/lib/boot.jar"));
-        assertSets("right EXECUTE classpath (COMPILE plus classes)", expectedRoots, urlsOfCp4Tests(cp));
-        cp = ClassPath.getClassPath(src, ClassPath.SOURCE);
-        assertNotNull("have a SOURCE classpath", cp);
-        assertEquals("right SOURCE classpath", Collections.singleton(src), new HashSet(Arrays.asList(cp.getRoots())));
-        // XXX test BOOT
-    }
-     */
-
     private SuiteProject testSuite;
     private NbModuleProject modA;
     private NbModuleProject modB;
@@ -383,13 +475,13 @@ public class ClassPathProviderImplTest extends TestBase {
 
     public void testSimpleRuntimeTestDependency() throws Exception {
         generateTestingSuite();
-        NbModuleProject modD = generateTestingSuiteComponent("d", "",
+        NbModuleProject modD = generateTestingSuiteComponent(testSuite,"d", "",
                 "<test-dependency>\n" +
-                "<code-name-base>a</code-name-base>\n" +
+                "<code-name-base>org.example.a</code-name-base>\n" +
 //                "<recursive/>\n" +
 //                "<compile-dependency/>\n" +
 //                "<test/>\n" +
-                "</test-dependency>\n");
+                "</test-dependency>\n", "");
 
         ClassPathProvider cpp = modD.getLookup().lookup(ClassPathProvider.class);
         ClassPath cp = cpp.findClassPath(modD.getTestSourceDirectory("unit"), ClassPath.COMPILE);
@@ -409,13 +501,13 @@ public class ClassPathProviderImplTest extends TestBase {
 
     public void testSimpleCompileTestDependency() throws Exception {
         generateTestingSuite();
-        NbModuleProject modD = generateTestingSuiteComponent("d", "",
+        NbModuleProject modD = generateTestingSuiteComponent(testSuite,"d", "",
                 "<test-dependency>\n" +
-                "<code-name-base>a</code-name-base>\n" +
+                "<code-name-base>org.example.a</code-name-base>\n" +
 //                "<recursive/>\n" +
                 "<compile-dependency/>\n" +
 //                "<test/>\n" +
-                "</test-dependency>\n");
+                "</test-dependency>\n", "");
 
         ClassPathProvider cpp = modD.getLookup().lookup(ClassPathProvider.class);
         ClassPath cp = cpp.findClassPath(modD.getTestSourceDirectory("unit"), ClassPath.COMPILE);
@@ -432,13 +524,13 @@ public class ClassPathProviderImplTest extends TestBase {
 
     public void testRecursiveRuntimeTestDependency() throws Exception {
         generateTestingSuite();
-        NbModuleProject modD = generateTestingSuiteComponent("d", "",
+        NbModuleProject modD = generateTestingSuiteComponent(testSuite,"d", "",
                 "<test-dependency>\n" +
-                "<code-name-base>a</code-name-base>\n" +
+                "<code-name-base>org.example.a</code-name-base>\n" +
                 "<recursive/>\n" +
 //                "<compile-dependency/>\n" +
 //                "<test/>\n" +
-                "</test-dependency>\n");
+                "</test-dependency>\n", "");
 
         ClassPathProvider cpp = modD.getLookup().lookup(ClassPathProvider.class);
         ClassPath cp = cpp.findClassPath(modD.getTestSourceDirectory("unit"), ClassPath.COMPILE);
@@ -460,13 +552,13 @@ public class ClassPathProviderImplTest extends TestBase {
 
     public void testRecursiveCompileTestDependency() throws Exception {
         generateTestingSuite();
-        NbModuleProject modD = generateTestingSuiteComponent("d", "",
+        NbModuleProject modD = generateTestingSuiteComponent(testSuite,"d", "",
                 "<test-dependency>\n" +
-                "<code-name-base>a</code-name-base>\n" +
+                "<code-name-base>org.example.a</code-name-base>\n" +
                 "<recursive/>\n" +
                 "<compile-dependency/>\n" +
 //                "<test/>\n" +
-                "</test-dependency>\n");
+                "</test-dependency>\n", "");
 
         ClassPathProvider cpp = modD.getLookup().lookup(ClassPathProvider.class);
         ClassPath cp = cpp.findClassPath(modD.getTestSourceDirectory("unit"), ClassPath.COMPILE);
@@ -485,13 +577,13 @@ public class ClassPathProviderImplTest extends TestBase {
 
     public void testRecursiveCompileTestDependencyWithTests() throws Exception {
         generateTestingSuite();
-        NbModuleProject modD = generateTestingSuiteComponent("d", "",
+        NbModuleProject modD = generateTestingSuiteComponent(testSuite,"d", "",
                 "<test-dependency>\n" +
-                "<code-name-base>a</code-name-base>\n" +
+                "<code-name-base>org.example.a</code-name-base>\n" +
                 "<recursive/>\n" +
                 "<compile-dependency/>\n" +
                 "<test/>\n" +
-                "</test-dependency>\n");
+                "</test-dependency>\n", "");
 
         ClassPathProvider cpp = modD.getLookup().lookup(ClassPathProvider.class);
         ClassPath cp = cpp.findClassPath(modD.getTestSourceDirectory("unit"), ClassPath.COMPILE);
@@ -534,37 +626,33 @@ public class ClassPathProviderImplTest extends TestBase {
         testSuite = generateSuite("testSuite1");
         modC = generateSuiteComponent(testSuite, "c");
         modT = generateSuiteComponent(testSuite, "t");
-        modB = generateTestingSuiteComponent("b",
+        modB = generateTestingSuiteComponent(testSuite,"b",
                 "<dependency>\n" +
-                "<code-name-base>c</code-name-base>" +
+                "<code-name-base>org.example.c</code-name-base>" +
                 "<build-prerequisite/>\n<run-dependency/>\n" +
                 "</dependency>",
                 "<test-dependency>\n" +
-                "<code-name-base>c</code-name-base>\n" +
+                "<code-name-base>org.example.c</code-name-base>\n" +
                 "<compile-dependency/>\n" +
                 "</test-dependency>\n" +
                 "<test-dependency>\n" +
-                "<code-name-base>t</code-name-base>\n" +
+                "<code-name-base>org.example.t</code-name-base>\n" +
                 "<recursive/>\n" +
                 "<compile-dependency/>\n" +
                 "<test/>\n" +
-                "</test-dependency>\n");
-        modA = generateTestingSuiteComponent("a",
+                "</test-dependency>\n", "");
+        modA = generateTestingSuiteComponent(testSuite,"a",
                 "<dependency>\n" +
-                "<code-name-base>b</code-name-base>" +
+                "<code-name-base>org.example.b</code-name-base>" +
                 "<build-prerequisite/>\n<run-dependency/>\n" +
                 "</dependency>",
-                "");
+                "", "");
         return testSuite;
     }
 
-    private static final Pattern CNB_REGEX = Pattern.compile("(<code-name-base>)([^.<]+)(</code-name-base>)");
-    private static final String CNB_REPL = "$1org.example.$2$3";
-
-    private NbModuleProject generateTestingSuiteComponent(String prjName, String depsXMLFragment, String testDepsXMLFragment) throws Exception {
-        FileObject prjFO = generateSuiteComponentDirectory(testSuite, testSuite.getProjectDirectoryFile(), prjName);
-        depsXMLFragment = CNB_REGEX.matcher(depsXMLFragment).replaceAll(CNB_REPL);
-        testDepsXMLFragment = CNB_REGEX.matcher(testDepsXMLFragment).replaceAll(CNB_REPL);
+    private NbModuleProject generateTestingSuiteComponent(SuiteProject suiteProject,String prjName,
+            String depsXMLFragment, String testDepsXMLFragment, String cpExt) throws Exception {
+        FileObject prjFO = generateSuiteComponentDirectory(suiteProject, suiteProject.getProjectDirectoryFile(), prjName);
 
         FileObject projectXMLFO = prjFO.getFileObject("nbproject/project.xml");
         String xml =
@@ -583,6 +671,7 @@ public class ClassPathProviderImplTest extends TestBase {
                 "</test-type>\n" +
                 "</test-dependencies>\n" +
                 "<public-packages/>\n" +
+                cpExt +
                 "</data>\n" +
                 "</configuration>\n" +
                 "</project>\n";
