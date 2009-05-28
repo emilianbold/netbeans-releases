@@ -49,10 +49,13 @@ import java.util.Map;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugzilla.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Attachment;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Comment;
@@ -122,16 +125,16 @@ public class IssueTest extends NbTestCase implements TestConstants {
 
         long ts = System.currentTimeMillis();
         String summary = "somary" + ts;
-        String id = TestUtil.createIssue(getRepository(), summary);
-        BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
+        final BugzillaRepository repository = getRepository();
+        String id = TestUtil.createIssue( repository, summary);
+        BugzillaIssue issue = (BugzillaIssue) repository.getIssue(id);
         assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
 
+        issue.setSeen(true);
         for (IssueField f : IssueField.values()) {
-            // haven't seen anything yet, everything's new
-            assertEquals(BugzillaIssue.FIELD_STATUS_IRELEVANT, issue.getFieldStatus(f));
+            // is seen , everything's uptodate
+            assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, f);
         }
-//        setSeen(issue); // reset status
-
 
         String keyword = getKeyword(issue);
 //        String milestone = getMilestone(issue);
@@ -213,25 +216,29 @@ public class IssueTest extends NbTestCase implements TestConstants {
         assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.STATUS);
         assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.ASSIGNED_TO);
         assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.ASSIGNED_TO_NAME);
-        assertStatus(BugzillaIssue.FIELD_STATUS_NEW, issue, IssueField.BLOCKS);
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.BLOCKS);
         assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.COMPONENT);
-        assertStatus(BugzillaIssue.FIELD_STATUS_NEW, issue, IssueField.DEPENDS_ON);
-        assertStatus(BugzillaIssue.FIELD_STATUS_NEW, issue, IssueField.KEYWORDS);
-        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.MILESTONE);
-        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.PLATFORM);
-        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.PRIORITY);
-        assertStatus(BugzillaIssue.FIELD_STATUS_NEW, issue, IssueField.QA_CONTACT);
-        assertStatus(BugzillaIssue.FIELD_STATUS_NEW, issue, IssueField.QA_CONTACT_NAME);
-        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.SEVERITY);
-        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.SUMMARY);
-        assertStatus(BugzillaIssue.FIELD_STATUS_NEW, issue, IssueField.URL);
-        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.VERSION);
-        assertStatus(BugzillaIssue.FIELD_STATUS_NEW, issue, IssueField.CC);
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.DEPENDS_ON);
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.KEYWORDS);
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.MILESTONE);
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.PLATFORM);
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.PRIORITY);
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.QA_CONTACT);
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.QA_CONTACT_NAME);
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.SEVERITY);
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.SUMMARY);
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.URL);
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.VERSION);
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.CC);
 
         assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.DESCRIPTION);
         assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.PRODUCT);
 
         setSeen(issue); // reset status
+
+        BugzillaRepositoryConnector brc = new BugzillaRepositoryConnector();
+        TaskData data = brc.getTaskData(repository.getTaskRepository(), issue.getID(), new NullProgressMonitor());
+        BugzillaIssue modIssue = new BugzillaIssue(data, repository);
 
         keyword = keyword + "," + getKeyword(issue);
 //        milestone = getMilestone(issue);
@@ -239,6 +246,8 @@ public class IssueTest extends NbTestCase implements TestConstants {
         priority = getPriority(issue);
         resolution = getResolution(issue);
         version = getVersion(issue);
+        String product = getProduct(issue);
+//        String milestone = getMilestone(issue);
         qaContact = REPO_USER2;
         qaContactName = REPO_USER2_NAME;
         blocks = "1,3";
@@ -247,39 +256,45 @@ public class IssueTest extends NbTestCase implements TestConstants {
         url = "http://evennewer.ulr";
         component = getComponent(issue);
         severity = getSeverity(issue);
+//        summary =  issue.getFieldValue(IssueField.SUMMARY) + "modified";
+//        String description = issue.getFieldValue(IssueField.DESCRIPTION) + ".modified";
 
-        issue.setFieldValue(IssueField.BLOCKS, blocks);
-        issue.setFieldValue(IssueField.COMPONENT, component);
-        issue.setFieldValue(IssueField.DEPENDS_ON, depends);
-        issue.setFieldValue(IssueField.KEYWORDS, keyword);
+//        modIssue.setFieldValue(IssueField.PRODUCT, product);
+//        modIssue.setFieldValue(IssueField.SUMMARY, summary);
+//        modIssue.setFieldValue(IssueField.DESCRIPTION, description); can't change desc?
+        modIssue.setFieldValue(IssueField.BLOCKS, blocks);
+        modIssue.setFieldValue(IssueField.COMPONENT, component);
+        modIssue.setFieldValue(IssueField.DEPENDS_ON, depends);
+        modIssue.setFieldValue(IssueField.KEYWORDS, keyword);
 //        issue.setFieldValue(IssueField.MILESTONE, milestone);
-        issue.setFieldValue(IssueField.PLATFORM, platform);
-        issue.setFieldValue(IssueField.PRIORITY, priority);
-        issue.setFieldValue(IssueField.QA_CONTACT, qaContact);
-        issue.setFieldValue(IssueField.QA_CONTACT_NAME, qaContactName);
-        issue.setFieldValue(IssueField.SEVERITY, getSeverity(issue));
-        issue.setFieldValue(IssueField.SUMMARY, summary + ".new");
-        issue.setFieldValue(IssueField.URL, url);
-        issue.setFieldValue(IssueField.VERSION, version);
-        issue.setFieldValue(IssueField.NEWCC, newcc);
+        modIssue.setFieldValue(IssueField.PLATFORM, platform);
+        modIssue.setFieldValue(IssueField.PRIORITY, priority);
+        modIssue.setFieldValue(IssueField.QA_CONTACT, qaContact);
+        modIssue.setFieldValue(IssueField.QA_CONTACT_NAME, qaContactName);
+        modIssue.setFieldValue(IssueField.SEVERITY, getSeverity(issue));
+        modIssue.setFieldValue(IssueField.SUMMARY, summary + ".new");
+        modIssue.setFieldValue(IssueField.URL, url);
+        modIssue.setFieldValue(IssueField.VERSION, version);
+        modIssue.setFieldValue(IssueField.NEWCC, newcc);
 
-        submit(issue);
+        submit(modIssue);
+        issue.refresh();
 
         assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.REPORTER);
         assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.STATUS);
         assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.ASSIGNED_TO);
         assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.ASSIGNED_TO_NAME);
         assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.BLOCKS);
-        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.COMPONENT);
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.COMPONENT);
         assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.DEPENDS_ON);
         assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.KEYWORDS);
-        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.MILESTONE);
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.MILESTONE);
         assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.PLATFORM);
         assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.PRIORITY);
         assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.QA_CONTACT);
         assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.QA_CONTACT_NAME);
         assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.SEVERITY);
-        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.SUMMARY);
+//        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.SUMMARY);
         assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.URL);
         assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.VERSION);
         assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.CC);
@@ -296,14 +311,16 @@ public class IssueTest extends NbTestCase implements TestConstants {
         url = "";
         keyword = "";
 
-        issue.setFieldValue(IssueField.BLOCKS, blocks);
-        issue.setFieldValue(IssueField.DEPENDS_ON, depends);
-        issue.setFieldValue(IssueField.KEYWORDS, keyword);
-        issue.setFieldValue(IssueField.QA_CONTACT, qaContact);
-        issue.setFieldValue(IssueField.QA_CONTACT_NAME, qaContactName);
-        issue.setFieldValue(IssueField.URL, url);
+        modIssue.setFieldValue(IssueField.BLOCKS, blocks);
+        modIssue.setFieldValue(IssueField.DEPENDS_ON, depends);
+        modIssue.setFieldValue(IssueField.KEYWORDS, keyword);
+        modIssue.setFieldValue(IssueField.QA_CONTACT, qaContact);
+        modIssue.setFieldValue(IssueField.QA_CONTACT_NAME, qaContactName);
+        modIssue.setFieldValue(IssueField.URL, url);
 
-        submit(issue);
+        modIssue.refresh();
+        submit(modIssue);
+        issue.refresh();
 
         assertEquals(blocks, issue.getFieldValue(IssueField.BLOCKS));
         assertEquals(depends, issue.getFieldValue(IssueField.DEPENDS_ON));
@@ -347,6 +364,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
         setSeen(issue); // reset status
 
         // add a cc
+        assertNotSame(REPO_USER, issue.getFieldValue(IssueField.CC));
         issue.setFieldValue(IssueField.NEWCC, REPO_USER);
         submit(issue);
         assertEquals(REPO_USER, issue.getFieldValue(IssueField.CC));
@@ -657,11 +675,12 @@ public class IssueTest extends NbTestCase implements TestConstants {
 
     private void assertStatus(int expectedStatus, BugzillaIssue issue, IssueField f) {
         int status = issue.getFieldStatus(f);
+        System.out.println(issue.getID() + " " + f + " " + getName(expectedStatus) + " " + getName(status) + " " + "[" + issue.getFieldValue(f) + "] vs [" + getSeenValue(issue, f) + "]");
         if(status != expectedStatus) {
             fail("expected [" + getName(expectedStatus) + "], " +
                  "was [" + getName(status)+ "] " +
                  "because of value [" + issue.getFieldValue(f) + "] " +
-                 "vs [" + getSeenValue(issue, f) + "]");
+                 "vs [" + getSeenValue(issue, f) + "] in field " + f);
         }
     }
 
