@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.*;
+import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
@@ -66,7 +67,7 @@ import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
  * @author Vladimir Voskresensky
  */
 public class APTFileMacroMap extends APTBaseMacroMap {
-    private static final Map<CharSequence,APTMacro> NO_CACHE = new HashMap<CharSequence,APTMacro>(0);
+    private static final Map<CharSequence,APTMacro> NO_CACHE = Collections.unmodifiableMap(new HashMap<CharSequence,APTMacro>(0));
     private static final int INITIAL_CACHE_SIZE = 512;
     private APTMacroMap sysMacroMap;
     private Map<CharSequence,APTMacro> macroCache = NO_CACHE;
