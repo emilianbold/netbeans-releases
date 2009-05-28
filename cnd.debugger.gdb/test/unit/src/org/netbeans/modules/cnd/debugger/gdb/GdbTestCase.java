@@ -107,11 +107,6 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
         }
     }
 
-    protected void startTest(String testapp) {
-        this.testapp = testapp;
-        System.out.println("\n" + testapp); // NOI18N
-    }
-
     protected void tlog(String msg) {
         System.out.println("    " + testapp + ": " + msg); // NOI18N
     }
@@ -160,7 +155,16 @@ public abstract class GdbTestCase extends BaseTestCase implements ContextProvide
         waitForState(State.STOPPED);
     }
 
-    public void doFinish() {
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        this.testapp = getName();
+        System.out.println("\n" + testapp); // NOI18N
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
         debugger.finish(false);
         project = null;
         pae = null;

@@ -40,10 +40,6 @@
 package org.netbeans.modules.cnd.debugger.gdb;
 
 import java.io.File;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger.State;
@@ -55,28 +51,6 @@ import org.netbeans.modules.cnd.debugger.gdb.models.GdbWatchVariable;
  * @author gordonp
  */
 public class GdbDebuggerTestCase extends GdbTestCase {
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        startTest(getName());
-    }
-
-    @After
-    @Override
-    public void tearDown() throws Exception {
-        super.tearDown();
-        doFinish();
-    }
 
     public GdbDebuggerTestCase(String name) {
         super(name);
