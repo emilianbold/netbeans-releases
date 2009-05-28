@@ -41,10 +41,11 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
 import org.netbeans.modules.xml.multiview.ui.DefaultTablePanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
-import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -53,11 +54,16 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import javax.swing.InputMap;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JTable;
+import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
 
 /**
  * @author pfiala
