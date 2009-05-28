@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview.ui;
 
+import java.awt.Dialog;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.ddloaders.multiview.Utils;
 import org.openide.DialogDescriptor;
@@ -55,17 +56,18 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-
-import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTree;
 
 /**
  * @author pfiala
@@ -221,11 +223,13 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
             this.group = group;
         }
 
+        @Override
         protected void addNotify() {
             super.addNotify();
             setKeys(getKeys());
         }
 
+        @Override
         protected void removeNotify() {
             setKeys(Collections.EMPTY_SET);
             super.removeNotify();

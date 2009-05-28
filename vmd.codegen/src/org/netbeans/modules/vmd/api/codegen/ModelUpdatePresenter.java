@@ -39,21 +39,16 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.ruby.modules.project.rake;
-import java.util.EventListener;
+package org.netbeans.modules.vmd.api.codegen;
+
+import org.netbeans.modules.vmd.api.model.Presenter;
 
 /**
- * Listener for changes in file existence and/or contents.
- * Unlike the Filesystems API, renames etc. are not considered special;
- * the "file" is identified uniquely by its path, not an object.
- * @author Jesse Glick
+ *
+ * @author ads
  */
-public interface FileChangeSupportListener extends EventListener {
+public abstract class ModelUpdatePresenter extends Presenter {
 
-    void fileCreated(FileChangeSupportEvent event);
-
-    void fileDeleted(FileChangeSupportEvent event);
-
-    void fileModified(FileChangeSupportEvent event);
+    public abstract void modelUpdated();
 
 }

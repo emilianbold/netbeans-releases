@@ -938,7 +938,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> cache = getAPTCache(false);
         APTFileCacheEntry out = cache.get(key);
         if (out == null) {
-            out = new APTFileCacheEntry(getAbsolutePath());
+            out = APTFileCacheEntry.createSerialEntry(getAbsolutePath());
         } else {
             if (APTTraceFlags.TRACE_APT_CACHE && traceFile(getAbsolutePath())) {
                 System.err.printf("APT CACHE for %s\nsize %d, key: %s\ncache state:%s\n", getAbsolutePath(), cache.size(), "", "");
@@ -952,7 +952,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (TraceFlags.APT_FILE_CACHE_ENTRY && entry != null) {
             ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> cache = getAPTCache(cleanOthers);
             APTIncludeHandler.State key = preprocHandler.getIncludeHandler().getState();
-            cache.put(key, entry);
+            cache.put(key, APTFileCacheEntry.toSerial(entry));
         }
     }
     

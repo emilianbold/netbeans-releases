@@ -65,6 +65,9 @@ import java.util.List;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.codegen.ui.RenameCommandAction;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.netbeans.modules.vmd.midp.components.general.ClassCode;
 import org.openide.util.actions.SystemAction;
 
 
@@ -134,7 +137,21 @@ public final class CommandEventSourceCD extends ComponentDescriptor {
                 }
             },
             // screen
-            new CommandEventSourceSRItemPresenter ()
+            new CommandEventSourceSRItemPresenter (),
+            new ClassCode.GeneratedCodePresenter(){
+
+                @Override
+                public void modelUpdated() {
+                }
+
+                @Override
+                public boolean isCodeGenerated(){
+                    DesignComponent component = getComponent().readProperty(
+                     PROP_COMMAND).getComponent();
+                    return Boolean.TRUE.equals( component.readProperty(
+                        ClassCD.PROP_CODE_GENERATED).getPrimitiveValue()) ;
+                }
+            }
         );
     }
 

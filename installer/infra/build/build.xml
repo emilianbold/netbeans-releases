@@ -324,7 +324,7 @@
              value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
 	
         <set property="jdk.bundle.files.suffix"
-             value="nb-6_7"/>
+             value="nb-6_8"/>
 	
 	<set property="nb.bundles.output.dir"
              value="${output.dir}/bundles"/>
@@ -1745,6 +1745,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase"             version="${nb.full.version}"/>
             <component uid="nb-webcommon"          version="${nb.full.version}"/>
             <component uid="nb-javaee"             version="${nb.full.version}"/>
+            <component uid="nb-groovy"             version="${nb.full.version}"/>
             <component uid="nb-soa"                version="${nb.full.version}"/>
             <component uid="nb-portalpack"         version="3.0.0.0.${portalpack.build.number}"/>
             <component uid="sjsas"                 version="2.1.${sjsas.milestone.number}.${sjsas.build.number}"/>

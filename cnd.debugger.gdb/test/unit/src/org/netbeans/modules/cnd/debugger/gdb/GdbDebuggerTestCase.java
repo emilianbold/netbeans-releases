@@ -40,13 +40,16 @@
 package org.netbeans.modules.cnd.debugger.gdb;
 
 import java.io.File;
+import java.util.Date;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger.State;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
+import org.netbeans.modules.cnd.debugger.gdb.models.GdbWatchVariable;
 
 /**
  *
@@ -89,7 +92,7 @@ public class GdbDebuggerTestCase extends GdbTestCase {
             file.delete();
         }
 
-        startDebugger("TmpTouch_1", "TmpTouch_1/tmptouch", tfile);
+        startDebugger("TmpTouch_1", "tmptouch", tfile);
         debugger.resume();
         tlog("Tmp file is " + tfile);
         waitForState(State.EXITED);
@@ -103,17 +106,26 @@ public class GdbDebuggerTestCase extends GdbTestCase {
     /** Test of startDebugger method, of class GdbDebugger */
     @Test
     public void testGetGdbVersion() {
-        startDebugger("Args_1", "Args_1/args", "1111 2222 3333");
+        startDebugger("Args_1", "args", "1111 2222 3333");
         double version = debugger.getGdbVersion();
         debugger.resume();
         tlog("gdbVersion is " + version);
         waitForState(State.EXITED);
     }
 
+    /** Test start and normal exit */
+    @Test
+    public void testNormalExit() {
+        startDebugger("BpTestProject", "main", "");
+
+        debugger.resume();
+        waitForState(State.EXITED);
+    }
+
     /** Test of setting a line breakpoint */
     @Test
-    public void testLineBreakpoint1() {
-        startDebugger("BpTestProject", "BpTestProject/main", "");
+    public void testLineBreakpointSet() {
+        startDebugger("BpTestProject", "main", "");
 
         GdbBreakpoint b1 = setLineBreakpoint("bp.h", 31);
         GdbBreakpoint b2 = setLineBreakpoint("testf/bp.h", 31);
@@ -132,10 +144,46 @@ public class GdbDebuggerTestCase extends GdbTestCase {
         waitForState(State.EXITED);
     }
 
+    /** Test of setting and disabling a line breakpoint */
+    @Test
+    public void testLineBreakpointDisable() {
+        startDebugger("BpTestProject", "main", "");
+
+        GdbBreakpoint b1 = setLineBreakpoint("bp.h", 31);
+        b1.disable();
+        
+        GdbBreakpoint b2 = setLineBreakpoint("testf/bp.h", 31);
+
+        debugger.resume();
+        // should stop on the second breakpoint only
+        waitForBreakpoint(b2);
+
+        debugger.resume();
+        waitForState(State.EXITED);
+    }
+
+    /** Test of setting and removing a line breakpoint */
+    @Test
+    public void testLineBreakpointDelete() {
+        startDebugger("BpTestProject", "main", "");
+
+        GdbBreakpoint b1 = setLineBreakpoint("bp.h", 31);
+        dm.removeBreakpoint(b1);
+
+        GdbBreakpoint b2 = setLineBreakpoint("testf/bp.h", 31);
+
+        debugger.resume();
+        // should stop on the second breakpoint only
+        waitForBreakpoint(b2);
+
+        debugger.resume();
+        waitForState(State.EXITED);
+    }
+
     /** Test of setting a function breakpoint */
     @Test
-    public void testFunctionBreakpoint1() {
-        startDebugger("BpTestProject", "BpTestProject/main", "");
+    public void testFunctionBreakpointSet() {
+        startDebugger("BpTestProject", "main", "");
 
         GdbBreakpoint b1 = setFunctionBreakpoint("foo1");
         GdbBreakpoint b2 = setFunctionBreakpoint("foo2");
@@ -149,6 +197,37 @@ public class GdbDebuggerTestCase extends GdbTestCase {
 
         // should stop on the second breakpoint
         waitForBreakpoint(b2);
+
+        debugger.resume();
+        waitForState(State.EXITED);
+    }
+
+    /** Test of setting a watch */
+    @Test
+    public void testWatchEvaluation() {
+        startDebugger("BpTestProject", "main", "");
+
+        // Set a breakpoint inside foo2()
+        GdbBreakpoint b2 = setLineBreakpoint("testf/bp.h", 31);
+
+        // go there
+        debugger.resume();
+        waitForBreakpoint(b2);
+
+        // Set a breakpoint inside foo1()
+        GdbBreakpoint b1 = setLineBreakpoint("bp.h", 31);
+
+        // Create a watch on foo1
+        Watch watch = dm.createWatch("foo1()");
+        GdbWatchVariable var = new GdbWatchVariable(debugger, watch);
+
+        var.getType();
+        var.getValue();
+
+        // it should not stop on the breakpoint during evaluation
+        CallStackFrame csf = debugger.getCurrentCallStackFrame();
+        assertEquals(b2.getPath(), csf.getFullname());
+        assertEquals(b2.getLineNumber(), csf.getLineNumber());
 
         debugger.resume();
         waitForState(State.EXITED);
