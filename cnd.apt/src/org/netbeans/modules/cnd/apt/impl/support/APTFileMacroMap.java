@@ -53,7 +53,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
-import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
@@ -67,8 +66,10 @@ import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
  * @author Vladimir Voskresensky
  */
 public class APTFileMacroMap extends APTBaseMacroMap {
+    private static final Map<CharSequence,APTMacro> NO_CACHE = new HashMap<CharSequence,APTMacro>(0);
+    private static final int INITIAL_CACHE_SIZE = 512;
     private APTMacroMap sysMacroMap;
-    private Map<CharSequence,APTMacro> macroCache = new HashMap<CharSequence,APTMacro>();
+    private Map<CharSequence,APTMacro> macroCache = NO_CACHE;
 
     public APTFileMacroMap() {
     }
@@ -81,20 +82,21 @@ public class APTFileMacroMap extends APTBaseMacroMap {
             sysMacroMap = APTBaseMacroMap.EMPTY;
         }
         this.sysMacroMap = sysMacroMap;
+        this.macroCache = new HashMap<CharSequence,APTMacro>(INITIAL_CACHE_SIZE);
         fill(userMacros, false);
-    }
-
-    public void setSysMacros(APTMacroMap sysMacroMap) {
-        this.sysMacroMap = sysMacroMap;
     }
 
     @Override
     public APTMacro getMacro(APTToken token) {
         // check own map
         CharSequence macroText = token.getTextID();
+        initCache();
         APTMacro res = macroCache.get(macroText);
         if (res == null) {
-            res = super.getMacro(token);
+            // no need to check in super, because everything is in cache already
+            if (false) {
+                res = super.getMacro(token);
+            }
             // then check system map
             if (res == null && sysMacroMap != null) {
                 res = sysMacroMap.getMacro(token);
@@ -112,23 +114,10 @@ public class APTFileMacroMap extends APTBaseMacroMap {
     }
 
     @Override
-    public void define(APTFile file, APTDefine define, Kind macroType) {
-        APTToken name = define.getName();
-        if (false && sysMacroMap != null && sysMacroMap.isDefined(name)) { // disable for IZ#124635
-            // TODO: report error about redefining system macros
-        } else {
-            super.define(file, define, Kind.DEFINED);
-            macroCache.remove(name.getTextID());
-        }
-    }
-
-    @Override
-    public void undef(APTFile file, APTToken name) {
-        if (false && sysMacroMap != null && sysMacroMap.isDefined(name)) { // disable for IZ#124635
-            // TODO: report warning about undefined system macros
-        }
-        super.undef(file, name);
-        macroCache.remove(name.getTextID());
+    protected void putMacro(CharSequence name, APTMacro macro) {
+        initCache();
+        super.putMacro(name, macro);
+        macroCache.put(name, macro);
     }
 
     protected APTMacro createMacro(CharSequence file, APTDefine define, Kind macroType) {
@@ -168,7 +157,15 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         if (state instanceof FileStateImpl) {
             sysMacroMap = ((FileStateImpl)state).sysMacroMap;
         }
-        macroCache.clear();
+        macroCache = NO_CACHE;
+    }
+
+    private void initCache() {
+        if (macroCache == NO_CACHE) {
+            macroCache =  new HashMap<CharSequence,APTMacro>(INITIAL_CACHE_SIZE);
+            // fill cache to speedup getMacro
+            APTMacroMapSnapshot.addAllMacros(active, macroCache);
+        }
     }
 
     public static class FileStateImpl extends StateImpl {
