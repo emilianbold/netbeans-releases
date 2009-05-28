@@ -80,7 +80,7 @@ public final class APTBuilderImpl {
             // it's better for lexer not to fail at all
             // lexer should have special token for "everything else"
             // but for now we use reporting about problems to see, where lexer should be improved
-            APTUtils.LOG.log(Level.SEVERE, "error on converting token stream to text while building APT", ex); // NOI18N
+            APTUtils.LOG.log(Level.SEVERE, "error on converting token stream to text while building APT\n{0}", new Object[] { ex }); // NOI18N
             APTUtils.LOG.log(Level.SEVERE, "problem file is {0}", new Object[] { path }); // NOI18N
         }
         return aptFile;

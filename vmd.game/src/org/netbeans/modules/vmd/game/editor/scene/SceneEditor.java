@@ -52,22 +52,22 @@ import org.netbeans.modules.vmd.game.model.Scene;
  */
 
 public class SceneEditor {
-	public static final boolean DEBUG = false;
-	
-	private Scene scene;
-	private JScrollPane scroll;
-	
-	/** Creates a new instance of SceneEditor */
-	public SceneEditor(Scene scene) {
-		this.scene = scene;
-		ScenePanel editor = new ScenePanel(scene);
-		this.scroll = new JScrollPane(editor);
-		scroll.setColumnHeaderView(editor.getRulerHorizontal());
-		scroll.setRowHeaderView(editor.getRulerVertical());
-		scroll.setCorner(JScrollPane.UPPER_LEFT_CORNER, editor.getGridButton());
-	}
-	
-	public JComponent getJComponent() {
-		return this.scroll;
-	}
+
+    public static final boolean DEBUG = false;
+    private Scene scene;
+    private JScrollPane scroll;
+
+    /** Creates a new instance of SceneEditor */
+    public SceneEditor(Scene scene) {
+        this.scene = scene;
+        ScenePanel editor = new ScenePanel(scene);
+        this.scroll = new JScrollPane(editor);
+        scroll.setColumnHeaderView(editor.getRulerHorizontal());
+        scroll.setRowHeaderView(editor.getRulerVertical());
+        scroll.setCorner(JScrollPane.UPPER_LEFT_CORNER, editor.getGridButton());
+    }
+
+    public JComponent getJComponent() {
+        return this.scroll;
+    }
 }
