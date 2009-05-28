@@ -405,7 +405,7 @@ class EarImpl implements EarImplementation,
                                     J2eeModule module = J2eeModuleFactory.createJ2eeModule(new ProxyJ2eeModule(mod, m, fileNameMapping));
                                     //#162173 respect order in pom configuration.. shall we?
                                     if (m.pomIndex > -1 && toRet.size() > m.pomIndex) {
-                                        toRet.add(m.pomIndex, mod);
+                                        toRet.add(m.pomIndex, module);
                                     } else {
                                         toRet.add(module);
                                     }
@@ -419,7 +419,7 @@ class EarImpl implements EarImplementation,
                             J2eeModule module = J2eeModuleFactory.createJ2eeModule(new ProxyJ2eeModule(mod, m, fileNameMapping));
                             //#162173 respect order in pom configuration.. shall we?
                             if (m.pomIndex > -1 && toRet.size() > m.pomIndex) {
-                                toRet.add(m.pomIndex, mod);
+                                toRet.add(m.pomIndex, module);
                             } else {
                                 toRet.add(module);
                             }

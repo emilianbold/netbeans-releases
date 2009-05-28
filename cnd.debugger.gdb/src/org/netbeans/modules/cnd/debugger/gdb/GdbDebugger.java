@@ -395,7 +395,7 @@ public class GdbDebugger implements PropertyChangeListener {
                         EnvUtils.appendPath(mapEnv, EnvUtils.getKey(envEntry), EnvUtils.getValue(envEntry));
                     }
                     // disabled on windows because of the issue 148204
-                    if (platform != PlatformTypes.PLATFORM_WINDOWS) {
+                    if (platform != PlatformTypes.PLATFORM_WINDOWS && !isUnitTest()) {
                         ioProxy = IOProxy.create(execEnv, iotab);
                     }
                 }
@@ -480,14 +480,19 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     private void warn(final boolean finish, final String msg) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
-                if (finish) {
-                    finish(false);
+        log.warning(msg);
+        if (!isUnitTest()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
+                    if (finish) {
+                        finish(false);
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            tlog.warning(msg);
+        }
     }
 
     private final void initGdbVersion() throws GdbErrorException {
@@ -623,12 +628,14 @@ public class GdbDebugger implements PropertyChangeListener {
             dis = (currentBreakpoint == null) ? Disassembly.isInDisasm() : (currentBreakpoint instanceof AddressBreakpoint);
         }
         final boolean inDis = dis;
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                // show current line
-                EditorContextBridge.showSource(csf, inDis);
-            }
-        });
+        if (!isUnitTest()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    // show current line
+                    EditorContextBridge.showSource(csf, inDis);
+                }
+            });
+        }
     }
 
     public String[] getThreadsList() {
