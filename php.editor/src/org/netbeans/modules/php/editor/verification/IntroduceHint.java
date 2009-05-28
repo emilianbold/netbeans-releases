@@ -210,7 +210,7 @@ public class IntroduceHint implements AstRule {
             if (isInside(methodInvocation.getStartOffset(), lineBegin, lineEnd)) {
                 String methName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
                 if (methName != null) {
-                    Collection<? extends TypeScope> allTypes = ModelUtils.typeOfVariableBase(model, methodInvocation);
+                    Collection<? extends TypeScope> allTypes = ModelUtils.resolveType(model, methodInvocation);
                     if (allTypes.size() == 1) {
                         TypeScope type = ModelUtils.getFirst(allTypes);
                         PHPIndex index = model.getIndexScope().getIndex();
@@ -256,7 +256,7 @@ public class IntroduceHint implements AstRule {
             if (isInside(fieldAccess.getStartOffset(), lineBegin, lineEnd)) {
                 String fieldName = CodeUtils.extractVariableName(fieldAccess.getField());
                 if (fieldName != null) {
-                    Collection<? extends TypeScope> allTypes = ModelUtils.typeOfVariableBase(model, fieldAccess);
+                    Collection<? extends TypeScope> allTypes = ModelUtils.resolveType(model, fieldAccess);
                     if (allTypes.size() == 1) {
                         TypeScope type = ModelUtils.getFirst(allTypes);
                         PHPIndex index = model.getIndexScope().getIndex();
