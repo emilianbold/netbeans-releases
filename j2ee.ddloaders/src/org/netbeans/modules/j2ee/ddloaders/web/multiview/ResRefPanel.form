@@ -165,7 +165,7 @@
         <Component class="javax.swing.JTextArea" name="descriptionTA">
           <Properties>
             <Property name="columns" type="int" value="20"/>
-            <Property name="rows" type="int" value="4"/>
+            <Property name="rows" type="int" value="3"/>
           </Properties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="ResRefPanel_descriptionTA"/>

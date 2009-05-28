@@ -53,7 +53,6 @@ public class ResEnvRefPanel extends javax.swing.JPanel {
     /** Creates new form ResRefPanel */
     public ResEnvRefPanel() {
         initComponents();
-        org.netbeans.modules.xml.multiview.Utils.makeTextAreaLikeTextField(descriptionTA, nameTF);
     }
 
     void setResEnvRefName(String name) {
@@ -103,6 +102,7 @@ public class ResEnvRefPanel extends javax.swing.JPanel {
         typeLabel = new javax.swing.JLabel();
         typeCB = new javax.swing.JComboBox();
         descriptionLabel = new javax.swing.JLabel();
+        descSP = new javax.swing.JScrollPane();
         descriptionTA = new javax.swing.JTextArea();
 
         setLayout(new java.awt.GridBagLayout());
@@ -154,17 +154,21 @@ public class ResEnvRefPanel extends javax.swing.JPanel {
         add(descriptionLabel, gridBagConstraints);
 
         descriptionTA.setRows(3);
+        descSP.setViewportView(descriptionTA);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
-        add(descriptionTA, gridBagConstraints);
+        add(descSP, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JScrollPane descSP;
     private javax.swing.JLabel descriptionLabel;
     private javax.swing.JTextArea descriptionTA;
     private javax.swing.JLabel nameLabel;
