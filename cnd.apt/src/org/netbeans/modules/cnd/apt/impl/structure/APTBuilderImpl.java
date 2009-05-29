@@ -327,7 +327,7 @@ public final class APTBuilderImpl {
         return newNode;
     }     
 
-    static private APT createLightCopy(APT apt) {
+    public static APT createLightCopy(APT apt) {
         assert (apt != null);
         assert (isRootNode(apt));        
         APT light = null;
