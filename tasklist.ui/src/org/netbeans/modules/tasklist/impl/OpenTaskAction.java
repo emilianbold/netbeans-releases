@@ -53,6 +53,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.NbBundle;
 
 /**
@@ -123,7 +125,7 @@ public class OpenTaskAction extends AbstractAction {
             if( null == line )
                 line = lines.getCurrent( 0 );
             if( null != line ) {
-                line.show( Line.SHOW_TOFRONT );
+                line.show( ShowOpenType.OPEN , ShowVisibilityType.FRONT);
                 return true;
             }
         } catch( IndexOutOfBoundsException e ) {

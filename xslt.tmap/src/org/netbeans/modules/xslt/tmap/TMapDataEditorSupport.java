@@ -62,6 +62,8 @@ import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.text.DataEditorSupport;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Lookup;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
@@ -216,7 +218,7 @@ public class TMapDataEditorSupport extends DataEditorSupport  implements
                     Line line = LineUtil.getLine(resultItem);
 
                     if (line != null) {
-                      line.show(Line.SHOW_GOTO);
+                      line.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
                     }
                 }
             }

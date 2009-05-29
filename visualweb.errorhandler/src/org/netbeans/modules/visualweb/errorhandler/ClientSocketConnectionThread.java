@@ -46,14 +46,10 @@ import java.awt.Toolkit;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Date;
-import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -63,6 +59,8 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotatable;
 import org.openide.text.Annotation;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.windows.WindowManager;
 
 /*
@@ -234,7 +232,7 @@ public class ClientSocketConnectionThread extends Thread {
                             SwingUtilities.invokeLater(new Runnable(){
                                 public void run(){
                                     attachAsNeeded(line);
-                                    line.show(Line.SHOW_GOTO);
+                                    line.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
                                     WindowManager.getDefault().getMainWindow().toFront();
                                 }
                             });
