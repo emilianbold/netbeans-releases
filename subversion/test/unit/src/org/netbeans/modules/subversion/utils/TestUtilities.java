@@ -58,7 +58,7 @@ public final class TestUtilities {
      */
     public static String formatFileURL (File file) {
         String url;
-        url = "file:///" + file.getAbsolutePath().replaceAll("\\\\", "/");
+        url = ("file:///" + file.getAbsolutePath().replaceAll("\\\\", "/")).replace("file:////", "file:///");
         return url;
     }
 
