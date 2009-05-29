@@ -41,6 +41,7 @@ package org.netbeans.modules.subversion.client.commands;
 
 import org.netbeans.modules.subversion.client.AbstractCommandTest;
 import java.io.File;
+import org.netbeans.modules.subversion.client.SvnClientTestFactory;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
@@ -77,8 +78,14 @@ public class AddTest extends AbstractCommandTest {
 
         assertStatus(SVNStatusKind.ADDED, file);
 
-        // XXX javahl throws exception
-        c.addFile(file);
+        try {
+            c.addFile(file);
+        } catch (SVNClientException ex) {
+            if (isCommandLine()) {
+                ex.printStackTrace();
+                fail("cmd client cannot throw the exception");
+            }
+        }
         assertStatus(SVNStatusKind.ADDED, file);
 
         assertNotifiedFiles(file);
@@ -91,17 +98,19 @@ public class AddTest extends AbstractCommandTest {
 
         ISVNClientAdapter c = getNbClient();
 
-//        SVNClientException e = null;
-//        try {
+        SVNClientException e = null;
+        try {
             c.addFile(file);
-//        } catch (SVNClientException ex) {
-//            e = ex;
-//        }
-//        assertNotNull(e);
+        } catch (SVNClientException ex) {
+            e = ex;
+        }
+        if (isJavahl()) {
+            assertNotNull(e);
+            assertTrue(e.getMessage().indexOf("is not a working copy") > -1
+                    || e.getMessage().indexOf("not found") > -1);
+        }
 
-//        assertTrue(e.getMessage().indexOf("is not a working copy") > -1);
-
-          assertNotifiedFiles(new File[]{});
+        assertNotifiedFiles(new File[]{});
     }
 
     public void testAddNotExistingFile() throws Exception {
@@ -119,10 +128,13 @@ public class AddTest extends AbstractCommandTest {
         }
         assertNotNull(e);
                         
-        assertTrue(e.getMessage().indexOf("is not a working copy") > -1);        
-        assertTrue(e.getMessage().indexOf("svn: Can't open file") > -1);        
-        assertTrue(e.getMessage().indexOf(".svn/entries': No such file or directory") > -1
-                || e.getMessage().indexOf("cannot find the path specified") > -1);
+        assertTrue(e.getMessage().indexOf("is not a working copy") > -1);
+        if (clientVersion.equals(SUBVERSION_1_5)) {
+            // only by 1.5
+            assertTrue(e.getMessage().indexOf("svn: Can't open file") > -1);
+            assertTrue(e.getMessage().indexOf(".svn/entries': No such file or directory") > -1
+                    || e.getMessage().indexOf("cannot find the path specified") > -1);
+        }
         
         assertNotifiedFiles(new File[]{});  
     }
@@ -148,19 +160,19 @@ public class AddTest extends AbstractCommandTest {
     public void testAddFileNonRecursivelly() throws Exception {
         File folder = createFolder("folder");
         File file = createFile(folder, "file");
-        
-        assertStatus(SVNStatusKind.UNVERSIONED, file);        
-        assertStatus(SVNStatusKind.UNVERSIONED, folder);        
-        
+
+        assertStatus(SVNStatusKind.UNVERSIONED, file);
+        assertStatus(SVNStatusKind.UNVERSIONED, folder);
+
         ISVNClientAdapter c = getNbClient();
         c.addFile(folder);
-                
+
         assertStatus(SVNStatusKind.ADDED, folder);
         assertStatus(SVNStatusKind.UNVERSIONED, file);
-        
+
         assertNotifiedFiles(folder);
     }
-    
+
     public void testAddDirectory() throws Exception {
         File folder = createFolder("folder");
 
@@ -180,7 +192,14 @@ public class AddTest extends AbstractCommandTest {
         c.addDirectory(folder, false);
         assertStatus(SVNStatusKind.ADDED, folder);
 
-        c.addFile(folder);
+        try {
+            c.addFile(folder);
+        } catch (SVNClientException ex) {
+            if (isCommandLine()) {
+                ex.printStackTrace();
+                fail("cmd client cannot throw the exception");
+            }
+        }
         assertStatus(SVNStatusKind.ADDED, folder);
 
         assertNotifiedFiles(new File[] { folder });
@@ -191,18 +210,19 @@ public class AddTest extends AbstractCommandTest {
 
         assertStatus(SVNStatusKind.UNVERSIONED, file);
 
-//        SVNClientException e = null;
-//        try {
+        SVNClientException e = null;
+        try {
             ISVNClientAdapter c = getNbClient();
             c.addDirectory(file, false);
-//        } catch (SVNClientException ex) {
-//            e = ex;
-//        }
-//        assertNotNull(e);
+        } catch (SVNClientException ex) {
+            e = ex;
+        }
+        if (isJavahl()) {
+            assertNotNull(e);
+            assertTrue(e.getMessage().indexOf("is not a working copy") > -1 || e.getMessage().indexOf("not found") > -1);
+        }
 
-//        assertTrue(e.getMessage().indexOf("is not a working copy") > -1);
-
-         assertNotifiedFiles(new File[] {});
+        assertNotifiedFiles(new File[] {});
     }
 
     public void testAddUnversionedDirectory() throws Exception {
@@ -221,9 +241,12 @@ public class AddTest extends AbstractCommandTest {
         assertNotNull(e);
                         
         assertTrue(e.getMessage().indexOf("is not a working copy") > -1);        
-        assertTrue(e.getMessage().indexOf("svn: Can't open file") > -1);        
-        assertTrue(e.getMessage().indexOf(".svn/entries': No such file or directory") > -1
-                || e.getMessage().indexOf("cannot find the path specified") > -1);
+        if (clientVersion.equals(SUBVERSION_1_5)) {
+            // only by 1.5
+            assertTrue(e.getMessage().indexOf("svn: Can't open file") > -1);
+            assertTrue(e.getMessage().indexOf(".svn/entries': No such file or directory") > -1
+                    || e.getMessage().indexOf("cannot find the path specified") > -1);
+        }
         
         assertNotifiedFiles(new File[]{});  
     }
@@ -231,48 +254,48 @@ public class AddTest extends AbstractCommandTest {
     public void testAddFolderRecursivelly() throws Exception {
         File folder = createFolder("folder");
         File file = createFolder(folder, "folder");
-        
-        assertStatus(SVNStatusKind.UNVERSIONED, file);        
-        assertStatus(SVNStatusKind.UNVERSIONED, folder);        
-        
-        ISVNClientAdapter c = getNbClient();                 
-        c.addDirectory(folder, true);      
 
-        assertStatus(SVNStatusKind.ADDED, folder);        
+        assertStatus(SVNStatusKind.UNVERSIONED, file);
+        assertStatus(SVNStatusKind.UNVERSIONED, folder);
+
+        ISVNClientAdapter c = getNbClient();
+        c.addDirectory(folder, true);
+
+        assertStatus(SVNStatusKind.ADDED, folder);
         assertStatus(SVNStatusKind.ADDED, file);
-        
+
         assertNotifiedFiles(new File[] {folder, file});
     }
-    
+
     public void testAddFolderRecursivellyForced() throws Exception {
         File parentFolder = createFolder("folder");
         File folder = createFolder(parentFolder, "folder");
-                
-        assertStatus(SVNStatusKind.UNVERSIONED, parentFolder);        
-        assertStatus(SVNStatusKind.UNVERSIONED, folder);        
-        
-        ISVNClientAdapter c = getNbClient();
-        c.addDirectory(parentFolder, true, true);      
 
-        assertStatus(SVNStatusKind.ADDED, parentFolder);        
+        assertStatus(SVNStatusKind.UNVERSIONED, parentFolder);
+        assertStatus(SVNStatusKind.UNVERSIONED, folder);
+
+        ISVNClientAdapter c = getNbClient();
+        c.addDirectory(parentFolder, true, true);
+
+        assertStatus(SVNStatusKind.ADDED, parentFolder);
         assertStatus(SVNStatusKind.ADDED, folder);
-        
+
         assertNotifiedFiles(new File[] { parentFolder, folder });
     }
-    
+
     public void testAddFolderNonRecursivelly() throws Exception {
         File parentFolder = createFolder("folder");
         File folder = createFolder(parentFolder, "file");
-        
-        assertStatus(SVNStatusKind.UNVERSIONED, parentFolder);        
-        assertStatus(SVNStatusKind.UNVERSIONED, folder);        
-        
+
+        assertStatus(SVNStatusKind.UNVERSIONED, parentFolder);
+        assertStatus(SVNStatusKind.UNVERSIONED, folder);
+
         ISVNClientAdapter c = getNbClient();
-        c.addDirectory(parentFolder, false);      
-                
+        c.addDirectory(parentFolder, false);
+
         assertStatus(SVNStatusKind.ADDED, parentFolder);
         assertStatus(SVNStatusKind.UNVERSIONED, folder);
-        
+
         assertNotifiedFiles(parentFolder );
     }
 }

@@ -315,16 +315,22 @@ public class ImportProject implements PropertyChangeListener {
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS)) {
-            OpenProjects.getDefault().removePropertyChangeListener(this);
-            //if (setAsMain) {
-            //    OpenProjects.getDefault().setMainProject(makeProject);
-            //}
-            RequestProcessor.getDefault().post(new Runnable() {
-
-                public void run() {
-                    doWork();
+            if (evt.getNewValue() instanceof Project[]) {
+                Project[] projects = (Project[])evt.getNewValue();
+                if (projects.length == 0) {
+                    return;
                 }
-            });
+                OpenProjects.getDefault().removePropertyChangeListener(this);
+                //if (setAsMain) {
+                //    OpenProjects.getDefault().setMainProject(makeProject);
+                //}
+                RequestProcessor.getDefault().post(new Runnable() {
+
+                    public void run() {
+                        doWork();
+                    }
+                });
+            }
         }
     }
 
@@ -392,6 +398,7 @@ public class ImportProject implements PropertyChangeListener {
     private void postConfigure() {
         try {
             if (!isProjectOpened()) {
+                isFinished = true;
                 return;
             }
             FileObject configureFileObject = FileUtil.toFileObject(configureFile);
@@ -445,6 +452,7 @@ public class ImportProject implements PropertyChangeListener {
 
     private void makeProject(boolean doClean) {
         if (!isProjectOpened()) {
+            isFinished = true;
             return;
         }
         if (makefileFile != null && makefileFile.exists()) {
@@ -478,6 +486,7 @@ public class ImportProject implements PropertyChangeListener {
 
     private void postClean(final Node node) {
         if (!isProjectOpened()) {
+            isFinished = true;
             return;
         }
         ExecutionListener listener = new ExecutionListener() {
@@ -502,6 +511,7 @@ public class ImportProject implements PropertyChangeListener {
 
     private void postMake(Node node) {
         if (!isProjectOpened()) {
+            isFinished = true;
             return;
         }
         final File makeLog = createTempFile("make"); // NOI18N
@@ -553,6 +563,7 @@ public class ImportProject implements PropertyChangeListener {
 
     private void discovery(int rc, File makeLog) {
         if (!isProjectOpened()) {
+            isFinished = true;
             return;
         }
         waitConfigurationDescriptor();
@@ -687,6 +698,7 @@ public class ImportProject implements PropertyChangeListener {
 
     private void postModelDiscovery(final boolean isFull) {
         if (!isProjectOpened()) {
+            isFinished = true;
             return;
         }
         CsmModel model = CsmModelAccessor.getModel();
@@ -722,7 +734,25 @@ public class ImportProject implements PropertyChangeListener {
         }
     }
 
+    private boolean isFinished = false;
+    public boolean isFinished(){
+        return isFinished;
+    }
+
+    public Project getProject(){
+        return makeProject;
+    }
+
+    private boolean isUILessMode = false;
+    public void setUILessMode(){
+        isUILessMode = true;
+    }
+
     private void showFollwUp(final NativeProject project) {
+        isFinished = true;
+        if (isUILessMode) {
+            return;
+        }
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
@@ -742,6 +772,7 @@ public class ImportProject implements PropertyChangeListener {
     // remove wrong "exclude from project" flags
     private void fixExcludedHeaderFiles() {
         if (!isProjectOpened()) {
+            isFinished = true;
             return;
         }
         CsmModel model = CsmModelAccessor.getModel();
@@ -806,6 +837,7 @@ public class ImportProject implements PropertyChangeListener {
 
     private void modelDiscovery() {
         if (!isProjectOpened()) {
+            isFinished = true;
             return;
         }
         Map<String, Object> map = new HashMap<String, Object>();
