@@ -69,6 +69,8 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.OperationEvent;
 import org.openide.loaders.OperationListener;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
@@ -1429,7 +1431,7 @@ public class FacesModel extends Model {
                 Line.Set ls = lc.getLineSet();
                 if (ls != null) {
                     Line line = ls.getCurrent(lineNo);
-                    line.show(Line.SHOW_GOTO, col);
+                    line.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, col);
                 }
             }
 

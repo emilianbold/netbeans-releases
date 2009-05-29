@@ -251,7 +251,9 @@ public final class SemanticHighlighter extends HighlighterBase {
         if (doc != null) {
             for (CsmOffsetable block : blocks) {
                 int startOffset = getDocumentOffset(doc, block.getStartOffset());
-                int endOffset = getDocumentOffset(doc, block.getEndOffset());
+                int endOffset = block.getEndOffset();
+
+                endOffset = getDocumentOffset(doc, endOffset == Integer.MAX_VALUE ? doc.getLength() + 1 : endOffset);
                 if (startOffset < doc.getLength() && endOffset > 0) {
                     addHighlightsToBag(bag, startOffset, endOffset, entity.getAttributes(block), entity.getName());
                 }

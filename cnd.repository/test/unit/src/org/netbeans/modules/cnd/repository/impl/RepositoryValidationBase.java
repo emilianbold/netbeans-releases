@@ -37,8 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
@@ -49,6 +47,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Tracer;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -162,7 +161,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
     // wget http://pkgconfig.freedesktop.org/releases/pkgconfig-0.18.tar.gz
     // gzip -d pkgconfig-0.18.tar.gz
     // tar xf pkgconfig-0.18.tar
-    private List<String> download(){
+    private List<String> download() throws IOException{
         List<String> list = new ArrayList<String>();
         String dataPath;
         if (false) {
@@ -174,7 +173,11 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         } else {
             // downloads in tmp dir
             dataPath = System.getProperty("java.io.tmpdir");
-            dataPath += File.separator + System.getProperty("user.name") +  "-cnd-test-downloads";
+            if (dataPath.endsWith(File.separator)) {
+                dataPath += System.getProperty("user.name") +  "-cnd-test-downloads";
+            } else {
+                dataPath += File.separator + System.getProperty("user.name") +  "-cnd-test-downloads";
+            }
         }
         final AtomicBoolean finish = new AtomicBoolean(false);
         ExecutionListener listener = new ExecutionListener() {
@@ -185,7 +188,11 @@ public class RepositoryValidationBase extends TraceModelTestBase {
             }
         };
         NativeExecutor ne = null;
-        if (!new File(dataPath + "/pkgconfig-0.18").exists()){
+        File file = new File(dataPath + "/pkgconfig-0.18");
+        if (!file.exists()){
+            file.mkdirs();
+        }
+        if (file.list().length == 0){
             ne = new NativeExecutor(dataPath,"wget",
                     "http://pkgconfig.freedesktop.org/releases/pkgconfig-0.18.tar.gz",new String[0],"wget","run",false,false);
             waitExecution(ne, listener, finish);
@@ -197,7 +204,11 @@ public class RepositoryValidationBase extends TraceModelTestBase {
             waitExecution(ne, listener, finish);
         }
 
-        if (!new File(dataPath + "/litesql-0.3.3").exists()){
+        file = new File(dataPath + "/litesql-0.3.3");
+        if (!file.exists()){
+            file.mkdirs();
+        }
+        if (file.list().length == 0){
             ne = new NativeExecutor(dataPath,"wget",
                     "http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/li/litesql/litesql-0.3.3.tar.gz",new String[0],"wget","run",false,false);
             waitExecution(ne, listener, finish);
@@ -210,6 +221,10 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         }
         list.add(dataPath + "/pkgconfig-0.18"); //NOI18N
         list.add(dataPath + "/litesql-0.3.3"); //NOI18N
+        for(String f : list){
+            file = new File(f);
+            assertTrue("Not found folder "+f, file.exists());
+        }
         list = expandAndSort(list);
         list.add("-DHAVE_CONFIG_H");
         list.add("-I"+dataPath + "/pkgconfig-0.18");
@@ -227,7 +242,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         }
         while(!finish.get()){
             try {
-                Thread.sleep(500);
+                Thread.sleep(100);
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             }
