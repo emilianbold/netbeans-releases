@@ -840,11 +840,11 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         StringBuilder sb = new StringBuilder();
         TransformationTable tt = getMacroTable(doc);
         if(tt != null) {
-            sb.append("MacroTable: " + tt.toString());
+            sb.append("MacroTable: " + tt.toString()); // NOI18N
         }
         tt = getTransformationTable(doc);
         if(tt != null) {
-            sb.append("TransformationTable: " + tt.toString());
+            sb.append("TransformationTable: " + tt.toString()); // NOI18N
         }
         return sb.toString();
     }
