@@ -37,8 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
@@ -210,6 +208,10 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         }
         list.add(dataPath + "/pkgconfig-0.18"); //NOI18N
         list.add(dataPath + "/litesql-0.3.3"); //NOI18N
+        for(String f : list){
+            File file = new File(f);
+            assertTrue("Not found folder "+f, file.exists());
+        }
         list = expandAndSort(list);
         list.add("-DHAVE_CONFIG_H");
         list.add("-I"+dataPath + "/pkgconfig-0.18");
@@ -227,7 +229,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         }
         while(!finish.get()){
             try {
-                Thread.sleep(500);
+                Thread.sleep(100);
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             }
