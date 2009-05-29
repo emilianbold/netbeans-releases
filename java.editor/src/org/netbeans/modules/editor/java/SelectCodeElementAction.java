@@ -59,7 +59,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.editor.BaseAction;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -146,7 +146,7 @@ final class SelectCodeElementAction extends BaseAction {
                 try {
                     js.runUserActionTask(this, true);
                 } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    Exceptions.printStackTrace(ex);
                 }
             }
             
@@ -187,7 +187,7 @@ final class SelectCodeElementAction extends BaseAction {
                 cc.toPhase(Phase.RESOLVED);
                 selectionInfos = initSelectionPath(target, cc);
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         }
         
