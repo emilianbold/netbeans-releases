@@ -581,11 +581,21 @@ public class Annotator {
 
     private static boolean onlyFolders(File[] files) {
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        boolean onlyFolders = true;
+        List<File> filesToRefresh = new LinkedList<File>();
         for (int i = 0; i < files.length; i++) {
             if (files[i].isFile()) return false;
-            if (!files[i].exists() && !cache.getStatus(files[i]).isDirectory()) return false;
+            FileInformation status = cache.getCachedStatus(files[i]);
+            if (status == null) {
+                filesToRefresh.add(files[i]);
+                onlyFolders = false; // be optimistic, this can be a file
+            } else if (!files[i].exists() && !status.isDirectory()) {
+                onlyFolders = false;
+                break;
+            }
         }
-        return true;
+        cache.refreshAsync(filesToRefresh);
+        return onlyFolders;
     }
 
     private static MessageFormat getFormat(String key) {
@@ -625,12 +635,13 @@ public class Annotator {
     private Image annotateFileIcon(VCSContext context, Image icon, int includeStatus) {
         FileInformation mostImportantInfo = null;
 
+        List<File> filesToRefresh = new LinkedList<File>();
         for (File file : context.getRootFiles()) {
             FileInformation info = cache.getCachedStatus(file);
             if (info == null) {
                 File parentFile = file.getParentFile();
                 Subversion.LOG.log(Level.FINE, "null cached status for: {0} in {1}", new Object[] {file, parentFile});
-                cache.refreshAsync(file);
+                filesToRefresh.add(file);
                 info = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
             }
             int status = info.getStatus();
@@ -640,7 +651,9 @@ public class Annotator {
                 mostImportantInfo = info;
             }
         }
-        if(mostImportantInfo == null) return null; 
+        cache.refreshAsync(filesToRefresh);
+
+        if(mostImportantInfo == null) return null;
         String statusText = null;
         int status = mostImportantInfo.getStatus();
         if (0 != (status & FileInformation.STATUS_VERSIONED_CONFLICT)) {
@@ -681,15 +694,20 @@ public class Annotator {
     }
 
     private Image annotateFolderIcon(VCSContext context, Image icon) {
-        FileStatusCache cache = Subversion.getInstance().getStatusCache();
         boolean isVersioned = false;
+        List<File> filesToRefresh = new LinkedList<File>();
         for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
             File file = (File) i.next();
-            if ((cache.getStatus(file).getStatus() & STATUS_BADGEABLE) != 0) {
+            FileInformation info = cache.getCachedStatus(file);
+            if (info == null) {
+                filesToRefresh.add(file);
+            } else if ((info.getStatus() & STATUS_BADGEABLE) != 0) {
                 isVersioned = true;
                 break;
             }
         }
+        cache.refreshAsync(filesToRefresh);
+        
         if (!isVersioned) {
             return null;
         }

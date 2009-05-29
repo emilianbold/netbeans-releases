@@ -67,7 +67,7 @@ public class CheckoutTest extends AbstractCommandTest {
             cleanUpRepo(new String[] {CI_FOLDER});
         }        
     }
-        
+    
     public void testCheckoutFile() throws Exception {
         File folder = createFolder(CI_FOLDER);        
         File file = createFile(folder, "file");
