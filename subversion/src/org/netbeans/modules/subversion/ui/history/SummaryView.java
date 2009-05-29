@@ -698,6 +698,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     sd.insertString(sd.getLength(), FIELDS_SEPARATOR + defaultFormat.format(date), null);
                 }
                 String commitMessage = container.getLog().getMessage();
+                if (commitMessage == null) commitMessage = "";
                 if (commitMessage.endsWith("\n")) commitMessage = commitMessage.substring(0, commitMessage.length() - 1); // NOI18N
                 sd.insertString(sd.getLength(), "\n", null);
 

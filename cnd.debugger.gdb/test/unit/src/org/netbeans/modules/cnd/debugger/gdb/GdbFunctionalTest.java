@@ -51,7 +51,9 @@ public class GdbFunctionalTest extends TestSuite {
     public GdbFunctionalTest() {
         super("Gdb functional tests");
 
-        //addTestSuite(GdbDebuggerTestCase.class);
+        if (System.getProperty("gdb.functional.tests") != null) {
+            addTestSuite(GdbDebuggerTestCase.class);
+        }
     }
 
     public static Test suite() {
