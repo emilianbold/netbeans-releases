@@ -1899,6 +1899,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public int[] getLineColumn(int offset) {
         int[] lineCol = new int[]{1, 1};
         String text = getText();
+        if (offset == Integer.MAX_VALUE) {
+            offset = text.length();
+        }
         if (text.length() < offset) {
             throw new IllegalArgumentException("offset is out of file length; " + // NOI18N
                     (getBuffer().isFileBased() ? "file based" : "document based") + // NOI18N
