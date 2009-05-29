@@ -100,6 +100,11 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
                 public boolean isMandatory() {
                     return idx < mandatoryArgSize;
                 }
+
+                //TODO: not implemented yet
+                public TypeScope getType() {
+                    return null;
+                }
             });
 
         }

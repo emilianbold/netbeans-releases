@@ -41,7 +41,9 @@ package org.netbeans.modules.php.editor.parser;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -116,7 +118,17 @@ public class PhpStructureScannerTest extends ParserTestBase{
                 result.addAll(instance.scan(info));
             }
         });
+        Comparator<StructureItem> comparator = new Comparator<StructureItem>() {
+            public int compare(StructureItem o1, StructureItem o2) {
+                long position1 = o1.getPosition();
+                long position2 = o2.getPosition();
+                return (int) (position1 - position2);
+            }
+        };
+        Collections.sort(result,comparator);
+
         for (StructureItem structureItem : result) {
+            Collections.sort(structureItem.getNestedItems(),comparator);
             sb.append(printStructureItem(structureItem, 0));
             sb.append("\n");
         }
