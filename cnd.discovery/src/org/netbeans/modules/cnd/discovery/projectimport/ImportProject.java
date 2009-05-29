@@ -556,22 +556,38 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private String getArguments(String command){
+        String arguments = _getArguments(command);
+        int i = arguments.indexOf("-f "); // NOI18N
+        if (i >= 0) {
+            String res = arguments.substring(0, i);
+            arguments = arguments.substring(i+3).trim();
+            int j = arguments.indexOf(' ');
+            if (j < 0) {
+                return res;
+            } else {
+                return res+arguments.substring(j).trim();
+            }
+        }
+        return arguments;
+    }
+
+    private String _getArguments(String command){
         if (command.startsWith("\"")) { // NOI18N
             int i = command.indexOf('"', 1); // NOI18N
             if (i > 0) {
-                return command.substring(i);
+                return command.substring(i).trim();
             }
             return ""; // NOI18N
         } else if (command.startsWith("\'")) { // NOI18N
             int i = command.indexOf('\'', 1); // NOI18N
             if (i > 0) {
-                return command.substring(i);
+                return command.substring(i).trim();
             }
             return ""; // NOI18N
         }
         int i = command.indexOf(' '); // NOI18N
         if (i > 0) {
-            return command.substring(i);
+            return command.substring(i).trim();
         }
         return ""; // NOI18N
     }
