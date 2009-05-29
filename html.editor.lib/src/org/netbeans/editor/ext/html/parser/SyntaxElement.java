@@ -64,7 +64,7 @@ public class SyntaxElement {
     public static final int TYPE_ENTITY_REFERENCE = 6;
     
     public static final String[] TYPE_NAMES =
-            new String[]{"comment","declaration","error","text","tag","endtag","entity reference"};
+            new String[]{"comment","declaration","error","text","tag","endtag","entity reference"}; //NOI18N
     
     private ParserSource source;
     
@@ -178,6 +178,8 @@ public class SyntaxElement {
         public String getName() {
             return name;
         }
+        
+        @Override
         public String toString() {
             return super.toString() + " - \"" + name + '"'; // NOI18N
         }
@@ -233,7 +235,7 @@ public class SyntaxElement {
             }
             
             ret.append( "}" );      //NOI18N
-            if(isEmpty()) ret.append(" (EMPTY TAG)");
+            if(isEmpty()) ret.append(" (EMPTY TAG)"); //NOI18N
            
             return ret.toString();
         }
@@ -288,17 +290,26 @@ public class SyntaxElement {
             this.valueOffset = ofs;
         }
         
+        @Override
         public String toString() {
-            return "TagAttribute[name=" + getName() + "; value=" + getValue() + "; nameOffset=" + getNameOffset() + "; valueOffset=" + getValueOffset() +"]";
+            return "TagAttribute[name=" + getName() + "; value=" + getValue() + "; nameOffset=" + getNameOffset() + "; valueOffset=" + getValueOffset() +"]"; //NOI18N
         }
        
         //backward compatibility
+        @Override
         public boolean equals(Object o) {
             if (!(o instanceof TagAttribute)) {
                 return false;
             } else {
                 return getName().equals(((TagAttribute)o).getName());
             }
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
+            return hash;
         }
     }
 }
