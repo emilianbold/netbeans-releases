@@ -384,7 +384,7 @@ public class KenaiTest extends NbTestCase {
             displayName = "Feature 2b";
             description = "Test Description - chat";
             feature = project.createProjectFeature(name, displayName, description, KenaiService.Type.CHAT.getId(), null, null, null);
-            assert feature.getName().equals(name);
+            assert feature.getName().equals(UNITTESTUNIQUENAME);
             assert feature.getDisplayName().equals(displayName);
 
             name = "unittestfeature03";
@@ -618,9 +618,6 @@ public class KenaiTest extends NbTestCase {
         _suite.addTest(new KenaiTest("testPasswordAuthentication"));
         _suite.addTest(new KenaiTest("testCreateProject"));
         _suite.addTest(new KenaiTest("testCreateFeature"));
-        _suite.addTest(new KenaiTest("testIsAuthorized"));
-//        _suite.addTest(new KenaiTest("testIsAuthorized2"));
-//        _suite.addTest(new KenaiTest("testGetFeatures"));
         _suite.addTest(new KenaiTest("testGetFeaturesGolden"));
         _suite.addTest(new KenaiTest("testGetLicenses"));
         _suite.addTest(new KenaiTest("testGetServices"));
