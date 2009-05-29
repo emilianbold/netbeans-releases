@@ -207,7 +207,7 @@ public abstract class MakeProjectBase  extends NbTestCase {
         };
         NativeExecutor ne = null;
         File fileCreatedFolder = new File(createdFolder);
-        if (!fileCreatedFolder.exists()){
+        if (!fileCreatedFolder.exists() || fileCreatedFolder.list().length == 0){
             FileUtil.createFolder(fileCreatedFolder);
             ne = new NativeExecutor(dataPath,"wget", urlName, new String[0], "wget", "run", false, false);
             waitExecution(ne, listener, finish);

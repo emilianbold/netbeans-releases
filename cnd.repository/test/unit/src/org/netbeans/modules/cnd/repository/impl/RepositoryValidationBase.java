@@ -187,7 +187,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
             }
         };
         NativeExecutor ne = null;
-        if (!new File(dataPath + "/pkgconfig-0.18").exists()){
+        if (!new File(dataPath + "/pkgconfig-0.18").exists() || new File(dataPath + "/pkgconfig-0.18").list().length == 0){
             ne = new NativeExecutor(dataPath,"wget",
                     "http://pkgconfig.freedesktop.org/releases/pkgconfig-0.18.tar.gz",new String[0],"wget","run",false,false);
             waitExecution(ne, listener, finish);
@@ -199,7 +199,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
             waitExecution(ne, listener, finish);
         }
 
-        if (!new File(dataPath + "/litesql-0.3.3").exists()){
+        if (!new File(dataPath + "/litesql-0.3.3").exists() || new File(dataPath + "/litesql-0.3.3").list().length == 0){
             ne = new NativeExecutor(dataPath,"wget",
                     "http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/li/litesql/litesql-0.3.3.tar.gz",new String[0],"wget","run",false,false);
             waitExecution(ne, listener, finish);
