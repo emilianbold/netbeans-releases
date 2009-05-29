@@ -36,5 +36,6 @@ Programs and/or Redistributable.
 
 The following files are each a Redistributable:
 
-(1) Sun Java Wireless Toolkit 2.5.2 for CLDC, and
-(2) JAVA PLATFORM, MICRO EDITION SOFTWARE DEVELOPMENT KIT 3.0 
+(1) Sun Java Wireless Toolkit 2.5.2 for CLDC
+(2) Sun Java Platform, Micro Edition Software Development Kit 3.0
+
