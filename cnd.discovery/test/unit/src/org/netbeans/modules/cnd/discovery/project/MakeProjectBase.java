@@ -194,7 +194,7 @@ public abstract class MakeProjectBase  extends NbTestCase {
         }
         File fileDataPath = new File(dataPath);
         if (!fileDataPath.exists()) {
-            FileUtil.createFolder(fileDataPath);
+            fileDataPath.mkdirs();
         }
         String createdFolder = dataPath+"/"+packageName;
         final AtomicBoolean finish = new AtomicBoolean(false);
@@ -207,8 +207,10 @@ public abstract class MakeProjectBase  extends NbTestCase {
         };
         NativeExecutor ne = null;
         File fileCreatedFolder = new File(createdFolder);
-        if (!fileCreatedFolder.exists() || fileCreatedFolder.list().length == 0){
-            FileUtil.createFolder(fileCreatedFolder);
+        if (!fileCreatedFolder.exists()){
+            fileCreatedFolder.mkdirs();
+        }
+        if (fileCreatedFolder.list().length == 0){
             ne = new NativeExecutor(dataPath,"wget", urlName, new String[0], "wget", "run", false, false);
             waitExecution(ne, listener, finish);
             ne = new NativeExecutor(dataPath,"gzip", "-d "+zipName, new String[0], "gzip", "run", false, false);
