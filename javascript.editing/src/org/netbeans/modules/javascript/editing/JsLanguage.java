@@ -42,6 +42,9 @@ package org.netbeans.modules.javascript.editing;
 
 import java.util.Collections;
 import java.util.Set;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.DeclarationFinder;
@@ -65,7 +68,31 @@ import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
  */
 public class JsLanguage extends DefaultLanguageConfig {
 
+    private static boolean jsClassPathRegistered = false;
+
     public JsLanguage() {
+        registerJsClassPathIfNeeded();
+    }
+
+    /*
+     * Registers javascript classpath.
+     *
+     * Class synchronized since more language instancies can be created in an undefined way.
+     *
+     * The registration is done lazily in EDT task so it is not ensured that
+     * the js classpath is properly initialized after returning from this method.
+     *
+     * The js classpath unregistration is done in module's install class.
+     */
+    private static synchronized void registerJsClassPathIfNeeded() {
+        if(!jsClassPathRegistered) {
+            jsClassPathRegistered = true;
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    GlobalPathRegistry.getDefault().register(JsClassPathProvider.BOOT_CP, new ClassPath[]{JsClassPathProvider.getBootClassPath()});
+                }
+            });
+        }
     }
 
     @Override
@@ -87,19 +114,18 @@ public class JsLanguage extends DefaultLanguageConfig {
     public String getDisplayName() {
         return "JavaScript"; //NOI18N
     }
-    
+
     @Override
     public String getPreferredExtension() {
         return "js"; // NOI18N
     }
-    
+
     @Override
     public Set<String> getLibraryPathIds() {
         return Collections.singleton(JsClassPathProvider.BOOT_CP);
     }
 
     // Service Registrations
-    
     @Override
     public KeystrokeHandler getKeystrokeHandler() {
         return new JsKeystrokeHandler();
@@ -119,7 +145,7 @@ public class JsLanguage extends DefaultLanguageConfig {
     public Parser getParser() {
         return new JsParser();
     }
-    
+
     @Override
     public CodeCompletionHandler getCompletionHandler() {
         return new JsCodeCompletion();
