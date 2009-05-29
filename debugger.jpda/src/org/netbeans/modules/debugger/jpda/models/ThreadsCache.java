@@ -126,7 +126,7 @@ public class ThreadsCache implements Executor {
             } catch (InternalExceptionWrapper e) {
                 this.vm = null;
             }
-            _allThreads = allThreads;
+            _allThreads = new ArrayList<ThreadReference>(allThreads);
             _allGroups = getAllGroups();
             
         }

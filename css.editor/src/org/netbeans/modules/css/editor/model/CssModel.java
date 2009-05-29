@@ -177,7 +177,7 @@ public final class CssModel {
 
             if (LOG) {
                 LOGGER.fine("CssModel parse tree:"); //NOI18N
-                root.dump("");
+                LOGGER.fine(root.dump());
                 LOGGER.fine("CssModel structure:"); //NOI18N
                 for(CssRule rule : rules) {
                     LOGGER.fine(rule.toString());

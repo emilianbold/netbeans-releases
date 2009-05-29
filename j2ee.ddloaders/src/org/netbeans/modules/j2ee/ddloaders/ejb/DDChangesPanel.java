@@ -44,12 +44,18 @@ package org.netbeans.modules.j2ee.ddloaders.ejb;
 import java.awt.Component;
 import java.util.List;
 import java.util.Iterator;
-
-import javax.swing.*;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
-
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileStateInvalidException;
 
@@ -112,6 +118,7 @@ public class DDChangesPanel extends JPanel {
         add (changesPanel, "Center"); // NOI18N
     }
     
+    @Override
     public java.awt.Dimension getPreferredSize () {
         return new java.awt.Dimension(600, 400);
     }
@@ -135,6 +142,7 @@ public class DDChangesPanel extends JPanel {
 
     static class ChangesListCellRenderer extends DefaultListCellRenderer {
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value,
                 int index, boolean isSelected,
                 boolean cellHasFocus) {

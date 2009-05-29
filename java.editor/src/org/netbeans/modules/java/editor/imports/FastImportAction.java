@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.TypeElement;
 import javax.swing.SwingUtilities;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -66,7 +65,6 @@ import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.java.editor.imports.ComputeImports.Pair;
 import org.netbeans.modules.java.editor.overridden.PopupUtil;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -144,9 +142,9 @@ public class FastImportAction extends BaseAction {
             handle.start();
             js.runWhenScanFinished(taskWhenScanFinished, true);
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         } catch (BadLocationException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
     }
     

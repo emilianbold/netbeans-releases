@@ -460,8 +460,11 @@ public abstract class Properties {
                 String l = br.readLine ();
                 while (l != null) {
                     int i = l.indexOf (':');
-                    if (i > 0)
-                        properties.put (l.substring (0, i), l.substring (i + 1));
+                    if (i > 0) {
+                        String value = l.substring (i + 1);
+                        value = translateSingleLineStringToMultiLine(value);
+                        properties.put (l.substring (0, i), value);
+                    }
                     l = br.readLine ();
                 }
                 br.close ();
@@ -505,6 +508,7 @@ public abstract class Properties {
                     Object value = properties.get (key);
                     if (value != null) {
                         // Do not write null values
+                        value = translateMultiLineStringToSingleLine(value.toString());
                         pw.println ("" + key + ":" + value);
                     }
                 }
@@ -523,6 +527,57 @@ public abstract class Properties {
                         lock.releaseLock ();
                     }
                 }
+            }
+        }
+
+        private static String translateMultiLineStringToSingleLine(String line) {
+            /* Do replace of newline and \\n:
+            line = line.replace("\\n", "\\\\n");
+            return line.replace("\n", "\\n");
+            Do it in one pass and minimize garbage: */
+            StringBuilder sb = null;
+            for (int i = 0; i < line.length(); i++) {
+                char c = line.charAt(i);
+                if (c == '\n' || c == 'n' && i > 0 && line.charAt(i-1) == '\\') {
+                    if (sb == null) {
+                        sb = new StringBuilder(line.substring(0, i));
+                    }
+                    sb.append("\\n"); // Replaces "\n" with "\\n" or "\\n" with "\\\\n"
+                } else if (sb != null) {
+                    sb.append(c);
+                }
+            }
+            if (sb == null) {
+                return line;
+            } else {
+                return sb.toString();
+            }
+        }
+
+        private static String translateSingleLineStringToMultiLine(String line) {
+            StringBuilder sb = null;
+            for (int i = 0; i < line.length(); i++) {
+                char c = line.charAt(i);
+                if (c == 'n' && i > 0 && line.charAt(i-1) == '\\') {
+                    if (sb == null) {
+                        sb = new StringBuilder(line.substring(0, i - 1));
+                    } else {
+                        int l = sb.length();
+                        sb.delete(l - 1, l); // Delete the last slash
+                    }
+                    if (i > 1 && line.charAt(i-2) == '\\') {
+                        sb.append("n"); // Replaces "\\\\n" to "\\n"
+                    } else {
+                        sb.append("\n"); // Replaces "\\n" to "\n"
+                    }
+                } else if (sb != null) {
+                    sb.append(c);
+                }
+            }
+            if (sb == null) {
+                return line;
+            } else {
+                return sb.toString();
             }
         }
 

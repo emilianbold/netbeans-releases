@@ -90,13 +90,14 @@ import org.netbeans.modules.vmd.game.model.Scene.CreateTiledLayerAction;
 import org.netbeans.modules.vmd.game.model.Scene.LayerInfo;
 import org.netbeans.modules.vmd.game.model.Scene.RemoveSceneAction;
 import org.netbeans.modules.vmd.game.model.Scene.RenameSceneAction;
+import org.netbeans.modules.vmd.game.model.SceneSelectionListener;
 import org.netbeans.modules.vmd.game.nbdialog.SpriteDialog;
 import org.netbeans.modules.vmd.game.nbdialog.TiledLayerDialog;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
-public class ScenePanel extends JPanel implements SceneListener,
+public class ScenePanel extends JPanel implements 
         TiledLayerListener, PropertyChangeListener, MouseMotionListener,
         MouseListener {
 
@@ -130,7 +131,8 @@ public class ScenePanel extends JPanel implements SceneListener,
     public ScenePanel(Scene scene) {
         ToolTipManager.sharedInstance().registerComponent(this);
         this.scene = scene;
-        this.scene.addSceneListener(this);
+        this.scene.addSceneListener(new SceneListenerImpl());
+        this.scene.addSceneListener(new SceneSelectionListenerImpl());
         this.scene.addPropertyChangeListener(this);
         this.addMouseMotionListener(this);
         this.addMouseListener(this);
@@ -284,22 +286,19 @@ public class ScenePanel extends JPanel implements SceneListener,
     }
 
     private void drawLayerDecorations(Graphics2D g, Layer layer) {
-        if (!this.hilitedLayers.containsKey(layer) && !this.selectedLayers.contains(layer)) {
+        if (!this.hilitedLayers.containsKey(layer) && !this.scene.isLayerSelected(layer)) {
             return;
         }
-        
-        if (this.selectedLayers.contains(layer)) {
+
+        if (this.scene.isLayerSelected(layer)) {
             if (this.scene.isLayerLocked(layer)) {
                 g.setColor(colorSelectionLocked);
-            }
-            else {
+            } else {
                 g.setColor(colorSelection);
             }
-        }
-        else if (this.hilitedLayers.containsKey(layer)) {
+        } else if (this.hilitedLayers.containsKey(layer)) {
             g.setColor(this.hilitedLayers.get(layer));
-        }
-        else {
+        } else {
             return;
         }
         
@@ -395,41 +394,6 @@ public class ScenePanel extends JPanel implements SceneListener,
         for (Layer layer : layers) {
             this.repaintLayerDecorations(layer);
         }
-    }
-
-    // -------- SceneListener ---------
-
-    public void layerAdded(Scene sourceScene, Layer layer, int index) {
-        this.registerLayerListeners(layer);
-        //this.repaintLayerWithDecorations(layer);
-        this.repaintAllLayerDecorations();
-    }
-
-    public void layerMoved(Scene sourceScene, Layer layer, int indexOld, int indexNew) {
-        //this.repaintLayerWithDecorations(layer);
-        this.repaintAllLayerDecorations();
-    }
-
-    public void layerRemoved(Scene sourceScene, Layer layer, LayerInfo info, int index) {
-        this.unregisterLayerListeners(layer);
-        //this.repaintLayerWithDecorations(layer);
-        this.repaintAllLayerDecorations();
-    }
-
-    public void layerLockChanged(Scene sourceScene, Layer layer, boolean locked) {
-        this.repaintAllLayerDecorations();
-    }
-
-    public void layerPositionChanged(Scene sourceScene, Layer layer,
-            Point oldPosition, Point newPosition, boolean inTransition) {
-        this.repaintLayerWithDecorations(oldPosition, layer);
-        this.repaintLayerWithDecorations(newPosition, layer);
-    }
-    
-    
-    public void layerVisibilityChanged(Scene sourceScene, Layer layer,
-            boolean visible) {
-        this.repaintLayerWithDecorations(layer);
     }
 
     private Point adjustFromOriginShift(Point p) {
@@ -569,7 +533,6 @@ public class ScenePanel extends JPanel implements SceneListener,
     
     
     
-    private Set<Layer> selectedLayers = new HashSet<Layer>();
     private Map<Layer, Point> dragLayerStartPoints = new HashMap<Layer, Point>();
     
     private Point startDragPoint = null;
@@ -581,10 +544,10 @@ public class ScenePanel extends JPanel implements SceneListener,
     private boolean mouseDragging;
     
     private void clearSelectedLayers() {
-        for (Iterator iter = this.selectedLayers.iterator(); iter.hasNext();) {
-            Layer layer = (Layer) iter.next();
-            iter.remove();
-            this.repaintLayerDecorations(layer);
+        for(Layer layer : this.scene.getLayers()){
+            if (this.scene.isLayerSelected(layer)){
+                this.scene.setLayerSelected(layer, false);
+            }
         }
         this.dragLayerStartPoints.clear();
         this.lastDragPoint = null;
@@ -596,18 +559,12 @@ public class ScenePanel extends JPanel implements SceneListener,
     
     private void addSelectedLayer(Layer layer, boolean toogleSelection) {
         if (toogleSelection) {
-            if (this.selectedLayers.contains(layer)) {
-                this.selectedLayers.remove(layer);
-            }
-            else {
-                this.selectedLayers.add(layer);
-            }
+            this.scene.setLayerSelected(layer, !this.scene.isLayerSelected(layer));
         }
         else {
-            this.selectedLayers.add(layer);
+            this.scene.setLayerSelected(layer, true);
         }
-        
-        this.repaintLayerDecorations(layer);
+        //this.repaintLayerDecorations(layer);
         
         //TODO : repaint only the layer outlines not the whole rulers
         this.horizontalRuler.repaint();
@@ -621,15 +578,17 @@ public class ScenePanel extends JPanel implements SceneListener,
         //initialize dragging
         if (this.mouseDragging == false) {
             //check that there are layers to drag and that were starting the drag inside a layer
-            if (selectedLayers.isEmpty() || this.scene.getLayersAtPoint(p).isEmpty())
+            if (this.scene.getLayersAtPoint(p).isEmpty())
                 return;
             
             //make sure that we are starting the drag inside a layer selected for dragging
             boolean dragStartPointOK = false;
-            for (Layer selectedLayer : this.selectedLayers) {
-                if (scene.getLayerBounds(selectedLayer).contains(p)) {
-                    dragStartPointOK = true;
-                    break;
+            for (Layer layer : this.scene.getLayers()){
+                if (this.scene.isLayerSelected(layer)){
+                    if (scene.getLayerBounds(layer).contains(p)) {
+                        dragStartPointOK = true;
+                        break;
+                    }
                 }
             }
             if (!dragStartPointOK)
@@ -638,14 +597,16 @@ public class ScenePanel extends JPanel implements SceneListener,
             //now i know i am doing a drag and that the cursor is inside a dragged layer
             //use the topmost layer as the reference for snapping to grid
             for (Layer tmp : this.scene.getLayersAtPoint(p)) {
-                if (this.selectedLayers.contains(tmp)) {
+                if (this.scene.isLayerSelected(tmp)) {
                     this.snapToGridReferenceLayer = tmp;
                     break;
                 }
             }
-            
-            for (Layer dragLayer : this.selectedLayers) {
-                this.dragLayerStartPoints.put(dragLayer, this.scene.getLayerPosition(dragLayer));
+
+            for (Layer layer : this.scene.getLayers()){
+                if (this.scene.isLayerSelected(layer)){
+                    this.dragLayerStartPoints.put(layer, this.scene.getLayerPosition(layer));
+                }
             }
             
             this.startDragPoint = p;
@@ -789,7 +750,7 @@ public class ScenePanel extends JPanel implements SceneListener,
     
     private void translateSelectedLayers(int dx, int dy, boolean inTransition) {
         //System.out.println("translate dx: " + dx + ", dy: " + dy + ", " + inTransition);
-        for (Layer dragLayer : this.selectedLayers) {
+        for (Layer dragLayer : this.dragLayerStartPoints.keySet()){
             Point slp = new Point(this.dragLayerStartPoints.get(dragLayer));
             slp.translate(dx, dy);
             if (this.scene.isLayerLocked(dragLayer)) {
@@ -853,7 +814,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 
         if (!isMultiSelect(e)) {
             for (Layer layer : layers) {
-                if (this.selectedLayers.contains(layer)) {
+                if (this.scene.isLayerSelected(layer)) {
                     return;
                 }
             }
@@ -869,10 +830,9 @@ public class ScenePanel extends JPanel implements SceneListener,
         }
                 
         Layer layer = layers.get(0);
-        if (!this.selectedLayers.contains(layer)) {
+        if (!this.scene.isLayerSelected(layer)) {
             this.addSelectedLayer(layer, false);
             this.lastAddedLayerByMousePress = layer;
-            this.repaintLayerDecorations(layer);
         }
         else {
             if (isMultiSelect(e)) {
@@ -1062,19 +1022,26 @@ public class ScenePanel extends JPanel implements SceneListener,
         }
         
         //align stuff
+        // collect selected but not locked layers to align
+        Set<Layer> selectedNotLockedLayers = new HashSet<Layer>();
+        for(Layer layer : scene.getLayers()){
+            if (this.scene.isLayerSelected(layer) && !this.scene.isLayerLocked(layer)){
+                selectedNotLockedLayers.add(layer);
+            }
+        }
         JMenu sub1MenuAlign = new JMenu(NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuAlign.txt"));
-        if (this.selectedLayers.size() < 2) {
+        if (selectedNotLockedLayers.size() < 2) {
             sub1MenuAlign.setEnabled(false);
         }
         else {
             AlignLayersTopAction alt = new AlignLayersTopAction();
-            alt.putValue(AlignLayersTopAction.PROP_LAYERS, this.selectedLayers);
+            alt.putValue(AlignLayersTopAction.PROP_LAYERS, selectedNotLockedLayers);
             AlignLayersLeftAction all = new AlignLayersLeftAction();
-            all.putValue(AlignLayersTopAction.PROP_LAYERS, this.selectedLayers);
+            all.putValue(AlignLayersLeftAction.PROP_LAYERS, selectedNotLockedLayers);
             AlignLayersBottomAction alb = new AlignLayersBottomAction();
-            alb.putValue(AlignLayersBottomAction.PROP_LAYERS, this.selectedLayers);
+            alb.putValue(AlignLayersBottomAction.PROP_LAYERS, selectedNotLockedLayers);
             AlignLayersRightAction alr = new AlignLayersRightAction();
-            alr.putValue(AlignLayersRightAction.PROP_LAYERS, this.selectedLayers);
+            alr.putValue(AlignLayersRightAction.PROP_LAYERS, selectedNotLockedLayers);
             
             sub1MenuAlign.add(alt);
             sub1MenuAlign.add(all);
@@ -1088,7 +1055,7 @@ public class ScenePanel extends JPanel implements SceneListener,
         if (!layersUnderCursor.isEmpty()) {
             for (int i = 0; i < layersUnderCursor.size(); i++) {
                 Layer layer = layersUnderCursor.get(i);
-                JCheckBoxMenuItem item = new JCheckBoxMenuItem(layer.getName(), this.selectedLayers.contains(layer));
+                JCheckBoxMenuItem item = new JCheckBoxMenuItem(layer.getName(), this.scene.isLayerSelected(layer));
                 sub1MenuSelectLayers.add(item);
                 item.addItemListener(new SelectListener(layer));
             }
@@ -1116,11 +1083,11 @@ public class ScenePanel extends JPanel implements SceneListener,
             }
         }
         RemoveSelectedLayersAction rsl = new RemoveSelectedLayersAction();
-        if (this.selectedLayers.isEmpty()) {
+        if (selectedNotLockedLayers.isEmpty()) {
             rsl.setEnabled(false);
         }
         else {
-            rsl.putValue(RemoveSelectedLayersAction.PROP_LAYERS, this.selectedLayers);
+            rsl.putValue(RemoveSelectedLayersAction.PROP_LAYERS, selectedNotLockedLayers);
         }
         
         
@@ -1160,6 +1127,50 @@ public class ScenePanel extends JPanel implements SceneListener,
         menu.show(this, e.getX(), e.getY());
     }
     
+    // -------- SceneListener ---------
+    private class SceneListenerImpl implements SceneListener {
+
+        public void layerAdded(Scene sourceScene, Layer layer, int index) {
+            registerLayerListeners(layer);
+            //this.repaintLayerWithDecorations(layer);
+            repaintAllLayerDecorations();
+        }
+
+        public void layerMoved(Scene sourceScene, Layer layer, int indexOld, int indexNew) {
+            //this.repaintLayerWithDecorations(layer);
+            repaintAllLayerDecorations();
+        }
+
+        public void layerRemoved(Scene sourceScene, Layer layer, LayerInfo info, int index) {
+            unregisterLayerListeners(layer);
+            //this.repaintLayerWithDecorations(layer);
+            repaintAllLayerDecorations();
+        }
+
+        public void layerLockChanged(Scene sourceScene, Layer layer, boolean locked) {
+            repaintAllLayerDecorations();
+        }
+
+        public void layerPositionChanged(Scene sourceScene, Layer layer,
+                Point oldPosition, Point newPosition, boolean inTransition) {
+            repaintLayerWithDecorations(oldPosition, layer);
+            repaintLayerWithDecorations(newPosition, layer);
+        }
+
+        public void layerVisibilityChanged(Scene sourceScene, Layer layer,
+                boolean visible) {
+            repaintLayerWithDecorations(layer);
+        }
+    }
+
+    private class SceneSelectionListenerImpl implements SceneSelectionListener {
+
+        public void layerSelectionChanged(Scene sourceScene, Layer layer, boolean selected) {
+            repaintLayerDecorations(layer);
+        }
+
+    }
+
     private class VisibilityListener implements ItemListener {
         private Layer layer;
         public VisibilityListener(Layer layer) {
@@ -1657,7 +1668,14 @@ public class ScenePanel extends JPanel implements SceneListener,
             //draw outlines of all selected layers on the rulers
             //make sure to draw the ScenePanel.this.snapToGridReferenceLayer last (i.e. on top of the other layers)
             
-            List<Layer> tmp = new ArrayList<Layer>(ScenePanel.this.selectedLayers);
+            List<Layer> tmp = new ArrayList<Layer>();
+            for (Layer layer : ScenePanel.this.scene.getLayers()) {
+                if (ScenePanel.this.scene.isLayerSelected(layer) 
+                        && !ScenePanel.this.scene.isLayerLocked(layer))
+                {
+                    tmp.add(layer);
+                }
+            }
             if (ScenePanel.this.snapToGridReferenceLayer != null) {
                 tmp.remove(ScenePanel.this.snapToGridReferenceLayer);
                 tmp.add(ScenePanel.this.snapToGridReferenceLayer);

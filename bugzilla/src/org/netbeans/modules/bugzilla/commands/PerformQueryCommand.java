@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugzilla.commands;
 
+import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
@@ -72,6 +73,7 @@ public class PerformQueryCommand extends BugzillaCommand {
         IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), "");            // NOI18N
         query.setUrl(queryUrl);
         BugzillaRepositoryConnector rc = Bugzilla.getInstance().getRepositoryConnector();
+        Bugzilla.LOG.log(Level.FINE, "executing query on repository {0} with parameters \n\t{1}", new Object[] {repository.getUrl(), queryUrl});
         rc.performQuery(taskRepository, query, collector, null, new NullProgressMonitor());
     }
 

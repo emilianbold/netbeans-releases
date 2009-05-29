@@ -56,7 +56,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -76,6 +78,7 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.SessionProvider;
+import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.Model;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.ColumnModel;
@@ -261,7 +264,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
         if (View.LOCALS_VIEW_NAME.equals(viewType) && (VariablesViewButtons.isResultsViewNested() ||
                 VariablesViewButtons.isWatchesViewNested())) {
-            List modelsList = new ArrayList();
+            Map<String, CompoundModel> modelsMap = new LinkedHashMap<String, CompoundModel>();
             Set treeModelFiltersSet = new HashSet();
             Set nodeModelFiltersSet = new HashSet();
             Set tableModelFiltersSet = new HashSet();
@@ -269,18 +272,18 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             CompoundModel localsCompound = createCompound(View.LOCALS_VIEW_NAME,
                     treeModelFiltersSet, nodeModelFiltersSet, tableModelFiltersSet,
                     nodeActionsProviderFiltersSet);
-            modelsList.add(localsCompound);
+            modelsMap.put(View.LOCALS_VIEW_NAME, localsCompound);
             if (VariablesViewButtons.isResultsViewNested()) {
-                modelsList.add(createCompound(View.RESULTS_VIEW_NAME,
+                modelsMap.put(View.RESULTS_VIEW_NAME, createCompound(View.RESULTS_VIEW_NAME,
                         treeModelFiltersSet, nodeModelFiltersSet, tableModelFiltersSet,
                         nodeActionsProviderFiltersSet));
             }
             if (VariablesViewButtons.isWatchesViewNested()) {
-                modelsList.add(createCompound(View.WATCHES_VIEW_NAME,
+                modelsMap.put(View.WATCHES_VIEW_NAME, createCompound(View.WATCHES_VIEW_NAME,
                         treeModelFiltersSet, nodeModelFiltersSet, tableModelFiltersSet,
                         nodeActionsProviderFiltersSet));
             }
-            UnionTreeModel unionModel = new UnionTreeModel(modelsList, localsCompound);
+            UnionTreeModel unionModel = new UnionTreeModel(modelsMap, localsCompound);
             treeModels.clear(); treeModels.add(unionModel);
             treeModelFilters.clear();
             // treeExpansionModels.clear(); treeExpansionModels.add(unionModel);
@@ -624,13 +627,15 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private static class UnionTreeModel implements TreeModel, ExtendedNodeModel,
             NodeActionsProvider, TableModel, TreeExpansionModel, ModelListener {
 
-        private List<CompoundModel> compoundModels;
+        private Collection<CompoundModel> compoundModels;
+        private Map<String, CompoundModel> compoundModelsByViewName;
         private List<CompoundModel> orderedModels; // order for getChildren()
         private final Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
 
-        UnionTreeModel(List<CompoundModel> treeModels, CompoundModel localsCompound) {
-            this.compoundModels = treeModels;
-            orderedModels = new ArrayList<CompoundModel>(treeModels);
+        UnionTreeModel(Map<String, CompoundModel> treeModels, CompoundModel localsCompound) {
+            this.compoundModelsByViewName = treeModels;
+            this.compoundModels = treeModels.values();
+            orderedModels = new ArrayList<CompoundModel>(this.compoundModels);
             orderedModels.remove(localsCompound);
             orderedModels.add(localsCompound);
         }
@@ -922,10 +927,25 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             return result;
         }
 
+        private String adjustColumn(String viewName, String columnID) {
+            if (View.WATCHES_VIEW_NAME.equals(viewName)) {
+                if (Constants.LOCALS_TYPE_COLUMN_ID.equals(columnID)) {
+                    columnID = Constants.WATCH_TYPE_COLUMN_ID;
+                } else if (Constants.LOCALS_VALUE_COLUMN_ID.equals(columnID)) {
+                    columnID = Constants.WATCH_VALUE_COLUMN_ID;
+                } else if (Constants.LOCALS_TO_STRING_COLUMN_ID.equals(columnID)) {
+                    columnID = Constants.WATCH_TO_STRING_COLUMN_ID;
+                }
+            }
+            return columnID;
+        }
+
         public Object getValueAt(Object node, String columnID) throws UnknownTypeException {
-            for (CompoundModel model : compoundModels) {
+            for (String viewName : compoundModelsByViewName.keySet()) {
+                CompoundModel model = compoundModelsByViewName.get(viewName);
+                String c = adjustColumn(viewName, columnID);
                 try {
-                    return model.getValueAt(node, columnID);
+                    return model.getValueAt(node, c);
                 } catch (UnknownTypeException e) {
                 }
             }
@@ -933,9 +953,11 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         public boolean isReadOnly(Object node, String columnID) throws UnknownTypeException {
-            for (CompoundModel model : compoundModels) {
+            for (String viewName : compoundModelsByViewName.keySet()) {
+                CompoundModel model = compoundModelsByViewName.get(viewName);
+                String c = adjustColumn(viewName, columnID);
                 try {
-                    return model.isReadOnly(node, columnID);
+                    return model.isReadOnly(node, c);
                 } catch (UnknownTypeException e) {
                 }
             }
@@ -943,9 +965,11 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         public void setValueAt(Object node, String columnID, Object value) throws UnknownTypeException {
-            for (CompoundModel model : compoundModels) {
+            for (String viewName : compoundModelsByViewName.keySet()) {
+                CompoundModel model = compoundModelsByViewName.get(viewName);
+                String c = adjustColumn(viewName, columnID);
                 try {
-                    model.setValueAt(node, columnID, value);
+                    model.setValueAt(node, c, value);
                     return;
                 } catch (UnknownTypeException e) {
                 }
