@@ -82,6 +82,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     private final InputOutput io;
     private String[] args;
     private String cmd;
+    private boolean x11forwarding;
     private volatile Future<Integer> targetFutureResult;
     private volatile int pid = -1;
     private volatile Integer status = null;
@@ -127,6 +128,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
 
         this.templateArgs = argsCopy;
         this.io = configuration.getIO();
+        this.x11forwarding = configuration.getX11Forwarding();
     }
 
     public int getPID() {
@@ -153,6 +155,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         NativeProcess process = (NativeProcess) event.getSource();
 
         State newState = null;
+        boolean doNotify = true;
 
         synchronized (stateLock) {
             switch (event.state) {
@@ -167,15 +170,18 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
                     pid = event.pid;
                     break;
                 case CANCELLED:
+                    doNotify = false;
                     state = State.TERMINATED;
                     log.fine("NativeTask " + process.toString() + " cancelled!"); // NOI18N
                     break;
                 case ERROR:
+                    doNotify = false;
                     state = State.FAILED;
                     log.fine("NativeTask " + process.toString() + // NOI18N
                             " finished with error! "); // NOI18N
                     break;
                 case FINISHED:
+                    doNotify = false;
                     state = State.DONE;
                     status = process.exitValue();
                     break;
@@ -184,7 +190,20 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
             newState = state;
         }
 
-        notifyListeners(new DLightTargetChangeEvent(this, newState, status));
+        // #165655 - reported RUN status may intermix with program's output
+        // This is because notification is sent as soon as process's waitFor()
+        // exists. At this moment IO's output may not be flushed.
+        // To avoid this condition, register poset-execution runnable
+        //    descr = descr.postExecution(new Runnable() {...})
+        // and don't notify listeners until it is invoked.
+        //
+        // So, in case we are in final state (DONE, FAILED, TERMINATED, ... )
+        // We will not notify listeners here, but rather will do this from
+        // a runnable passed to an execution service as a postExecution parameter.
+
+        if (doNotify) {
+            notifyListeners(new DLightTargetChangeEvent(NativeExecutableTarget.this, newState, status));
+        }
     }
 
     public int getExitCode() throws InterruptedException {
@@ -231,11 +250,12 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
             ExecutionDescriptor descr = new ExecutionDescriptor();
             descr = descr.controllable(true).frontWindow(true);
 
-            NativeProcessBuilder pb = new NativeProcessBuilder(execEnv, cmd, true);
-            pb = pb.setArguments(args);
-            pb = pb.addNativeProcessListener(NativeExecutableTarget.this);
-            pb = pb.setWorkingDirectory(workingDirectory);
-            pb = pb.addEnvironmentVariables(envs);
+            NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv);
+            pb.setExecutable(cmd).setArguments(args);
+            pb.addNativeProcessListener(NativeExecutableTarget.this);
+            pb.setWorkingDirectory(workingDirectory);
+            pb.addEnvironmentVariables(envs);
+            pb.setX11Forwarding(x11forwarding);
 
             // Setup external terminal ...
             if (execEnv.isLocal() && externalTerminal != null) {
@@ -267,6 +287,13 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
                     log.severe(ex.getMessage());
                 }
             }
+
+            descr = descr.postExecution(new Runnable() {
+
+                public void run() {
+                    notifyListeners(new DLightTargetChangeEvent(NativeExecutableTarget.this, state, status));
+                }
+            });
 
             final ExecutionService es = ExecutionService.newService(
                     pb,

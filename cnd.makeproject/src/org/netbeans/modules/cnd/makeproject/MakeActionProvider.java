@@ -52,7 +52,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JButton;
@@ -74,13 +73,11 @@ import org.netbeans.modules.cnd.makeproject.api.RunDialogPanel;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomToolConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
@@ -160,7 +157,7 @@ public class MakeActionProvider implements ActionProvider {
     MakeProject project;
 
     // Project Descriptor
-    ConfigurationDescriptor projectDescriptor = null;
+    MakeConfigurationDescriptor projectDescriptor = null;
     /** Map from commands to ant targets */
     Map<String, String[]> commands;
     Map<String, String[]> commandsNoBuild;
@@ -213,7 +210,7 @@ public class MakeActionProvider implements ActionProvider {
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             projectDescriptor = pdp.getConfigurationDescriptor();
         }
-        return (MakeConfigurationDescriptor) projectDescriptor;
+        return projectDescriptor;
     }
 
     public String[] getSupportedActions() {
@@ -253,7 +250,10 @@ public class MakeActionProvider implements ActionProvider {
         ProjectInformation info = project.getLookup().lookup(ProjectInformation.class);
         final String projectName = info.getDisplayName();
         final MakeConfigurationDescriptor pd = getProjectDescriptor();
-        final MakeConfiguration conf = (MakeConfiguration) pd.getConfs().getActive();
+        final MakeConfiguration conf = pd.getActiveConfiguration();
+        if (conf == null) {
+            return;
+        }
 
         CancellableTask actionWorker = new CancellableTask() {
             @Override
@@ -666,7 +666,9 @@ public class MakeActionProvider implements ActionProvider {
                         if (cancelled.get()) {
                             return; // getEnv() might be costly for remote host
                         }
-                        if (HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
+                        if (conf.getDevelopmentHost().getExecutionEnvironment().isLocal() &&
+                                HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DISPLAY") == null && // NOI18N
+                                conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
                             // DISPLAY hasn't been set
                             if (runProfile == null) {
                                 runProfile = conf.getProfile().clone(conf);
@@ -681,14 +683,12 @@ public class MakeActionProvider implements ActionProvider {
                         // naturalize if relative
                         path = makeArtifact.getOutput();
                         //TODO: we also need remote aware IpeUtils..........
-                        if (conf.getDevelopmentHost().isLocalhost()) {
-                            if (!IpeUtils.isPathAbsolute(path)) {
-                                // make path relative to run working directory
-                                path = makeArtifact.getWorkingDirectory() + "/" + path; // NOI18N
-                                path = FilePathAdaptor.naturalize(path);
-                                path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
-                                path = FilePathAdaptor.naturalize(path);
-                            }
+                        if (!IpeUtils.isPathAbsolute(path)) {
+                            // make path relative to run working directory
+                            path = makeArtifact.getWorkingDirectory() + "/" + path; // NOI18N
+                            path = FilePathAdaptor.naturalize(path);
+                            path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
+                            path = FilePathAdaptor.naturalize(path);
                         }
                     } else {
                         // Always absolute
@@ -955,8 +955,11 @@ public class MakeActionProvider implements ActionProvider {
                 command.equals(COMMAND_DEBUG_STEP_INTO) ||
                 command.equals(COMMAND_DEBUG_LOAD_ONLY) ||
                 command.equals(COMMAND_CUSTOM_ACTION)) {
-            ConfigurationDescriptor pd = getProjectDescriptor();
-            MakeConfiguration conf = (MakeConfiguration) pd.getConfs().getActive();
+            MakeConfigurationDescriptor pd = getProjectDescriptor();
+            MakeConfiguration conf = pd.getActiveConfiguration();
+            if (conf == null) {
+                return null;
+            }
             RunProfile profile = (RunProfile) conf.getAuxObject(RunProfile.PROFILE_ID);
             if (profile == null) { // See IZ 89349
                 return null;
@@ -987,10 +990,10 @@ public class MakeActionProvider implements ActionProvider {
         if (!isProjectDescriptorLoaded()) {
             return false;
         }
-        if (!(getProjectDescriptor().getConfs().getActive() instanceof MakeConfiguration)) {
+        MakeConfiguration conf = getProjectDescriptor().getActiveConfiguration();
+        if (conf == null) {
             return false;
         }
-        MakeConfiguration conf = (MakeConfiguration) getProjectDescriptor().getConfs().getActive();
         if (command.equals(COMMAND_CLEAN)) {
             return true;
         } else if (command.equals(COMMAND_BUILD)) {
@@ -1113,11 +1116,15 @@ public class MakeActionProvider implements ActionProvider {
         ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
         int hostPlatformId = CompilerSetManager.getDefault(execEnv).getPlatform();
         if (buildPlatformId != hostPlatformId) {
-            Platform buildPlatform = Platforms.getPlatform(buildPlatformId);
-            Platform hostPlatform = Platforms.getPlatform(hostPlatformId);
-            String errormsg = getString("WRONG_PLATFORM", hostPlatform.getDisplayName(), buildPlatform.getDisplayName());
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
-            return false;
+            if (!conf.isMakefileConfiguration()) {
+                Platform buildPlatform = Platforms.getPlatform(buildPlatformId);
+                Platform hostPlatform = Platforms.getPlatform(hostPlatformId);
+                String errormsg = getString("WRONG_PLATFORM", hostPlatform.getDisplayName(), buildPlatform.getDisplayName());
+                if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(errormsg, NotifyDescriptor.WARNING_MESSAGE)) != NotifyDescriptor.OK_OPTION) {
+                    return false;
+                }
+            }
+            conf.getDevelopmentHost().setBuildPlatform(hostPlatformId);
         }
 
         boolean unknownCompilerSet = false;

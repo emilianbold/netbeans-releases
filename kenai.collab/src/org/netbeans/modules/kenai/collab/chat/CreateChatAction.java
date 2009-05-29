@@ -94,7 +94,7 @@ public class CreateChatAction extends AbstractAction {
                         SwingUtilities.invokeLater(new Runnable() {
 
                             public void run() {
-                                JOptionPane.showMessageDialog(null, NbBundle.getMessage(CreateChatAction.class, "CTL_NotAuthorizedToCreateChat"));
+                                JOptionPane.showMessageDialog(null, NbBundle.getMessage(CreateChatAction.class, "CTL_NotAuthorizedToCreateChat",getValue(NAME)));
                                 progress.finish();
                                 mainWindow.setCursor(Cursor.getDefaultCursor());
                                 if (source!=null) source.setEnabled(true);
@@ -139,7 +139,7 @@ public class CreateChatAction extends AbstractAction {
                                             public void run() {
                                                 final ChatTopComponent chatTc = ChatTopComponent.findInstance();
                                                 chatTc.open();
-                                                chatTc.addChat(new ChatPanel(KenaiConnection.getDefault().createChat(f)));
+                                                chatTc.addChat(new ChatPanel(KenaiConnection.getDefault().getChat(f)));
                                                 mainWindow.setCursor(Cursor.getDefaultCursor());
                                                 progress.finish();
                                                 if (source!=null) source.setEnabled(true);

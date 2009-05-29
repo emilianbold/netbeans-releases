@@ -868,12 +868,12 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                        workingCopy);
 
         /* Generate test method names: */
-        TypeElement tstClassElem
-                = (TypeElement) trees.getElement(tstClassTreePath);
+//        TypeElement tstClassElem
+//                = (TypeElement) trees.getElement(tstClassTreePath);
         List<String> testMethodNames
                 = TestMethodNameGenerator.getTestMethodNames(srcMethods,
-                                                             tstClassElem,
-                                                             clsMap.getNoArgMethods(),
+// passing null's to get the names as for newly created class to avoid creating all test methods every time we generating the tests
+                                                             null, null,
                                                              workingCopy);
 
         Iterator<ExecutableElement> srcMethodsIt = srcMethods.iterator();
@@ -1305,7 +1305,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                     maker,
                                     srcMethod.getSimpleName().toString());
             List<VariableTree> paramVariables = generateParamVariables(
-                                    maker,
+                                    workingCopy,
                                     srcMethod);
             statements.add(sout);
             statements.addAll(paramVariables);
@@ -1334,41 +1334,49 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
             TypeMirror retType = srcMethod.getReturnType();
             TypeKind retTypeKind = retType.getKind();
 
-            if ((retTypeKind == TypeKind.VOID) || (retTypeKind == TypeKind.ERROR)) {
-                StatementTree methodCallStmt = maker.ExpressionStatement(methodCall);
-
-                statements.add(methodCallStmt);
-            } else {
-                Tree retTypeTree = maker.Type(retType);
-
-                VariableTree expectedValue = maker.Variable(
-                        maker.Modifiers(NO_MODIFIERS),
-                        EXP_RESULT_VAR_NAME,
-                        retTypeTree,
-                        getDefaultValue(maker, retType));
-                VariableTree actualValue = maker.Variable(
-                        maker.Modifiers(NO_MODIFIERS),
-                        RESULT_VAR_NAME,
-                        retTypeTree,
-                        methodCall);
-
-                List<ExpressionTree> comparisonArgs = new ArrayList<ExpressionTree>(2);
-                comparisonArgs.add(maker.Identifier(expectedValue.getName().toString()));
-                comparisonArgs.add(maker.Identifier(actualValue.getName().toString()));
-                if ((retTypeKind == TypeKind.DOUBLE) || (retTypeKind == TypeKind.FLOAT)){
-                    comparisonArgs.add(maker.Identifier(new Double(0).toString()));
+            switch(retTypeKind){
+                case VOID:
+                case ERROR: {
+                    StatementTree methodCallStmt = maker.ExpressionStatement(methodCall);
+                    statements.add(methodCallStmt);
+                    break;
                 }
+                case TYPEVAR:{
+                    retType = getSuperType(workingCopy, retType);
+                    retTypeKind = retType.getKind();
+                }
+                default:
+                    retType = workingCopy.getTypes().erasure(retType);
+                    retTypeKind = retType.getKind();
+                    Tree retTypeTree = maker.Type(retType);
+                    VariableTree expectedValue = maker.Variable(
+                            maker.Modifiers(NO_MODIFIERS),
+                            EXP_RESULT_VAR_NAME,
+                            retTypeTree,
+                            getDefaultValue(maker, retType));
+                    VariableTree actualValue = maker.Variable(
+                            maker.Modifiers(NO_MODIFIERS),
+                            RESULT_VAR_NAME,
+                            retTypeTree,
+                            methodCall);
 
-                MethodInvocationTree comparison = maker.MethodInvocation(
-                        Collections.<ExpressionTree>emptyList(),    //type args.
-                        maker.Identifier("assertEquals"),               //NOI18N
-                        comparisonArgs);
-                StatementTree comparisonStmt = maker.ExpressionStatement(
-                        comparison);
+                    List<ExpressionTree> comparisonArgs = new ArrayList<ExpressionTree>(2);
+                    comparisonArgs.add(maker.Identifier(expectedValue.getName().toString()));
+                    comparisonArgs.add(maker.Identifier(actualValue.getName().toString()));
+                    if ((retTypeKind == TypeKind.DOUBLE) || (retTypeKind == TypeKind.FLOAT)){
+                        comparisonArgs.add(maker.Identifier(new Double(0).toString()));
+                    }
 
-                statements.add(expectedValue);
-                statements.add(actualValue);
-                statements.add(comparisonStmt);
+                    MethodInvocationTree comparison = maker.MethodInvocation(
+                            Collections.<ExpressionTree>emptyList(),    //type args.
+                            maker.Identifier("assertEquals"),               //NOI18N
+                            comparisonArgs);
+                    StatementTree comparisonStmt = maker.ExpressionStatement(
+                            comparison);
+
+                    statements.add(expectedValue);
+                    statements.add(actualValue);
+                    statements.add(comparisonStmt);
             }
         }
 
@@ -1429,8 +1437,9 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
     /**
      */
     private List<VariableTree> generateParamVariables(
-                                            TreeMaker maker,
+                                            WorkingCopy workingCopy,
                                             ExecutableElement srcMethod) {
+        TreeMaker maker = workingCopy.getTreeMaker();
         List<? extends VariableElement> params = srcMethod.getParameters();
         if ((params == null) || params.isEmpty()) {
             return Collections.<VariableTree>emptyList();
@@ -1442,6 +1451,9 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
         int index = 0;
         for (VariableElement param : params) {
             TypeMirror paramType = param.asType();
+            if (paramType.getKind() == TypeKind.TYPEVAR){
+                paramType = getSuperType(workingCopy, paramType);
+            }
             paramVariables.add(
                     maker.Variable(maker.Modifiers(noModifiers),
                                    varNames[index++],
@@ -1451,6 +1463,17 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
         return paramVariables;
     }
 
+    /**
+     * Returns supertype of the provided type or provided type if no supertypes were found
+     */
+
+    private TypeMirror getSuperType(WorkingCopy workingCopy, TypeMirror type){
+        List<? extends TypeMirror> superTypes = workingCopy.getTypes().directSupertypes(type);
+        if (!superTypes.isEmpty()){
+            return superTypes.get(0);
+        }
+        return type;
+    }
     /**
      */
     private List<IdentifierTree> createIdentifiers(
@@ -1689,7 +1712,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
             }
 
             TreePath nestedClassPath = new TreePath(tstClassPath, nestedClass);
-            TypeMirror nestedClassType = trees.getTypeMirror(nestedClassPath);
+            TypeMirror nestedClassType = trees.getElement(nestedClassPath).asType();
             if (srcClassType == null) {
                 srcClassType = srcClass.asType();
             }

@@ -128,6 +128,7 @@ public abstract class ObjectNode extends BaseNode implements ChangeListener {
                 }
             }
         }
+        res.add(RefactoringActionsFactory.renameAction());
         res.add(RefactoringActionsFactory.whereUsedAction());
         if (CsmKindUtilities.isField(decl) || CsmKindUtilities.isClass(decl)) {
             res.add(CsmRefactoringActionsFactory.encapsulateFieldsAction());

@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.apt.support;
 
 import antlr.TokenStreamException;
 import java.io.File;
-import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.structure.APT;
@@ -118,26 +117,34 @@ public abstract class APTAbstractWalker extends APTWalker {
             Object lock = cacheEntry.getIncludeLock(aptInclude);
             synchronized (lock) {
                 APTMacroMap.State postIncludeState = cacheEntry.getPostIncludeMacroState(aptInclude);
-                if (postIncludeState != null) {
+                if (postIncludeState != null && !hasIncludeActionSideEffects()) {
                     getPreprocHandler().getMacroMap().setState(postIncludeState);
                     return;
                 }
-                include(resolvedPath, aptInclude);
-                postIncludeState = getPreprocHandler().getMacroMap().getState();
-                cacheEntry.setPostIncludeMacroState(aptInclude, postIncludeState);
+                if (include(resolvedPath, aptInclude, postIncludeState)) {
+                    postIncludeState = getPreprocHandler().getMacroMap().getState();
+                    cacheEntry.setPostIncludeMacroState(aptInclude, postIncludeState);
+                }
             }
         } else {
-            include(resolvedPath, aptInclude);
+            include(resolvedPath, aptInclude, null);
         }
     }
 
-    abstract protected void include(ResolvedPath resolvedPath, APTInclude aptInclude);
-   
+    /**
+     * 
+     * @param resolvedPath
+     * @param aptInclude
+     * @param postIncludeState cached information about visit of this include directive
+     * @return true if need to cache post include state
+     */
+    abstract protected boolean include(ResolvedPath resolvedPath, APTInclude aptInclude, APTMacroMap.State postIncludeState);
+    abstract protected boolean hasIncludeActionSideEffects();
+
     protected void onDefine(APT apt) {
         APTDefine define = (APTDefine)apt;
         if (define.isValid()) {
-            List<APTToken> body = define.getBody();
-            getMacroMap().define(getRootFile(), define.getName(), define.getParams(), body, Kind.DEFINED);
+            getMacroMap().define(getRootFile(), define, Kind.DEFINED);
         } else {
             if (DebugUtils.STANDALONE) {
                 if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {

@@ -11,7 +11,6 @@ Notes:
 1) never put unexpected tag into the nodes stack => cannot be paired
 2) probably better is to say "Unknown tag" rather than "Unknown content"
 
-
 Usecases:
 =========
 
@@ -33,7 +32,7 @@ ast: p()
 
 3. <a> has required end and can contain <script> with required end
 <a><script></a></script>
-           ^^^^ error: unmatched tag
+^^^        ^^^^ error: unmatched tag
 
 ast: a(script())
 
@@ -95,5 +94,54 @@ C. Unresolved tags
 
 note: whether a tag is resolved or not doesn't affect the parsing/nesting of
 its content or following siblings
+
+Usecase studies
+================
+legend: s == stack
+
+Study (1)
+<body>              //s(body)
+<div>               //s(body,div1)
+    <div>           //s(body,div1,div2)
+        <div>       //s(body,div1,div2,div3)
+            <div>   //s(body,div1, div2, div3, div4)
+        </div>      //s(body,div1,div2,div3)
+    </div>          //s(body,div1,div2)
+</div>              //s(body,div1) -- error, <body> not on the stack's top
+</body>             ???
+
+...at the end the stack still contain one <div> ... the first one ... so where
+to flag the error?
+
+Study (2)
+<body>      //s(body)
+<p>         //s(body,p1)
+<p>         //s(body,p2) -- previous tag cannot contain this one && have optional end, so close it by the start of next <p>
+</body>     -- p2 remains on stack, but has optional end so we can close it by the start of the close tag
+
+Study A.1
+<p>         //s(p)
+<a>         //s(p,a)
+</p>        //s(a) -- p is not top, but has optional end, while <a> has required end => so close it by the next stack item (a) and mark </p> end tag as unmatched
+</a>        //s()
+
+Study A.2
+<p>         //s(p)
+<div>       //s(p)-- div not allowed here, mark as error
+</p>        //s()
+</div>      -- unmatched, mark
+
+Study A.3
+<a>         //s(a)
+<script>    //s(a,script)
+</a>        //s(a,script) -- script is not top, a has required end, script as well => flag the </a> end tag as unmatched
+</script>   //s(a) -- close script normally
+            -- a stays in stack, mark as unmatched
+
+Study A.4
+<a>         //s(a)
+<div>       //s(a) -- a cannot contain div, mark div as unallowed here
+</a>        //s()
+</div>      --div is unmatched end tag
 
 

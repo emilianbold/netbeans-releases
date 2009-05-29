@@ -121,7 +121,7 @@ public class HostInfoImpl implements HostInfo {
             String tmpBase = System.getProperty("java.io.tmpdir"); // NOI18N
 
             if (Utilities.isWindows()) {
-                tmpBase = WindowsSupport.getInstance().normalizePath(tmpBase);
+                tmpBase = WindowsSupport.getInstance().convertToShellPath(tmpBase);
             }
 
             pb.environment().put("TMPBASE", tmpBase); // NOI18N

@@ -567,9 +567,9 @@ public class Annotator {
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         for (File file : files) {
             if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) return false;
-            }
-            return true;
         }
+        return true;
+    }
 
     private static boolean onlyProjects(Node[] nodes) {
         if (nodes == null || nodes.length == 0) return false;
@@ -589,7 +589,7 @@ public class Annotator {
             if (status == null) {
                 filesToRefresh.add(files[i]);
                 onlyFolders = false; // be optimistic, this can be a file
-            } else if (!files[i].exists() && !cache.getStatus(files[i]).isDirectory()) {
+            } else if (!files[i].exists() && !status.isDirectory()) {
                 onlyFolders = false;
                 break;
             }
@@ -707,7 +707,7 @@ public class Annotator {
             }
         }
         cache.refreshAsync(filesToRefresh);
-
+        
         if (!isVersioned) {
             return null;
         }

@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
@@ -186,20 +187,16 @@ public class CompilerSetManager {
             // we postpone dialog displayer until EDT is free to process
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    RequestProcessor.getDefault().post(new NamedRunnable("Postponed No Compilers Found Notification") { // NOI18N
-                        public void runImpl() {
-                            DialogDescriptor dialogDescriptor = new DialogDescriptor(
-                                    new NoCompilersPanel(),
-                                    getString("NO_COMPILERS_FOUND_TITLE"),
-                                    true,
-                                    new Object[]{DialogDescriptor.OK_OPTION},
-                                    DialogDescriptor.OK_OPTION,
-                                    DialogDescriptor.BOTTOM_ALIGN,
-                                    null,
-                                    null);
-                            DialogDisplayer.getDefault().notify(dialogDescriptor);
-                        }
-                    });
+                    DialogDescriptor dialogDescriptor = new DialogDescriptor(
+                            new NoCompilersPanel(),
+                            getString("NO_COMPILERS_FOUND_TITLE"),
+                            true,
+                            new Object[]{DialogDescriptor.OK_OPTION},
+                            DialogDescriptor.OK_OPTION,
+                            DialogDescriptor.BOTTOM_ALIGN,
+                            null,
+                            null);
+                    DialogDisplayer.getDefault().notify(dialogDescriptor);
                 }
             });
         }
@@ -479,8 +476,8 @@ public class CompilerSetManager {
         }
     }
 
-    public static CompilerSetManager getDeepCopy(ExecutionEnvironment execEnv) {
-        return getDefaultImpl(execEnv, false).deepCopy();
+    public static CompilerSetManager getDeepCopy(ExecutionEnvironment execEnv, boolean initialize) {
+        return getDefaultImpl(execEnv, initialize).deepCopy();
     }
 
     private CompilerSetManager deepCopy() {
@@ -521,7 +518,7 @@ public class CompilerSetManager {
                 continue;
             }
             if (!IpeUtils.isPathAbsolute(path)) {
-                path = CndFileUtils.normalizeFile(new File(path)).getAbsolutePath();
+                path = CndFileUtils.normalizeAbsolutePath(new File(path).getAbsolutePath());
             }
             File dir = new File(path);
             if (dir.isDirectory()) {
@@ -550,12 +547,16 @@ public class CompilerSetManager {
      */
     private ArrayList<String> appendDefaultLocations(int platform, ArrayList<String> dirlist) {
         for (ToolchainDescriptor d : ToolchainManager.getImpl().getToolchains(platform)) {
-            Map<String, String> map = d.getDefaultLocations();
+            Map<String, List<String>> map = d.getDefaultLocations();
             if (map != null) {
                 String pname = getPlatformName(platform);
-                String dir = map.get(pname);
-                if (dir != null && !dirlist.contains(dir)) {
-                    dirlist.add(dir);
+                List<String> list = map.get(pname);
+                if (list != null ) {
+                    for (String dir : list){
+                        if (!dirlist.contains(dir)){
+                            dirlist.add(dir);
+                        }
+                    }
                 }
             }
         }
@@ -618,18 +619,23 @@ public class CompilerSetManager {
             CompilerSet cs = null;
             cs.addDirectory(data);
         }
-        int i1 = data.indexOf(';');
-        int i2 = data.indexOf(';', i1 + 1);
-        String flavor = data.substring(0, i1);
-        String path = data.substring(i1 + 1, i2);
-        String tools = data.substring(i2 + 1);
+
+        String flavor;
+        String path;
+        StringTokenizer st = new StringTokenizer(data, ";"); // NOI18N
+        try {
+            flavor = st.nextToken();
+            path = st.nextToken();
+        } catch (NoSuchElementException ex) {
+            log.warning("Malformed compilerSetString: " + data);
+            return null;
+        }
         CompilerFlavor compilerFlavor = CompilerFlavor.toFlavor(flavor, platform);
         if (compilerFlavor == null) { // #158084
             log.warning("NULL compiler flavor for " + flavor + " on platform " + platform);
             return null;
         }
         CompilerSet cs = new CompilerSet(compilerFlavor, path, flavor);
-        StringTokenizer st = new StringTokenizer(tools, ";"); // NOI18N
         while (st.hasMoreTokens()) {
             String name = st.nextToken();
             int kind = -1;
@@ -643,14 +649,12 @@ public class CompilerSetManager {
                     kind = Tool.FortranCompiler;
                 } else if (name.startsWith("as=")) { // NOI18N
                     kind = Tool.Assembler;
-                    i1 = name.indexOf('=');
-                    p = name.substring(i1 + 1);
+                    p = name.substring(name.indexOf('=') + 1);
                 } else if (name.equals("dmake")) { // NOI18N
                     kind = Tool.MakeTool;
                 } else if (name.startsWith("gdb=")) { // NOI18N
                     kind = Tool.DebuggerTool;
-                    i1 = name.indexOf('=');
-                    p = name.substring(i1 + 1);
+                    p = name.substring(name.indexOf('=') + 1);
                 }
             } else {
                 if (name.equals("gcc")) { // NOI18N
@@ -669,8 +673,7 @@ public class CompilerSetManager {
                     kind = Tool.DebuggerTool;
                 } else if (name.startsWith("gdb=")) { // NOI18N
                     kind = Tool.DebuggerTool;
-                    i1 = name.indexOf('=');
-                    p = name.substring(i1 + 1);
+                    p = name.substring(name.indexOf('=') + 1);
                 }
             }
             if (kind != -1) {
@@ -696,8 +699,6 @@ public class CompilerSetManager {
         if (remoteInitialization != null) {
             return;
         }
-        final CompilerSetProvider provider = CompilerSetProviderFactory.createNew(executionEnvironment);
-        assert provider != null;
         ServerRecord record = ServerList.get(executionEnvironment);
         assert record != null;
 
@@ -721,6 +722,9 @@ public class CompilerSetManager {
                     //            CompilerSetReporter.canReport(),System.identityHashCode(CompilerSetManager.this));
                     //}
                     try {
+                        final CompilerSetProvider provider = CompilerSetProviderFactory.createNew(executionEnvironment);
+                        assert provider != null;
+                        provider.init();
                         platform = provider.getPlatform();
                         CompilerSetReporter.report("CSM_ValPlatf", true, PlatformTypes.toString(platform)); //NOI18N
                         CompilerSetReporter.report("CSM_LFTC"); //NOI18N
@@ -782,7 +786,10 @@ public class CompilerSetManager {
             task.addTaskListener(new TaskListener() {
                 public void taskFinished(org.openide.util.Task task) {
                     log.fine("Code Model Ready for " + CompilerSetManager.this.toString());
-                    CompilerSetManagerEvents.get(executionEnvironment).runTasks();
+                    // FIXUP: this server has been probably deleted; TODO: provide return statis from loader
+                    if (!ServerList.get(executionEnvironment).isDeleted()) {
+                        CompilerSetManagerEvents.get(executionEnvironment).runTasks();
+                    }
                 }
             });
             task.schedule(0);

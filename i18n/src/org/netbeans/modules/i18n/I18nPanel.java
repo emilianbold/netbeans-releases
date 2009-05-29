@@ -50,6 +50,8 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Enumeration;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -64,6 +66,7 @@ import org.openide.util.Lookup;
 import org.netbeans.api.javahelp.Help;
 import org.netbeans.api.project.Project;
 import org.openide.awt.Mnemonics;
+import org.openide.util.Enumerations;
 import static org.jdesktop.layout.GroupLayout.BASELINE;
 import static org.jdesktop.layout.GroupLayout.TRAILING;
 import static org.jdesktop.layout.LayoutStyle.RELATED;
@@ -286,6 +289,22 @@ public class I18nPanel extends JPanel {
                     String rn = cp.getResourceName(folder) + "/Bundle.properties"; // NOI18N
                 
                     FileObject peer = cp.findResource(rn);
+                    if (peer == null) {
+                        //Try to find any properties file
+                        Enumeration<? extends FileObject> data = Enumerations.filter(folder.getData(false), new Enumerations.Processor(){
+                            public Object process(Object obj, Collection alwaysNull) {
+                                if (obj instanceof FileObject &&
+                                        "properties".equals( ((FileObject)obj).getExt())){ //NOI18N
+                                    return obj;
+                                } else {
+                                    return null;
+                                }
+                            }
+                        });
+                        if (data.hasMoreElements()) {
+                            peer = data.nextElement();
+                        }
+                    }
                     if (peer != null) {
                         try {
                             DataObject peerDataObject = DataObject.find(peer);

@@ -1053,6 +1053,8 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         }
         
         boolean rpcEncoded = false;
+        String warningMessage = null;
+
         if(wsdlSource == WSDL_FROM_PROJECT || wsdlSource == WSDL_FROM_URL) {
             String wsdlUrl = (wsdlSource == WSDL_FROM_PROJECT?jTxtWsdlProject.getText().trim():jTxtWsdlURL.getText().trim());
             if(wsdlUrl == null || wsdlUrl.length() == 0) {
@@ -1119,8 +1121,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
                             foundWsdlNamespace = true;
                         }
                         if (line.indexOf("REPLACE_WITH_ACTUAL_URL") > 0) { //NOI18N
-                            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_WrongWsdl")); // NOI18N
-                            return false;
+                            warningMessage = NbBundle.getMessage(ClientInfo.class, "MSG_MissingWsURL");
                         } //NOI18N
                         try {
                             line = lnReader.readLine();
@@ -1225,7 +1226,9 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         WSStackUtils wsStackUtils = new WSStackUtils(project);
         if (ServerType.GLASSFISH_V3 == wsStackUtils.getServerType() && !wsStackUtils.isWsitSupported()) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, NbBundle.getMessage(ClientInfo.class, "LBL_NoMetroInstalled")); //NOI18N            
-        } else {        
+        } else if (warningMessage != null) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, warningMessage);
+        } else {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
         }
         

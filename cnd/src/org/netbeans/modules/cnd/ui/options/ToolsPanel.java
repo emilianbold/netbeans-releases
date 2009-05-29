@@ -50,11 +50,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -65,6 +68,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -86,9 +90,11 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -224,7 +230,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
             cbFortranRequired.setEnabled(false);
             cbAsRequired.setEnabled(false);
         }
-        csm = cacheManager.getCompilerSetManagerCopy(execEnv);
+        csm = cacheManager.getCompilerSetManagerCopy(execEnv, true);
 
         gdbEnabled = !IpeUtils.isDbxguiEnabled();
 
@@ -1627,6 +1633,8 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     }// </editor-fold>//GEN-END:initComponents
 
 private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btVersionsActionPerformed
+    btVersions.setEnabled(false);
+
     RequestProcessor.getDefault().post(new Runnable() {
         public void run() {
             ProgressHandle handle = ProgressHandleFactory.createHandle(getString("LBL_VersionInfo_Progress")); // NOI18N
@@ -1635,24 +1643,30 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             StringBuilder versions = new StringBuilder();
 
             versions.append("\n"); // NOI18N
-            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.CCompiler), tfCPath) + "\n"); // NOI18N
+            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.CCompiler), tfCPath)).append("\n"); // NOI18N
             handle.progress(1);
-            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.CCCompiler), tfCppPath) + "\n"); // NOI18N
+            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.CCCompiler), tfCppPath)).append("\n"); // NOI18N
             handle.progress(2);
-            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.FortranCompiler), tfFortranPath) + "\n"); // NOI18N
+            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.FortranCompiler), tfFortranPath)).append("\n"); // NOI18N
             handle.progress(3);
-            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.Assembler), tfAsPath) + "\n"); // NOI18N
+            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.Assembler), tfAsPath)).append("\n"); // NOI18N
             handle.progress(4);
-            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.MakeTool), tfMakePath) + "\n"); // NOI18N
+            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.MakeTool), tfMakePath)).append("\n"); // NOI18N
             if (gdbEnabled) {
                 handle.progress(5);
-                versions.append(getToolVersion(currentCompilerSet.findTool(Tool.DebuggerTool), tfGdbPath) + "\n"); // NOI18N
+                versions.append(getToolVersion(currentCompilerSet.findTool(Tool.DebuggerTool), tfGdbPath)).append("\n"); // NOI18N
             }
             handle.finish();
 
             NotifyDescriptor nd = new NotifyDescriptor.Message(versions.toString());
             nd.setTitle(getString("LBL_VersionInfo_Title")); // NOI18N
             DialogDisplayer.getDefault().notify(nd);
+
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    btVersions.setEnabled(true);
+                }
+            });
         }
     });
 }//GEN-LAST:event_btVersionsActionPerformed
@@ -1780,10 +1794,40 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         return;
     }
     final CompilerSet selectedCS[] = new CompilerSet[] {(CompilerSet)lstDirlist.getSelectedValue()};
+    final AtomicBoolean cancelled = new AtomicBoolean(false);
     Runnable longTask = new Runnable() {
         public void run() {
+            log.finest("Restoring defaults\n");
+            ServerRecord record = ServerList.get(execEnv);
+            if (record.isOffline()) {
+                record.validate(true);
+                if (record.isOffline()) {
+                    cancelled.set(true);
+                    return;
+                }
+            }
+//            try {
+//                ConnectionManager.getInstance().connectTo(execEnv);
+//            } catch (IOException ex) {
+//                //TODO: report it!
+//                cancelled.set(true);
+//                return;
+//            } catch (CancellationException ex) {
+//                cancelled.set(true);
+//                return;
+//            }
             CompilerSetManager newCsm = CompilerSetManager.create(execEnv);
             newCsm.initialize(false, true);
+            while(newCsm.isPending()) {
+                log.finest("\twaiting for compiler manager to initialize...");
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
+                    cancelled.set(true);
+                    return;
+                }
+            }
+
             cacheManager.addCompilerSetManager(newCsm);
             List<CompilerSet> list = csm.getCompilerSets();
             for (CompilerSet cs : list) {
@@ -1814,15 +1858,18 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             if (selectedName != null) {
                 selectedCS[0] = csm.getCompilerSet(selectedName);
             }
+            log.finest("Restored defaults\n");
         }
     };
     Runnable postWork = new Runnable() {
         public void run() {
-            changed = true;
-            if (selectedCS[0] != null) {
-                update(false, selectedCS[0]);
-            } else {
-                update(false);
+            if (!cancelled.get()) {
+                changed = true;
+                if (selectedCS[0] != null) {
+                    update(false, selectedCS[0]);
+                } else {
+                    update(false);
+                }
             }
         }
     };

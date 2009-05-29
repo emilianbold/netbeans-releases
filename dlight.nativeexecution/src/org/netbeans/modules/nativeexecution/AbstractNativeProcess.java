@@ -78,7 +78,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         this.info = info;
         isInterrupted = false;
         state = State.INITIAL;
-        id = info.getCommandLine();
+        id = info.getCommandLineForShell();
         stateLock = new String("StateLock: " + id); // NOI18N
 
         HostInfo hinfo = null;

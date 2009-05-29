@@ -805,28 +805,35 @@ public class RunJarPanel extends javax.swing.JPanel {
     }
     
     static String splitJVMParams(String line) {
-        String[] splitted = line.split(" "); //NOI18N
-        String jvms = "";
-        for (String s : splitted) {
+        PropertySplitter ps = new PropertySplitter(line);
+        ps.setSeparator(' '); //NOI18N
+        String s = ps.nextPair();
+        String jvms = ""; //NOI18N
+        while (s != null) {
             if (s.startsWith("-") || s.contains("%classpath")) { //NOI18N
                 jvms = jvms + " " + s;
             } else if (s.equals("${packageClassName}") || s.matches("[\\w]+[\\.]{0,1}[\\w\\.]*")) { //NOI18N
                 break;
             }
+            s = ps.nextPair();
         }
         return jvms.trim();
     }
     
     static String splitMainClass(String line) {
-        String[] splitted = line.split(" ");
-        for (String s : splitted) {
+        PropertySplitter ps = new PropertySplitter(line);
+        ps.setSeparator(' '); //NOI18N
+        String s = ps.nextPair();
+        while (s != null) {
             if (s.startsWith("-") || s.contains("%classpath")) { //NOI18N
+                s = ps.nextPair();
                 continue;
             } else if (s.equals("${packageClassName}") || s.matches("[\\w]+[\\.]{0,1}[\\w\\.]*")) { //NOI18N
                 return s;
             } else {
                 Logger.getLogger(RunJarPanel.class.getName()).fine("failed splitting main class from=" + line); //NOI18N
             }
+            s = ps.nextPair();
         }
         return ""; //NOI18N
     }
@@ -837,7 +844,7 @@ public class RunJarPanel extends javax.swing.JPanel {
         if (i > -1) {
             return line.substring(i + main.length()).trim();
         }
-        return "";
+        return ""; //NOI18N
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

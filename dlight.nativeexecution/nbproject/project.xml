@@ -139,6 +139,7 @@
                 <friend>com.sun.cloud.cnd</friend>
                 <package>org.netbeans.modules.nativeexecution.api</package>
                 <package>org.netbeans.modules.nativeexecution.api.util</package>
+                <package>org.netbeans.modules.nativeexecution.spi</package>
             </friend-packages>
         </data>
     </configuration>

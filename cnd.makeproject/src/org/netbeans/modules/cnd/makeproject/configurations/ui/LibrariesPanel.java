@@ -356,9 +356,8 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
             } else if (PathPanel.getMode() == PathPanel.REL) {
                 path = IpeUtils.toRelativePath(baseDir, path);
             } else {
-                path = path;
+                // path = path;
             }
-            path = FilePathAdaptor.mapToRemote(path);
             path = FilePathAdaptor.normalize(path);
             myListEditorPanel.addObjectAction(new LibraryItem.LibFileItem(path));
         }

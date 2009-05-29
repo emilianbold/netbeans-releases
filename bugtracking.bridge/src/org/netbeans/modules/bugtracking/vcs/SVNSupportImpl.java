@@ -40,6 +40,9 @@
 package org.netbeans.modules.bugtracking.vcs;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.spi.VCSSupport;
 import org.netbeans.modules.subversion.api.Subversion;
 
@@ -50,9 +53,19 @@ import org.netbeans.modules.subversion.api.Subversion;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.spi.VCSSupport.class)
 public class SVNSupportImpl extends VCSSupport {
 
+    private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcssupport");  // NOI18N
+
     @Override
     public void searchHistory(File file, int line) {
-        Subversion.showFileHistory(file, line);
+        try {
+            Subversion.showFileHistory(file, line);
+        } catch (IOException ex) {
+            if(Subversion.CLIENT_UNAVAILABLE_ERROR_MESSAGE.equals(ex.getMessage())) {
+                // do nothing - was already handled in subversion
+                return;
+            }
+            LOG.log(Level.SEVERE, null, ex);
+        }
     }
 
 }

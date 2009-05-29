@@ -43,6 +43,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -67,12 +68,20 @@ public class MessagingAccessorImpl extends MessagingAccessor {
             try {
                 final KenaiProject prj = k.getProject(project.getId());
                 if (k.getMyProjects().contains(prj)) {
-                    if (kc.getChat(project.getId()) == null) {
+                    MultiUserChat chat = kc.getChat(project.getId());
+                    if (chat == null) {
                         KenaiFeature[] f;
                         f = prj.getFeatures(KenaiService.Type.CHAT);
                         if (f.length == 1) {
-                            kc.getChat(f[0]);
+                            chat = kc.getChat(f[0]);
+                            if (chat==null || !chat.isJoined()) {
+                                throw new RuntimeException();
+                            }
                         }
+                    } else if (!chat.isJoined()) {
+                        KenaiConnection.getDefault().tryJoinChat(chat);
+                        if (!chat.isJoined())
+                            throw new RuntimeException();
                     }
                 }
             } catch (Exception ex) {
@@ -95,8 +104,8 @@ public class MessagingAccessorImpl extends MessagingAccessor {
             public void actionPerformed(ActionEvent arg0) {
                 final ChatTopComponent chatTC = ChatTopComponent.findInstance();
                 chatTC.open();
-                chatTC.requestActive();
                 chatTC.setActive(project.getId());
+                chatTC.requestActive(false);
             }
         };
     }
@@ -111,7 +120,7 @@ public class MessagingAccessorImpl extends MessagingAccessor {
         return new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                ChatTopComponent.findInstance().reconnect(project);
+                project.firePropertyChange(ProjectHandle.PROP_CONTENT, null, null);
             }
         };
     }

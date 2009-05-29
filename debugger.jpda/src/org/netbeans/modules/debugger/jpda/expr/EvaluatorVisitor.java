@@ -658,7 +658,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             return getTypeName(tv.getUpperBound());
         }
         if (type.getKind() == TypeKind.DECLARED) {
-            return ((DeclaredType) type).asElement().toString();
+            return ElementUtilities.getBinaryName((TypeElement) ((DeclaredType) type).asElement());
         }
         return type.toString();
     }
@@ -1593,6 +1593,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             ReferenceType refType = evaluationContext.getFrame().location().declaringType();
             JPDAClassType classType = evaluationContext.getDebugger().getClassType(refType);
             return ((JDIVariable) classType.classObject()).getJDIValue();
+            // UnsupportedOperationException is catched at TreeEvaluator.evaluate().
         }
 
         // return special variable

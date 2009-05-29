@@ -69,6 +69,7 @@ import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
 import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
 import org.netbeans.modules.bugzilla.query.QueryController;
+import org.netbeans.modules.bugzilla.query.QueryParameter;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.ImageUtilities;
@@ -282,6 +283,10 @@ public class BugzillaRepository extends Repository {
                 url.append("+");                                                // NOI18N
             }
         }
+        QueryParameter[] additionalParams = getSimpleSearchParameters();
+        for (QueryParameter qp : additionalParams) {
+            url.append(qp.get());
+        }
         PerformQueryCommand queryCmd = new PerformQueryCommand(this, url.toString(), collector);
         getExecutor().execute(queryCmd);
         if(queryCmd.hasFailed()) {
@@ -343,7 +348,9 @@ public class BugzillaRepository extends Repository {
     protected void setTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword, boolean shortLoginEnabled) {
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword, shortLoginEnabled);
         Bugzilla.getInstance().addRepository(this);
-        resetRepository(); // only on url, user or passwd change        
+        resetRepository(); // XXX only on url, user or passwd change
+                           // XXX reset the configuration only if the host changed
+                           //     on psswd and user change reset only taskrepository
     }
 
     static TaskRepository createTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword, boolean shortLoginEnabled) {
@@ -483,12 +490,20 @@ public class BugzillaRepository extends Repository {
     private void scheduleIssueRefresh() {
         int delay = BugzillaConfig.getInstance().getIssueRefreshInterval();
         Bugzilla.LOG.log(Level.FINE, "scheduling issue refresh for repository {0} in {1} minute(s)", new Object[] {name, delay}); // NOI18N
+        if(delay < 5) {
+            Bugzilla.LOG.log(Level.WARNING, " wrong issue refresh delay {0}. Falling back to default {0}", new Object[] {delay, BugzillaConfig.DEFAULT_ISSUE_REFRESH}); // NOI18N
+            delay = BugzillaConfig.DEFAULT_ISSUE_REFRESH;
+        }
         refreshIssuesTask.schedule(delay * 60 * 1000); // given in minutes
     }
 
     private void scheduleQueryRefresh() {
         int delay = BugzillaConfig.getInstance().getQueryRefreshInterval();
         Bugzilla.LOG.log(Level.FINE, "scheduling query refresh for repository {0} in {1} minute(s)", new Object[] {name, delay}); // NOI18N
+        if(delay < 5) {
+            Bugzilla.LOG.log(Level.WARNING, " wrong query refresh delay {0}. Falling back to default {0}", new Object[] {delay, BugzillaConfig.DEFAULT_QUERY_REFRESH}); // NOI18N
+            delay = BugzillaConfig.DEFAULT_QUERY_REFRESH;
+        }
         refreshQueryTask.schedule(delay * 60 * 1000); // given in minutes
     }
 
@@ -556,4 +571,7 @@ public class BugzillaRepository extends Repository {
         return super.toString() + " (" + getDisplayName() + ')';        //NOI18N
     }
 
+    protected QueryParameter[] getSimpleSearchParameters () {
+        return new QueryParameter[] {};
+    }
 }

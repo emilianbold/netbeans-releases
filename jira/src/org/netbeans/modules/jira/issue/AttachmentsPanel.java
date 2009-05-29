@@ -93,7 +93,7 @@ public class AttachmentsPanel extends JPanel {
     private static final Color BG_COLOR = new Color(220, 220, 220);
     private static final String NAME_FIELD_CP = "ATTACHMENT_NAME_FIELD"; // NOI18N
     private static final String BROWSE_CP = "ATTACHMENT_BROWSE_BUTTON"; // NOI18N
-    private List<JTextField> newAttachments;
+    private List<JTextField> newAttachments = new LinkedList<JTextField>();
     private JLabel noneLabel;
     private LinkButton createNewButton;
     private JLabel dummyLabel = new JLabel();
@@ -108,7 +108,7 @@ public class AttachmentsPanel extends JPanel {
     }
 
     public void setIssue(NbJiraIssue issue) {
-        newAttachments = new LinkedList<JTextField>();
+        newAttachments.clear();
         removeAll();
 
         GroupLayout layout = new GroupLayout(this);

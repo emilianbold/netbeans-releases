@@ -49,6 +49,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.FileObjects;
@@ -57,7 +60,6 @@ import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -71,6 +73,7 @@ import org.openide.util.WeakListeners;
 public class CacheClassPath implements ClassPathImplementation, PropertyChangeListener {
     
     public static final boolean KEEP_JARS = Boolean.getBoolean("CacheClassPath.keepJars");     //NOI18N
+    private static Logger log = Logger.getLogger(CacheClassPath.class.getName());
     
     private final ClassPath cp;    
     private final boolean translate;
@@ -134,7 +137,8 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
                         }
                         _cache.add(ClassPathSupport.createResource(cacheUrl));
                     } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
+                        if (log.isLoggable(Level.SEVERE))
+                            log.log(Level.SEVERE, ioe.getMessage(), ioe);
                     }
                 }
                 if (KEEP_JARS && translate) {
@@ -165,7 +169,7 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
                 try {
                     File sigs = JavaIndex.getClassFolder(url);
                     URL orl = sigs.toURI ().toURL ();
-                    if (sigs.isDirectory ()) {
+                    if (!sigs.isDirectory()) {
                         // #155742 - URL for folder must always end with slash
                         if (!orl.toExternalForm ().endsWith("/")) {
                             //TODO: string concatenation

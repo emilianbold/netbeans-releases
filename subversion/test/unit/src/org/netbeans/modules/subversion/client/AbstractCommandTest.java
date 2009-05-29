@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.subversion.client;
 
-import org.netbeans.modules.subversion.client.cli.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -63,7 +62,6 @@ import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.ISVNProperty;
-import org.tigris.subversion.svnclientadapter.SVNClientAdapterFactory;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -99,7 +97,6 @@ public abstract class AbstractCommandTest extends AbstractSvnTest {
 
     @Override
     protected void setUp() throws Exception {
-        setOwnClientFactory("commandline".equals(SvnClientTestFactory.getClientType()));
         super.setUp();
         if(getName().startsWith("testCheckout") ) {
             cleanUpRepo(new String[] {CI_FOLDER});
@@ -174,7 +171,7 @@ public abstract class AbstractCommandTest extends AbstractSvnTest {
             assertEquals(refArray[i].getLastCommitAuthor(), entry.getLastCommitAuthor());
             assertEquals(refArray[i].getNodeKind(), entry.getNodeKind());
             assertEquals(refArray[i].getSize(), entry.getSize());
-            assertEquals(refArray[i].getLastChangedDate(), entry.getLastChangedDate());
+            assertEquals(refArray[i].getLastChangedDate().toString(), entry.getLastChangedDate().toString());
         }
     }
         
@@ -265,7 +262,7 @@ public abstract class AbstractCommandTest extends AbstractSvnTest {
 //        fileNotifyListener = new FileNotifyListener();
 //        c.addNotifyListener(fileNotifyListener);
 //        return c;
-        return getNbClient();
+        return getFullWorkingClient();
     }
 
     protected void clearNotifiedFiles() {

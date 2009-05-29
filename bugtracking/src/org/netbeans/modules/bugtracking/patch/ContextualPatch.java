@@ -221,7 +221,8 @@ public final class ContextualPatch {
                 copyStreamsCloseAll(fo.getOutputStream(), new ByteArrayInputStream(content));
             }
         } else {
-            PrintWriter w = new PrintWriter(new OutputStreamWriter(fo.getOutputStream(), getEncoding(patch.targetFile)));
+            Charset charset = getEncoding(patch.targetFile);
+            PrintWriter w = new PrintWriter(new OutputStreamWriter(fo.getOutputStream(), charset));
             try {
                 if (lines.size() == 0) return;
                 for (String line : lines.subList(0, lines.size() - 1)) {

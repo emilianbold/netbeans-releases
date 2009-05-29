@@ -89,7 +89,7 @@ public class AddExistingFolderItemsAction extends NodeAction {
         assert folder != null;
         
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
-        MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
+        MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
         
         if (!makeConfigurationDescriptor.okToChange()) {
             return;
@@ -108,7 +108,7 @@ public class AddExistingFolderItemsAction extends NodeAction {
             addButton,
             DialogDescriptor.CANCEL_OPTION,
         };
-        SourceFilesPanel sourceFilesPanel = new SourceFilesPanel();
+        SourceFilesPanel sourceFilesPanel = new SourceFilesPanel(null);
         JPanel panel = new JPanel();
         panel.setPreferredSize(new Dimension(700, 380));
         panel.setLayout(new java.awt.GridBagLayout());

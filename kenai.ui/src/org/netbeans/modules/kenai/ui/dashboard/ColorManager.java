@@ -52,7 +52,9 @@ public class ColorManager {
 
     private static final boolean isAqua = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
 
-    private Color defaultBackground = UIManager.getColor("Tree.background"); //NOI18N
+    private Color defaultBackground = UIManager.getColor("Tree.background") == null  //NOI18N
+            ? UIManager.getColor("white")  //NOI18N
+            : UIManager.getColor("Tree.background"); //NOI18N
     private Color defaultForeground = UIManager.getColor("black"); //NOI18N
     private Color disabledColor = Color.gray;
     private Color linkColor = Color.blue;

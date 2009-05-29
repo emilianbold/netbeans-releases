@@ -91,7 +91,7 @@ public class MakeTemplateListener implements OperationListener {
             return null;
         }
 
-        return (MakeConfigurationDescriptor) pdp.getConfigurationDescriptor();
+        return pdp.getConfigurationDescriptor();
     }
 
     public void operationCreateFromTemplate(OperationEvent.Copy copy) {
@@ -175,7 +175,6 @@ public class MakeTemplateListener implements OperationListener {
             } else {
                 itemPath = ioFile.getPath();
             }
-            itemPath = FilePathAdaptor.mapToRemote(itemPath);
             itemPath = FilePathAdaptor.normalize(itemPath);
             Item item = new Item(itemPath);
 

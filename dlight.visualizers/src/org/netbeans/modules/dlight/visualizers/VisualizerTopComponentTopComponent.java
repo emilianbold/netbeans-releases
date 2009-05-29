@@ -67,7 +67,7 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
     private String currentToolName;
 //    private JTabbedPane tabbedPane = null;
     //private HashMap<String, Visualizer> visualizerComponents = new HashMap<String, Visualizer>();
-
+    
     private VisualizerTopComponentTopComponent() {
         initComponents();
         initPerformanceMonitorViewComponents();
@@ -101,6 +101,17 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
         }
         return instance;
     }
+
+    @Override
+    protected void componentActivated() {
+        super.componentActivated();
+        if (viewComponent != null){
+            super.requestFocusInWindow(false);
+            viewComponent.requestFocus();
+        }
+    }
+
+
 
     /**
      * Obtain the VisualizerTopComponentTopComponent instance. Never call {@link #getDefault} directly!
@@ -203,6 +214,17 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
             });
         }
     }
+
+    @Override
+    public void requestFocus() {
+        if (viewComponent != null){
+            viewComponent.requestFocus();
+        }else{
+            super.requestFocus(true);
+        }
+    }
+
+
 
     public void addContent(String toolName, JComponent viewComponent) {
         if (currentToolName == null || !currentToolName.equals(toolName) || this.viewComponent != viewComponent) {

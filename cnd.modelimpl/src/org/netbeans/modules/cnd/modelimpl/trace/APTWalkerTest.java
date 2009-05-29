@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTAbstractWalker;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
+import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -83,14 +84,9 @@ public class APTWalkerTest extends APTAbstractWalker {
         super.onIncludeNext(apt);
     }
 
-    protected void include(ResolvedPath resolvedPath, APTInclude aptInclude) {
+    protected boolean include(ResolvedPath resolvedPath, APTInclude aptInclude, APTMacroMap.State postIncludeState) {
         resolvingTime += System.currentTimeMillis() - lastTime;
-        if (resolvedPath != null && 
-                getIncludeHandler().pushInclude(
-                                                resolvedPath.getPath(), 
-                                                aptInclude.getToken().getLine(), 
-                                                resolvedPath.getIndex())
-                                                ) {
+        if (resolvedPath != null && getIncludeHandler().pushInclude(resolvedPath.getPath(), aptInclude, resolvedPath.getIndex())) {
             APTFile apt;
             boolean res = false;
             try {
@@ -105,6 +101,12 @@ public class APTWalkerTest extends APTAbstractWalker {
             } finally {
                 getIncludeHandler().popInclude(); 
             }
-        }        
+        }
+        return postIncludeState == null;
+    }
+
+    @Override
+    protected boolean hasIncludeActionSideEffects() {
+        return true;
     }
 }

@@ -54,6 +54,7 @@ import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.event.ClassPrepareEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.ClassPrepareRequestWrapper;
@@ -135,7 +136,7 @@ public class ClassBreakpointImpl extends ClassBasedBreakpoint {
                         type,
                         ReferenceTypeWrapper.classObject(type)
                     );
-                } catch (UnsupportedOperationException ex) {
+                } catch (UnsupportedOperationExceptionWrapper ex) {
                     // PATCH for KVM. They does not support
                     // ReferenceType.classObject ()
                     return perform (

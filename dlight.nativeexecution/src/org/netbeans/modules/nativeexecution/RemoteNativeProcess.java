@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommandLineHelper;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.MacroMap;
@@ -31,12 +32,17 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
     }
 
     protected void create() throws Throwable {
+        Throwable exception = null;
+        ChannelStreams streams = null;
+
+        if (isInterrupted()) {
+            throw new InterruptedException();
+        }
+
         try {
-            final String commandLine = info.getCommandLine();
+            final String commandLine = info.getCommandLineForShell();
             final ConnectionManager mgr = ConnectionManager.getInstance();
             final ExecutionEnvironment execEnv = info.getExecutionEnvironment();
-            final Session session = ConnectionManagerAccessor.getDefault().
-                    getConnectionSession(mgr, execEnv, true);
 
             final String sh = hostInfo.getShell();
             final MacroMap envVars = info.getEnvVariables();
@@ -47,35 +53,54 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             // Always prepend /bin and /usr/bin to PATH
             envVars.put("PATH", "/bin:/usr/bin:$PATH"); // NOI18N
 
+            if (isInterrupted()) {
+                throw new InterruptedException();
+            }
+
             synchronized (lock) {
-                cstreams = execCommand(session, sh + " -s"); // NOI18N
-                cstreams.in.write("echo $$\n".getBytes()); // NOI18N
-                cstreams.in.flush();
+                try {
+                    final Session session = ConnectionManagerAccessor.getDefault().
+                            getConnectionSession(mgr, execEnv, true);
 
-                final String workingDirectory = info.getWorkingDirectory(true);
+                    streams = execCommand(session, sh + " -s"); // NOI18N
+                    streams.in.write("echo $$\n".getBytes()); // NOI18N
+                    streams.in.flush();
 
-                if (workingDirectory != null) {
-                    cstreams.in.write(("cd " + workingDirectory + "\n").getBytes()); // NOI18N
-                    cstreams.in.flush();
+                    final String workingDirectory = info.getWorkingDirectory(true);
+
+                    if (workingDirectory != null) {
+                        streams.in.write(("cd " + CommandLineHelper.getInstance(execEnv).toShellPath(workingDirectory) + "\n").getBytes()); // NOI18N
+                        streams.in.flush();
+                    }
+
+                    EnvWriter ew = new EnvWriter(streams.in);
+                    ew.write(envVars);
+
+                    streams.in.write(("exec " + commandLine + "\n").getBytes()); // NOI18N
+                    streams.in.flush();
+
+                    readPID(streams.out);
+                } catch (Throwable ex) {
+                    exception = ex;
                 }
-
-                EnvWriter ew = new EnvWriter(cstreams.in);
-                ew.write(envVars);
-
-                cstreams.in.write(("exec " + commandLine + "\n").getBytes()); // NOI18N
-                cstreams.in.flush();
-
-                readPID(cstreams.out);
             }
         } catch (Throwable ex) {
-            String msg = ex.getMessage() == null ? ex.toString() : ex.getMessage();
+            exception = ex;
+        } finally {
+            if (streams == null) {
+                String error = null;
 
-            cstreams = new ChannelStreams(
-                    cstreams == null ? null : cstreams.channel,
-                    new ByteArrayInputStream(new byte[0]),
-                    new ByteArrayInputStream(msg.getBytes()),
-                    new ByteArrayOutputStream());
-            throw ex;
+                if (exception != null) {
+                    error = exception.getMessage() == null ? exception.toString() : exception.getMessage();
+                }
+
+                streams = new ChannelStreams(null,
+                        new ByteArrayInputStream(new byte[0]),
+                        new ByteArrayInputStream(error == null ? new byte[0] : error.getBytes()),
+                        new ByteArrayOutputStream());
+            }
+
+            cstreams = streams;
         }
     }
 
@@ -126,6 +151,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
                 channel.disconnect();
 //          NativeTaskSupport.kill(execEnv, 9, getPID());
             }
+
         }
 
     }
@@ -140,6 +166,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             try {
                 ChannelExec echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
                 echannel.setCommand(command);
+                echannel.setXForwarding(info.getX11Forwarding());
                 echannel.connect(10000);
 
                 return new ChannelStreams(echannel,
@@ -150,8 +177,8 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
                 String message = ex.getMessage();
                 Throwable cause = ex.getCause();
                 if (cause != null && cause instanceof NullPointerException) {
-                    // Jsch bug... retry? ;)
-                    } else if ("channel is not opened.".equals(message)) { // NOI18N
+                    // Jsch bug... retry?
+                } else if ("java.io.InterruptedIOException".equals(message)) { // NOI18N
                     log.fine("RETRY to open jsch channel in 0.5 seconds [" + retry + "]..."); // NOI18N
                     try {
                         Thread.sleep(500);
@@ -159,7 +186,14 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
                         Thread.currentThread().interrupt();
                         break;
                     }
-
+                } else if ("channel is not opened.".equals(message)) { // NOI18N
+                    log.fine("RETRY to open jsch channel in 0.5 seconds [" + retry + "]..."); // NOI18N
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ex1) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
                 } else {
                     throw ex;
                 }

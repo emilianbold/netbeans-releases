@@ -48,6 +48,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
+import org.netbeans.modules.glassfish.spi.Decorator;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 
 /**
@@ -72,10 +73,13 @@ public class Hk2ResourceContainers extends Children.Keys<Object> implements Refr
             if (childTypes != null) {
                 for (int i = 0; i < childTypes.length; i++) {
                     String type = childTypes[i];
-                    keys.add(new Hk2ItemNode(lookup,
-                            new Hk2ResourcesChildren(lookup, type),
-                            NbBundle.getMessage(Hk2ResourceContainers.class, "LBL_" + type),
-                            DecoratorManager.findDecorator(type, null)));
+                    Decorator decorator = DecoratorManager.findDecorator(type, null);
+                    if ((decorator == null) && (type.equals(GlassfishModule.JDBC)) || (decorator != null))  {
+                        keys.add(new Hk2ItemNode(lookup,
+                                new Hk2ResourcesChildren(lookup, type),
+                                NbBundle.getMessage(Hk2ResourceContainers.class, "LBL_" + type),
+                                DecoratorManager.findDecorator(type, Hk2ItemNode.REFRESHABLE_FOLDER)));
+                    }
                 }
             }
         } else {
@@ -83,7 +87,7 @@ public class Hk2ResourceContainers extends Children.Keys<Object> implements Refr
             keys.add(new Hk2ItemNode(lookup,
                             new Hk2ResourcesChildren(lookup, type),
                             NbBundle.getMessage(Hk2ResourceContainers.class, "LBL_" + type),
-                            DecoratorManager.findDecorator(type, null)));
+                            DecoratorManager.findDecorator(type, Hk2ItemNode.REFRESHABLE_FOLDER)));
         }
         setKeys(keys);
     }

@@ -86,7 +86,7 @@ public class TraceFlags {
     public static final boolean CACHE_SKIP_APT_VISIT = DebugUtils.getBoolean("cnd.cache.skip.apt.visit", false); // NOI18N
     public static final boolean CACHE_FILE_STATE = DebugUtils.getBoolean("cnd.cache.file.state", true); // NOI18N
     public static final boolean USE_WEAK_MEMORY_CACHE = DebugUtils.getBoolean("cnd.cache.key.object", true); // NOI18N
-    public static final boolean APT_FILE_CACHE_ENTRY = DebugUtils.getBoolean("cnd.apt.cache.entry", false); //NOI18N
+    public static final boolean APT_FILE_CACHE_ENTRY = DebugUtils.getBoolean("cnd.apt.cache.entry", true); //NOI18N
 
     public static final boolean CACHE_SKIP_SAVE = DebugUtils.getBoolean("cnd.cache.skip.save", true); // NOI18N
     

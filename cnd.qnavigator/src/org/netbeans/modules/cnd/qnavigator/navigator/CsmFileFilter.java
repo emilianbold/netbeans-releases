@@ -175,7 +175,7 @@ public class CsmFileFilter {
     private BooleanFilter showUsing = new BooleanFilter("ShowUsing", true); // NOI18N
     private SortMode sortByName = SortMode.Name;
     private BooleanFilter groupByKind = new BooleanFilter("groupByKind", false); // NOI18N
-    private BooleanFilter expandAll = new BooleanFilter("expandAll", true); // NOI18N
+    private BooleanFilter expandAll = new BooleanFilter("expandAll", false); // NOI18N
 
     public enum SortMode { Name, Offset }
 

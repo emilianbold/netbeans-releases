@@ -36,17 +36,14 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.remote.compilers;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringWriter;
-import java.util.StringTokenizer;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.cnd.remote.support.RemoteConnectionSupport;
-import org.netbeans.modules.cnd.remote.support.ShellUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 
@@ -56,59 +53,49 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
  * @author gordonp
  */
 /*package-local*/ class CompilerSetScriptManager extends RemoteConnectionSupport {
-        
-    private BufferedReader in;
-    private StringWriter out;
-    private StringTokenizer st;
+
+    private List<String> compilerSets;
+    private int nextSet;
     private String platform;
 
     public CompilerSetScriptManager(ExecutionEnvironment env) {
         super(env);
+        compilerSets = new ArrayList<String>();
     }
-
-//    private String substituteCommand(String script) {
-//        // The PATH stuff makes in much less likely to get a non-standard chmod...
-//        String cmd = ShellUtils.prepareExportString(new String[] {"PATH=/bin:/usr/bin:$PATH"})+ "(chmod 755 " + script + ") && " + script; // NOI18N
-//        log.finest("RemoteScriptSupport runs: " + cmd);
-//        return ShellUtils.wrapCommand(executionEnvironment, cmd);
-//    }
-
-
     private static int emulateFailure = Integer.getInteger("cnd.remote.failure", 0); // NOI18N
 
     public void runScript() {
         if (!isFailedOrCancelled()) {
+            nextSet = 0;
+            compilerSets.clear();
             try {
-                //String cmd = "(chmod 755 " + SCRIPT + ") && " + SCRIPT;
-                String cmd = SCRIPT;
-                NativeProcessBuilder pb = new NativeProcessBuilder(executionEnvironment, cmd,false);
+                NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
+                pb.setExecutable(SCRIPT);
                 Process process = pb.call();
-                InputStream is = process.getInputStream();
-                in = new BufferedReader(new InputStreamReader(is));
-                out = new StringWriter();
+                BufferedReader in = new BufferedReader(
+                        new InputStreamReader(process.getInputStream()));
+                try {
+                    if (0 < emulateFailure) {
+                        log.warning("CSSM.runScript: failure emulation [" + emulateFailure + "]"); // NOI18N
+                        setFailed("failure emulation in CompilerSetScriptManager"); // NOI18N
+                        emulateFailure--;
+                        return;
+                    }
 
-                if (emulateFailure>0) {
-                    log.warning("CSSM.runScript: failure emulation [" + emulateFailure + "]"); // NOI18N
-                    setFailed("failure emulation in CompilerSetScriptManager"); // NOI18N
-                    emulateFailure--;
-                    return;
+                    platform = in.readLine();
+                    log.fine("CSSM.runScript: Reading input from getCompilerSets.bash");
+                    log.fine("    platform [" + platform + "]");
+
+                    String line;
+                    while ((line = in.readLine()) != null) {
+                        log.fine("    line [" + line + "]");
+                        compilerSets.add(line);
+                    }
+                } finally {
+                    in.close();
                 }
-
-
-                String line;
-                platform = in.readLine();
-                log.fine("CSSM.runScript: Reading input from getCompilerSets.bash");
-                log.fine("    platform [" + platform + "]");
-                while ((line = in.readLine()) != null) {
-                    log.fine("    line [" + line + "]");
-                    out.write(line + '\n');
-                    out.flush();
-                }
-                in.close();
-                is.close();
-                st = new StringTokenizer(out.toString());
             } catch (IOException ex) {
-                log.warning("CSSM.runScript: IOException [" + ex.getMessage() + "]") ; // NOI18N
+                log.warning("CSSM.runScript: IOException [" + ex.getMessage() + "]"); // NOI18N
                 setFailed(ex.getMessage());
 //            } finally {
 //                support.disconnect();
@@ -116,27 +103,26 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
         }
     }
 
-    public static final String SCRIPT = ".netbeans/6.5/cnd2/scripts/getCompilerSets.bash"; // NOI18N
+    public static final String SCRIPT = ".netbeans/6.7/cnd2/scripts/getCompilerSets.bash"; // NOI18N
 
     public String getPlatform() {
         return platform;
     }
 
     public boolean hasMoreCompilerSets() {
-        return st != null && st.hasMoreTokens();
+        return nextSet < compilerSets.size();
     }
 
     public String getNextCompilerSetData() {
-        String compilerSetInfo = st.nextToken();
-        return compilerSetInfo;
+        return compilerSets.get(nextSet++);
     }
-    
+
     @Override
     public String toString() {
-        if (out != null) {
-            return out.toString();
-        } else {
-            return "";
+        StringBuilder buf = new StringBuilder();
+        for (String set : compilerSets) {
+            buf.append(set).append('\n');
         }
+        return buf.toString();
     }
 }

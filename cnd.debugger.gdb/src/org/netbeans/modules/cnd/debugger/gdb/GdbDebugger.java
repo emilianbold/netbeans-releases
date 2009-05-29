@@ -48,7 +48,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -379,10 +378,11 @@ public class GdbDebugger implements PropertyChangeListener {
                     // we need to switch to the first frame here
                     // for anonymous breakpoints to be set correctly, see IZ 139388
                     gdb.up_silently(1024);
+
+                    gdb.data_list_register_names("");
                     
                     setLoading();
                 }
-                gdb.data_list_register_names("");
             } else {
                 gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
 
@@ -740,7 +740,7 @@ public class GdbDebugger implements PropertyChangeListener {
             if (line.contains("Reading symbols from ") || // NOI18N
                     (platform == PlatformTypes.PLATFORM_MACOSX && line.contains("Symbols from "))) { // NOI18N
                 line = line.substring(21, line.length() - 8);
-                if (compareExePaths(line, exepath)) {
+                if (GdbUtils.compareExePaths(platform, line, exepath)) {
                     return true;
                 }
             } else if (line.contains("Loaded symbols for ") && comparePaths(exepath, line.substring(19))) { // NOI18N
@@ -751,62 +751,16 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     public boolean comparePaths(String path1, String path2) {
-        path1 = path1.trim();
-        path2 = path2.trim();
-        // we need to convert paths to unix-like style, so that normalization works correctly
-        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-            path1 = WinPath.win2cyg(path1).toLowerCase();
-            path2 = WinPath.win2cyg(path2).toLowerCase();
-        }
-        // see isssue 152489, normalization is required to correctly compare paths with ..
-        try {
-            String norPath1 = new URI(path1).normalize().getPath();
-            String norPath2 = new URI(path2).normalize().getPath();
-            // use normalized paths only if both paths have been normalized correctly
-            path1 = norPath1;
-            path2 = norPath2;
-        } catch (Exception e) {
-            // do nothing
-        }
-        return path1.equals(path2);
+        return GdbUtils.comparePaths(platform, path1, path2);
     }
 
     private boolean symbolsReadFromInfoFiles(String results, String exepath) {
         for (String line : results.split("\\\\n")) { // NOI18N
             if (line.contains("Symbols from ")) { // NOI18N
-                return compareExePaths(line.substring(15, line.length() - 3), exepath);
+                return GdbUtils.compareExePaths(platform, line.substring(15, line.length() - 3), exepath);
             }
         }
         return false;
-    }
-
-    /**
-     * Compare the executable path from gdb (via the <i>info files</i> command to the executable path
-     * from the project data. This comparison is <b>very</b> system dependent. For MacOS, all compares
-     * are done in lower case. For Unix, they're done as-is. The most difficult platform is Windows,
-     * where, depending on the gdb provider, I can see a Cygwin name, either forward or backward slashes,
-     * either single or double backslashes (MinGW). The ".exe" may also be missing in some cases.
-     *
-     * @param exe1 The first path
-     * @param exe2 The second path
-     * @return True if exe1 and exe2 resolve to the same executable
-     */
-    private boolean compareExePaths(String exe1, String exe2) {
-        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-            exe1 = removeExe(exe1);
-            exe2 = removeExe(exe2);
-        } else if (platform == PlatformTypes.PLATFORM_MACOSX) {
-            exe1 = exe1.toLowerCase();
-            exe2 = exe2.toLowerCase();
-        }
-        return comparePaths(exe1, exe2);
-    }
-
-    private static String removeExe(String exe) {
-        if (exe.endsWith(".exe")) { // NOI18N
-            return exe.substring(0, exe.length() - 4);
-        }
-        return exe;
     }
 
     /**
@@ -1320,7 +1274,14 @@ public class GdbDebugger implements PropertyChangeListener {
         CallStackFrame curFrame = getCurrentCallStackFrame();
         for (String frame : frames) {
             Map<String, String> frameMap = GdbUtils.createMapFromString(frame);
-            int level = Integer.parseInt(frameMap.get("level")); // NOI18N
+            int level;
+            try {
+                level = Integer.parseInt(frameMap.get("level")); // NOI18N
+            } catch (Exception e) {
+                log.log(Level.INFO, "Unable to parse level number for frame: " + frame, e); // NOI18N
+                // unable to parse level - just continue
+                continue;
+            }
             String args = frameMap.get("args"); // NOI18N
             Collection<GdbVariable> vars = GdbUtils.createLocalsList(args);
             synchronized (callstack) {
@@ -1429,10 +1390,10 @@ public class GdbDebugger implements PropertyChangeListener {
                 killcmd.add(signal.toString());
 
                 killcmd.add(Long.toString(pid));
-                NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, killcmd.get(0),false);
                 String[] args = killcmd.subList(1, killcmd.size()).toArray(new String[killcmd.size()-1]);
-                // setArguments returns new builder instance, so it is necessary to reassign it...
-                npb = npb.setArguments(args);
+                NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+                npb.setExecutable(killcmd.get(0)).setArguments(args);
+                
                 try {
                     npb.call();
                 } catch (Exception ex) {
@@ -1589,16 +1550,13 @@ public class GdbDebugger implements PropertyChangeListener {
         return state == State.STOPPED;
     }
 
-    /*public Boolean evaluateIn(Expression expression, final Object frame) {
-    return Boolean.FALSE;
-    }*/
     /**
      * Helper method that fires JPDABreakpointEvent on JPDABreakpoints.
      *
      * @param breakpoint a breakpoint to be changed
      * @param event a event to be fired
      */
-    public void fireBreakpointEvent(GdbBreakpoint breakpoint, GdbBreakpointEvent event) {
+    private static void fireBreakpointEvent(GdbBreakpoint breakpoint, GdbBreakpointEvent event) {
         breakpoint.fireGdbBreakpointChange(event);
     }
 
@@ -2066,10 +2024,10 @@ public class GdbDebugger implements PropertyChangeListener {
     private static void attach2Target(Object target, ProjectInformation pinfo) throws DebuggerStartException {
         Project project = pinfo.getProject();
         ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        MakeConfigurationDescriptor mcd = (MakeConfigurationDescriptor) cdp.getConfigurationDescriptor();
+        MakeConfigurationDescriptor mcd = cdp.getConfigurationDescriptor();
         
         if (mcd != null) {
-            MakeConfiguration conf = (MakeConfiguration) mcd.getConfs().getActive();
+            MakeConfiguration conf = mcd.getActiveConfiguration();
             String path = getExecutableOrSharedLibrary(pinfo, conf);
 
             if (path != null) {

@@ -43,6 +43,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -78,6 +79,17 @@ public class GNUCCCCompilerTest {
 
     @After
     public void tearDown() {
+    }
+
+
+    @Test
+    public void testPatternCpp() {
+        String s = "c++";
+        s = s.replace("+", "\\+");
+        s = ".*\\.(" + s + ")$"; //NOI18N;
+        Pattern pattern = Pattern.compile(s);
+        assert(pattern.matcher("file.c++").find());
+        assert(!pattern.matcher("file.cpp").find());
     }
 
     @Test

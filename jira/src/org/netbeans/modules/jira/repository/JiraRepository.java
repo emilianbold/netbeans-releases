@@ -45,10 +45,9 @@ import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import java.awt.Image;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -58,8 +57,10 @@ import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
+import org.eclipse.mylyn.internal.jira.core.model.NamedFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ContentFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
+import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
 import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
@@ -72,6 +73,7 @@ import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.commands.JiraExecutor;
+import org.netbeans.modules.jira.commands.NamedFiltersCommand;
 import org.netbeans.modules.jira.commands.PerformQueryCommand;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
@@ -102,6 +104,8 @@ public class JiraRepository extends Repository {
     private RequestProcessor refreshProcessor;
     private JiraExecutor executor;
     private JiraConfiguration configuration;
+    private final Object REPOSITORY_LOCK = new Object();
+    private final Object CONFIGURATION_LOCK = new Object();
 
     public JiraRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
@@ -210,7 +214,7 @@ public class JiraRepository extends Repository {
     }
 
     public void removeQuery(JiraQuery query) {
-        JiraConfig.getInstance().removeQuery(this, query);
+        Jira.getInstance().getStorageManager().removeQuery(this, query);
         getIssueCache().removeQuery(name);
         getQueriesIntern().remove(query);
         stopRefreshing(query);
@@ -218,24 +222,41 @@ public class JiraRepository extends Repository {
 
     public void saveQuery(JiraQuery query) {
         assert name != null;
-        JiraConfig.getInstance().putQuery(this, query); // XXX display name ????
+        Jira.getInstance().getStorageManager().putQuery(this, query);
         getQueriesIntern().add(query);
     }
 
     private Set<Query> getQueriesIntern() {
         if(queries == null) {
-            queries = new HashSet<Query>(10);
-            String[] qs = JiraConfig.getInstance().getQueries(name);
-            for (String queryName : qs) {
-                JiraQuery q = JiraConfig.getInstance().getQuery(this, queryName);
-                if(q != null ) {
-                    queries.add(q);
-                } else {
-                    Jira.LOG.warning("Couldn't find query with stored name " + queryName); // NOI18N
+            JiraStorageManager manager = Jira.getInstance().getStorageManager();
+            queries = manager.getQueries(this);
+            Jira.getInstance().getRequestProcessor().post(new Runnable() {
+                public void run() {
+                    synchronized(queries) {
+                        queries.addAll(getServerQueries());
+                    }
+                    fireQueryListChanged();
                 }
+            });
+
+        }
+        synchronized(queries) {
+            return queries;
+        }
+    }
+
+    protected Collection<Query> getServerQueries() {
+        List<Query> ret = new ArrayList<Query>();
+        NamedFiltersCommand cmd = new NamedFiltersCommand(taskRepository);
+        getExecutor().execute(cmd);
+        if(!cmd.hasFailed()) {
+            NamedFilter[] filters = cmd.getNamedFilters();
+            for (NamedFilter nf : filters) {
+                JiraQuery q = new JiraQuery(nf.getName(), this, nf, -1);
+                ret.add(q);
             }
         }
-        return queries;
+        return ret;
     }
 
     @Override
@@ -264,12 +285,15 @@ public class JiraRepository extends Repository {
 
         if(keywords.length == 1) {
             // only one search criteria -> might be we are looking for the bug with id=keywords[0]
-            TaskData taskData = JiraUtils.getTaskDataByKey(this, keywords[0], false);
-            if(taskData != null) {
-                NbJiraIssue issue = new NbJiraIssue(taskData, JiraRepository.this);
-                issues.add(issue); // we don't cache this issues
-                                   // - the retured taskdata are partial
-                                   // - and we need an as fast return as possible at this place
+            keywords[0] = repairKeyIfNeeded(keywords[0]);
+            if (keywords[0] != null) {
+                TaskData taskData = JiraUtils.getTaskDataByKey(this, keywords[0], false);
+                if (taskData != null) {
+                    NbJiraIssue issue = new NbJiraIssue(taskData, JiraRepository.this);
+                    issues.add(issue); // we don't cache this issues
+                    // - the retured taskdata are partial
+                    // - and we need an as fast return as possible at this place
+                }
             }
         }
 
@@ -290,6 +314,7 @@ public class JiraRepository extends Repository {
 
         final ContentFilter cf = new ContentFilter(sb.toString(), true, false, false, false);
         fd.setContentFilter(cf);
+        fd.setProjectFilter(getProjectFilter());
         PerformQueryCommand queryCmd = new PerformQueryCommand(this, fd, collector);
         getExecutor().execute(queryCmd);
         return issues.toArray(new NbJiraIssue[issues.size()]);
@@ -309,15 +334,15 @@ public class JiraRepository extends Repository {
 
     protected void setTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
-        resetRepository(); // only on url, user or passwd change        
+        resetRepository(); // only on url, user or passwd change
         Jira.getInstance().addRepository(this);
     }
 
-    static TaskRepository createTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
-        TaskRepository repository =
-                new TaskRepository(
-                    Jira.getInstance().getRepositoryConnector().getConnectorKind(),
-                    url);
+    public void setCredentials(String user, String password, String httpUser, String httpPassword) {
+        setCredentials(taskRepository, user, password, httpUser, httpPassword);
+    }
+
+    protected static void setCredentials (TaskRepository repository, String user, String password, String httpUser, String httpPassword) {
         AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user, password);
         repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
 
@@ -327,7 +352,14 @@ public class JiraRepository extends Repository {
             authenticationCredentials = new AuthenticationCredentials(httpUser, httpPassword);
             repository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
         }
+    }
 
+    static TaskRepository createTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
+        TaskRepository repository =
+                new TaskRepository(
+                    Jira.getInstance().getRepositoryConnector().getConnectorKind(),
+                    url);
+        setCredentials(repository, user, password, httpUser, httpPassword);
         // XXX need proxy settings from the IDE
 
         return repository;
@@ -353,12 +385,14 @@ public class JiraRepository extends Repository {
         return c != null ? c.getPassword() : ""; // NOI18N
     }
     
-    synchronized void resetRepository() {
-        // XXX
+    void resetRepository() {
+        // XXX synchronization
         configuration = null;
-        TaskRepository taskRepo = getTaskRepository();
-        if(taskRepo != null) {
-            Jira.getInstance().removeClient(taskRepo);
+        synchronized (REPOSITORY_LOCK) {
+            TaskRepository taskRepo = getTaskRepository();
+            if (taskRepo != null) {
+                Jira.getInstance().removeClient(taskRepo);
+            }
         }
     }
 
@@ -367,16 +401,20 @@ public class JiraRepository extends Repository {
      *
      * @return
      */
-    public synchronized JiraConfiguration getConfiguration() {
-        if(configuration == null) {
-            configuration = getConfigurationIntern(false);
+    public JiraConfiguration getConfiguration() {
+        synchronized (CONFIGURATION_LOCK) {
+            if (configuration == null) {
+                configuration = getConfigurationIntern(false);
+            }
+            return configuration;
         }
-        return configuration;
     }
 
-    public synchronized void refreshConfiguration() {
+    public void refreshConfiguration() {
         JiraConfiguration c = getConfigurationIntern(true);
-        configuration = c;
+        synchronized (CONFIGURATION_LOCK) {
+            configuration = c;
+        }
     }
 
     protected JiraConfiguration createConfiguration(JiraClient client) {
@@ -384,8 +422,6 @@ public class JiraRepository extends Repository {
     }
 
     private JiraConfiguration getConfigurationIntern(final boolean forceRefresh) {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-
         // XXX need logging incl. consumed time
 
         class ConfigurationCommand extends JiraCommand {
@@ -539,4 +575,30 @@ public class JiraRepository extends Repository {
         return executor;
     }
 
+    /**
+     * Returns null if key is not a valid Jira issue key
+     * @param key
+     * @return
+     */
+    protected String repairKeyIfNeeded (String key) {
+        String retval = null;
+        try {
+            Long.parseLong(key);
+            // problem
+            // mylyn will interpret this key as an ID
+        } catch (NumberFormatException ex) {
+            // this is good, no InsufficientRightsException will be thrown in mylyn
+            retval = key;
+        }
+        return retval;
+    }
+
+    /**
+     * Returns <code>null</code> for a general repository.
+     * Override this to provide a valid project filter for a repository which is limited to a subset of all projects (e.g. kenai).
+     * @return a project filter - <code>null</code> for this implementation.
+     */
+    protected ProjectFilter getProjectFilter () {
+        return null;
+    }
 }

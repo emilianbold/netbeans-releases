@@ -493,8 +493,9 @@ public class SunStudioDataCollector
             if (isAttachable()) {
                 // i.e. should start separate process
                 AttachableTarget at = (AttachableTarget) config.target;
-                NativeProcessBuilder npb = new NativeProcessBuilder(config.execEnv, cmd,false);
-                npb = npb.setArguments("-P", "" + at.getPID(), "-o", config.experimentDirectory); // NOI18N
+                NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(config.execEnv);
+                npb.setExecutable(cmd);
+                npb.setArguments("-P", "" + at.getPID(), "-o", config.experimentDirectory); // NOI18N
 
                 ExecutionDescriptor descr = new ExecutionDescriptor();
                 descr = descr.errProcessorFactory(new StdErrRedirectorFactory());
@@ -506,6 +507,16 @@ public class SunStudioDataCollector
             }
 
             if (monitorsUpdater != null) {
+                // IZ165095: RUN FAILED on remote host
+                // See explanation there about why I use a delay here ...
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex) {
+                    // should not happen...
+                    log.log(Level.FINE, "SSDC: wait a second before starting monitorsUpdater: sleep terminated", ex); // NOI18N
+                }
+
                 monitorsUpdater.start();
             }
         }

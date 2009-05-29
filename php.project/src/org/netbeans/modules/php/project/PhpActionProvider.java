@@ -59,6 +59,7 @@ import org.netbeans.modules.php.project.ui.actions.RunTestCommand;
 import org.netbeans.modules.php.project.ui.actions.TestProjectCommand;
 import org.netbeans.modules.php.project.ui.actions.UploadCommand;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.LifecycleManager;
 import org.openide.util.Lookup;
@@ -73,6 +74,7 @@ public class PhpActionProvider implements ActionProvider {
     PhpActionProvider(PhpProject project) {
         commands = new LinkedHashMap<String, Command>();
         Command[] commandArray = new Command[] {
+            // project sensitive actions
             new RunProjectCommand(project),
             new DebugProjectCommand(project),
             new TestProjectCommand(project),
@@ -83,6 +85,8 @@ public class PhpActionProvider implements ActionProvider {
             new CopyCommand(project),
             new MoveCommand(project),
             new RenameCommand(project),
+
+            // file sensitive actions
             new DownloadCommand(project),
             new UploadCommand(project),
         };
@@ -127,7 +131,9 @@ public class PhpActionProvider implements ActionProvider {
         Command command = getCommand(commandId);
         assert command != null : commandId;
         assert command instanceof Displayable;
-        return ProjectSensitiveActions.projectCommandAction(command.getCommandId(),
-                ((Displayable) command).getDisplayName(), null);
+        if (command.isFileSensitive()) {
+            return FileSensitiveActions.fileCommandAction(command.getCommandId(), ((Displayable) command).getDisplayName(), null);
+        }
+        return ProjectSensitiveActions.projectCommandAction(command.getCommandId(), ((Displayable) command).getDisplayName(), null);
     }
 }

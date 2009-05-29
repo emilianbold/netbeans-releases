@@ -96,7 +96,6 @@ public final class QuerySupport {
         Parameters.notNull("helper", helper); // NOI18N
         Parameters.notNull("evaluator", evaluator); // NOI18N
         Parameters.notNull("srcRoots", srcRoots); // NOI18N
-        Parameters.notNull("testRoots", testRoots); // NOI18N
         Parameters.notNull("binaryProperties", binaryProperties); // NOI18N
 
         return new CompiledSourceForBinaryQueryImpl(helper, evaluator, srcRoots, testRoots, binaryProperties, testBinaryProperties);

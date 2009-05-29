@@ -42,6 +42,8 @@
 package org.netbeans.modules.hudson.spi;
 
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
@@ -96,8 +98,25 @@ public abstract class ProjectHudsonProvider {
      * @return a matching project, or null
      */
     public Project findAssociatedProject(Association assoc) {
+        Map<Association,Project> assocs = new HashMap<Association,Project>();
         for (Project p : OpenProjects.getDefault().getOpenProjects()) {
-            if (assoc.equals(findAssociation(p))) {
+            Association found = findAssociation(p);
+            if (assoc.equals(found)) {
+                return p;
+            }
+            if (!assocs.containsKey(assoc)) {
+                assocs.put(found, p);
+            } else {
+                // In case of ambiguity, do not return anything.
+                // XXX better would be for this method to return Collection<Project>
+                // so Hyperlinker could try all the alternatives in turn
+                assocs.put(found, null);
+            }
+        }
+        if (assoc.getJobName() != null) {
+            // May happen that the PHP only knows the server URL, not the specific job.
+            Project p = assocs.get(Association.fromString(assoc.getServerUrl()));
+            if (p != null) {
                 return p;
             }
         }

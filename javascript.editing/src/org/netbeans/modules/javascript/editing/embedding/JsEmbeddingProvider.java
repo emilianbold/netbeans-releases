@@ -273,8 +273,14 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
     private static final class RhtmlTranslator implements Translator {
 
         public List<Embedding> translate(Snapshot snapshot) {
-            TokenSequence<? extends TokenId> tokenSequence = snapshot.getTokenHierarchy().tokenSequence();
             List<Embedding> embeddings = new ArrayList<Embedding>();
+            TokenHierarchy th = snapshot.getTokenHierarchy();
+            if(th == null) {
+                //likely a rhtml language couldn't be found
+                LOG.info("Cannot get TokenHierarchy from snapshot " + snapshot);
+                return embeddings;
+            }
+            TokenSequence<? extends TokenId> tokenSequence = th.tokenSequence();
 
             // Add a super class such that code completion, goto declaration etc.
             // knows where to pull the various link_to etc. methods from

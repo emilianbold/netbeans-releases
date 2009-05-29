@@ -43,6 +43,8 @@ package org.netbeans.modules.java.source;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanRegistrationException;
@@ -67,6 +69,7 @@ import org.openide.util.Exceptions;
 public class JBrowseModule extends ModuleInstall {
     
     private static final boolean ENABLE_MBEANS = Boolean.getBoolean("org.netbeans.modules.java.source.enableMBeans");  //NOI18N
+    private static Logger log = Logger.getLogger(JBrowseModule.class.getName());
     
     /** Creates a new instance of JBrowseModule */
     public JBrowseModule() {
@@ -113,16 +116,20 @@ public class JBrowseModule extends ModuleInstall {
             mgs.registerMBean (new LowMemoryNotifierMBeanImpl(), new ObjectName (LowMemoryNotifierMBean.OBJECT_NAME));
             mgs.registerMBean( LuceneIndexMBeanImpl.getDefault(), new ObjectName (LuceneIndexMBean.OBJECT_NAME));
         } catch (NotCompliantMBeanException e) {
-            ErrorManager.getDefault ().notify (e);
+            if (log.isLoggable(Level.SEVERE))
+                log.log(Level.SEVERE, e.getMessage(), e);
         }
         catch (MalformedObjectNameException e) {
-            ErrorManager.getDefault ().notify (e);
+            if (log.isLoggable(Level.SEVERE))
+                log.log(Level.SEVERE, e.getMessage(), e);
         }
         catch (InstanceAlreadyExistsException e) {
-            ErrorManager.getDefault ().notify (e);
+            if (log.isLoggable(Level.SEVERE))
+                log.log(Level.SEVERE, e.getMessage(), e);
         }
         catch (MBeanRegistrationException e) {
-            ErrorManager.getDefault ().notify (e);
+            if (log.isLoggable(Level.SEVERE))
+                log.log(Level.SEVERE, e.getMessage(), e);
         }
     }
     
@@ -132,13 +139,16 @@ public class JBrowseModule extends ModuleInstall {
             mgs.unregisterMBean (new ObjectName (LowMemoryNotifierMBean.OBJECT_NAME));
             mgs.unregisterMBean (new ObjectName (LuceneIndexMBean.OBJECT_NAME));
         } catch (MalformedObjectNameException e) {
-            ErrorManager.getDefault ().notify (e);
+            if (log.isLoggable(Level.SEVERE))
+                log.log(Level.SEVERE, e.getMessage(), e);
         }
         catch (InstanceNotFoundException e) {
-            ErrorManager.getDefault ().notify (e);
+            if (log.isLoggable(Level.SEVERE))
+                log.log(Level.SEVERE, e.getMessage(), e);
         }
         catch (MBeanRegistrationException e) {
-            ErrorManager.getDefault ().notify (e);
+            if (log.isLoggable(Level.SEVERE))
+                log.log(Level.SEVERE, e.getMessage(), e);
         }
     }
 }

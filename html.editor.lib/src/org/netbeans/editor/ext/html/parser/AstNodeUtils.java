@@ -38,6 +38,8 @@
  */
 package org.netbeans.editor.ext.html.parser;
 
+import java.util.StringTokenizer;
+
 /**
  *
  * @author marek
@@ -47,19 +49,26 @@ public class AstNodeUtils {
     private static final String INDENT = "   ";
 
     public static void dumpTree(AstNode node) {
-        dump(node, "");
+        StringBuffer buf = new StringBuffer();
+        dumpTree(node, buf);
+        System.out.println(buf.toString());
     }
 
-    private static void dump(AstNode node, String prefix) {
-        System.out.println(prefix + node.toString());
+    public static void dumpTree(AstNode node, StringBuffer buf) {
+        dump(node, "", buf);
+    }
+
+    private static void dump(AstNode node, String prefix, StringBuffer buf) {
+        buf.append(prefix + node.toString());
+        buf.append('\n');
         for (AstNode child : node.children()) {
-            dump(child, INDENT);
+            dump(child, prefix + INDENT, buf);
         }
     }
-    
+
     public static AstNode getRoot(AstNode node) {
-        for(;;) {
-            if(node.parent() == null) {
+        for (;;) {
+            if (node.parent() == null) {
                 return node;
             } else {
                 node = node.parent();
@@ -68,9 +77,10 @@ public class AstNodeUtils {
     }
 
     public static AstNode findDescendant(AstNode node, int astOffset) {
-        int so = node.startOffset();
-        int eo = node.endOffset();
+        int[] nodeRange = node.getLogicalRange();
 
+        int so = nodeRange[0];
+        int eo = nodeRange[1];
 
         if (astOffset < so || astOffset > eo) {
             //we are out of the scope - may happen just with the first client call
@@ -83,8 +93,9 @@ public class AstNodeUtils {
         }
 
         for (AstNode child : node.children()) {
-            int ch_so = child.startOffset();
-            int ch_eo = child.endOffset();
+            int[] childNodeRange = child.getLogicalRange();
+            int ch_so = childNodeRange[0];
+            int ch_eo = childNodeRange[1];
             if (astOffset >= ch_so && astOffset < ch_eo) {
                 //the child is or contains the searched node
                 return findDescendant(child, astOffset);
@@ -93,6 +104,70 @@ public class AstNodeUtils {
         }
 
         return node;
+    }
+
+    public  static AstNode getTagNode(AstNode node, int astOffset) {
+        if(node.type() == AstNode.NodeType.OPEN_TAG) {
+            if (astOffset >= node.startOffset() && astOffset < node.endOffset()) {
+                //the offset falls directly to the tag
+                return node;
+            }
+            
+            AstNode match = node.getMatchingTag();
+            if (match != null && match.type() == AstNode.NodeType.ENDTAG) {
+                //end tag is possibly the searched node
+                if (astOffset >= match.startOffset() && astOffset < match.endOffset()) {
+                    return match;
+                }
+            }
+
+            //offset falls somewhere inside the logical range but outside of
+            //the open or end tag ranges.
+            return null;
+        }
+        
+        return node;
+    }
+
+    /** find an AstNode according to the path
+     * example of path: html/body/table|2/tr -- find a second table tag in body tag
+     *
+     * note: queries OPEN TAGS ONLY!
+     */
+    public static AstNode query(AstNode base, String path) {
+        StringTokenizer st = new StringTokenizer(path, "/");
+        AstNode found = base;
+        while(st.hasMoreTokens()) {
+            String token = st.nextToken();
+            int indexDelim = token.indexOf('|');
+
+            String nodeName = indexDelim >= 0 ? token.substring(0, indexDelim) : token;
+            String sindex = indexDelim >= 0 ? token.substring(indexDelim + 1, token.length()) : "0";
+            int index = Integer.parseInt(sindex);
+
+            int count = 0;
+            AstNode foundLocal = null;
+            for(AstNode child : found.children()) {
+                if(child.type() == AstNode.NodeType.OPEN_TAG && child.name().equals(nodeName) && count++ == index) {
+                    foundLocal = child;
+                    break;
+                }
+            }
+            if(foundLocal != null) {
+                found = foundLocal;
+
+                if(!st.hasMoreTokens()) {
+                    //last token, we may return
+                    assert found.name().equals(nodeName);
+                    return found;
+                }
+
+            } else {
+                return null; //no found
+            }
+        }
+
+        return null;
     }
 
     public static void visitChildren(AstNode node, AstNodeVisitor visitor) {
@@ -109,6 +184,5 @@ public class AstNodeUtils {
             visitAncestors(parent, visitor);
         }
     }
-    
 }
     

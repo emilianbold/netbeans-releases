@@ -163,8 +163,8 @@ public class PostFlowAnalysis extends TreeScanner {
     @Override
     public void visitNewClass(JCNewClass tree) {
         super.visitNewClass(tree);
-        Symbol c = tree.constructor.owner;
-        if (c.hasOuterInstance()) {
+        Symbol c = tree.constructor != null ? tree.constructor.owner : null;
+        if (c != null && c.hasOuterInstance()) {
             if (tree.encl == null && (c.owner.kind & (Kinds.MTH | Kinds.VAR)) != 0) {
                 checkThis(tree.pos(), c.type.getEnclosingType().tsym);
             }
@@ -176,7 +176,7 @@ public class PostFlowAnalysis extends TreeScanner {
         super.visitApply(tree);
         Symbol meth = TreeInfo.symbol(tree.meth);
         Name methName = TreeInfo.name(tree.meth);
-        if (meth.name==names.init) {
+        if (meth != null && meth.name==names.init) {
             Symbol c = meth.owner;
             if (c.hasOuterInstance()) {
                 if (tree.meth.getTag() != JCTree.SELECT && ((c.owner.kind & (Kinds.MTH | Kinds.VAR)) != 0 || methName == names._this)) {
@@ -189,7 +189,7 @@ public class PostFlowAnalysis extends TreeScanner {
     @Override
     public void visitSelect(JCFieldAccess tree) {
         super.visitSelect(tree);
-        if (tree.name == names._this || tree.name == names._super)
+        if ((tree.name == names._this || tree.name == names._super) && tree.selected.type != null)
             checkThis(tree.pos(), tree.selected.type.tsym);
     }
 

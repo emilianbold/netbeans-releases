@@ -1266,7 +1266,7 @@ public class UnitTab extends javax.swing.JPanel {
             String category = u.getCategoryName();
             List<Unit> units = model.getUnits();
             for (Unit unit : units) {
-                if (unit != null && category.equals(unit.getCategoryName()) && !unit.isMarked()) {
+                if (unit != null && category.equals(unit.getCategoryName()) && !unit.isMarked() && unit.canBeMarked()) {
                     retval = true;
                     break;
                 }
@@ -1330,11 +1330,21 @@ public class UnitTab extends javax.swing.JPanel {
                 }
             }
             UninstallUnitWizard wizard = new UninstallUnitWizard ();
-            wizard.invokeWizard (true);
-            Containers.forEnable ().removeAll ();
-            restoreSelectedRow(row);
-            refreshState ();
-            focusTable ();
+            boolean finished = false;
+            try {
+                finished = wizard.invokeWizard(true);
+            } finally {
+                Containers.forEnable().removeAll();
+                if (finished) {
+                    for (Unit u : model.getMarkedUnits()) {
+                        u.setMarked(false);
+                    }
+                }
+                fireUpdataUnitChange();
+                restoreSelectedRow(row);
+                refreshState ();
+                focusTable ();
+            }
         }
         /*
         public void performerImpl (Unit u) {

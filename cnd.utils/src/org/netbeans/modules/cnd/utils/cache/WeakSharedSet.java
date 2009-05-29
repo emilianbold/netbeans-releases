@@ -60,10 +60,10 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
- * This class provides storage functionality with Weak-referenced entries and 
+ * This class provides storage functionality with Weak-referenced entries and
  * one new method <tt>addOrGet<tt> (backed by a hash table)
  * Access to set should be syncronized if used from different threads
- * 
+ *
  * @see #addOrGet(Object)
  * @author Vladimir Voskresensky
  */
@@ -71,7 +71,7 @@ import java.util.Set;
 public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
     private final SharedKeyWeakHashMap<E, Boolean> m;  // The backing map
     private transient Set<E> s;       // Its keySet
-    
+
     /**
      * Constructs a new, empty <tt>WeakSharedSet</tt> with the given initial
      * capacity and the given load factor.
@@ -120,7 +120,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
                 SharedKeyWeakHashMap.DEFAULT_LOAD_FACTOR);
         addAll(s);
     }
-        
+
     @Override
     public void clear()               {        m.clear(); }
     public int size()                 { return m.size(); }
@@ -135,12 +135,12 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
             m.resize(newCapacity);
         }
     }
-    
+
     /**
      * it is expected that method addOrGet is used instead of add
-     */ 
+     */
     @Override
-    public boolean add(E e) { return m.put(e, Boolean.TRUE) == null; }
+    public boolean add(E e) { return m.put(e, null) == null; }
     public Iterator<E> iterator()     { return s.iterator(); }
     @Override
     public Object[] toArray()         { return s.toArray(); }
@@ -159,8 +159,8 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
     @Override
     public boolean retainAll(Collection<?> c)   {return s.retainAll(c);}
     // addAll is the only inherited implementation
-    
-        
+
+
     /**
      * Put object in this set if equal one is not yet in set.
      * Returns previous set entry if equal object is already in set.
@@ -168,69 +168,66 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
      * @param e object to put in set.
      * @return the previous set entry equals with <tt>e</tt>, or
      *         passed object <tt>e</tt> if there were not entry in set.
-     */    
+     */
     public E addOrGet(E e) { return m.putOrGet(e); }
-    
+
     private static final long serialVersionUID = 2454657854757543876L;
-    
+
     private void readObject(java.io.ObjectInputStream stream)
     throws IOException, ClassNotFoundException {
         stream.defaultReadObject();
         s = m.keySet();
     }
-    
+
     // delegate class with only one special method putOrGet
+    // remove entry value field for performance and memory consumption
     // all other is copied from java.util.WeakHashMap
-    /**
-     * Copyright 2007 Sun Microsystems, Inc. All rights reserved.
-     * SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
-     */
     private static class SharedKeyWeakHashMap<K,V>
             extends AbstractMap<K,V>
             implements Map<K,V> {
-        
+
         /**
          * The default initial capacity -- MUST be a power of two.
          */
         private static final int DEFAULT_INITIAL_CAPACITY = 16;
-        
+
         /**
          * The maximum capacity, used if a higher value is implicitly specified
          * by either of the constructors with arguments.
          * MUST be a power of two <= 1<<30.
          */
         private static final int MAXIMUM_CAPACITY = 1 << 30;
-        
+
         /**
          * The load fast used when none specified in constructor.
          */
         private static final float DEFAULT_LOAD_FACTOR = 0.75f;
-        
+
         /**
          * The table, resized as necessary. Length MUST Always be a power of two.
          */
         private Entry[] table;
-        
+
         /**
          * The number of key-value mappings contained in this weak hash map.
          */
         private int size;
-        
+
         /**
          * The next size value at which to resize (capacity * load factor).
          */
         private int threshold;
-        
+
         /**
          * The load factor for the hash table.
          */
         private final float loadFactor;
-        
+
         /**
          * Reference queue for cleared WeakEntries
          */
         private final ReferenceQueue<K> queue = new ReferenceQueue<K>();
-        
+
         /**
          * The number of times this SharedKeyWeakHashMap has been structurally modified.
          * Structural modifications are those that change the number of
@@ -241,7 +238,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
          * @see ConcurrentModificationException
          */
         private volatile int modCount;
-        
+
         /**
          * Constructs a new, empty <tt>SharedKeyWeakHashMap</tt> with the given initial
          * capacity and the given load factor.
@@ -257,7 +254,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
                         initialCapacity);
             if (initialCapacity > MAXIMUM_CAPACITY)
                 initialCapacity = MAXIMUM_CAPACITY;
-            
+
             if (loadFactor <= 0 || Float.isNaN(loadFactor))
                 throw new IllegalArgumentException("Illegal Load factor: "+ // NOI18N
                         loadFactor);
@@ -268,7 +265,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
             this.loadFactor = loadFactor;
             threshold = (int)(capacity * loadFactor);
         }
-        
+
         /**
          * Constructs a new, empty <tt>SharedKeyWeakHashMap</tt> with the given initial
          * capacity and the default load factor (0.75).
@@ -279,7 +276,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
         public SharedKeyWeakHashMap(int initialCapacity) {
             this(initialCapacity, DEFAULT_LOAD_FACTOR);
         }
-        
+
         /**
          * Constructs a new, empty <tt>SharedKeyWeakHashMap</tt> with the default initial
          * capacity (16) and load factor (0.75).
@@ -289,7 +286,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
             threshold = DEFAULT_INITIAL_CAPACITY;
             table = new Entry[DEFAULT_INITIAL_CAPACITY];
         }
-        
+
         /**
          * Constructs a new <tt>SharedKeyWeakHashMap</tt> with the same mappings as the
          * specified map.  The <tt>SharedKeyWeakHashMap</tt> is created with the default
@@ -305,28 +302,28 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
                     DEFAULT_LOAD_FACTOR);
             putAll(m);
         }
-        
+
         // internal utilities
-        
+
         /**
          * Value representing null keys inside tables.
          */
         private static final Object NULL_KEY = new Object();
-        
+
         /**
          * Use NULL_KEY for key if it is null.
          */
         private static Object maskNull(Object key) {
             return (key == null ? NULL_KEY : key);
         }
-        
+
         /**
          * Returns internal representation of null key back to caller as null.
          */
         private static <K> K unmaskNull(Object key) {
             return (K) (key == NULL_KEY ? null : key);
         }
-        
+
         /**
          * Checks for equality of non-null reference x and possibly-null y.  By
          * default uses Object.equals.
@@ -334,14 +331,14 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
         static boolean eq(Object x, Object y) {
             return x == y || x.equals(y);
         }
-        
+
         /**
          * Returns index for hash code h.
          */
         static int indexFor(int h, int length) {
             return h & (length-1);
         }
-        
+
         /**
          * Expunges stale entries from the table.
          */
@@ -350,7 +347,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
             while ( (e = (Entry<K,V>) queue.poll()) != null) {
                 int h = e.hash;
                 int i = indexFor(h, table.length);
-                
+
                 Entry<K,V> prev = table[i];
                 Entry<K,V> p = prev;
                 while (p != null) {
@@ -361,7 +358,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
                         else
                             prev.next = next;
                         e.next = null;  // Help GC
-                        e.value = null; //  "   "
+                        //e.value = null; //  "   "
                         size--;
                         break;
                     }
@@ -370,7 +367,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
                 }
             }
         }
-        
+
         /**
          * Returns the table after first expunging stale entries.
          */
@@ -378,7 +375,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
             expungeStaleEntries();
             return table;
         }
-        
+
         /**
          * Returns the number of key-value mappings in this map.
          * This result is a snapshot, and may not reflect unprocessed
@@ -392,7 +389,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
             expungeStaleEntries();
             return size;
         }
-        
+
         /**
          * Returns <tt>true</tt> if this map contains no key-value mappings.
          * This result is a snapshot, and may not reflect unprocessed
@@ -403,7 +400,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
         public boolean isEmpty() {
             return size() == 0;
         }
-        
+
         /**
          * Returns the value to which the specified key is mapped,
          * or {@code null} if this map contains no mapping for the key.
@@ -423,19 +420,9 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
          */
         @Override
         public V get(Object key) {
-            Object k = maskNull(key);
-            int h = hash(k.hashCode());
-            Entry[] tab = getTable();
-            int index = indexFor(h, tab.length);
-            Entry<K,V> e = tab[index];
-            while (e != null) {
-                if (e.hash == h && eq(k, e.get()))
-                    return e.value;
-                e = e.next;
-            }
             return null;
         }
-        
+
         /**
          * Returns <tt>true</tt> if this map contains a mapping for the
          * specified key.
@@ -448,7 +435,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
         public boolean containsKey(Object key) {
             return getEntry(key) != null;
         }
-        
+
         /**
          * Returns the entry associated with the specified key in this map.
          * Returns null if the map contains no mapping for this key.
@@ -463,7 +450,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
                 e = e.next;
             return e;
         }
-        
+
         /**
          * Associates the specified value with the specified key in this map.
          * If the map previously contained a mapping for this key, the old
@@ -482,24 +469,21 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
             int h = hash(k.hashCode());
             Entry[] tab = getTable();
             int i = indexFor(h, tab.length);
-            
+
             for (Entry<K,V> e = tab[i]; e != null; e = e.next) {
                 if (h == e.hash && eq(k, e.get())) {
-                    V oldValue = e.value;
-                    if (value != oldValue)
-                        e.value = value;
-                    return oldValue;
+                    return null;
                 }
             }
-            
+
             modCount++;
             Entry<K,V> e = tab[i];
-            tab[i] = new Entry<K,V>(k, value, queue, h, e);
+            tab[i] = new Entry<K,V>(k, queue, h, e);
             if (++size >= threshold)
                 resize(tab.length * 2);
             return null;
         }
-        
+
         /**
          * Rehashes the contents of this map into a new array with a
          * larger capacity.  This method is called automatically when the
@@ -521,11 +505,11 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
                 threshold = Integer.MAX_VALUE;
                 return;
             }
-            
+
             Entry[] newTable = new Entry[newCapacity];
             transfer(oldTable, newTable);
             table = newTable;
-            
+
         /*
          * If ignoring null elements and processing ref queue caused massive
          * shrinkage, then restore old table.  This should be rare, but avoids
@@ -539,7 +523,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
                 table = oldTable;
             }
         }
-        
+
         /** Transfers all entries from src to dest tables */
         private void transfer(Entry[] src, Entry[] dest) {
             for (int j = 0; j < src.length; ++j) {
@@ -550,7 +534,6 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
                     Object key = e.get();
                     if (key == null) {
                         e.next = null;  // Help GC
-                        e.value = null; //  "   "
                         size--;
                     } else {
                         int i = indexFor(e.hash, dest.length);
@@ -561,7 +544,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
                 }
             }
         }
-        
+
         /**
          * Copies all of the mappings from the specified map to this map.
          * These mappings will replace any mappings that this map had for any
@@ -575,7 +558,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
             int numKeysToBeAdded = m.size();
             if (numKeysToBeAdded == 0)
                 return;
-            
+
         /*
          * Expand the map if the map if the number of mappings to be added
          * is greater than or equal to threshold.  This is conservative; the
@@ -595,11 +578,11 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
                 if (newCapacity > table.length)
                     resize(newCapacity);
             }
-            
+
             for (Map.Entry<? extends K, ? extends V> e : m.entrySet())
-                put(e.getKey(), e.getValue());
+                put(e.getKey(), null);
         }
-        
+
         /**
          * Removes the mapping for a key from this weak hash map if it is present.
          * More formally, if this map contains a mapping from key <tt>k</tt> to
@@ -628,7 +611,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
             int i = indexFor(h, tab.length);
             Entry<K,V> prev = tab[i];
             Entry<K,V> e = prev;
-            
+
             while (e != null) {
                 Entry<K,V> next = e.next;
                 if (h == e.hash && eq(k, e.get())) {
@@ -638,17 +621,17 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
                         tab[i] = next;
                     else
                         prev.next = next;
-                    return e.value;
+                    return null;
                 }
                 prev = e;
                 e = next;
             }
-            
+
             return null;
         }
-        
-        
-        
+
+
+
         /** Special version of remove needed by Entry set */
         Entry<K,V> removeMapping(Object o) {
             if (!(o instanceof Map.Entry))
@@ -660,7 +643,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
             int i = indexFor(h, tab.length);
             Entry<K,V> prev = tab[i];
             Entry<K,V> e = prev;
-            
+
             while (e != null) {
                 Entry<K,V> next = e.next;
                 if (h == e.hash && e.equals(entry)) {
@@ -675,10 +658,10 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
                 prev = e;
                 e = next;
             }
-            
+
             return null;
         }
-        
+
         /**
          * Removes all of the mappings from this map.
          * The map will be empty after this call returns.
@@ -688,19 +671,19 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
             // clear out ref queue. We don't need to expunge entries
             // since table is getting cleared.
             while (queue.poll() != null) {}
-            
+
             modCount++;
             Entry[] tab = table;
             for (int i = 0; i < tab.length; ++i)
                 tab[i] = null;
             size = 0;
-            
+
             // Allocation of array may have caused GC, which may have caused
             // additional entries to go stale.  Removing these entries from the
             // reference queue will make them eligible for reclamation.
             while (queue.poll() != null) {}
         }
-        
+
         /**
          * Returns <tt>true</tt> if this map maps one or more keys to the
          * specified value.
@@ -713,18 +696,9 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
         public boolean containsValue(Object value) {
             if (value==null)
                 return containsNullValue();
-            
-            Entry[] tab = getTable();
-            for (int i = tab.length ; i-- > 0 ;) {
-                for (Entry e = tab[i] ; e != null ; e = e.next) {
-                    if (value.equals(e.value)) {
-                        return true;
-                    }
-                }
-            }
             return false;
         }
-        
+
         /**
          * Special-case code for containsValue with null argument
          */
@@ -732,49 +706,43 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
             Entry[] tab = getTable();
             for (int i = tab.length ; i-- > 0 ;) {
                 for (Entry e = tab[i] ; e != null ; e = e.next) {
-                    if (e.value==null) {
-                        return true;
-                    }
+                    return true;
                 }
             }
             return false;
         }
-        
+
         /**
          * The entries in this hash table extend WeakReference, using its main ref
          * field as the key.
          */
         private static class Entry<K,V> extends WeakReference<K> implements Map.Entry<K,V> {
-            private V value;
             private final int hash;
             private Entry<K,V> next;
-            
+
             /**
              * Creates new entry.
              */
-            Entry(K key, V value,
+            Entry(K key,
                     ReferenceQueue<K> queue,
                     int hash, Entry<K,V> next) {
                 super(key, queue);
-                this.value = value;
                 this.hash  = hash;
                 this.next  = next;
             }
-            
+
             public K getKey() {
                 return SharedKeyWeakHashMap.<K>unmaskNull(get());
             }
-            
+
             public V getValue() {
-                return value;
+                return null;
             }
-            
+
             public V setValue(V newValue) {
-                V oldValue = value;
-                value = newValue;
-                return oldValue;
+                return null;
             }
-            
+
             @Override
             public boolean equals(Object o) {
                 if (!(o instanceof Map.Entry))
@@ -783,39 +751,33 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
                 Object k1 = getKey();
                 Object k2 = e.getKey();
                 if (k1 == k2 || (k1 != null && k1.equals(k2))) {
-                    Object v1 = getValue();
-                    Object v2 = e.getValue();
-                    if (v1 == v2 || (v1 != null && v1.equals(v2)))
-                        return true;
+                    return true;
                 }
                 return false;
             }
-            
+
             @Override
             public int hashCode() {
                 Object k = getKey();
-                Object v = getValue();
-                return  ((k==null ? 0 : k.hashCode()) ^
-                        (v==null ? 0 : v.hashCode()));
+                return  (k==null ? 0 : k.hashCode());
             }
-            
+
             @Override
             public String toString() {
-                return getKey() + "=" + getValue(); // NOI18N
+                return "" + getKey(); // NOI18N
             }
         }
-        
+
         /**
          * Have to copy AbstractMap.SimpleEntry,
          * since it appears only in jdk 1.6
          */
-        public static class SimpleEntry<K,V>
+        private static class SimpleEntry<K,V>
                 implements Map.Entry<K,V>, java.io.Serializable {
             private static final long serialVersionUID = -8499721149061103585L;
-            
+
             private final K key;
-            private V value;
-            
+
             /**
              * Creates an entry representing a mapping from the specified
              * key to the specified value.
@@ -823,11 +785,10 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
              * @param key the key represented by this entry
              * @param value the value represented by this entry
              */
-            public SimpleEntry(K key, V value) {
+            public SimpleEntry(K key) {
                 this.key   = key;
-                this.value = value;
             }
-            
+
             /**
              * Creates an entry representing the same mapping as the
              * specified entry.
@@ -836,9 +797,8 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
              */
             public SimpleEntry(Map.Entry<? extends K, ? extends V> entry) {
                 this.key   = entry.getKey();
-                this.value = entry.getValue();
             }
-            
+
             /**
              * Returns the key corresponding to this entry.
              *
@@ -847,16 +807,16 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
             public K getKey() {
                 return key;
             }
-            
+
             /**
              * Returns the value corresponding to this entry.
              *
              * @return the value corresponding to this entry
              */
             public V getValue() {
-                return value;
+                return null;
             }
-            
+
             /**
              * Replaces the value corresponding to this entry with the specified
              * value.
@@ -865,11 +825,9 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
              * @return the old value corresponding to the entry
              */
             public V setValue(V value) {
-                V oldValue = this.value;
-                this.value = value;
-                return oldValue;
+                return null;
             }
-            
+
             /**
              * Compares the specified object with this entry for equality.
              * Returns {@code true} if the given object is also a map entry and
@@ -878,11 +836,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
              * if<pre>
              *   (e1.getKey()==null ?
              *    e2.getKey()==null :
-             *    e1.getKey().equals(e2.getKey()))
-             *   &amp;&amp;
-             *   (e1.getValue()==null ?
-             *    e2.getValue()==null :
-             *    e1.getValue().equals(e2.getValue()))</pre>
+             *    e1.getKey().equals(e2.getKey()))</pre>
              * This ensures that the {@code equals} method works properly across
              * different implementations of the {@code Map.Entry} interface.
              *
@@ -896,14 +850,13 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
                 if (!(o instanceof Map.Entry))
                     return false;
                 Map.Entry e = (Map.Entry)o;
-                return eq(key, e.getKey()) && eq(value, e.getValue());
+                return eq(key, e.getKey());
             }
-            
+
             /**
              * Returns the hash code value for this map entry.  The hash code
              * of a map entry {@code e} is defined to be: <pre>
-             *   (e.getKey()==null   ? 0 : e.getKey().hashCode()) ^
-             *   (e.getValue()==null ? 0 : e.getValue().hashCode())</pre>
+             *   (e.getKey()==null   ? 0 : e.getKey().hashCode())</pre>
              * This ensures that {@code e1.equals(e2)} implies that
              * {@code e1.hashCode()==e2.hashCode()} for any two Entries
              * {@code e1} and {@code e2}, as required by the general
@@ -914,10 +867,9 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
              */
             @Override
             public int hashCode() {
-                return (key   == null ? 0 :   key.hashCode()) ^
-                        (value == null ? 0 : value.hashCode());
+                return (key   == null ? 0 :   key.hashCode());
             }
-            
+
             /**
              * Returns a String representation of this map entry.  This
              * implementation returns the string representation of this
@@ -928,36 +880,36 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
              */
             @Override
             public String toString() {
-                return key + "=" + value; // NOI18N
+                return "" + key; // NOI18N
             }
-            
+
         }
-        
+
         private abstract class HashIterator<T> implements Iterator<T> {
             int index;
             Entry<K,V> entry = null;
             Entry<K,V> lastReturned = null;
             int expectedModCount = modCount;
-            
+
             /**
              * Strong reference needed to avoid disappearance of key
              * between hasNext and next
              */
             Object nextKey = null;
-            
+
             /**
              * Strong reference needed to avoid disappearance of key
              * between nextEntry() and any use of the entry
              */
             Object currentKey = null;
-            
+
             HashIterator() {
                 index = (size() != 0 ? table.length : 0);
             }
-            
+
             public boolean hasNext() {
                 Entry[] t = table;
-                
+
                 while (nextKey == null) {
                     Entry<K,V> e = entry;
                     int i = index;
@@ -975,57 +927,58 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
                 }
                 return true;
             }
-            
+
             /** The common parts of next() across different types of iterators */
             protected Entry<K,V> nextEntry() {
                 if (modCount != expectedModCount)
                     throw new ConcurrentModificationException();
                 if (nextKey == null && !hasNext())
                     throw new NoSuchElementException();
-                
+
                 lastReturned = entry;
                 entry = entry.next;
                 currentKey = nextKey;
                 nextKey = null;
                 return lastReturned;
             }
-            
+
             public void remove() {
                 if (lastReturned == null)
                     throw new IllegalStateException();
                 if (modCount != expectedModCount)
                     throw new ConcurrentModificationException();
-                
+
                 SharedKeyWeakHashMap.this.remove(currentKey);
                 expectedModCount = modCount;
                 lastReturned = null;
                 currentKey = null;
             }
-            
+
         }
-        
+
         private class ValueIterator extends HashIterator<V> {
             public V next() {
-                return nextEntry().value;
+                nextEntry();
+                return null;
             }
         }
-        
+
         private class KeyIterator extends HashIterator<K> {
             public K next() {
                 return nextEntry().getKey();
             }
         }
-        
+
         private class EntryIterator extends HashIterator<Map.Entry<K,V>> {
             public Map.Entry<K,V> next() {
                 return nextEntry();
             }
         }
-        
+
         // Views
-        
+
         private transient Set<Map.Entry<K,V>> entrySet = null;
-        
+
         /**
          * Returns a {@link Set} view of the keys contained in this map.
          * The set is backed by the map, so changes to the map are
@@ -1044,21 +997,21 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
             Set<K> ks = keySet;
             return (ks != null ? ks : (keySet = new KeySet()));
         }
-        
+
         private class KeySet extends AbstractSet<K> {
             public Iterator<K> iterator() {
                 return new KeyIterator();
             }
-            
+
             public int size() {
                 return SharedKeyWeakHashMap.this.size();
             }
-            
+
             @Override
             public boolean contains(Object o) {
                 return containsKey(o);
             }
-            
+
             @Override
             public boolean remove(Object o) {
                 if (containsKey(o)) {
@@ -1067,13 +1020,13 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
                 } else
                     return false;
             }
-            
+
             @Override
             public void clear() {
                 SharedKeyWeakHashMap.this.clear();
             }
         }
-        
+
         /**
          * Returns a {@link Collection} view of the values contained in this map.
          * The collection is backed by the map, so changes to the map are
@@ -1092,27 +1045,27 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
             Collection<V> vs = values;
             return (vs != null ?  vs : (values = new Values()));
         }
-        
+
         private class Values extends AbstractCollection<V> {
             public Iterator<V> iterator() {
                 return new ValueIterator();
             }
-            
+
             public int size() {
                 return SharedKeyWeakHashMap.this.size();
             }
-            
+
             @Override
             public boolean contains(Object o) {
                 return containsValue(o);
             }
-            
+
             @Override
             public void clear() {
                 SharedKeyWeakHashMap.this.clear();
             }
         }
-        
+
         /**
          * Returns a {@link Set} view of the mappings contained in this map.
          * The set is backed by the map, so changes to the map are
@@ -1131,12 +1084,12 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
             Set<Map.Entry<K,V>> es = entrySet;
             return es != null ? es : (entrySet = new EntrySet());
         }
-        
+
         private class EntrySet extends AbstractSet<Map.Entry<K,V>> {
             public Iterator<Map.Entry<K,V>> iterator() {
                 return new EntryIterator();
             }
-            
+
             @Override
             public boolean contains(Object o) {
                 if (!(o instanceof Map.Entry))
@@ -1146,21 +1099,21 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
                 Entry candidate = getEntry(e.getKey());
                 return candidate != null && candidate.equals(e);
             }
-            
+
             @Override
             public boolean remove(Object o) {
                 return removeMapping(o) != null;
             }
-            
+
             public int size() {
                 return SharedKeyWeakHashMap.this.size();
             }
-            
+
             @Override
             public void clear() {
                 SharedKeyWeakHashMap.this.clear();
             }
-            
+
             private List<Map.Entry<K,V>> deepCopy() {
                 List<Map.Entry<K,V>> list = new ArrayList<Map.Entry<K,V>>(size());
                 for (Map.Entry<K,V> e : this)
@@ -1168,21 +1121,21 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
                     list.add(new /*AbstractMap.*/SimpleEntry<K,V>(e));
                 return list;
             }
-            
+
             @Override
             public Object[] toArray() {
                 return deepCopy().toArray();
             }
-            
+
             @Override
             public <T> T[] toArray(T[] a) {
                 return deepCopy().toArray(a);
             }
         }
-        
+
         ////////////////////////////////////////////////////////////////////////////
         // new changes
-        
+
         /**
          * Applies a supplemental hash function to a given hashCode, which
          * defends against poor quality hash functions.  This is critical
@@ -1197,9 +1150,9 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
             h ^= (h >>> 20) ^ (h >>> 12);
             return h ^ (h >>> 7) ^ (h >>> 4);
         }
-        
+
         // Views
-        
+
         /**
          * Each of these fields are initialized to contain an instance of the
          * appropriate view the first time this view is requested.  The views are
@@ -1207,7 +1160,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
          */
         transient volatile Set<K>        keySet = null;
         transient volatile Collection<V> values = null;
-        
+
         /**
          * Put specified key in this set if key is not yet in set.
          * returns previous value in set if key already in set.
@@ -1221,7 +1174,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
             int h = hash(k.hashCode());
             Entry[] tab = getTable();
             int i = indexFor(h, tab.length);
-            
+
             Entry<K,V> e = tab[i];
             while (e != null) {
                 if (e.hash == h) {
@@ -1232,10 +1185,10 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
                 }
                 e = e.next;
             }
-        
+
             modCount++;
             e = tab[i];
-            tab[i] = new Entry<K,V>(k, (V)Boolean.TRUE, queue, h, e);
+            tab[i] = new Entry<K,V>(k, queue, h, e);
             if (++size >= threshold)
                 resize(tab.length * 2);
             return k;

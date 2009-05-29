@@ -82,13 +82,13 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
     /*package*/ CppSymbolDemanglerImpl() {
         Project project = org.netbeans.api.project.ui.OpenProjects.getDefault().getMainProject();
         NativeProject nPrj = (project == null) ? null : project.getLookup().lookup(NativeProject.class);
-        if (nPrj == null) {
+        MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
+        if (nPrj == null || conf == null) {
             cppCompiler = CPPCompiler.GNU;
             demanglerTool = GNU_FAMILIY;
             env = ExecutionEnvironmentFactory.getLocal();
             return;
         }
-        MakeConfiguration conf = (MakeConfiguration) ConfigurationSupport.getProjectDescriptor(project).getConfs().getActive();
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         String demangle_utility = SS_FAMILIY;
         if (compilerSet.getCompilerFlavor().isGnuCompiler()) {
@@ -202,7 +202,8 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
     }
 
     private void demangleImpl(List<String> mangledNames) {
-        NativeProcessBuilder npb = new NativeProcessBuilder(env, demanglerTool, false);
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+        npb.setExecutable(demanglerTool);
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL).outLineBased(true);
 
         final List<String> demangledNames = new ArrayList<String>();

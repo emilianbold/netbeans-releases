@@ -273,6 +273,7 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
                 TestRunner rspecRunner = Util.getTestRunner(TestRunner.TestType.RSPEC);
                 boolean debug = COMMAND_DEBUG_SINGLE.equals(command);
                 if (rspecRunner != null) {
+                    saveFile(file);
                     rspecRunner.runTest(file, debug);
                 } else {
                     // Save all files first - this rake file could be accessing other files
@@ -414,6 +415,14 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
             }
             return;
 
+        }
+
+        if (COMMAND_RSPEC_ALL.equals(command)) {
+            TestRunner testRunner = Util.getTestRunner(TestRunner.TestType.RSPEC);
+            if (testRunner != null) {
+                testRunner.getInstance().runAllTests(project, false);
+            }
+            return;
         }
 
         if (COMMAND_AUTOTEST.equals(command)) {

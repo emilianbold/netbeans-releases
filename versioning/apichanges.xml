@@ -110,7 +110,7 @@ is the proper place.
             <api name="versioning_spi"/>
             <summary>Added getCollocationQueryImplementation() method to VersioningSystem</summary>
             <version major="1" minor="9"/>
-            <date day="17" month="2" year="2009"/>
+            <date day="12" month="5" year="2009"/>
             <author login="tstupka"/>
             <compatibility addition="yes"/>
             <description>

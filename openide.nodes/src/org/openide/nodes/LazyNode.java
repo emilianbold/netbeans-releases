@@ -39,8 +39,6 @@
 
 package org.openide.nodes;
 
-import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 import javax.swing.Action;
 
@@ -52,15 +50,13 @@ final class LazyNode extends FilterNode {
     private Map<String,?> map;
 
     LazyNode(Map<String,?> map) {
-        this(new ChFactory(), map);
+        this(new AbstractNode(new Children.Array()), map);
     }
-    private LazyNode(ChFactory factory, Map<String,?> map) {
-        super(new AbstractNode(Children.create(factory, true)));
-        factory.node = this;
+    private LazyNode(AbstractNode an, Map<String,?> map) {
+        super(an, new SwitchChildren(an));
+        ((SwitchChildren)getChildren()).node = this;
         this.map = map;
         
-        AbstractNode an = (AbstractNode)getOriginal();
-
         an.setName((String) map.get("name")); // NOI18N
         an.setDisplayName((String) map.get("displayName")); // NOI18N
         an.setShortDescription((String) map.get("shortDescription")); // NOI18N
@@ -95,20 +91,39 @@ final class LazyNode extends FilterNode {
         });
         return n[0];
     }
-
-    private static final class ChFactory extends ChildFactory<Object> {
+    
+    private static final class SwitchChildren extends FilterNode.Children {
         LazyNode node;
 
-        @Override
-        protected boolean createKeys(List<Object> toPopulate) {
-            LazyNode n = node;
-            node = null;
-            if (n != null) {
-                n.switchToOriginal();
-                return true;
-            } else {
-                return false;
-            }
+        public SwitchChildren(Node or) {
+            super(or);
         }
+
+        @Override
+        protected void addNotify() {
+            node.switchToOriginal();
+            super.addNotify();
+        }
+
+        @Override
+        public Node[] getNodes(boolean optimalResult) {
+            node.switchToOriginal();
+            return super.getNodes(optimalResult);
+        }
+
+        @Override
+        public int getNodesCount(boolean optimalResult) {
+            node.switchToOriginal();
+            return super.getNodesCount(optimalResult);
+        }
+
+
+        @Override
+        public Node findChild(String name) {
+            node.switchToOriginal();
+            return super.findChild(name);
+        }
+
+
     }
 }

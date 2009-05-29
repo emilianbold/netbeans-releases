@@ -353,8 +353,9 @@ public final class ParserQueue {
     /**
      * If file isn't yet enqueued, places it at the beginning of the queue,
      * otherwise moves it there
+     * @return true if file was added into queue
      */
-    public void add(FileImpl file, Collection<APTPreprocHandler.State> ppStates, Position position,
+    public boolean add(FileImpl file, Collection<APTPreprocHandler.State> ppStates, Position position,
             boolean clearPrevState, FileAction fileAction) {
 
         if (ppStates.isEmpty()) {
@@ -367,7 +368,7 @@ public final class ParserQueue {
         boolean newEntry = false;
         synchronized (lock) {
             if (state == State.OFF) {
-                return;
+                return false;
             }
             switch (fileAction) {
                 case MARK_MORE_PARSE:
@@ -384,7 +385,7 @@ public final class ParserQueue {
                 if (TraceFlags.TRACE_PARSER_QUEUE) {
                     System.err.println("ParserQueue: do not add parsing or parsed " + file.getAbsolutePath()); // NOI18N
                 }
-                return;
+                return false;
             }
             if (queue.isEmpty()) {
                 serial.set(0);
@@ -414,9 +415,14 @@ public final class ParserQueue {
                     } else {
                         entry.addStates(ppStates);
                     }
-                    if (position.compareTo(entry.getPosition()) < 0) {
+                    if (file != entry.file) {
+                        // Replace old file instance by new
                         queue.remove(entry);
-                        entry = new Entry(entry.getFile(), entry.getPreprocStates(), entry.getPosition(), serial.incrementAndGet());
+                        entry = new Entry(file, entry.getPreprocStates(), position, serial.incrementAndGet());
+                        addEntry = true;
+                    } else if (position.compareTo(entry.getPosition()) < 0) {
+                        queue.remove(entry);
+                        entry = new Entry(file, entry.getPreprocStates(), position, serial.incrementAndGet());
                         addEntry = true;
                     }
                 }
@@ -441,6 +447,7 @@ public final class ParserQueue {
         if (newEntry) {
             ProgressSupport.instance().fireFileAddedToParse(file);
         }
+        return true;
     }
 
     public void waitReady() throws InterruptedException {
@@ -494,7 +501,7 @@ public final class ParserQueue {
             data = getProjectData(project, true);
             if (data.filesBeingParsed.contains(file)) {
                 if (TraceFlags.TRACE_PARSER_QUEUE) {
-                    System.err.println("beeing parsed by another thread " + file); // NOI18N
+                    System.err.println(Thread.currentThread().getName() + ": beeing parsed by another thread " + file); // NOI18N
                 }
             } else {
                 if (removeFoundEntryFromQueue) {
@@ -825,9 +832,16 @@ public final class ParserQueue {
 
     private Entry findEntry(FileImpl file) {
 //        return fileEntry.get(file);
+        int fileHashCode = file.hashCode();
         for (Entry e : queue) {
-            if (e.getFile() == file) {
+            FileImpl f = e.getFile();
+            if (f == file) {
                 return e;
+            }
+            if (fileHashCode == f.hashCode()) {
+                if (file.equals(f)) {
+                    return e;
+                }
             }
         }
         return null;

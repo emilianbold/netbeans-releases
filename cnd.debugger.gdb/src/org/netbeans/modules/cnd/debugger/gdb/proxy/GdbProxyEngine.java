@@ -134,14 +134,14 @@ public class GdbProxyEngine {
     
     private void startDebugger(List<String> debuggerCommand, String workingDirectory, String cspath) throws IOException {
         ExecutionEnvironment execEnv = debugger.getHostExecutionEnvironment();
-        NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, debuggerCommand.get(0),false);
         String[] args = debuggerCommand.subList(1, debuggerCommand.size()).toArray(new String[debuggerCommand.size()-1]);
-        npb = npb.setArguments(args);
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+        npb.setExecutable(debuggerCommand.get(0)).setArguments(args);
 
         if (execEnv.isLocal()) {
             String pathname = Path.getPathName();
-            npb = npb.addEnvironmentVariable(pathname, cspath);
-            npb = npb.setWorkingDirectory(workingDirectory);
+            npb.addEnvironmentVariable(pathname, cspath);
+            npb.setWorkingDirectory(workingDirectory);
         }
 
         final NativeProcess proc = npb.call();
@@ -194,11 +194,15 @@ public class GdbProxyEngine {
                     while ((line = fromGdb.readLine()) != null) {
                         line = line.trim();
                         if (line.length() > 0) {
-                            processMessage(line);
+                            try {
+                                processMessage(line);
+                            } catch (Exception e) {
+                                log.log(Level.SEVERE, "Exception in processMessage", e); // NOI18N
+                            }
                         }
                     }
                 } catch (IOException ioe) {
-                    log.log(Level.WARNING, "Exception in gdbReader", ioe); // NOI18N
+                    log.log(Level.WARNING, "IOException in gdbReader", ioe); // NOI18N
                 }
             }
         });

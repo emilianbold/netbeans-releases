@@ -248,10 +248,8 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
                 return null;
             }
             String itemPath = fileChooser.getSelectedFile().getPath();
-            itemPath = FilePathAdaptor.mapToRemote(itemPath);
             itemPath = FilePathAdaptor.naturalize(itemPath);
             String bd = baseDir;
-            bd = FilePathAdaptor.mapToRemote(bd);
             bd = FilePathAdaptor.naturalize(bd);
             if (pathPanel != null && pathPanel.getMode() == PathPanel.REL_OR_ABS) {
                 itemPath = IpeUtils.toAbsoluteOrRelativePath(bd, itemPath);

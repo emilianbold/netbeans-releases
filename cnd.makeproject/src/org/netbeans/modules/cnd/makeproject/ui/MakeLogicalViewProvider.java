@@ -51,6 +51,8 @@ import java.awt.dnd.DnDConstants;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -76,6 +78,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
+import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.actions.AddExistingFolderItemsAction;
 import org.netbeans.modules.cnd.makeproject.api.actions.AddExistingItemAction;
@@ -568,6 +571,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
         class VisualUpdater implements Runnable {
+
             public void run() {
                 fireIconChange();
                 fireOpenedIconChange();
@@ -639,7 +643,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             List<Action> actions = new ArrayList<Action>();
             // Add standard actions
             Action[] standardActions;
-            MakeConfiguration active = (descriptor == null) ? null : (MakeConfiguration) descriptor.getConfs().getActive();
+            MakeConfiguration active = (descriptor == null) ? null : descriptor.getActiveConfiguration();
             if (descriptor == null || active == null || active.isMakefileConfiguration()) { // FIXUP: need better check
                 standardActions = getAdditionalDiskFolderActions();
             } else {
@@ -820,10 +824,20 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
-    private class LogicalViewChildren extends BaseMakeViewChildren {
+    private class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChangeListener {
 
         public LogicalViewChildren(Folder folder) {
             super(folder);
+            if (folder.isDiskFolder()) {
+                MakeOptions.getInstance().addPropertyChangeListener(this);
+            }
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            String property = evt.getPropertyName();
+            if (property.equals(MakeOptions.VIEW_BINARY_FILES)) {
+                stateChanged(new ChangeEvent(this));
+            }
         }
 
         protected Node[] createNodes(Object key) {
@@ -896,6 +910,11 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                             // not visible
                             continue;
                         }
+
+                        if (!MakeOptions.getInstance().getViewBinaryFiles() && CndFileVisibilityQuery.getDefault().isIgnored(child)) {
+                            continue;
+                        }
+
                         // Add file to the view
                         Item item = new Item(child.getAbsolutePath());
                         Folder.insertItemElementInList(collection2, item);
@@ -933,7 +952,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
     private MakeConfigurationDescriptor getMakeConfigurationDescriptor() {
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor) pdp.getConfigurationDescriptor();
+        MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
         return makeConfigurationDescriptor;
     }
 
@@ -981,8 +1000,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             }
         }
 
-
         class VisualUpdater implements Runnable {
+
             public void run() {
                 fireIconChange();
                 fireOpenedIconChange();
@@ -991,6 +1010,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         /*
          * Something in the folder has changed
          **/
+
         public void stateChanged(ChangeEvent e) {
             updateAnnotationFiles();
             EventQueue.invokeLater(new VisualUpdater()); // IZ 151257
@@ -1226,7 +1246,6 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
                         File movedFileFile = FileUtil.toFile(movedFileFO);
                         String itemPath = movedFileFile.getPath();
-                        itemPath = FilePathAdaptor.mapToRemote(itemPath);
                         itemPath = IpeUtils.toRelativePath(toFolder.getConfigurationDescriptor().getBaseDir(), itemPath);
                         itemPath = FilePathAdaptor.normalize(itemPath);
                         Item movedItem = toFolder.findItemByPath(itemPath);
@@ -1287,7 +1306,6 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
                             File copiedFileFile = FileUtil.toFile(copiedFileObject);
                             String itemPath = copiedFileFile.getPath();
-                            itemPath = FilePathAdaptor.mapToRemote(itemPath);
                             itemPath = IpeUtils.toRelativePath(toFolder.getConfigurationDescriptor().getBaseDir(), itemPath);
                             itemPath = FilePathAdaptor.normalize(itemPath);
                             Item copiedItemItem = toFolder.findItemByPath(itemPath);
@@ -1618,8 +1636,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             List<Action> newActions = new ArrayList<Action>();
             if (getItem().getFolder() == null) {
                 return oldActions;
-            }
-            else if (getItem().getFolder().isDiskFolder()) {
+            } else if (getItem().getFolder().isDiskFolder()) {
                 for (int i = 0; i < oldActions.length; i++) {
                     if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.OpenAction) {
                         newActions.add(oldActions[i]);
@@ -1693,7 +1710,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             if (item == null || item.getFolder() == null || item.getFolder().getConfigurationDescriptor() == null || item.getFolder().getConfigurationDescriptor().getConfs() == null) {
                 return false;
             }
-            MakeConfiguration makeConfiguration = (MakeConfiguration) item.getFolder().getConfigurationDescriptor().getConfs().getActive();
+            MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
             ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
             if (itemConfiguration == null) {
                 return false;
@@ -1703,6 +1720,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
         class VisualUpdater implements Runnable {
+
             public void run() {
                 fireIconChange();
                 fireOpenedIconChange();
@@ -1884,7 +1902,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 }
 
                 if (folder != null) {
-                    MakeConfigurationDescriptor mcd = (MakeConfigurationDescriptor) folder.getConfigurationDescriptor();
+                    MakeConfigurationDescriptor mcd = folder.getConfigurationDescriptor();
                     if (mcd != null && !mcd.okToChange()) {
                         return;
                     }

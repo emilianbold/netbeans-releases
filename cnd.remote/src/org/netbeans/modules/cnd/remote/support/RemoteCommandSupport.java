@@ -63,7 +63,6 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
     private StringWriter out;
     private final String cmd;
     private final Map<String, String> env;
-    private final boolean escape;
     private final String[] args;
 
     private boolean interrupted = false;
@@ -82,7 +81,6 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
         super(execEnv);
         this.cmd = cmd;
         this.env = env;
-        this.escape = true;
         this.args = args;
     }
 
@@ -91,7 +89,6 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
         super(execEnv);
         this.cmd = cmd;
         this.env = env;
-        this.escape = false;
         this.args = null;
     }
 
@@ -116,11 +113,17 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
             }
             try {
 //                final String substitutedCommand = substituteCommand();
-                NativeProcessBuilder pb = new NativeProcessBuilder(executionEnvironment, cmd, this.escape);
-                if (args != null) {
-                    pb = pb.setArguments(args);
+                NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
+
+                if (args == null) {
+                    pb.setCommandLine(cmd);
+                } else {
+                    pb.setExecutable(cmd);
+                    pb.setArguments(args);
                 }
-                pb = pb.addEnvironmentVariables(env);
+
+                pb.addEnvironmentVariables(env);
+
                 Process process = pb.call();
                 InputStream is = process.getInputStream();
                 if (is == null) { // otherwise we can get an NPE in reader

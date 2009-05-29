@@ -56,7 +56,6 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cnd.makeproject.MakeSources;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -146,7 +145,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         }
 
         // Make sure all languages are update
-        ((MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor()).refreshRequiredLanguages();
+        projectDescriptorProvider.getConfigurationDescriptor().refreshRequiredLanguages();
 
         // Create options
         JButton options[] = new JButton[]{

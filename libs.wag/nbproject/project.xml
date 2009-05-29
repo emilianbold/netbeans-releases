@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
+            <code-name-base>org.netbeans.libs.wag</code-name-base>
+            <module-dependencies/>
+            <public-packages>
+                <package>org.json</package>
+                <package>com.zembly.gateway.client</package>
+                <package>com.zembly.gateway.client.config</package>
+                <package>com.zembly.gateway.client.config.impl</package>
+                <package>com.zembly.gateway.client.spi.config</package>
+                <package>com.zembly.oauth.api</package>
+                <package>com.zembly.oauth.core</package>
+            </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/wag/JSON.org.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/wag/zclcore-0.5.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/wag/zcl4j_min-0.5.jar</runtime-relative-path>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>

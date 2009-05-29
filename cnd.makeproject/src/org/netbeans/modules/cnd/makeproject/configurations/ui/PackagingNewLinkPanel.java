@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import javax.swing.event.DocumentEvent;
@@ -50,6 +49,7 @@ import org.openide.DialogDescriptor;
  * @author  thp
  */
 public class PackagingNewLinkPanel extends javax.swing.JPanel {
+
     DialogDescriptor dialogDescriptor = null;
 
     /** Creates new form PackagingNewLinkPanel */
@@ -59,16 +59,17 @@ public class PackagingNewLinkPanel extends javax.swing.JPanel {
             topDirectory += "/"; // NOI18N
         }
         nameTextField.setText(topDirectory);
-        
+
         DocumentListener documentListener = new DocumentListener() {
+
             public void insertUpdate(DocumentEvent e) {
                 validateDialog();
             }
-            
+
             public void removeUpdate(DocumentEvent e) {
                 validateDialog();
             }
-            
+
             public void changedUpdate(DocumentEvent e) {
                 validateDialog();
             }
@@ -76,25 +77,24 @@ public class PackagingNewLinkPanel extends javax.swing.JPanel {
         nameTextField.getDocument().addDocumentListener(documentListener);
         linkTextField.getDocument().addDocumentListener(documentListener);
     }
-    
-    public String getName() {
+
+    public String getLinkName() {
         return nameTextField.getText();
     }
-    
+
     public String getLink() {
         return linkTextField.getText();
     }
-    
+
     public void setDialogDesriptor(DialogDescriptor dialogDescriptor) {
         this.dialogDescriptor = dialogDescriptor;
         validateDialog();
     }
-    
+
     private void validateDialog() {
         if (nameTextField.getText().length() == 0 || linkTextField.getText().length() == 0) {
             dialogDescriptor.setValid(false);
-        }
-        else {
+        } else {
             dialogDescriptor.setValid(true);
         }
     }
@@ -165,8 +165,6 @@ public class PackagingNewLinkPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
         add(link, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel link;
     private javax.swing.JLabel linkLabel;
@@ -174,5 +172,4 @@ public class PackagingNewLinkPanel extends javax.swing.JPanel {
     private javax.swing.JLabel nameLabel;
     private javax.swing.JTextField nameTextField;
     // End of variables declaration//GEN-END:variables
-
 }

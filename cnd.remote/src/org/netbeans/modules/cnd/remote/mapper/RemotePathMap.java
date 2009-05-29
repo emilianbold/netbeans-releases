@@ -192,7 +192,7 @@ public class RemotePathMap extends PathMap {
 
         try {
             // check if local path is mirrored by remote path
-            if (validateMapping(execEnv, lpath, lpath)) {
+            if (validateMapping(execEnv, lpath, new File(lpath))) {
                 synchronized (map) {
                     map.put(lpath, lpath);
                 }
@@ -273,39 +273,52 @@ public class RemotePathMap extends PathMap {
                 REMOTE_PATH_MAP + ExecutionEnvironmentFactory.toUniqueID(execEnv), newValue);
     }
 
-    private static boolean validateMapping(ExecutionEnvironment exexEnv, 
-            String rpath, String lpath) throws InterruptedException {
+    private static boolean validateMapping(ExecutionEnvironment execEnv,
+            String rpath, File lpath) throws InterruptedException {
+        if (!PlatformInfo.getDefault(execEnv).isWindows() && !PlatformInfo.getDefault(ExecutionEnvironmentFactory.getLocal()).isWindows()) {
+            return isTheSame(execEnv, rpath, lpath);
+        }
+        return false;
+    }
+    
+    /**
+     * Determines whether local and remote directories coincide,
+     * i.e. map to the same physical directory
+     * @param execEnv remote environment
+     * @param localDir local path
+     * @param remoteDir remote path
+     * @return
+     */
+    // TODO: move to a more appropriate place
+    public static boolean isTheSame(ExecutionEnvironment execEnv, String rpath, File path) throws InterruptedException {
+        if (path.exists() && path.isDirectory()) {
+            File validationFile = null;
+            try {
+                // create file
+                validationFile = File.createTempFile("cnd", "tmp", path); // NOI18N
+                if (validationFile.exists()) {
+                    BufferedWriter out = new BufferedWriter(new FileWriter(validationFile));
+                    String validationLine = Double.toString(Math.random());
+                    out.write(validationLine);
+                    out.close();
 
-        if (!PlatformInfo.getDefault(exexEnv).isWindows() && !PlatformInfo.getDefault(ExecutionEnvironmentFactory.getLocal()).isWindows()) {
-            File path = new File(lpath);
-            if (path.exists() && path.isDirectory()) {
-                File validationFile = null;
-                try {
-                    // create file
-                    validationFile = File.createTempFile("cnd", "tmp", path); // NOI18N
-                    if (validationFile.exists()) {
-                        BufferedWriter out = new BufferedWriter(new FileWriter(validationFile));
-                        String validationLine = Double.toString(Math.random());
-                        out.write(validationLine);
-                        out.close();
-                        String cmd = "cat " + rpath + "/" + validationFile.getName() + " | grep " + validationLine; // NOI18N
-                        if (!Boolean.getBoolean("emulate.remote.cmd.hangup")) { // VK: a safe way to test error recovery - no risk of pushing bad changes :)
-                            cmd = String.format("bash -c \"%s\"", cmd); //NOI18N
-                        }
-                        RemoteCommandSupport rcs = new RemoteCommandSupport(exexEnv, cmd); // NOI18N
-                        if (rcs.run() == 0) {
-                            return true;
-                        }
-                        if (rcs.isCancelled() || rcs.isInterrupted()) {
-                            throw new InterruptedException();
-                        }
+                    RemoteCommandSupport rcs = new RemoteCommandSupport(
+                            execEnv, "grep", null, // NOI18N
+                            validationLine,
+                            rpath + "/" + validationFile.getName()); // NOI18N
+
+                    if (rcs.run() == 0) {
+                        return true;
                     }
-                } catch (IOException ex) {
-                    // directory is write protected
-                } finally {
-                    if (validationFile != null && validationFile.exists()) {
-                        validationFile.delete();
+                    if (rcs.isCancelled() || rcs.isInterrupted()) {
+                        throw new InterruptedException();
                     }
+                }
+            } catch (IOException ex) {
+                // directory is write protected
+            } finally {
+                if (validationFile != null && validationFile.exists()) {
+                    validationFile.delete();
                 }
             }
         }

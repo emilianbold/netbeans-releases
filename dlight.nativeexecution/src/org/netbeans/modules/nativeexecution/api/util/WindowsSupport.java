@@ -143,9 +143,13 @@ public final class WindowsSupport {
      * For now it is assumed that once cygwin was found it is used for starting
      * shell ... So in this case will convert to /cygdrive/....
      */
-    public String normalizePath(final String path) {
+    public String convertToShellPath(String path) {
         if (path == null) {
             return ""; // NOI18N
+        }
+
+        while (path.startsWith("\"") && path.endsWith("\"")) { // NOI18N
+            path = path.substring(1, path.length() - 1);
         }
 
         if (path.length() < 2) {
@@ -170,11 +174,13 @@ public final class WindowsSupport {
             result = path;
         }
 
+        result = result.replaceAll("([^\\\\]) ", "$1\\\\ "); // NOI18N
+
         return result;
 
     }
 
-    public String convertoToWindowsPath(String path) {
+    public String convertToWindowsPath(String path) {
         String result = ""; // NOI18N
 
         if (path.startsWith("/cygdrive/")) { // NOI18N
@@ -186,16 +192,17 @@ public final class WindowsSupport {
             path = path.substring(2);
         }
 
-        result = result + path;
-        return result.replaceAll("/", "\\\\"); // NOI18N
+        result = (result + path).replaceAll("/", "\\\\"); // NOI18N
+
+        return result;
     }
 
-    public String normalizeAllPaths(String paths) {
+    public String convertToAllShellPaths(String paths) {
         String[] ps = paths.split(";"); // NOI18N
         StringBuilder sb = new StringBuilder();
 
         for (String path : ps) {
-            sb.append(normalizePath(path));
+            sb.append(convertToShellPath(path));
             sb.append(':');
         }
 

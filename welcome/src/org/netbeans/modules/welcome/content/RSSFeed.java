@@ -116,6 +116,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
     
     private static DateFormat parsingDateFormat = new SimpleDateFormat( "EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH ); // NOI18N
     private static DateFormat parsingDateFormatShort = new SimpleDateFormat( "EEE, dd MMM yyyy", Locale.ENGLISH ); // NOI18N
+    private static DateFormat parsingDateFormatLong = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH ); // NOI18N
     private static DateFormat printingDateFormatShort = DateFormat.getDateInstance( DateFormat.SHORT );
     
     private boolean isCached = false;
@@ -202,6 +203,8 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
             pathSB.append(u.getPort());
         }
         pathSB.append(u.getPath());
+        if( null != u.getQuery() )
+            pathSB.append(u.getQuery());
         return pathSB.toString();
     }
     
@@ -427,7 +430,14 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
             } catch( NumberFormatException nfE ) {
                 //ignore
             } catch( ParseException otherPE ) {
-                //ignore
+                try {
+                    Date date = parsingDateFormatLong.parse( strDateTime );
+                    return printingDateFormatShort.format( date );
+                } catch( NumberFormatException nfE ) {
+                    //ignore
+                } catch( ParseException e ) {
+                    //ignore
+                }
             }
         }
         return strDateTime;
@@ -631,14 +641,20 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
 
         public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
             if( itemList.size() < maxItemCount ) {
-                if( "item".equals( localName ) ) { // NOI18N
+                if( "item".equals( localName )
+                        || "entry".equals( localName ) ) { // NOI18N
                     currentItem = new FeedItem();
                 } else if( "link".equals( localName ) // NOI18N
                         || "pubDate".equals( localName ) // NOI18N
                         || "date".equals( localName ) // NOI18N
+                        || "published".equals( localName ) // NOI18N
                         || "description".equals( localName ) // NOI18N
+                        || "content".equals( localName ) // NOI18N
                         || "title".equals( localName ) ) { // NOI18N
                     textBuffer = new StringBuffer( 110 );
+
+                    if( "link".equals(localName) && null != currentItem && null != atts.getValue("href") )
+                        currentItem.link = atts.getValue("href");
                 } else if( "enclosure".equals( localName ) && null != currentItem ) { //NOI18N
                     currentItem.enclosureUrl = atts.getValue( "url" ); //NOI18N
                 }
@@ -647,7 +663,8 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
 
         public void endElement(String uri, String localName, String qName) throws SAXException {
             if( itemList.size() < maxItemCount ) {
-                if( "item".equals( localName ) ) { // NOI18N
+                if( "item".equals( localName )
+                        || "entry".equals( localName ) ) { // NOI18N
                     if( null != currentItem && currentItem.isValid() ) {
                         itemList.add( currentItem );
                     }
@@ -658,14 +675,16 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
                     if( 0 == text.length() )
                         text = null;
 
-                    if( "link".equals( localName ) ) { // NOI18N
+                    if( "link".equals( localName ) && null == currentItem.link ) { // NOI18N
                         currentItem.link = text;
                     } else if( "pubDate".equals( localName ) // NOI18N
+                            || "published".equals( localName )
                             || "date".equals( localName ) ) { // NOI18N
                         currentItem.dateTime = text;
                     } else if( "title".equals( localName ) ) { // NOI18N
                         currentItem.title = text;
-                    } else if( "description".equals( localName ) ) { // NOI18N
+                    } else if( "description".equals( localName )
+                            || "content".equals(localName) ) { // NOI18N
                         currentItem.description = text;
                     }
                 }

@@ -51,6 +51,8 @@ public class TestSuite {
 
     public static final String ANONYMOUS_SUITE = new String();
 
+    public static final TestSuite ANONYMOUS_TEST_SUITE = new TestSuite(ANONYMOUS_SUITE);
+
     /**
      * The name of this suite.
      */

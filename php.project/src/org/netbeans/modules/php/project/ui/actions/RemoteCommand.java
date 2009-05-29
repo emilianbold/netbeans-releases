@@ -89,6 +89,11 @@ public abstract class RemoteCommand extends Command {
     }
 
     @Override
+    public boolean isFileSensitive() {
+        return true;
+    }
+
+    @Override
     public final void invokeAction(Lookup context) {
         if (!getConfigAction().isValid(false)) {
             // property not set yet

@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap.State;
@@ -55,23 +56,21 @@ public final class APTFileCacheEntry {
     private final ConcurrentMap<Integer, IncludeData> cache = new ConcurrentHashMap<Integer, IncludeData>();
     private final Map<Integer, Boolean> evalData = new HashMap<Integer, Boolean>();
     private final CharSequence filePath;
-    private static boolean TRACE = false;
     public APTFileCacheEntry(CharSequence filePath) {
         assert (filePath != null);
         this.filePath = filePath;
     }
 
-    private static volatile int hits = 0;
+    private static volatile int includeHits = 0;
+    private static volatile int evalHits = 0;
     /** must be called under lock */
     /*package*/ APTMacroMap.State getPostIncludeMacroState(APTInclude node) {
         IncludeData data = getIncludeData(node);
         assert data != null;
         if (data.postIncludeMacroState != null) {
-            hits++;
-            if (TRACE) {
-                if (hits % 10 == 0) {
-                    System.err.println("HIT " + hits + " cache for line:" + node.getToken().getLine() + " in " + filePath);
-                }
+            includeHits++;
+            if (APTTraceFlags.TRACE_APT_CACHE && needTraceValue(includeHits)) {
+                System.err.println("INCLUDE HIT " + includeHits + " cache for line:" + node.getToken().getLine() + " in " + filePath);
             }
         }
         return data.postIncludeMacroState;
@@ -89,7 +88,13 @@ public final class APTFileCacheEntry {
     }
 
     /*package*/ Boolean getEvalResult(APT node) {
-        return evalData.get(node.getOffset());
+        Boolean out = evalData.get(node.getOffset());
+        if (APTTraceFlags.TRACE_APT_CACHE) {
+            if (out != null && needTraceValue(evalHits++)) {
+                System.err.println("EVAL HIT " + evalHits + " cache for line:" + node.getToken().getLine() + " as " + out + " in " + filePath);
+            }
+        }
+        return out;
     }
 
     /*package*/ void setEvalResult(APT node, boolean result) {
@@ -116,6 +121,11 @@ public final class APTFileCacheEntry {
     @Override
     public String toString() {
         return "APT cache for " + filePath; // NOI18N
+    }
+
+    private boolean needTraceValue(int val) {
+//        return CharSequenceKey.ComparatorIgnoreCase.compare(filePath, "/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/include/math.h") == 0;
+        return val % 10 == 0;
     }
 
     private static final class IncludeData {

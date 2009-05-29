@@ -51,6 +51,11 @@ import org.openide.ErrorManager;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import javax.swing.SwingUtilities;
+import org.netbeans.lib.cvsclient.command.GlobalOptions;
+import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecutor;
+import org.openide.util.RequestProcessor;
 
 /**
  * Handles events fired from the filesystem such as file/folder create/delete/move.
@@ -214,6 +219,35 @@ class FilesystemHandler extends VCSInterceptor {
                 if (file.getName().equals(CvsVersioningSystem.FILENAME_CVSIGNORE)) cache.directoryContentChanged(file.getParentFile());
             }
         });
+    }
+
+    @Override
+    public Object getAttribute(final File file, String attrName) {
+        if("ProvidedExtensions.Refresh".equals(attrName)) {
+            return new Runnable() {
+                public void run() {
+                    UpdateCommand cmd = new UpdateCommand();
+                    GlobalOptions options = CvsVersioningSystem.createGlobalOptions();
+
+                    cmd.setFiles(new File[] {file});
+                    cmd.setBuildDirectories(true);
+                    cmd.setPruneDirectories(true);
+                    options.setDoNoChanges(true);
+                    // TODO: javacvs library fails to obey the -P flag when -q is specified
+            //        options.setModeratelyQuiet(true);
+                    final ExecutorGroup refreshCommandGroup = new ExecutorGroup(null);
+                    refreshCommandGroup.addExecutors(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options, null));
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            refreshCommandGroup.execute();
+                        }
+                    });
+        
+                }
+            };
+        } else {
+            return super.getAttribute(file, attrName);
+        }
     }
 
     // private methods ---------------------------

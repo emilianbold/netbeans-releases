@@ -42,6 +42,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -77,9 +78,10 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
             }
 
             // exec 'scp -f rfile' remotely
-            String command = "scp -f " + remoteName; //NOI18N
-
-            NativeProcessBuilder pb = new NativeProcessBuilder(executionEnvironment, command,false);
+            NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
+            pb.setExecutable("scp"); // NOI18N
+            pb.setArguments("-f", remoteName); //NOI18N
+            
             Process process = pb.call();
 
 //            Channel channel = session.openChannel("exec");
@@ -169,6 +171,9 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
             }
             setExitStatus(process.waitFor());
 
+        } catch (InterruptedIOException e) {
+            // don't log, this just mean that somebody has interrupted us
+            return false;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -182,14 +187,14 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
         }
         return getExitStatus() == 0;
     }
-    
-    public static boolean copyTo(ExecutionEnvironment execEnv, String localFile, String remotePath) {
+
+    public static boolean copyTo(ExecutionEnvironment execEnv, String localFile, String remoteFile) {
         RemoteCopySupport support = new RemoteCopySupport(execEnv);
-        return support.copyTo(localFile, remotePath);
+        return support.copyTo(localFile, remoteFile);
     }
 
-    public boolean copyTo(String localFile, String remotePath) {
-        Future<Integer> result = CommonTasksSupport.uploadFile(localFile, executionEnvironment, remotePath, 0775, null);
+    public boolean copyTo(String localFile, String remoteFile) {
+        Future<Integer> result = CommonTasksSupport.uploadFile(localFile, executionEnvironment, remoteFile, 0775, null);
         try {
             Integer i = result.get();
             if (i != null) {

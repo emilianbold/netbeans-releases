@@ -90,7 +90,7 @@ public final class ToolchainManager {
 
         MakeDescriptor getMake();
 
-        Map<String, String> getDefaultLocations();
+        Map<String, List<String>> getDefaultLocations();
 
         DebuggerDescriptor getDebugger();
 

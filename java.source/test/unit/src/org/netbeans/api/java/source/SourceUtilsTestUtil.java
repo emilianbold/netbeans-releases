@@ -50,6 +50,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
 import junit.framework.Assert;
@@ -181,6 +183,8 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
 
     private static List<URL> bootClassPath;
 
+    private static Logger log = Logger.getLogger(SourceUtilsTestUtil.class.getName());
+    
     public static synchronized List<URL> getBootClassPath() {
         if (bootClassPath == null) {
             try {
@@ -207,7 +211,9 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
                 
                 bootClassPath = urls;
             } catch (FileStateInvalidException e) {
-                ErrorManager.getDefault().notify(e);
+//                ErrorManager.getDefault().notify(e);
+                if (log.isLoggable(Level.SEVERE))
+                    log.log(Level.SEVERE, e.getMessage(), e);
             }
         }
 
@@ -369,7 +375,9 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
                 info.toPhase(this.phase);
                 this.info = info;
             } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
+//                ErrorManager.getDefault().notify(ioe);
+                if (log.isLoggable(Level.SEVERE))
+                    log.log(Level.SEVERE, ioe.getMessage(), ioe);
             }
         }                
         

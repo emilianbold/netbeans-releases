@@ -169,7 +169,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
             addObjectAction(new PackagerFileElement(
                     FileType.SOFTLINK,
                     packagingNewEntryPanel.getLink(),
-                    packagingNewEntryPanel.getName(),
+                    packagingNewEntryPanel.getLinkName(),
                     "", // packagingFilesOuterPanel.getFilePermTextField().getText(),
                     packagingFilesOuterPanel.getOwnerTextField().getText(),
                     packagingFilesOuterPanel.getGroupTextField().getText()));
@@ -204,7 +204,6 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
                 } else {
                     itemPath = files[i].getPath();
                 }
-                itemPath = FilePathAdaptor.mapToRemote(itemPath);
                 itemPath = FilePathAdaptor.normalize(itemPath);
                 String topFolder = "${PACKAGE_TOP_DIR}"; // NOI18N
                 if (files[i].isDirectory()) {
@@ -330,10 +329,8 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
                     } else {
                         path = files[i].getPath();
                     }
-                    path = FilePathAdaptor.mapToRemote(path);
                     path = FilePathAdaptor.normalize(path);
                     String toFile = IpeUtils.toRelativePath(origDir.getParentFile().getAbsolutePath(), files[i].getPath());
-                    toFile = FilePathAdaptor.mapToRemote(toFile);
                     toFile = FilePathAdaptor.normalize(toFile);
                     String topFolder = "${PACKAGE_TOP_DIR}"; // NOI18N
                     String perm;

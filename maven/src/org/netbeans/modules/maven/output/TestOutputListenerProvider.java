@@ -106,10 +106,11 @@ public class TestOutputListenerProvider implements OutputProcessor {
             Matcher match = failWindowsPattern2.matcher(line);
             if (match.matches()) {
                 visitor.setOutputListener(new TestOutputListener(runningTestClass, outputDir), true);
+                visitor.setLine(delayedLine + line);
+            } else {
+                visitor.setLine(delayedLine + "\n" + line);
             }
-            visitor.setLine(delayedLine + "\n" + line);
             delayedLine = null;
-            return;
         }
         Matcher match = outDirPattern.matcher(line);
         if (match.matches()) {

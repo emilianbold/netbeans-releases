@@ -77,8 +77,9 @@ import org.w3c.dom.Element;
 @ServiceProvider(service=ElementFactory.class)
 public class SettingsElementFactoryProvider implements ElementFactory {
 
-    private SettingsQNames ns = new SettingsQNames(true);
-    private SettingsQNames nonns = new SettingsQNames(false);
+    private SettingsQNames ns = new SettingsQNames(true, false);
+    private SettingsQNames nsold = new SettingsQNames(true, true);
+    private SettingsQNames nonns = new SettingsQNames(false, false);
     private Set<QName> all;
 
 
@@ -86,6 +87,7 @@ public class SettingsElementFactoryProvider implements ElementFactory {
         all = new HashSet<QName>();
         all.addAll(ns.getElementQNames());
         all.addAll(nonns.getElementQNames());
+        all.addAll(nsold.getElementQNames());
     }
 
     public Set<QName> getElementQNames() {
