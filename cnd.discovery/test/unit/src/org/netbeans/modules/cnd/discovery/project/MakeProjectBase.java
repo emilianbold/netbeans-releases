@@ -42,6 +42,8 @@ package org.netbeans.modules.cnd.discovery.project;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.MockServices;
@@ -54,9 +56,13 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -66,17 +72,58 @@ public abstract class MakeProjectBase  extends NbTestCase {
     public MakeProjectBase(String name) {
         super(name);
         System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
+        System.setProperty("cnd.mode.unittest", "true");
+        Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         MockServices.setServices(MakeProjectType.class);
+        startupModel();
+    }
+
+    private void startupModel() {
+        ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
+        model.startup();
+        RepositoryUtils.cleanCashes();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        shutdownModel();
+    }
+
+    private final void shutdownModel() {
+        ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
+        waitModelTasks(model);
+        model.shutdown();
+        waitModelTasks(model);
+        RepositoryUtils.cleanCashes();
+        RepositoryUtils.debugClear();
+    }
+
+    private void waitModelTasks(ModelImpl model) {
+        Cancellable task = model.enqueueModelTask(new Runnable() {
+            public void run() {
+            }
+        }, "wait finished other tasks"); //NOI18N
+        if (task instanceof Task) {
+            ((Task) task).waitFinished();
+        }
     }
 
     public void performTestProject(String URL){
         try {
             final String path = download(URL);
+            File configure = new File(path+File.separator+"configure");
+            File makeFile = new File(path+File.separator+"Makefile");
+            if (!configure.exists()) {
+                if (!makeFile.exists()){
+                    assertTrue("Cannot find configure or Makefile in folder "+path, false);
+                }
+            }
             WizardDescriptor wizard = new WizardDescriptor() {
                 @Override
                 public synchronized Object getProperty(String name) {

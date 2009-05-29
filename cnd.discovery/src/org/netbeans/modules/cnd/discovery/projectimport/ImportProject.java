@@ -351,7 +351,7 @@ public class ImportProject implements PropertyChangeListener {
         ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
         pdp.getConfigurationDescriptor();
         if (pdp.gotDescriptor()) {
-            if (configurePath != null && configurePath.length() > 0) {
+            if (runConfigure && configurePath != null && configurePath.length() > 0 && configureFile != null && configureFile.exists()) {
                 postConfigure();
             } else {
                 if (runMake) {
@@ -365,6 +365,8 @@ public class ImportProject implements PropertyChangeListener {
                     });
                 }
             }
+        } else {
+            isFinished = true;
         }
     }
 
@@ -414,39 +416,37 @@ public class ImportProject implements PropertyChangeListener {
                     Exceptions.printStackTrace(ex);
                 }
             }
-            // Possibly run the configure script
-            if (runConfigure) {
-                // If no makefile, create empty one so it shows up in Interesting Files
-                //if (!makefileFile.exists()) {
-                //    makefileFile.createNewFile();
-                //}
-                //final File configureLog = createTempFile("configure");
-                ExecutionListener listener = new ExecutionListener() {
+            // If no makefile, create empty one so it shows up in Interesting Files
+            //if (!makefileFile.exists()) {
+            //    makefileFile.createNewFile();
+            //}
+            //final File configureLog = createTempFile("configure");
+            ExecutionListener listener = new ExecutionListener() {
 
-                    public void executionStarted() {
-                    }
+                public void executionStarted() {
+                }
 
-                    public void executionFinished(int rc) {
-                        if (rc == 0) {
-                            importResult.put(Step.Configure, State.Successful);
-                        } else {
-                            importResult.put(Step.Configure, State.Fail);
-                        }
-                        if (runMake && rc == 0) {
-                            //parseConfigureLog(configureLog);
-                            makeProject(false);
-                        } else {
-                            switchModel(true);
-                            postModelDiscovery(true);
-                        }
+                public void executionFinished(int rc) {
+                    if (rc == 0) {
+                        importResult.put(Step.Configure, State.Successful);
+                    } else {
+                        importResult.put(Step.Configure, State.Fail);
                     }
-                };
-                if (TRACE) {
-                    logger.log(Level.INFO, "#configure " + configureArguments);
-                } // NOI18N
-                ShellRunAction.performAction(node, listener, null, makeProject); //, new BufferedWriter(new FileWriter(configureLog)));
+                    if (runMake && rc == 0) {
+                        //parseConfigureLog(configureLog);
+                        makeProject(false);
+                    } else {
+                        switchModel(true);
+                        postModelDiscovery(true);
+                    }
+                }
+            };
+            if (TRACE) {
+                logger.log(Level.INFO, "#configure " + configureArguments); // NOI18N
             }
+            ShellRunAction.performAction(node, listener, null, makeProject); //, new BufferedWriter(new FileWriter(configureLog)));
         } catch (DataObjectNotFoundException e) {
+            isFinished = true;
         }
     }
 
@@ -467,6 +467,7 @@ public class ImportProject implements PropertyChangeListener {
                     postMake(node);
                 }
             } catch (DataObjectNotFoundException ex) {
+                isFinished = true;
             }
         } else {
             String path = nativeProjectFolder.getAbsolutePath();
@@ -707,8 +708,10 @@ public class ImportProject implements PropertyChangeListener {
             final CsmProject p = model.getProject(np);
             if (p == null) {
                 if (TRACE) {
-                    logger.log(Level.INFO, "#discovery cannot be done by model");
-                } // NOI18N
+                    logger.log(Level.INFO, "#discovery cannot be done by model"); // NOI18N
+                }
+                isFinished = true;
+                return;
             }
             CsmProgressListener listener = new CsmProgressAdapter() {
 
@@ -718,8 +721,8 @@ public class ImportProject implements PropertyChangeListener {
                         ImportProject.listeners.remove(p);
                         CsmListeners.getDefault().removeProgressListener(this);
                         if (TRACE) {
-                            logger.log(Level.INFO, "#start discovery by model");
-                        } // NOI18N
+                            logger.log(Level.INFO, "#start discovery by model"); // NOI18N
+                        }
                         if (isFull) {
                             modelDiscovery();
                         } else {
@@ -731,6 +734,8 @@ public class ImportProject implements PropertyChangeListener {
             };
             CsmListeners.getDefault().addProgressListener(listener);
             ImportProject.listeners.put(p, listener);
+        } else {
+            isFinished = true;
         }
     }
 
