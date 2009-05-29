@@ -112,7 +112,7 @@ public class TaskProcessor {
     private final static Collection<SchedulerTask> toRemove = new LinkedList<SchedulerTask> ();
     
     //Worker thread factory - single worker thread
-    private final static WorkerThreadFactory factory = new WorkerThreadFactory ();
+    final static WorkerThreadFactory factory = new WorkerThreadFactory ();
     //Currently running SchedulerTask
     private final static CurrentRequestReference currentRequest = new CurrentRequestReference ();
     //Deferred task until scan is done
@@ -837,7 +837,7 @@ public class TaskProcessor {
      * Single thread factory creating worker thread.
      */
     //@NotThreadSafe
-    private static class WorkerThreadFactory implements ThreadFactory {
+    static class WorkerThreadFactory implements ThreadFactory {
         
         private Thread t;
         
