@@ -66,6 +66,8 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 
@@ -140,7 +142,7 @@ public class GoToDeclarationAction extends BaseAction {
         Line.Set lineSet = lc.getLineSet();
         Line line = lineSet.getCurrent(NbDocument.findLineNumber(docToGo, offset));
         int column = NbDocument.findLineColumn (docToGo, offset);
-        line.show (Line.SHOW_GOTO, column);
+        line.show (ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
     }
     
     public boolean isEnabled() {

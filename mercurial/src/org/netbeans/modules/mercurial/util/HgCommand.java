@@ -1483,7 +1483,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static void doCat(File repository, File file, File outFile, OutputLogger logger) throws HgException {
-        doCat(repository, file, outFile, "tip", false, logger); //NOI18N
+        doCat(repository, file, outFile, null, false, logger); //NOI18N
     }
 
     /**
