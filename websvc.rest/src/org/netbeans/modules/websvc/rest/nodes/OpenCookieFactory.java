@@ -51,6 +51,8 @@ import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Exceptions;
 
 /**
@@ -108,7 +110,7 @@ public class OpenCookieFactory {
             if (lc != null) {
                 long[] position = JavaSourceHelper.getPosition(javaSource, methodName);
                 Line line = lc.getLineSet().getOriginal((int) position[0]);
-                line.show(Line.SHOW_SHOW, (int) position[1]);
+                line.show(ShowOpenType.OPEN, ShowVisibilityType.NONE, (int) position[1]);
             }
         }
     }

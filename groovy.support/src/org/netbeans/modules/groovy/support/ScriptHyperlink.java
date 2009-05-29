@@ -57,6 +57,8 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotatable;
 import org.openide.text.Annotation;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakSet;
 import org.openide.windows.OutputEvent;
@@ -140,9 +142,9 @@ public final class ScriptHyperlink extends Annotation implements OutputListener,
                         if (! l.isDeleted()) {
                             attachAsNeeded(l);
                             if (col1 == -1) {
-                                l.show(Line.SHOW_GOTO);
+                                l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
                             } else {
-                                l.show(Line.SHOW_GOTO, col1 - 1);
+                                l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, col1 - 1);
                             }
                             //l.show(Line.SHOW_SHOW);
                         }
@@ -190,9 +192,9 @@ public final class ScriptHyperlink extends Annotation implements OutputListener,
                     if (! l.isDeleted()) {
                         attachAsNeeded(l);
                         if (col1 == -1) {
-                            l.show(Line.SHOW_TRY_SHOW);
+                            l.show(ShowOpenType.NONE, ShowVisibilityType.NONE);
                         } else {
-                            l.show(Line.SHOW_TRY_SHOW, col1 - 1);
+                            l.show(ShowOpenType.NONE, ShowVisibilityType.NONE, col1 - 1);
                         }
                     }
                 }
