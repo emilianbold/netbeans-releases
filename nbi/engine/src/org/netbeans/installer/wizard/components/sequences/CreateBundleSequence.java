@@ -35,95 +35,71 @@
  */
 package org.netbeans.installer.wizard.components.sequences;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.helper.ExecutionMode;
+import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.wizard.components.WizardSequence;
+import org.netbeans.installer.wizard.components.actions.CreateBundleAction;
+import org.netbeans.installer.wizard.components.actions.CreateMacOSAppLauncherAction;
+import org.netbeans.installer.wizard.components.actions.CreateNativeLauncherAction;
 import org.netbeans.installer.wizard.components.actions.DownloadConfigurationLogicAction;
 import org.netbeans.installer.wizard.components.actions.DownloadInstallationDataAction;
-import org.netbeans.installer.wizard.components.actions.InstallAction;
-import org.netbeans.installer.wizard.components.actions.UninstallAction;
 import org.netbeans.installer.wizard.components.panels.ComponentsSelectionPanel;
-import org.netbeans.installer.wizard.components.panels.LicensesPanel;
-import org.netbeans.installer.wizard.components.panels.PostInstallSummaryPanel;
-import org.netbeans.installer.wizard.components.panels.PreInstallSummaryPanel;
+import org.netbeans.installer.wizard.components.panels.PostCreateBundleSummaryPanel;
+import org.netbeans.installer.wizard.components.panels.PreCreateBundleSummaryPanel;
 
 /**
  *
- * @author Kirill Sorokin
  * @author Dmitry Lipin
  */
-public class MainSequence extends WizardSequence {
+public class CreateBundleSequence extends WizardSequence {
     private ComponentsSelectionPanel componentsSelectionPanel;
     private DownloadConfigurationLogicAction downloadConfigurationLogicAction;
-    private LicensesPanel licensesPanel;
-    private PreInstallSummaryPanel preInstallSummaryPanel;
-    private UninstallAction uninstallAction;
     private DownloadInstallationDataAction downloadInstallationDataAction;
-    private InstallAction installAction;
-    private PostInstallSummaryPanel postInstallSummaryPanel;
-    private Map<Product, ProductWizardSequence> productSequences;
+    private PreCreateBundleSummaryPanel preCreateBundleSummaryPanel;
+    private CreateBundleAction createBundleAction;
+    private CreateNativeLauncherAction createNativeLauncherAction;
+    private CreateMacOSAppLauncherAction createAppLauncherAction;
+    private PostCreateBundleSummaryPanel postCreateBundleSummaryPanel;
 
-    public MainSequence() {
-        componentsSelectionPanel = new ComponentsSelectionPanel();
+    public CreateBundleSequence() {
+        componentsSelectionPanel = new ComponentsSelectionPanel ();
         downloadConfigurationLogicAction = new DownloadConfigurationLogicAction();
-        licensesPanel = new LicensesPanel();
-        preInstallSummaryPanel = new PreInstallSummaryPanel();
-        uninstallAction = new UninstallAction();
         downloadInstallationDataAction = new DownloadInstallationDataAction();
-        installAction = new InstallAction();
-        postInstallSummaryPanel = new PostInstallSummaryPanel();
-        productSequences = new HashMap<Product, ProductWizardSequence>();
+        preCreateBundleSummaryPanel = new PreCreateBundleSummaryPanel();
+        createBundleAction = new CreateBundleAction();
+        createNativeLauncherAction = new CreateNativeLauncherAction();
+        createAppLauncherAction = new CreateMacOSAppLauncherAction();
+        postCreateBundleSummaryPanel = new PostCreateBundleSummaryPanel();
     }
 
     @Override
     public void executeForward() {
         final Registry registry = Registry.getInstance();
-        final List<Product> toInstall = registry.getProductsToInstall();
-        final List<Product> toUninstall = registry.getProductsToUninstall();
 
         // remove all current children (if there are any), as the components
         // selection has probably changed and we need to rebuild from scratch
         getChildren().clear();
 
-        // if we're installing, we ask for input, run a wizard sequence for
-        // each selected component and then download and install
+        // we're creating a bundle - we only need to download and package things
         addChild(componentsSelectionPanel);
-        if (toInstall.size() > 0) {
-            addChild(downloadConfigurationLogicAction);
-            addChild(licensesPanel);
+        addChild(preCreateBundleSummaryPanel);
+        addChild(downloadConfigurationLogicAction);
+        addChild(downloadInstallationDataAction);
+        addChild(createBundleAction);
 
-            for (Product product : toInstall) {
-                if (!productSequences.containsKey(product)) {
-                    productSequences.put(
-                            product,
-                            new ProductWizardSequence(product));
-                }
-
-                addChild(productSequences.get(product));
-            }
+        if (registry.getTargetPlatform().isCompatibleWith(Platform.MACOSX)) {
+            addChild(createAppLauncherAction);
+        } else {
+            addChild(createNativeLauncherAction);
         }
-
-        addChild(preInstallSummaryPanel);
-
-        if (toUninstall.size() > 0) {
-            addChild(uninstallAction);
-        }
-
-        if (toInstall.size() > 0) {
-            addChild(downloadInstallationDataAction);
-            addChild(installAction);
-        }
-
-        addChild(postInstallSummaryPanel);
+        addChild(postCreateBundleSummaryPanel);
 
         super.executeForward();
     }
     
+    @Override
     public boolean canExecuteForward() {
-        return ExecutionMode.NORMAL == ExecutionMode.getCurrentExecutionMode();
-    }
+        return ExecutionMode.CREATE_BUNDLE == ExecutionMode.getCurrentExecutionMode();
+    }    
 }
