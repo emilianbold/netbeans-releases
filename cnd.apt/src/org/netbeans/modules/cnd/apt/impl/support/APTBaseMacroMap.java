@@ -142,13 +142,16 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     private void defineImpl(APTFile file, APTDefine define, Kind macroType) {
         APTToken name = define.getName();
         CharSequence filePath = (file == null ? CharSequenceKey.empty() : file.getPath());
-        active.getMacros().put(name.getTextID(), createMacro(filePath, define, macroType));
+        putMacro(name.getTextID(), createMacro(filePath, define, macroType));
     }
 
     public void undef(APTFile file, APTToken name) {
-        active.getMacros().put(name.getTextID(), APTMacroMapSnapshot.UNDEFINED_MACRO);
+        putMacro(name.getTextID(), APTMacroMapSnapshot.UNDEFINED_MACRO);
     }
-    
+
+    protected void putMacro(CharSequence name, APTMacro macro) {
+        active.getMacros().put(name, macro);
+    }
     /** method to implement in children */
     protected abstract APTMacro createMacro(CharSequence file, APTDefine define, Kind macroType);
     
