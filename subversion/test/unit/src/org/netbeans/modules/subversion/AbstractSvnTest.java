@@ -80,23 +80,23 @@ public abstract class AbstractSvnTest extends NbTestCase {
     private File repoDir;
     private String repoPath;
     private SVNUrl repo2Url;
-    private boolean ownClientFactory;
+    protected static final String SUBVERSION_1_5 = "1.5";
+    protected static final String SUBVERSION_1_6 = "1.6";
+    protected String clientVersion;
+    private final static String JAVAHL = "javahl";
         
     public AbstractSvnTest(String testName) throws MalformedURLException, SVNClientException {
         super(testName);
+        clientVersion = SUBVERSION_1_6;
         workDir = new File(System.getProperty("work.dir")); 
         FileUtil.refreshFor(workDir);          
         repoDir = new File(System.getProperty("work.dir") + "/repo");
         repoPath = repoDir.getAbsolutePath();
         if(repoPath.startsWith("/")) {
-            repoPath = repoPath.substring(1, repoPath.length());
+            //repoPath = repoPath.substring(1, repoPath.length());
         }
         
         wc = new File(workDir, getName() + "_wc");        
-    }
-
-    public void setOwnClientFactory (boolean own) {
-        this.ownClientFactory = own;
     }
 
     @Override
@@ -113,8 +113,8 @@ public abstract class AbstractSvnTest extends NbTestCase {
         cleanUpWC();  
         initRepo(repoDir);  
         
-        wc.mkdirs();        
-        if(importOnSetup()) svnimportWC();                   
+        wc.mkdirs();
+        if(importOnSetup()) svnimportWC();
     }
     
     protected boolean importOnSetup() {
@@ -142,12 +142,12 @@ public abstract class AbstractSvnTest extends NbTestCase {
     protected void commit(File folder, String msg) throws SVNClientException {
         add(folder);
         try {
-            getClient().commit(new File[]{ folder }, msg, true);
+            getFullWorkingClient().commit(new File[]{ folder }, msg, true);
         } catch (SVNClientException e) {
             if(e.getMessage().toLowerCase().indexOf("out of date") > -1) {
                 try {
-                    getClient().update(folder, SVNRevision.HEAD, true);
-                    getClient().commit(new File[]{ folder }, msg, true);
+                    getFullWorkingClient().update(folder, SVNRevision.HEAD, true);
+                    getFullWorkingClient().commit(new File[]{ folder }, msg, true);
                 } catch (SVNClientException e1) {
                     fail("commit was supposed to work " + e1.getMessage());   
                 }
@@ -163,21 +163,21 @@ public abstract class AbstractSvnTest extends NbTestCase {
     }
     
     protected void remove(File file) throws SVNClientException {        
-        getClient().remove(new File[] {file}, true);
+        getFullWorkingClient().remove(new File[] {file}, true);
     }
     
     protected void copy(SVNUrl urlFrom, SVNUrl urlTo) throws SVNClientException {        
-        getClient().copy(urlFrom, urlTo, "copy", SVNRevision.HEAD);
+        getFullWorkingClient().copy(urlFrom, urlTo, "copy", SVNRevision.HEAD);
     }
     
     protected void ignore(File file) throws SVNClientException {        
         File parent =  file.getParentFile();
-        List patterns = getClient().getIgnoredPatterns(parent);
+        List patterns = getFullWorkingClient().getIgnoredPatterns(parent);
         String path = file.getName();
         if(!patterns.contains(path)) {            
             patterns.add(path);
         }
-        getClient().setIgnoredPatterns(parent, patterns);
+        getFullWorkingClient().setIgnoredPatterns(parent, patterns);
         assertStatus(SVNStatusKind.IGNORED, file);
     }
     
@@ -185,7 +185,7 @@ public abstract class AbstractSvnTest extends NbTestCase {
         ISVNStatus status = getSVNStatus(file);        
         if(status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
             try {
-                getClient().addFile(file);
+                getFullWorkingClient().addFile(file);
             } catch (SVNClientException e) {
                 if(e.getMessage().indexOf("is not a working copy") > -1 && 
                    containsParent(e.getMessage(), file.getParentFile())) 
@@ -210,11 +210,11 @@ public abstract class AbstractSvnTest extends NbTestCase {
     }
    
     protected void mkdir(SVNUrl url) throws SVNClientException {
-        getClient().mkdir(url, "mkdir");
+        getFullWorkingClient().mkdir(url, "mkdir");
     }
    
     protected void setProperty(File file, String propName, String value) throws SVNClientException {
-        getClient().propertySet(file, propName, value, false);
+        getFullWorkingClient().propertySet(file, propName, value, false);
     }    
     
     protected void update(File file) throws SVNClientException {
@@ -222,11 +222,11 @@ public abstract class AbstractSvnTest extends NbTestCase {
     }
     
     protected void update(File file, SVNRevision rev) throws SVNClientException {
-        getClient().update(file, rev, true);
+        getFullWorkingClient().update(file, rev, true);
     }    
     
     protected void cleanUpRepo() throws SVNClientException {
-        ISVNClientAdapter client = getClient();
+        ISVNClientAdapter client = getFullWorkingClient();
         ISVNDirEntry[] entries = client.getList(repoUrl, SVNRevision.HEAD, false);
         SVNUrl[] urls = new SVNUrl[entries.length];
         for (int i = 0; i < entries.length; i++) {
@@ -236,11 +236,11 @@ public abstract class AbstractSvnTest extends NbTestCase {
     }
     
     protected void cleanUpRepo(String[] paths) throws SVNClientException {
-        ISVNClientAdapter client = getClient();
+        ISVNClientAdapter client = getFullWorkingClient();
         SVNUrl[] urls = new SVNUrl[paths.length];
         for (int i = 0; i < paths.length; i++) {
-            urls[i] = repoUrl.appendPath(paths[i]);            
-        }        
+            urls[i] = getTestUrl().appendPath(paths[i]);
+        }
         try {
             client.remove(urls, "cleanup");
         } catch (SVNClientException e) {
@@ -270,21 +270,21 @@ public abstract class AbstractSvnTest extends NbTestCase {
     }
 
     protected void assertStatus(SVNStatusKind status, File file) throws SVNClientException {
-        ISVNStatus[] values = getClient().getStatus(new File[]{file});
+        ISVNStatus[] values = getFullWorkingClient().getStatus(new File[]{file});
         for (ISVNStatus iSVNStatus : values) {
             assertEquals(status, iSVNStatus.getTextStatus());
         }
     }
     
     protected void assertPropertyStatus(SVNStatusKind status, File file) throws SVNClientException {
-        ISVNStatus[] values = getClient().getStatus(new File[]{file});
+        ISVNStatus[] values = getFullWorkingClient().getStatus(new File[]{file});
         for (ISVNStatus iSVNStatus : values) {
             assertEquals(status, iSVNStatus.getPropStatus());
         }
     }
  
     protected ISVNStatus getSVNStatus(File file) throws SVNClientException {
-        return getClient().getSingleStatus(file);        
+        return getFullWorkingClient().getSingleStatus(file);
     }
 
     private boolean containsParent(String message, File parent) {
@@ -296,13 +296,9 @@ public abstract class AbstractSvnTest extends NbTestCase {
         }
         return false;
     }
-    
-    private ISVNClientAdapter getClient() throws SVNClientException {
-        if (ownClientFactory) {
-            return SvnClientTestFactory.getInstance().createSvnClient();
-        } else {
-            return SvnClientFactory.getInstance().createSvnClient();
-        }
+
+    protected ISVNClientAdapter getFullWorkingClient() throws SVNClientException {
+        return SvnClientFactory.getInstance().createSvnClient();
     }   
     
     protected void assertCachedStatus(File file, int expectedStatus) throws Exception {
@@ -350,7 +346,7 @@ public abstract class AbstractSvnTest extends NbTestCase {
     }
     
     protected void svnimportWC() throws SVNClientException {
-        ISVNClientAdapter client = getClient();        
+        ISVNClientAdapter client = getFullWorkingClient();
         SVNUrl url = getTestUrl().appendPath(wc.getName());
         try {
             client.mkdir(url, true, "msg");
@@ -362,16 +358,16 @@ public abstract class AbstractSvnTest extends NbTestCase {
             for (File file : files) {
                 if(!isMetadata(file)) {
                     client.addFile(file);
-                }                
+                }
             }
             client.commit(new File[] {wc}, "commit", true);                    
         }        
     }        
     
     protected void importFile(File folder) throws SVNClientException {
-        ISVNClientAdapter client = getClient();        
+        ISVNClientAdapter client = getFullWorkingClient();
         SVNUrl url = getTestUrl().appendPath(folder.getName());        
-        client.mkdir(url, true, "msg");        
+        client.mkdir(url, true, "msg");
         client.checkout(url, folder, SVNRevision.HEAD, true);        
         File[] files = folder.listFiles();
         if(files != null) {
@@ -406,36 +402,36 @@ public abstract class AbstractSvnTest extends NbTestCase {
     }
     
     protected ISVNInfo getInfo(SVNUrl url) throws SVNClientException {
-        return getClient().getInfo(url);
+        return getFullWorkingClient().getInfo(url);
     }
     
     protected ISVNLogMessage[] getCompleteLog(SVNUrl url) throws SVNClientException {
-        return getClient().getLogMessages(url, new SVNRevision.Number(0), new SVNRevision.Number(0), SVNRevision.HEAD, true, false, 0L);
+        return getFullWorkingClient().getLogMessages(url, new SVNRevision.Number(0), new SVNRevision.Number(0), SVNRevision.HEAD, true, false, 0L);
     }
     
     protected ISVNLogMessage[] getLog(SVNUrl url) throws SVNClientException {
-        return getClient().getLogMessages(url, SVNRevision.HEAD, SVNRevision.HEAD);
+        return getFullWorkingClient().getLogMessages(url, SVNRevision.HEAD, SVNRevision.HEAD);
     }
     
     protected InputStream getContent(SVNUrl url) throws SVNClientException {
-        return getClient().getContent(url, SVNRevision.HEAD);
+        return getFullWorkingClient().getContent(url, SVNRevision.HEAD);
     }
     
     protected ISVNInfo getInfo(File file) throws SVNClientException {
-        return getClient().getInfo(file);
+        return getFullWorkingClient().getInfo(file);
     }
     
     protected void copy(File file, File copy) throws SVNClientException {
-        getClient().copy(file, copy);
+        getFullWorkingClient().copy(file, copy);
     }
     
     protected ISVNDirEntry[] list(SVNUrl url) throws SVNClientException {
-        return getClient().getList(url, SVNRevision.HEAD, false);
+        return getFullWorkingClient().getList(url, SVNRevision.HEAD, false);
     }
     
     protected void unlock(File file, String msg, boolean force) throws SVNClientException {
         try {
-            getClient().unlock(new File[]{file}, force);
+            getFullWorkingClient().unlock(new File[]{file}, force);
         } catch (SVNClientException e) {
             if(e.getMessage().indexOf("No lock on path") < 0) {
                 throw e;
@@ -445,7 +441,7 @@ public abstract class AbstractSvnTest extends NbTestCase {
     
     protected void lock(File file, String msg, boolean force) throws SVNClientException {
         unlock(file, "unlock", force);
-        getClient().lock(new File[] {file}, msg, force);
+        getFullWorkingClient().lock(new File[] {file}, msg, force);
     }
     
     protected void waitALittleBit(long t) {
@@ -483,5 +479,12 @@ public abstract class AbstractSvnTest extends NbTestCase {
     protected SVNUrl getFileUrl(File file) {
         return getTestUrl().appendPath(getWC().getName()).appendPath(file.getName());
     }
-    
+
+    protected boolean isJavahl () {
+        return JAVAHL.equals(SvnClientTestFactory.getClientType());
+    }
+
+    protected boolean isCommandLine () {
+        return !isJavahl();
+    }
 }
