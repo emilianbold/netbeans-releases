@@ -64,6 +64,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Exceptions;
 
 /**
@@ -87,7 +89,7 @@ public class ApisupportHyperlinkProvider implements HyperlinkProviderExt {
     public void performClickAction(Document doc, int offset, HyperlinkType type) {
         Line ln = getLine(doc, offset);
         if (ln != null) {
-            ln.show(Line.SHOW_GOTO);
+            ln.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
         } else {
             Toolkit.getDefaultToolkit().beep();
         }

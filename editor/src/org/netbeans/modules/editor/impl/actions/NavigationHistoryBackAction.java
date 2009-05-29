@@ -71,6 +71,8 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -258,7 +260,7 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
 
                             Line line = lineCookie.getLineSet().getCurrent(lineIndex);
                             if (line != null) {
-                                line.show(Line.SHOW_REUSE, column);
+                                line.show(ShowOpenType.REUSE, ShowVisibilityType.FOCUS, column);
                                 worked[0] = true;
                             }
                         }

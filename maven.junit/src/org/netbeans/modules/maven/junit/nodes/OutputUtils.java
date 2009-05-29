@@ -52,6 +52,8 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 
 /**
  *
@@ -313,7 +315,7 @@ final class OutputUtils {
                     try {
                         Line l = ed.getLineSet().getOriginal(lineNum - 1);
                         if (!l.isDeleted()) {
-                            l.show(Line.SHOW_GOTO);
+                            l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
                         }
                     } catch (IndexOutOfBoundsException ioobe) {
                         // Probably harmless. Bogus line number.

@@ -72,6 +72,8 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -264,7 +266,7 @@ public class OpenLayerFilesAction extends CookieAction {
                     if (line[0] < 1) {
                         return;
                     }
-                    lineCookie.getLineSet().getCurrent(line[0] - 1).show(Line.SHOW_GOTO /*, Math.max(0, col[0])*/);
+                    lineCookie.getLineSet().getCurrent(line[0] - 1).show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS /*, Math.max(0, col[0])*/);
                 } catch (Exception e) {
                     return;
                 }
