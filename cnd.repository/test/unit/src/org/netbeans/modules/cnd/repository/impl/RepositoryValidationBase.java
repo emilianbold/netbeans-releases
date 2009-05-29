@@ -172,7 +172,11 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         } else {
             // downloads in tmp dir
             dataPath = System.getProperty("java.io.tmpdir");
-            dataPath += File.separator + System.getProperty("user.name") +  "-cnd-test-downloads";
+            if (dataPath.endsWith(File.separator)) {
+                dataPath += System.getProperty("user.name") +  "-cnd-test-downloads";
+            } else {
+                dataPath += File.separator + System.getProperty("user.name") +  "-cnd-test-downloads";
+            }
         }
         final AtomicBoolean finish = new AtomicBoolean(false);
         ExecutionListener listener = new ExecutionListener() {

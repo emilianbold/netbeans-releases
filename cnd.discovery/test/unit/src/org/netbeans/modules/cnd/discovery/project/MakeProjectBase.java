@@ -186,9 +186,16 @@ public abstract class MakeProjectBase  extends NbTestCase {
         } else {
             // downloads in tmp dir
             dataPath = System.getProperty("java.io.tmpdir");
-            dataPath += File.separator + System.getProperty("user.name") +  "-cnd-test-downloads";
+            if (dataPath.endsWith(File.separator)) {
+                dataPath += System.getProperty("user.name") +  "-cnd-test-downloads";
+            } else {
+                dataPath += File.separator + System.getProperty("user.name") +  "-cnd-test-downloads";
+            }
         }
-        FileUtil.createFolder(new File(dataPath));
+        File fileDataPath = new File(dataPath);
+        if (!fileDataPath.exists()) {
+            FileUtil.createFolder(fileDataPath);
+        }
         String createdFolder = dataPath+"/"+packageName;
         final AtomicBoolean finish = new AtomicBoolean(false);
         ExecutionListener listener = new ExecutionListener() {
@@ -199,7 +206,9 @@ public abstract class MakeProjectBase  extends NbTestCase {
             }
         };
         NativeExecutor ne = null;
-        if (!new File(createdFolder).exists()){
+        File fileCreatedFolder = new File(createdFolder);
+        if (!fileCreatedFolder.exists()){
+            FileUtil.createFolder(fileCreatedFolder);
             ne = new NativeExecutor(dataPath,"wget", urlName, new String[0], "wget", "run", false, false);
             waitExecution(ne, listener, finish);
             ne = new NativeExecutor(dataPath,"gzip", "-d "+zipName, new String[0], "gzip", "run", false, false);
@@ -208,7 +217,6 @@ public abstract class MakeProjectBase  extends NbTestCase {
             waitExecution(ne, listener, finish);
         }
         ne = new NativeExecutor(createdFolder, "rm", "-rf nbproject", new String[0], "rm", "run", false, false);
-        FileUtil.createFolder(new File(createdFolder));
         waitExecution(ne, listener, finish);
         return createdFolder;
     }
