@@ -130,8 +130,8 @@ public class ImportProject implements PropertyChangeListener {
     private String buildResult = "";  // NOI18N
     private Project makeProject;
     private boolean runMake;
-    private String includeDirectories = "";
-    private String macros = "";
+    private String includeDirectories = ""; // NOI18N
+    private String macros = ""; // NOI18N
     private String consolidationStrategy = ConsolidationStrategyPanel.FILE_LEVEL;
     private Iterator<SourceFolderInfo> sources;
     private String sourceFoldersFilter = null;
@@ -143,7 +143,7 @@ public class ImportProject implements PropertyChangeListener {
         if (TRACE) {
             logger.setLevel(Level.ALL);
         }
-        if (Boolean.TRUE.equals(wizard.getProperty("simpleMode"))) {
+        if (Boolean.TRUE.equals(wizard.getProperty("simpleMode"))) { // NOI18N
             simpleSetup(wizard);
         } else {
             customSetup(wizard);
@@ -504,10 +504,17 @@ public class ImportProject implements PropertyChangeListener {
                 postMake(node);
             }
         };
+        String arguments = ""; // NOI18N
+        if (cleanCommand != null){
+            arguments = getArguments(cleanCommand);
+        }
+        if (arguments.length()==0) {
+            arguments = "clean"; // NOI18N
+        }
         if (TRACE) {
-            logger.log(Level.INFO, "#make clean");
-        } // NOI18N
-        MakeAction.execute(node, "clean", listener, null, makeProject); // NOI18N
+            logger.log(Level.INFO, "#make "+arguments); // NOI18N
+        }
+        MakeAction.execute(node, arguments, listener, null, makeProject); // NOI18N
     }
 
     private void postMake(Node node) {
@@ -538,10 +545,35 @@ public class ImportProject implements PropertyChangeListener {
                 Exceptions.printStackTrace(ex);
             }
         }
+        String arguments = ""; // NOI18N
+        if (buildCommand != null){
+            arguments = getArguments(buildCommand);
+        }
         if (TRACE) {
-            logger.log(Level.INFO, "#make > " + makeLog.getAbsolutePath());
-        } // NOI18N
-        MakeAction.execute(node, "", listener, outputListener, makeProject); // NOI18N
+            logger.log(Level.INFO, "#make "+arguments+" > " + makeLog.getAbsolutePath()); // NOI18N
+        }
+        MakeAction.execute(node, arguments, listener, outputListener, makeProject); // NOI18N
+    }
+
+    private String getArguments(String command){
+        if (command.startsWith("\"")) { // NOI18N
+            int i = command.indexOf('"', 1); // NOI18N
+            if (i > 0) {
+                return command.substring(i);
+            }
+            return ""; // NOI18N
+        } else if (command.startsWith("\'")) { // NOI18N
+            int i = command.indexOf('\'', 1); // NOI18N
+            if (i > 0) {
+                return command.substring(i);
+            }
+            return ""; // NOI18N
+        }
+        int i = command.indexOf(' '); // NOI18N
+        if (i > 0) {
+            return command.substring(i);
+        }
+        return ""; // NOI18N
     }
 
     private DiscoveryProvider getProvider(String id) {
@@ -580,12 +612,12 @@ public class ImportProject implements PropertyChangeListener {
                         DiscoveryProvider provider = (DiscoveryProvider) map.get(DiscoveryWizardDescriptor.PROVIDER);
                         if (provider != null && "make-log".equals(provider.getID())) { // NOI18N
                             if (TRACE) {
-                                logger.log(Level.INFO, "#start discovery by log file " + provider.getProperty("make-log-file").getValue());
-                            } // NOI18N
+                                logger.log(Level.INFO, "#start discovery by log file " + provider.getProperty("make-log-file").getValue()); // NOI18N
+                            }
                         } else {
                             if (TRACE) {
-                                logger.log(Level.INFO, "#start discovery by object files");
-                            } // NOI18N
+                                logger.log(Level.INFO, "#start discovery by object files"); // NOI18N
+                            }
                         }
                         try {
                             done = true;
@@ -600,8 +632,8 @@ public class ImportProject implements PropertyChangeListener {
                         }
                     } else {
                         if (TRACE) {
-                            logger.log(Level.INFO, "#no dwarf information found in object files");
-                        } // NOI18N
+                            logger.log(Level.INFO, "#no dwarf information found in object files"); // NOI18N
+                        }
                     }
                 }
             }
@@ -613,8 +645,8 @@ public class ImportProject implements PropertyChangeListener {
                     map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
                     if (extension.canApply(map, makeProject)) {
                         if (TRACE) {
-                            logger.log(Level.INFO, "#start discovery by log file " + makeLog.getAbsolutePath());
-                        } // NOI18N
+                            logger.log(Level.INFO, "#start discovery by log file " + makeLog.getAbsolutePath()); // NOI18N
+                        }
                         try {
                             done = true;
                             extension.apply(map, makeProject);
@@ -624,8 +656,8 @@ public class ImportProject implements PropertyChangeListener {
                         }
                     } else {
                         if (TRACE) {
-                            logger.log(Level.INFO, "#discovery cannot be done by log file " + makeLog.getAbsolutePath());
-                        } // NOI18N
+                            logger.log(Level.INFO, "#discovery cannot be done by log file " + makeLog.getAbsolutePath()); // NOI18N
+                        }
                     }
                 }
             } else if (done && makeLog != null) {
@@ -639,16 +671,16 @@ public class ImportProject implements PropertyChangeListener {
                     map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
                     if (extension.canApply(map, makeProject)) {
                         if (TRACE) {
-                            logger.log(Level.INFO, "#start fix macros by log file " + makeLog.getAbsolutePath());
-                        } // NOI18N
+                            logger.log(Level.INFO, "#start fix macros by log file " + makeLog.getAbsolutePath()); // NOI18N
+                        }
                         @SuppressWarnings("unchecked")
                         List<ProjectConfiguration> confs = (List) map.get(DiscoveryWizardDescriptor.CONFIGURATIONS);
                         fixMacros(confs);
                         importResult.put(Step.FixMacros, State.Successful);
                     } else {
                         if (TRACE) {
-                            logger.log(Level.INFO, "#fix macros cannot be done by log file " + makeLog.getAbsolutePath());
-                        } // NOI18N
+                            logger.log(Level.INFO, "#fix macros cannot be done by log file " + makeLog.getAbsolutePath()); // NOI18N
+                        }
                     }
                 }
             }
@@ -671,8 +703,8 @@ public class ImportProject implements PropertyChangeListener {
                     NativeFileItem item = findByNormalizedName(new File(fileConf.getFilePath()));
                     if (item instanceof Item) {
                         if (TRACE) {
-                            logger.log(Level.FINE, "#fix macros for file " + fileConf.getFilePath());
-                        } // NOI18N
+                            logger.log(Level.FINE, "#fix macros for file " + fileConf.getFilePath()); // NOI18N
+                        }
                         ProjectBridge.fixFileMacros(fileConf.getUserMacros(), (Item) item);
                     }
                 }
@@ -691,8 +723,8 @@ public class ImportProject implements PropertyChangeListener {
             public void run() {
                 makeConfigurationDescriptor.checkForChangedItems(makeProject, null, null);
                 if (TRACE) {
-                    logger.log(Level.INFO, "#save configuration descriptor");
-                } // NOI18N
+                    logger.log(Level.INFO, "#save configuration descriptor"); // NOI18N
+                }
             }
         });
     }
@@ -786,8 +818,8 @@ public class ImportProject implements PropertyChangeListener {
             final CsmProject p = model.getProject(np);
             if (p != null && np != null) {
                 if (TRACE) {
-                    logger.log(Level.INFO, "#start fixing excluded header files by model");
-                } // NOI18N
+                    logger.log(Level.INFO, "#start fixing excluded header files by model"); // NOI18N
+                }
                 Set<String> needCheck = new HashSet<String>();
                 for (CsmFile file : p.getAllFiles()) {
                     if (file instanceof FileImpl) {
@@ -800,8 +832,8 @@ public class ImportProject implements PropertyChangeListener {
                         if (item != null && np.equals(item.getNativeProject()) && item.isExcluded()) {
                             if (item instanceof Item) {
                                 if (TRACE) {
-                                    logger.log(Level.FINE, "#fix excluded header for file " + impl.getAbsolutePath());
-                                } // NOI18N
+                                    logger.log(Level.FINE, "#fix excluded header for file " + impl.getAbsolutePath()); // NOI18N
+                                }
                                 ProjectBridge.setExclude((Item) item, false);
                                 if (file.isHeaderFile()) {
                                     needCheck.add(item.getFile().getAbsolutePath());
@@ -855,8 +887,8 @@ public class ImportProject implements PropertyChangeListener {
             if (extension != null) {
                 if (extension.canApply(map, makeProject)) {
                     if (TRACE) {
-                        logger.log(Level.INFO, "#start discovery by object files");
-                    } // NOI18N
+                        logger.log(Level.INFO, "#start discovery by object files"); // NOI18N
+                    }
                     try {
                         extension.apply(map, makeProject);
                         importResult.put(Step.DiscoveryDwarf, State.Successful);
@@ -866,15 +898,15 @@ public class ImportProject implements PropertyChangeListener {
                     }
                 } else {
                     if (TRACE) {
-                        logger.log(Level.INFO, "#no dwarf information found in object files");
-                    } // NOI18N
+                        logger.log(Level.INFO, "#no dwarf information found in object files"); // NOI18N
+                    }
                 }
             }
         }
         if (!does) {
             if (TRACE) {
-                logger.log(Level.INFO, "#start discovery by model");
-            } // NOI18N
+                logger.log(Level.INFO, "#start discovery by model"); // NOI18N
+            }
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectFolder.getAbsolutePath());
             DiscoveryProvider provider = getProvider("model-folder"); // NOI18N
             provider.getProperty("folder").setValue(nativeProjectFolder.getAbsolutePath()); // NOI18N
@@ -902,13 +934,13 @@ public class ImportProject implements PropertyChangeListener {
             NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
             if (state) {
                 if (TRACE) {
-                    logger.log(Level.INFO, "#enable model for " + np.getProjectDisplayName());
-                } // NOI18N
+                    logger.log(Level.INFO, "#enable model for " + np.getProjectDisplayName()); // NOI18N
+                }
                 ((ModelImpl) model).enableProject(np);
             } else {
                 if (TRACE) {
-                    logger.log(Level.INFO, "#disable model for " + np.getProjectDisplayName());
-                } // NOI18N
+                    logger.log(Level.INFO, "#disable model for " + np.getProjectDisplayName()); // NOI18N
+                }
                 ((ModelImpl) model).disableProject(np);
             }
         }
