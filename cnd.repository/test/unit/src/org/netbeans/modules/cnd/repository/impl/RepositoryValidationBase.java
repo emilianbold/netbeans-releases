@@ -164,9 +164,18 @@ public class RepositoryValidationBase extends TraceModelTestBase {
     // tar xf pkgconfig-0.18.tar
     private List<String> download(){
         List<String> list = new ArrayList<String>();
-        String dataPath = getDataDir().getAbsolutePath();
-        int i = dataPath.indexOf("repository");
-        dataPath = dataPath.substring(0,i+11)+"build/test/unit/work";
+        String dataPath;
+        if (false) {
+            // local downloads
+            dataPath = getDataDir().getAbsolutePath();
+            if (dataPath.endsWith("/data") || dataPath.endsWith("\\data")) {
+                dataPath = dataPath.substring(0, dataPath.length()-4)+"downloads";
+            }
+        } else {
+            // downloads in tmp dir
+            dataPath = System.getProperty("java.io.tmpdir");
+            dataPath += File.separator + System.getProperty("user.name") +  "-cnd-test-downloads";
+        }
         final AtomicBoolean finish = new AtomicBoolean(false);
         ExecutionListener listener = new ExecutionListener() {
             public void executionStarted() {
