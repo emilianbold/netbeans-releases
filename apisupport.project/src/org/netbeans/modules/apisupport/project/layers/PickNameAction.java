@@ -47,7 +47,6 @@ import java.net.URL;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.ManifestManager;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -68,7 +67,7 @@ import org.openide.util.actions.CookieAction;
 public class PickNameAction extends CookieAction {
     
     private static FileObject findFile(Node[] activatedNodes) {
-        return ((DataObject) activatedNodes[0].getCookie(DataObject.class)).getPrimaryFile();
+        return activatedNodes[0].getCookie(DataObject.class).getPrimaryFile();
     }
     
     private static NbModuleProvider findProject(FileObject f) {
@@ -117,6 +116,7 @@ public class PickNameAction extends CookieAction {
         }
     }
     
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         if (!super.enable(activatedNodes)) {
             return false;
@@ -148,6 +148,7 @@ public class PickNameAction extends CookieAction {
         return null;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

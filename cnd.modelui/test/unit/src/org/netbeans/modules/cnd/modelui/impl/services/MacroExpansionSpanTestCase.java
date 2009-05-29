@@ -55,46 +55,29 @@ import java.io.File;
 import java.io.PrintStream;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
-import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionDocProvider;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 
 /**
- * Tests for MacroExpansionDocProviderImpl
+ * Class for MacroExpansionDocProviderImpl tests for span of macro detection
  *
  * @author Nick Krasilnikov
  */
-public class MacroExpansionDocProviderImplTestCase extends TraceModelTestBase {
+public class MacroExpansionSpanTestCase extends MacroExpansionDocProviderImplBaseTestCase {
 
-    public MacroExpansionDocProviderImplTestCase(String testName) {
+    public MacroExpansionSpanTestCase(String testName) {
         super(testName);
     }
 
+    // Find span of macro on specified offset
+    // Format:
+    // performExpandFileTest("file name, line, column); // NOI18N
+
     public void testFile1() throws Exception {
-        performTest("file1.cc"); // NOI18N
-    }
-
-    public void testFile1_2() throws Exception {
-        performTest("file1.cc", 5, 13, 5, 21); // NOI18N
-    }
-
-    public void testCodeExpansion() throws Exception {
-        performTest("file1.cc", 10, 13, "CONSTANT + 1"); // NOI18N
+        performTest("file1.cc", 18, 7); // NOI18N
     }
 
     ////////////////////////////////////////////////////////////////////////////
     // general staff
-    @Override
-    protected void postSetUp() throws Exception {
-        super.postSetUp();
-        log("postSetUp is preparing project"); // NOI18N
-        initParsedProject();
-        log("postSetUp finished project preparing"); // NOI18N
-        log("Test " + getName() + "started"); // NOI18N
-    }
 
     @Override
     protected void doTest(String[] args, PrintStream streamOut, PrintStream streamErr, Object... params) throws Exception {
@@ -103,90 +86,35 @@ public class MacroExpansionDocProviderImplTestCase extends TraceModelTestBase {
 
         assertNotNull("Csm file was not found for " + path, currentFile); // NOI18N
 
-        if (params.length == 0) {
-            // Test whole file
-            CsmMacroExpansionDocProvider mp = new MacroExpansionDocProviderImpl();
+        if (params.length == 2) {
+
+            MacroExpansionDocProviderImpl mp = new MacroExpansionDocProviderImpl();
 
             String objectSource = currentFile.getName().toString();
 
             BaseDocument doc = getBaseDocument(getDataFile(objectSource));
             assertNotNull(doc);
-            int startOffset = 0;
-            int endOffset = doc.getLength();
 
-            String res = mp.expand(doc, startOffset, endOffset);
-            assertNotNull(res);
-
-            streamOut.println(res);
-
-        } else if (params.length == 4) {
-            // Test part of file
-
-            CsmMacroExpansionDocProvider mp = new MacroExpansionDocProviderImpl();
-
-            String objectSource = currentFile.getName().toString();
-
-            int startLine = (Integer) params[0];
-            int startColumn = (Integer) params[1];
-
-            int endLine = (Integer) params[2];
-            int endColumn = (Integer) params[3];
-
-            BaseDocument doc = getBaseDocument(getDataFile(objectSource));
-            assertNotNull(doc);
-            int startOffset = CndCoreTestUtils.getDocumentOffset(doc, startLine, startColumn);
-            int endOffset = CndCoreTestUtils.getDocumentOffset(doc, endLine, endColumn);
-
-            String res = mp.expand(doc, startOffset, endOffset);
-            assertNotNull(res);
-
-            streamOut.println(res);
-         } else if (params.length == 3) {
-            // Test expansion of code in specified context
-
-            CsmMacroExpansionDocProvider mp = new MacroExpansionDocProviderImpl();
-
-            String objectSource = currentFile.getName().toString();
+            mp.expand(doc, 0, 0);
 
             int line = (Integer) params[0];
             int column = (Integer) params[1];
 
-            String code = (String) params[2];
-
-            BaseDocument doc = getBaseDocument(getDataFile(objectSource));
-            assertNotNull(doc);
             int offset = CndCoreTestUtils.getDocumentOffset(doc, line, column);
 
-            String res = mp.expand(doc, offset, code);
+            int[] res = mp.getMacroExpansionSpan(doc, offset, false);
             assertNotNull(res);
+            streamOut.println("Span: "); // NOI18N
+            streamOut.print("start offset: line " + getLine(doc, res[0]) + " column " + getColumn(doc, res[0])); // NOI18N
+            streamOut.println(" - end offset: line " + getLine(doc, res[1]) + " column " + getColumn(doc, res[1])); // NOI18N
 
-            streamOut.println(res);
         } else {
             assert true; // Bad test params
         }
     }
 
-    protected BaseDocument getBaseDocument(File testSourceFile) throws Exception {
-        FileObject testFileObject = FileUtil.toFileObject(testSourceFile);
-        assertNotNull("Unresolved test file " + testSourceFile, testFileObject);//NOI18N
-        DataObject testDataObject = DataObject.find(testFileObject);
-        assertNotNull("Unresolved data object for file " + testFileObject, testDataObject);//NOI18N
-        BaseDocument doc = CndCoreTestUtils.getBaseDocument(testDataObject);
-        assertNotNull("Unresolved document for data object " + testDataObject, testDataObject);//NOI18N
-        return doc;
-    }
-
-    private void performTest(String source, int startLine, int startColumn, int endLine, int endColumn) throws Exception {
-        super.performTest(source, getName(), null, startLine, startColumn, endLine, endColumn);
-    }
-
-    private void performTest(String source, int line, int column, String code) throws Exception {
-        super.performTest(source, getName(), null, line, column, code);
-    }
-
-    @Override
-    protected void performTest(String source) throws Exception {
-        super.performTest(source, getName(), null);
+    private void performTest(String source, int line, int column) throws Exception {
+        super.performTest(source, getName(), null, line, column);
     }
 
 }

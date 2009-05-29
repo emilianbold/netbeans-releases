@@ -60,8 +60,11 @@ public final class MakeProjectType implements AntBasedProjectType {
     public static final String MAKE_DEP_PROJECT = "make-dep-project"; // NOI18N
     public static final String SOURCE_ENCODING_TAG = "sourceEncoding"; // NOI18N
     
-    /** Do nothing, just a service. */
-    MakeProjectType() {}
+    /**
+     * Do nothing, just a service.
+     * public for testing
+     */
+    public MakeProjectType() {}
     
     public String getType() {
         return TYPE;
