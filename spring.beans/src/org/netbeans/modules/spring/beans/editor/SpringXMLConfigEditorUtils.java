@@ -74,6 +74,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.w3c.dom.NamedNodeMap;
@@ -252,7 +254,7 @@ public final class SpringXMLConfigEditorUtils {
                     if (line != null) {
                         int lineOffset = NbDocument.findLineOffset(doc, lineNumber);
                         int column = offset - lineOffset;
-                        line.show(Line.SHOW_GOTO, column);
+                        line.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
                         return true;
                     }
                 }
