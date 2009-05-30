@@ -251,10 +251,10 @@ org.netbeans.modules.css2.gsf.CSSParserResult
 org.netbeans.modules.css2.parser.CharStream
 org.netbeans.modules.css2.parser.ParseException
 org.netbeans.modules.css2.parser.Token
-#org.netbeans.modules.javascript.editing.Element
-#org.netbeans.modules.javascript.editing.JsLanguage
-#org.netbeans.modules.javascript.editing.JsParseResult
-#org.netbeans.modules.javascript.editing.JsParser
+org.netbeans.modules.javascript.editing.Element
+org.netbeans.modules.javascript.editing.JsLanguage
+org.netbeans.modules.javascript.editing.JsParseResult
+org.netbeans.modules.javascript.editing.JsParser
 org.netbeans.modules.javascript.editing.JsPositionManager
 org.netbeans.modules.javascript.editing.JsUtils
 org.netbeans.modules.gsf.api.ElementHandle
