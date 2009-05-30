@@ -38,6 +38,8 @@ import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -158,7 +160,7 @@ public final class ElementOpen {
                         Line l = lc.getLineSet().getCurrent(line);
                         
                         if (l != null) {
-                            l.show(Line.SHOW_GOTO, column);
+                            l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
                             return true;
                         }
                     }

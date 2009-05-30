@@ -408,3 +408,8 @@ org.netbeans.modules.profiler.categories.Categorization
 org.netbeans.modules.profiler.categories.CategoryBuilder
 
 org.netbeans.modules.profiler.actions.SelfSamplerAction
+
+# don't load nodes from services tab
+org.netbeans.modules.db.explorer.node.RootNode
+org.netbeans.modules.hudson.ui.nodes.HudsonRootNode
+org.netbeans.modules.bugtracking.ui.nodes.BugtrackingRootNode

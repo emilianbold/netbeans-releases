@@ -1795,7 +1795,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         output.writeInt(lastParseTime);
         State curState = state;
         if (curState != State.PARSED && curState != State.INITIAL) {
-            System.err.printf("file is written in intermediate state %s, switching to PARSED\n", curState);
+            System.err.printf("file is written in intermediate state %s, switching to PARSED: %s \n", curState, getAbsolutePath());
             curState = State.PARSED;
         }
         output.writeByte(curState.ordinal());
@@ -1899,6 +1899,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public int[] getLineColumn(int offset) {
         int[] lineCol = new int[]{1, 1};
         String text = getText();
+        if (offset == Integer.MAX_VALUE) {
+            offset = text.length();
+        }
         if (text.length() < offset) {
             throw new IllegalArgumentException("offset is out of file length; " + // NOI18N
                     (getBuffer().isFileBased() ? "file based" : "document based") + // NOI18N

@@ -94,7 +94,9 @@ public final class FileObjectIndexable implements IndexableImpl {
         if (url == null) {
             try {
                 FileObject file = root.getFileObject(relativePath);
-                url = file.getURL();
+                if (file != null) {
+                    url = file.getURL();
+                }
             } catch (FileStateInvalidException ex) {
                 url = ex;
             }

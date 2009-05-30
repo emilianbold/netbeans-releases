@@ -65,6 +65,8 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Utilities;
 
 /**
@@ -753,7 +755,7 @@ public final class Utils {
                     try {
                         Line l = ed.getLineSet().getOriginal(lineNum - 1);
                         if (!l.isDeleted()) {
-                            l.show(Line.SHOW_GOTO);
+                            l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
                         }
                     } catch (IndexOutOfBoundsException ioobe) {
                         // Probably harmless. Bogus line number.

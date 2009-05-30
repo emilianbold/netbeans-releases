@@ -54,6 +54,8 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotation;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.NbBundle;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
@@ -253,7 +255,7 @@ public class LogHyperLinkSupport {
                 errAnnot = new ErrorAnnotation(errorMsg);
                 errAnnot.attach(errorLine);
                 errAnnot.moveToFront();
-                errorLine.show(Line.SHOW_TRY_SHOW);
+                errorLine.show(ShowOpenType.NONE, ShowVisibilityType.NONE);
             }
         }
         

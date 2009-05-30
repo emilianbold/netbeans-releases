@@ -101,7 +101,8 @@ public class QueryAction extends SystemAction {
                     if(forKenai) {
                         tc = QueryTopComponent.forKenai(query, repository);
                     } else {
-                        tc = new QueryTopComponent(query, repository);
+                        tc = new QueryTopComponent();
+                        ((QueryTopComponent) tc).init(query, repository);
                     }
                 }
                 if(!tc.isOpened()) {

@@ -533,13 +533,17 @@ import org.openide.util.Lookup;
     }
     
     public static void makePlatform(File d) throws IOException {
+        makePlatform(d, "1.6.1"); // like 5.0
+    }
+    
+    public static void makePlatform(File d, String harnessSpecVersion) throws IOException {
         // To satisfy NbPlatform.defaultPlatformLocation and NbPlatform.isValid, and make at least one module:
         Manifest mani = new Manifest();
         mani.getMainAttributes().putValue("OpenIDE-Module", "core");
         TestBase.createJar(new File(new File(new File(d, "platform"), "core"), "core.jar"), Collections.EMPTY_MAP, mani);
         mani = new Manifest();
         mani.getMainAttributes().putValue("OpenIDE-Module", "org.netbeans.modules.apisupport.harness");
-        mani.getMainAttributes().putValue("OpenIDE-Module-Specification-Version", "1.6.1"); // like 5.0
+        mani.getMainAttributes().putValue("OpenIDE-Module-Specification-Version", harnessSpecVersion);
         TestBase.createJar(new File(new File(new File(d, "harness"), "modules"), "org-netbeans-modules-apisupport-harness.jar"), Collections.EMPTY_MAP, mani);
         FileUtil.refreshFor(d);
     }

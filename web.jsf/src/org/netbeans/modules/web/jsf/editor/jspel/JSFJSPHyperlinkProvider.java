@@ -50,7 +50,6 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -67,6 +66,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -305,7 +306,7 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
 
                                 if(line != null) {
                                     // show the line
-                                    line.show(Line.SHOW_TOFRONT, column);
+                                    line.show(ShowOpenType.OPEN, ShowVisibilityType.FRONT, column);
                                 }
                             }
 
