@@ -188,6 +188,9 @@
             </test-dependencies>
             <friend-packages>
                 <friend>com.sun.cloud.cnd</friend>
+                <friend>com.sun.cloud.cnd.remote.ext</friend>
+                <package>org.netbeans.modules.cnd.remote.mapper</package>
+                <package>org.netbeans.modules.cnd.remote.server</package>
                 <package>org.netbeans.modules.cnd.spi.remote.setup</package>
                 <package>org.netbeans.modules.cnd.spi.remote.setup.support</package>
             </friend-packages>
