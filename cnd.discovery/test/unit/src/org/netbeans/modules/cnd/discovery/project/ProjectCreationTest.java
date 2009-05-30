@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.discovery.project;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -63,6 +64,12 @@ public class ProjectCreationTest extends MakeProjectBase {
     }
 
     public void testLiteSql(){
+        if (Utilities.isWindows()) {
+            // make does not work on windows
+            // it start XWin and all hangs
+            // do anybody know how to make litesql on windows?
+            return;
+        }
         performTestProject("http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/li/litesql/litesql-0.3.3.tar.gz");
     }
 
