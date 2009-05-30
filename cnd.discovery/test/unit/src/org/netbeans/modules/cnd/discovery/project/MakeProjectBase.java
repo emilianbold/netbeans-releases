@@ -59,7 +59,6 @@ import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor.Task;
@@ -69,6 +68,8 @@ import org.openide.util.RequestProcessor.Task;
  * @author Alexander Simon
  */
 public abstract class MakeProjectBase  extends NbTestCase {
+    private static final boolean OPTIMIZE_NATIVE_EXECUTIONS =true;
+
     public MakeProjectBase(String name) {
         super(name);
         System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
@@ -117,8 +118,8 @@ public abstract class MakeProjectBase  extends NbTestCase {
     public void performTestProject(String URL){
         try {
             final String path = download(URL);
-            File configure = new File(path+File.separator+"configure");
-            File makeFile = new File(path+File.separator+"Makefile");
+            final File configure = new File(path+File.separator+"configure");
+            final File makeFile = new File(path+File.separator+"Makefile");
             if (!configure.exists()) {
                 if (!makeFile.exists()){
                     assertTrue("Cannot find configure or Makefile in folder "+path, false);
@@ -132,11 +133,23 @@ public abstract class MakeProjectBase  extends NbTestCase {
                     } else if ("path".equals(name)) {
                         return path;
                     } else if ("configureName".equals(name)) {
-                        return path+"/configure";
+                        if (OPTIMIZE_NATIVE_EXECUTIONS && makeFile.exists()) {
+                            // optimization on developer computer:
+                            // run configure only once
+                            return null;
+                        } else {
+                            return path+"/configure";
+                        }
                     } else if ("realFlags".equals(name)) {
                         return "CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\"";
                     } else if ("buildProject".equals(name)) {
-                        return Boolean.TRUE;
+                        if (OPTIMIZE_NATIVE_EXECUTIONS && makeFile.exists() && findObjectFiles(path)) {
+                            // optimization on developer computer:
+                            // make only once
+                            return Boolean.FALSE;
+                        } else {
+                            return Boolean.TRUE;
+                        }
                     }
                     return null;
                 }
@@ -167,6 +180,26 @@ public abstract class MakeProjectBase  extends NbTestCase {
             Exceptions.printStackTrace(ex);
             assertTrue(ex.getMessage(), false);
         }
+    }
+
+    private boolean findObjectFiles(String path){
+        return findObjectFiles(new File(path));
+    }
+    
+    private boolean findObjectFiles(File file){
+        if (file.isDirectory()) {
+            for(File f : file.listFiles()){
+                if (f.isDirectory()) {
+                    boolean b = findObjectFiles(f);
+                    if (b) {
+                        return true;
+                    }
+                } else if (f.isFile() && f.getName().endsWith(".o")) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     abstract void perform(CsmProject csmProject);
