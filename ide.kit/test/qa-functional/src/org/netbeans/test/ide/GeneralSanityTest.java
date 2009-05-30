@@ -81,7 +81,7 @@ public class GeneralSanityTest extends NbTestCase {
             ).gui(true).clusters(".*").enableModules(".*").
             honorAutoloadEager(true).
             addTest(
-//                "testWaitForUIReady",
+                "testWaitForUIReady",
                 "testBlacklistedClassesHandler",
                 "testOrgOpenideOptionsIsDisabledAutoload",
                 "testOrgNetBeansModulesLanguagesIsDisabledAutoload",
