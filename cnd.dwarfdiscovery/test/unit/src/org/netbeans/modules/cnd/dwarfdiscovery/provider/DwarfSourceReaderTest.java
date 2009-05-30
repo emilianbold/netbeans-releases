@@ -45,6 +45,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
@@ -53,6 +55,7 @@ import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -62,6 +65,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
 
     public DwarfSourceReaderTest() {
         super("DwarfSourceReaderTest");
+        Logger.getLogger("cnd.logger").setLevel(Level.SEVERE);
     }
 
     public void testLeopard(){
@@ -452,7 +456,15 @@ public class DwarfSourceReaderTest extends NbTestCase {
         GrepEntry grep =new GrepEntry();
         grep.firstMacro="HTIOP_ACCEPTOR_IMPL_CPP";
         grep.firstMacroLine=4;
-        grepBase.put("/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/orbsvcs/orbsvcs/HTIOP/HTIOP_Acceptor_Impl.cpp", grep);
+        String name = "/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/orbsvcs/orbsvcs/HTIOP/HTIOP_Acceptor_Impl.cpp";
+        grepBase.put(name, grep);
+        if (Utilities.isWindows()) {
+            // this is hack for testing on windows an object file created on unix
+            name = ":"+name.replace('/', '\\');
+            for (char c = 'A'; c <= 'Z'; c++) {
+                grepBase.put(c+name, grep);
+            }
+        }
         DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/x86_64-redhat-4.1.2.o", ignore, grepBase);
         assertNotNull(source);
         TreeMap<String, String> map = new TreeMap<String, String>(source.getUserMacros());
