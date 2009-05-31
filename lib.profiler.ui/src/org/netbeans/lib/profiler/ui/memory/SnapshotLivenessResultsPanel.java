@@ -111,6 +111,14 @@ public class SnapshotLivenessResultsPanel extends LivenessResultsPanel implement
     protected JPopupMenu getPopupMenu() {
         if (popup == null) {
             popup = new JPopupMenu();
+
+            if (snapshot.containsStacks()) {
+                popup.addSeparator();
+                popupShowStacks = new JMenuItem();
+                popupShowStacks.setText(STACK_TRACES_POPUP_ITEM);
+                popup.add(popupShowStacks);
+                popupShowStacks.addActionListener(this);
+            }
         }
 
         return popup;
