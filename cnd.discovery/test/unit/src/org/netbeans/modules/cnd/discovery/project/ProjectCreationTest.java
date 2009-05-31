@@ -60,7 +60,7 @@ public class ProjectCreationTest extends MakeProjectBase {
     }
 
     public void testPkgConfig(){
-        performTestProject("http://pkgconfig.freedesktop.org/releases/pkgconfig-0.18.tar.gz");
+        performTestProject("http://pkgconfig.freedesktop.org/releases/pkg-config-0.23.tar.gz", null);
     }
 
     public void testLiteSql(){
@@ -70,7 +70,11 @@ public class ProjectCreationTest extends MakeProjectBase {
             // do anybody know how to make litesql on windows?
             return;
         }
-        performTestProject("http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/li/litesql/litesql-0.3.3.tar.gz");
+        performTestProject("http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/li/litesql/litesql-0.3.3.tar.gz", null);
+    }
+
+    public void testTesseract(){
+        performTestProject("http://tesseract-ocr.googlecode.com/files/tesseract-2.03.tar.gz", null);
     }
 
     @Override
