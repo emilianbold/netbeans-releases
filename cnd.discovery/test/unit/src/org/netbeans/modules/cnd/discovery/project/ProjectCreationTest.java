@@ -60,7 +60,7 @@ public class ProjectCreationTest extends MakeProjectBase {
     }
 
     public void testPkgConfig(){
-        performTestProject("http://pkgconfig.freedesktop.org/releases/pkgconfig-0.18.tar.gz", null);
+        performTestProject("http://pkgconfig.freedesktop.org/releases/pkg-config-0.23.tar.gz", null);
     }
 
     public void testLiteSql(){
