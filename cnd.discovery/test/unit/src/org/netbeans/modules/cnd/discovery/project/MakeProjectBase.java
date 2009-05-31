@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.discovery.project;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -115,9 +116,9 @@ public abstract class MakeProjectBase  extends NbTestCase {
         }
     }
 
-    public void performTestProject(String URL){
+    public void performTestProject(String URL, List<String> additionalScripts){
         try {
-            final String path = download(URL);
+            final String path = download(URL, additionalScripts);
             final File configure = new File(path+File.separator+"configure");
             final File makeFile = new File(path+File.separator+"Makefile");
             if (!configure.exists()) {
@@ -204,7 +205,7 @@ public abstract class MakeProjectBase  extends NbTestCase {
 
     abstract void perform(CsmProject csmProject);
 
-    private String download(String urlName) throws IOException {
+    private String download(String urlName, List<String> additionalScripts) throws IOException {
         String zipName = urlName.substring(urlName.lastIndexOf('/')+1);
         String tarName = zipName.substring(0, zipName.lastIndexOf('.'));
         String packageName = tarName.substring(0, tarName.lastIndexOf('.'));
@@ -250,6 +251,15 @@ public abstract class MakeProjectBase  extends NbTestCase {
             waitExecution(ne, listener, finish);
             ne = new NativeExecutor(dataPath,"tar", "xf "+tarName, new String[0], "tar", "run", false, false);
             waitExecution(ne, listener, finish);
+            if (additionalScripts != null) {
+                for(String s: additionalScripts){
+                    int i = s.indexOf(' ');
+                    String command = s.substring(0,i);
+                    String arguments = s.substring(i+1);
+                    ne = new NativeExecutor(dataPath,command, arguments, new String[0], command, "run", false, false);
+                    waitExecution(ne, listener, finish);
+                }
+            }
         }
         ne = new NativeExecutor(createdFolder, "rm", "-rf nbproject", new String[0], "rm", "run", false, false);
         waitExecution(ne, listener, finish);
