@@ -550,7 +550,6 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         } else if (evt.getPropertyName().equals(EditorRegistry.FOCUS_GAINED_PROPERTY)) {
             if (evt.getNewValue() instanceof JTextComponent) {
                 JTextComponent jtc = (JTextComponent) evt.getNewValue();
-                components = Collections.singletonList(jtc);
                 handleActiveDocumentChange(null, jtc.getDocument());
             }
 
@@ -566,8 +565,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             handleActiveDocumentChange((Document) evt.getOldValue(), (Document) evt.getNewValue());
         }
 
+        Map<URL, FileListWork> jobs = new HashMap<URL, FileListWork>();
         if (components.size() > 0) {
-            Map<URL, FileListWork> jobs = new HashMap<URL, FileListWork>();
             for(JTextComponent jtc : components) {
                 Document d = jtc.getDocument();
                 FileObject f = NbEditorUtilities.getFileObject(d);
@@ -575,15 +574,20 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     URL root = getOwningSourceRoot(f);
                     if (root != null) {
                         long version = DocumentUtilities.getDocumentVersion(d);
-                        Long lastSeenVersion = (Long) d.getProperty(PROP_LAST_SEEN_VERSION);
+                        Long lastIndexedVersion = (Long) d.getProperty(PROP_LAST_INDEXED_VERSION);
+                        boolean reindex = false;
 
-                        // check if we've ever seen this document, if it supports versioning
-                        // and if so then if the version seen last time is the same as the current one
-                        if (lastSeenVersion == null || version == 0 || lastSeenVersion < version) {
-                            d.putProperty(PROP_LAST_SEEN_VERSION, version);
+                        if (lastIndexedVersion == null) {
+                            Long lastDirtyVersion = (Long) d.getProperty(PROP_LAST_DIRTY_VERSION);
+                            reindex = lastDirtyVersion != null;
+                        } else {
+                            reindex = lastIndexedVersion < version;
+                        }
 
+                        if (reindex) {
+                            // we have already seen the document and it's been modified since the last time
                             if (LOGGER.isLoggable(Level.FINE)) {
-                                LOGGER.fine("Document modified: " + FileUtil.getFileDisplayName(f) + " Owner: " + root); //NOI18N
+                                LOGGER.fine("Document modified (reindexing): " + FileUtil.getFileDisplayName(f) + " Owner: " + root); //NOI18N
                             }
 
                             FileListWork job = jobs.get(root);
@@ -597,16 +601,16 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     }
                 }
             }
+        }
 
-            if (jobs.isEmpty()) {
-                // either all documents are up-to-date or we can't find owning source roots,
-                // which may happen right after start when no roots have been scanned yet,
-                // try forcing the initial scan in order to block TaskProcessor (#165170)
-                scheduleWork(null, false);
-            } else {
-                for(FileListWork job : jobs.values()) {
-                    scheduleWork(job, false);
-                }
+        if (jobs.isEmpty()) {
+            // either all documents are up-to-date or we can't find owning source roots,
+            // which may happen right after start when no roots have been scanned yet,
+            // try forcing the initial scan in order to block TaskProcessor (#165170)
+            scheduleWork(null, false);
+        } else {
+            for(FileListWork job : jobs.values()) {
+                scheduleWork(job, false);
             }
         }
     }
@@ -620,13 +624,16 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     }
 
     public void insertUpdate(DocumentEvent e) {
-        // these are not called for BaseDocuments
-        handleDocumentModification(e.getDocument());
+        removeUpdate(e);
     }
 
     public void removeUpdate(DocumentEvent e) {
-        // these are not called for BaseDocuments
-        handleDocumentModification(e.getDocument());
+        Document d = e.getDocument();
+        if (d instanceof BaseDocument) {
+            d.putProperty(PROP_MODIFIED_UNDER_WRITE_LOCK, true);
+        } else {
+            handleDocumentModification(d);
+        }
     }
 
     // -----------------------------------------------------------------------
@@ -634,12 +641,17 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     // -----------------------------------------------------------------------
 
     public void atomicLock(AtomicLockEvent e) {
+        Document d = (Document) e.getSource();
+        d.putProperty(PROP_MODIFIED_UNDER_WRITE_LOCK, null);
     }
 
     public void atomicUnlock(AtomicLockEvent e) {
-        // XXX: strictly speaking we should use DocumentListener to see whether
-        // the document has actually been modified
-        handleDocumentModification((Document) e.getSource());
+        Document d = (Document) e.getSource();
+        Boolean modified = (Boolean) d.getProperty(PROP_MODIFIED_UNDER_WRITE_LOCK);
+        d.putProperty(PROP_MODIFIED_UNDER_WRITE_LOCK, null);
+        if (modified != null && modified.booleanValue()) {
+            handleDocumentModification(d);
+        }
     }
 
     // -----------------------------------------------------------------------
@@ -654,8 +666,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     private static final boolean noRootsScan = Boolean.getBoolean("netbeans.indexing.noRootsScan"); //NOI18N
     private static final boolean notInterruptible = Boolean.getBoolean("netbeans.indexing.notInterruptible"); //NOI18N
     private static final int FILE_LOCKS_DELAY = org.openide.util.Utilities.isWindows() ? 2000 : 1000;
-    private static final String PROP_LAST_SEEN_VERSION = RepositoryUpdater.class.getName() + "-last-seen-document-version"; //NOI18N
-    
+    private static final String PROP_LAST_INDEXED_VERSION = RepositoryUpdater.class.getName() + "-last-indexed-document-version"; //NOI18N
+    private static final String PROP_LAST_DIRTY_VERSION = RepositoryUpdater.class.getName() + "-last-dirty-document-version"; //NOI18N
+    private static final String PROP_MODIFIED_UNDER_WRITE_LOCK = RepositoryUpdater.class.getName() + "-modified-under-write-lock"; //NOI18N
+
     private final Map<URL, List<URL>>scannedRoots2Dependencies = Collections.synchronizedMap(new HashMap<URL, List<URL>>());
     private final Set<URL>scannedBinaries = Collections.synchronizedSet(new HashSet<URL>());
     private final Set<URL>scannedUnknown = Collections.synchronizedSet(new HashSet<URL>());
@@ -677,9 +691,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         if (deactivated != null && deactivated == activeDocument) {
             if (activeDocument instanceof BaseDocument) {
                 ((BaseDocument) activeDocument).removeAtomicLockListener(this);
-            } else {
-                activeDocument.removeDocumentListener(this);
             }
+            activeDocument.removeDocumentListener(this);
             activeDocumentRef = null;
             LOGGER.log(Level.FINE, "Unregistering active document listener: activeDocument={0}", activeDocument); //NOI18N
         }
@@ -688,9 +701,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             if (activeDocument != null) {
                 if (activeDocument instanceof BaseDocument) {
                     ((BaseDocument) activeDocument).removeAtomicLockListener(this);
-                } else {
-                    activeDocument.removeDocumentListener(this);
                 }
+                activeDocument.removeDocumentListener(this);
                 LOGGER.log(Level.FINE, "Unregistering active document listener: activeDocument={0}", activeDocument); //NOI18N
             }
 
@@ -699,9 +711,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             
             if (activeDocument instanceof BaseDocument) {
                 ((BaseDocument) activeDocument).addAtomicLockListener(this);
-            } else {
-                activeDocument.addDocumentListener(this);
             }
+            activeDocument.addDocumentListener(this);
             LOGGER.log(Level.FINE, "Registering active document listener: activeDocument={0}", activeDocument); //NOI18N
         }
     }
@@ -715,34 +726,47 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             URL root = getOwningSourceRoot(f);
             if (root != null) {
                 if (activeDocument == document) {
-                    // An active document was modified, we've indexed that document berfore,
-                    // so mark it dirty
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Active document modified: " + FileUtil.getFileDisplayName(f) + " Owner: " + root); //NOI18N
+                    long version = DocumentUtilities.getDocumentVersion(activeDocument);
+                    Long lastDirtyVersion = (Long) activeDocument.getProperty(PROP_LAST_DIRTY_VERSION);
+                    boolean markDirty = false;
+
+                    if (lastDirtyVersion != null && lastDirtyVersion < version) {
+                        // we have already seen the document and it's changed since the last time
+                        markDirty = true;
                     }
 
-                    Collection<? extends Indexable> dirty = Collections.singleton(SPIAccessor.getInstance().create(new FileObjectIndexable(URLMapper.findFileObject(root), f)));
-                    String mimeType = DocumentUtilities.getMimeType(document);
-                    Collection<? extends CustomIndexerFactory> customIndexerFactories = MimeLookup.getLookup(mimeType).lookupAll(CustomIndexerFactory.class);
-                    Collection<? extends EmbeddingIndexerFactory> embeddingIndexerFactories = MimeLookup.getLookup(mimeType).lookupAll(EmbeddingIndexerFactory.class);
+                    activeDocument.putProperty(PROP_LAST_DIRTY_VERSION, version);
 
-                    for(CustomIndexerFactory factory : customIndexerFactories) {
-                        try {
-                            Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root), root,
-                                    factory.getIndexerName(), factory.getIndexVersion(), null, false, true, null);
-                            factory.filesDirty(dirty, ctx);
-                        } catch (IOException ex) {
-                            LOGGER.log(Level.WARNING, null, ex);
+                    if (markDirty) {
+                        // An active document was modified, we've indexed that document berfore,
+                        // so mark it dirty
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.fine("Active document modified (marking dirty): " + FileUtil.getFileDisplayName(f) + " Owner: " + root); //NOI18N
                         }
-                    }
 
-                    for(EmbeddingIndexerFactory factory : embeddingIndexerFactories) {
-                        try {
-                            Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root), root,
-                                    factory.getIndexerName(), factory.getIndexVersion(), null, false, true, null);
-                            factory.filesDirty(dirty, ctx);
-                        } catch (IOException ex) {
-                            LOGGER.log(Level.WARNING, null, ex);
+                        Collection<? extends Indexable> dirty = Collections.singleton(SPIAccessor.getInstance().create(new FileObjectIndexable(URLMapper.findFileObject(root), f)));
+                        String mimeType = DocumentUtilities.getMimeType(document);
+                        Collection<? extends CustomIndexerFactory> customIndexerFactories = MimeLookup.getLookup(mimeType).lookupAll(CustomIndexerFactory.class);
+                        Collection<? extends EmbeddingIndexerFactory> embeddingIndexerFactories = MimeLookup.getLookup(mimeType).lookupAll(EmbeddingIndexerFactory.class);
+
+                        for(CustomIndexerFactory factory : customIndexerFactories) {
+                            try {
+                                Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root), root,
+                                        factory.getIndexerName(), factory.getIndexVersion(), null, false, true, null);
+                                factory.filesDirty(dirty, ctx);
+                            } catch (IOException ex) {
+                                LOGGER.log(Level.WARNING, null, ex);
+                            }
+                        }
+
+                        for(EmbeddingIndexerFactory factory : embeddingIndexerFactories) {
+                            try {
+                                Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root), root,
+                                        factory.getIndexerName(), factory.getIndexVersion(), null, false, true, null);
+                                factory.filesDirty(dirty, ctx);
+                            } catch (IOException ex) {
+                                LOGGER.log(Level.WARNING, null, ex);
+                            }
                         }
                     }
                 } else {
@@ -1373,6 +1397,20 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     if (crawler.isFinished()) {
                         if (index(resources, root)) {
                             crawler.storeTimestamps();
+
+                            // if we are refreshing a specific set of files, try to update
+                            // their document versions
+                            if (!files.isEmpty()) {
+                                Map<FileObject, Document> f2d = getEditorFiles();
+                                for(FileObject f : files) {
+                                    Document d = f2d.get(f);
+                                    if (d != null) {
+                                        long version = DocumentUtilities.getDocumentVersion(d);
+                                        d.putProperty(PROP_LAST_INDEXED_VERSION, version);
+                                        d.putProperty(PROP_LAST_DIRTY_VERSION, null);
+                                    }
+                                }
+                            }
                         }
                     }
                 } catch (IOException ioe) {
@@ -1398,6 +1436,19 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
             }
             return false;
+        }
+
+        // XXX: this should ideally be available directly from EditorRegistry
+        private static Map<FileObject, Document> getEditorFiles() {
+            Map<FileObject, Document> f2d = new HashMap<FileObject, Document>();
+            for(JTextComponent jtc : EditorRegistry.componentList()) {
+                Document d = jtc.getDocument();
+                FileObject f = NbEditorUtilities.getFileObject(d);
+                if (f != null) {
+                    f2d.put(f, d);
+                }
+            }
+            return f2d;
         }
     } // End of FileListWork class
 
