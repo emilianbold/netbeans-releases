@@ -53,6 +53,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.hudson.api.HudsonJob;
@@ -102,7 +104,10 @@ public class HudsonConnector {
     }
     
     public synchronized Collection<HudsonJob> getAllJobs() {
-        Document docInstance = getDocument(instance.getUrl() + XML_API_URL + "?depth=1"); // NOI18N
+        Document docInstance = getDocument(instance.getUrl() + XML_API_URL + "?depth=1&xpath=/&exclude=//primaryView&exclude=//view[name='All']" +
+                "&exclude=//view/job/url&exclude=//view/job/color&exclude=//description&exclude=//job/build&exclude=//healthReport" +
+                "&exclude=//firstBuild&exclude=//keepDependencies&exclude=//nextBuildNumber&exclude=//property&exclude=//action" +
+                "&exclude=//upstreamProject&exclude=//downstreamProject&exclude=//queueItem"); // NOI18N
         
         if (null == docInstance)
             return new ArrayList<HudsonJob>();
@@ -148,17 +153,36 @@ public class HudsonConnector {
     Collection<? extends HudsonJobBuild> getBuilds(HudsonJobImpl job) {
         Document docBuild = getDocument(job.getUrl() + XML_API_URL +
                 // XXX no good way to only include what you _do_ want without using XSLT
-                "?depth=1&xpath=/*/build&wrapper=root&exclude=//artifact&exclude=//action&exclude=//changeSet&exclude=//culprit");
+                "?depth=1&xpath=/*/build&wrapper=root&exclude=//artifact&exclude=//action&exclude=//changeSet&exclude=//culprit" +
+                "&exclude=//duration&exclude=//fullDisplayName&exclude=//keepLog&exclude=//timestamp&exclude=//url&exclude=//builtOn");
         if (docBuild == null) {
             return Collections.emptySet();
         }
         List<HudsonJobBuildImpl> builds = new ArrayList<HudsonJobBuildImpl>();
-        NodeList buildDetails = docBuild.getElementsByTagName("build"); // NOI18N // HUDSON-3267: might be root elt
-        for (int i = 0; i < buildDetails.getLength(); i++) {
-            Element build = (Element) buildDetails.item(i);
-            int number = Integer.parseInt(Utilities.xpath("number", build)); // NOI18N
-            boolean building = Boolean.valueOf(Utilities.xpath("building", build)); // NOI18N
-            Result result = building ? Result.NOT_BUILT : Result.valueOf(Utilities.xpath("result", build)); // NOI18N
+        NodeList buildNodes = docBuild.getElementsByTagName("build"); // NOI18N // HUDSON-3267: might be root elt
+        for (int i = 0; i < buildNodes.getLength(); i++) {
+            Node build = buildNodes.item(i);
+            int number = 0;
+            boolean building = false;
+            Result result = null;
+            NodeList details = build.getChildNodes();
+            for (int j = 0; j < details.getLength(); j++) {
+                Node detail = details.item(j);
+                if (detail.getNodeType() != Node.ELEMENT_NODE) {
+                    continue;
+                }
+                String nodeName = detail.getNodeName();
+                String text = detail.getFirstChild().getTextContent();
+                if (nodeName.equals("number")) { // NOI18N
+                    number = Integer.parseInt(text);
+                } else if (nodeName.equals("building")) { // NOI18N
+                    building = Boolean.valueOf(text);
+                } else if (nodeName.equals("result")) { // NOI18N
+                    result = Result.valueOf(text);
+                } else {
+                    LOG.fine("unexpected <build> child: " + nodeName);
+                }
+            }
             builds.add(new HudsonJobBuildImpl(this, job, number, building, result));
         }
         return builds;
@@ -188,51 +212,37 @@ public class HudsonConnector {
             
             String name = null;
             String url = null;
-            String description = null;
             
             for (int j = 0; j < n.getChildNodes().getLength(); j++) {
                 Node o = n.getChildNodes().item(j);
-                
-                if (o.getNodeType() == Node.ELEMENT_NODE) {
-                    if (o.getNodeName().equals(XML_API_NAME_ELEMENT)) {
-                        name = o.getFirstChild().getTextContent();
-                    } else if (o.getNodeName().equals(XML_API_URL_ELEMENT)) {
-                        url = o.getFirstChild().getTextContent();
-                    }
+                if (o.getNodeType() != Node.ELEMENT_NODE) {
+                    continue;
+                }
+                if (o.getNodeName().equals(XML_API_NAME_ELEMENT)) {
+                    name = o.getFirstChild().getTextContent();
+                } else if (o.getNodeName().equals(XML_API_URL_ELEMENT)) {
+                    url = normalizeUrl(o.getFirstChild().getTextContent(), "view/[^/]+/"); // NOI18N
                 }
             }
             
             if (null != name && null != url) {
                 Element docView = (Element) n;
                 
-                // Retrieve description
-                NodeList descriptionList = docView.getElementsByTagName(XML_API_DESCRIPTION_ELEMENT);
+                HudsonViewImpl view = new HudsonViewImpl(instance, name, url);
                 
-                try {
-                    description = descriptionList.item(0).getFirstChild().getTextContent();
-                } catch (NullPointerException e) {
-                    description = "";
-                }
-                
-                // Create HudsonView
-                HudsonViewImpl view = new HudsonViewImpl(instance, name, description, url);
-                
-                if (!view.getName().equals(HudsonView.ALL_VIEW)) {
-                    
-                    // Retrieve jobs
-                    NodeList jobsList = docView.getElementsByTagName(XML_API_JOB_ELEMENT);
-                    
-                    for (int k = 0; k < jobsList.getLength(); k++) {
-                        Node d = jobsList.item(k);
-                        
-                        for (int l = 0; l < d.getChildNodes().getLength(); l++) {
-                            Node e = d.getChildNodes().item(l);
-                            
-                            if (e.getNodeType() == Node.ELEMENT_NODE) {
-                                if (e.getNodeName().equals(XML_API_NAME_ELEMENT)) {
-                                    cache.put(view.getName() + "/" + e.getFirstChild().getTextContent(), view); // NOI18N
-                                }
-                            }
+                NodeList jobsList = docView.getElementsByTagName(XML_API_JOB_ELEMENT);
+                for (int k = 0; k < jobsList.getLength(); k++) {
+                    Node d = jobsList.item(k);
+                    for (int l = 0; l < d.getChildNodes().getLength(); l++) {
+                        Node e = d.getChildNodes().item(l);
+                        if (e.getNodeType() != Node.ELEMENT_NODE) {
+                            continue;
+                        }
+                        String nodeName = e.getNodeName();
+                        if (nodeName.equals(XML_API_NAME_ELEMENT)) {
+                            cache.put(view.getName() + "/" + e.getFirstChild().getTextContent(), view); // NOI18N
+                        } else {
+                            LOG.fine("unexpected view <job> child: " + nodeName);
                         }
                     }
                 }
@@ -257,81 +267,112 @@ public class HudsonConnector {
             
             HudsonJobImpl job = new HudsonJobImpl(instance);
             
-            for (int j = 0; j < n.getChildNodes().getLength(); j++) {
-                Node o = n.getChildNodes().item(j);
-                
-                if (o.getNodeType() == Node.ELEMENT_NODE) {
-                    if (o.getNodeName().equals(XML_API_NAME_ELEMENT)) {
-                        job.putProperty(JOB_NAME, o.getFirstChild().getTextContent());
-                    } else if (o.getNodeName().equals(XML_API_URL_ELEMENT)) {
-                        job.putProperty(JOB_URL, o.getFirstChild().getTextContent());
-                    } else if (o.getNodeName().equals(XML_API_COLOR_ELEMENT)) {
-                        String color = o.getFirstChild().getTextContent().trim();
-                        try {
-                            job.putProperty(JOB_COLOR, Color.valueOf(color));
-                        } catch (IllegalArgumentException x) {
-                            Exceptions.attachMessage(x,
-                                    "http://www.netbeans.org/nonav/issues/show_bug.cgi?id=126166 - no Color value '" +
-                                    color + "' among " + Arrays.toString(Color.values())); // NOI18N
-                            Exceptions.printStackTrace(x);
-                            job.putProperty(JOB_COLOR, Color.red_anime);
+            NodeList jobDetails = n.getChildNodes();
+            for (int k = 0; k < jobDetails.getLength(); k++) {
+                Node d = jobDetails.item(k);
+                if (d.getNodeType() != Node.ELEMENT_NODE) {
+                    continue;
+                }
+                String nodeName = d.getNodeName();
+                if (nodeName.equals(XML_API_NAME_ELEMENT)) {
+                    job.putProperty(JOB_NAME, d.getFirstChild().getTextContent());
+                } else if (nodeName.equals(XML_API_URL_ELEMENT)) {
+                    job.putProperty(JOB_URL, normalizeUrl(d.getFirstChild().getTextContent(), "job/[^/]+/")); // NOI18N
+                } else if (nodeName.equals(XML_API_COLOR_ELEMENT)) {
+                    String color = d.getFirstChild().getTextContent().trim();
+                    try {
+                        job.putProperty(JOB_COLOR, Color.valueOf(color));
+                    } catch (IllegalArgumentException x) {
+                        Exceptions.attachMessage(x,
+                                "http://www.netbeans.org/nonav/issues/show_bug.cgi?id=126166 - no Color value '" +
+                                color + "' among " + Arrays.toString(Color.values())); // NOI18N
+                        Exceptions.printStackTrace(x);
+                        job.putProperty(JOB_COLOR, Color.red_anime);
+                    }
+                } else if (nodeName.equals(XML_API_DISPLAY_NAME_ELEMENT)) {
+                    job.putProperty(JOB_DISPLAY_NAME, d.getFirstChild().getTextContent());
+                } else if (nodeName.equals(XML_API_BUILDABLE_ELEMENT)) {
+                    job.putProperty(JOB_BUILDABLE, Boolean.valueOf(d.getFirstChild().getTextContent()));
+                } else if (nodeName.equals(XML_API_INQUEUE_ELEMENT)) {
+                    job.putProperty(JOB_IN_QUEUE, Boolean.valueOf(d.getFirstChild().getTextContent()));
+                } else if (nodeName.equals(XML_API_LAST_BUILD_ELEMENT)) {
+                    job.putProperty(JOB_LAST_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
+                } else if (nodeName.equals(XML_API_LAST_FAILED_BUILD_ELEMENT)) {
+                    job.putProperty(JOB_LAST_FAILED_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
+                } else if (nodeName.equals(XML_API_LAST_STABLE_BUILD_ELEMENT)) {
+                    job.putProperty(JOB_LAST_STABLE_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
+                } else if (nodeName.equals(XML_API_LAST_SUCCESSFUL_BUILD_ELEMENT)) {
+                    job.putProperty(JOB_LAST_SUCCESSFUL_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
+                } else if (nodeName.equals(XML_API_LAST_COMPLETED_BUILD_ELEMENT)) {
+                    job.putProperty(JOB_LAST_COMPLETED_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
+                } else if (nodeName.equals("module")) { // NOI18N
+                    String name = null, displayName = null, url = null;
+                    Color color = null;
+                    NodeList moduleDetails = d.getChildNodes();
+                    for (int j = 0; j < moduleDetails.getLength(); j++) {
+                        Node n2 = moduleDetails.item(j);
+                        if (n2.getNodeType() != Node.ELEMENT_NODE) {
+                            continue;
+                        }
+                        String nodeName2 = n2.getNodeName();
+                        String text = n2.getFirstChild().getTextContent();
+                        if (nodeName2.equals("name")) { // NOI18N
+                            name = text;
+                        } else if (nodeName2.equals("displayName")) { // NOI18N
+                            displayName = text;
+                        } else if (nodeName2.equals("url")) { // NOI18N
+                            url = normalizeUrl(text, "job/[^/]+/[^/]+/"); // NOI18N
+                        } else if (nodeName2.equals("color")) { // NOI18N
+                            color = Color.valueOf(text);
+                        } else {
+                            LOG.fine("unexpected <module> child: " + nodeName);
                         }
                     }
+                    job.addModule(name, displayName, color, url);
+                } else {
+                    LOG.fine("unexpected global <job> child: " + nodeName);
                 }
             }
-            
-            if (null != job.getName() && null != job.getUrl() && null != job.getColor()) {
-                NodeList jobDetails = n.getChildNodes();
-                
-                for (int k = 0; k < jobDetails.getLength(); k++) {
-                    Node d = jobDetails.item(k);
-                    
-                    if (d.getNodeType() == Node.ELEMENT_NODE) {
-                        if (d.getNodeName().equals(XML_API_DESCRIPTION_ELEMENT)) {
-                            try {
-                                job.putProperty(JOB_DESCRIPTION, d.getFirstChild().getTextContent());
-                            } catch (NullPointerException e) {}
-                        } else if (d.getNodeName().equals(XML_API_DISPLAY_NAME_ELEMENT)) {
-                            job.putProperty(JOB_DISPLAY_NAME, d.getFirstChild().getTextContent());
-                        } else if (d.getNodeName().equals(XML_API_BUILDABLE_ELEMENT)) {
-                            job.putProperty(JOB_BUILDABLE, Boolean.valueOf(d.getFirstChild().getTextContent()));
-                        } else if (d.getNodeName().equals(XML_API_INQUEUE_ELEMENT)) {
-                            job.putProperty(JOB_IN_QUEUE, Boolean.valueOf(d.getFirstChild().getTextContent()));
-                        } else if (d.getNodeName().equals(XML_API_LAST_BUILD_ELEMENT)) {
-                            job.putProperty(JOB_LAST_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
-                        } else if (d.getNodeName().equals(XML_API_LAST_FAILED_BUILD_ELEMENT)) {
-                            job.putProperty(JOB_LAST_FAILED_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
-                        } else if (d.getNodeName().equals(XML_API_LAST_STABLE_BUILD_ELEMENT)) {
-                            job.putProperty(JOB_LAST_STABLE_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
-                        } else if (d.getNodeName().equals(XML_API_LAST_SUCCESSFUL_BUILD_ELEMENT)) {
-                            job.putProperty(JOB_LAST_SUCCESSFUL_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
-                        } else if (d.getNodeName().equals(XML_API_LAST_COMPLETED_BUILD_ELEMENT)) {
-                            job.putProperty(JOB_LAST_COMPLETED_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
-                        } else if (d.getNodeName().equals("module")) { // NOI18N
-                            Element e = (Element) d;
-                            job.addModule(Utilities.xpath("name", e), Utilities.xpath("displayName", e), // NOI18N
-                                    Color.valueOf(Utilities.xpath("color", e)), Utilities.xpath("url", e)); // NOI18N
-                        }
-                    }
-                }
-                
-                for (HudsonView v : instance.getViews()) {
-                    // All view synchronization
-                    if (v.getName().equals(HudsonView.ALL_VIEW)) {
-                        job.addView(v);
-                        continue;
-                    }
-                    
-                    if (null != cache.get(v.getName() + "/" + job.getName())) // NOI18N
-                        job.addView(v);
-                }
-                
-                jobs.add(job);
+
+            for (HudsonView v : instance.getViews()) {
+                if (null != cache.get(v.getName() + "/" + job.getName())) // NOI18N
+                    job.addView(v);
             }
+
+            jobs.add(job);
         }
         
         return jobs;
     }
+
+    /**
+     * Try to fix up a URL as returned by Hudson's XML API.
+     * @param suggested whatever {@code .../api/xml#//url} offered, e.g. {@code http://localhost:9999/job/My%20Job/}
+     * @param relativePattern regex for the expected portion of the URL relative to server root, e.g. {@code job/[^/]+/}
+     * @return analogous URL constructed from instance root, e.g. {@code https://my.facade/hudson/job/My%20Job/}
+     * @see "#165735"
+     */
+    private String normalizeUrl(String suggested, String relativePattern) {
+        Pattern tailPattern;
+        synchronized (tailPatterns) {
+            tailPattern = tailPatterns.get(relativePattern);
+            if (tailPattern == null) {
+                tailPatterns.put(relativePattern, tailPattern = Pattern.compile(".+/(" + relativePattern + ")"));
+            }
+        }
+        Matcher m = tailPattern.matcher(suggested);
+        if (m.matches()) {
+            String result = instance.getUrl() + m.group(1);
+            if (!result.equals(suggested)) {
+                LOG.log(Level.FINER, "Normalizing {0} -> {1}", new Object[] {suggested, result});
+            }
+            return result;
+        } else {
+            LOG.warning("Anomalous URL " + suggested + " not ending with " + relativePattern + " from " + instance);
+            return suggested;
+        }
+    }
+    private static final Map<String,Pattern> tailPatterns = new HashMap<String,Pattern>();
     
     private synchronized HudsonVersion retrieveHudsonVersion() {
         HudsonVersion v = null;

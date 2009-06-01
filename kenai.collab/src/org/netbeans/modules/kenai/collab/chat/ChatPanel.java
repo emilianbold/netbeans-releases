@@ -43,10 +43,15 @@ package org.netbeans.modules.kenai.collab.chat;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -58,6 +63,8 @@ import java.util.Random;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollBar;
+import javax.swing.JTextPane;
 import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
@@ -85,8 +92,23 @@ import org.openide.util.NbBundle;
  */
 public class ChatPanel extends javax.swing.JPanel {
 
-    MultiUserChat muc;
+    private MultiUserChat muc;
+    private boolean disableAutoScroll = false;
     private final HTMLEditorKit editorKit;
+    private static final String[][] smileysMap = new String[][] {
+        {"8)", "cool"}, // NOI18N
+        {"8-)", "cool"}, // NOI18N
+        {":]", "grin"}, // NOI18N
+        {":-]", "grin"}, // NOI18N
+        {":D", "laughing"}, // NOI18N
+        {":-D", "laughing"}, // NOI18N
+        {":(", "sad"}, // NOI18N
+        {":-(", "sad"}, // NOI18N
+        {":)", "smiley"}, // NOI18N
+        {":-)", "smiley"}, // NOI18N
+        {";)", "wink"}, // NOI18N
+        {";-)", "wink"} // NOI18N
+    };
 
     public ChatPanel(MultiUserChat chat) {
         this.muc=chat;
@@ -129,6 +151,28 @@ public class ChatPanel extends javax.swing.JPanel {
         NotificationsEnabledAction bubbleEnabled = new NotificationsEnabledAction();
         inbox.addMouseListener(bubbleEnabled);
         outbox.addMouseListener(bubbleEnabled);
+
+        inboxScrollPane.addMouseWheelListener(new MouseWheelListener() {
+
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                JScrollBar vbar = inboxScrollPane.getVerticalScrollBar();
+                if (vbar==null)
+                    return;
+                disableAutoScroll = ((vbar.getValue() + vbar.getVisibleAmount()) != vbar.getMaximum());
+            }
+        });
+        inboxScrollPane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
+
+            public void adjustmentValueChanged(AdjustmentEvent event) {
+                JScrollBar vbar = (JScrollBar) event.getSource();
+
+                if (!event.getValueIsAdjusting()) {
+                    return;
+                }
+                disableAutoScroll = ((vbar.getValue() + vbar.getVisibleAmount()) != vbar.getMaximum());
+            }
+        });
+
 //        setUpPrivateMessages();
     }
 
@@ -165,14 +209,26 @@ public class ChatPanel extends javax.swing.JPanel {
 
     private String removeTags(String body) {
         String tmp = body;
-        tmp.replaceAll("\r\n", "\n");
-        tmp.replaceAll("\r", "\n");
+        tmp.replaceAll("\r\n", "\n"); // NOI18N
+        tmp.replaceAll("\r", "\n"); // NOI18N
         return tmp.replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\n", "<br>"); // NOI18N
     }
 
-    private String replaceLinks(String removeTags) {
+    private String replaceLinks(String body) {
         // This regexp works quite nice, should be OK in most cases (does not handle [.,?!] in the end of the URL)
-        return removeTags.replaceAll("(http|https|ftp)://([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,4}(/[^ ]*)*", "<a href=\"$0\">$0</a>"); //NOI18N
+        return body.replaceAll("(http|https|ftp)://([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,4}(/[^ ]*)*", "<a href=\"$0\">$0</a>"); //NOI18N
+    }
+
+    private String replaceSmileys(String body) {
+        if (body.matches(".*[8:;]-?[]D()].*")) { // NOI18N
+            for (int i = 0; i < smileysMap.length; i++) {
+                body = body.replace(smileysMap[i][0],
+                        "<img align=\"center\" src=\"" + // NOI18N
+                        this.getClass().getResource("/org/netbeans/modules/kenai/collab/resources/emo_" + smileysMap[i][1] + "16.png") +
+                        "\"></img>"); // NOI18N
+            }
+        }
+        return body;
     }
 
 //    void setUpPrivateMessages() {
@@ -285,7 +341,12 @@ public class ChatPanel extends javax.swing.JPanel {
         outbox = new javax.swing.JTextPane();
         inboxPanel = new javax.swing.JPanel();
         inboxScrollPane = new javax.swing.JScrollPane();
-        inbox = new javax.swing.JTextPane();
+        inbox = new JTextPane() {
+            public void scrollRectToVisible(Rectangle aRect) {
+                if (!disableAutoScroll)
+                super.scrollRectToVisible(aRect);
+            }
+        };
         online = new javax.swing.JLabel();
 
         splitter.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
@@ -423,7 +484,7 @@ public class ChatPanel extends javax.swing.JPanel {
             String text = "";
             if (printheader) {
                 if (rgb != null) {
-                    text += "<div style=\"height: 3px; background-color: rgb(" + rgb + ")\"></div>";
+                    text += "<div style=\"height: 3px; background-color: rgb(" + rgb + ")\"></div>"; // NOI18N
                 }
                 text += "<table border=\"0\" borderwith=\"0\" width=\"100%\"><tbody>" + //NOI18N
                         "<tr style=\"background-color: rgb(" + headerColor.getRed() + "," + headerColor.getGreen() + "," + headerColor.getBlue() + ")\">" + //NOI18N
@@ -431,7 +492,7 @@ public class ChatPanel extends javax.swing.JPanel {
                         DateFormat.getTimeInstance(DateFormat.SHORT).format(getTimestamp(message)) + "</td></tr></tbody></table>"; // NOI18N
             }
             rgb = messageColor.getRed() + "," + messageColor.getGreen() + "," + messageColor.getBlue(); // NOI18N
-            text += "<div class=\"message\" style=\"background-color: rgb(" + rgb + ")\">" + replaceLinks(removeTags(message.getBody())) + "</div>"; // NOI18N
+            text += "<div class=\"message\" style=\"background-color: rgb(" + rgb + ")\">" + replaceSmileys(replaceLinks(removeTags(message.getBody()))) + "</div>"; // NOI18N
 
             editorKit.insertHTML(doc, doc.getLength(), text, 0, 0, null);
         } catch (IOException ex) {
@@ -480,7 +541,7 @@ public class ChatPanel extends javax.swing.JPanel {
     protected void setEndSelection() {
         inbox.setSelectionStart(inbox.getDocument().getLength());
         inbox.setSelectionEnd(inbox.getDocument().getLength());
-    }
+        }
 
 //    void setUsersListVisible(boolean visible) {
 //        usersScrollPane.setVisible(visible);

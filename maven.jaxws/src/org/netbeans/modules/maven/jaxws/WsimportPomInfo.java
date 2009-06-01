@@ -49,6 +49,15 @@ public class WsimportPomInfo {
     private String wsdlPath;
     private String handlerFile;
     private List<String> bindingFiles;
+    private String id;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public WsimportPomInfo(String wsdlPath) {
         this.wsdlPath = wsdlPath;

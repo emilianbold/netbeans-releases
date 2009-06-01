@@ -78,6 +78,7 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -196,6 +197,7 @@ public class BugzillaIssue extends Issue {
     }
 
     void opened() {
+        seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
         String refresh = System.getProperty("org.netbeans.modules.bugzilla.noIssueRefresh"); // NOI18N
         if(refresh != null && refresh.equals("true")) {                                      // NOI18N
             return;
@@ -205,6 +207,7 @@ public class BugzillaIssue extends Issue {
 
     void closed() {
         repository.stopRefreshing(getID());
+        seenAtributes = null;
     }
 
     @Override
@@ -310,10 +313,7 @@ public class BugzillaIssue extends Issue {
             attributes = new HashMap<String, String>();
             String value;
             for (IssueField field : IssueField.values()) {
-                switch(field) {
-                    default:
-                        value = getFieldValue(field);
-                }
+                value = getFieldValue(field);
                 if(value != null && !value.trim().equals("")) {                 // NOI18N
                     attributes.put(field.key, value);
                 }
@@ -324,11 +324,6 @@ public class BugzillaIssue extends Issue {
 
     @Override
     public void setSeen(boolean seen) throws IOException {
-        if(seen) {
-            seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
-        } else {
-            seenAtributes = null;
-        }
         super.setSeen(seen);
     }
 
@@ -809,7 +804,13 @@ public class BugzillaIssue extends Issue {
             // a new issue was created -> refresh all queries
             repository.refreshAllQueries();
         }
-        seenAtributes = null;
+                
+        try {
+            seenAtributes = null;
+            setSeen(true);
+        } catch (IOException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        }
         return true;
     }
 

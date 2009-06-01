@@ -66,6 +66,7 @@ public class MessageDestRefTableModel extends DDBeanTableModel
             return columnNames;
         }
 
+    @Override
 	public void setValueAt(Object value, int row, int column)
 	{
 		MessageDestinationRef param = getMessageDestRef(row);

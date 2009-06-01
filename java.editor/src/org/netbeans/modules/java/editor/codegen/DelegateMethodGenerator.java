@@ -140,7 +140,8 @@ public class DelegateMethodGenerator implements CodeGenerator {
         dialog.setVisible(true);
         if (dialogDescriptor.getValue() == dialogDescriptor.getDefaultValue()) {
             JavaSource js = JavaSource.forDocument(component.getDocument());
-            if (panel.getDelegateField().getKind() == ElementKind.CLASS) {//#165261: exit when just class node selected
+            ElementHandle<? extends Element> delegateField = panel.getDelegateField();
+            if (delegateField != null && delegateField.getKind() == ElementKind.CLASS) {//#165261: exit when just class node selected
                 return;
             }
             if (js != null) {
@@ -179,9 +180,9 @@ public class DelegateMethodGenerator implements CodeGenerator {
                     js.runUserActionTask(new Task<CompilationController>() {
 
                         public void run(CompilationController controller) throws IOException {
-                            if (controller.getPhase().compareTo(JavaSource.Phase.PARSED) < 0) {
-                                JavaSource.Phase phase = controller.toPhase(JavaSource.Phase.PARSED);
-                                if (phase.compareTo(JavaSource.Phase.PARSED) < 0) {
+                            if (controller.getPhase().compareTo(JavaSource.Phase.RESOLVED) < 0) {
+                                JavaSource.Phase phase = controller.toPhase(JavaSource.Phase.RESOLVED);
+                                if (phase.compareTo(JavaSource.Phase.RESOLVED) < 0) {
                                     if (log.isLoggable(Level.SEVERE))
                                         log.log(Level.SEVERE, "Cannot reach required phase. Leaving without action.");
                                     return;
@@ -234,6 +235,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
         
     static ElementNode.Description getAvailableMethods(CompilationInfo controller, int caretOffset, final ElementHandle<? extends Element> elementHandle) {
         VariableElement field = (VariableElement) elementHandle.resolve(controller);
+        assert field != null;
         if (field.asType().getKind() == TypeKind.DECLARED) {
             DeclaredType type = (DeclaredType) field.asType();
             Trees trees = controller.getTrees();

@@ -44,10 +44,16 @@ package org.netbeans.modules.apisupport.project.universe;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.EditableManifest;
@@ -178,7 +184,106 @@ public class ModuleListTest extends TestBase {
         assertEquals(file(standaloneSuite3, "dummy-project/build/cluster"), PropertyUtils.resolveFile(basedir, eval.getProperty("cluster")));
         assertNull(eval.getProperty("suite.dir"));
     }
-    
+
+    private class ModuleListLogHandler extends Handler {
+        private boolean cacheUsed = true;
+        private Set<String> scannedDirs = Collections.synchronizedSet(new HashSet<String>(1000));
+        String error;
+
+        @Override
+        public void publish(LogRecord record) {
+            String msg = record.getMessage();
+            if (msg.startsWith("Due to previous call of refresh(), not using nbbuild cache in"))
+                cacheUsed = false;
+            assertFalse("Duplicate scan of project tree detected: " + msg,
+                    msg.startsWith("Warning: two modules found with the same code name base"));
+            if (msg.startsWith("scanPossibleProject: ") && msg.endsWith("scanned successfully")
+                    && ! scannedDirs.add(msg)) {
+                error = "scanPossibleProject already run: " + msg;
+            }
+            if (msg.startsWith("scanCluster: ") && msg.endsWith(" succeeded.")
+                    && ! scannedDirs.add(msg)) {
+                error = "scanCluster already run: " + msg;
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+            assertFalse("Using nbbuild cache, which should be disabled", cacheUsed);
+        }
+
+    }
+
+    public void testConcurrentScanning() throws Exception {
+        ModuleList.refresh();
+        final ModuleList mlref[] = new ModuleList[1];
+        Logger logger = Logger.getLogger(ModuleList.class.getName());
+        Level origLevel = logger.getLevel();
+        ModuleListLogHandler handler = new ModuleListLogHandler();
+        try {
+            logger.setLevel(Level.ALL);
+            logger.addHandler(handler);
+
+            Thread t = new Thread() {
+
+                @Override
+                public void run() {
+                    try {
+                        mlref[0] = ModuleList.findOrCreateModuleListFromNetBeansOrgSources(nbRootFile());
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            };
+            long start = System.currentTimeMillis();
+            t.start();
+            ModuleList ml = ModuleList.findOrCreateModuleListFromNetBeansOrgSources(nbRootFile());
+            t.join();
+            System.out.println("Concurrent scans took " + (System.currentTimeMillis() - start) + "msec.");
+            assertNull(handler.error, handler.error);   // error is non-null when duplicate scan detected
+            assertNotNull("Module list for root " + nbRootFile() + " returned null", ml);
+            assertNotNull("Module list for root " + nbRootFile() + " returned null", mlref[0]);
+            assertTrue("No projects scanned.", handler.scannedDirs.size() > 0);
+            System.out.println("Total " + handler.scannedDirs.size() + " project folders scanned.");
+
+            // now testing scan of binary clusters
+            ModuleList.refresh();
+            handler.scannedDirs.clear();
+            mlref[0] = null;
+            assertTrue("NB dest. dir does not exist: " + destDirF, destDirF.exists());
+            t = new Thread() {
+
+                @Override
+                public void run() {
+                    try {
+                        mlref[0] = ModuleList.findOrCreateModuleListFromBinaries(destDirF);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            };
+            start = System.currentTimeMillis();
+            t.start();
+            ml = ModuleList.findOrCreateModuleListFromBinaries(destDirF);
+            t.join();
+            System.out.println("Concurrent scans took " + (System.currentTimeMillis() - start) + "msec.");
+            assertNull(handler.error, handler.error);   // error is non-null when duplicate scan detected
+            assertNotNull("Module list for dir " + destDirF + " returned null", ml);
+            assertNotNull("Module list for dir " + destDirF + " returned null", mlref[0]);
+            assertTrue("No clusters scanned.", handler.scannedDirs.size() > 0);
+            System.out.println("Total " + handler.scannedDirs.size() + " clusters scanned.");
+            // XXX Some more possible concurrent scans could be tested, not that easy to set up,
+            // e.g. ML#findOrCreateModuleListFromSuite, ...FromStandaloneModule, ...
+        } finally {
+            logger.removeHandler(handler);
+            logger.setLevel(origLevel);
+        }
+    }
+
     public void testFindModulesInSuite() throws Exception {
         assertEquals("correct modules in suite1", new HashSet<File>(Arrays.asList(
             file(suite1, "action-project"),

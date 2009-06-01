@@ -342,6 +342,20 @@ final class DesignResourceMap extends ResourceMap {
                 col.add(dobj.getPrimaryEntry());
                 col.addAll(dobj.secondaryEntries());
             }
+            try {
+                String baseName = dobj.getName() + "_"; // NOI18N
+                for (FileObject fo : dobj.getPrimaryFile().getParent().getChildren()) {
+                    String fileName = fo.getNameExt();
+                    if (fileName.endsWith(".properties") && fileName.startsWith(baseName)) { // NOI18N
+                        DataObject dobj2 = DataObject.find(fo);
+                        if (dobj2 instanceof PropertiesDataObject) {
+                            col.add(((MultiDataObject)dobj2).getPrimaryEntry());
+                        }
+                    }
+                }
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
         }
         DesignResourceMap parent = getDesignParent();
         return parent != null ? parent.collectLocaleEntries(col) : col;

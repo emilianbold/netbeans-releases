@@ -53,6 +53,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
@@ -1176,19 +1177,17 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      */
     public final FileImpl onFileIncluded(ProjectBase base, CharSequence file, APTPreprocHandler preprocHandler, APTMacroMap.State postIncludeState, int mode, boolean triggerParsingActivity) throws IOException {
         FileImpl csmFile = null;
-        try {
-            disposeLock.readLock().lock();
-            if (disposing) {
-                return null;
-            }
-            csmFile = findFile(new File(file.toString()), true, FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
-        } finally {
-            disposeLock.readLock().unlock();
+        if (disposing) {
+            return null;
         }
+        csmFile = findFile(new File(file.toString()), true, FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
 
         if (postIncludeState != null) {
             // we have post include state => no need to spend time in include walkers
             preprocHandler.getMacroMap().setState(postIncludeState);
+            return csmFile;
+        }
+        if (disposing) {
             return csmFile;
         }
         APTPreprocHandler.State newState = preprocHandler.getState();
@@ -1220,9 +1219,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         boolean updateFileContainer = false;
         try {
-            disposeLock.readLock().lock();
             if (disposing) {
-                return null;
+                return csmFile;
             }
             if (triggerParsingActivity) {
                 FileContainer.FileEntry
@@ -1317,33 +1315,34 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
             return csmFile;
         } finally {
-            disposeLock.readLock().unlock();
-            if (updateFileContainer) {
+            if (!disposing && updateFileContainer) {
                 getFileContainer().put();
             }
         }
     }
 
     private void entryNotFoundMessage(CharSequence file) {
-        // since file container can return empty container the entry can be null.
-        StringBuilder buf = new StringBuilder("File container does not have file "); //NOI18N
-        buf.append("[" + file + "]"); //NOI18N
-        if (getFileContainer() == FileContainer.empty()) {
-            buf.append(" because file container is EMPTY."); //NOI18N
-        } else {
-            buf.append("."); //NOI18N
+        if (Utils.LOG.isLoggable(Level.INFO)) {
+            // since file container can return empty container the entry can be null.
+            StringBuilder buf = new StringBuilder("File container does not have file "); //NOI18N
+            buf.append("[" + file + "]"); //NOI18N
+            if (getFileContainer() == FileContainer.empty()) {
+                buf.append(" because file container is EMPTY."); //NOI18N
+            } else {
+                buf.append("."); //NOI18N
+            }
+            if (isDisposing()) {
+                buf.append("\n\tIt is very strange but project is disposing."); //NOI18N
+            }
+            if (!isValid()) {
+                buf.append("\n\tIt is very strange but project is invalid."); //NOI18N
+            }
+            Status st = getStatus();
+            if (st != null) {
+                buf.append("\n\tProject " + toString() + " has status " + st + "."); //NOI18N
+            }
+            Utils.LOG.info(buf.toString());
         }
-        if (isDisposing()) {
-            buf.append("\n\tIt is very strange but project is disposing."); //NOI18N
-        }
-        if (!isValid()) {
-            buf.append("\n\tIt is very strange but project is invalid."); //NOI18N
-        }
-        Status st = getStatus();
-        if (st != null) {
-            buf.append("\n\tProject " + toString() + " has status " + st + "."); //NOI18N
-        }
-        Utils.LOG.info(buf.toString());
     }
 
     private static void traceIncludeStates(CharSequence title,
@@ -1896,6 +1895,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             validator.storeSettings();
             getUnresolved().dispose();
             RepositoryUtils.closeUnit(getUID(), getRequiredUnits(), cleanPersistent);
+
+            weakClassifierContainer = null;
+            weakDeclarationContainer = null;
+            weakFileContainer = null;
+            weakGraphContainer = null;
 
             platformProject = null;
             unresolved = null;
@@ -2658,7 +2662,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         this.FAKE_GLOBAL_NAMESPACE = new NamespaceImpl(this, true);
     }
 
-    private WeakReference<DeclarationContainer> weakDeclarationContainer;
+    private WeakReference<DeclarationContainer> weakDeclarationContainer = TraceFlags.USE_WEAK_MEMORY_CACHE ? new WeakReference<DeclarationContainer>(null) : null;
     DeclarationContainer getDeclarationsSorage() {
         DeclarationContainer dc = null;
         WeakReference<DeclarationContainer> weak = null;
@@ -2675,13 +2679,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (dc == null && isValid()) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get DeclarationsSorage by key " + declarationsSorageKey)); // NOI18N
         }
-        if (TraceFlags.USE_WEAK_MEMORY_CACHE && dc != null) {
+        if (TraceFlags.USE_WEAK_MEMORY_CACHE && dc != null && weakDeclarationContainer != null) {
             weakDeclarationContainer = new WeakReference<DeclarationContainer>(dc);
         }
         return dc != null ? dc : DeclarationContainer.empty();
     }
 
-    private WeakReference<FileContainer> weakFileContainer;
+    private WeakReference<FileContainer> weakFileContainer = TraceFlags.USE_WEAK_MEMORY_CACHE ? new WeakReference<FileContainer>(null) : null;
     FileContainer getFileContainer() {
         FileContainer fc = null;
         WeakReference<FileContainer> weak = null;
@@ -2698,13 +2702,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (fc == null && isValid()) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get FileContainer by key " + fileContainerKey)); // NOI18N
         }
-        if (TraceFlags.USE_WEAK_MEMORY_CACHE && fc != null) {
+        if (TraceFlags.USE_WEAK_MEMORY_CACHE && fc != null && weakFileContainer != null) {
             weakFileContainer = new WeakReference<FileContainer>(fc);
         }
         return fc != null ? fc : FileContainer.empty();
     }
 
-    private WeakReference<GraphContainer> weakGraphContainer;
+    private WeakReference<GraphContainer> weakGraphContainer = TraceFlags.USE_WEAK_MEMORY_CACHE ? new WeakReference<GraphContainer>(null) : null;
     public final GraphContainer getGraphStorage() {
         GraphContainer gc = null;
         WeakReference<GraphContainer> weak = null;
@@ -2721,13 +2725,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (gc == null && isValid()) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get GraphContainer by key " + graphStorageKey)); // NOI18N
         }
-        if (TraceFlags.USE_WEAK_MEMORY_CACHE && gc != null) {
+        if (TraceFlags.USE_WEAK_MEMORY_CACHE && gc != null && weakGraphContainer != null) {
             weakGraphContainer = new WeakReference<GraphContainer>(gc);
         }
         return gc != null ? gc : GraphContainer.empty();
     }
 
-    private WeakReference<ClassifierContainer> weakClassifierContainer;
+    private WeakReference<ClassifierContainer> weakClassifierContainer = TraceFlags.USE_WEAK_MEMORY_CACHE ? new WeakReference<ClassifierContainer>(null) : null;
     final ClassifierContainer getClassifierSorage() {
         ClassifierContainer cc = null;
         WeakReference<ClassifierContainer> weak = null;
@@ -2744,7 +2748,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (cc == null && isValid()) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get ClassifierSorage by key " + classifierStorageKey)); // NOI18N
         }
-        if (TraceFlags.USE_WEAK_MEMORY_CACHE && cc != null) {
+        if (TraceFlags.USE_WEAK_MEMORY_CACHE && cc != null && weakClassifierContainer != null) {
             weakClassifierContainer = new WeakReference<ClassifierContainer>(cc);
         }
         return cc != null ? cc : ClassifierContainer.empty();

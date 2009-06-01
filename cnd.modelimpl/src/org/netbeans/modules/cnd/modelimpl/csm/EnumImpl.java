@@ -155,8 +155,8 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     
     @Override
     public void dispose() {
-        _clearEnumerators();
         super.dispose();
+        _clearEnumerators();
     }
     
     private void _clearEnumerators() {

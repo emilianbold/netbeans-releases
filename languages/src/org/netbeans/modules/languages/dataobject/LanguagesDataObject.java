@@ -97,16 +97,8 @@ public class LanguagesDataObject extends MultiDataObject {
         while (parent != null && !"src".equals(parent.getNameExt())) {
             parent = parent.getParent();
         }
-        
-        if (parent == null) {
-            return "test"; // fallback
-        } else {
-            if (createdClass.getParent() == parent) {
-                return "";
-            } else {
-                return createdClass.getParent().getPath().substring(parent.getPath().length() + 1).replace('/', '.');
-            }
-        }
+        return (parent == null) ? "test" // fallback
+                : createdClass.getParent().getPath().substring(parent.getPath().length() + 1).replace('/', '.');
     }
 
     static void createFileWithSubstitutions(

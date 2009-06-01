@@ -38,6 +38,8 @@
  */
 package org.netbeans.editor.ext.html.parser;
 
+import java.util.StringTokenizer;
+
 /**
  *
  * @author marek
@@ -125,6 +127,47 @@ public class AstNodeUtils {
         }
         
         return node;
+    }
+
+    /** find an AstNode according to the path
+     * example of path: html/body/table|2/tr -- find a second table tag in body tag
+     *
+     * note: queries OPEN TAGS ONLY!
+     */
+    public static AstNode query(AstNode base, String path) {
+        StringTokenizer st = new StringTokenizer(path, "/");
+        AstNode found = base;
+        while(st.hasMoreTokens()) {
+            String token = st.nextToken();
+            int indexDelim = token.indexOf('|');
+
+            String nodeName = indexDelim >= 0 ? token.substring(0, indexDelim) : token;
+            String sindex = indexDelim >= 0 ? token.substring(indexDelim + 1, token.length()) : "0";
+            int index = Integer.parseInt(sindex);
+
+            int count = 0;
+            AstNode foundLocal = null;
+            for(AstNode child : found.children()) {
+                if(child.type() == AstNode.NodeType.OPEN_TAG && child.name().equals(nodeName) && count++ == index) {
+                    foundLocal = child;
+                    break;
+                }
+            }
+            if(foundLocal != null) {
+                found = foundLocal;
+
+                if(!st.hasMoreTokens()) {
+                    //last token, we may return
+                    assert found.name().equals(nodeName);
+                    return found;
+                }
+
+            } else {
+                return null; //no found
+            }
+        }
+
+        return null;
     }
 
     public static void visitChildren(AstNode node, AstNodeVisitor visitor) {

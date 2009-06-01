@@ -444,7 +444,9 @@ public final class UIUtils {
                                   "SPACE", "addToSelection",
                              "ctrl SPACE", "toggleAndAnchor",
                             "shift SPACE", "extendTo",
-                       "ctrl shift SPACE", "moveSelectionTo"
+                       "ctrl shift SPACE", "moveSelectionTo",
+                               "SUBTRACT", "collapse",
+                                    "ADD", "expand"
 		 }),
         };
         Object[] res = new Object[uiDefaults.length + inputMaps.length];

@@ -100,12 +100,8 @@ public class JspKeystrokeHandler implements KeystrokeHandler {
             return false;
         }
         final Indent indent = Indent.get(doc);
-        indent.lock();
-        try {
-            indent.reindent(lineStart, caretOffset);
-        } finally {
-            indent.unlock();
-        }
+        indent.reindent(lineStart, caretOffset); //already locked
+
         return false;
     }
 

@@ -96,6 +96,16 @@ public class HtmlCompletionItem implements CompletionItem {
     public static HtmlCompletionItem createCharacterReference(String name, char value, int substitutionOffset, String helpId) {
         return new CharRefItem(name, value, substitutionOffset, helpId);
     }
+
+    public static HtmlCompletionItem createFileCompletionItem(String value, int substitutionOffset, Color color, ImageIcon icon) {
+        return new FileAttributeValue(value, substitutionOffset, color, icon);
+    }
+
+    public static HtmlCompletionItem createGoUpFileCompletionItem(int substitutionOffset, Color color, ImageIcon icon) {
+        return new GoUpFileAttributeValue(substitutionOffset, color, icon);
+    }
+
+
     //------------------------------------------
     protected int substitutionOffset;
     protected String text, helpId;

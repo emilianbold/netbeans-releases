@@ -85,8 +85,8 @@ public class JspUtils {
 
             if (data == null) {
                 if (fo.isValid()) {
-                    //error if valid file
-                    throw new IllegalStateException("Cannot obtain JSPColoringData instance for file " + fo.getPath()); //NOI18N
+                    //error if valid file, just log since it seems can happen quite often
+                    Logger.global.info("Cannot obtain JSPColoringData instance for file " + fo.getPath()); //NOI18N
                 }
             } else {
                 JspParseData jspParseData = new JspParseData((Map<String, String>) data.getPrefixMapper(), data.isELIgnored(), data.isXMLSyntax(), data.isInitialized());

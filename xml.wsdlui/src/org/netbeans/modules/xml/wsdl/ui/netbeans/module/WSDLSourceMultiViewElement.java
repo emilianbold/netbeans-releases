@@ -74,6 +74,8 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeEvent;
 import org.openide.text.CloneableEditor;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -142,7 +144,7 @@ public class WSDLSourceMultiViewElement extends CloneableEditor implements Multi
       }
       javax.swing.SwingUtilities.invokeLater(new Runnable() {
           public void run() {
-              line.show(Line.SHOW_GOTO, column);
+              line.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
 //todo r              openActiveSourceEditor();
           }
       });

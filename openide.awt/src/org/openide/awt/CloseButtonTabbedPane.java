@@ -60,6 +60,7 @@ import java.awt.event.AWTEventListener;
 import java.awt.event.MouseEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
@@ -144,8 +145,18 @@ final class CloseButtonTabbedPane extends JTabbedPane {
         return result;
     }
 
+    private final Pattern removeHtmlTags = System.getProperty("java.version").startsWith("1.6.0_14")
+            ? Pattern.compile("\\<.*?\\>") : null;
+
     @Override
     public void setTitleAt(int idx, String title) {
+        // workaround for JDK bug (http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6670274)
+        // NB issue #113388
+        if (removeHtmlTags != null && title.startsWith("<html>")) {
+            title = removeHtmlTags.matcher(title).replaceAll("");
+            title = Utilities.replaceString(title, "&nbsp;", "");
+        }
+
         Component c = findTabAt(idx);
         //if NO_CLOSE_BUTTON -> just call super
         if (isNoCloseButton(c)) {

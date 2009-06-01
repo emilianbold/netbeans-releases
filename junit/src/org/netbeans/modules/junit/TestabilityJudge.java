@@ -52,7 +52,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 interface TestabilityJudge {
     
     TestabilityResult isClassTestable(CompilationInfo compInfo,
-                                      TypeElement classElem);
+                                      TypeElement classElem, long skipTestabilityResultMask);
     
     boolean isMethodTestable(ExecutableElement method);
     
