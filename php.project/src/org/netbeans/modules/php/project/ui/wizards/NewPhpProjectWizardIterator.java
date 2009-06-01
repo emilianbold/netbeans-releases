@@ -47,19 +47,27 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.ui.LocalServer;
+import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
+import org.netbeans.modules.php.project.ui.actions.RemoteCommand;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.netbeans.modules.php.project.util.PhpProjectGenerator;
+import org.netbeans.modules.php.project.util.PhpProjectGenerator.ProjectProperties;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.windows.InputOutput;
 
 /**
  * @author Tomas Mysik
@@ -69,6 +77,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     public static enum WizardType {
         NEW,
         EXISTING,
+        REMOTE,
     }
 
     private final WizardType wizardType;
@@ -86,6 +95,10 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
     public static NewPhpProjectWizardIterator existing() {
         return new NewPhpProjectWizardIterator(WizardType.EXISTING);
+    }
+
+    public static NewPhpProjectWizardIterator remote() {
+        return new NewPhpProjectWizardIterator(WizardType.REMOTE);
     }
 
     public void initialize(WizardDescriptor wizard) {
@@ -118,25 +131,55 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 getProjectDirectory(),
                 getSources(),
                 (String) descriptor.getProperty(ConfigureProjectPanel.PROJECT_NAME),
-                getRunAsType(),
+                wizardType == WizardType.REMOTE ? RunAsType.REMOTE : getRunAsType(),
                 (Charset) descriptor.getProperty(ConfigureProjectPanel.ENCODING),
                 getUrl(),
-                getIndexFile(),
+                wizardType == WizardType.REMOTE ? null : getIndexFile(), // no index file for remote needed
                 descriptor,
                 isCopyFiles(),
                 getCopySrcTarget(),
                 (RemoteConfiguration) descriptor.getProperty(RunConfigurationPanel.REMOTE_CONNECTION),
                 (String) descriptor.getProperty(RunConfigurationPanel.REMOTE_DIRECTORY),
-                (UploadFiles) descriptor.getProperty(RunConfigurationPanel.REMOTE_UPLOAD));
-        AntProjectHelper helper = PhpProjectGenerator.createProject(projectProperties, new ProgressMonitor(handle));
+                wizardType == WizardType.REMOTE ? UploadFiles.ON_SAVE : (UploadFiles) descriptor.getProperty(RunConfigurationPanel.REMOTE_UPLOAD));
+
+        PhpProjectGenerator.Monitor monitor = null;
+        switch (wizardType) {
+            case NEW:
+            case EXISTING:
+                monitor = new LocalProgressMonitor(handle);
+                break;
+            case REMOTE:
+                monitor = new RemoteProgressMonitor(handle);
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown wizard type: " + wizardType);
+        }
+
+        AntProjectHelper helper = PhpProjectGenerator.createProject(projectProperties, monitor);
         resultSet.add(helper.getProjectDirectory());
 
         FileObject sources = FileUtil.toFileObject(projectProperties.getSourcesDirectory());
         resultSet.add(sources);
 
-        FileObject indexFile = sources.getFileObject(projectProperties.getIndexFile());
-        if (indexFile != null && indexFile.isValid()) {
-            resultSet.add(indexFile);
+        String indexFile = projectProperties.getIndexFile();
+        switch (wizardType) {
+            case REMOTE:
+                downloadRemoteFiles(projectProperties, monitor);
+                // try to find index file for downloaded files
+                indexFile = getIndexFile();
+                break;
+        }
+
+        if (indexFile != null) {
+            FileObject fo = sources.getFileObject(indexFile);
+            if (fo != null && fo.isValid()) {
+                resultSet.add(fo);
+                switch (wizardType) {
+                    case REMOTE:
+                        saveIndexFile(helper, indexFile);
+                        break;
+                }
+            }
         }
 
         return resultSet;
@@ -166,13 +209,31 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     public WizardDescriptor.Panel<WizardDescriptor> current() {
+        setTitle();
+        return panels[index];
+    }
+
+    private void setTitle() {
         // #158483
         if (descriptor != null) {
             // wizard title
-            String title = NbBundle.getMessage(NewPhpProjectWizardIterator.class, wizardType == WizardType.NEW ? "TXT_PhpProject" : "TXT_ExistingPhpProject");
-            descriptor.putProperty("NewProjectWizard_Title", title); // NOI18N
+            String msgKey = null;
+            switch (wizardType) {
+                case NEW:
+                    msgKey = "TXT_PhpProject"; // NOI18N
+                    break;
+                case EXISTING:
+                    msgKey = "TXT_ExistingPhpProject"; // NOI18N
+                    break;
+                case REMOTE:
+                    msgKey = "TXT_RemotePhpProject"; // NOI18N
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown wizard type: " + wizardType);
+            }
+
+            descriptor.putProperty("NewProjectWizard_Title", NbBundle.getMessage(NewPhpProjectWizardIterator.class, msgKey)); // NOI18N
         }
-        return panels[index];
     }
 
     public void addChangeListener(ChangeListener l) {
@@ -182,9 +243,22 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     private WizardDescriptor.Panel<WizardDescriptor>[] createPanels() {
+        String step2 = null;
+        switch (wizardType) {
+            case NEW:
+            case EXISTING:
+                step2 = "LBL_RunConfiguration"; // NOI18N
+                break;
+            case REMOTE:
+                step2 = "LBL_RemoteConfiguration"; // NOI18N
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown wizard type: " + wizardType);
+        }
+
         String[] steps = new String[] {
-            NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString("LBL_ProjectNameLocation"),
-            NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString("LBL_RunConfiguration"),
+            NbBundle.getMessage(NewPhpProjectWizardIterator.class, "LBL_ProjectNameLocation"),
+            NbBundle.getMessage(NewPhpProjectWizardIterator.class, step2),
         };
 
         ConfigureProjectPanel configureProjectPanel = new ConfigureProjectPanel(steps, wizardType);
@@ -280,10 +354,38 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return null;
     }
 
-    private static final class ProgressMonitor implements PhpProjectGenerator.Monitor {
+    private void downloadRemoteFiles(ProjectProperties projectProperties, PhpProjectGenerator.Monitor monitor) {
+        assert wizardType == WizardType.REMOTE : "Download not allowed for: " + wizardType;
+        assert monitor instanceof RemoteProgressMonitor;
+
+        RemoteProgressMonitor remoteMonitor = (RemoteProgressMonitor) monitor;
+        remoteMonitor.startingDownload();
+
+        FileObject sources = FileUtil.toFileObject(projectProperties.getSourcesDirectory());
+        RemoteConfiguration remoteConfiguration = projectProperties.getRemoteConfiguration();
+        InputOutput remoteLog = RemoteCommand.getRemoteLog(remoteConfiguration.getDisplayName());
+        RemoteClient remoteClient = new RemoteClient(remoteConfiguration, RemoteClient.AdvancedProperties.create(
+                    remoteLog,
+                    projectProperties.getRemoteDirectory(),
+                    false,
+                    false));
+        DownloadCommand.download(remoteClient, remoteLog, projectProperties.getName(), false, sources, sources);
+
+        remoteMonitor.finishingDownload();
+    }
+
+    private void saveIndexFile(AntProjectHelper helper, String indexFile) throws IOException {
+        EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        privateProperties.setProperty(PhpProjectProperties.INDEX_FILE, indexFile);
+        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
+        Project project = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+        ProjectManager.getDefault().saveProject(project);
+    }
+
+    private static final class LocalProgressMonitor implements PhpProjectGenerator.Monitor {
         private final ProgressHandle handle;
 
-        public ProgressMonitor(ProgressHandle handle) {
+        public LocalProgressMonitor(ProgressHandle handle) {
             assert handle != null;
             this.handle = handle;
         }
@@ -306,6 +408,42 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             String msg = NbBundle.getMessage(
                     NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_PreparingToOpen");
             handle.progress(msg, 5);
+        }
+    }
+
+    private static final class RemoteProgressMonitor implements PhpProjectGenerator.Monitor {
+        private final ProgressHandle handle;
+
+        public RemoteProgressMonitor(ProgressHandle handle) {
+            assert handle != null;
+            this.handle = handle;
+        }
+
+        public void starting() {
+            handle.start(10);
+
+            String msg = NbBundle.getMessage(
+                    NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_CreatingProject");
+            handle.progress(msg, 2);
+        }
+
+        public void creatingIndexFile() {
+            assert false : "Should not get here";
+        }
+
+        public void finishing() {
+        }
+
+        public void startingDownload() {
+            String msg = NbBundle.getMessage(
+                    NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_StartingDownload");
+            handle.progress(msg, 5);
+        }
+
+        public void finishingDownload() {
+            String msg = NbBundle.getMessage(
+                    NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_PreparingToOpen");
+            handle.progress(msg, 10);
         }
     }
 }

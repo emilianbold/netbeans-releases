@@ -99,6 +99,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         if (configureProjectPanelVisual == null) {
             switch (wizardType) {
                 case NEW:
+                case REMOTE:
                     configureProjectPanelVisual = new ConfigureNewProjectPanelVisual(this);
                     break;
                 case EXISTING:
@@ -124,6 +125,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         // project
         switch (wizardType) {
             case NEW:
+            case REMOTE:
                 // sources - we need them first because of free project name
                 MutableComboBoxModel localServers = getLocalServers();
                 if (localServers != null) {
@@ -202,6 +204,9 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     public boolean isFinishPanel() {
+        if (wizardType == NewPhpProjectWizardIterator.WizardType.REMOTE) {
+            return false;
+        }
         return isRunConfigurationStepValid();
     }
 
@@ -215,6 +220,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         // different order of validation for each wizard type
         switch (wizardType) {
             case NEW:
+            case REMOTE:
                 // first check whether document roots are read already
                 if (descriptor.getProperty(ROOTS) == null) {
                     return false;
@@ -485,6 +491,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
         switch (wizardType) {
             case NEW:
+            case REMOTE:
                 warnIfNotEmpty(sourcesLocation, "Sources"); // NOI18N
                 break;
             case EXISTING:
@@ -655,6 +662,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         removeListeners();
         switch (wizardType) {
             case NEW:
+            case REMOTE:
                 projectNameChanged();
                 break;
             case EXISTING:

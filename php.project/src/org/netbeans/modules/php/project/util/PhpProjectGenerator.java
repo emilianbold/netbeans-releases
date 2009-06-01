@@ -108,7 +108,8 @@ public final class PhpProjectGenerator {
         logUsage(helper.getProjectDirectory(), sourceDir, projectProperties.getRunAsType(), projectProperties.isCopySources());
 
         // index file
-        if (!existingSources) {
+        String indexFile = projectProperties.getIndexFile();
+        if (!existingSources && indexFile != null) {
             monitor.creatingIndexFile();
 
             FileObject template = null;
@@ -127,7 +128,7 @@ public final class PhpProjectGenerator {
                 }
             }
             assert template != null : "Template for Index PHP file cannot be null";
-            createIndexFile(template, sourceDir, projectProperties.getIndexFile());
+            createIndexFile(template, sourceDir, indexFile);
         }
 
         monitor.finishing();
@@ -223,7 +224,9 @@ public final class PhpProjectGenerator {
 
     private static void configureIndexFile(ProjectProperties projectProperties, EditableProperties sharedProperties, EditableProperties privateProperties) {
         String indexFile = projectProperties.getIndexFile();
-        privateProperties.setProperty(PhpProjectProperties.INDEX_FILE, indexFile);
+        if (indexFile != null) {
+            privateProperties.setProperty(PhpProjectProperties.INDEX_FILE, indexFile);
+        }
     }
 
     private static void configureRunConfiguration(ProjectProperties projectProperties, EditableProperties sharedProperties, EditableProperties privateProperties) {
@@ -331,7 +334,6 @@ public final class PhpProjectGenerator {
             assert name != null;
             assert charset != null;
             assert url != null;
-            assert indexFile != null;
             assert descriptor != null;
 
             if (projectDirectory != null) {
