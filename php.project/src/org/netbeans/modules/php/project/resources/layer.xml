@@ -89,6 +89,14 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/phpProject.png"/>
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/existingPhpProject.html"/>
                 </file>
+                <file name="remotePHPProject.php">
+                    <attr name="position" intvalue="300"/>
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.php.project.ui.wizards.NewPhpProjectWizardIterator.remote"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/phpProject.png"/>
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/remotePhpProject.html"/>
+                </file>
             </folder>
         </folder>
         <folder name="Scripting">
