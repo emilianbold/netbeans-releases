@@ -76,6 +76,9 @@ public class StateLexerIncTest extends TestCase {
         doc.putProperty(Language.class, StateTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         TokenSequence<?> ts = hi.tokenSequence();
+        // Extra newline at the end of document returned in DocumentUtilities.getText(doc) is lexed too
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, StateTokenId.ERROR, "\n", 0);
         assertFalse(ts.moveNext());
         
         // Insert text into document
@@ -93,6 +96,8 @@ public class StateLexerIncTest extends TestCase {
         assertEquals(LexerTestUtilities.lookahead(ts), 1);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, StateTokenId.ERROR, "c", 2);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, StateTokenId.ERROR, "\n", 3);
         assertEquals(LexerTestUtilities.state(ts), null);
         assertFalse(ts.moveNext());
         

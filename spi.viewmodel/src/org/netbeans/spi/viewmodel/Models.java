@@ -762,6 +762,16 @@ public final class Models {
         }
 
         public void modelChanged(ModelEvent event) {
+            if (event instanceof ModelEvent.NodeChanged &&
+                    (event.getSource() instanceof NodeModel || event.getSource() instanceof NodeModelFilter)) {
+                // CompoundNodeModel.modelChanged() takes this.
+                return ;
+            }
+            if (event instanceof ModelEvent.TableValueChanged &&
+                    (event.getSource() instanceof TableModel || event.getSource() instanceof TableModelFilter)) {
+                // CompoundTableModel.modelChanged() takes this.
+                return ;
+            }
             ModelEvent newEvent = translateEvent(event, this);
             Collection<ModelListener> listeners;
             synchronized (modelListeners) {
@@ -905,6 +915,16 @@ public final class Models {
         }
 
         public void modelChanged(ModelEvent event) {
+            if (event instanceof ModelEvent.TableValueChanged &&
+                    (event.getSource() instanceof TableModel || event.getSource() instanceof TableModelFilter)) {
+                // CompoundTableModel.modelChanged() takes this.
+                return ;
+            }
+            if (event instanceof ModelEvent.TreeChanged &&
+                    (event.getSource() instanceof TreeModel || event.getSource() instanceof TreeModelFilter)) {
+                // CompoundTreeModel.modelChanged() takes this.
+                return ;
+            }
             ModelEvent newEvent = translateEvent(event, this);
             Collection<ModelListener> listeners;
             synchronized (modelListeners) {
@@ -1181,6 +1201,15 @@ public final class Models {
         }
 
         public void modelChanged(ModelEvent event) {
+            if (event instanceof ModelEvent.NodeChanged && (event.getSource() instanceof NodeModel || event.getSource() instanceof NodeModelFilter)) {
+                // CompoundNodeModel.modelChanged() takes this.
+                return ;
+            }
+            if (event instanceof ModelEvent.TreeChanged &&
+                    (event.getSource() instanceof TreeModel || event.getSource() instanceof TreeModelFilter)) {
+                // CompoundTreeModel.modelChanged() takes this.
+                return ;
+            }
             ModelEvent newEvent = translateEvent(event, this);
             Collection<ModelListener> listeners;
             synchronized (modelListeners) {
@@ -1518,6 +1547,15 @@ public final class Models {
         }
 
         public void modelChanged(ModelEvent event) {
+            if (event instanceof ModelEvent.NodeChanged && (event.getSource() instanceof NodeModel || event.getSource() instanceof NodeModelFilter)) {
+                // CompoundNodeModel.modelChanged() takes this.
+                return ;
+            }
+            if (event instanceof ModelEvent.TableValueChanged &&
+                    (event.getSource() instanceof TableModel || event.getSource() instanceof TableModelFilter)) {
+                // CompoundTableModel.modelChanged() takes this.
+                return ;
+            }
             ModelEvent newEvent = translateEvent(event, this);
             Collection<ModelListener> listeners;
             synchronized (modelListeners) {

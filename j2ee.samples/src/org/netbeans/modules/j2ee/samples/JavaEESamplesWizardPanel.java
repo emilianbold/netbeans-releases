@@ -62,15 +62,17 @@ public class JavaEESamplesWizardPanel implements WizardDescriptor.Panel,
     private WizardDescriptor wizardDescriptor;
     private JavaEESamplesPanelVisual component;
     private final boolean withDB;
+    private final boolean specifyPrjName;
     
     /** Creates a new instance of templateWizardPanel */
-    public JavaEESamplesWizardPanel(boolean withDB) {
+    public JavaEESamplesWizardPanel(boolean withDB, boolean specifyPrjName) {
         this.withDB = withDB;
+        this.specifyPrjName = specifyPrjName;
     }
     
     public Component getComponent() {
         if (component == null) {
-            component = new JavaEESamplesPanelVisual(this, withDB);
+            component = new JavaEESamplesPanelVisual(this, withDB, specifyPrjName);
             component.setName(NbBundle.getMessage(JavaEESamplesWizardPanel.class, "LBL_CreateProjectStep"));
             component.putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(JavaEESamplesWizardPanel.class, "LBL_TXT_NewJ2EESample"));
         }
