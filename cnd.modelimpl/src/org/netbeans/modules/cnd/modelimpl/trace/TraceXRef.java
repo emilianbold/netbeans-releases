@@ -85,6 +85,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
+import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -189,6 +190,7 @@ public class TraceXRef extends TraceModel {
         } finally {
             super.shutdown(true);
             APTDriver.getInstance().close();
+            APTFileCacheManager.close();
         }
     }
 

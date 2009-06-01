@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.apt.support.APTMacroExpandedStream;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
@@ -152,6 +153,7 @@ public class TraceModel extends TraceModelBase {
     public static void main(String[] args) {
         new TraceModel(true).test(args);
         APTDriver.getInstance().close();
+        APTFileCacheManager.close();
     //System.out.println("" + org.netbeans.modules.cnd.apt.utils.APTIncludeUtils.getHitRate());
     }
     private Cache cache;
@@ -1080,9 +1082,11 @@ public class TraceModel extends TraceModelBase {
         if (firstFile == null || firstFile.equalsIgnoreCase(file.getAbsolutePath())) {
             firstFile = file.getAbsolutePath();
             APTDriver.getInstance().invalidateAll();
+            APTFileCacheManager.invalidateAll();
             getProject().debugInvalidateFiles();
         } else {
             APTDriver.getInstance().invalidateAPT(buffer);
+            APTFileCacheManager.invalidate(buffer);
         }
     }
     long minDriver = Long.MAX_VALUE;
