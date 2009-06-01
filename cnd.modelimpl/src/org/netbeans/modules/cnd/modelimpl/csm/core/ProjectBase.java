@@ -1209,7 +1209,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         // gather macro map from all includes and fill preprocessor conditions state
         FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(csmFile.getAbsolutePath());
-        APTFileCacheEntry aptCacheEntry = csmFile.getAPTCacheEntry(preprocHandler);
+        APTFileCacheEntry aptCacheEntry = csmFile.getAPTCacheEntry(preprocHandler, true);
         APTParseFileWalker walker = new APTParseFileWalker(base, aptLight, csmFile, preprocHandler, triggerParsingActivity, pcBuilder,aptCacheEntry);
         walker.visit();
         FilePreprocessorConditionState pcState = pcBuilder.build();
@@ -2195,8 +2195,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 // for testing remember restored file
                 long time = REMEMBER_RESTORED ? System.currentTimeMillis() : 0;
                 int stackSize = inclStack.size();
-                APTWalker walker = new APTRestorePreprocStateWalker(startProject, aptLight, csmFile, preprocHandler, inclStack, FileContainer.getFileKey(interestedFile, false).toString(), csmFile.getAPTCacheEntry(preprocHandler));
+                APTWalker walker = new APTRestorePreprocStateWalker(startProject, aptLight, csmFile, preprocHandler, inclStack, FileContainer.getFileKey(interestedFile, false).toString(), csmFile.getAPTCacheEntry(preprocHandler, true));
                 walker.visit();
+                // we do not remember cache entry because it is stopped before end of file
+                // fileImpl.setAPTCacheEntry(handler, cacheEntry, false);
+
                 if (preprocHandler.isValid()) {
                     if (REMEMBER_RESTORED) {
                         if (testRestoredFiles == null) {
