@@ -50,6 +50,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.openide.util.Cancellable;
 import org.openide.util.RequestProcessor;
 
@@ -142,8 +143,8 @@ public class ModalMessageDlg extends javax.swing.JPanel {
 
         dialog.setBounds(middleX - size.width / 2, middleY - size.height / 2, size.width, size.height);
 
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
+        RequestProcessor.getDefault().post(new NamedRunnable(title) {
+            public void runImpl() {
                 try {
                     workTask.run();
                 } finally {

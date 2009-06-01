@@ -68,6 +68,8 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeOp;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -398,7 +400,7 @@ public class Nodes {
                 int column = pos.getColumn();
                 Line l = pos.getCloneableEditorSupport().getLineSet().getCurrent(line);
 
-                l.show(Line.SHOW_GOTO, column);
+                l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

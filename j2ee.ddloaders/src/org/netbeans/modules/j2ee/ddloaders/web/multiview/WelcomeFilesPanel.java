@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.web.JspPropertyGroup;
 import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.netbeans.modules.j2ee.ddloaders.web.*;
 import org.netbeans.modules.xml.multiview.ui.*;
@@ -77,12 +76,14 @@ public class WelcomeFilesPanel extends SectionInnerPanel {
     
     /** This will be called before model is changed from this panel
      */
+    @Override
     protected void startUIChange() {
         dObj.setChangedFromUI(true);
     }
     
     /** This will be called after model is changed from this panel
      */
+    @Override
     protected void endUIChange() {
         dObj.modelUpdatedFromUI();
         dObj.setChangedFromUI(false);
@@ -212,7 +213,6 @@ public class WelcomeFilesPanel extends SectionInnerPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        // TODO add your handling code here:
         try {
             SourceGroup[] groups = DDUtils.getDocBaseGroups(dObj);
             org.openide.filesystems.FileObject fo = BrowseFolders.showDialog(groups);

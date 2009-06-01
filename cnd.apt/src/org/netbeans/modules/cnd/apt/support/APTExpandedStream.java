@@ -104,7 +104,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
             try {
                 token = (APTToken) selector.nextToken();
             } catch (TokenStreamException ex) {
-                APTUtils.LOG.log(Level.SEVERE, null, ex);
+                APTUtils.LOG.log(Level.SEVERE, ex.getMessage());
                 return APTUtils.EOF_TOKEN;
             }
             if (extractingMacroParams) {
@@ -124,7 +124,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                             // start macro expanding
                             switchMacroExpanding = pushMacroExpanding(token, macro);
                         } catch (TokenStreamException ex) {
-                            APTUtils.LOG.log(Level.SEVERE, null, ex);
+                            APTUtils.LOG.log(Level.SEVERE, ex.getMessage());
                             switchMacroExpanding = false;
                         }
                     }
@@ -156,7 +156,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                 selector.push((TokenStream)expanded);
             }
         } catch (RecognitionException ex) {
-            APTUtils.LOG.log(Level.SEVERE, "error on expanding " + token, ex); // NOI18N
+            APTUtils.LOG.log(Level.SEVERE, "error on expanding {0}\n{1}", new Object[] {token, ex.getMessage()}); // NOI18N
             res = false;
         }    
         return res;

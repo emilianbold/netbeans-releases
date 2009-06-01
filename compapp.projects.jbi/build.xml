@@ -43,11 +43,13 @@ made subject to such option by the copyright holder.
 <project name="compapp.projects.jbi" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
 
-    <target name="ant-extra">
+    <target name="ant-extra" depends="init">
         <mkdir dir="build/antclasses"/>
         <javac srcdir="antsrc" destdir="build/antclasses" source="1.5" debug="true" deprecation="true">
             <classpath>
-                <pathelement path="${antsrc.cp}"/>
+                <path refid="cp"/>
+                <pathelement location="${netbeans.dest.dir}/java2/ant/lib/ant.jar"/>
+                <pathelement location="${cluster}/${module.jar}"/>
             </classpath>
         </javac>
         <copy todir="build/antclasses">
@@ -65,7 +67,10 @@ made subject to such option by the copyright holder.
         <mkdir dir="build/catdclasses"/>
         <javac srcdir="catdsrc" destdir="build/catdclasses" source="1.5" debug="true" deprecation="true">
             <classpath>
-                <pathelement path="${catdsrc.cp}"/>
+                <path refid="cp"/>
+                <pathelement location="${netbeans.dest.dir}/java2/modules/ext/junit-3.8.2.jar"/>
+                <pathelement location="${netbeans.dest.dir}/java2/modules/ext/jaxws21/api/saaj-api.jar"/>
+                <pathelement location="${cluster}/${module.jar}"/>
             </classpath>
         </javac>
         <mkdir dir="${cluster}/modules/ext/jbi"/>
@@ -74,5 +79,5 @@ made subject to such option by the copyright holder.
         </jar>
     </target>
 
-    <target name="netbeans-extra" depends="ant-extra,catd-extra"/>
+    <target name="netbeans-extra" depends="ant-extra"/> <!-- TODO ,catd-extra"/-->
 </project>

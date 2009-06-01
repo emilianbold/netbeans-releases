@@ -52,6 +52,7 @@ import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.GetSourcesFromKenaiPanel.GetSourcesInfo;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
+import org.netbeans.modules.kenai.ui.spi.SourceHandle;
 import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
 import org.netbeans.modules.versioning.system.cvss.api.CVS;
@@ -65,23 +66,31 @@ import org.openide.windows.WindowManager;
 public final class GetSourcesFromKenaiAction implements ActionListener {
 
     private ProjectAndFeature prjAndFeature;
+    private SourceHandleImpl srcHandle;
 
     private String dialogTitle = NbBundle.getMessage(GetSourcesFromKenaiAction.class, "GetSourcesFromKenaiTitle");
     private String getOption = NbBundle.getMessage(GetSourcesFromKenaiAction.class, "GetSourcesFromKenaiAction.GetFromKenai.option");
     private String cancelOption = NbBundle.getMessage(GetSourcesFromKenaiAction.class, "GetSourcesFromKenaiAction.Cancel.option");
 
-    public GetSourcesFromKenaiAction(ProjectAndFeature prjFtr) {
+    public GetSourcesFromKenaiAction(ProjectAndFeature prjFtr, SourceHandle src) {
         prjAndFeature = prjFtr;
+        this.srcHandle = (SourceHandleImpl) src;
     }
 
     public GetSourcesFromKenaiAction() {
-        this(null);
+        this(null, null);
     }
 
     public void actionPerformed(ActionEvent e) {
         if (prjAndFeature!=null && KenaiService.Names.EXTERNAL_REPOSITORY.equals(prjAndFeature.feature.getService())) {
             tryExternalCheckout(prjAndFeature.feature.getLocation());
             return;
+        }
+
+        if (prjAndFeature!=null && KenaiService.Names.SUBVERSION.equals(prjAndFeature.feature.getService())) {
+            if (!Subversion.isClientAvailable(true)) {
+                return;
+            }
         }
 
         Object options[] = new Object[2];
@@ -109,27 +118,33 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
             final KenaiFeature feature = sourcesInfo.feature;
 
             if (KenaiService.Names.SUBVERSION.equals(feature.getService())) {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        try {
+                if (Subversion.isClientAvailable(true)) {
+                    RequestProcessor.getDefault().post(new Runnable() {
 
-                            if (passwdAuth != null) {
-                                Subversion.checkoutRepositoryFolder(feature.getLocation(), sourcesInfo.relativePaths,
-                                    new File(sourcesInfo.localFolderPath), passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true);
-                            } else {
-                                Subversion.checkoutRepositoryFolder(feature.getLocation(), sourcesInfo.relativePaths,
-                                    new File(sourcesInfo.localFolderPath), true);
-                            }
+                        public void run() {
+                            try {
 
-                        } catch (MalformedURLException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (IOException ex) {
-                            if (Subversion.CLIENT_UNAVAILABLE_ERROR_MESSAGE.equals(ex.getMessage())) {
-                                // DO SOMETHING, svn client is unavailable
+                                if (passwdAuth != null) {
+                                    Subversion.checkoutRepositoryFolder(feature.getLocation(), sourcesInfo.relativePaths,
+                                            new File(sourcesInfo.localFolderPath), passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true);
+                                } else {
+                                    Subversion.checkoutRepositoryFolder(feature.getLocation(), sourcesInfo.relativePaths,
+                                            new File(sourcesInfo.localFolderPath), true);
+                                }
+                                if (srcHandle!=null) {
+                                    srcHandle.refresh();
+                                }
+
+                            } catch (MalformedURLException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } catch (IOException ex) {
+                                if (Subversion.CLIENT_UNAVAILABLE_ERROR_MESSAGE.equals(ex.getMessage())) {
+                                    // DO SOMETHING, svn client is unavailable
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
             } else if (KenaiService.Names.MERCURIAL.equals(feature.getService())) {
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
@@ -142,7 +157,9 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
                                 Mercurial.cloneRepository(feature.getLocation(), new File(sourcesInfo.localFolderPath),
                                     "", "", ""); // NOI18N
                             }
-
+                            if (srcHandle != null) {
+                                srcHandle.refresh();
+                            }
                         } catch (MalformedURLException ex) {
                             Exceptions.printStackTrace(ex);
                         }
@@ -170,7 +187,8 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
             Logger.getLogger(GetSourcesFromKenaiAction.class.getName()).log(Level.INFO, "Cannot checkout external repository " + url, malformedURLException);
         } catch (IOException ex) {
             if (Subversion.CLIENT_UNAVAILABLE_ERROR_MESSAGE.equals(ex.getMessage())) {
-                // DO SOMETHING, svn client is unavailable
+                //this should not happen. It is handled in openCheckoutWizard
+                return;
             }
         }
         JOptionPane.showMessageDialog(

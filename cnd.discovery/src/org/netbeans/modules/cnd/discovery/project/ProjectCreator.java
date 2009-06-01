@@ -444,8 +444,8 @@ public class ProjectCreator {
             return;
         }
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
-        MakeConfiguration conf = (MakeConfiguration) makeConfigurationDescriptor.getConfs().getActive();
+        MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
+        MakeConfiguration conf = makeConfigurationDescriptor.getActiveConfiguration();
         String name = displayName;
         if (displayName.indexOf('.')>0){
             name = displayName.substring(displayName.lastIndexOf('.')+1);

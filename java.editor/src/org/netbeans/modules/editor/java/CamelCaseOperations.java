@@ -49,7 +49,7 @@ import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -206,7 +206,7 @@ import org.openide.ErrorManager;
             }
             document.insertString(offset, text, null);
         } catch (BadLocationException ble) {
-            ErrorManager.getDefault().notify(ble);
+            Exceptions.printStackTrace(ble);
         }
     }
 }

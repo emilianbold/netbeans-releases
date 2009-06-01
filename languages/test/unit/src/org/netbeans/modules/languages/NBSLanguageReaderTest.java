@@ -135,40 +135,5 @@ public class NBSLanguageReaderTest extends TestCase {
             assertEquals ("test.nbs 5,20: Syntax error (nt: rePart, tokens: <identifier,'a'> <whitespace,' '>.", ex.getMessage ());
         }
     }
-    
-    public void testUndefinedNT () throws ParseException, IOException {
-        NBSLanguageReader reader = NBSLanguageReader.create (
-            "TOKEN:TAG:( '<' ['a'-'z']+ )\n" +
-            "TOKEN:SYMBOL:( '>' | '=')\n" +
-            "TOKEN:ENDTAG:( '</' ['a'-'z']+ )\n" +
-            "TOKEN:ATTRIBUTE:( ['a'-'z']+ )\n" +
-            "TOKEN:ATTR_VALUE:( '\\\"' [^ '\\n' '\\r' '\\\"']+ '\\\"' )\n" +
-            "TOKEN:VALUE:( '\\\"' [^ '\\n' '\\r' '\\\"']+ '\\\"' )\n" +
-            "TOKEN:TEXT:( [^'<']+ )\n" +
-            "\n" +
-            "S = tags;\n" +
-            "tags = (startTag | endTag | etext)*;\n" +
-            "startTag = <TAG> (attribute)* ( <SYMBOL, '>'> | <SYMBOL, '/>'> );\n" +
-            "attribute = <ATTRIBUTE>;\n" +
-            "attribute = <ATTR_VALUE>; \n" +
-            "attribute = <ATTRIBUTE> <SYMBOL,'='> <VALUE>; \n" +
-            "etext = (<TEXT>)*;\n",
-            "test.nbs", 
-            "text/x-test"
-        );
-        try {
-            List<TokenType> tokenTypes = reader.getTokenTypes ();
-            assertEquals (10, tokenTypes.size ());
-            assertEquals (0, reader.getFeatures ().size ());
-            LanguageImpl language = TestUtils.createLanguage (reader);
-            language.read ();
-            List<Rule> grammarRules = reader.getRules (language);
-            assertEquals (20, grammarRules.size ());
-            LLSyntaxAnalyser.create (language, grammarRules, Collections.<Integer>emptySet ());
-            assert (false);
-        } catch (ParseException ex) {
-            assertEquals ("endTag grammar rule not defined!", ex.getMessage ());
-        }
-    }
 }
 

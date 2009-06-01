@@ -113,13 +113,11 @@ public class HudsonManagerImpl {
         
         fireChangeListeners();
         
-        // Strore instance file
-        storeInstanceDefinition(instance);
+        instance.storeDefinition();
         
-        // Add property change listener
         instance.getProperties().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                storeInstanceDefinition(instance);
+                instance.storeDefinition();
             }
         });
         
@@ -197,16 +195,6 @@ public class HudsonManagerImpl {
         return NbPreferences.forModule(HudsonManagerImpl.class).node("instances"); // NOI18N
     }
     
-    private void storeInstanceDefinition(HudsonInstanceImpl instance) {
-        if (!instance.isPersisted()) {
-            return;
-        }
-        Preferences node = instance.prefs();
-        for (Map.Entry<String,String> entry : instance.getProperties().entrySet()) {
-            node.put(entry.getKey(), entry.getValue());
-        }
-    }
-
     public static String simplifyServerLocation(String name, boolean forKey) {
         // http://deadlock.netbeans.org/hudson/ => deadlock.netbeans.org_hudson
         String display = name.replaceFirst("https?://", "").replaceFirst("/$", "");

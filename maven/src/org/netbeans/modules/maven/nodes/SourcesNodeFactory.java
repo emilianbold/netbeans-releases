@@ -42,6 +42,8 @@ import org.netbeans.modules.maven.spi.nodes.AbstractMavenNodeList;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -96,6 +98,11 @@ public class SourcesNodeFactory implements NodeFactory {
         public Node node(SourceGroup group) {
             Project owner = FileOwnerQuery.getOwner(group.getRootFolder());
             if (owner != project) {
+                if (owner == null) {
+                    //#152418 if project for folder is not found, just look the other way..
+                    Logger.getLogger(SourcesNodeFactory.class.getName()).log(Level.INFO, "Cannot find a project owner for folder " + group.getRootFolder()); //NOI18N
+                    return null;
+                }
                 AbstractNode erroNode = new AbstractNode(Children.LEAF);
                 ProjectInformation info = owner.getLookup().lookup(ProjectInformation.class);
                 String prjText;

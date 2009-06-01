@@ -333,22 +333,35 @@ class IssueStorage {
     }
 
     void cleanup() {
-        File root = getStorageRootFile();
-        File[] repos = root.listFiles();
-        if(repos == null) {
-            return;
-        }
-        for (File repo : repos) {
-            cleanup(repo);
+        try {
+            BugtrackingManager.LOG.log(Level.FINE, "starting bugtrackig storage cleanup"); // NOI18N
+
+            File root = getStorageRootFile();
+            File[] repos = root.listFiles();
+            if(repos == null) {
+                return;
+            }
+            for (File repo : repos) {
+                cleanup(repo);
+            }
+        } finally {
+            BugtrackingManager.LOG.log(Level.FINE, "finnished bugtrackig storage cleanup"); // NOI18N
         }
     }
 
     void cleanup(String namespace) {
-        cleanup(getNameSpaceFolder(namespace));
+        try {
+            BugtrackingManager.LOG.log(Level.FINE, "starting bugtrackig storage cleanup for {0}", new Object[] {namespace}); // NOI18N
+            cleanup(getNameSpaceFolder(namespace));
+        } finally {
+            BugtrackingManager.LOG.log(Level.FINE, "finnished bugtrackig storage cleanup for {0}", new Object[] {namespace}); // NOI18N
+        }
     }
+
 
     private void cleanup(File repo) {
         try {
+            BugtrackingManager.LOG.log(Level.FINE, "starting bugtrackig storage cleanup for {0}", new Object[] {repo.getAbsoluteFile()}); // NOI18N
             Set<String> livingIssues = new HashSet<String>();
             File[] queries = repo.listFiles(new FilenameFilter() {
                 public boolean accept(File dir, String name) {
@@ -378,6 +391,7 @@ class IssueStorage {
                     livingIssues.addAll(ids.keySet());
                 }
             }
+            BugtrackingManager.LOG.log(Level.FINER, "living query issues {0}", new Object[] {livingIssues}); // NOI18N
             File[] issues = repo.listFiles(new FilenameFilter() {
                 public boolean accept(File dir, String name) {
                     return name.endsWith(ISSUE_SUFIX);
@@ -388,6 +402,7 @@ class IssueStorage {
                     String id = issue.getName();
                     id = id.substring(0, id.length() - ISSUE_SUFIX.length());
                     if(!livingIssues.contains(id)) {
+                        BugtrackingManager.LOG.log(Level.FINE, "removing issue {0}", new Object[] {id}); // NOI18N
                         issue.delete();
                     }
                 }
@@ -397,6 +412,8 @@ class IssueStorage {
             BugtrackingManager.LOG.log(Level.WARNING, null, ex); // NOI18N
         } catch (InterruptedException ex) {
             BugtrackingManager.LOG.log(Level.WARNING, null, ex); // NOI18N
+        } finally {
+            BugtrackingManager.LOG.log(Level.FINE, "finished bugtrackig storage cleanup for {0}", new Object[] {repo.getAbsoluteFile()}); // NOI18N
         }
     }
 

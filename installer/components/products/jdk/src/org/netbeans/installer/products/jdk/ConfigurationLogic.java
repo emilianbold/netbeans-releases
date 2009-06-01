@@ -39,6 +39,7 @@ package org.netbeans.installer.products.jdk;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
@@ -358,33 +359,32 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             
     private ExecutionResults runJREInstallerWindows(File jreInstaller, Progress progress) throws InstallationException {
         progress.setDetail(PROGRESS_DETAIL_RUNNING_JRE_INSTALLER);
-        final String [] command ;
+        final List <String> commands = new ArrayList<String> ();
         
         final File logFile = getLog("jre_install");
         
-        if(logFile!=null) {
-            command = new String [] {
-                "msiexec.exe",
-                "/qn",
-                "/i",
-                jreInstaller.getPath(),
-                "IEXPLORER=1",
-                "MOZILLA=1",
-                "/log",
-                logFile.getAbsolutePath()
-            };
-            LogManager.log("... JRE installation log file : " + logFile);
+        if(jreInstaller.getName().equals(JRE_MSI_NAME)) {
+            commands.add("msiexec.exe");
+            commands.add("/qn");
+            commands.add("/i");
+            commands.add(jreInstaller.getPath());
+            commands.add("IEXPLORER=1");
+            commands.add("MOZILLA=1");
+            if (logFile != null) {
+                commands.add("/log");
+                commands.add(logFile.getAbsolutePath());
+                LogManager.log("... JRE installation log file : " + logFile);
+            }
         } else {
-            command = new String [] {
-                "msiexec.exe",
-                "/qn",
-                "/i",
-                jreInstaller.getPath(),
-                "IEXPLORER=1",
-                "MOZILLA=1",
-            };
+            commands.add(jreInstaller.getPath());
+            commands.add("/s");
+            final String loggingOption = (logFile!=null) ?
+            "/log " + BACK_SLASH + QUOTE  + logFile.getAbsolutePath()  + BACK_SLASH + QUOTE +" " : EMPTY_STRING;
+            commands.add(loggingOption);
+
         }
         
+        final String [] command = commands.toArray(new String [] {});
         
         final File location = new File(parseString("$E{ProgramFiles}"),
                 "Java\\jre" + (isJDK6U10orLater() ? "6" : getProduct().getVersion().toJdkStyle()));
@@ -415,9 +415,18 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     ERROR_INSTALL_JRE_ERROR_KEY),e);
         } finally {
             progressThread.finish();
+            if(!jreInstaller.getName().equals(JRE_MSI_NAME)) {
+                try {
+                    FileUtils.deleteFile(jreInstaller);
+                } catch (IOException e) {
+                    LogManager.log("Cannot delete JRE installer file " + jreInstaller, e);                
+                }
+            }
+
             progress.setPercentage(progress.COMPLETE);
         }
     }
+
     private ExecutionResults runJavaDBInstallerWindows(File javadbInstaller, Progress progress) throws InstallationException {
         progress.setDetail(PROGRESS_DETAIL_RUNNING_JAVADB_INSTALLER);
         final String [] command ;
@@ -486,9 +495,14 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
      */
     private File findJREWindowsInstaller() {
         if (isJDK6U10orLater()) {
-            // Starting with JDK6U10, jre.msi is located at the JDK installation directory
+            // for 6u14+ we additionally bundle public jre installer
+            // for 6u10-6u13, jre.msi is located at the JDK installation directory
+            final String jreFileName = getProduct().getVersion().newerOrEquals(Version.getVersion("1.6.0_14")) ?
+                JRE_INSTALLER_FILE_NAME :
+                JRE_MSI_NAME;
+            
             File jreInstallerFile = new File(
-                    getProduct().getInstallationLocation(), JRE_MSI_NAME);
+                    getProduct().getInstallationLocation(), jreFileName);
             if (!jreInstallerFile.exists()) {
                 LogManager.log("... JRE installer doesn`t exist : " + jreInstallerFile);
                 return null;
@@ -1098,6 +1112,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String JDK_INSTALLER_FILE_NAME =
             ResourceUtils.getString(ConfigurationLogic.class,
             "CL.jdk.installer.file");
+    public static final String JRE_INSTALLER_FILE_NAME =
+            "{jre-installer-file}";
     public static final String ERROR_JDK_INSTALL_SCRIPT_RETURN_NONZERO_KEY =
             "CL.error.jdk.installation.return.nonzero";//NOI18N
     public static final String ERROR_JDK_UNINSTALL_SCRIPT_RETURN_NONZERO_KEY =

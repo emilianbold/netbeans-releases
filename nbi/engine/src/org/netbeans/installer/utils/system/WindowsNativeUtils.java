@@ -232,8 +232,10 @@ public class WindowsNativeUtils extends NativeUtils {
             ErrorManager.notifyCritical("Cannot load native library which is stricly necessary to work correctly.",e);
         }
         //initializeForbiddenFiles(FORBIDDEN_DELETING_FILES_WINDOWS);
-        initializeForbiddenFiles();
-        initializeRegistryKeys();
+        if(nativeLibraryLoaded) {
+            initializeForbiddenFiles();
+            initializeRegistryKeys();
+        }
     }
     @Override
     protected Platform getPlatform() {

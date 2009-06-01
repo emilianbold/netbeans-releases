@@ -81,7 +81,7 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
         FileImpl included = null;
         if (resolvedPath != null) {
             CharSequence path = resolvedPath.getPath();
-            if (getIncludeHandler().pushInclude(path, apt.getToken().getLine(), resolvedPath.getIndex())) {
+            if (getIncludeHandler().pushInclude(path, apt, resolvedPath.getIndex())) {
                 ProjectBase aStartProject = this.getStartProject();
                 if (aStartProject != null){
                     if (aStartProject.isValid()) {

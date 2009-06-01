@@ -309,7 +309,11 @@
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
-                        <code-name-base>org.netbeans.insane</code-name-base>
+                        <code-name-base>org.netbeans.libs.junit4</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
                         <recursive/>
                         <compile-dependency/>
                     </test-dependency>
@@ -361,6 +365,8 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.sun.cloud.cnd</friend>
+                <friend>com.sun.cloud.cnd.remote.ext</friend>
                 <friend>com.sun.dlight</friend>
                 <friend>com.sun.dlight.model</friend>
                 <friend>com.sun.dlight.projectsupport</friend>
@@ -393,7 +399,6 @@
                 <friend>org.netbeans.modules.cnd.qnavigator</friend>
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>
-                <friend>com.sun.cloud.cnd</friend>
                 <package>org.netbeans.modules.cnd</package>
                 <package>org.netbeans.modules.cnd.actions</package>
                 <package>org.netbeans.modules.cnd.api.compilers</package>

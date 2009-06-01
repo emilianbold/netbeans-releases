@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.languages.features;
 
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -48,6 +50,11 @@ import javax.swing.text.Document;
 
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTPath;
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
+import org.netbeans.api.languages.ParserManager;
+import org.netbeans.api.languages.ParserManager.State;
+import org.netbeans.api.languages.SyntaxContext;
+import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.database.DatabaseContext;
@@ -57,6 +64,7 @@ import org.netbeans.api.languages.database.DatabaseItem;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
+import org.netbeans.modules.languages.LanguagesManager;
 
 
 /**
@@ -65,27 +73,28 @@ import org.netbeans.modules.languages.Language;
  */
 public class DatabaseManager {
     
-//    private NbEditorDocument            document;
+    private NbEditorDocument            document;
 
     
     /** Creates a new instance of AnnotationManager */
-//    public DatabaseManager (Document document) {
-//        this.document = (NbEditorDocument) document;
-//    }
+    public DatabaseManager (Document document) {
+        this.document = (NbEditorDocument) document;
+    }
     
-    public static DatabaseContext parse (
+    static DatabaseContext parse (
         ASTNode ast, 
-        Document doc
+        Document doc,
+        ParserManager parser
     ) {
         DatabaseContext rootContext = new DatabaseContext (null, null, ast.getOffset (), ast.getEndOffset ());
         List<ASTItem> path = new ArrayList<ASTItem> ();
         path.add (ast);
         List<DatabaseItem> unresolvedUsages = new ArrayList<DatabaseItem> ();
-        process (path, rootContext, unresolvedUsages, doc);
+        process (path, rootContext, unresolvedUsages, doc, parser);
         Iterator<DatabaseItem> it2 = unresolvedUsages.iterator ();
         while (it2.hasNext ()) {
-//!            if (parser != null && parser.getState () == State.PARSING)
-//                return null;
+            if (parser != null && parser.getState () == State.PARSING)
+                return null;
             DatabaseUsage usage = (DatabaseUsage) it2.next ();
             DatabaseContext context = (DatabaseContext) it2.next ();
             DatabaseDefinition definition = rootContext.getDefinition (usage.getName (), usage.getOffset ());
@@ -102,11 +111,14 @@ public class DatabaseManager {
         List<ASTItem>           path, 
         DatabaseContext         context, 
         List<DatabaseItem>      unresolvedUsages,
-        Document                doc
+        Document                doc,
+        ParserManager           parser
     ) {
         ASTItem last = path.get (path.size () - 1);
         Iterator<ASTItem> it = last.getChildren ().iterator ();
         while (it.hasNext ()) {
+            if (parser != null && parser.getState () == State.PARSING)
+                return;
             ASTItem item =  it.next ();
             path.add (item);
             Language language = (Language) item.getLanguage ();
@@ -142,7 +154,7 @@ public class DatabaseManager {
                     String type = (String) feature.getValue ("type");
                     DatabaseContext newContext = new DatabaseContext (context, type, item.getOffset (), item.getEndOffset ());
                     context.addContext (item, newContext);
-                    process (path, newContext, unresolvedUsages, doc);
+                    process (path, newContext, unresolvedUsages, doc, parser);
                     path.remove (path.size () - 1);
                     continue;
                 }
@@ -162,21 +174,21 @@ public class DatabaseManager {
                     }
                 }
             }
-            process (path, context, unresolvedUsages, doc);
+            process (path, context, unresolvedUsages, doc, parser);
             path.remove (path.size () - 1);
         }
     }
     
     //private static Map<ASTNode,DatabaseContext> astNodeToDatabaseContext = new WeakHashMap<ASTNode,DatabaseContext> ();
     
-//    public static DatabaseContext getRoot (ASTNode ast) {
-//        return org.netbeans.api.languages.database.DatabaseManager.getRoot(ast);
-//        //return astNodeToDatabaseContext.get (ast);
-//    }
-//    
-//    static void setRoot (ASTNode node, DatabaseContext databaseContext) {
-//        org.netbeans.api.languages.database.DatabaseManager.setRoot(node, databaseContext);
-//        //astNodeToDatabaseContext.put (node, databaseContext);
-//    }
+    public static DatabaseContext getRoot (ASTNode ast) {
+        return org.netbeans.api.languages.database.DatabaseManager.getRoot(ast);
+        //return astNodeToDatabaseContext.get (ast);
+    }
+    
+    static void setRoot (ASTNode node, DatabaseContext databaseContext) {
+        org.netbeans.api.languages.database.DatabaseManager.setRoot(node, databaseContext);
+        //astNodeToDatabaseContext.put (node, databaseContext);
+    }
 }
 

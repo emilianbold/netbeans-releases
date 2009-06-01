@@ -57,7 +57,7 @@ public class LocalizedBundleInfoTest extends TestBase {
 
     public void testIsModified() throws Exception {
         NbModuleProject p = generateStandaloneModule("module1");
-        LocalizedBundleInfo.Provider provider = (LocalizedBundleInfo.Provider) p.getLookup().lookup(LocalizedBundleInfo.Provider.class);
+        LocalizedBundleInfo.Provider provider = p.getLookup().lookup(LocalizedBundleInfo.Provider.class);
         LocalizedBundleInfo info = provider.getLocalizedBundleInfo();
         assertFalse("just loaded", info.isModified());
         info.setCategory("my new category");

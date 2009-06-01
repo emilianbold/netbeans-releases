@@ -50,8 +50,8 @@ import java.util.HashMap;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JTree;
 import javax.swing.UIManager;
+import org.openide.util.Parameters;
 
 
 /**
@@ -98,7 +98,11 @@ final class DropGlassPane extends JPanel {
      * @param visible was glass pane visible
      */
     static void setOriginalPane(JComponent source, Component pane, boolean visible) {
-        // pending, should throw an exception that original is set already
+        if (oldPane != null) {
+            throw new IllegalStateException("Original pane already present");
+        }
+        Parameters.notNull("source", source);
+        Parameters.notNull("pane", pane);
         oldPane = pane;
         originalSource = source;
         wasVisible = visible;
@@ -115,8 +119,7 @@ final class DropGlassPane extends JPanel {
      */
     static void putBackOriginal() {
         if (oldPane == null) {
-            // pending, should throw an exception
-            return;
+            throw new IllegalStateException("No original pane present");
         }
 
         originalSource.getRootPane().setGlassPane(oldPane);
@@ -126,6 +129,7 @@ final class DropGlassPane extends JPanel {
 
     /** Unset drop line if setVisible to false.
      * @param boolean aFlag new state */
+    @Override
     public void setVisible(boolean aFlag) {
         super.setVisible(aFlag);
 
@@ -169,6 +173,7 @@ final class DropGlassPane extends JPanel {
 
     /** Paint drop line on glass pane.
      * @param Graphics g Obtained graphics */
+    @Override
     public void paint(Graphics g) {
         if (line != null) {
             Color c = UIManager.getColor("Tree.dropLine");

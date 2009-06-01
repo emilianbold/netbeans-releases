@@ -59,13 +59,14 @@ import javax.swing.Icon;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.modules.java.ui.Icons;
-import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.text.NbDocument;
 
 /** This class contains various methods bound to visualization of Java model 
@@ -333,7 +334,7 @@ public final class  UiUtils {
                         Line l = lc.getLineSet().getCurrent(line);
                         
                         if (l != null) {
-                            l.show(Line.SHOW_GOTO, column);
+                            l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
                             return true;
                         }
                     }

@@ -68,6 +68,8 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotatable;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -148,10 +150,10 @@ public class Utils {
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 if (a [0] instanceof Line)
-                    ((Line) a [0]).show (Line.SHOW_GOTO);
+                    ((Line) a [0]).show (ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
                 else
                 if (a [0] instanceof Line.Part)
-                    ((Line.Part) a [0]).getLine ().show (Line.SHOW_GOTO);
+                    ((Line.Part) a [0]).getLine ().show (ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
                 else
                     throw new InternalError ();
             }

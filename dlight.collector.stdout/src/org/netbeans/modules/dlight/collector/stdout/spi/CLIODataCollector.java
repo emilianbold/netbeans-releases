@@ -148,7 +148,7 @@ public final class CLIODataCollector
 
     public void init(DataStorage storage, DLightTarget target) {
         this.storage = storage;
-        log.info("Do INIT for " + storage.toString()); // NOI18N
+        log.fine("Do INIT for " + storage.toString()); // NOI18N
     }
 
     protected void processLine(String line) {

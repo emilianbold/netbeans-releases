@@ -40,76 +40,75 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 /**
  *
  * @author Kirill Sorokin
+ * @author Dmitry Lipin
  */
 public final class ResourceUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Static
-    private static Map<String, ResourceBundle> loadedBundles = 
+
+    private static HashMap<String, ResourceBundle> loadedBundles =
             new HashMap<String, ResourceBundle>();
-    
+
+
     // strings //////////////////////////////////////////////////////////////////////
-    public static String getString(
-            final String baseName, 
-            final String key) {
-        return loadBundle(
-                baseName, 
-                Locale.getDefault(), 
-                ResourceUtils.class.getClassLoader()).getString(key);
+    public static String getString(final String baseName, final String key) {
+        return getString(baseName, key, ResourceUtils.class.getClassLoader());
     }
-    
+
+    public static String getString(final String baseName, final String key, final ClassLoader loader) {
+        return getBundleMessage(baseName, Locale.getDefault(), loader, key);
+    }
+
+    public static String getString(final Class clazz, final String key) {
+        return getBundleMessage(getBundleResource(clazz), Locale.getDefault(), clazz.getClassLoader(), key);
+    }
+
     public static String getString(
-            final String baseName, 
-            final String key, 
+            final String baseName,
+            final String key,
             final Object... arguments) {
-        return StringUtils.format(getString(baseName, key), arguments);
+        return getString(baseName, key, ResourceUtils.class.getClassLoader(), arguments);
     }
-    
+
     public static String getString(
-            final String baseName, 
-            final String key, 
-            final ClassLoader loader) {
-        return loadBundle(baseName, Locale.getDefault(), loader).getString(key);
-    }
-    
-    public static String getString(
-            final String baseName, 
-            final String key, 
-            final ClassLoader loader, 
+            final String baseName,
+            final String key,
+            final ClassLoader loader,
             final Object... arguments) {
-        return StringUtils.format(getString(baseName, key, loader), arguments);
+        return format(getString(baseName, key, loader), arguments);
     }
-    
+
     public static String getString(
-            final Class clazz, 
-            final String key) {
-        return loadBundle(clazz, Locale.getDefault()).getString(key);
-    }
-    
-    public static String getString(
-            final Class clazz, 
-            final String key, 
+            final Class clazz,
+            final String key,
             final Object... arguments) {
-        return StringUtils.format(getString(clazz, key), arguments);
+        return format(getString(clazz, key), arguments);
     }
-    
+
+    private static String format(
+            final String message,
+            final Object... arguments) {
+        return message == null ? null : StringUtils.format(message, arguments);
+    }
+
     // resources ////////////////////////////////////////////////////////////////////
     public static InputStream getResource(
             final String name) {
         return getResource(name, ResourceUtils.class.getClassLoader());
     }
-    
+
     public static InputStream getResource(
-            final String path, 
+            final String path,
             final ClassLoader loader) {
         return loader.getResourceAsStream(path);
     }
-    
+
     /**
      * Returns the size of the resource file.
      * @param resource Resource name
@@ -141,7 +140,7 @@ public final class ResourceUtils {
         }
         return size;
     }
-    
+
     public static String getResourceFileName(
             final String resource) {
         return resource.substring(resource.lastIndexOf("/")+1);
@@ -154,41 +153,67 @@ public final class ResourceUtils {
     }
     // private //////////////////////////////////////////////////////////////////////
     private static ResourceBundle loadBundle(
-            final String baseName, 
-            final Locale locale, 
+            final String baseName,
+            final Locale locale,
             final ClassLoader loader) {
         final String bundleId = loader.toString() + baseName;
-        
+
         ResourceBundle bundle = (ResourceBundle) loadedBundles.get(bundleId);
-        
-        if (bundle == null) {
-            bundle = ResourceBundle.getBundle(baseName, locale, loader);
+
+        if (bundle == null && !loadedBundles.containsKey(bundleId)) {
+            try {
+                bundle = ResourceBundle.getBundle(baseName, locale, loader);                
+            } catch (MissingResourceException e) {
+                LogManager.log("Can`t find bundle " + baseName +
+                        " using [" + locale + "] locale" +
+                        " and [" + loader + "] classloader",
+                        e);
+                //throw e;
+            }
             loadedBundles.put(bundleId, bundle);
         }
-        
+
         return bundle;
     }
-    
-    private static ResourceBundle loadBundle(
-            final Class clazz, 
-            final Locale locale) {
-        return loadBundle(
-                clazz.getPackage().getName() + BUNDLE_FILE_SUFFIX, 
-                locale, 
-                clazz.getClassLoader());
+
+    private static String getBundleMessage(
+            final String baseName,
+            final Locale locale,
+            final ClassLoader loader,
+            final String key) {
+        ResourceBundle bundle = loadBundle(baseName, locale, loader);
+        String message = null;
+        if (bundle != null) {
+            try {                
+                message = bundle.getString(key);
+            } catch (MissingResourceException e) {
+                if(locale.toString().length() > 0) {
+                    String [] parts = locale.toString().split(StringUtils.UNDERSCORE);
+                    String upLocale = StringUtils.asString(parts, 0, parts.length - 1, StringUtils.UNDERSCORE);                    
+                    return getBundleMessage(baseName, StringUtils.parseLocale(upLocale), loader, key);
+                } else {
+                    LogManager.log("Can`t load message in bundle " + baseName +
+                        " for key " + key +
+                        " using [" + loader + "] classloader");
+                }
+            }            
+        }
+        return message;
     }
     
+    private static String getBundleResource(final Class clazz) {
+        return clazz.getPackage().getName() + BUNDLE_FILE_SUFFIX;
+    }
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private ResourceUtils() {
         // does nothing
     }
-    
+
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final int BUFFER_SIZE = 
+    public static final int BUFFER_SIZE =
             40960; // NOMAGI
-    
-    public static final String BUNDLE_FILE_SUFFIX = 
+    public static final String BUNDLE_FILE_SUFFIX =
             ".Bundle"; // NOI18N
 }

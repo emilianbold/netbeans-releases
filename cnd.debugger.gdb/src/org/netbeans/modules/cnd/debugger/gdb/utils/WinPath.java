@@ -100,6 +100,6 @@ public class WinPath {
     }
 
     public static boolean isWinPath(String path) {
-        return path.length() > 2 && Character.isLetter(path.charAt(0)) && path.charAt(1) == ':';
+        return path.length() >= 2 && Character.isLetter(path.charAt(0)) && path.charAt(1) == ':';
     }
 }

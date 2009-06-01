@@ -44,6 +44,7 @@ package org.netbeans.modules.languages.dataobject;
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
@@ -55,7 +56,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.openide.filesystems.FileUtil;
 
 
 public class LanguagesDataNode extends DataNode {
@@ -63,7 +63,8 @@ public class LanguagesDataNode extends DataNode {
     public LanguagesDataNode(LanguagesDataObject obj) {
         super(obj, Children.LEAF);
         String mimeType = obj.getPrimaryFile ().getMIMEType ();
-        FileObject fo = FileUtil.getConfigFile ("Editors/" + mimeType + "/language.nbs");
+        FileObject fo = Repository.getDefault ().getDefaultFileSystem ().
+            findResource ("Editors/" + mimeType + "/language.nbs");
         String icon = (String) fo.getAttribute ("icon");
         if (icon == null)
             icon = "org/netbeans/modules/languages/resources/defaultIcon.png";
@@ -93,7 +94,8 @@ public class LanguagesDataNode extends DataNode {
         if (!mimeTypeToActions.containsKey (mimeType)) {
             List<Action> actions = new ArrayList<Action> ();
             try {
-                FileObject fo = FileUtil.getConfigFile ("Loaders/" + mimeType + "/Actions");
+                FileObject fo = Repository.getDefault ().getDefaultFileSystem ().
+                    findResource ("Loaders/" + mimeType + "/Actions");
                 if (fo != null) {
                     DataFolder df = DataFolder.findFolder (fo);
                     DataObject[] dob = df.getChildren ();

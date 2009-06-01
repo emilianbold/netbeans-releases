@@ -57,7 +57,6 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
-import javax.swing.text.Position;
 
 /**
  *                       0    1    2    3    4    waypoints.size()
@@ -354,7 +353,7 @@ public final class NavigationHistory {
     
     private static final Logger LOG = Logger.getLogger(NavigationHistory.class.getName());
     
-    private static Map<String, NavigationHistory> instances = new HashMap<String, NavigationHistory>();
+    private static final Map<String, NavigationHistory> instances = new HashMap<String, NavigationHistory>();
 
     private final String id;
     private final String LOCK = new String("NavigationHistory.LOCK"); //NOI18N

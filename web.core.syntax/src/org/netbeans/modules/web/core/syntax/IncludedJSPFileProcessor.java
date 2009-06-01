@@ -41,24 +41,18 @@ package org.netbeans.modules.web.core.syntax;
 
 import java.util.Collections;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
-import org.openide.filesystems.FileObject;
 import static org.netbeans.api.jsp.lexer.JspTokenId.JavaCodeType;
 
 /**
  *
  * @author Tomasz.Slota@Sun.COM
  */
-class IncludedJSPFileProcessor extends JSPProcessor{
+class IncludedJSPFileProcessor extends JSPProcessor {
     private StringBuilder importsDeclarations = new StringBuilder();
     private StringBuilder declarations = new StringBuilder();
     private StringBuilder scriptlets = new StringBuilder();
@@ -67,29 +61,8 @@ class IncludedJSPFileProcessor extends JSPProcessor{
         this.doc = doc;
     }
 
-    public void process() throws BadLocationException {
-        processCalled = true;
-
-        fobj = NbEditorUtilities.getFileObject(doc);
-
-        if( fobj == null) {
-            //do not handle non fileobject documents like coloring properties preview document
-            processingSuccessful = false;
-            return;
-        }
-        
-        //Workaround of issue #120195 - Deadlock in jspparser while reformatting JSP
-        //Needs to be removed after properly fixing the issue
-        if (!DocumentUtilities.isWriteLocked(doc)) {
-            JspParserAPI.ParseResult parseResult = JspUtils.getCachedParseResult(fobj, false, false);
-            if (parseResult == null || !parseResult.isParsingSuccess()) {
-                processingSuccessful = false;
-                return;
-            }
-        }
-
-        final BadLocationException[] ex = new BadLocationException[1];
-
+    @Override
+    protected void renderProcess() throws BadLocationException {
         processIncludes();
 
         TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
@@ -106,11 +79,7 @@ class IncludedJSPFileProcessor extends JSPProcessor{
             Token token = tokenSequence.token();
 
             if (token.id() == JspTokenId.SCRIPTLET) {
-                int blockStart = token.offset(tokenHierarchy);
-
                 JavaCodeType blockType = (JavaCodeType) token.getProperty(JspTokenId.SCRIPTLET_TOKEN_TYPE_PROPERTY);
-
-//                String blockBody = charSequence.subSequence(blockStart, blockEnd).toString(); //doc.getText(blockStart, blockEnd - blockStart);
                 StringBuilder buff = blockType == JavaCodeType.DECLARATION ? declarations : scriptlets;
 
                 if (blockType != JavaCodeType.EXPRESSION) {
@@ -120,12 +89,9 @@ class IncludedJSPFileProcessor extends JSPProcessor{
         } while (tokenSequence.moveNext());
 
 
-        if (ex[0] != null) {
-            throw ex[0];
-        }
-
         importsDeclarations.append(createImplicitImportStatements(Collections.<String>emptyList()));
-        declarations.append(createBeanVarDeclarations());
+        // no need to do it, the JSP parser will return the beans for the including page
+        //declarations.append(createBeanVarDeclarations());
     }
 
     public String getDeclarations() {

@@ -41,11 +41,11 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
+import javax.swing.DefaultCellEditor;
+import javax.swing.JComboBox;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
-
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
-import javax.swing.*;
 
 /**
  * @author pfiala
@@ -63,10 +63,12 @@ public abstract class InnerTableModel extends AbstractTableModel {
         this.columnWidths = columnWidths;
     }
 
+    @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         return true;
     }
 
+    @Override
     public String getColumnName(int column) {
         return columnNames[column];
     }

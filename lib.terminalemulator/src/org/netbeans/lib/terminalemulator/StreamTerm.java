@@ -362,7 +362,7 @@ public class StreamTerm extends Term {
         public void flush() throws IOException {
             if (closed)
                 throw new IOException();
-            flush();
+            //flush();
         }
 
         @Override

@@ -49,6 +49,8 @@ import org.openide.text.Line;
 import org.netbeans.modules.bpel.debugger.api.AnnotationType;
 import org.netbeans.modules.bpel.debugger.spi.EditorContext;
 import org.openide.nodes.Node;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -333,7 +335,7 @@ public class BpelEditorContext implements EditorContext {
                     
                     final Line line = 
                             lineCookie.getLineSet().getCurrent(lineNumber - 1);
-                    line.show(Line.SHOW_GOTO);
+                    line.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
                 }
             }
         });
