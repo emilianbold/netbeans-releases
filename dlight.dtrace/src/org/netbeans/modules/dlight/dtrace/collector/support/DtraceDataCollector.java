@@ -546,8 +546,8 @@ public final class DtraceDataCollector
                             }
                         } else {
                             notifyIndicators(indicatorDataBuffer);
-                            indicatorDataBuffer.clear();
                         }
+                        indicatorDataBuffer.clear();
                     }
                 }
             }
