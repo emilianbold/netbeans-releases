@@ -340,6 +340,11 @@ public class StampsTest extends NbTestCase {
             boolean called;
 
             public void flushCaches(DataOutputStream os) throws IOException {
+                for (int i = 0; i < 1024 * 1024; i++) {
+                    os.write(10);
+                }
+                os.flush();
+                os.close();
                 throw new IOException("Not supported yet.");
             }
 
