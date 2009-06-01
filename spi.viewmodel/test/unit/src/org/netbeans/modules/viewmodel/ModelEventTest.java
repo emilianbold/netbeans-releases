@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -69,6 +69,7 @@ public class ModelEventTest  extends NbTestCase implements NodeListener {
         super (s);
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         ArrayList l = new ArrayList ();
@@ -181,24 +182,28 @@ public class ModelEventTest  extends NbTestCase implements NodeListener {
         int sd = 0;
         int cc = 0;
         
+        @Override
         protected void addCall (String methodName, Object node) {
             // Ignore multiple calls
         }
 
         // init ....................................................................
 
+        @Override
         public String getDisplayName (Object node) throws UnknownTypeException {
             String dns = super.getDisplayName(node);
             dns += (dn++);
             return dns;
         }
         
+        @Override
         public String getIconBase (Object node) throws UnknownTypeException {
             String ibs = super.getIconBase(node);
             ibs += (ib++);
             return ibs;
         }
         
+        @Override
         public String getShortDescription (Object node) throws UnknownTypeException {
             String sds = super.getShortDescription(node);
             sds += (sd++);
@@ -214,10 +219,12 @@ public class ModelEventTest  extends NbTestCase implements NodeListener {
          *
          * @return  true if node is leaf
          */
+        @Override
         public synchronized int getChildrenCount (Object node) throws UnknownTypeException {
             return super.getChildrenCount (node) + (cc++);
         }
         
+        @Override
         public Object[] getChildren (Object parent, int from, int to) throws UnknownTypeException {
             //System.err.println("CompoundModel1.getChildren("+parent+", "+from+", "+to+")");
             //Thread.dumpStack();
