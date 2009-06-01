@@ -119,6 +119,9 @@ public class TokenListUpdaterTest extends NbTestCase {
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.MINUS, "-", 7);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "xy", 8);
+        // Extra newline of the document is returned by DocumentUtilities.getText(doc) and lexed
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, "\n", 10);
         assertFalse(ts.moveNext());
     }
 
@@ -148,6 +151,9 @@ public class TokenListUpdaterTest extends NbTestCase {
         ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "ab", 0);
+        // Extra ending '\n' of the document returned by DocumentUtilities.getText(doc) and lexed
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, "\n", 2);
         assertFalse(ts.moveNext());
     }
 
@@ -175,6 +181,9 @@ public class TokenListUpdaterTest extends NbTestCase {
         ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "ab", 0);
+        // Extra ending '\n' of the document returned by DocumentUtilities.getText(doc) and lexed
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, "\n", 2);
         assertFalse(ts.moveNext());
     }
 
@@ -209,6 +218,9 @@ public class TokenListUpdaterTest extends NbTestCase {
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", 1);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", 2);
+        // Extra ending '\n' of the document returned by DocumentUtilities.getText(doc) and lexed
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, "\n", 3);
         assertFalse(ts.moveNext());
     }
 
@@ -242,6 +254,9 @@ public class TokenListUpdaterTest extends NbTestCase {
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", 1);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.MINUS, "-", 2);
+        // Extra ending '\n' of the document returned by DocumentUtilities.getText(doc) and lexed
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, "\n", 3);
         assertFalse(ts.moveNext());
     }
 
@@ -273,6 +288,9 @@ public class TokenListUpdaterTest extends NbTestCase {
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", 1);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.MINUS, "-", 2);
+        // Extra ending '\n' of the document returned by DocumentUtilities.getText(doc) and lexed
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, "\n", 3);
         assertFalse(ts.moveNext());
     }
 
@@ -295,6 +313,9 @@ public class TokenListUpdaterTest extends NbTestCase {
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", 1);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.MINUS, "-", 2);
+        // Extra ending '\n' of the document returned by DocumentUtilities.getText(doc) and lexed
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, "\n", 3);
         assertFalse(ts.moveNext());
     }
 

@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
+import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
@@ -266,15 +267,19 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                                 return Collections.<CsmReference>emptyList();
                             } else if (handlers.size() == 1) {
                                 APTPreprocHandler handler = handlers.iterator().next();
-                                APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, fileImpl.getAPTCacheEntry(handler));
+                                APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(handler, true);
+                                APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, cacheEntry);
                                 walker.getTokenStream();
+                                fileImpl.setAPTCacheEntry(handler, cacheEntry, false);
                                 out = walker.getCollectedData();
                             } else {
                                 Comparator<CsmReference> comparator = new OffsetableComparator<CsmReference>();
                                 TreeSet<CsmReference> result = new TreeSet<CsmReference>(comparator);
                                 for (APTPreprocHandler handler : handlers) {
-                                    APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, fileImpl.getAPTCacheEntry(handler));
+                                    APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(handler, true);
+                                    APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, cacheEntry);
                                     walker.getTokenStream();
+                                    fileImpl.setAPTCacheEntry(handler, cacheEntry, false);
                                     result.addAll(walker.getCollectedData());
                                 }
                                 out = new ArrayList<CsmReference>(result);
