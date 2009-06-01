@@ -74,11 +74,9 @@ public class ModelEventTest  extends NbTestCase implements NodeListener {
         ArrayList l = new ArrayList ();
         cm = new CompoundModel1 ();
         l.add (cm);
-        OutlineTable tt = (OutlineTable) Models.createView
-            (Models.createCompoundModel (l));
+        OutlineTable tt = BasicTest.createView(Models.createCompoundModel (l));
         BasicTest.waitFinished (tt.currentTreeModelRoot.getRootNode().getRequestProcessor());
-        n = tt.getExplorerManager ().
-            getRootContext ();
+        n = tt.getExplorerManager ().getRootContext ();
         n.addNodeListener(this);
     }
 
@@ -221,7 +219,7 @@ public class ModelEventTest  extends NbTestCase implements NodeListener {
         }
         
         public Object[] getChildren (Object parent, int from, int to) throws UnknownTypeException {
-            System.err.println("CompoundModel1.getChildren("+parent+", "+from+", "+to+")");
+            //System.err.println("CompoundModel1.getChildren("+parent+", "+from+", "+to+")");
             //Thread.dumpStack();
             addCall ("getChildren", parent);
             Object[] ch = new Object[3 + (cc - 1)];

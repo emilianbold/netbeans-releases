@@ -42,20 +42,24 @@
 package org.netbeans.modules.viewmodel;
 
 import java.awt.event.ActionEvent;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 
+import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
 
 import org.netbeans.spi.viewmodel.*;
 
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 
@@ -73,12 +77,29 @@ public class BasicTest  extends NbTestCase {
         super (s);
     }
 
+    static OutlineTable createView(final Models.CompoundModel mcm) {
+        final OutlineTable[] ttPtr = new OutlineTable[] { null };
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                public void run() {
+                    ttPtr[0] = (OutlineTable) Models.createView(mcm);
+                }
+            });
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex.getTargetException());
+        }
+        assertNotNull(ttPtr[0]);
+        return ttPtr[0];
+    }
+
     public void testBasic () throws Exception {
         ArrayList l = new ArrayList ();
         CompoundModel cm = new CompoundModel ();
         l.add (cm);
         Models.CompoundModel mcm = Models.createCompoundModel(l, helpID);
-        OutlineTable tt = (OutlineTable) Models.createView(mcm);
+        OutlineTable tt = createView(mcm);
         RequestProcessor rp = tt.currentTreeModelRoot.getRootNode().getRequestProcessor();
         cm.setRPUsed(rp);
         waitFinished (rp);
@@ -135,7 +156,7 @@ public class BasicTest  extends NbTestCase {
         TestColumnModel tcm = new TestColumnModel();
         l.add(tcm);
         Models.CompoundModel mcm = Models.createCompoundModel(l);
-        OutlineTable tt = (OutlineTable) Models.createView(mcm);
+        OutlineTable tt = createView(mcm);
         cm.setRPUsed(tt.currentTreeModelRoot.getRootNode().getRequestProcessor());
         Node.Property[] columns = tt.columns;
         assertEquals(2, columns.length);
@@ -146,7 +167,7 @@ public class BasicTest  extends NbTestCase {
     NodeModel, NodeActionsProvider, TableModel, TreeExpansionModel {
 
     
-        private Vector listeners = new Vector ();
+        private final Set<ModelListener> listeners = new HashSet<ModelListener>();
         
         private Throwable exception;
 
@@ -204,7 +225,7 @@ public class BasicTest  extends NbTestCase {
          * @return the root node of the tree or null
          */
         public Object getRoot () {
-            addCall ("getRoot", null);
+            //addCall ("getRoot", null);
             return ROOT;
         }
 
@@ -401,6 +422,7 @@ public class BasicTest  extends NbTestCase {
         private Set toBeExpandedTest = new HashSet ();
         private Set expandedTest = new HashSet ();
         {
+            toBeExpandedTest.add (getRoot());
             toBeExpandedTest.add ("a");
             toBeExpandedTest.add ("ab");
             toBeExpandedTest.add ("abc");
@@ -450,7 +472,9 @@ public class BasicTest  extends NbTestCase {
          * @param l the listener to add
          */
         public void addModelListener (ModelListener l) {
-            listeners.add (l);
+            synchronized (listeners) {
+                listeners.add (l);
+            }
         }
 
         /** 
@@ -459,18 +483,26 @@ public class BasicTest  extends NbTestCase {
          * @param l the listener to remove
          */
         public void removeModelListener (ModelListener l) {
-            listeners.remove (l);
+            synchronized (listeners) {
+                listeners.remove (l);
+            }
         }
         
         public void fire () {
-            Vector v = (Vector) listeners.clone ();
+            List<ModelListener> v;
+            synchronized (listeners) {
+                v = new ArrayList<ModelListener>(listeners);
+            }
             int i, k = v.size ();
             for (i = 0; i < k; i++)
                 ((ModelListener) v.get (i)).modelChanged (null);
         }
         
         public void fire (ModelEvent event) {
-            Vector v = (Vector) listeners.clone ();
+            List<ModelListener> v;
+            synchronized (listeners) {
+                v = new ArrayList<ModelListener>(listeners);
+            }
             int i, k = v.size ();
             for (i = 0; i < k; i++) {
                 ((ModelListener) v.get (i)).modelChanged (event);
