@@ -43,7 +43,6 @@ package org.netbeans.modules.j2ee.samples;
 
 import java.awt.Component;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -65,6 +64,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.web.examples.WebSampleProjectGenerator;
 
 public class JavaEESamplesWizardIterator implements WizardDescriptor.InstantiatingIterator {
     
@@ -79,8 +79,9 @@ public class JavaEESamplesWizardIterator implements WizardDescriptor.Instantiati
     }
     
     protected WizardDescriptor.Panel[] createPanels() {
+        boolean specifyPrjName = "web".equals(Templates.getTemplate(wiz).getAttribute("prjType"));
         return new WizardDescriptor.Panel[] {
-            new JavaEESamplesWizardPanel(false)
+            new JavaEESamplesWizardPanel(false, specifyPrjName)
         };
     }
     
@@ -90,14 +91,26 @@ public class JavaEESamplesWizardIterator implements WizardDescriptor.Instantiati
         };
     }
     
-    public Set/*<FileObject>*/ instantiate() throws IOException {
+    public Set<FileObject> instantiate() throws IOException {
         Set resultSet = new LinkedHashSet();
         File dirF = FileUtil.normalizeFile((File) wiz.getProperty(WizardProperties.PROJ_DIR));
-        createFolder(dirF);
-        
+        String name = (String)wiz.getProperty(WizardProperties.NAME);
         FileObject template = Templates.getTemplate(wiz);
-        FileObject dir = FileUtil.toFileObject(dirF);
-        unZipFile(template.getInputStream(), dir);
+
+        FileObject dir = null;
+        if ("web".equals(template.getAttribute("prjType"))) {
+            // Use generator from web.examples to create project with specified name
+            dir = WebSampleProjectGenerator.createProjectFromTemplate(template, dirF, name);
+        }
+        else {
+            // Unzip prepared project only (no way to change name of the project)
+            // FIXME: should be modified to create projects with specified name (project.xml files in sub-projects should be modified too)
+            // FIXME: web.examples and j2ee.samples modules may be merged into one module
+            createFolder(dirF);
+            dir = FileUtil.toFileObject(dirF);
+            unZipFile(template.getInputStream(), dir);
+        }
+
         ProjectManager.getDefault().clearNonProjectCache();
         
         // Always open top dir as a project:

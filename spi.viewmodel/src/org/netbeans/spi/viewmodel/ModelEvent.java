@@ -215,5 +215,34 @@ public class ModelEvent extends EventObject {
         public int getChange() {
             return change;
         }
+
+        @Override
+        public String toString() {
+            return super.toString()+"(node = "+node+", change = "+getChangeString(change)+")";
+        }
+
+        private static String getChangeString(int change) {
+            StringBuilder sb = new StringBuilder();
+            if ((change & DISPLAY_NAME_MASK) != 0) {
+                sb.append("DISPLAY_NAME, ");
+            }
+            if ((change & ICON_MASK) != 0) {
+                sb.append("ICON, ");
+            }
+            if ((change & SHORT_DESCRIPTION_MASK) != 0) {
+                sb.append("SHORT_DESCRIPTION, ");
+            }
+            if ((change & CHILDREN_MASK) != 0) {
+                sb.append("CHILDREN, ");
+            }
+            if ((change & EXPANSION_MASK) != 0) {
+                sb.append("EXPANSION, ");
+            }
+            if (sb.length() > 0) {
+                sb.delete(sb.length() - 2, sb.length());
+            }
+            return sb.toString();
+        }
+
     }
 }
