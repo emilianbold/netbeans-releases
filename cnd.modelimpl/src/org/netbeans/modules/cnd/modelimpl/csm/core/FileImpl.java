@@ -62,8 +62,6 @@ import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.ArrayList;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
@@ -74,11 +72,10 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
-import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
-import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
+import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -417,7 +414,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     /** must be called only changeStateLock */
     private void postMarkedAsModified() {
         tsRef.clear();
-        aptCaches.clear();
         if (parsingState == ParsingState.BEING_PARSED) {
             parsingState = ParsingState.MODIFIED_WHILE_BEING_PARSED;
         }
@@ -602,6 +598,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
             if (invalidateCache) {
                 APTDriver.getInstance().invalidateAPT(this.getBuffer());
+                APTFileCacheManager.invalidate(this.getBuffer());
             }
         }
     }
@@ -830,8 +827,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         APTLanguageFilter languageFilter = getLanguageFilter(ppState);
         FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(getAbsolutePath());
-        APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler, false, pcBuilder, getAPTCacheEntry(preprocHandler));
+        APTFileCacheEntry cacheEntry = getAPTCacheEntry(preprocHandler, false);
+        APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler, false, pcBuilder,cacheEntry);
         tsCache.addNewPair(pcBuilder, walker.getTokenStream(false), languageFilter);
+        setAPTCacheEntry(preprocHandler, cacheEntry, false);
         return true;
     }    
     private final Object tokStreamLock = new Object();
@@ -917,42 +916,18 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
-    private Reference<ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>> aptCaches = new SoftReference<ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>(null);
-    private final Object aptCachesLock = new Object();
-    private ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> getAPTCache(boolean clean) {
-        synchronized (aptCachesLock) {
-            ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> out = aptCaches.get();
-            if (out == null || clean) {
-                out = new ConcurrentHashMap<APTIncludeHandler.State, APTFileCacheEntry>();
-                aptCaches = new SoftReference<ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>(out);
-            }
-            return out;
-        }
-    }
-
-    public final APTFileCacheEntry getAPTCacheEntry(APTPreprocHandler preprocHandler) {
+    public final APTFileCacheEntry getAPTCacheEntry(APTPreprocHandler preprocHandler, boolean serial) {
         if (!TraceFlags.APT_FILE_CACHE_ENTRY) {
             return null;
         }
-        APTIncludeHandler.State key = preprocHandler.getIncludeHandler().getState();
-        ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> cache = getAPTCache(false);
-        APTFileCacheEntry out = cache.get(key);
-        if (out == null) {
-            out = APTFileCacheEntry.createSerialEntry(getAbsolutePath());
-        } else {
-            if (APTTraceFlags.TRACE_APT_CACHE && traceFile(getAbsolutePath())) {
-                System.err.printf("APT CACHE for %s\nsize %d, key: %s\ncache state:%s\n", getAbsolutePath(), cache.size(), "", "");
-            }
-        }
+        APTFileCacheEntry out = APTFileCacheManager.getEntry(getAbsolutePath(), preprocHandler, serial);
         assert out != null;
         return out;
     }
 
-    /*package*/final void setAPTCacheEntry(APTPreprocHandler preprocHandler, APTFileCacheEntry entry, boolean cleanOthers) {
-        if (TraceFlags.APT_FILE_CACHE_ENTRY && entry != null) {
-            ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> cache = getAPTCache(cleanOthers);
-            APTIncludeHandler.State key = preprocHandler.getIncludeHandler().getState();
-            cache.put(key, APTFileCacheEntry.toSerial(entry));
+    public final void setAPTCacheEntry(APTPreprocHandler preprocHandler, APTFileCacheEntry entry, boolean cleanOthers) {
+        if (TraceFlags.APT_FILE_CACHE_ENTRY) {
+            APTFileCacheManager.setAPTCacheEntry(getAbsolutePath(), preprocHandler, entry, cleanOthers);
         }
     }
     
@@ -982,11 +957,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         try {
             APTFile aptFull = getFullAPT();
             if (aptFull != null) {
-                APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, false, null, getAPTCacheEntry(preprocHandler));
+                APTFileCacheEntry cacheEntry = getAPTCacheEntry(preprocHandler, false);
+                APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, false, null, cacheEntry);
                 CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter(ppState)), flags);
                 parser.setErrorDelegate(delegate);
                 parser.setLazyCompound(false);
                 parser.translation_unit();
+                setAPTCacheEntry(preprocHandler, cacheEntry, false);
                 return new ParserBasedTokenBuffer(parser);
             }
         } catch (Error ex) {
@@ -1046,7 +1023,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
             // We gather conditional state here as well, because sources are not included anywhere
             FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(getAbsolutePath());
-            APTFileCacheEntry aptCacheEntry = getAPTCacheEntry(preprocHandler);
+            APTFileCacheEntry aptCacheEntry = getAPTCacheEntry(preprocHandler, true);
             APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, true, pcBuilder,aptCacheEntry);
             walker.addMacroAndIncludes(true);
             if (TraceFlags.DEBUG) {
@@ -1938,9 +1915,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     /*package-local*/ void clearStateCache() {
         tsRef.clear();
-        aptCaches.clear();
         stateCache.clearStateCache();
-        APTDriver.getInstance().invalidateAPT(this.getBuffer());
+        APTFileCacheManager.invalidate(this.getBuffer());
     }
 
     public static class NameKey implements Comparable<NameKey> {

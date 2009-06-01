@@ -131,7 +131,7 @@ public final class APTMacroImpl implements APTMacro {
             retValue = 31*retValue + macroType.ordinal();
             retValue = 31*retValue + (file == null ? 0 : file.hashCode());
             retValue = 31*retValue + defineNode.hashCode();
-            hashCode = retValue;
+            hashCode = APTUtils.hash(retValue);
         }
         return retValue;
     }       
