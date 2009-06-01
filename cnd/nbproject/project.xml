@@ -375,6 +375,7 @@
                 <friend>com.sun.tools.swdev.advtools.actions.spi</friend>
                 <friend>com.sun.tools.swdev.projectimport</friend>
                 <friend>com.sun.tools.swdev.sunstudio</friend>
+                <friend>org.netbeans.libs.sunstudio</friend>
                 <friend>org.netbeans.modules.cnd.api.remote</friend>
                 <friend>org.netbeans.modules.cnd.classview</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>
