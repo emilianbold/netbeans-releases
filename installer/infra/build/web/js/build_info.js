@@ -61,7 +61,7 @@ build_info.BOUNCER_URL = "http://services.netbeans.org/bouncer/index.php";
 build_info.USE_HTML_ZIP_LISTING = 1;
 build_info.add_download_tabs = function() {
 	add_download_tab("6.5.1", "http://www.netbeans.org/downloads");
-	add_download_tab("6.7 RC1");
+	add_download_tab("6.7 RC2");
 	add_download_tab("JavaFX", "http://www.netbeans.org/downloads");
 	add_download_tab(DEVELOPMENT_TITLE, DEVELOPMENT_BUILDS_LINK);
 	add_download_tab(ARCHIVE_TITLE,ARCHIVE_BUILDS_LINK);
