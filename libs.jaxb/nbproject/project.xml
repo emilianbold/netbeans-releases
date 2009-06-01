@@ -89,13 +89,17 @@
                 <package>javax.xml.bind.helpers</package>
                 <package>javax.xml.bind.util</package>
                 <package>javax.xml.stream</package>
-                <package>com.sun.istack</package>
                 <package>com.sun.codemodel</package>
                 <package>com.sun.dtdparser</package>
-                <package>com.sun.istack.tools</package>
-                <package>com.sun.tools.xjc</package>
+                <package>com.sun.istack</package>
                 <package>com.sun.istack.localization</package>
-            </friend-packages>
+                <package>com.sun.istack.tools</package>
+                <package>com.sun.org.apache.xml.internal.resolver</package>
+                <package>com.sun.org.apache.xml.internal.resolver.helpers</package>
+                <package>com.sun.org.apache.xml.internal.resolver.readers</package>
+                <package>com.sun.org.apache.xml.internal.resolver.tools</package>
+                <package>com.sun.tools.xjc</package>
+              </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxb/activation.jar</runtime-relative-path>
             </class-path-extension>

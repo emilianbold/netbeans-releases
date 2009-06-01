@@ -118,8 +118,10 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
                     APTFile aptLight = inclFileOwner.getAPTLight(csmFile);
                     if (aptLight != null) {
                         APTPreprocHandler preprocHandler = getPreprocHandler();
-                        APTWalker walker = new APTRestorePreprocStateWalker(getStartProject(), aptLight, csmFile, preprocHandler, inclStack, interestedFile, csmFile.getAPTCacheEntry(preprocHandler));
+                        APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(preprocHandler, false);
+                        APTWalker walker = new APTRestorePreprocStateWalker(getStartProject(), aptLight, csmFile, preprocHandler, inclStack, interestedFile,cacheEntry);
                         walker.visit();
+                        csmFile.setAPTCacheEntry(preprocHandler, cacheEntry, false);
                     } else {
                         // expected #included file was deleted
                         csmFile = null;
@@ -130,8 +132,10 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
                 APTFile aptLight = inclFileOwner.getAPTLight(csmFile);
                 if (aptLight != null) {
                     APTPreprocHandler preprocHandler = getPreprocHandler();
-                    APTWalker walker = new APTRestorePreprocStateWalker(getStartProject(), aptLight, csmFile, preprocHandler, csmFile.getAPTCacheEntry(preprocHandler));
+                    APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(preprocHandler, false);
+                    APTWalker walker = new APTRestorePreprocStateWalker(getStartProject(), aptLight, csmFile, preprocHandler,cacheEntry);
                     walker.visit();
+                    csmFile.setAPTCacheEntry(preprocHandler, cacheEntry, false);
                 } else {
                     // expected #included file was deleted
                     csmFile = null;

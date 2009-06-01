@@ -103,6 +103,8 @@ public class SimpleLexerIncTest extends NbTestCase {
         LexerTestUtilities.incCheck(doc, false);
         
         TokenSequence<?> ts = hi.tokenSequence();
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.WHITESPACE, "\n", 0);
         assertFalse(ts.moveNext());
         
         // Insert text into document
@@ -149,14 +151,16 @@ public class SimpleLexerIncTest extends NbTestCase {
         offset += commentText.length();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "def", offset);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, "\n", offset + 3);
         assertFalse(ts.moveNext());
         LexerTestUtilities.incCheck(doc, false);
         
         // Check TokenSequence.move()
         int relOffset = ts.move(50); // past the end of all tokens
-        assertEquals(relOffset, 50 - (offset + 3));
+        assertEquals(relOffset, 50 - (offset + 4));
         assertTrue(ts.movePrevious());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "def", offset);
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, "\n", offset + 3);
 
         relOffset = ts.move(6); // right at begining of "-"
         assertEquals(relOffset, 0);

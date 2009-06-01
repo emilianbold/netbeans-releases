@@ -422,9 +422,12 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             return code;
         }
         ProjectBase base = (ProjectBase) project;
-
-        StopOnOffsetParseFileWalker walker = new StopOnOffsetParseFileWalker(base, aptLight, fileImpl, offset, handler, fileImpl.getAPTCacheEntry(handler));
+        
+        APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(handler, false);
+        StopOnOffsetParseFileWalker walker = new StopOnOffsetParseFileWalker(base, aptLight, fileImpl, offset, handler,cacheEntry);
         walker.visit();
+        // we do not remember cache entry because it is stopped before end of file
+        // fileImpl.setAPTCacheEntry(handler, cacheEntry, false);
         TokenStream ts = APTTokenStreamBuilder.buildTokenStream(code);
         if (ts != null) {
             ts = new APTMacroExpandedStream(ts, handler.getMacroMap());

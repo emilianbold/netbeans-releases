@@ -54,26 +54,31 @@ import org.netbeans.modules.cnd.apt.support.APTMacroMap.State;
  */
 public final class APTFileCacheEntry {
     private final Map<Integer, IncludeData> cache;
-    private final Map<Integer, Boolean> evalData = new HashMap<Integer, Boolean>();
+    private final Map<Integer, Boolean> evalData;
     private final CharSequence filePath;
     private final boolean serial;
-    private APTFileCacheEntry(CharSequence filePath, boolean concurrent, Map<Integer, IncludeData> storage) {
+    private APTFileCacheEntry(CharSequence filePath, boolean concurrent, Map<Integer, IncludeData> storage, Map<Integer, Boolean> eval) {
         assert (filePath != null);
         this.filePath = filePath;
         this.serial = concurrent;
         this.cache = storage;
+        this.evalData = eval;
     }
 
-    public static APTFileCacheEntry toSerial(APTFileCacheEntry entry) {
-        return !entry.isSerial() ? entry : new APTFileCacheEntry(entry.filePath, true, new HashMap<Integer, IncludeData>(entry.cache));
+    /*package*/static APTFileCacheEntry toSerial(APTFileCacheEntry entry) {
+        return new APTFileCacheEntry(entry.filePath, true, new HashMap<Integer, IncludeData>(entry.cache), new HashMap<Integer, Boolean>(entry.evalData));
     }
 
-    public static APTFileCacheEntry createConcurrentEntry(CharSequence filePath) {
-        return new APTFileCacheEntry(filePath, false, new ConcurrentHashMap<Integer, IncludeData>());
+    /*package*/static APTFileCacheEntry createConcurrentEntry(CharSequence filePath) {
+        return create(filePath, false);
     }
 
-    public static APTFileCacheEntry createSerialEntry(CharSequence filePath) {
-        return new APTFileCacheEntry(filePath, true, new HashMap<Integer, IncludeData>());
+    /*package*/static APTFileCacheEntry createSerialEntry(CharSequence filePath) {
+        return create(filePath, true);
+    }
+
+    private static APTFileCacheEntry create(CharSequence filePath, boolean serial) {
+        return new APTFileCacheEntry(filePath, serial, serial ? new HashMap<Integer, IncludeData>() : new ConcurrentHashMap<Integer, IncludeData>(), new HashMap<Integer, Boolean>());
     }
 
     public boolean isSerial() {
