@@ -108,6 +108,28 @@ public class APTUtils {
         return h ^ (h >>> 16);
     }
 
+    public static boolean equalArrayLists(List<?> l1, List<?> l2) {
+        if (l1 != l2) {
+            if (l1 == null || l2 == null) {
+                return false;
+            } else {
+                int n1 = l1.size();
+                int n2 = l2.size();
+                if (n1 != n2) {
+                    return false;
+                }
+                for (int i = 0; i < n1; i++) {
+                    if (!l1.get(i).equals(l2.get(i))) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        } else {
+            return true;
+        }
+    }
+
     public static void setTokenText(APTToken _token, char buf[], int start, int count) {
         if (_token instanceof APTBaseToken) {
             _token.setTextID(CharSequenceKey.create(buf, start, count));
