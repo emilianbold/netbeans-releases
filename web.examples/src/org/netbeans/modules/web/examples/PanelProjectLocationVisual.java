@@ -43,17 +43,15 @@ package org.netbeans.modules.web.examples;
 
 import java.io.File;
 import java.text.MessageFormat;
-
 import javax.swing.JFileChooser;
+import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-
 import org.netbeans.spi.project.ui.support.ProjectChooser;
-
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
-public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener {
+class PanelProjectLocationVisual extends JPanel implements DocumentListener {
 
     private PanelConfigureProject panel;
 
