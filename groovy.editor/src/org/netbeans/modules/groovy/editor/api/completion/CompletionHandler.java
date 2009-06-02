@@ -121,6 +121,7 @@ import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler;
+import org.netbeans.modules.groovy.editor.completion.VariableFinderVisitor;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.util.Exceptions;
@@ -566,7 +567,36 @@ public class CompletionHandler implements CodeCompletionHandler {
             }
         }
 
-        if (!classDefBeforePosition && classDefAfterPosition) {
+        if (request.path != null) {
+            ASTNode node = request.path.root();
+            if (node instanceof ModuleNode) {
+                ModuleNode module = (ModuleNode) node;
+                String name = null;
+                for (Iterator it = module.getClasses().iterator(); it.hasNext();) {
+                    ClassNode clazz = (ClassNode) it.next();
+                    if (clazz.isScript()) {
+                        name = clazz.getName();
+                        request.scriptMode = true;
+                        break;
+                    }
+                }
+
+                // we have a script class - lets see if there is another
+                // non-script class with same name that would mean we are just
+                // broken class, not a script
+                if (name != null) {
+                    for (Iterator it = module.getClasses().iterator(); it.hasNext();) {
+                        ClassNode clazz = (ClassNode) it.next();
+                        if (!clazz.isScript() && name.equals(clazz.getName())) {
+                            request.scriptMode = false;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!request.scriptMode && !classDefBeforePosition && classDefAfterPosition) {
             return CaretLocation.ABOVE_FIRST_CLASS;
         }
 
@@ -574,8 +604,7 @@ public class CompletionHandler implements CodeCompletionHandler {
         // script with synthetic wrapper class and wrapper method: run().
         // See GINA, ch. 7
 
-        if (!classDefBeforePosition && !classDefAfterPosition) {
-            request.scriptMode = true;
+        if (!classDefBeforePosition && request.scriptMode) {
             return CaretLocation.INSIDE_METHOD;
         }
 
@@ -584,6 +613,8 @@ public class CompletionHandler implements CodeCompletionHandler {
             LOG.log(Level.FINEST, "path == null"); // NOI18N
             return null;
         }
+
+
 
         /* here we loop from the tail of the path (innermost element)
         up to the root to figure out where we are. Some of the trails are:
@@ -1057,8 +1088,10 @@ public class CompletionHandler implements CodeCompletionHandler {
     private boolean completeLocalVars(List<CompletionProposal> proposals, CompletionRequest request) {
         LOG.log(Level.FINEST, "-> completeLocalVars"); // NOI18N
 
-        if (!(request.location == CaretLocation.INSIDE_CLOSURE || request.location == CaretLocation.INSIDE_METHOD)) {
-            LOG.log(Level.FINEST, "not inside method or closure, bail out."); // NOI18N
+        if (!(request.location == CaretLocation.INSIDE_CLOSURE || request.location == CaretLocation.INSIDE_METHOD)
+                // handle $someprefix in string
+                && !(request.location == CaretLocation.INSIDE_STRING && request.prefix.matches("\\$[^\\{].*"))) {
+            LOG.log(Level.FINEST, "Not inside method, closure or in-string variable, bail out."); // NOI18N
             return false;
         }
 
@@ -1069,40 +1102,36 @@ public class CompletionHandler implements CodeCompletionHandler {
             return false;
         }
 
-        ASTNode scope = getSurroundingMethodOrClosure(request);
+        VariableFinderVisitor vis = new VariableFinderVisitor(((ModuleNode) request.path.root()).getContext(),
+                request.path, request.doc, request.astOffset);
+        vis.collect();
 
-        if (request.scriptMode) {
-            LOG.log(Level.FINEST, "We are running in script-mode."); // NOI18N
-            if (scope == null) {
-                scope = AstUtilities.getRoot(request.info);
+        boolean updated = false;
+
+        // If we are dealing with GStrings, the prefix is prefixed ;-)
+        // ... with the dollar sign $ See # 143295
+        int anchorShift = 0;
+        String varPrefix = request.prefix;
+
+        if (request.prefix.startsWith("$")) {
+            varPrefix = request.prefix.substring(1);
+            anchorShift = 1;
+        }
+
+        for (Variable node : vis.getVariables()) {
+            String varName = node.getName();
+            LOG.log(Level.FINEST, "Node found: {0}", varName); // NOI18N
+
+            if (varPrefix.length() < 1) {
+                proposals.add(new CompletionItem.LocalVarItem(node, anchor + anchorShift));
+                updated = true;
+            } else if (!varName.equals(varPrefix) && varName.startsWith(varPrefix)) {
+                proposals.add(new CompletionItem.LocalVarItem(node, anchor + anchorShift));
+                updated = true;
             }
         }
 
-        if (scope == null) {
-            LOG.log(Level.FINEST, "scope == null"); // NOI18N
-            return false;
-        }
-
-        Map<String, ASTNode> result = new HashMap<String, ASTNode>();
-        getLocalVars(scope, result, request);
-
-        if (!result.isEmpty()) {
-            for (ASTNode node : result.values()) {
-                String varName = ((Variable) node).getName();
-                LOG.log(Level.FINEST, "Node found: {0}", varName); // NOI18N
-
-                if (request.prefix.length() < 1) {
-                    proposals.add(new CompletionItem.LocalVarItem((Variable) node, anchor));
-                } else {
-                    if (varName.compareTo(request.prefix) != 0 && varName.startsWith(request.prefix)) {
-                        proposals.add(new CompletionItem.LocalVarItem((Variable) node, anchor));
-                    }
-                }
-
-            }
-        }
-
-        return true;
+        return updated;
     }
 
     /**
@@ -1282,56 +1311,6 @@ public class CompletionHandler implements CodeCompletionHandler {
             }
         }
         return sb.toString();
-    }
-
-    /**
-     * This method returns the Local Variables of a method or a closure.
-     * @param node
-     * @param result
-     * @param request
-     */
-    private void getLocalVars(ASTNode node, Map<String, ASTNode> result, CompletionRequest request) {
-        // if we are dealing with a closure, we retrieve the local vars differently
-
-        if (node instanceof ClosureExpression) {
-            ClosureExpression closure = (ClosureExpression) node;
-
-            if (closure.isParameterSpecified()) {
-                LOG.log(Level.FINEST, "We do have Parameters...");
-                Parameter[] params = closure.getParameters();
-
-                for (int i = 0; i < params.length; i++) {
-                    Parameter parameter = params[i];
-                    LOG.log(Level.FINEST, "Parameter: {0}", parameter.getName());
-                    // FIXME is the text right choice ?
-                    result.put(parameter.getName(), parameter);
-                }
-
-
-            } else {
-                LOG.log(Level.FINEST, "Closure without parameters, have to put it in list");
-                // FIXME is the text right choice ?
-                result.put("it", new VariableExpression("it"));
-            }
-        } else {
-            if (node instanceof Variable) {
-                String name = ((Variable) node).getName();
-                if (!result.containsKey(name) && name.length() > 0) {
-                    result.put(name, node);
-                }
-            }
-
-            List<ASTNode> list = AstUtilities.children(node);
-            for (ASTNode child : list) {
-                // if we are running in script-mode, which means starting at the root
-                // we neighter recurse into MethodNodes nor closures.
-                if (request.scriptMode && (child instanceof MethodNode || child instanceof ClosureExpression)) {
-                    continue;
-                }
-
-                getLocalVars(child, result, request);
-            }
-        }
     }
 
     /**

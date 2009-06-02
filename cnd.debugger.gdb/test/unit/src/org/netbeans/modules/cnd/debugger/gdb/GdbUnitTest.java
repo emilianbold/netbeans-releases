@@ -52,6 +52,8 @@ public class GdbUnitTest extends TestSuite {
         super("Gdb unit tests");
         addTestSuite(PathComparisonTestCase.class);
         addTestSuite(StringProcessingTestCase.class);
+        addTestSuite(VariablesTestCase.class);
+        addTestSuite(ValuePresenterTestCase.class);
     }
 
     public static Test suite() {

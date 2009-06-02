@@ -74,6 +74,9 @@ class DiskMapTurboProvider implements TurboProvider {
     synchronized Map<File, FileInformation>  getAllModifiedValues() {
         if (cachedStoreSerial != storeSerial || cachedValues == null) {
             cachedValues = new HashMap<File, FileInformation>();
+            if (!cacheStore.isDirectory()) {
+                cacheStore.mkdirs();
+            }
             File [] files = cacheStore.listFiles();
             if(files == null) {
                 return Collections.unmodifiableMap(cachedValues);
@@ -230,6 +233,9 @@ class DiskMapTurboProvider implements TurboProvider {
         if (value == null && !store.exists()) return true;
 
         File storeNew = new File(store.getParentFile(), store.getName() + ".new"); // NOI18N
+        if (!cacheStore.isDirectory()) {
+            cacheStore.mkdirs();
+        }
 
         DataOutputStream oos = null;
         DataInputStream dis = null;

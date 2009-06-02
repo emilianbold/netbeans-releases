@@ -303,7 +303,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
                 }
 
                 if (!isInterrupted()) {
-                    log.fine(this.toString() + " State change: " + // NOI18N
+                    log.finest(this.toString() + " State change: " + // NOI18N
                             this.state + " -> " + state); // NOI18N
                 }
 

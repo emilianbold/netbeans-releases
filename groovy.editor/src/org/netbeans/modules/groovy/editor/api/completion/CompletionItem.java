@@ -943,7 +943,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         @Override
         public String getRhsHtml(HtmlFormatter formatter) {
-            return var.getType().getNameWithoutPackage();
+            return NbUtilities.stripPackage(Utilities.translateClassLoaderTypeName(var.getType().getName()));
         }
 
         @Override

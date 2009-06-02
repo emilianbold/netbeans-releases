@@ -62,11 +62,12 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.ruby.modules.project.rake.FileChangeSupport;
-import org.netbeans.modules.ruby.modules.project.rake.FileChangeSupportEvent;
-import org.netbeans.modules.ruby.modules.project.rake.FileChangeSupportListener;
 import org.netbeans.spi.project.support.GenericSources;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -373,7 +374,7 @@ public final class SourcesHelper {
         return new SourcesImpl();
     }
     
-    private final class SourcesImpl implements Sources, PropertyChangeListener, FileChangeSupportListener {
+    private final class SourcesImpl implements Sources, PropertyChangeListener, FileChangeListener {
         
         private final ChangeSupport cs = new ChangeSupport(this);
         private boolean haveAttachedListeners;
@@ -466,7 +467,7 @@ public final class SourcesHelper {
         private synchronized void listen(File rootLocation) {
             // #40845. Need to fire changes if a source root is added or removed.
             if (rootsListenedTo.add(rootLocation) && /* be lazy */ haveAttachedListeners) {
-                FileChangeSupport.DEFAULT.addListener(this, rootLocation);
+                    FileUtil.addFileChangeListener(this, rootLocation);
             }
         }
         
@@ -474,7 +475,7 @@ public final class SourcesHelper {
             if (!haveAttachedListeners) {
                 haveAttachedListeners = true;
                 for (File rootLocation : rootsListenedTo) {
-                    FileChangeSupport.DEFAULT.addListener(this, rootLocation);
+                    FileUtil.addFileChangeListener(this, rootLocation);
                 }
             }
             cs.addChangeListener(listener);
@@ -502,20 +503,32 @@ public final class SourcesHelper {
             }
         }
 
-        public void fileCreated(FileChangeSupportEvent event) {
+        public void fileFolderCreated(FileEvent fe) {
             // Root might have been created on disk.
             maybeFireChange();
         }
 
-        public void fileDeleted(FileChangeSupportEvent event) {
+        public void fileDataCreated(FileEvent fe) {
+            maybeFireChange();
+        }
+
+        public void fileDeleted(FileEvent fe) {
             // Root might have been deleted.
             maybeFireChange();
         }
 
-        public void fileModified(FileChangeSupportEvent event) {
+        public void fileChanged(FileEvent fe) {
             // ignore; generally should not happen (listening to dirs)
         }
-        
+
+        public void fileRenamed(FileRenameEvent fe) {
+            maybeFireChange();
+        }
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            // #164930 - ignore
+        }
+
         public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
             // Properties may have changed so as cause external roots to move etc.
             maybeFireChange();

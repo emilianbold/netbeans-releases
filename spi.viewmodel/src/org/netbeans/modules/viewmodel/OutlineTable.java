@@ -647,7 +647,7 @@ ExplorerManager.Provider, PropertyChangeListener {
     }
 
     private boolean isHiddenColumn(int index) {
-        if (tableColumns[index] == null) {
+        if (tableColumns == null || tableColumns[index] == null) {
             return false;
         }
         ETableColumnModel ecm = (ETableColumnModel) treeTable.getTable().getColumnModel();

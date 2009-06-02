@@ -104,8 +104,11 @@ public class JiraRepository extends Repository {
     private RequestProcessor refreshProcessor;
     private JiraExecutor executor;
     private JiraConfiguration configuration;
+    
+    private boolean remoteFiltersLoaded = false;
     private final Object REPOSITORY_LOCK = new Object();
     private final Object CONFIGURATION_LOCK = new Object();
+    private final Object QUERIES_LOCK = new Object();
 
     public JiraRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
@@ -200,7 +203,7 @@ public class JiraRepository extends Repository {
 
     @Override
     public void remove() {
-        Query[] qs = getQueries();
+        Set<Query> qs = getQueriesIntern(false);
         for (Query q : qs) {
             removeQuery((JiraQuery) q);
         }
@@ -216,31 +219,31 @@ public class JiraRepository extends Repository {
     public void removeQuery(JiraQuery query) {
         Jira.getInstance().getStorageManager().removeQuery(this, query);
         getIssueCache().removeQuery(name);
-        getQueriesIntern().remove(query);
+        getQueriesIntern(false).remove(query);
         stopRefreshing(query);
     }
 
     public void saveQuery(JiraQuery query) {
         assert name != null;
         Jira.getInstance().getStorageManager().putQuery(this, query);
-        getQueriesIntern().add(query);
+        getQueriesIntern(false).add(query);
     }
 
-    private Set<Query> getQueriesIntern() {
-        if(queries == null) {
-            JiraStorageManager manager = Jira.getInstance().getStorageManager();
-            queries = manager.getQueries(this);
-            Jira.getInstance().getRequestProcessor().post(new Runnable() {
-                public void run() {
-                    synchronized(queries) {
+    private Set<Query> getQueriesIntern(boolean alsoRemoteFilters) {
+        synchronized (QUERIES_LOCK) {
+            if(queries == null) {
+                JiraStorageManager manager = Jira.getInstance().getStorageManager();
+                queries = manager.getQueries(this);
+            }
+            if(alsoRemoteFilters && !remoteFiltersLoaded) {
+                Jira.getInstance().getRequestProcessor().post(new Runnable() {
+                    public void run() {
                         queries.addAll(getServerQueries());
+                        remoteFiltersLoaded = true;
+                        fireQueryListChanged();
                     }
-                    fireQueryListChanged();
-                }
-            });
-
-        }
-        synchronized(queries) {
+                });
+            }
             return queries;
         }
     }
@@ -261,7 +264,7 @@ public class JiraRepository extends Repository {
 
     @Override
     public Query[] getQueries() {
-        Set<Query> l = getQueriesIntern();
+        Set<Query> l = getQueriesIntern(true);
         return l.toArray(new Query[l.size()]);
     }
 

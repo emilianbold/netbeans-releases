@@ -56,6 +56,7 @@ import javax.swing.event.EventListenerList;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
+import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AbstractFileBuffer;
 
 /**
@@ -96,6 +97,7 @@ public class FileBufferDoc extends AbstractFileBuffer {
         }
         // TODO: think over when do invalidate? before informing listeners or after
         APTDriver.getInstance().invalidateAPT(this);
+        APTFileCacheManager.invalidate(this);
     }
 
     @Override

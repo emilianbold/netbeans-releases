@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.bpel.editors.api;
 
-import java.beans.BeanInfo;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,21 +47,13 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
-import javax.swing.text.AbstractDocument;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
-import org.netbeans.core.api.multiview.MultiViewHandler;
-import org.netbeans.core.api.multiview.MultiViewPerspective;
-import org.netbeans.core.api.multiview.MultiViews;
-import org.netbeans.modules.xml.schema.ui.basic.SchemaColumnsView;
-import org.netbeans.modules.xml.schema.ui.basic.SchemaTreeView;
-import org.netbeans.modules.xml.validation.ShowCookie;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.bpel.editors.api.BpelEditorConstants;
 import org.netbeans.modules.bpel.editors.api.Constants.VariableStereotype;
@@ -123,7 +114,6 @@ import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.ReThrow;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.xam.Component;
@@ -132,10 +122,7 @@ import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.Referenceable;
-import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
-import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
-import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.LineCookie;
@@ -147,15 +134,11 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
-import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.soa.ui.SoaUtil;
 
@@ -484,7 +467,7 @@ public class EditorUtil {
 
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    l.show(Line.SHOW_GOTO, column);
+                    l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
                     openActiveSourceEditor();
                 }
             });
@@ -841,7 +824,7 @@ public class EditorUtil {
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                fLine.show(Line.SHOW_GOTO, fColumn);
+                fLine.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, fColumn);
             }
         });
     }

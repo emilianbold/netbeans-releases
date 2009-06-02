@@ -66,9 +66,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.universe.JavadocRootsProvider;
+import org.netbeans.modules.apisupport.project.universe.JavadocRootsSupport;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.SourceRootsProvider;
+import org.netbeans.modules.apisupport.project.universe.SourceRootsSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 
@@ -419,6 +421,10 @@ public final class PlatformComponentFactory {
                 ErrorManager.getDefault().notify(ErrorManager.USER, e);
             }
         }
+        
+        boolean containsRoot(URL srcRootToAdd) {
+            return SourceRootsSupport.containsRoot(srcRP, srcRootToAdd);
+        }
     }
     
     /**
@@ -489,6 +495,10 @@ public final class PlatformComponentFactory {
                 // tell the user that something goes wrong
                 ErrorManager.getDefault().notify(ErrorManager.USER, e);
             }
+        }
+
+        boolean containsRoot(URL rootToAdd) {
+            return JavadocRootsSupport.containsRoot(jrp, rootToAdd);
         }
     }
     

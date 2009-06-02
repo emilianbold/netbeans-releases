@@ -49,11 +49,12 @@ import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.index.IndexedVariable;
 import org.netbeans.modules.php.editor.model.IndexScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
-import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
+import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
@@ -116,6 +117,22 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         if (assignments.size() == 1) {
             retval = assignments.iterator().next();
         } else {
+            if (assignments.isEmpty() && isGloballyVisible()) {
+                Scope inScope = getInScope();
+                if (inScope != null) {
+                    inScope = inScope.getInScope();
+                }
+                if (inScope instanceof VariableScope) {
+                    VariableScope varScope = (VariableScope)inScope;
+                    List<? extends VariableName> variables = ModelUtils.filter(varScope.getDeclaredVariables(), getName());
+                    if (!variables.isEmpty()) {
+                        VariableName varName = ModelUtils.getFirst(variables);
+                        if (varName instanceof VariableNameImpl) {
+                            return ((VariableNameImpl)varName).findAssignment(offset);
+                        }
+                    }
+                }
+            }
             for (VarAssignmentImpl varAssignmentImpl : assignments) {
                 if (varAssignmentImpl.getBlockRange().containsInclusive(offset)) {
                     if (retval == null || retval.getOffset() <= varAssignmentImpl.getOffset()) {

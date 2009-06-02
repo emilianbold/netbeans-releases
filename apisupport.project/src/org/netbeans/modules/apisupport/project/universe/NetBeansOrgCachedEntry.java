@@ -129,7 +129,7 @@ final class NetBeansOrgCachedEntry extends AbstractEntryWithSources {
             LOG.fine("Had to fall back to loading official entry for " + cnb + " because of " + why);
             Map<String,ModuleEntry> entries = new HashMap<String,ModuleEntry>();
             try {
-                ModuleList.scanPossibleProject(sourceLocation, entries, false, false, nb_all, nbdestdir, netbeansOrgPath, false);
+                ModuleList.scanPossibleProject(sourceLocation, entries, false, false, nb_all, nbdestdir, netbeansOrgPath);
                 officialEntry = entries.get(cnb);
                 if (officialEntry == null) {
                     LOG.fine("Failed to load official entry for " + cnb);

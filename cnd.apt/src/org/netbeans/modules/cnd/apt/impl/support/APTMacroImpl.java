@@ -46,6 +46,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collection;
+import org.netbeans.modules.cnd.apt.impl.structure.APTBuilderImpl;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
@@ -67,7 +68,7 @@ public final class APTMacroImpl implements APTMacro {
         this.file = file;
         assert file != null;
         assert file.length() == 0 || macroType == Kind.DEFINED : "file info has only #defined macro " + file;
-        this.defineNode = defineNode;
+        this.defineNode = (APTDefine) APTBuilderImpl.createLightCopy(defineNode);
         this.macroType = macroType;
     }
 
@@ -130,7 +131,7 @@ public final class APTMacroImpl implements APTMacro {
             retValue = 31*retValue + macroType.ordinal();
             retValue = 31*retValue + (file == null ? 0 : file.hashCode());
             retValue = 31*retValue + defineNode.hashCode();
-            hashCode = retValue;
+            hashCode = APTUtils.hash(retValue);
         }
         return retValue;
     }       

@@ -45,6 +45,7 @@ import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.openide.util.Parameters;
 
 /**
  * Temporary helpe functions needed by the java.source
@@ -66,6 +67,16 @@ public class Utilities {
     //Helpers for asserts in java.source    
     public static boolean holdsParserLock () {
         return TaskProcessor.holdsParserLock();
+    }
+
+    /**
+     * Returns true if given thread is a TaskProcessor dispatch thread.
+     * @param Thread thread
+     * @return boolean
+     */
+    public static boolean isTaskProcessorThread (final Thread thread) {
+        Parameters.notNull("thread", thread);
+        return TaskProcessor.factory.isDispatchThread(thread);
     }
 
     //Helpers for indexing in java.source, will be removed when indexing will be part of parsing api

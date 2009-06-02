@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
@@ -52,6 +53,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
+import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
@@ -60,11 +62,12 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindMacrosWalker;
-import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindUnusedBlocksWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
 
 /**
@@ -116,46 +119,81 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         List<CsmOffsetable> out = Collections.<CsmOffsetable>emptyList();
         if (file instanceof FileImpl) {
             FileImpl fileImpl = (FileImpl) file;
-
-            try {
-                APTFile apt = APTDriver.getInstance().findAPTLight(fileImpl.getBuffer());
-
-                if (hasConditionalsDirectives(apt)) {
-                    Collection<APTPreprocHandler> handlers = fileImpl.getPreprocHandlers();
-                    if (handlers.isEmpty()) {
-                        DiagnosticExceptoins.register(new IllegalStateException("Empty preprocessor handlers for " + file.getAbsolutePath())); //NOI18N
-                        return Collections.<CsmOffsetable>emptyList();
-                    } else if (handlers.size() == 1) {
-                        APTPreprocHandler handler = handlers.iterator().next();
-                        APTFindUnusedBlocksWalker walker = new APTFindUnusedBlocksWalker(apt, fileImpl, handler, fileImpl.getAPTCacheEntry(handler));
-                        walker.visit();
-                        out = walker.getBlocks();
+            Collection<PreprocessorStatePair> statePairs = fileImpl.getPreprocStatePairs();
+            List<CsmOffsetable> result = new ArrayList<CsmOffsetable>();
+            boolean first = true;
+            for (PreprocessorStatePair pair : statePairs) {
+                FilePreprocessorConditionState state = pair.pcState;
+                if (state != FilePreprocessorConditionState.PARSING) {
+                    List<CsmOffsetable> blocks = state.createBlocksForFile(fileImpl);
+                    if (first) {
+                        result = blocks;
+                        first = false;
                     } else {
-                        //Comparator<CsmOffsetable> comparator = new OffsetableComparator();
-                        //TreeSet<CsmOffsetable> result = new TreeSet<CsmOffsetable>(comparator);
-                        List<CsmOffsetable> result = new  ArrayList<CsmOffsetable>();
-                        boolean first = true;
-                        for (APTPreprocHandler handler : handlers) {
-                            APTFindUnusedBlocksWalker walker = new APTFindUnusedBlocksWalker(apt, fileImpl, handler, fileImpl.getAPTCacheEntry(handler));
-                            walker.visit();
-                            List<CsmOffsetable> blocks = walker.getBlocks();
-                            if (first) {
-                                result = blocks;
-                                first = false;
-                            } else {
-                                result = intersection(result, blocks);
-                                if (result.isEmpty()) {
-                                    break;
-                                }
-                            }
+                        result = intersection(result, blocks);
+                        if (result.isEmpty()) {
+                            break;
                         }
-                        out = result;
                     }
                 }
-            } catch (IOException ex) {
-                System.err.println("skip getting unused blocks\nreason:" + ex.getMessage()); //NOI18N
-		DiagnosticExceptoins.register(ex);
             }
+            CsmOffsetable error = null;
+            for (CsmErrorDirective csmErrorDirective : fileImpl.getErrors()) {
+                error = org.netbeans.modules.cnd.modelimpl.csm.core.Utils.createOffsetable(fileImpl, csmErrorDirective.getEndOffset(), Integer.MAX_VALUE);
+                break;
+            }
+            if (error != null) {
+                out = new ArrayList<CsmOffsetable>(result.size());
+                for (CsmOffsetable offs : result) {
+                    if (offs.getEndOffset() < error.getStartOffset()) {
+                        out.add(offs);
+                    } else {
+                        break;
+                    }
+                }
+                out.add(error);
+            } else {
+                out = result;
+            }
+//            try {
+//                APTFile apt = APTDriver.getInstance().findAPTLight(fileImpl.getBuffer());
+//
+//                if (hasConditionalsDirectives(apt)) {
+//                    Collection<APTPreprocHandler> handlers = fileImpl.getPreprocHandlers();
+//                    if (handlers.isEmpty()) {
+//                        DiagnosticExceptoins.register(new IllegalStateException("Empty preprocessor handlers for " + file.getAbsolutePath())); //NOI18N
+//                        return Collections.<CsmOffsetable>emptyList();
+//                    } else if (handlers.size() == 1) {
+//                        APTPreprocHandler handler = handlers.iterator().next();
+//                        APTFindUnusedBlocksWalker walker = new APTFindUnusedBlocksWalker(apt, fileImpl, handler, fileImpl.getAPTCacheEntry(handler));
+//                        walker.visit();
+//                        out = walker.getBlocks();
+//                    } else {
+//                        //Comparator<CsmOffsetable> comparator = new OffsetableComparator();
+//                        //TreeSet<CsmOffsetable> result = new TreeSet<CsmOffsetable>(comparator);
+//                        List<CsmOffsetable> result = new  ArrayList<CsmOffsetable>();
+//                        first = true;
+//                        for (APTPreprocHandler handler : handlers) {
+//                            APTFindUnusedBlocksWalker walker = new APTFindUnusedBlocksWalker(apt, fileImpl, handler, fileImpl.getAPTCacheEntry(handler));
+//                            walker.visit();
+//                            List<CsmOffsetable> blocks = walker.getBlocks();
+//                            if (first) {
+//                                result = blocks;
+//                                first = false;
+//                            } else {
+//                                result = intersection(result, blocks);
+//                                if (result.isEmpty()) {
+//                                    break;
+//                                }
+//                            }
+//                        }
+//                        out = result;
+//                    }
+//                }
+//            } catch (IOException ex) {
+//                System.err.println("skip getting unused blocks\nreason:" + ex.getMessage()); //NOI18N
+//		DiagnosticExceptoins.register(ex);
+//            }
         }
         return out;
     }
@@ -229,15 +267,19 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                                 return Collections.<CsmReference>emptyList();
                             } else if (handlers.size() == 1) {
                                 APTPreprocHandler handler = handlers.iterator().next();
-                                APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, fileImpl.getAPTCacheEntry(handler));
+                                APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(handler, true);
+                                APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, cacheEntry);
                                 walker.getTokenStream();
+                                fileImpl.setAPTCacheEntry(handler, cacheEntry, false);
                                 out = walker.getCollectedData();
                             } else {
                                 Comparator<CsmReference> comparator = new OffsetableComparator<CsmReference>();
                                 TreeSet<CsmReference> result = new TreeSet<CsmReference>(comparator);
                                 for (APTPreprocHandler handler : handlers) {
-                                    APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, fileImpl.getAPTCacheEntry(handler));
+                                    APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(handler, true);
+                                    APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, cacheEntry);
                                     walker.getTokenStream();
+                                    fileImpl.setAPTCacheEntry(handler, cacheEntry, false);
                                     result.addAll(walker.getCollectedData());
                                 }
                                 out = new ArrayList<CsmReference>(result);

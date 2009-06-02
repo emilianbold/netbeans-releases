@@ -329,7 +329,9 @@ public final class LexerTestUtilities {
                 doc.getProperty(Language.class);
         String docText = null;
         try {
-            docText = doc.getText(0, doc.getLength());
+            // Get the text including the extra newline since DocumentUtilities.getText(doc)
+            // returns it so it gets lexed
+            docText = doc.getText(0, doc.getLength() + 1);
         } catch (BadLocationException e) {
             e.printStackTrace();
             TestCase.fail("BadLocationException occurred");
