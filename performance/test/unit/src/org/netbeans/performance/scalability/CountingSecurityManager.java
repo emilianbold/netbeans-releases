@@ -39,7 +39,9 @@
 
 package org.netbeans.performance.scalability;
 
+import java.io.File;
 import java.io.FileDescriptor;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.security.Permission;
@@ -48,6 +50,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import junit.framework.Assert;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -78,7 +81,12 @@ public final class CountingSecurityManager extends SecurityManager {
         msgs = new StringWriter();
         pw = new PrintWriter(msgs);
         CountingSecurityManager.prefix = prefix;
-        System.err.println("setting prefix to " + prefix);
+        try {
+            CountingSecurityManager.prefix = new File(prefix).getCanonicalPath();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        System.err.println("setting prefix to " + CountingSecurityManager.prefix);
         Statistics.reset();
     }
     
