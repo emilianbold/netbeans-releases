@@ -75,6 +75,7 @@ public abstract class MakeProjectBase  extends NbTestCase {
         super(name);
         System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
         System.setProperty("cnd.mode.unittest", "true");
+        System.setProperty("cnd.make.project.creation.skip.notify.header.extension", "true");
         Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
     }
 
@@ -256,7 +257,10 @@ public abstract class MakeProjectBase  extends NbTestCase {
                     int i = s.indexOf(' ');
                     String command = s.substring(0,i);
                     String arguments = s.substring(i+1);
-                    ne = new NativeExecutor(dataPath,command, arguments, new String[0], command, "run", false, false);
+                    if (command.startsWith(".")) {
+                        command = createdFolder+"/"+command;
+                    }
+                    ne = new NativeExecutor(createdFolder, command, arguments, new String[0], command, "run", false, false);
                     waitExecution(ne, listener, finish);
                 }
             }
