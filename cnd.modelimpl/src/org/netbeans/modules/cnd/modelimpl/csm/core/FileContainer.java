@@ -165,7 +165,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         if (f != null) {
             if (f.fileNew != null){
                 // clean repository
-                if (false) { RepositoryUtils.remove(f.fileNew) ;}
+                if (false) { RepositoryUtils.remove(f.fileNew, null) ;}
             }
         }
 	put();
