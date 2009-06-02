@@ -83,6 +83,11 @@ public final class ClassifierContainerKey extends ProjectNameBasedKey {
     }
 
     @Override
+    public boolean hasCache() {
+        return true;
+    }
+
+    @Override
     public String toString() {
         return "ClassifierContainerKey " + getProjectName(); // NOI18N
     }

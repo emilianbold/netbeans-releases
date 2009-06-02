@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.uid.KeyBasedUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
@@ -123,7 +124,7 @@ public final class RepositoryUtils {
         return counter++;
     }
 
-    public static void remove(CsmUID uid) {
+    public static void remove(CsmUID uid, CsmObject obj) {
         Key key = UIDtoKey(uid);
         if (key != null) {
             try {
@@ -142,17 +143,22 @@ public final class RepositoryUtils {
                     repository.remove(key);
                 }
             } finally {
-                if (uid instanceof Disposable) {
-                    ((Disposable)uid).dispose();
-                }
+                disposeUID(uid, obj);
             }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void disposeUID(CsmUID uid, CsmObject obj) {
+        if (uid instanceof KeyBasedUID<?>) {
+            ((KeyBasedUID<CsmObject>)uid).dispose(obj);
         }
     }
 
     public static void remove(Collection<? extends CsmUID> uids) {
         if (uids != null) {
             for (CsmUID uid : uids) {
-                remove(uid);
+                remove(uid, null);
             }
         }
     }

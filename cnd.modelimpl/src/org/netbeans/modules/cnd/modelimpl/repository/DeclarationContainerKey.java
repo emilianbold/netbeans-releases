@@ -87,4 +87,9 @@ public class DeclarationContainerKey extends ProjectNameBasedKey {
     public Key.Behavior getBehavior() {
         return Key.Behavior.LargeAndMutable;
     }
+
+    @Override
+    public boolean hasCache() {
+        return true;
+    }
 }
