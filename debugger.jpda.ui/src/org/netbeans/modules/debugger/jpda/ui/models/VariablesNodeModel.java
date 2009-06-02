@@ -94,7 +94,7 @@ public class VariablesNodeModel implements ExtendedNodeModel {
     public static final String NO_DEBUG_INFO =
         "org/netbeans/modules/debugger/jpda/resources/wrong_pass.png";
     public static final String EXPR_ARGUMENTS =
-        "org/netbeans/modules/debugger/jpda/resources/wrong_pass.png";
+        "org/netbeans/modules/debugger/jpda/resources/ExprArguments.gif";
 
     private static final int TO_STRING_LENGTH_LIMIT = 10000;
 
