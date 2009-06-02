@@ -269,6 +269,9 @@ public class UnixNativeUtils extends NativeUtils {
         LogManager.logIndent(
                 "devising the shortcut location by type: " + locationType); // NOI18N
 
+        if(shortcut.getPath()!=null) {
+            return new File(shortcut.getPath());
+        }
         final File shortcutFile;
         
         switch (locationType) {
@@ -294,11 +297,20 @@ public class UnixNativeUtils extends NativeUtils {
                 shortcutFile = new File(allUsersAppFolder,
                         getShortcutFileName(shortcut));
                 break;
+            case CUSTOM:
+                final String folder = shortcut.getRelativePath();
+
+                LogManager.log("... custom folder : " + folder);
+                shortcutFile = new File(folder,
+                        getShortcutFileName(shortcut));
+                break;
             default:
                 shortcutFile = null;
 
         }
-
+        if(shortcutFile!=null) {
+            shortcut.setPath(shortcutFile.getAbsolutePath());
+        }
         LogManager.logUnindent(
                 "shortcut file: " + shortcutFile); // NOI18N
 
