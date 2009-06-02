@@ -78,6 +78,7 @@ public final class CountingSecurityManager extends SecurityManager {
         msgs = new StringWriter();
         pw = new PrintWriter(msgs);
         CountingSecurityManager.prefix = prefix;
+        System.err.println("setting prefix to " + prefix);
         Statistics.reset();
     }
     
