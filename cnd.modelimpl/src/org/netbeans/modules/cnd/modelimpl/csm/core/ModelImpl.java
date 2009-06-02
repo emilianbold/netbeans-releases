@@ -443,6 +443,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         for (Iterator projIter = libs.iterator(); projIter.hasNext();) {
             disposeProject((ProjectBase) projIter.next());
         }
+        LibraryManager.getInstance().shutdown();
 
         cleanCaches();
 

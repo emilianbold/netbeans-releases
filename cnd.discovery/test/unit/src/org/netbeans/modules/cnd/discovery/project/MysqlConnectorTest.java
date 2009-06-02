@@ -36,59 +36,52 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.io.DataInput;
-import java.io.IOException;
-import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
-import org.netbeans.modules.cnd.repository.spi.Key;
-import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+package org.netbeans.modules.cnd.discovery.project;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 
 /**
  *
  * @author Alexander Simon
  */
-public final class ClassifierContainerKey extends ProjectNameBasedKey {
+public class MysqlConnectorTest extends MakeProjectBase {
+    private static final boolean TRACE = true;
 
-    public ClassifierContainerKey(String project) {
-        super(project);
+    public MysqlConnectorTest() {
+        super("MysqlConnectorTest");
+        if (TRACE) {
+            System.setProperty("cnd.discovery.trace.projectimport", "true"); // NOI18N
+        }
+
     }
 
-    public ClassifierContainerKey(DataInput in) throws IOException {
-        super(in);
+    public void testCmake(){
+        performTestProject("http://www.cmake.org/files/v2.6/cmake-2.6.4.tar.gz", null);
     }
 
-    public int getSecondaryAt(int level) {
-        assert (level == 0);
-        return KeyObjectFactory.KEY_CLASSIFIER_CONTAINER_KEY;
-    }
-
-    @Override
-    public int hashCode() {
-        return 37*KeyObjectFactory.KEY_CLASSIFIER_CONTAINER_KEY + super.hashCode();
-    }
-
-
-    public int getSecondaryDepth() {
-        return 1;
-    }
-
-    public PersistentFactory getPersistentFactory() {
-        return CsmObjectFactory.instance();
+    public void testMysqlConnector(){
+        List<String> list = new ArrayList<String>();
+        list.add("../cmake-2.6.4/bin/cmake -G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS=\"-g3 -gdwarf-2\" -DCMAKE_C_FLAGS=\"-g3 -gdwarf-2\"");
+        performTestProject("http://download.softagency.net/MySQL/Downloads/Connector-C/mysql-connector-c-6.0.1.tar.gz", list);
     }
 
     @Override
-    public Key.Behavior getBehavior() {
-        return Key.Behavior.LargeAndMutable;
-    }
-
-    @Override
-    public boolean hasCache() {
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        return "ClassifierContainerKey " + getProjectName(); // NOI18N
+    void perform(CsmProject csmProject) {
+        if (TRACE) {
+            System.err.println("Model content:");
+        }
+        for (CsmFile file : csmProject.getAllFiles()) {
+            if (TRACE) {
+                System.err.println("\t"+file.getAbsolutePath());
+            }
+            for(CsmInclude include : file.getIncludes()){
+                assertTrue("Not resolved include directive "+include.getIncludeName()+" in file "+file.getAbsolutePath(), include.getIncludeFile() != null);
+            }
+        }
     }
 }

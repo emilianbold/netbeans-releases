@@ -49,10 +49,12 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -88,36 +90,48 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 
     public boolean synchronize() {
 
-        // determine the remote directory
-        RemotePathMap mapper = RemotePathMap.getRemotePathMapInstance(executionEnvironment);
+//        // determine the remote directory
+//        RemotePathMap mapper = RemotePathMap.getRemotePathMapInstance(executionEnvironment);
+//
+//        // probably mapper already knows it?
+//        String remoteDir = mapper.getRemotePath(this.localDir.getAbsolutePath(), false);
+//        if (remoteDir == null) {
+//            // mapper does not know dir; let's check its parent
+//            String localParent = this.localDir.getParentFile().getAbsolutePath();
+//            String remoteParent = mapper.getRemotePath(localParent, false);
+//            boolean addMapping = false;
+//            if (remoteParent == null) {
+//                // we can't map parent path either
+//                addMapping = true;
+//                remoteParent = getRemoteSyncRoot();
+//                if (remoteParent == null) {
+//                    if (mapper.checkRemotePath(localDir.getAbsolutePath(), true)) {
+//                        remoteDir = mapper.getRemotePath(this.localDir.getAbsolutePath(), false);
+//                        addMapping = false;
+//                    } else {
+//                        return false;
+//                    }
+//                }
+//            }
+//            if (remoteDir == null) {
+//                remoteDir = remoteParent + '/' + localDir.getName(); //NOI18N
+//            }
+//            if (addMapping) {
+//                mapper.addMapping(localParent, remoteParent);
+//            }
+//        }
 
-        // probably mapper already knows it?
-        String remoteDir = mapper.getRemotePath(this.localDir.getAbsolutePath(), false);
-        if (remoteDir == null) {
-            // mapper does not know dir; let's check its parent
-            String localParent = this.localDir.getParentFile().getAbsolutePath();
-            String remoteParent = mapper.getRemotePath(localParent, false);
-            boolean addMapping = false;
-            if (remoteParent == null) {
-                // we can't map parent path either
-                addMapping = true;
-                remoteParent = getRemoteSyncRoot();
-                if (remoteParent == null) {
-                    if (mapper.checkRemotePath(localDir.getAbsolutePath(), true)) {
-                        remoteDir = mapper.getRemotePath(this.localDir.getAbsolutePath(), false);
-                        addMapping = false;
-                    } else {
-                        return false;
-                    }
-                }
+        // We should make no implicit assumptions.
+        // Later we'll allow user to specify where to copy project files to
+        String remoteParent = getRemoteSyncRoot();
+        if (remoteParent == null) {
+            if (err != null) {
+                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Cant_find_sync_root", ServerList.get(executionEnvironment).toString()));
             }
-            if (remoteDir == null) {
-                remoteDir = remoteParent + '/' + localDir.getName(); //NOI18N
-            }
-            if (addMapping) {
-                mapper.addMapping(localParent, remoteParent);
-            }
+            return false; // TODO:
         }
+        String remoteDir = remoteParent + '/' + localDir.getName(); //NOI18N
+
         boolean success = false;
         try {
             boolean same;
@@ -131,8 +145,14 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
                         (same ? " are same - skipping" : " arent same - copying")); //NOI18N
             }
             if (!same) {
+                if (out != null) {
+                    out.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Copying",
+                            remoteDir, ServerList.get(executionEnvironment).toString()));
+                }
                 synchronizeImpl(remoteDir);
             }
+            RemotePathMap mapper = RemotePathMap.getRemotePathMapInstance(executionEnvironment);
+            mapper.addMapping(localDir.getParentFile().getAbsolutePath(), remoteParent);
             success = true;
         } catch (InterruptedException ex) {
             // reporting does not make sense, just return false
@@ -142,8 +162,16 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
             logger.log(Level.FINEST, null, ex);
         } catch (ExecutionException ex) {
             logger.log(Level.FINE, null, ex);
+            if (err != null) {
+                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
+                        remoteDir, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage()));
+            }
         } catch (IOException ex) {
             logger.log(Level.FINE, null, ex);
+            if (err != null) {
+                err.printf("%s asdasd \n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
+                        remoteDir, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage()));
+            }
         }
         return success;
     }

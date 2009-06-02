@@ -275,10 +275,10 @@ public final class APTDefineNode extends APTMacroBaseNode
             return false;
         }
         final APTDefineNode other = (APTDefineNode) obj;
-        if (this.params != other.params && (this.params == null || !this.params.equals(other.params))) {
+        if (!APTUtils.equalArrayLists(this.params, other.params)) {
             return false;
         }
-        if (this.bodyTokens != other.bodyTokens && (this.bodyTokens == null || !this.bodyTokens.equals(other.bodyTokens))) {
+        if (!APTUtils.equalArrayLists(this.bodyTokens, other.bodyTokens)) {
             return false;
         }
         return true;
