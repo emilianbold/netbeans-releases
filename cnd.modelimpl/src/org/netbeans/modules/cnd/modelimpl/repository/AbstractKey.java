@@ -76,6 +76,10 @@ public abstract class AbstractKey implements Key, SelfPersistent {
         return Behavior.Default;
     }
 
+    public boolean hasCache() {
+        return false;
+    }
+
     public abstract int getSecondaryAt(int level);
 
     public abstract CharSequence getAt(int level);

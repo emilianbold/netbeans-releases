@@ -455,7 +455,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             getDeclarationsSorage().removeDeclaration(declaration);
         }
         // do not clean repository, it must be done from physical container of declaration
-        if (false) { RepositoryUtils.remove(declarationUid); }
+        if (false) { RepositoryUtils.remove(declarationUid, declaration); }
         // update repository
         RepositoryUtils.put(this);
         notify(declaration, NotifyEvent.DECLARATION_REMOVED);
@@ -532,7 +532,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             nsDefinitionsLock.writeLock().unlock();
         }
         // does not remove unregistered declaration from repository, it's responsibility of physical container
-        if (false) { RepositoryUtils.remove(definitionUid); }
+        if (false) { RepositoryUtils.remove(definitionUid, def); }
         // update repository about itself
         RepositoryUtils.put(this);
         if (remove) {

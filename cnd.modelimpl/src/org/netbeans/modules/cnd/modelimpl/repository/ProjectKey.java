@@ -88,5 +88,9 @@ final class ProjectKey extends ProjectNameBasedKey {
     public Key.Behavior getBehavior() {
 	return Behavior.LargeAndMutable;
     }
-    
+
+    @Override
+    public boolean hasCache() {
+        return true;
+    }
 }
