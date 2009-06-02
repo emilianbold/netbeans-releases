@@ -246,10 +246,13 @@ public abstract class MakeProjectBase  extends NbTestCase {
             fileCreatedFolder.mkdirs();
         }
         if (fileCreatedFolder.list().length == 0){
+            System.err.println(dataPath+"#wget "+urlName);
             ne = new NativeExecutor(dataPath,"wget", urlName, new String[0], "wget", "run", false, false);
             waitExecution(ne, listener, finish);
+            System.err.println(dataPath+"#gzip -d "+zipName);
             ne = new NativeExecutor(dataPath,"gzip", "-d "+zipName, new String[0], "gzip", "run", false, false);
             waitExecution(ne, listener, finish);
+            System.err.println(dataPath+"#tar xf "+tarName);
             ne = new NativeExecutor(dataPath,"tar", "xf "+tarName, new String[0], "tar", "run", false, false);
             waitExecution(ne, listener, finish);
             if (additionalScripts != null) {
@@ -260,11 +263,13 @@ public abstract class MakeProjectBase  extends NbTestCase {
                     if (command.startsWith(".")) {
                         command = createdFolder+"/"+command;
                     }
+                    System.err.println(createdFolder+"#"+command+" "+arguments);
                     ne = new NativeExecutor(createdFolder, command, arguments, new String[0], command, "run", false, false);
                     waitExecution(ne, listener, finish);
                 }
             }
         }
+        System.err.println(createdFolder+"#rm -rf nbproject");
         ne = new NativeExecutor(createdFolder, "rm", "-rf nbproject", new String[0], "rm", "run", false, false);
         waitExecution(ne, listener, finish);
         return createdFolder;
