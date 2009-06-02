@@ -155,45 +155,6 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
             } else {
                 out = result;
             }
-//            try {
-//                APTFile apt = APTDriver.getInstance().findAPTLight(fileImpl.getBuffer());
-//
-//                if (hasConditionalsDirectives(apt)) {
-//                    Collection<APTPreprocHandler> handlers = fileImpl.getPreprocHandlers();
-//                    if (handlers.isEmpty()) {
-//                        DiagnosticExceptoins.register(new IllegalStateException("Empty preprocessor handlers for " + file.getAbsolutePath())); //NOI18N
-//                        return Collections.<CsmOffsetable>emptyList();
-//                    } else if (handlers.size() == 1) {
-//                        APTPreprocHandler handler = handlers.iterator().next();
-//                        APTFindUnusedBlocksWalker walker = new APTFindUnusedBlocksWalker(apt, fileImpl, handler, fileImpl.getAPTCacheEntry(handler));
-//                        walker.visit();
-//                        out = walker.getBlocks();
-//                    } else {
-//                        //Comparator<CsmOffsetable> comparator = new OffsetableComparator();
-//                        //TreeSet<CsmOffsetable> result = new TreeSet<CsmOffsetable>(comparator);
-//                        List<CsmOffsetable> result = new  ArrayList<CsmOffsetable>();
-//                        first = true;
-//                        for (APTPreprocHandler handler : handlers) {
-//                            APTFindUnusedBlocksWalker walker = new APTFindUnusedBlocksWalker(apt, fileImpl, handler, fileImpl.getAPTCacheEntry(handler));
-//                            walker.visit();
-//                            List<CsmOffsetable> blocks = walker.getBlocks();
-//                            if (first) {
-//                                result = blocks;
-//                                first = false;
-//                            } else {
-//                                result = intersection(result, blocks);
-//                                if (result.isEmpty()) {
-//                                    break;
-//                                }
-//                            }
-//                        }
-//                        out = result;
-//                    }
-//                }
-//            } catch (IOException ex) {
-//                System.err.println("skip getting unused blocks\nreason:" + ex.getMessage()); //NOI18N
-//		DiagnosticExceptoins.register(ex);
-//            }
         }
         return out;
     }
@@ -269,18 +230,16 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                                 APTPreprocHandler handler = handlers.iterator().next();
                                 APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(handler, true);
                                 APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, cacheEntry);
-                                walker.getTokenStream();
+                                out = walker.collectMacros();
                                 fileImpl.setAPTCacheEntry(handler, cacheEntry, false);
-                                out = walker.getCollectedData();
                             } else {
                                 Comparator<CsmReference> comparator = new OffsetableComparator<CsmReference>();
                                 TreeSet<CsmReference> result = new TreeSet<CsmReference>(comparator);
                                 for (APTPreprocHandler handler : handlers) {
                                     APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(handler, true);
                                     APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, cacheEntry);
-                                    walker.getTokenStream();
+                                    result.addAll(walker.collectMacros());
                                     fileImpl.setAPTCacheEntry(handler, cacheEntry, false);
-                                    result.addAll(walker.getCollectedData());
                                 }
                                 out = new ArrayList<CsmReference>(result);
                             }

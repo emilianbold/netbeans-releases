@@ -76,6 +76,12 @@ public interface Key {
      * @return key Behavior
      */
     Behavior getBehavior();
+
+    /**
+     * return true if key may have a local L1 cache
+     * @return
+     */
+    public boolean hasCache();
     
     /** returns depth of primary key's hierarchy *
      * @return depth of primary key's hierarchy

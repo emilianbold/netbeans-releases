@@ -216,5 +216,9 @@ public class MemoryCacheTest extends NbTestCase {
         public int getSecondaryAt(int level) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
+        public boolean hasCache() {
+            return false;
+        }
     }
 }

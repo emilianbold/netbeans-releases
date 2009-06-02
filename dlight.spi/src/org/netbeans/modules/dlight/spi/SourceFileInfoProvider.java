@@ -46,7 +46,7 @@ import java.util.Map;
  */
 public interface SourceFileInfoProvider {
 
-  SourceFileInfo fileName(String functionName, long offset, Map<String, String> serviceInfo);
+  SourceFileInfo fileName(String functionName, int lineNumber, long offset, Map<String, String> serviceInfo);
 
   public final class SourceFileInfo {
 

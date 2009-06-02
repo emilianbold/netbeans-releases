@@ -680,6 +680,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     private void onDispose() {
+        RepositoryUtils.disposeUID(uid, this);
         projectLock.writeLock().lock();
         try {
             if (projectRef == null) {
@@ -1574,7 +1575,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         } finally {
             declarationsLock.writeLock().unlock();
         }
-        RepositoryUtils.remove(uidDecl);
+        RepositoryUtils.remove(uidDecl, declaration);
         // update repository
         RepositoryUtils.put(this);
     }

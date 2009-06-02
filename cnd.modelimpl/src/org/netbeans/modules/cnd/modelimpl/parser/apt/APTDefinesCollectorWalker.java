@@ -76,8 +76,8 @@ public class APTDefinesCollectorWalker extends APTSelfWalker {
     }
 
     @Override
-    protected APTWalker createIncludeWalker(APTFile apt, APTSelfWalker parent, CharSequence includePath) {
-        return new APTDefinesCollectorWalker(apt, parent.csmFile, ((APTDefinesCollectorWalker) parent).getPreprocHandler(), macroRefMap, includePath, null);
+    protected APTWalker createIncludeWalker(APTFile apt, APTSelfWalker parent, CharSequence includePath, APTFileCacheEntry cache) {
+        return new APTDefinesCollectorWalker(apt, parent.csmFile, ((APTDefinesCollectorWalker) parent).getPreprocHandler(), macroRefMap, includePath, cache);
     }
 
     @Override

@@ -104,6 +104,10 @@ public class TryGetTest extends BaseTestCase {
         public Key.Behavior getBehavior() {
             return Key.Behavior.Default;
         }
+
+        public boolean hasCache() {
+            return false;
+        }
     }
 
     private class LargeKey extends BaseKey {
@@ -114,6 +118,10 @@ public class TryGetTest extends BaseTestCase {
 
         public Key.Behavior getBehavior() {
             return Key.Behavior.LargeAndMutable;
+        }
+
+        public boolean hasCache() {
+            return false;
         }
     }
 
