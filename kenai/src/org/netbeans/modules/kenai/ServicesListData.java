@@ -39,10 +39,13 @@
 
 package org.netbeans.modules.kenai;
 
+import org.codeviation.pojson.Pojson.IgnoreNonExisting;
+
 /**
  *
  * @author Jan Becicka
  */
+@IgnoreNonExisting
 public class ServicesListData extends ListData {
 
     public ServicesListItem services[];
@@ -52,6 +55,7 @@ public class ServicesListData extends ListData {
         return services.length;
     }
 
+    @IgnoreNonExisting
     public static class ServicesListItem {
         public String name;
         public String description;

@@ -53,7 +53,6 @@ public class MessageDestRefPanel extends javax.swing.JPanel {
     /** Creates new form ResRefPanel */
     public MessageDestRefPanel() {
         initComponents();
-        org.netbeans.modules.xml.multiview.Utils.makeTextAreaLikeTextField(descriptionTA, nameTF);
     }
 
     void setMessageDestRefName(String name) {
@@ -119,6 +118,7 @@ public class MessageDestRefPanel extends javax.swing.JPanel {
         linkLabel = new javax.swing.JLabel();
         linkTF = new javax.swing.JTextField();
         descriptionLabel = new javax.swing.JLabel();
+        destSP = new javax.swing.JScrollPane();
         descriptionTA = new javax.swing.JTextArea();
 
         setLayout(new java.awt.GridBagLayout());
@@ -202,12 +202,15 @@ public class MessageDestRefPanel extends javax.swing.JPanel {
         add(descriptionLabel, gridBagConstraints);
 
         descriptionTA.setRows(3);
+        destSP.setViewportView(descriptionTA);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
-        add(descriptionTA, gridBagConstraints);
+        add(destSP, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     
@@ -215,6 +218,7 @@ public class MessageDestRefPanel extends javax.swing.JPanel {
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JLabel descriptionLabel;
     private javax.swing.JTextArea descriptionTA;
+    private javax.swing.JScrollPane destSP;
     private javax.swing.JLabel linkLabel;
     private javax.swing.JTextField linkTF;
     private javax.swing.JLabel nameLabel;

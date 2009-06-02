@@ -61,21 +61,21 @@ public class NbModuleProviderTest extends TestBase {
         FileObject dir = nbRoot().getFileObject("java.project");
         assertNotNull("have java.project checked out", dir);
         Project p = ProjectManager.getDefault().findProject(dir);
-        NbModuleProvider nmtp = (NbModuleProvider) p.getLookup().lookup(NbModuleProvider.class);
+        NbModuleProvider nmtp = p.getLookup().lookup(NbModuleProvider.class);
         assertNotNull("has NbModuleProvider", nmtp);
         assertSame("is netbeans.org modules", NbModuleProvider.NETBEANS_ORG, nmtp.getModuleType());
         
         FileObject suite1 = resolveEEP("suite1");
         FileObject action = suite1.getFileObject("action-project");
         p = ProjectManager.getDefault().findProject(action);
-        nmtp = (NbModuleProvider) p.getLookup().lookup(NbModuleProvider.class);
+        nmtp = p.getLookup().lookup(NbModuleProvider.class);
         assertNotNull("has NbModuleProvider", nmtp);
         assertSame("is suite-component module", NbModuleProvider.SUITE_COMPONENT, nmtp.getModuleType());
         
         FileObject suite3 = resolveEEP("suite3");
         FileObject dummy = suite3.getFileObject("dummy-project");
         p = ProjectManager.getDefault().findProject(dummy);
-        nmtp = (NbModuleProvider) p.getLookup().lookup(NbModuleProvider.class);
+        nmtp = p.getLookup().lookup(NbModuleProvider.class);
         assertNotNull("has NbModuleProvider", nmtp);
         assertSame("is standalone modules", NbModuleProvider.STANDALONE, nmtp.getModuleType());
     }

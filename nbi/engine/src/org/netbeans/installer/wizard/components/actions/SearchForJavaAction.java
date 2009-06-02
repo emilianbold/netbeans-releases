@@ -38,6 +38,7 @@ package org.netbeans.installer.wizard.components.actions;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -179,10 +180,7 @@ public class SearchForJavaAction extends WizardAction {
                 }
                 
                 // add the location to the list if it's not already there
-                if (!javaLocations.contains(javaHome)) {
-                    javaLocations.add(javaHome);
-                    javaLabels.add(getLabel(javaHome));
-                }
+                addJavaLocation(javaHome);
             } else {
                 LogManager.unindent();
             }
@@ -237,17 +235,19 @@ public class SearchForJavaAction extends WizardAction {
     }
     
     public static void addJavaLocation(File location, Version version, String vendor) {
-        if (!javaLocations.contains(location)) {
-            javaLocations.add(location);
-            javaLabels.add(getLabel(location, version, vendor));
-            JavaUtils.addJavaInfo(location, new JavaInfo(version, vendor));
+        File javaHome = getCanonicalFile(location);
+        if (!javaLocations.contains(javaHome)) {
+            javaLocations.add(javaHome);
+            javaLabels.add(getLabel(javaHome, version, vendor));
+            JavaUtils.addJavaInfo(javaHome, new JavaInfo(version, vendor));
         }
     }
-    
+
     public static void addJavaLocation(File location) {
-        if (!javaLocations.contains(location)) {
-            javaLocations.add(location);
-            javaLabels.add(getLabel(location));
+        File javaHome = getCanonicalFile(location);
+        if (!javaLocations.contains(javaHome)) {
+            javaLocations.add(javaHome);
+            javaLabels.add(getLabel(javaHome));
         }
     }
     public static List <File> getJavaLocations() {
@@ -258,6 +258,22 @@ public class SearchForJavaAction extends WizardAction {
         return javaLabels;
     }
     
+    private static File getCanonicalFile(final File file) {
+        File location = file;
+        if (SystemUtils.isWindows() && location.getAbsolutePath().matches(".*~[0-9]+.*")) {
+            //Issue #166036
+            try {
+                // if C:\Program Files == C:\Progra~1, get canonical representation
+                location = location.getCanonicalFile();
+                if(location!=file) {
+                    LogManager.log("... using " + location + " instead of " + file);
+                }
+            } catch (IOException e) {
+            }
+        }
+        return location;
+    }
+
     private void fetchLocationsFromFilesystem(final List<File> locations) {
         final List<String> candidateLocations = new ArrayList<String>();
         

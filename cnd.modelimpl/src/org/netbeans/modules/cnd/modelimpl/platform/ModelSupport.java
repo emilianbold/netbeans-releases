@@ -505,7 +505,7 @@ public class ModelSupport implements PropertyChangeListener {
                         }
                     }
                 } else {
-                    System.err.println("skip unnecessary switch of buffers");
+//                    System.err.println("skip unnecessary switch of buffers");
                 }
             }
         }

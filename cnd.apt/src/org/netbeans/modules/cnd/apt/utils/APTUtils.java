@@ -97,6 +97,17 @@ public class APTUtils {
     private APTUtils() {
     }
 
+    public static int hash(int h) {
+        // Spread bits to regularize both segment and index locations,
+        // using variant of single-word Wang/Jenkins hash.
+        h += (h <<  15) ^ 0xffffcd7d;
+        h ^= (h >>> 10);
+        h += (h <<   3);
+        h ^= (h >>>  6);
+        h += (h <<   2) + (h << 14);
+        return h ^ (h >>> 16);
+    }
+
     public static void setTokenText(APTToken _token, char buf[], int start, int count) {
         if (_token instanceof APTBaseToken) {
             _token.setTextID(CharSequenceKey.create(buf, start, count));
@@ -181,7 +192,7 @@ public class APTUtils {
                 }
             }
         } catch (TokenStreamException ex) {
-            LOG.log(Level.SEVERE, "error on converting token stream to text", ex); // NOI18N
+            LOG.log(Level.SEVERE, "error on converting token stream to text\n{0}", new Object[] { ex }); // NOI18N
         }
         return retValue.toString();
     }
@@ -201,7 +212,7 @@ public class APTUtils {
                 token = next;
             }
         } catch (TokenStreamException ex) {
-            LOG.log(Level.SEVERE, "error on stringizing token stream", ex); // NOI18N
+            LOG.log(Level.SEVERE, "error on stringizing token stream\n{0}", new Object[] { ex }); // NOI18N
         }
         return retValue.toString();
     }

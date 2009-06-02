@@ -120,7 +120,7 @@ made subject to such option by the copyright holder.
                                                                         <sp1:OnlySignEntireHeadersAndBody/>
                                                                         <sp1:AlgorithmSuite>
                                                                             <wsp1:Policy>
-                                                                                    <sp1:Basic128Sha256/>
+                                                                                    <sp1:Basic128/>
                                                                                 </wsp1:Policy>
                                                                         </sp1:AlgorithmSuite>
                                                                 </wsp1:Policy>
@@ -162,7 +162,7 @@ made subject to such option by the copyright holder.
                         </sp1:Layout>
                         <sp1:AlgorithmSuite>
                             <wsp1:Policy>
-                                <sp1:Basic128Sha256/>
+                                <sp1:Basic128/>
                             </wsp1:Policy>
                         </sp1:AlgorithmSuite>
                         <sp1:IncludeTimestamp/>

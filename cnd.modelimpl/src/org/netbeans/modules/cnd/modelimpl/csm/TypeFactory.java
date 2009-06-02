@@ -282,7 +282,7 @@ public class TypeFactory {
                                 }
                             }
                         }
-                        if (type.classifierText == null) {
+                        if (type.classifierText == TypeImpl.NON_INITIALIZED_CLASSIFIER_TEXT) {
                             type.classifierText = QualifiedNameCache.getManager().getString(sb);
                             type.qname = l.toArray(new CharSequence[l.size()]);
                         }

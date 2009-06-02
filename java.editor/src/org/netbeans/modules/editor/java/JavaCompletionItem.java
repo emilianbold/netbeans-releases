@@ -364,6 +364,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             public void run () {
                 try {
                     String textToReplace = doc.getText(offset, length);
+                    Position position = doc.createPosition(offset);
                     if (textToReplace.contentEquals(text)) {
                         if (semiPos > -1)
                             doc.insertString(semiPos, ";", null); //NOI18N
@@ -371,9 +372,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             c.setCaretPosition(offset + length);
                         return;
                     }
-                    Position position = doc.createPosition(offset);
                     Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
-                    doc.remove(offset, length);
+                    doc.remove(position.getOffset(), length);
                     doc.insertString(position.getOffset(), text.toString(), null);
                     if (semiPosition != null)
                         doc.insertString(semiPosition.getOffset(), ";", null);
@@ -805,9 +805,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                         if (!insideNew)
                                             cs = text.insert(0, cs);
                                         String textToReplace = doc.getText(offset, finalLen);
+                                        Position pos = doc.createPosition(offset);
                                         if (textToReplace.contentEquals(cs)) return;
                                         doc.remove(offset, finalLen);
-                                        doc.insertString(offset, cs.toString(), null);
+                                        doc.insertString(pos.getOffset(), cs.toString(), null);
                                         if (semiPosition != null)
                                             doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
                                     } catch (BadLocationException e) {
@@ -1392,10 +1393,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 doc.runAtomic (new Runnable () {
                     public void run () {
                     try {
+                        Position pos = doc.createPosition(offset);
                         Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
                         if (length > 0)
-                            doc.remove(offset, length);
-                        doc.insertString(offset, getInsertPrefix().toString(), null);
+                            doc.remove(pos.getOffset(), length);
+                        doc.insertString(pos.getOffset(), getInsertPrefix().toString(), null);
                         if (semiPosition != null)
                             doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
                     } catch (BadLocationException e) {
@@ -1507,6 +1509,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
         
         protected void substituteText(final JTextComponent c, final int offset, final int len, String toAdd) {
             final BaseDocument doc = (BaseDocument)c.getDocument();
+            final Position pos;
+            try {
+                pos = doc.createPosition(offset);
+            } catch (BadLocationException e) {
+                return; // Invalid offset -> do nothing
+            }
             if (len > 0) {
                 doc.runAtomic (new Runnable () {
                     public void run () {
@@ -1527,7 +1535,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         ExecutableElement ee = elementHandle.resolve(copy);                        
                         if (ee == null)
                             return;
-                        final int embeddedOffset = copy.getSnapshot().getEmbeddedOffset(offset);
+                        final int embeddedOffset = copy.getSnapshot().getEmbeddedOffset(pos.getOffset());
                         TreePath tp = copy.getTreeUtilities().pathFor(embeddedOffset);
                         if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
                             if (Utilities.inAnonymousOrLocalClass(tp))
@@ -1669,6 +1677,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
         @Override
         protected void substituteText(final JTextComponent c, final int offset, final int len, String toAdd) {
             final BaseDocument doc = (BaseDocument)c.getDocument();
+            final Position pos;
+            try {
+                pos = doc.createPosition(offset);
+            } catch (BadLocationException e) {
+                return; // Invalid offset -> do nothing
+            }
             if (len > 0) {
                 doc.runAtomic (new Runnable () {
                     public void run () {
@@ -1689,7 +1703,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         VariableElement ve = elementHandle.resolve(copy);                        
                         if (ve == null)
                             return;
-                        final int embeddedOffset = copy.getSnapshot().getEmbeddedOffset(offset);
+                        final int embeddedOffset = copy.getSnapshot().getEmbeddedOffset(pos.getOffset());
                         TreePath tp = copy.getTreeUtilities().pathFor(embeddedOffset);
                         if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
                             if (Utilities.inAnonymousOrLocalClass(tp))
@@ -1935,12 +1949,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 public void run () {
                     try {
                         Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
+                        Position pos = doc.createPosition(offset2);
                         doc.remove(offset2, length);
                         if (insertName) {
-                            doc.insertString(offset2, simpleName + text2, null);
-                            position [0] = doc.createPosition(offset2 + simpleName.length() + text2.indexOf('('));
+                            doc.insertString(pos.getOffset(), simpleName + text2, null);
+                            position [0] = doc.createPosition(pos.getOffset() + simpleName.length() + text2.indexOf('('));
                         } else {
-                            doc.insertString(offset2, text2, null);
+                            doc.insertString(pos.getOffset(), text2, null);
                             position [0] = doc.createPosition(offset2 + text2.indexOf('('));
                         }
                         if (semiPosition != null)
@@ -2453,8 +2468,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                     text.insert(0, "@" + AutoImport.resolveImport(controller, tp, type)); //NOI18N
                                     String textToReplace = doc.getText(offset, finalLen);
                                     if (textToReplace.contentEquals(text)) return;
-                                    doc.remove(offset, finalLen);
-                                    doc.insertString(offset, text.toString(), null);
+                                    Position pos = doc.createPosition(offset);
+                                    doc.remove(pos.getOffset(), finalLen);
+                                    doc.insertString(pos.getOffset(), text.toString(), null);
                                     if (semiPosition != null)
                                         doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
                                 } catch (BadLocationException e) {

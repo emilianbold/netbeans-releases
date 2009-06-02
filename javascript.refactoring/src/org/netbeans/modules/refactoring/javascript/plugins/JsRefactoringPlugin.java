@@ -42,6 +42,7 @@ package org.netbeans.modules.refactoring.javascript.plugins;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.csl.spi.support.ModificationResult;
@@ -204,7 +205,9 @@ public abstract class JsRefactoringPlugin extends ProgressProviderAdapter implem
         }
 
         try {
-            ParserManager.parse(sources, task);
+            for(Source s : sources) {
+                ParserManager.parse(Collections.singletonList(s), task);
+            }
             return task.results;
         } catch (ParseException e) {
             throw new RuntimeException(e);

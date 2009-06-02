@@ -83,7 +83,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             }
 
             pb.redirectError();
-            if (!env.containsKey("DISPLAY")) { // NOI18N
+            if (env == null || !env.containsKey("DISPLAY")) { // NOI18N
                 pb.setX11Forwarding(true);
             }
 

@@ -87,8 +87,12 @@ public interface GlassfishModule {
     public static final String COMET_FLAG = "v3.grizzly.cometSupport"; // NOI18N
     
     // Contract provider constants (identify the different containers in V3)
+    public static final String EAR_CONTAINER = "ear"; // NOI18N
     public static final String WEB_CONTAINER = "web"; // NOI18N
     public static final String JRUBY_CONTAINER = "jruby"; // NOI18N
+    public static final String EJB_CONTAINER = "ejb"; // NOI18N
+    public static final String APPCLIENT_CONTAINER = "appclient"; // NOI18N
+    public static final String CONNECTOR_CONTAINER = "connector"; // NOI18N
 
     // Resource types
     public static final String JDBC = "JDBC"; // NOI18N

@@ -141,18 +141,20 @@ public class RunDialogAction extends NodeAction {
         Object ret = DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (ret == runButton) {
             Project project = runDialogPanel.getSelectedProject();
-            RunProfile profile = ConfigurationSupport.getProjectDescriptor(project).getConfs().getActive().getProfile();
-            String path = runDialogPanel.getExecutablePath();
-            path = IpeUtils.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
-            ProjectActionEvent projectActionEvent = new ProjectActionEvent(
-                    project,
-                    ProjectActionEvent.Type.RUN,
-                    IpeUtils.getBaseName(path) + " (run)", // NOI18N
-                    path,
-                    (MakeConfiguration) ConfigurationSupport.getProjectDescriptor(project).getConfs().getActive(),
-                    profile,
-                    false);
-            ProjectActionSupport.getInstance().fireActionPerformed(new ProjectActionEvent[]{projectActionEvent});
+            MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
+            if (conf != null) {
+                RunProfile profile = conf.getProfile();
+                String path = runDialogPanel.getExecutablePath();
+                path = IpeUtils.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
+                ProjectActionEvent projectActionEvent = new ProjectActionEvent(
+                        project,
+                        ProjectActionEvent.Type.RUN,
+                        IpeUtils.getBaseName(path) + " (run)", // NOI18N
+                        path, conf,
+                        profile,
+                        false);
+                ProjectActionSupport.getInstance().fireActionPerformed(new ProjectActionEvent[]{projectActionEvent});
+            }
         }
     }
 

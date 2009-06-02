@@ -110,6 +110,7 @@ public class DiscoveryProjectGenerator {
             downConfiguration(sourceRoot, false);
         }
         projectBridge.save();
+        projectBridge.dispose();
     }
 
     private void downConfiguration(Folder folder, boolean isCPP) {
@@ -733,7 +734,7 @@ public class DiscoveryProjectGenerator {
         }
         return folders;
     }
-    
+
     private static class Pair{
         private FileConfiguration fileConfiguration;
         private Item item;
