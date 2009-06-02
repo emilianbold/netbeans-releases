@@ -36,7 +36,7 @@ public final class OpenFunctionInEditorActionProvider {
                 Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
 
         for (SourceFileInfoProvider provider : sourceInfoProviders) {
-            final SourceFileInfo sourceInfo = provider.fileName(functionName, 0, null);
+            final SourceFileInfo sourceInfo = provider.fileName(functionName, 0, 0, null);
             if (sourceInfo != null && sourceInfo.isSourceKnown()) {
                 DLightExecutorService.submit(new Runnable() {
 
