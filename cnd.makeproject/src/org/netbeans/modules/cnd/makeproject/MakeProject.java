@@ -133,6 +133,7 @@ import org.w3c.dom.Text;
 public final class MakeProject implements Project, AntProjectListener {
 
     public static final boolean TRACE_MAKE_PROJECT_CREATION = Boolean.getBoolean("cnd.make.project.creation.trace"); // NOI18N
+    public static final boolean SKIP_NOTIFY_NEW_HEADER_EXTENSION = Boolean.getBoolean("cnd.make.project.creation.skip.notify.header.extension"); // NOI18N
 
 //    private static final Icon MAKE_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif")); // NOI18N
     private static final String HEADER_EXTENSIONS = "header-extensions"; // NOI18N
@@ -406,6 +407,9 @@ public final class MakeProject implements Project, AntProjectListener {
                 extensions.append(',');
             }
             extensions.append(ext);
+        }
+        if (SKIP_NOTIFY_NEW_HEADER_EXTENSION){
+            return true;
         }
         NotifyDescriptor d = new NotifyDescriptor.Confirmation(
                 MessageFormat.format(message, new Object[]{extensions.toString()}),

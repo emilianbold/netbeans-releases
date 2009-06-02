@@ -113,14 +113,11 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
         try {
             progressHandle.start();
             Set<TransferFile> forDownload = remoteClient.prepareDownload(sources, filesToDownload);
-            // avoid timeout errors
-            remoteClient.disconnect();
 
             if (showDownloadDialog) {
+                // avoid timeout errors
+                remoteClient.disconnect();
                 forDownload = TransferFilter.showDownloadDialog(forDownload);
-                if (forDownload.size() == 0) {
-                    return;
-                }
             }
 
             if (forDownload.size() > 0) {
