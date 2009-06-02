@@ -89,7 +89,7 @@ public class ProjectBridge {
         resultSet.add(project);
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         if (pdp != null) {
-            makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
+            makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
         }
     }
 
@@ -108,7 +108,7 @@ public class ProjectBridge {
         project = ProjectGenerator.createBlankProject("DiscoveryProject", baseFolder, new MakeConfiguration[] {extConf}, true); // NOI18N
         resultSet.add(project);
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
+        makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
     }
     
     public Folder createFolder(Folder parent, String name){
@@ -169,7 +169,7 @@ public class ProjectBridge {
     }
     
     public Object getAuxObject(Item item){
-        MakeConfiguration makeConfiguration = (MakeConfiguration)item.getFolder().getConfigurationDescriptor().getConfs().getActive();
+        MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
         ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
         return itemConfiguration;
     }
@@ -177,7 +177,7 @@ public class ProjectBridge {
     public void setAuxObject(Item item, Object pao){
         if (pao instanceof ItemConfiguration) {
             ItemConfiguration conf = (ItemConfiguration)pao;
-            MakeConfiguration makeConfiguration = (MakeConfiguration)item.getFolder().getConfigurationDescriptor().getConfs().getActive();
+            MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
             ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration);
             switch(itemConfiguration.getTool()) {
                 case Tool.CCCompiler:
@@ -296,8 +296,14 @@ public class ProjectBridge {
     }
     
     public void setupProject(List<String> includes, List<String> macros, boolean isCPP){
-        Configuration c = makeConfigurationDescriptor.getConfs().getActive();
+        Configuration c = makeConfigurationDescriptor.getActiveConfiguration();
         if (c instanceof MakeConfiguration) {
+            for(int i = 0; i < includes.size(); i++) {
+                includes.set(i, getString(includes.get(i)));
+            }
+            for(int i = 0; i < macros.size(); i++) {
+                macros.set(i, getString(macros.get(i)));
+            }
             MakeConfiguration extConf = (MakeConfiguration)c;
             if (isCPP) {
                 extConf.getCCCompilerConfiguration().getIncludeDirectories().setValue(includes);
@@ -315,7 +321,7 @@ public class ProjectBridge {
     }
 
     public CCCCompilerConfiguration getFolderConfiguration(boolean isCPP, Folder folder) {
-        MakeConfiguration makeConfiguration = (MakeConfiguration)folder.getConfigurationDescriptor().getConfs().getActive();
+        MakeConfiguration makeConfiguration = folder.getConfigurationDescriptor().getActiveConfiguration();
         //FolderConfiguration folderConfiguration = (FolderConfiguration)makeConfiguration.getAuxObject(folder.getId());
         FolderConfiguration folderConfiguration = folder.getFolderConfiguration(makeConfiguration);
         if (folderConfiguration == null) {
@@ -333,6 +339,12 @@ public class ProjectBridge {
         if (cccc == null) {
             return;
         }
+        for(int i = 0; i < includes.size(); i++) {
+            includes.set(i, getString(includes.get(i)));
+        }
+        for(int i = 0; i < macros.size(); i++) {
+            macros.set(i, getString(macros.get(i)));
+        }
         cccc.getIncludeDirectories().setValue(includes);
         cccc.getInheritIncludes().setValue(inheriteIncludes);
         cccc.getPreprocessorConfiguration().setValue(macros);
@@ -340,7 +352,7 @@ public class ProjectBridge {
     }
     
     public static void setExclude(Item item, boolean exclude){
-        MakeConfiguration makeConfiguration = (MakeConfiguration)item.getFolder().getConfigurationDescriptor().getConfs().getActive();
+        MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
         ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
         if (itemConfiguration == null) {
             return;
@@ -353,7 +365,7 @@ public class ProjectBridge {
     }
     
     public void setHeaderTool(Item item){
-        MakeConfiguration makeConfiguration = (MakeConfiguration)item.getFolder().getConfigurationDescriptor().getConfs().getActive();
+        MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
         ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
         if (itemConfiguration == null) {
             return;
@@ -364,7 +376,7 @@ public class ProjectBridge {
     }
 
     public void setSourceTool(Item item, boolean isCPP){
-        MakeConfiguration makeConfiguration = (MakeConfiguration)item.getFolder().getConfigurationDescriptor().getConfs().getActive();
+        MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
         ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
         if (itemConfiguration == null) {
             return;
@@ -381,7 +393,7 @@ public class ProjectBridge {
     }
     
     public CCCCompilerConfiguration getItemConfiguration(Item item) {
-        MakeConfiguration makeConfiguration = (MakeConfiguration)item.getFolder().getConfigurationDescriptor().getConfs().getActive();
+        MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
         ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) {
             return null;
@@ -394,7 +406,7 @@ public class ProjectBridge {
     }
 
     public void setupFile(String compilepath, List<String> includes, boolean inheriteIncludes, List<String> macros, boolean inheriteMacros, Item item) {
-        MakeConfiguration makeConfiguration = (MakeConfiguration)item.getFolder().getConfigurationDescriptor().getConfs().getActive();
+        MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
         ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) {
             return;
@@ -402,6 +414,12 @@ public class ProjectBridge {
         BooleanConfiguration excl =itemConfiguration.getExcluded();
         if (excl.getValue()){
             excl.setValue(false);
+        }
+        for(int i = 0; i < includes.size(); i++) {
+            includes.set(i, getString(includes.get(i)));
+        }
+        for(int i = 0; i < macros.size(); i++) {
+            macros.set(i, getString(macros.get(i)));
         }
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
@@ -414,7 +432,7 @@ public class ProjectBridge {
     }
 
     public static void fixFileMacros(Map<String,String> macros, Item item) {
-        MakeConfiguration makeConfiguration = (MakeConfiguration)item.getFolder().getConfigurationDescriptor().getConfs().getActive();
+        MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
         ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) {
             return;
@@ -448,9 +466,23 @@ public class ProjectBridge {
             cccCompilerConfiguration.getPreprocessorConfiguration().setValue(list);
         }
     }
+
+    private Map<String, String> cache = new HashMap<String, String>();
+    private String getString(String s) {
+        String res = cache.get(s);
+        if (res == null) {
+            cache.put(s, s);
+            return s;
+        }
+        return res;
+    }
+
+    void dispose(){
+        cache.clear();
+    }
     
     private CompilerSet getCompilerSet(){
-        MakeConfiguration makeConfiguration = (MakeConfiguration)makeConfigurationDescriptor.getConfs().getActive();
+        MakeConfiguration makeConfiguration = makeConfigurationDescriptor.getActiveConfiguration();
         return CompilerSetManager.getDefault(makeConfiguration.getDevelopmentHost().getExecutionEnvironment()).getCompilerSet(makeConfiguration.getCompilerSet().getValue());
     }
 

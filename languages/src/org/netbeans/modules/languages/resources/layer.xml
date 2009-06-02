@@ -50,8 +50,6 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     <folder name="Editors">
-        <file name="org-netbeans-modules-languages-ParserImpl$AParserFactory.instance"/>
-        <file name="org-netbeans-modules-languages-ParserListenerFactoryImpl.instance"/>
         <folder name="AnnotationTypes">
             <file name="Error.xml" url="Error.xml"/>
             <file name="SyntaxError.xml" url="SyntaxError.xml"/>
@@ -233,17 +231,4 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    <folder name="Templates">
-        <folder name="NetBeansModuleDevelopment">
-            <file name="_language.nbs" url="nbs_template.nbs">
-                <attr name="template" boolvalue="true"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.resources.Bundle"/>
-                <attr name="templateCategory" stringvalue="simple-files"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/resources/nbs_template.html"/>
-            </file>
-        </folder>
-    </folder>
 </filesystem>
-
-
-

@@ -181,7 +181,7 @@ public class APTDriverImpl {
                         try {
                             reader.close();
                         } catch (IOException ex) {
-                            APTUtils.LOG.log(Level.SEVERE, "exception on closing stream", ex); // NOI18N
+                            APTUtils.LOG.log(Level.SEVERE, "exception on closing stream\n{0}", new Object[] { ex }); // NOI18N
                         }
                     }
                 }

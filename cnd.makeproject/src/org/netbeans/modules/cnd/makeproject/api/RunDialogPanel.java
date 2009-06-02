@@ -358,8 +358,8 @@ public class RunDialogPanel extends javax.swing.JPanel {
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             if (pdp == null)
                 return;
-            MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
-            MakeConfiguration conf = (MakeConfiguration)projectDescriptor.getConfs().getActive();
+            MakeConfigurationDescriptor projectDescriptor = pdp.getConfigurationDescriptor();
+            MakeConfiguration conf = projectDescriptor.getActiveConfiguration();
             RunProfile runProfile = conf.getProfile();
             runDirectoryTextField.setText(runProfile.getRunDirectory());
             argumentTextField.setText(runProfile.getArgsFlat());
@@ -539,8 +539,8 @@ public class RunDialogPanel extends javax.swing.JPanel {
             lastSelectedProject = projectChoices[projectComboBox.getSelectedIndex()-1];
             project = lastSelectedProject;
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-            MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
-            MakeConfiguration conf = (MakeConfiguration)projectDescriptor.getConfs().getActive();
+            MakeConfigurationDescriptor projectDescriptor = pdp.getConfigurationDescriptor();
+            MakeConfiguration conf = projectDescriptor.getActiveConfiguration();
             updateRunProfile(conf.getBaseDir(), conf.getProfile());
         } else {
             try {

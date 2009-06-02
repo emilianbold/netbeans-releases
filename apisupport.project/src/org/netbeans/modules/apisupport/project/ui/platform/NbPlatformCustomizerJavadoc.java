@@ -50,6 +50,8 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizerSources.ListListener;
 import org.netbeans.modules.apisupport.project.universe.JavadocRootsProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -252,10 +254,15 @@ public final class NbPlatformCustomizerJavadoc extends JPanel {
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
             File javadocRoot = FileUtil.normalizeFile(chooser.getSelectedFile());
-            ModuleUISettings.getDefault().setLastUsedNbPlatformLocation(javadocRoot.getParentFile().getAbsolutePath());
             URL newUrl = FileUtil.urlForArchiveOrDir(javadocRoot);
-            model.addJavadocRoot(newUrl);
-            javadocList.setSelectedValue(newUrl, true);
+            if (model.containsRoot(newUrl)) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    getMessage("MSG_ExistingJavadocRoot")));
+            } else {
+                ModuleUISettings.getDefault().setLastUsedNbPlatformLocation(javadocRoot.getParentFile().getAbsolutePath());
+                model.addJavadocRoot(newUrl);
+                javadocList.setSelectedValue(newUrl, true);
+            }
         }
     }//GEN-LAST:event_addZipFolder
     

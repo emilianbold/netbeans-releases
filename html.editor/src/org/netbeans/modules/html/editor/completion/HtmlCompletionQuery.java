@@ -363,18 +363,24 @@ public class HtmlCompletionQuery {
                         return null; // no ArgItem
                     }
                     String argName = argItem.text().toString();
-                    if(isXHtml) {
+                    if(!isXHtml) {
                         argName = argName.toLowerCase(Locale.ENGLISH);
                     }
 
                     DTD.Attribute arg = tag.getAttribute(argName);
-                    if (arg == null || arg.getType() != DTD.Attribute.TYPE_SET) {
+                    if (arg == null /*|| arg.getType() != DTD.Attribute.TYPE_SET*/) {
                         return null;
                     }
 
+                    result = new ArrayList<CompletionItem>();
+
                     if (id != HTMLTokenId.VALUE) {
                         anchor = offset;
-                        result = translateValues(anchor, arg.getValueList(""));
+                        result.addAll(translateValues(anchor, arg.getValueList("")));
+                        AttrValuesCompletion valuesCompletion = AttrValuesCompletion.getSupport(tagElem.getName(), argName);
+                        if(valuesCompletion != null) {
+                            result.addAll(valuesCompletion.getValueCompletionItems(document, offset, ""));
+                        }
                     } else {
                         String quotationChar = null;
                         if (preText != null && preText.length() > 0) {
@@ -385,8 +391,15 @@ public class HtmlCompletionQuery {
                                 quotationChar = "\""; // NOI18N
                             }
                         }
+                        String prefix = quotationChar == null ? preText : preText.substring(1);
+
                         anchor = itemOffset + (quotationChar != null ? 1 : 0);
-                        result = translateValues(itemOffset, arg.getValueList(quotationChar == null ? preText : preText.substring(1)), quotationChar);
+
+                        result.addAll(translateValues(itemOffset, arg.getValueList(prefix), quotationChar));
+                        AttrValuesCompletion valuesCompletion = AttrValuesCompletion.getSupport(tagElem.getName(), argName);
+                        if(valuesCompletion != null) {
+                            result.addAll(valuesCompletion.getValueCompletionItems(document, offset, prefix));
+                        }
                     }
                 }
             } else if (id == HTMLTokenId.SCRIPT) {

@@ -78,7 +78,6 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
     public static final List KNOWN_FOLDERS = Arrays.asList(
             "grails-app", // NOI18N
             "lib", // NOI18N
-            "plugins", // NOI18N
             "scripts", // NOI18N
             "src", // NOI18N
             "test", // NOI18N
@@ -104,14 +103,18 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
             );
 
     private final FileObject projectDir;
+
+    private final GrailsProject project;
+
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    private GrailsSources(FileObject projectDir) {
-        this.projectDir = projectDir;
+    private GrailsSources(GrailsProject project) {
+        this.project = project;
+        this.projectDir = project.getProjectDirectory();
     }
 
-    static GrailsSources create(FileObject projectDir) {
-        GrailsSources sources = new GrailsSources(projectDir);
+    static GrailsSources create(GrailsProject project) {
+        GrailsSources sources = new GrailsSources(project);
         sources.startFSListener();
         return sources;
     }
@@ -148,13 +151,24 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
             addGroup(SourceCategory.WEBAPP, "LBL_web-app", result);
             addGroup(SourceCategory.GRAILSAPP_VIEWS, "LBL_grails-app_views", result);
         } else if (GroovySources.SOURCES_TYPE_GRAILS_UNKNOWN.equals(type)) {
-            addGroup(SourceCategory.PLUGINS, "LBL_Plugins", result);
-//            for (FileObject child : projectDir.getChildren()) {
-//                if (child.isFolder() && VisibilityQuery.getDefault().isVisible(child) && !KNOWN_FOLDERS.contains(child.getName())) {
-//                    String name = child.getName();
-//                    addGroup(child, Character.toUpperCase(name.charAt(0)) + name.substring(1), result);
-//                }
-//            }
+            // plugins may reside in project dir
+            File pluginsDirFile = project.getBuildConfig().getProjectPluginsDir();
+            FileObject pluginsDir = pluginsDirFile == null ? null : FileUtil.toFileObject(
+                    FileUtil.normalizeFile(pluginsDirFile));
+            File globalPluginsDirFile = project.getBuildConfig().getGlobalPluginsDir();
+            FileObject globalPluginsDir = globalPluginsDirFile == null ? null : FileUtil.toFileObject(
+                    FileUtil.normalizeFile(globalPluginsDirFile));
+
+            for (FileObject child : projectDir.getChildren()) {
+                if (child.isFolder()
+                        && VisibilityQuery.getDefault().isVisible(child)
+                        && !KNOWN_FOLDERS.contains(child.getName())
+                        && child != pluginsDir
+                        && child != globalPluginsDir) {
+                    String name = child.getName();
+                    addGroup(child, Character.toUpperCase(name.charAt(0)) + name.substring(1), result);
+                }
+            }
 
             addUnknownGroups(KNOWN_FOLDERS_IN_GRAILS_APP, result, "grails-app", null);
             addUnknownGroups(KNOWN_OR_IGNORED_FOLDERS_IN_TEST, result, "test", "LBL_SomeTests");

@@ -123,38 +123,36 @@ public final class ErrorManager {
                     ERROR_LOGFILE_INFO_KEY,
                     LogManager.getLogFile().getAbsolutePath());
         }
+        String titleKey = null;
+        UiUtils.MessageType type;
+
         switch (level) {
             case ErrorLevel.MESSAGE:
-                UiUtils.showMessageDialog(
-                        dialogText,
-                        ResourceUtils.getString(
-                        ErrorManager.class, ERROR_MESSAGE_KEY),
-                        UiUtils.MessageType.INFORMATION);
-                return;
+                titleKey = ERROR_MESSAGE_KEY;
+                type = UiUtils.MessageType.INFORMATION;
+                break;
             case ErrorLevel.WARNING:
-                UiUtils.showMessageDialog(
-                        dialogText,
-                        ResourceUtils.getString(
-                        ErrorManager.class, ERROR_WARNING_KEY),
-                        UiUtils.MessageType.WARNING);
-                return;
+                titleKey = ERROR_WARNING_KEY;
+                type = UiUtils.MessageType.WARNING;
+                break;
             case ErrorLevel.ERROR:
-                UiUtils.showMessageDialog(
-                        dialogText,
-                        ResourceUtils.getString(
-                        ErrorManager.class, ERROR_ERROR_KEY),
-                        UiUtils.MessageType.ERROR);
-                return;
+                titleKey = ERROR_ERROR_KEY;
+                type = UiUtils.MessageType.ERROR;
+                break;
             case ErrorLevel.CRITICAL:
-                UiUtils.showMessageDialog(
-                        dialogText,
-                        ResourceUtils.getString(
-                        ErrorManager.class, ERROR_CRITICAL_KEY),
-                        UiUtils.MessageType.CRITICAL);
-                finishHandler.criticalExit();
-                return;
+                titleKey = ERROR_CRITICAL_KEY;
+                type = UiUtils.MessageType.CRITICAL;
+                break;
             default:
                 return;
+        }
+        String title = ResourceUtils.getString(ErrorManager.class, titleKey); 
+        if(title == null) {
+            titleKey = type.toString();
+        }
+        UiUtils.showMessageDialog(dialogText, titleKey, type);
+        if(type.equals(UiUtils.MessageType.CRITICAL)) {
+            finishHandler.criticalExit();
         }
     }
     

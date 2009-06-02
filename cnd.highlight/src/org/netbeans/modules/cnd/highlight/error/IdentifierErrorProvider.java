@@ -86,7 +86,7 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
 
     @Override
     public boolean isEnabledByDefault() {
-        return !CndUtils.isReleaseMode();
+        return true;//!CndUtils.isReleaseMode();
     }
     
     @Override

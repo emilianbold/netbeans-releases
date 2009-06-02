@@ -63,7 +63,7 @@ import org.openide.util.NbPreferences;
  * @author Jan Becicka
  */
 public class ChatNotifications {
-    public static final String NOTIFICATIONS_PREF = "chat.notifications.";
+    public static final String NOTIFICATIONS_PREF = "chat.notifications."; // NOI18N
     
     private static ImageIcon NEWMSG = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/newmessage.png"));
     private static ChatNotifications instance;

@@ -152,6 +152,10 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
         return unitNamesCache.getValueById(unitId);
     }
 
+    public String getUnitNameSafe(int unitId) {
+        return unitNamesCache.containsId(unitId) ? unitNamesCache.getValueById(unitId) : "No Index " + unitId + " in " + unitNamesCache; // NOI18N
+    }
+
     private static IntToStringCache getUnitFileNames(int unitId) {
         return unitNamesCache.getFileNames(unitId);
     }

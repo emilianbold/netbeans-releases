@@ -99,8 +99,8 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
 
     @Override
     public void dispose() {
-        onDispose();
         super.dispose();
+        onDispose();
     }
 
     @Override

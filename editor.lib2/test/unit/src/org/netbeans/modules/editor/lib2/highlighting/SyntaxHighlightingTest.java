@@ -171,6 +171,7 @@ public class SyntaxHighlightingTest extends NbTestCase {
     private void checkText(String text, Language<?> lang) {
         System.out.println("Checking text: '" + text + "'\n");
         Document doc = createDocument(lang, text);
+        text += '\n'; // Adding newline that gets added by AbstractDocument and gets lexed
         SyntaxHighlighting layer = new SyntaxHighlighting(doc);
 
         HighlightsSequence hs = layer.getHighlights(Integer.MIN_VALUE, Integer.MAX_VALUE);

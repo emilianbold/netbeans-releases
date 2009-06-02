@@ -19,8 +19,6 @@ public class HudsonViewConstants {
 
     public static final String VIEW_NAME = "view_name"; // NOI18N
     
-    public static final String VIEW_DESCRIPTION = "view_description"; // NOI18N
-    
     public static final String VIEW_URL = "view_url"; // NOI18N
 
 }

@@ -99,7 +99,7 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
 
     public void testIZ157797() throws Exception {
         // IZ#157797: no hyperlink on macro reference
-        performTest("src/macro_incl_ok.h", 2, 25, "src/macro_def.cc", 3, 9);
+        performTest("src/macro_incl_ok.h", 2, 25, "src/macro_def.cc", 3, 1);
         performNullTargetTest("src/macro_incl_err.h", 2, 25);
     }
 
