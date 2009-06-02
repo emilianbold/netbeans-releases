@@ -366,14 +366,16 @@ public class UIDUtilities {
      * Base UID for cached objects
      */
     /* package */ static class CachedUID<T> extends KeyBasedUID<T> implements Disposable {
-        private WeakReference<T> weakT = TraceFlags.USE_WEAK_MEMORY_CACHE ? new WeakReference<T>(null) : null;
+        private WeakReference<T> weakT;
 
-        protected CachedUID(Key key) {
+        protected CachedUID(Key key, T obj) {
             super(key);
+            weakT = TraceFlags.USE_WEAK_MEMORY_CACHE ? new WeakReference<T>(obj) : null;
         }
 
         /* package */ CachedUID(DataInput aStream) throws IOException {
             super(aStream);
+            weakT = TraceFlags.USE_WEAK_MEMORY_CACHE ? new WeakReference<T>(null) : null;
         }
 
         @Override
@@ -407,7 +409,7 @@ public class UIDUtilities {
     /* package */ static final class ProjectUID extends CachedUID<CsmProject> { //KeyBasedUID<CsmProject> {
 
         public ProjectUID(ProjectBase project) {
-            super(KeyUtilities.createProjectKey(project));
+            super(KeyUtilities.createProjectKey(project), project);
         }
 
         /* package */ ProjectUID(DataInput aStream) throws IOException {
@@ -421,7 +423,7 @@ public class UIDUtilities {
     /* package */ static final class NamespaceUID extends CachedUID<CsmNamespace> { //KeyBasedUID<CsmNamespace> {
 
         public NamespaceUID(CsmNamespace ns) {
-            super(KeyUtilities.createNamespaceKey(ns));
+            super(KeyUtilities.createNamespaceKey(ns), ns);
         }
 
         /* package */ NamespaceUID(DataInput aStream) throws IOException {
@@ -435,7 +437,7 @@ public class UIDUtilities {
     /* package */ static final class FileUID extends CachedUID<CsmFile> { //KeyBasedUID<CsmFile> {
 
         public FileUID(FileImpl file) {
-            super(KeyUtilities.createFileKey(file));
+            super(KeyUtilities.createFileKey(file), file);
         }
 
         /* package */ FileUID(DataInput aStream) throws IOException {
@@ -477,11 +479,11 @@ public class UIDUtilities {
     private static abstract class OffsetableDeclarationUIDBaseCached<T extends CsmOffsetableDeclaration> extends CachedUID<T> { //KeyBasedUID<T> {
 
         public OffsetableDeclarationUIDBaseCached(T declaration) {
-            this(KeyUtilities.createOffsetableDeclarationKey((OffsetableDeclarationBase<?>) declaration));
+            this(KeyUtilities.createOffsetableDeclarationKey((OffsetableDeclarationBase<?>) declaration), declaration);
         }
 
-        protected OffsetableDeclarationUIDBaseCached(Key key) {
-            super(key);
+        protected OffsetableDeclarationUIDBaseCached(Key key, T obj) {
+            super(key, obj);
         }
 
         /* package */ OffsetableDeclarationUIDBaseCached(DataInput aStream) throws IOException {
