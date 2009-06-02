@@ -1962,7 +1962,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         assert key instanceof TinyCharSequence;
         CsmUID<CsmNamespace> nsUID = namespaces.remove(key);
         assert nsUID != null;
-        RepositoryUtils.remove(nsUID);
+        RepositoryUtils.remove(nsUID, ns);
     }
 
     protected final ModelImpl getModel() {

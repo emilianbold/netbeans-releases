@@ -82,6 +82,10 @@ public final class LibraryManager {
     private final Map<String, LibraryEntry> librariesEntries = new ConcurrentHashMap<String, LibraryEntry>();
     private final Object lock = new Object();
 
+    public void shutdown(){
+        librariesEntries.clear();
+    }
+    
     /**
      * Returns collection of artificial libraries used in project
      */

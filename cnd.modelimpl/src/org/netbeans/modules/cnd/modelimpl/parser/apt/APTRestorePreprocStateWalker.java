@@ -51,8 +51,10 @@ import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeInfo;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
+import org.netbeans.modules.cnd.apt.support.APTMacroMap.State;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
+import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 
@@ -121,7 +123,8 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
                         APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(preprocHandler, false);
                         APTWalker walker = new APTRestorePreprocStateWalker(getStartProject(), aptLight, csmFile, preprocHandler, inclStack, interestedFile,cacheEntry);
                         walker.visit();
-                        csmFile.setAPTCacheEntry(preprocHandler, cacheEntry, false);
+                        // we do not remember cache entry as serial because stopped before #include directive
+                        // csmFile.setAPTCacheEntry(preprocHandler, cacheEntry, false);
                     } else {
                         // expected #included file was deleted
                         csmFile = null;
@@ -135,6 +138,7 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
                     APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(preprocHandler, false);
                     APTWalker walker = new APTRestorePreprocStateWalker(getStartProject(), aptLight, csmFile, preprocHandler,cacheEntry);
                     walker.visit();
+                    // remember walk info
                     csmFile.setAPTCacheEntry(preprocHandler, cacheEntry, false);
                 } else {
                     // expected #included file was deleted
@@ -170,6 +174,14 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
             // See IZ119620, IZ120478
         }
     }
-    
-    
+
+    @Override
+    protected boolean include(ResolvedPath resolvedPath, APTInclude apt, State postIncludeState) {
+        boolean ret = super.include(resolvedPath, apt, postIncludeState);
+        // does not allow to store post include state if we stopped before #include directive
+        if (hasIncludeActionSideEffects() && isStopped()) {
+            ret = false;
+        }
+        return ret;
+    }        
 }
