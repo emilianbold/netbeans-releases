@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -457,6 +458,61 @@ implements Lookup.Provider, ContextActionEnabler<ContextActionTest.Openable> {
         String n = (String)action.getValue(Action.NAME);
         assertEquals("Open", n);
     }
+    public void testContextXMLDefinitionNoKey() throws Exception {
+        FileObject folder;
+        folder = FileUtil.getConfigFile("actions/support/test");
+        assertNotNull("testing layer is loaded: ", folder);
+
+        FileObject fo = folder.getFileObject("testContextNoKey.instance");
+
+        Object obj = fo.getAttribute("instanceCreate");
+        if (!(obj instanceof ContextAwareAction)) {
+            fail("Shall create an action: " + obj);
+        }
+        ContextAwareAction caa = (ContextAwareAction)obj;
+        Action action = caa.createContextAwareInstance(lookupProxy);
+
+        assertEquals("Both actions are equal", action, caa);
+        assertEquals("and have the same hash", action.hashCode(), caa.hashCode());
+
+
+        class SimpleAction extends AbstractAction {
+            public int cnt;
+
+            public void actionPerformed(ActionEvent e) {
+                cnt++;
+            }
+        }
+        SimpleAction simpleAction = new SimpleAction();
+
+        ActionMap map = new ActionMap();
+
+
+        LookupWithOpenable openLookup = new LookupWithOpenable();
+
+        activate(openLookup);
+        assertTrue("Our action is enabled", this.getIsEnabled(action));
+        openLookup.setHasCookie(false);
+        assertFalse("Our action is not enabled", this.getIsEnabled(action));
+
+        activate(openLookup, Lookups.singleton(map));
+        assertFalse("Still disabled", this.getIsEnabled(action));
+        map.put("contextKey", simpleAction);
+        assertFalse("Action does not react to any key", this.getIsEnabled(action));
+
+        openLookup.setHasCookie(true);
+        assertTrue("Still enabled", this.getIsEnabled(action));
+
+        doActionPerformed(action, new ActionEvent(this, 0, ""));
+        assertEquals("no meaning in simple action", 0, simpleAction.cnt);
+        assertEquals("Our SimpleCookieAction invoked", 1, SimpleCookieAction.runOn.size());
+        List<? extends Openable> open = SimpleCookieAction.runOn.get(0);
+        assertEquals("Our SimpleCookieAction invoked", 1, open.size());
+        assertSame("the right instance", openLookup.lookup(Openable.class), open.get(0));
+
+        String n = (String)action.getValue(Action.NAME);
+        assertEquals("Open", n);
+    }
     
     public void testShareAcceleratorKey() {
         FileObject folder;
@@ -517,6 +573,10 @@ implements Lookup.Provider, ContextActionEnabler<ContextActionTest.Openable> {
         
         
         doBasicUsageWithEnabler(action);
+    }
+
+    static URL myIconResource() {
+        return ContextAwareAction.class.getResource("TestIcon.png");
     }
     
     private ActionsInfraHid.WaitPCL doBasicUsageWithEnabler(Action operateOn) throws Exception {

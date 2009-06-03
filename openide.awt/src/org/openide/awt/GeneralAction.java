@@ -221,9 +221,6 @@ final class GeneralAction {
          * to right action.
          */
         public DelegateAction(Map map, Object key, Lookup actionContext, Action fallback, boolean surviveFocusChange) {
-            if (key == null) {
-                throw new NullPointerException("Has to provide a key!"); // NOI18N
-            }
             this.map = map;
             this.key = key;
             this.fallback = fallback;
@@ -306,6 +303,10 @@ final class GeneralAction {
         }
 
         void updateState(ActionMap prev, ActionMap now) {
+            if (key == null) {
+                return;
+            }
+
             if (prev != null) {
                 Action prevAction = prev.get(key);
                 if (prevAction != null) {
@@ -367,7 +368,7 @@ final class GeneralAction {
             if (obj instanceof DelegateAction) {
                 DelegateAction d = (DelegateAction)obj;
                 
-                if (!key.equals(d.key)) {
+                if (key != null && !key.equals(d.key)) {
                     return false;
                 }
                 if (map != null && !map.equals(d.map)) {

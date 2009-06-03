@@ -107,6 +107,9 @@ class GlobalManager extends Object implements LookupListener {
     }
     
     public Action findGlobalAction(Object key) {
+        if (key == null) {
+            return null;
+        }
         ActionMap map = actionMap.get();
         Action a = (map == null) ? null : map.get(key);
         if (LOG.isLoggable(Level.FINE)) {
@@ -116,7 +119,10 @@ class GlobalManager extends Object implements LookupListener {
         return a;
     }
     
-    public void registerListener(Object key, GeneralAction.DelegateAction a) {
+    public final void registerListener(Object key, GeneralAction.DelegateAction a) {
+        if (key == null) {
+            return;
+        }
         synchronized (CACHE) {
             Set<GeneralAction.DelegateAction> existing = listeners.get(key);
             if (existing == null) {
@@ -128,7 +134,10 @@ class GlobalManager extends Object implements LookupListener {
         }
     }
 
-    public void unregisterListener(Object key, GeneralAction.DelegateAction a) {
+    public final void unregisterListener(Object key, GeneralAction.DelegateAction a) {
+        if (key == null) {
+            return;
+        }
         synchronized (CACHE) {
             Set<GeneralAction.DelegateAction> existing = listeners.get(key);
             if (existing != null) {
@@ -226,11 +235,13 @@ class GlobalManager extends Object implements LookupListener {
             super(context);
         }
         
+        @Override
         public boolean isSurvive() {
             return true;
         }
         
         
+        @Override
         protected ActionMap newMap(ActionMap prev, ActionMap newMap) {
             ArrayList<Object> old = new ArrayList<Object>();
             if (prev != null) {

@@ -47,7 +47,7 @@ package org.openide.awt;
  *
  * @author Jaroslav Tulach
  */
-public enum ContextSelection {
+enum ContextSelection {
     /** the action is enabled when exactly one instance of 
      * desired object is present
      */
