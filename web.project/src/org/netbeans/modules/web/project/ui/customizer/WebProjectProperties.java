@@ -119,9 +119,6 @@ import org.openide.util.Task;
  */
 final public class WebProjectProperties {
     
-    public static final String J2EE_1_4 = "1.4"; // NOI18N
-    public static final String J2EE_1_3 = "1.3"; // NOI18N
-    
     // Special properties of the project
     public static final String WEB_PROJECT_NAME = "web.project.name"; //NOI18N
     public static final String JAVA_PLATFORM = "platform.active"; //NOI18N

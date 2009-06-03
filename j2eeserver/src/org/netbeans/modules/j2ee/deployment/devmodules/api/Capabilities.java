@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,39 +31,63 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.clientproject;
+package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
-import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.modules.j2ee.api.ejbjar.Car;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
-import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
+import java.util.Set;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
 /**
  *
- * @author jungi
+ * @author Petr Hejl
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation.class)
-public class AppClientInjectionTargetQueryImplementation implements InjectionTargetQueryImplementation {
-    
-    public AppClientInjectionTargetQueryImplementation() {
-    }
-    
-    public boolean isInjectionTarget(CompilationController controller, TypeElement typeElement) {
-        Car apiCar = Car.getCar(controller.getFileObject());
-        if (apiCar != null && 
-                !apiCar.getJ2eePlatformVersion().equals(EjbProjectConstants.J2EE_13_LEVEL) &&
-                !apiCar.getJ2eePlatformVersion().equals(EjbProjectConstants.J2EE_14_LEVEL)) {
-            return SourceUtils.isMainClass(typeElement.getQualifiedName().toString(), controller.getClasspathInfo());
-        }
-        return false;
+public final class Capabilities {
+
+    private final J2eeModuleProvider provider;
+
+    private Capabilities(J2eeModuleProvider provider) {
+        this.provider = provider;
     }
 
-    public boolean isStaticReferenceRequired(CompilationController controller, TypeElement typeElement) {
-        // all injection references must be static in appclient
-        return isInjectionTarget(controller, typeElement);
+    public static Capabilities forProject(Project project) {
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (provider == null) {
+            return null;
+        }
+        return new Capabilities(provider);
+    }
+
+//    public boolean isEJB21Supported() {
+//        return false;
+//    }
+//
+//    public boolean isEJB30Supported() {
+//        return false;
+//    }
+//
+//    public boolean isEJB31Supported() {
+//        return false;
+//    }
+//
+//    public boolean isEJB31LiteSupported() {
+//        return false;
+//    }
+
+    public boolean hasDefaultPersistenceProvider() {
+        J2eePlatform platform  = Deployment.getDefault().getJ2eePlatform(provider.getServerInstanceID());
+        if (platform == null) {
+            // server probably not registered, can't resolve whether default provider is supported (see #79856)
+            return false;
+        }
+
+        Set<Profile> profiles = platform.getSupportedProfiles(provider.getJ2eeModule().getModuleType());
+        return (profiles.contains(Profile.JAVA_EE_5) || profiles.contains(Profile.JAVA_EE_6_FULL))
+                && platform.isToolSupported("defaultPersistenceProviderJavaEE5");
     }
 }
