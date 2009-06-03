@@ -39,49 +39,28 @@
 
 package org.netbeans.modules.cnd.discovery.project;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmInclude;
-import org.netbeans.modules.cnd.api.model.CsmProject;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.modules.cnd.test.BaseTestSuite;
 
 /**
  *
  * @author Alexander Simon
  */
-public class MysqlConnectorTest extends MakeProjectBase {
-    private static final boolean TRACE = true;
+public class DiscoverySuiteTest extends BaseTestSuite {
 
-    public MysqlConnectorTest() {
-        super("MysqlConnectorTest");
-        if (TRACE) {
-            System.setProperty("cnd.discovery.trace.projectimport", "true"); // NOI18N
-        }
+    public DiscoverySuiteTest() {
+        super("C/C++ Discovery Test"); // NOI18N
 
+        addTestSuite(PkgConfigTestCase.class);
+        addTestSuite(LiteSqlTestCase.class);
+        addTestSuite(ProjectCreationTestCase.class);
+        addTestSuite(CMakeTestCase.class);
+        addTestSuite(MysqlConnectorTestCase.class);
     }
 
-    public void testCmake(){
-        performTestProject("http://www.cmake.org/files/v2.6/cmake-2.6.4.tar.gz", null);
-    }
-
-    public void testMysqlConnector(){
-        List<String> list = new ArrayList<String>();
-        list.add("../cmake-2.6.4/bin/cmake -G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS=\"-g3 -gdwarf-2\" -DCMAKE_C_FLAGS=\"-g3 -gdwarf-2\"");
-        performTestProject("http://download.softagency.net/MySQL/Downloads/Connector-C/mysql-connector-c-6.0.1.tar.gz", list);
-    }
-
-    @Override
-    void perform(CsmProject csmProject) {
-        if (TRACE) {
-            System.err.println("Model content:");
-        }
-        for (CsmFile file : csmProject.getAllFiles()) {
-            if (TRACE) {
-                System.err.println("\t"+file.getAbsolutePath());
-            }
-            for(CsmInclude include : file.getIncludes()){
-                assertTrue("Not resolved include directive "+include.getIncludeName()+" in file "+file.getAbsolutePath(), include.getIncludeFile() != null);
-            }
-        }
+    public static Test suite() {
+        TestSuite suite = new DiscoverySuiteTest();
+        return suite;
     }
 }
