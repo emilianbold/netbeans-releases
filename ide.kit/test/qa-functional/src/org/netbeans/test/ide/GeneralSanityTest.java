@@ -73,6 +73,8 @@ public class GeneralSanityTest extends NbTestCase {
     }
     
     public static Test suite() {
+        // disable 'slowness detection'
+        System.setProperty("org.netbeans.core.TimeableEventQueue.quantum", "100000");
         NbTestSuite s = new NbTestSuite();
         s.addTest(new GeneralSanityTest("testInitBlacklistedClassesHandler"));
         s.addTest(NbModuleSuite.create(

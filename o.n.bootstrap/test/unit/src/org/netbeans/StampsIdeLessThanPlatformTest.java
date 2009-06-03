@@ -37,92 +37,75 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.core;
+package org.netbeans;
 
-import java.awt.EventQueue;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.logging.Handler;
+import java.io.File;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
-import org.openide.util.Exceptions;
+import org.netbeans.junit.NbTestSuite;
 
 /**
  *
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
-public class TimableEventQueueTest extends NbTestCase {
-    static {
-        System.setProperty("org.netbeans.core.TimeableEventQueue.quantum", "300");
-        System.setProperty("org.netbeans.core.TimeableEventQueue.pause", "3000");
-        TimableEventQueue.initialize();
+public class StampsIdeLessThanPlatformTest extends NbTestCase {
+    private File userdir;
+    private File ide;
+    private File platform;
+    private File install;
+    
+    
+    public static Test suite() {
+        //return new StampsTest("testStampsInvalidatedWhenClustersChange");
+        return new NbTestSuite(StampsIdeLessThanPlatformTest.class);
     }
-    private static CountingHandler handler = new CountingHandler();
     
-    
-    public TimableEventQueueTest(String testName) {
+    public StampsIdeLessThanPlatformTest(String testName) {
         super(testName);
-    }
-
-    @Override
-    protected Level logLevel() {
-        return Level.FINEST;
-    }
+    }            
 
     @Override
     protected void setUp() throws Exception {
-        Logger l = Logger.getLogger("org.netbeans.core");
+        clearWorkDir();
+        
+        install = new File(getWorkDir(), "install");
+        platform = new File(install, "platform7");
+        ide = new File(install, "ide8");
+        userdir = new File(getWorkDir(), "tmp");
+        
+        System.setProperty("netbeans.home", platform.getPath());
+        System.setProperty("netbeans.dirs", ide.getPath());
+        System.setProperty("netbeans.user", userdir.getPath());
+        
+        StampsTest.createModule("org.openide.awt", platform, 50000L);
+        StampsTest.createModule("org.openide.nodes", platform, 60000L);
+        StampsTest.createModule("org.netbeans.api.languages", ide, 50000L);
+        StampsTest.createModule("org.netbeans.modules.logmanagement", userdir, 10000L);
+        
+        Stamps.main("reset");
+        
+        Thread.sleep(100);
+
+        Logger l = Logger.getLogger("org");
+        l.setLevel(Level.OFF);
         l.setUseParentHandlers(false);
-        l.removeHandler(handler);
-        l.addHandler(handler);
-        handler.records.clear();
     }
 
-    @RandomlyFails
-    public void testDispatchEvent() throws Exception {
-        class Slow implements Runnable {
-            private int ok;
-            public void run() {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                ok++;
-            }
-        }
-        Slow slow = new Slow();
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
+    
+    public void testGenerateTimeStamps() {
+        long stamp = Stamps.moduleJARs();
+        assertEquals("Timestamp is taken from nodes module", 60000L, stamp);
         
-        EventQueue.invokeAndWait(slow);
-        EventQueue.invokeAndWait(slow);
-        
-        assertEquals("called", 2, slow.ok);
+        StampsTest.assertStamp(60000L, platform, false, true);
+        StampsTest.assertStamp(50000L, ide, false, true);
+        StampsTest.assertStamp(-1L, userdir, false, false);
+    }        
+    
 
-        if (handler.records.isEmpty()) {
-            fail("There shall be some reports: " + handler.records);
-        }
-    }
-
-    private static final class CountingHandler extends Handler {
-        List<LogRecord> records = Collections.synchronizedList(new LinkedList<LogRecord>());
-
-        @Override
-        public void publish(LogRecord record) {
-            if (record.getLevel().intValue() >= Level.INFO.intValue()) {
-                records.add(record);
-            }
-        }
-
-        @Override
-        public void flush() {
-        }
-
-        @Override
-        public void close() throws SecurityException {
-        }
-    }
 }
