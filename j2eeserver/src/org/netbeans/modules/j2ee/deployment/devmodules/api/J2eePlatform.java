@@ -393,6 +393,12 @@ public final class J2eePlatform {
      * @deprecated use {@link #getSupportedProfiles()}
      */
     public Set/*<String>*/ getSupportedSpecVersions() {
+        boolean assertsEnabled = false;
+        assert assertsEnabled = true;
+        if (assertsEnabled) {
+            LOGGER.log(Level.INFO, "Call to deprecated method " + J2eePlatform.class.getName() + "getSupportedSpecVersions", new Exception());
+        }
+
         return impl.getSupportedSpecVersions();
     }
 
@@ -406,6 +412,11 @@ public final class J2eePlatform {
      * @deprecated use {@link #getSupportedProfiles(java.lang.Object)}
      */
     public Set <String> getSupportedSpecVersions(Object moduleType) {
+        boolean assertsEnabled = false;
+        assert assertsEnabled = true;
+        if (assertsEnabled) {
+            LOGGER.log(Level.INFO, "Call to deprecated method " + J2eePlatform.class.getName() + "getSupportedSpecVersions", new Exception());
+        }
         return impl.getSupportedSpecVersions(moduleType);
     }
 
