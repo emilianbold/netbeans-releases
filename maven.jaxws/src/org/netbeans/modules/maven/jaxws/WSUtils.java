@@ -349,34 +349,34 @@ public class WSUtils {
         for (JaxWsService s : jaxWsSupport.getServices()) {
             if (!s.isServiceProvider()) {
                 oldClients.add(s);
-                oldNames.add(s.getLocalWsdl());
+                oldNames.add(s.getId());
             }
         }
         FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
         if (wsdlFolder != null) {
-            List<JaxWsService> newClients = getJaxWsClients(prj, jaxWsSupport, wsdlFolder);
+            List<JaxWsService> newClients = getJaxWsClients(prj);
             Set<String> commonNames = new HashSet<String>();
             for (JaxWsService client : newClients) {
-                String localWsdl = client.getLocalWsdl();
-                if (oldNames.contains(localWsdl)) {
-                    commonNames.add(localWsdl);
+                String id = client.getId();
+                if (oldNames.contains(id)) {
+                    commonNames.add(id);
                 }
             }
             // removing old clients
             for (JaxWsService oldClient : oldClients) {
-                if (!commonNames.contains(oldClient.getLocalWsdl())) {
+                if (!commonNames.contains(oldClient.getId())) {
                     jaxWsSupport.removeService(oldClient);
                 }
             }
             // add new clients
             for (JaxWsService newClient : newClients) {
-                if (!commonNames.contains(newClient.getLocalWsdl())) {
-                    newClient.setWsdlUrl(getOriginalWsdlUrl(prj, jaxWsSupport, newClient.getLocalWsdl(), false));
+                if (!commonNames.contains(newClient.getId())) {
+                    newClient.setWsdlUrl(getOriginalWsdlUrl(prj, newClient.getId(), false));
                     jaxWsSupport.addService(newClient);
                 }
             }
         } else {
-            // removing all clients
+            // removing ald clients
             for (JaxWsService client : oldClients) {
                 jaxWsSupport.removeService(client);
             }
@@ -384,17 +384,18 @@ public class WSUtils {
         
     }
 
-    public static void detectWsdlClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder)  {
+    public static void detectWsdlClients(Project prj, JAXWSLightSupport jaxWsSupport)  {
         List<WsimportPomInfo> candidates = MavenModelUtils.getWsdlFiles(prj);
         if (candidates.size() > 0) {
-            for (WsimportPomInfo candidate : candidates) {
-                String wsdlPath = candidate.getWsdlPath();
-                if (isClient(prj, jaxWsSupport, wsdlPath)) {
+            for (WsimportPomInfo candidate : candidates) {             
+                if (isClient(prj, candidate)) {
+                    String wsdlPath = candidate.getWsdlPath();
                     JaxWsService client = new JaxWsService(wsdlPath, false);
                     if (candidate.getHandlerFile() != null) {
                         client.setHandlerBindingFile(candidate.getHandlerFile());
                     }
-                    client.setWsdlUrl(getOriginalWsdlUrl(prj, jaxWsSupport, wsdlPath, false));
+                    client.setId(candidate.getId());
+                    client.setWsdlUrl(getOriginalWsdlUrl(prj, client.getId(), false));
                     jaxWsSupport.addService(client);
                 }
             }
@@ -403,13 +404,14 @@ public class WSUtils {
         }
     }
 
-    private static List<JaxWsService> getJaxWsClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder) {
+    private static List<JaxWsService> getJaxWsClients(Project prj) {
         List<WsimportPomInfo> candidates = MavenModelUtils.getWsdlFiles(prj);
         List<JaxWsService> clients = new ArrayList<JaxWsService>();
-        for (WsimportPomInfo candidate : candidates) {
-            String wsdlPath = candidate.getWsdlPath();
-            if (isClient(prj, jaxWsSupport, wsdlPath)) {
+        for (WsimportPomInfo candidate : candidates) {           
+            if (isClient(prj, candidate)) {
+                String wsdlPath = candidate.getWsdlPath();
                 JaxWsService client = new JaxWsService(wsdlPath, false);
+                client.setId(candidate.getId());
                 if (candidate.getHandlerFile() != null) {
                     client.setHandlerBindingFile(candidate.getHandlerFile());
                 }
@@ -419,24 +421,18 @@ public class WSUtils {
         return clients;
     }
 
-    private static boolean isClient(Project prj, JAXWSLightSupport jaxWsSupport, String localWsdlPath) {
+    private static boolean isClient(Project prj, WsimportPomInfo candidate) {
         Preferences prefs = ProjectUtils.getPreferences(prj, MavenWebService.class,true);
         if (prefs != null) {
-            FileObject wsdlFo = getLocalWsdl(jaxWsSupport, localWsdlPath);
-            if (wsdlFo != null) {
-                // if client exists return true
-                if (prefs.get(MavenWebService.CLIENT_PREFIX+wsdlFo.getName(), null) != null) {
-                    return true;
-                // if service doesn't exist return true
-                } else if (prefs.get(MavenWebService.SERVICE_PREFIX+wsdlFo.getName(), null) == null) {
-                    return true;
-                }
+            // if client exists return true
+            if (prefs.get(MavenWebService.SERVICE_PREFIX+candidate.getId(), null) != null) {
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
-    private static FileObject getLocalWsdl(JAXWSLightSupport jaxWsSupport, String localWsdlPath) {
+    static FileObject getLocalWsdl(JAXWSLightSupport jaxWsSupport, String localWsdlPath) {
         FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
         if (wsdlFolder!=null) {
             return wsdlFolder.getFileObject(localWsdlPath);
@@ -444,17 +440,14 @@ public class WSUtils {
         return null;
     }
 
-    public static String getOriginalWsdlUrl(Project prj, JAXWSLightSupport jaxWsSupport, String localWsdl, boolean forService) {
-        FileObject wsdlFo = WSUtils.getLocalWsdl(jaxWsSupport, localWsdl);
-        if (wsdlFo != null) {
-            Preferences prefs = ProjectUtils.getPreferences(prj, MavenWebService.class, true);
-            if (prefs != null) {
-                // remember original WSDL URL for service
-                if (forService) {
-                    return prefs.get(MavenWebService.SERVICE_PREFIX+wsdlFo.getName(), null);
-                } else {
-                    return prefs.get(MavenWebService.CLIENT_PREFIX+wsdlFo.getName(), null);
-                }
+    public static String getOriginalWsdlUrl(Project prj, String id, boolean forService) {
+        Preferences prefs = ProjectUtils.getPreferences(prj, MavenWebService.class, true);
+        if (prefs != null) {
+            // remember original WSDL URL for service
+            if (forService) {
+                return prefs.get(MavenWebService.SERVICE_PREFIX+id, null);
+            } else {
+                return prefs.get(MavenWebService.CLIENT_PREFIX+id, null);
             }
         }
         return null;
@@ -936,6 +929,23 @@ public class WSUtils {
                 }
             }
         }
+    }
+
+    public static String getUniqueId(String id, List<JaxWsService> services) {
+        String result = id;
+        Set<String> serviceIdSet = new HashSet<String>();
+        for (JaxWsService s : services) {
+            String serviceId = s.getId();
+            if (serviceId != null) {
+                serviceIdSet.add(serviceId);
+            }
+        }
+
+        int i=1;
+        while (serviceIdSet.contains(result)) {
+            result = id+"_"+String.valueOf(i++); //NOI18N
+        }
+        return result;
     }
     
 }

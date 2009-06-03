@@ -59,10 +59,8 @@ import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.Context;
 import org.netbeans.api.languages.ParserManager.State;
-import org.netbeans.api.languages.ParserManager.State;
 import org.netbeans.api.languages.ParserManagerListener;
 import org.netbeans.api.languages.SyntaxContext;
-import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -71,6 +69,8 @@ import org.netbeans.modules.languages.ParserManagerImpl;
 import org.openide.cookies.LineCookie;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.text.NbDocument;
 
 
@@ -343,7 +343,7 @@ class LanguagesNavigatorModel implements TreeModel {
             Line.Set lineSet = lineCookie.getLineSet ();
             Line line = lineSet.getCurrent (NbDocument.findLineNumber (document, item.getOffset ()));
             int column = NbDocument.findLineColumn (document, item.getOffset ());
-            line.show (Line.SHOW_GOTO, column);
+            line.show (ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
         }
 
         private List<ASTNavigatorNode> nodes;

@@ -50,8 +50,6 @@ public class FoldersListSettings  {
     private static final String LAST_EXTERNAL_SOURCE_ROOT = "srcRoot";  //NOI18N
     private static final String NEW_PROJECT_COUNT = "newProjectCount"; //NOI18N
 
-//    private static final String SHOW_AGAIN_BROKEN_REF_ALERT = "showAgainBrokenRefAlert"; //NOI18N
-
     public String displayName() {
         return NbBundle.getMessage (FoldersListSettings.class, "TXT_WebProjectFolderList"); //NOI18N
     }
@@ -76,15 +74,6 @@ public class FoldersListSettings  {
         getPreferences().putInt(NEW_PROJECT_COUNT, count);
     }
     
-//    public boolean isShowAgainBrokenRefAlert() {
-//        Boolean b = (Boolean)getProperty(SHOW_AGAIN_BROKEN_REF_ALERT);
-//        return b == null ? true : b.booleanValue();
-//    }
-//    
-//    public void setShowAgainBrokenRefAlert(boolean again) {
-//        this.putProperty(SHOW_AGAIN_BROKEN_REF_ALERT, Boolean.valueOf(again), true);
-//    }
-
     public static FoldersListSettings getDefault () {
         return INSTANCE;
     }

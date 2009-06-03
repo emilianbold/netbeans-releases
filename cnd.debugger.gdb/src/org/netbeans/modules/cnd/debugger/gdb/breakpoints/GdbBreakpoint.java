@@ -103,6 +103,10 @@ public abstract class GdbBreakpoint extends Breakpoint {
      * @param ln a line number to stop on
      */
     public void setLineNumber(int ln) {
+        setLineNumber(ln, false);
+    }
+
+    private void setLineNumber(int ln, boolean noOld) {
         int old;
         synchronized (this) {
             if (ln == lineNumber) {
@@ -111,7 +115,12 @@ public abstract class GdbBreakpoint extends Breakpoint {
             old = lineNumber;
             lineNumber = ln;
         }
-        firePropertyChange(PROP_LINE_NUMBER, Integer.valueOf(old), Integer.valueOf(ln));
+        firePropertyChange(PROP_LINE_NUMBER, noOld ? null : Integer.valueOf(old), Integer.valueOf(ln));
+    }
+
+    // see IZ:165386 we should distinguish line updates from LineTranslations
+    public void setLineNumberNoOld(int ln) {
+        setLineNumber(ln, true);
     }
     
     protected void setValid() {

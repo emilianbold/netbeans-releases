@@ -76,15 +76,15 @@ public class APTDefinesCollectorWalker extends APTSelfWalker {
     }
 
     @Override
-    protected APTWalker createIncludeWalker(APTFile apt, APTSelfWalker parent, CharSequence includePath) {
-        return new APTDefinesCollectorWalker(apt, parent.csmFile, ((APTDefinesCollectorWalker) parent).getPreprocHandler(), macroRefMap, includePath, null);
+    protected APTWalker createIncludeWalker(APTFile apt, APTSelfWalker parent, CharSequence includePath, APTFileCacheEntry cache) {
+        return new APTDefinesCollectorWalker(apt, parent.csmFile, ((APTDefinesCollectorWalker) parent).getPreprocHandler(), macroRefMap, includePath, cache);
     }
 
     @Override
     protected void onDefine(APT apt) {
         super.onDefine(apt);
         APTDefine aptMacro = (APTDefine) apt;
-        macroRefMap.put(aptMacro.getName().getTextID(), new MacroInfo(csmFile, apt.getOffset(), apt.getEndOffset(), includePath));
+        macroRefMap.put(aptMacro.getName().getTextID(), new MacroInfo(csmFile, apt.getOffset(), includePath));
     }
 
     @Override
@@ -105,14 +105,12 @@ public class APTDefinesCollectorWalker extends APTSelfWalker {
 }
 class MacroInfo {
 
-    public MacroInfo(CsmFile file, int startOffest, int endOffset, CharSequence includePath) {
+    public MacroInfo(CsmFile file, int startOffest, CharSequence includePath) {
         this.targetFile = UIDCsmConverter.fileToUID(file);
         this.startOffset = startOffest;
-        this.endOffset = endOffset;
         this.includePath = includePath;
     }
     public final CsmUID<CsmFile> targetFile;
     public final int startOffset;
-    public final int endOffset;
     public final CharSequence includePath;
 }

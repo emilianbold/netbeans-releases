@@ -321,7 +321,7 @@ public final class ParseProjectXml extends Task {
             // XXX share parse w/ ModuleListParser
             Document pDoc = XMLUtil.parse(new InputSource(getProjectFile ().toURI().toString()),
                                           false, true, /*XXX*/null, null);
-            if (getModuleType(pDoc) == TYPE_NB_ORG) {
+            VALIDATE: if (getModuleType(pDoc) == TYPE_NB_ORG) {
                 // Ensure project.xml is valid according to schema.
                 File nball = new File(getProject().getProperty("nb_all"));
                 SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -332,7 +332,11 @@ public final class ParseProjectXml extends Task {
                     "apisupport.project/src/org/netbeans/modules/apisupport/project/resources/nb-module-project3.xsd",
                 };
                 for (String xsd : xsds) {
-                    sources.add(new StreamSource(new File(nball, xsd)));
+                    File xsdF = new File(nball, xsd);
+                    if (!xsdF.isFile()) {
+                        break VALIDATE;
+                    }
+                    sources.add(new StreamSource(xsdF));
                 }
                 Schema schema = schemaFactory.newSchema(sources.toArray(new Source[0]));
                 Validator validator = schema.newValidator();

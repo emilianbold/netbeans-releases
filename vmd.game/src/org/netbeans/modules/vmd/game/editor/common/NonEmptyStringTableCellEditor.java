@@ -48,7 +48,7 @@ import javax.swing.border.LineBorder;
 
 /**
  *
- * @author avk
+ * @author akorostelev
  */
 public class NonEmptyStringTableCellEditor extends DefaultCellEditor {
 

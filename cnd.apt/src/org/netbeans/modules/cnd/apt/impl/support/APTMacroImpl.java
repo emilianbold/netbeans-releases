@@ -45,10 +45,9 @@ import antlr.TokenStream;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
+import org.netbeans.modules.cnd.apt.impl.structure.APTBuilderImpl;
+import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -60,25 +59,16 @@ import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
  */
 public final class APTMacroImpl implements APTMacro {
     private final CharSequence file;
-    private final APTToken name;
-    private final APTToken[] paramsArray;
-    private final List<APTToken> body;
+    private final APTDefine defineNode;
     private final Kind macroType;
     private volatile int hashCode = 0;
 
-    public APTMacroImpl(CharSequence file, APTToken name, Collection<APTToken> params, List<APTToken> body, Kind macroType) {
-        assert (name != null);
+    public APTMacroImpl(CharSequence file, APTDefine defineNode, Kind macroType) {
+        assert (defineNode.getName() != null);
         this.file = file;
         assert file != null;
         assert file.length() == 0 || macroType == Kind.DEFINED : "file info has only #defined macro " + file;
-        this.name = name;
-        //this.params = params;
-        if (params != null) {
-            paramsArray = params.toArray(new APTToken[params.size()]);
-        } else {
-            paramsArray = null;
-        }
-        this.body = body;
+        this.defineNode = (APTDefine) APTBuilderImpl.createLightCopy(defineNode);
         this.macroType = macroType;
     }
 
@@ -91,28 +81,25 @@ public final class APTMacroImpl implements APTMacro {
     }
 
     public boolean isFunctionLike() {
-        return paramsArray != null;
+        return defineNode.isFunctionLike();
     }
 
     public APTToken getName() {
-        return name;
+        return defineNode.getName();
     }
 
     public Collection<APTToken> getParams() {
-        if (paramsArray == null) {
-            return null;
-        }
-        List<APTToken> res = new ArrayList<APTToken>(paramsArray.length);
-        for (APTToken elem : paramsArray) {
-            res.add(elem);
-        }
-        return res;
+        return defineNode.getParams();
     }
 
     public TokenStream getBody() {
-        return body != null ? new ListBasedTokenStream(body) : APTUtils.EMPTY_STREAM;
+        return new ListBasedTokenStream(defineNode.getBody());
     }
-    
+
+    public APTDefine getDefineNode() {
+        return defineNode;
+    }
+
     @Override
     public boolean equals(Object obj) {
         boolean retValue;
@@ -129,23 +116,11 @@ public final class APTMacroImpl implements APTMacro {
         if (one.macroType != other.macroType) {
             return false;
         }
-        if (!one.name.equals(other.name)) {
-            return false;
-        }
         // check files
         if ((one.file == other.file) && (one.file != null) && !one.file.equals(other.file)) {
             return false;
         }
-        // TODO: probably we don't need params and body becuase file is the same and name is positions based
-        // check equal params
-        if (!Arrays.equals(one.paramsArray, other.paramsArray)) {
-            return false;
-        }
-        // check equal body
-        if ((one.body == other.body) && (one.body != null) && !one.body.equals(other.body)) {
-            return false;
-        }
-        return true;
+        return one.defineNode.equals(other.defineNode);
     }
     
     @Override
@@ -154,12 +129,9 @@ public final class APTMacroImpl implements APTMacro {
         if (retValue == 0) {
             // init hash
             retValue = 31*retValue + macroType.ordinal();
-            retValue = 31*retValue + getName().getTextID().hashCode();
             retValue = 31*retValue + (file == null ? 0 : file.hashCode());
-            // TODO: probably we don't need params and body becuase file is the same and name is positions based
-            retValue = 31*retValue + Arrays.hashCode(paramsArray);
-            retValue = 31*retValue + (body == null ? 0 : body.hashCode());
-            hashCode = retValue;
+            retValue = 31*retValue + defineNode.hashCode();
+            hashCode = APTUtils.hash(retValue);
         }
         return retValue;
     }       
@@ -185,10 +157,10 @@ public final class APTMacroImpl implements APTMacro {
         }
         retValue.append("#define '"); // NOI18N
         retValue.append(getName());
-        if (paramsArray != null) {
+        if (getParams() != null) {
             retValue.append("["); // NOI18N
             boolean first = true;
-            for (APTToken elem : paramsArray) {
+            for (APTToken elem : getParams()) {
                 if (!first) {
                     retValue.append(", "); // NOI18N
                 }

@@ -45,7 +45,6 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.util.Iterator;
 import java.util.concurrent.Callable;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -62,7 +61,6 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.view.spi.EstimatedSpanView;
 import org.netbeans.editor.view.spi.LockView;
 import org.netbeans.modules.editor.java.JavaKit;
-import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -204,7 +202,7 @@ public class JavaEditorWarmUpTask implements Runnable{
                     SwingUtilities.invokeLater(this);
 
                 } catch (BadLocationException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                 }
                 break;
 
@@ -298,7 +296,7 @@ public class JavaEditorWarmUpTask implements Runnable{
                         doc.readUnlock();
                     }
                 } catch (BadLocationException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                 }
                     
                 status = STATUS_RENDER_FRAME;

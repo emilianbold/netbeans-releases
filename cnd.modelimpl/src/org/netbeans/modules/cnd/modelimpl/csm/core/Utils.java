@@ -124,7 +124,7 @@ public class Utils {
         }
     }
 
-    public static void setSelfUID(CsmDeclaration decl) {
+    public static void setSelfUID(CsmObject decl) {
         if (decl instanceof OffsetableIdentifiableBase) {
             ((OffsetableIdentifiableBase)decl).setSelfUID();
         } else {

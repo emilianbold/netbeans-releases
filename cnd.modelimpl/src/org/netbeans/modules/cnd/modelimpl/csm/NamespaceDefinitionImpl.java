@@ -183,7 +183,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         CsmUID<CsmOffsetableDeclaration> uid = UIDCsmConverter.declarationToUID(declaration);
         assert uid != null;
         declarations.remove(uid);
-        RepositoryUtils.remove(uid);
+        RepositoryUtils.remove(uid, declaration);
         // update repository
         RepositoryUtils.put(this);
     }

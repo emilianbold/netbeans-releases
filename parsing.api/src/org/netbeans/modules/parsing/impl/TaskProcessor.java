@@ -112,7 +112,7 @@ public class TaskProcessor {
     private final static Collection<SchedulerTask> toRemove = new LinkedList<SchedulerTask> ();
     
     //Worker thread factory - single worker thread
-    private final static WorkerThreadFactory factory = new WorkerThreadFactory ();
+    final static WorkerThreadFactory factory = new WorkerThreadFactory ();
     //Currently running SchedulerTask
     private final static CurrentRequestReference currentRequest = new CurrentRequestReference ();
     //Deferred task until scan is done
@@ -518,16 +518,6 @@ public class TaskProcessor {
             for (Source source : sources) {
                 try {
                     Document doc = source.getDocument (true);
-//                    if (doc == null) {
-//                        final FileObject file = source.getFileObject();
-//                        if (file != null) {
-//                            final DataObject dobj = DataObject.find(file);
-//                            final EditorCookie ec = dobj.getCookie(EditorCookie.class);
-//                            if (ec != null) {
-//                                doc = ec.getDocument();
-//                            }
-//                        }
-//                    }                
                     if (doc instanceof AbstractDocument) {
                         Object result = method.invoke(doc);
                         if (result == currentThread) {
@@ -584,6 +574,9 @@ public class TaskProcessor {
                                     parserLock.lock ();
                                     try {
                                         try {
+                                            if (LOGGER.isLoggable(Level.FINE)) {
+                                                LOGGER.fine("Running Special Task: " + r.toString());
+                                            }
                                             // needs some description!!!! (tzezula)
                                             ((ParserResultTask) r.task).run (null, null);
                                         } finally {
@@ -844,7 +837,7 @@ public class TaskProcessor {
      * Single thread factory creating worker thread.
      */
     //@NotThreadSafe
-    private static class WorkerThreadFactory implements ThreadFactory {
+    static class WorkerThreadFactory implements ThreadFactory {
         
         private Thread t;
         

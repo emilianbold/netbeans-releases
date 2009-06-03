@@ -96,6 +96,7 @@ public class SingleModulePropertiesTest extends TestBase {
     }
     
     protected void setUp() throws Exception {
+        noDataDir = true;
         clearWorkDir();
         super.setUp();
     }
@@ -560,21 +561,23 @@ public class SingleModulePropertiesTest extends TestBase {
 //        System.err.println("Total time: " + (System.currentTimeMillis() - startTotal) + "msec");
 //    }
 
-//    XXX: failing test, fix or delete
-//    public void testGetActivePlatform() throws Exception {
-//        SuiteProject suite = generateSuite("suite");
-//        NbModuleProject module = generateSuiteComponent(suite, "module");
-//        File plaf = new File(getWorkDir(), "plaf");
-//        makePlatform(plaf);
-//        FileObject platformPropertiesFO = suite.getProjectDirectory().getFileObject("nbproject/platform.properties");
-//        EditableProperties platformProperties = Util.loadProperties(platformPropertiesFO);
-//        platformProperties.put("suite.dir", "${basedir}");
-//        platformProperties.put("netbeans.dest.dir", "${suite.dir}/../plaf");
-//        Util.storeProperties(platformPropertiesFO, platformProperties);
-//        SingleModuleProperties props = loadProperties(module);
-//        NbPlatform platform = props.getActivePlatform();
-//        assertEquals(plaf, platform.getDestDir());
-//    }
+    // XXX still failing randomly, investigate
+    @RandomlyFails
+    public void testGetActivePlatform() throws Exception {
+        SuiteProject suite = generateSuite("suite");
+        NbModuleProject module = generateSuiteComponent(suite, "module");
+        File plaf = new File(getWorkDir(), "plaf");
+        makePlatform(plaf, "1.13"); // 6.7 harness
+        NbPlatform.addPlatform("plaf", plaf, "Test Platform");
+        FileObject platformPropertiesFO = suite.getProjectDirectory().getFileObject("nbproject/platform.properties");
+        EditableProperties platformProperties = Util.loadProperties(platformPropertiesFO);
+        platformProperties.put("suite.dir", "${basedir}");
+        platformProperties.put("nbplatform.active", "plaf");
+        Util.storeProperties(platformPropertiesFO, platformProperties);
+        SingleModuleProperties props = loadProperties(module);
+        NbPlatform platform = props.getActivePlatform();
+        assertEquals(plaf, platform.getDestDir());
+    }
 
     static SingleModuleProperties loadProperties(NbModuleProject project) throws IOException {
         return new SingleModuleProperties(project.getHelper(), project.evaluator(),

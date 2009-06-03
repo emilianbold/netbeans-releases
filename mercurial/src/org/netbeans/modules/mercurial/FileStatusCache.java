@@ -161,12 +161,12 @@ public class FileStatusCache {
 
         Set<File> roots = context.getRootFiles();
         Set<File> exclusions = context.getExclusions();
-        Set<File> setAllFiles = allFiles.keySet();
         boolean bExclusions = exclusions != null && exclusions.size() > 0;
         boolean bContainsFile = false;
         
-        for (File file: setAllFiles) {
-            FileInformation info = (FileInformation) allFiles.get(file);
+        for (Map.Entry<File, FileInformation> entry : allFiles.entrySet()) {
+            File file = entry.getKey();
+            FileInformation info = entry.getValue();
             if ((info.getStatus() & includeStatus) == 0) continue;
             for (File root : roots) {
                 if (VersioningSupport.isFlat(root)) {
@@ -212,15 +212,15 @@ public class FileStatusCache {
      */
     public File [] listFiles(VCSContext context, int includeStatus) {
         Set<File> set = new HashSet<File>();
-        Map allFiles = cacheProvider.getAllModifiedValues();
+        Map<File, FileInformation> allFiles = cacheProvider.getAllModifiedValues();
         if(allFiles == null){
             Mercurial.LOG.log(Level.FINE, "FileStatusCache: listFiles(): allFiles == null"); // NOI18N
             return new File[0];
         }
 
-        for (Iterator i = allFiles.keySet().iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            FileInformation info = (FileInformation) allFiles.get(file);
+        for (Map.Entry<File, FileInformation> entry : allFiles.entrySet()) {
+            File file = entry.getKey();
+            FileInformation info = entry.getValue();
             if ((info.getStatus() & includeStatus) == 0) continue;
             Set<File> roots = context.getRootFiles();
             for (File root : roots) {
@@ -268,10 +268,10 @@ public class FileStatusCache {
      */
     public File [] listFiles(File[] roots, int includeStatus) {
         Set<File> set = new HashSet<File>();
-        Map allFiles = cacheProvider.getAllModifiedValues();
-        for (Iterator i = allFiles.keySet().iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            FileInformation info = (FileInformation) allFiles.get(file);
+        Map<File, FileInformation> allFiles = cacheProvider.getAllModifiedValues();
+        for (Map.Entry<File, FileInformation> entry : allFiles.entrySet()) {
+            File file = entry.getKey();
+            FileInformation info = entry.getValue();
             if ((info.getStatus() & includeStatus) == 0) continue;
             for (int j = 0; j < roots.length; j++) {
                 File root = roots[j];
@@ -463,9 +463,9 @@ public class FileStatusCache {
         files = scanFolder(dir, interestingFiles);
         turbo.writeEntry(dir, FILE_STATUS_MAP, files.size() == 0 ? null : files);
         //if(interestingFiles != null) {
-        for (Iterator i = files.keySet().iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            FileInformation info = files.get(file);
+        for (Map.Entry<File, FileInformation> entry : files.entrySet()) {
+            File file = entry.getKey();
+            FileInformation info = entry.getValue();
             if ((info.getStatus() & (FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) != 0) {
                 fireFileStatusChanged(file, null, info);
             }
@@ -589,17 +589,19 @@ public class FileStatusCache {
             Map<File, FileInformation> interestingFiles;
             try {
                 interestingFiles = HgCommand.getInterestingStatus(repository, root);
-                for (File file : interestingFiles.keySet()) {
-                    FileInformation fi = interestingFiles.get(file);
+                for (Map.Entry<File, FileInformation> entry : interestingFiles.entrySet()) {
+                    File file = entry.getKey();
+                    FileInformation fi = entry.getValue();
                     Mercurial.LOG.log(Level.FINE, "refreshAll() file: {0} {1} ", new Object[] {file.getAbsolutePath(), fi}); // NOI18N
                     refreshFileStatus(file, fi, interestingFiles);
                 }
                 if (files != null) {
-                    for (File file : files.keySet()) {
+                    for (Map.Entry<File, FileInformation> entry : files.entrySet()) {
+                        File file = entry.getKey();
                         if ((file.isFile() || !file.exists()) && !interestingFiles.containsKey(file)) {
                             // A file was in cache but is now up to date
-                            Mercurial.LOG.log(Level.FINE, "refreshAll() uninteresting file: {0} {1}", new Object[] {file, files.get(file)}); // NOI18N
-                            refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN); 
+                            Mercurial.LOG.log(Level.FINE, "refreshAll() uninteresting file: {0} {1}", new Object[] {file, entry.getValue()}); // NOI18N
+                            refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                         }
                     }
                 }
@@ -701,9 +703,9 @@ public class FileStatusCache {
             }
             currentDirMap.put(file, fi);
         } 
-        for (File dir : dirMap.keySet()) {
-            dir = FileUtil.normalizeFile(dir);
-            Map<File, FileInformation> currentDirMap = dirMap.get(dir);
+        for (Map.Entry<File, Map<File, FileInformation>> entry : dirMap.entrySet()) {
+            File dir = FileUtil.normalizeFile(entry.getKey());
+            Map<File, FileInformation> currentDirMap = entry.getValue();
             turbo.writeEntry(dir, FILE_STATUS_MAP, currentDirMap);
         }
     }
@@ -732,10 +734,10 @@ public class FileStatusCache {
      * Cleans up the cache by removing or correcting entries that are no longer valid or correct.
      */
     void cleanUp() {
-        Map files = cacheProvider.getAllModifiedValues();
-        for (Iterator i = files.keySet().iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            FileInformation info = (FileInformation) files.get(file);
+        Map<File, FileInformation> files = cacheProvider.getAllModifiedValues();
+        for (Map.Entry<File, FileInformation> entry : files.entrySet()) {
+            File file = entry.getKey();
+            FileInformation info = entry.getValue();
             if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
                 refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
             } else if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {

@@ -608,6 +608,9 @@ public class OutputDocument implements Document, Element, ChangeListener {
         
         void calc() {
             synchronized (getLines().readLock()) {
+                if (lineIndex < 0) {
+                    return;
+                }
                 if (startOffset == -1) {
                     startOffset = getLines().getLineStart(lineIndex);
                     if (lineIndex >= getLines().getLineCount()-1) {

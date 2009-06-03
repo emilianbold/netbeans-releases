@@ -56,7 +56,6 @@ import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.openide.util.Exceptions;
 
 public final class PerfanDataStorage extends DataStorage {
 
@@ -157,7 +156,7 @@ public final class PerfanDataStorage extends DataStorage {
         } catch (InterruptedIOException ex) {
             // it was terminated while getting functions list...
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            log.log(Level.WARNING, null, ex);
         }
 
         return result;
@@ -171,7 +170,7 @@ public final class PerfanDataStorage extends DataStorage {
         } catch (InterruptedIOException ex) {
             // it was terminated while getting functions list...
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            log.log(Level.WARNING, null, ex);
         }
 
         return result;
@@ -185,7 +184,7 @@ public final class PerfanDataStorage extends DataStorage {
         } catch (InterruptedIOException ex) {
             // it was terminated while getting functions list...
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            log.log(Level.WARNING, null, ex);
         }
 
         return result;

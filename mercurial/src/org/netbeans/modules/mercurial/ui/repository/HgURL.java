@@ -388,7 +388,7 @@ public final class HgURL {
     }
 
     private static String stripUserInfoFromInvalidURI(String urlString) {
-        if (looksLikePlainFilePath(urlString)) {
+        if (looksLikePlainFilePath(urlString) && !urlString.startsWith("//")) { //NOI18N
             return urlString;
         }
 
@@ -397,15 +397,32 @@ public final class HgURL {
                                 ? urlString.substring(schemeName.length() + 1).trim()
                                 : urlString;
 
-        int atIndex = schemeSpecific.indexOf('@');
+        /*
+         * some users use the at-sign in their password, so we must look at
+         * the last at-sign (separating user-info from server spec.),
+         * not at the first one (which might just be part of the password)
+         */
+        int atIndex = schemeSpecific.lastIndexOf('@');
+
         if (atIndex == -1) {
-            if ("file".equals(schemeName)) {
-                return trimDupliciteInitialSlashes(schemeSpecific);
-            } else {
-                return urlString;
-            }
+            return urlString;
         } else {
-            return schemeSpecific.substring(atIndex + 1);
+            String schemeSpecNoAuth = schemeSpecific.substring(atIndex + 1);
+            if (schemeName == null) {
+                if (schemeSpecific.startsWith("//")) {                  //NOI18N
+                    return "//" + schemeSpecNoAuth;                     //NOI18N
+                } else {
+                    return schemeSpecNoAuth;
+                }
+            } else {
+                StringBuilder buf = new StringBuilder(urlString.length());
+                buf.append(schemeName).append(':');
+                if (schemeSpecific.startsWith("//")) {                  //NOI18N
+                    buf.append("//");                                   //NOI18N
+                }
+                buf.append(schemeSpecNoAuth);
+                return buf.toString();
+            }
         }
     }
 
@@ -419,8 +436,8 @@ public final class HgURL {
         String str = schemaSpecificUrlPart;
 
         /* find index of the first non-slash character: */
-        int index;
-        for (index = 0; (index < length) && (str.charAt(index) == '/'); index++) {
+        int index = 0;
+        while ((index < length) && (str.charAt(index) == '/')) {
             index++;
         }
 

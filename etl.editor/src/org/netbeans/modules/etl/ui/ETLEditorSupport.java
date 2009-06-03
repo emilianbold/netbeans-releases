@@ -61,6 +61,8 @@ import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Task;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Mode;
@@ -522,7 +524,7 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
                     Line line = ValidationUtil.getLine(resultItem);
 
                     if (line != null) {
-                        line.show(Line.SHOW_GOTO);
+                        line.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
                     }
                 }
 

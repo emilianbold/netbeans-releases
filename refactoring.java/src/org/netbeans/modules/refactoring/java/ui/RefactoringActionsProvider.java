@@ -54,6 +54,8 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
@@ -108,8 +110,10 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, final CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
-                    if (selected==null)
+                    if (selected==null) {
+                        logger().log(Level.INFO, "doRename: " + selectedElement, new NullPointerException("selected")); // NOI18N
                         return null;
+                    }
                     if (selected.getKind() == ElementKind.CONSTRUCTOR) {
                         selected = selected.getEnclosingElement();
                         selectedElement = TreePathHandle.create(info.getTrees().getPath(selected), info);
@@ -393,6 +397,10 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
+                    if (selected == null) {
+                        logger().log(Level.INFO, "doDelete: " + selectedElement, new NullPointerException("selected")); // NOI18N
+                        return null;
+                    }
                     if (selected.getKind() == ElementKind.PACKAGE || selected.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
                         FileObject file = SourceUtils.getFile(selected, info.getClasspathInfo());
                         if (file==null) {
@@ -552,6 +560,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     Element e = selectedElement.resolveElement(info);
                     if (e == null) {
+                        logger().log(Level.INFO, "doMove: " + selectedElement, new NullPointerException("e")); // NOI18N
                         return null;
                     }
                     if ((e.getKind().isClass() || e.getKind().isInterface()) &&
@@ -929,5 +938,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 RetoucheUtils.isFileInOpenProject(fileObject) && 
                 RetoucheUtils.isOnSourceClasspath(fileObject) && 
                 !RetoucheUtils.isClasspathRoot(fileObject);
+    }
+
+    private static Logger logger() {
+        return Logger.getLogger(RefactoringActionsProvider.class.getName());
     }
 }

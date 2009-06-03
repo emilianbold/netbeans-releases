@@ -164,7 +164,7 @@ ExplorerManager.Provider, PropertyChangeListener {
                         int corder = getColumnOrder(columns[columnIndex]);
                         for (int i = 0; i < columnVisibleMap.length; i++) {
                             if (columnVisibleMap[i] == prefferedVisibleIndex) {
-                                if (corder > getColumnOrder(columns[i])) {
+                                if (corder > getColumnOrder(columns[i]) && !columns[i].isHidden()) {
                                     prefferedVisibleIndex++;
                                     break;
                                 }
@@ -208,7 +208,7 @@ ExplorerManager.Provider, PropertyChangeListener {
                     if (columnIndex != -1) {
                         columns[columnIndex].setHidden(true);
                         for (int i = 0; i < columnVisibleMap.length; i++) {
-                            if (columnVisibleMap[i] >= visibleIndex) {
+                            if (columnVisibleMap[i] >= visibleIndex && columnVisibleMap[i] > 0) {
                                 columnVisibleMap[i]--;
                             }
                         }
@@ -487,7 +487,7 @@ ExplorerManager.Provider, PropertyChangeListener {
             if (columns[i].isHidden()) {
                 int order = columnOrder[i];
                 for (int j = 0; j < columnVisibleMap.length; j++) {
-                    if (columnOrder[j] >= order) {
+                    if (columnOrder[j] >= order && columnVisibleMap[j] > 0) {
                         columnVisibleMap[j]--;
                     }
                 }
@@ -622,7 +622,8 @@ ExplorerManager.Provider, PropertyChangeListener {
         int[] order = new int[n];
         int ci = 0;
         for (int i = 0; i < n; i++, ci++) {
-            while (columns[ci].isHidden()) ci++;
+            while (ci < columns.length && columns[ci].isHidden()) ci++;
+            if (ci >= columns.length) break;
             order[i] = columnVisibleMap[ci];
             logger.fine("    order["+i+"] = "+order[i]);
         }
@@ -646,7 +647,7 @@ ExplorerManager.Provider, PropertyChangeListener {
     }
 
     private boolean isHiddenColumn(int index) {
-        if (tableColumns[index] == null) {
+        if (tableColumns == null || tableColumns[index] == null) {
             return false;
         }
         ETableColumnModel ecm = (ETableColumnModel) treeTable.getTable().getColumnModel();

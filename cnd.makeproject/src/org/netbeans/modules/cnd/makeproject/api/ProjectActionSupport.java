@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
@@ -283,7 +284,7 @@ public class ProjectActionSupport {
             return tab;
         }
 
-        public void reRun() {
+        private void reRun() {
             currentAction = 0;
             getTab().closeInputOutput();
             synchronized (lock) {
@@ -298,7 +299,7 @@ public class ProjectActionSupport {
             go();
         }
 
-        public void go() {
+        private void go() {
             currentHandler = null;
             sa.setEnabled(false);
             ra.setEnabled(false);
@@ -360,7 +361,15 @@ public class ProjectActionSupport {
                     }
                 }
                 if (success) {
-                    RemoteSyncWorker syncWorker = ServerList.get(env).getSyncFactory().createNew(new File(baseDir), env, null, null);
+                    PrintWriter err = null;
+                    PrintWriter out = null;
+                    InputOutput tab = getTab();
+                    if (tab != null) {
+                        out = this.ioTab.getOut();
+                        err = this.ioTab.getErr();
+                    }
+                    RemoteSyncWorker syncWorker = ServerList.get(env).getSyncFactory().createNew(
+                            new File(baseDir), env, out, err);
                     success &= syncWorker.synchronize();
                 }
             }

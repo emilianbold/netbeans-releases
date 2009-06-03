@@ -44,7 +44,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 import junit.framework.TestCase;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 
 /**

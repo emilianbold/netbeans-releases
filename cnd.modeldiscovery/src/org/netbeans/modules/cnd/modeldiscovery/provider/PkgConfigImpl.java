@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -70,7 +71,7 @@ import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 public class PkgConfigImpl implements PkgConfig {
 
     private HashMap<String, PackageConfigurationImpl> configurations = new HashMap<String, PackageConfigurationImpl>();
-    private Map<String, Pair> seachBase;
+    private Map<String, List<Pair>> seachBase;
     private String drivePrefix;
     private PlatformInfo pi;
 
@@ -165,10 +166,20 @@ public class PkgConfigImpl implements PkgConfig {
     }
 
     public ResolvedPath getResolvedPath(String include) {
-        Map<String, Pair> map = getLibraryItems();
-        Pair pair = map.get(include);
-        if (pair != null){
-            return new ResolvedPathImpl(pair.path, pair.configurations);
+        Map<String, List<Pair>> map = getLibraryItems();
+        List<Pair> pairs = map.get(include);
+        if (pairs != null && pairs.size() > 0){
+            if (true || pairs.size() == 1) {
+                // get first found package
+                return new ResolvedPathImpl(pairs.get(0).path, pairs.get(0).configurations);
+            } else {
+                String path = pairs.get(0).path;
+                Set<PackageConfiguration> set = new LinkedHashSet<PackageConfiguration>();
+                for(Pair p : pairs){
+                    set.addAll(p.configurations);
+                }
+                return new ResolvedPathImpl(path, set);
+            }
         }
         return null;
     }
@@ -179,20 +190,24 @@ public class PkgConfigImpl implements PkgConfig {
         for(String pkg: sort){
             traceConfig(pkg, false);
         }
-        Map<String, Pair> res = getLibraryItems();
+        Map<String, List<Pair>> res = getLibraryItems();
         System.out.println("Known includes size: "+res.size()); // NOI18N
         sort = new ArrayList<String>(res.keySet());
         Collections.sort(sort);
         for(String key: sort){
-            Pair value = res.get(key);
-            StringBuilder buf = new StringBuilder();
-            for(PackageConfiguration pc : value.configurations){
-                if (buf.length()>0){
-                    buf.append(", "); // NOI18N
+            List<Pair> pairs = res.get(key);
+            if (pairs != null) {
+                for(Pair value : pairs) {
+                    StringBuilder buf = new StringBuilder();
+                    for(PackageConfiguration pc : value.configurations){
+                        if (buf.length()>0){
+                            buf.append(", "); // NOI18N
+                        }
+                        buf.append(pc.getName());
+                    }
+                    System.out.println(key+"\t"+value.path+"\t["+buf.toString()+"]"); // NOI18N
                 }
-                buf.append(pc.getName());
             }
-            System.out.println(key+"\t"+value.path+"\t["+buf.toString()+"]"); // NOI18N
         }
 
     }
@@ -258,8 +273,8 @@ public class PkgConfigImpl implements PkgConfig {
         }
     }
 
-    private Map<String, Pair> getLibraryItems(){
-        Map<String, Pair> res = null;
+    private Map<String, List<Pair>> getLibraryItems(){
+        Map<String, List<Pair>> res = null;
         if (seachBase != null) {
             res = seachBase;
         }
@@ -269,7 +284,7 @@ public class PkgConfigImpl implements PkgConfig {
         }
         return res;
     }
-    private Map<String, Pair> _getLibraryItems(){
+    private Map<String, List<Pair>> _getLibraryItems(){
         Map<String, Set<PackageConfiguration>> map = new HashMap<String, Set<PackageConfiguration>>();
         for(String pkg : configurations.keySet()){
             PackageConfigurationImpl pc = configurations.get(pkg);
@@ -293,7 +308,7 @@ public class PkgConfigImpl implements PkgConfig {
                 }
             }
         }
-        Map<String, Pair> res = new HashMap<String, Pair>();
+        Map<String, List<Pair>> res = new HashMap<String, List<Pair>>();
         for (Map.Entry<String, Set<PackageConfiguration>> entry : map.entrySet()) {
             Pair pair = new Pair(entry.getKey(), entry.getValue());
             File dir = RemoteFile.create(pi.getExecutionEnvironment(), entry.getKey());
@@ -302,7 +317,7 @@ public class PkgConfigImpl implements PkgConfig {
         return res;
     }
 
-    private void addLibraryItem(Map<String, Pair> res, Pair pkg, String prefix, File dir, int loop){
+    private void addLibraryItem(Map<String, List<Pair>> res, Pair pkg, String prefix, File dir, int loop){
         if (loop>2) {
             return;
         }
@@ -322,10 +337,17 @@ public class PkgConfigImpl implements PkgConfig {
                         } else {
                             key = prefix+"/"+f.getName(); // NOI18N
                         }
-                        //if (res.containsKey(key) && !pkg.equals(res.get(key))) {
-                        //    System.out.println("Name conflict '"+key+"' in packages '"+pkg+"' and '"+res.get(key)+"'"); // NOI18N
-                        //}
-                        res.put(key, pkg);
+                        List<Pair> list = res.get(key);
+                        if (list == null){
+                            list = new ArrayList<Pair>(1);
+                            res.put(key, list);
+                        }
+                        if (!list.contains(pkg)){
+                            list.add(pkg);
+                            //if (list.size() > 1) {
+                            //    System.out.println("Name conflict '"+key+"' in packages '"+pkg+"' and '"+list.get(0)+"'"); // NOI18N
+                            //}
+                        }
                     }
                 }
             }

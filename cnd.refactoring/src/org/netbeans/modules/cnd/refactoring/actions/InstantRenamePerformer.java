@@ -171,12 +171,16 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                 Utilities.setStatusBoldText(target, getString("no-instant-rename")); // NOI18N
                 return;
             }
-            
+
+            boolean doFullRename = true;
             if (allowInstantRename(ref, dobj.getPrimaryFile())) {
                 Collection<CsmReference> changePoints = computeChangePoints(ref);
-                //String ident = ref.getText();
-                doInstantRename(changePoints, target, caret);
-            } else {
+                if (!changePoints.isEmpty()) {
+                    doFullRename = false;
+                    doInstantRename(changePoints, target, caret);
+                }
+            }
+            if (doFullRename) {
                 doFullRename(dobj, target);
             }
         } catch (BadLocationException e) {

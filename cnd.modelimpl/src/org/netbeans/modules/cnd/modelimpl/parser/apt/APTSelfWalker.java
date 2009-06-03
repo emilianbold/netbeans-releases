@@ -37,6 +37,7 @@ import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTAbstractWalker;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
+import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
@@ -68,7 +69,11 @@ public class APTSelfWalker extends APTAbstractWalker {
         if (resolvedPath != null && getIncludeHandler().pushInclude(resolvedPath.getPath(), aptInclude, resolvedPath.getIndex())) {
             try {
                 APTFile apt = APTDriver.getInstance().findAPTLight(new FileBufferFile(new File(resolvedPath.getPath().toString())));
-                createIncludeWalker(apt, this, resolvedPath.getPath()).visit();
+                APTPreprocHandler preprocHandler = getPreprocHandler();
+                APTFileCacheEntry cache = APTFileCacheManager.getEntry(resolvedPath.getPath(),preprocHandler, true);
+                createIncludeWalker(apt, this, resolvedPath.getPath(), cache).visit();
+                // does not remember walk to safe memory
+                // APTFileCacheManager.setAPTCacheEntry(resolvedPath.getPath(), preprocHandler, cache, false);
             } catch (FileNotFoundException ex) {
                 APTUtils.LOG.log(Level.WARNING, "APTSelfWalker: file {0} not found", new Object[] {resolvedPath.getPath()});// NOI18N
 		DiagnosticExceptoins.register(ex);
@@ -82,8 +87,8 @@ public class APTSelfWalker extends APTAbstractWalker {
         return postIncludeState == null;
     }
     
-    protected APTWalker createIncludeWalker(APTFile apt, APTSelfWalker parent, CharSequence includePath) {
-        return new APTSelfWalker(apt, parent.csmFile, parent.getPreprocHandler(), null);
+    protected APTWalker createIncludeWalker(APTFile apt, APTSelfWalker parent, CharSequence includePath, APTFileCacheEntry cache) {
+        return new APTSelfWalker(apt, parent.csmFile, parent.getPreprocHandler(), cache);
     }
 
     @Override
@@ -91,3 +96,4 @@ public class APTSelfWalker extends APTAbstractWalker {
         return false;
     }
 }
+

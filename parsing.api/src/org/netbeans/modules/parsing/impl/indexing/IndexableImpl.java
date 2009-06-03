@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 
 /**
@@ -49,14 +47,16 @@ import java.net.URL;
  */
 public interface IndexableImpl {
 
-    public long getLastModified();
+//    public long getLastModified();
 
-    public String getName();
+//    public String getName();
 
     public String getRelativePath();
 
     public URL getURL();
 
-    public InputStream openInputStream() throws IOException;
+    public String getMimeType();
+
+//    public InputStream openInputStream() throws IOException;
 
 }

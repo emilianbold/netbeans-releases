@@ -60,6 +60,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.debugger.jpda.ui.models.WatchesNodeModel;
 import org.openide.util.NbPreferences;
 import org.openide.util.datatransfer.PasteType;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -335,6 +336,13 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
         // Open the watches view, where the fixed watch was added:
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                TopComponent watchesView = WindowManager.getDefault().findTopComponent("watchesView"); // NOI18N
+                if (watchesView != null && watchesView.isOpened()) {
+                    Mode mw = WindowManager.getDefault().findMode(watchesView);
+                    if (mw != null && mw.getSelectedTopComponent() == watchesView) {
+                        return ;
+                    }
+                }
                 Preferences preferences = NbPreferences.forModule(ContextProvider.class).node("variables_view"); // NOI18N
                 String viewName = preferences.getBoolean("show_watches", true) ? "localsView" : "watchesView"; // NOI18N
                 TopComponent view = WindowManager.getDefault().findTopComponent(viewName);

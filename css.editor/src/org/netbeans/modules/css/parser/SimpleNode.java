@@ -41,20 +41,40 @@ public class SimpleNode implements Node {
     }
 
     public String image() {
+        return image(false);
+    }
+
+    public String image(boolean debug) {
         synchronized (this) {
-            if (image == null) {
+            //do not cache or use cached if debugged
+            String retVal = image;
+            if (retVal == null || debug) {
                 StringBuffer sb = new StringBuffer();
                 if (jjtGetFirstToken() == jjtGetLastToken()) {
-                    image = jjtGetFirstToken().image;
+                    retVal = jjtGetFirstToken().image;
                 } else {
                     Token t = jjtGetFirstToken();
                     Token last = jjtGetLastToken();
                     while (t != null && t.offset <= last.offset) { //also include the last token
+                        if(debug) {
+                            sb.append("<");
+                            sb.append(t.offset);
+                            sb.append(",");
+                        }
                         sb.append(t.image);
+                        if(debug) {
+                            sb.append(">");
+                        }
                         t = t.next;
                     }
-                    image = sb.toString();
+                    retVal = sb.toString();
                 }
+            }
+
+            if(!debug) {
+                image = retVal;
+            } else {
+                return retVal; //do not cache if debug
             }
 
             return image;
@@ -118,35 +138,34 @@ public class SimpleNode implements Node {
         this.lastToken = token;
     }
 
-    /* You can override these two methods in subclasses of SimpleNode to
-    customize the way the node appears when the tree is dumped.  If
-    your output uses more than one line you should override
-    toString(String), otherwise overriding toString() is probably all
-    you need to do. */
-    public String toString(boolean addImage) {
+    private String toString(boolean addImage) {
         return CssParserTreeConstants.jjtNodeName[id]
                 + " [" 
                 + startOffset()
                 + " - " 
                 + endOffset() 
                 + "]"
-                + (addImage ? " '" + image() + "'" : "");
+                + (addImage ? " '" + image(true) + "'" : "");
                 
     }
     
+    @Override
     public String toString() {
         return toString(true);
     }
 
-    public String toString(String prefix) {
-        return prefix + toString(false);
+    private String toString(String prefix, boolean addTokenImage) {
+        return prefix + toString(addTokenImage);
     }
 
-    /* Override this method if you want to customize how the node dumps
-    out its children. */
-    public String dump(String prefix) {
+    public String dump() {
+        return dump("");
+    }
+    
+    private String dump(String prefix) {
         StringBuilder str = new StringBuilder();
-        str.append(toString(prefix));
+//        str.append(toString(prefix, true));
+        str.append(toString(prefix, children == null || children.length == 0));
         str.append('\n');
         if (children != null) {
             for (int i = 0; i < children.length; ++i) {
@@ -156,7 +175,6 @@ public class SimpleNode implements Node {
                 }
             }
         }
-        System.out.println(str);
         return str.toString();
     }
 

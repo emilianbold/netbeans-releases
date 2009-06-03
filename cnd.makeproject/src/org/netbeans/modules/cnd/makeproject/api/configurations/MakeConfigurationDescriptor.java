@@ -113,7 +113,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     private HashMap<String, Item> projectItems = null;
     private final List<String> sourceRoots = new ArrayList<String>();
     private final Set<ChangeListener> projectItemsChangeListeners = new HashSet<ChangeListener>();
-    private NativeProject nativeProject = null;
+    private volatile NativeProject nativeProject = null;
     public static final String DEFAULT_PROJECT_MAKFILE_NAME = "Makefile"; // NOI18N
     private String projectMakefileName = DEFAULT_PROJECT_MAKFILE_NAME;
     private Task initTask = null;
@@ -178,7 +178,17 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     public MakeConfiguration getActiveConfiguration() {
         Configurations confs = getConfs();
         if (confs != null) {
-            return (MakeConfiguration) confs.getActive();
+            MakeConfiguration conf = (MakeConfiguration) confs.getActive();
+            if (conf == null) {
+                if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
+                    new Exception("There are no active configuration in the project descriptor MakeConfigurationDescriptor@"+System.identityHashCode(this)+" for project "+getBaseDir()).printStackTrace(); // NOI18N
+                }
+            }
+            return conf;
+        } else {
+            if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
+                new Exception("There are no configurations in the project descriptor MakeConfigurationDescriptor@"+System.identityHashCode(this)+" for project "+getBaseDir()).printStackTrace(); // NOI18N
+            }
         }
         return null;
     }
@@ -461,7 +471,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     }
 
     public void fireFilesAdded(List<NativeFileItem> fileItems) {
-        getNativeProject().fireFilesAdded(fileItems);
+        if (getNativeProject() != null) { // once not null, it never becomes null
+            getNativeProject().fireFilesAdded(fileItems);
+        }
     }
 
     public void removeProjectItem(Item item) {
@@ -472,17 +484,21 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     }
 
     public void fireFilesRemoved(List<NativeFileItem> fileItems) {
-        if (getNativeProject() != null) {
+        if (getNativeProject() != null) { // once not null, it never becomes null
             getNativeProject().fireFilesRemoved(fileItems);
         }
     }
 
     public void fireFileRenamed(String oldPath, NativeFileItem newFileItem) {
-        getNativeProject().fireFileRenamed(oldPath, newFileItem);
+        if (getNativeProject() != null) { // once not null, it never becomes null
+            getNativeProject().fireFileRenamed(oldPath, newFileItem);
+        }
     }
 
     public void checkForChangedItems(Project project, Folder folder, Item item) {
-        getNativeProject().checkForChangedItems(folder, item);
+        if (getNativeProject() != null) { // once not null, it never becomes null
+            getNativeProject().checkForChangedItems(folder, item);
+        }
         MakeLogicalViewProvider.checkForChangedItems(project, folder, item);
     }
 
@@ -676,9 +692,15 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         FileObject fo = null;
         fo = FileUtil.toFileObject(new File(getBaseDir()));
         if (fo != null) {
+            if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
+                System.err.println("Start of writting project descriptor MakeConfigurationDescriptor@"+System.identityHashCode(this)+" for project "+fo.getName()+" @"+System.identityHashCode(this)); // NOI18N
+            }
             new ConfigurationXMLWriter(fo, this).write();
             new ConfigurationMakefileWriter(this).write();
             ConfigurationProjectXMLWriter();
+            if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
+                System.err.println("End of writting project descriptor MakeConfigurationDescriptor@"+System.identityHashCode(this)+" for project "+fo.getName()+" @"+System.identityHashCode(this)); // NOI18N
+            }
         }
 
         // Clear flag
@@ -998,7 +1020,8 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
     }
 
-    private NativeProjectProvider getNativeProject() {
+    private final NativeProjectProvider getNativeProject() {
+        // the cons
         if (nativeProject == null) {
             FileObject fo = FileUtil.toFileObject(new File(baseDir));
             try {
@@ -1056,7 +1079,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             top.setRoot(rootPath);
         }
         addFiles(top, dir, null, filesAdded, true);
-        getNativeProject().fireFilesAdded(filesAdded);
+        if (getNativeProject() != null) { // once not null, it never becomes null
+            getNativeProject().fireFilesAdded(filesAdded);
+        }
         if (attachListeners) {
             top.attachListeners();
         }
@@ -1075,7 +1100,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         Folder top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getName(), dir.getName(), true);
         folder.addFolder(top);
         addFiles(top, dir, null, filesAdded, true);
-        getNativeProject().fireFilesAdded(filesAdded);
+        if (getNativeProject() != null) { // once not null, it never becomes null
+            getNativeProject().fireFilesAdded(filesAdded);
+        }
         if (attachListeners) {
             top.attachListeners();
         }

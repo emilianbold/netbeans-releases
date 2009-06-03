@@ -50,8 +50,7 @@ import org.netbeans.modules.wag.manager.model.WagService;
 import org.netbeans.modules.wag.manager.model.WagServiceParameter;
 import com.zembly.oauth.api.Parameter;
 import com.zembly.gateway.client.Zembly;
-import com.zembly.gateway.client.config.Configuration;
-import com.zembly.gateway.client.config.impl.DefaultConfiguration;
+
 
 /**
  *
@@ -81,14 +80,11 @@ public class SearchEngine {
     private Zembly zembly;
 
     private SearchEngine() {
-        Configuration config = new DefaultConfiguration();
-        config.setBaseUrl(BASE_URL);
-        config.setHttpMethod(HTTP_METHOD);
-
-        try {
-            zembly = new Zembly(config);
+        try {        
+            zembly = Zembly.getInstance();
         } catch (Exception ex) {
-            // RESOLVE need to figure what to do when getting an exception;
+            ex.printStackTrace();
+            // ignore
         }
     }
 

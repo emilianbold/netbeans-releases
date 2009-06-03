@@ -131,7 +131,8 @@ abstract class EntrySupport {
         }
 
         public boolean isInitialized() {
-            return inited;
+            ChildrenArray arr = array.get();
+            return inited && arr != null && arr.isInitialized();
         }
 
         @Override
@@ -169,7 +170,7 @@ abstract class EntrySupport {
                         // support was switched while we were waiting for access
                         return new Node[0];
                     }
-                    results[1] = inited;
+                    results[1] = isInitialized();
                     nodes = tmpArray.nodes();
                 } finally {
                     Children.PR.exitReadAccess();
