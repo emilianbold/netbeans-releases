@@ -44,11 +44,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.junit.MockServices;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -228,6 +225,7 @@ public abstract class MakeProjectBase extends BaseTestCase {
         if (TRACE) {
             System.err.println("Model content:");
         }
+        csmProject.waitParse();
         for (CsmFile file : csmProject.getAllFiles()) {
             if (TRACE) {
                 System.err.println("\t"+file.getAbsolutePath());

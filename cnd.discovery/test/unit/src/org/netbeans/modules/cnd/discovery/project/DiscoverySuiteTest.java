@@ -54,7 +54,7 @@ public class DiscoverySuiteTest extends BaseTestSuite {
 
         addTestSuite(PkgConfigTestCase.class);
         addTestSuite(LiteSqlTestCase.class);
-        addTestSuite(ProjectCreationTestCase.class);
+        addTestSuite(TesseractTestCase.class);
         addTestSuite(CMakeTestCase.class);
         addTestSuite(MysqlConnectorTestCase.class);
     }

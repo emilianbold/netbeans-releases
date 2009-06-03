@@ -39,16 +39,19 @@
 
 package org.netbeans.modules.cnd.discovery.project;
 
+import org.junit.Test;
+
 /**
  *
  * @author Alexander Simon
  */
-public class ProjectCreationTestCase extends MakeProjectBase {
+public class TesseractTestCase extends MakeProjectBase {
 
-    public ProjectCreationTestCase() {
+    public TesseractTestCase() {
         super("Tesseract");
     }
 
+    @Test
     public void testTesseract(){
         performTestProject("http://tesseract-ocr.googlecode.com/files/tesseract-2.03.tar.gz", null);
     }
