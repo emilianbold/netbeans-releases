@@ -96,3 +96,4 @@ public class APTSelfWalker extends APTAbstractWalker {
         return false;
     }
 }
+
