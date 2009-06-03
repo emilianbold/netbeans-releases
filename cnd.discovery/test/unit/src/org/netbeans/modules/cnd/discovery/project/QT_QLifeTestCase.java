@@ -39,29 +39,24 @@
 
 package org.netbeans.modules.cnd.discovery.project;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.Test;
 
 /**
  *
  * @author Alexander Simon
  */
-public class DiscoverySuiteTest extends BaseTestSuite {
+public class QT_QLifeTestCase extends MakeProjectBase {
 
-    public DiscoverySuiteTest() {
-        super("C/C++ Discovery Test"); // NOI18N
-
-        addTestSuite(PkgConfigTestCase.class);
-        addTestSuite(LiteSqlTestCase.class);
-        addTestSuite(TesseractTestCase.class);
-        addTestSuite(CMakeTestCase.class);
-        addTestSuite(MysqlConnectorTestCase.class);
-        addTestSuite(QT_QLifeTestCase.class);
+    public QT_QLifeTestCase() {
+        super("QT");
     }
 
-    public static Test suite() {
-        TestSuite suite = new DiscoverySuiteTest();
-        return suite;
+    @Test
+    public void testQLife(){
+        List<String> list = new ArrayList<String>();
+        list.add("qmake qlife.pro");
+        performTestProject("http://personal.inet.fi/koti/rkauppila/projects/life/qlife-qt4-0.9.tar.gz", list);
     }
 }
