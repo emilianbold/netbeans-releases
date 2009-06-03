@@ -39,29 +39,26 @@
 
 package org.netbeans.modules.cnd.discovery.project;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.Test;
 
 /**
  *
  * @author Alexander Simon
  */
-public class DiscoverySuiteTest extends BaseTestSuite {
+public class SpeedcrunchTestCase extends MakeProjectBase {
 
-    public DiscoverySuiteTest() {
-        super("C/C++ Discovery Test"); // NOI18N
-
-        addTestSuite(PkgConfigTestCase.class);
-        addTestSuite(LiteSqlTestCase.class);
-        addTestSuite(TesseractTestCase.class);
-        addTestSuite(CMakeTestCase.class);
-        addTestSuite(MysqlConnectorTestCase.class);
-        addTestSuite(QT_QLifeTestCase.class);
+    public SpeedcrunchTestCase() {
+        super("QT");
     }
 
-    public static Test suite() {
-        TestSuite suite = new DiscoverySuiteTest();
-        return suite;
+    @Test
+    public void testSpeedcrunch(){
+        List<String> list = new ArrayList<String>();
+        // need QT4.3
+        list.add("../cmake-2.6.4/bin/cmake src/ -G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=\"-g3 -gdwarf-2\" -DCMAKE_C_FLAGS_DEBUG=\"-g3 -gdwarf-2\"");
+        performTestProject("http://speedcrunch.googlecode.com/files/speedcrunch-0.10.1.tar.gz", list);
     }
 }
+
