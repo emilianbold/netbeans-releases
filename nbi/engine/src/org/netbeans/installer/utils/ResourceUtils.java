@@ -38,8 +38,12 @@ package org.netbeans.installer.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
@@ -89,6 +93,37 @@ public final class ResourceUtils {
             final String key,
             final Object... arguments) {
         return format(getString(clazz, key), arguments);
+    }
+
+    public static Map <Locale, String> getStrings(
+            final String baseName,
+            final String key,
+            final ClassLoader loader,
+            final Object... arguments) {
+        Map <Locale, String> map = getBundleMessagesMapForKey(baseName, key, loader);
+        if(arguments.length == 0) {
+            return map;
+        } else {
+            Map <Locale, String> result = new HashMap<Locale, String>();
+            for(Locale locale : map.keySet()) {
+                result.put(locale, format(map.get(locale), arguments));
+            }
+            return result;
+        }
+    }
+    
+    public static Map <Locale, String> getStrings(
+            final String baseName,
+            final String key,
+            final Object... arguments) {
+        return getStrings(baseName, key, ResourceUtils.class.getClassLoader(), arguments);
+    }
+
+    public static Map <Locale, String> getStrings(
+            final Class clazz,
+            final String key,
+            final Object... arguments) {
+        return getStrings(getBundleResource(clazz), key, clazz.getClassLoader(), arguments);
     }
 
     private static String format(
@@ -156,7 +191,8 @@ public final class ResourceUtils {
             final String baseName,
             final Locale locale,
             final ClassLoader loader) {
-        final String bundleId = loader.toString() + baseName;
+        final String bundleId = loader.toString() + baseName +
+                (locale.toString().equals(StringUtils.EMPTY_STRING) ? StringUtils.EMPTY_STRING : ("_" + locale));
 
         ResourceBundle bundle = (ResourceBundle) loadedBundles.get(bundleId);
 
@@ -199,6 +235,23 @@ public final class ResourceUtils {
             }            
         }
         return message;
+    }
+
+    private static Map <Locale, String> getBundleMessagesMapForKey(
+            final String baseName,
+            final String key,
+            final ClassLoader loader) {
+        Map <Locale, String> map = new HashMap <Locale, String> ();
+        List <Locale> list = new ArrayList <Locale> ();
+        list.add(new Locale(StringUtils.EMPTY_STRING));
+        list.addAll(Arrays.asList(Locale.getAvailableLocales()));
+        for(Locale locale : list) {
+            ResourceBundle bundle = loadBundle(baseName, locale, loader);            
+            if(bundle!=null && locale.equals(bundle.getLocale()) && !map.containsKey(bundle.getLocale())) {
+                map.put(locale, getBundleMessage(baseName, locale, loader, key));
+            }
+        }
+        return map;
     }
     
     private static String getBundleResource(final Class clazz) {
