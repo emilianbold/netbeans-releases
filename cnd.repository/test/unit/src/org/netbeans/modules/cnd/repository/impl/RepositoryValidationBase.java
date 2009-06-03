@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Tracer;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.openide.util.Exceptions;
 
 /**
@@ -163,22 +163,8 @@ public class RepositoryValidationBase extends TraceModelTestBase {
     // tar xf pkgconfig-0.18.tar
     private List<String> download() throws IOException{
         List<String> list = new ArrayList<String>();
-        String dataPath;
-        if (false) {
-            // local downloads
-            dataPath = getDataDir().getAbsolutePath();
-            if (dataPath.endsWith("/data") || dataPath.endsWith("\\data")) {
-                dataPath = dataPath.substring(0, dataPath.length()-4)+"downloads";
-            }
-        } else {
-            // downloads in tmp dir
-            dataPath = System.getProperty("java.io.tmpdir");
-            if (dataPath.endsWith(File.separator)) {
-                dataPath += System.getProperty("user.name") +  "-cnd-test-downloads";
-            } else {
-                dataPath += File.separator + System.getProperty("user.name") +  "-cnd-test-downloads";
-            }
-        }
+        File fileDataPath = CndCoreTestUtils.getDownloadBase();
+        String dataPath = fileDataPath.getAbsolutePath();
         final AtomicBoolean finish = new AtomicBoolean(false);
         ExecutionListener listener = new ExecutionListener() {
             public void executionStarted() {

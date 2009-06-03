@@ -54,6 +54,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.junit.Manager;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.UserQuestionException;
 
@@ -200,4 +201,24 @@ public class CndCoreTestUtils {
     public static int getDocumentOffset(BaseDocument doc, int lineIndex, int colIndex) {
         return Utilities.getRowStartFromLineOffset(doc, lineIndex -1) + (colIndex - 1);
     }
+
+    /**
+     * get common place for long living test base
+     * @return
+     */
+    public static File getDownloadBase(){
+        // downloads in tmp dir
+        String dataPath = System.getProperty("java.io.tmpdir");
+        if (dataPath.endsWith(File.separator)) {
+            dataPath += System.getProperty("user.name") +  "-cnd-test-downloads";
+        } else {
+            dataPath += File.separator + System.getProperty("user.name") +  "-cnd-test-downloads";
+        }
+        File fileDataPath = new File(dataPath);
+        if (!fileDataPath.exists()) {
+            fileDataPath.mkdirs();
+        }
+        return FileUtil.normalizeFile(fileDataPath);
+    }
+
 }
