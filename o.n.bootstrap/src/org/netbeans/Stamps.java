@@ -91,6 +91,15 @@ public final class Stamps {
             stamp(false);
             return;
         }
+        if (args.length == 1 && "init".equals(args[0])) { // NOI18N
+            moduleJARs = null;
+            stamp(true);
+            return;
+        }
+        if (args.length == 1 && "clear".equals(args[0])) { // NOI18N
+            moduleJARs = null;
+            return;
+        }
     }
     private static final Stamps MODULES_JARS = new Stamps();
     /** Creates instance of stamp that checks timestamp for all files that affect
@@ -359,35 +368,46 @@ public final class Stamps {
 
         File configDir = new File(new File(cluster, "config"), "Modules"); // NOI18N
         File modulesDir = new File(cluster, "modules"); // NOI18N
-        
-        highestStampForDir(configDir, result);
-        highestStampForDir(modulesDir, result);
+
+        AtomicLong clusterResult = new AtomicLong();
+        if (highestStampForDir(configDir, clusterResult) && highestStampForDir(modulesDir, clusterResult)) {
+            // ok
+        } else {
+            if (!cluster.isDirectory()) {
+                // skip non-existing clusters`
+                return;
+            }
+        }
+
+        if (clusterResult.longValue() > result.longValue()) {
+            result.set(clusterResult.longValue());
+        }
         
         if (createStampFile) {
             try {
                 stamp.getParentFile().mkdirs();
                 stamp.createNewFile();
-                stamp.setLastModified(result.longValue());
+                stamp.setLastModified(clusterResult.longValue());
             } catch (IOException ex) {
                 System.err.println("Cannot write timestamp to " + stamp); // NOI18N
             }
         }
     }
 
-    private static void highestStampForDir(File file, AtomicLong result) {
+    private static boolean highestStampForDir(File file, AtomicLong result) {
         File[] children = file.listFiles();
         if (children == null) {
             long time = file.lastModified();
             if (time > result.longValue()) {
                 result.set(time);
             }
-            return;
+            return false;
         }
         
         for (File f : children) {
             highestStampForDir(f, result);
         }
-
+        return true;
     }
     
     private static boolean compareAndUpdateFile(File file, String content, AtomicLong result) {
