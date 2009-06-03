@@ -50,7 +50,7 @@ import org.junit.Test;
 public class QT_QLifeTestCase extends MakeProjectBase {
 
     public QT_QLifeTestCase() {
-        super("QT");
+        super("QLife");
     }
 
     @Test

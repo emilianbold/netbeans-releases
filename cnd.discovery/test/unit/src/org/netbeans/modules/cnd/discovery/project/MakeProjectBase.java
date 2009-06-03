@@ -41,11 +41,14 @@ package org.netbeans.modules.cnd.discovery.project;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.junit.MockServices;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -58,7 +61,6 @@ import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
-import org.netbeans.modules.cnd.test.BaseTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.openide.WizardDescriptor;
 import org.openide.util.Cancellable;
@@ -69,7 +71,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Alexander Simon
  */
-public abstract class MakeProjectBase extends BaseTestCase {
+public abstract class MakeProjectBase extends NbTestCase { //BaseTestCase {
     private static final boolean OPTIMIZE_NATIVE_EXECUTIONS =true;
     private static final boolean TRACE = true;
 
@@ -78,9 +80,10 @@ public abstract class MakeProjectBase extends BaseTestCase {
         if (TRACE) {
             System.setProperty("cnd.discovery.trace.projectimport", "true"); // NOI18N
         }
-        //System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
-        //System.setProperty("cnd.mode.unittest", "true");
-        //Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
+        System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
+        System.setProperty("cnd.mode.unittest", "true");
+        Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
+        MockServices.setServices(MakeProjectType.class);
     }
 
     @Override
@@ -90,13 +93,13 @@ public abstract class MakeProjectBase extends BaseTestCase {
         startupModel();
     }
 
-    @Override
-    protected List<Class> getServises() {
-        List<Class> list = new ArrayList<Class>();
-        list.add(MakeProjectType.class);
-        list.addAll(super.getServises());
-        return list;
-    }
+//    @Override
+//    protected List<Class> getServises() {
+//        List<Class> list = new ArrayList<Class>();
+//        list.add(MakeProjectType.class);
+//        list.addAll(super.getServises());
+//        return list;
+//    }
 
     private void startupModel() {
         ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
@@ -208,7 +211,7 @@ public abstract class MakeProjectBase extends BaseTestCase {
     private boolean findObjectFiles(String path){
         return findObjectFiles(new File(path));
     }
-    
+
     private boolean findObjectFiles(File file){
         if (file.isDirectory()) {
             for(File f : file.listFiles()){
