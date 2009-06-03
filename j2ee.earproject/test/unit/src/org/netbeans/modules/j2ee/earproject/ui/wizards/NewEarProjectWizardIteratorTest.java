@@ -52,6 +52,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.earproject.EarProjectTest;
 import org.netbeans.modules.j2ee.earproject.TestPlatformProvider;
@@ -78,12 +79,12 @@ public class NewEarProjectWizardIteratorTest extends NbTestCase {
      * May be used for generating project instances in tests.
      */
     public static void generateEARProject(
-            File prjDirF, String name, String j2eeLevel,
+            File prjDirF, String name, Profile j2eeProfile,
             String serverInstanceID, String warName,
             String jarName, String carName, String mainClass,
             String platformName, String sourceLevel) throws IOException {
         NewEarProjectWizardIterator.testableInstantiate(prjDirF, name,
-                j2eeLevel, serverInstanceID, warName, jarName,
+                j2eeProfile, serverInstanceID, warName, jarName,
                 carName, mainClass, platformName, sourceLevel, null, null, null);
     }
     
@@ -94,8 +95,8 @@ public class NewEarProjectWizardIteratorTest extends NbTestCase {
      * @see #generateEARProject(File, String, String, String, String, String, String, String, String, String)
      */
     public static void generateEARProject(File earDirF, String name,
-            String j2eeLevel, String serverID) throws IOException {
-        generateEARProject(earDirF, name, j2eeLevel, serverID, null, null, null,
+            Profile j2eeProfile, String serverID) throws IOException {
+        generateEARProject(earDirF, name, j2eeProfile, serverID, null, null, null,
                 null, null, null);
     }
     
@@ -122,7 +123,7 @@ public class NewEarProjectWizardIteratorTest extends NbTestCase {
     public void testTestableInstantiate() throws Exception {
         File dirF = new File(getWorkDir(), "testEA");
         String name = "Test EnterpriseApplication";
-        String j2eeLevel = "1.4";
+        Profile j2eeProfile = Profile.J2EE_14;
         String warName = null;
         String jarName = null;
         String carName = null;
@@ -131,7 +132,7 @@ public class NewEarProjectWizardIteratorTest extends NbTestCase {
         String sourceLevel = null;
         
         Set result = NewEarProjectWizardIterator.testableInstantiate(dirF, name,
-                j2eeLevel, serverInstanceID, warName, jarName,
+                j2eeProfile, serverInstanceID, warName, jarName,
                 carName, mainClass, platformName, sourceLevel, null, null, null);
         
         Set<FileObject> expResult = new HashSet<FileObject>();
@@ -150,7 +151,7 @@ public class NewEarProjectWizardIteratorTest extends NbTestCase {
         assertNotNull("application client registered", FileUtil.getConfigFile(resource));
         File dirF = new File(getWorkDir(), "testEA");
         String name = "Test EnterpriseApplication";
-        String j2eeLevel = "1.4";
+        Profile j2eeProfile = Profile.J2EE_14;
         String warName = null;
         String jarName = null;
         String carName = "testEA-app-client";
@@ -159,7 +160,7 @@ public class NewEarProjectWizardIteratorTest extends NbTestCase {
         String sourceLevel = null;
         
         Set result = NewEarProjectWizardIterator.testableInstantiate(dirF, name,
-                j2eeLevel, serverInstanceID, warName, jarName,
+                j2eeProfile, serverInstanceID, warName, jarName,
                 carName, mainClass, platformName, sourceLevel, null, null, null);
         
         Set<FileObject> expResult = new HashSet<FileObject>();
@@ -182,7 +183,7 @@ public class NewEarProjectWizardIteratorTest extends NbTestCase {
         assertNotNull("application client registered", FileUtil.getConfigFile(resource));
         File dirF = new File(getWorkDir(), "testEA");
         String name = "Test EnterpriseApplication";
-        String j2eeLevel = "1.4";
+        Profile j2eeProfile = Profile.J2EE_14;
         String warName = "testEA-war";
         String jarName = "testEA-ejb";
         String carName = "testEA-app-client";
@@ -191,7 +192,7 @@ public class NewEarProjectWizardIteratorTest extends NbTestCase {
         String sourceLevel = null;
         
         Set result = NewEarProjectWizardIterator.testableInstantiate(dirF, name,
-                j2eeLevel, serverInstanceID, warName, jarName,
+                j2eeProfile, serverInstanceID, warName, jarName,
                 carName, mainClass, platformName, sourceLevel, null, null, null);
         
         Set<FileObject> expResult = new HashSet<FileObject>();

@@ -49,6 +49,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
@@ -333,7 +334,7 @@ public final class Deployment {
      * @since 1.6
      */
     public String[] getServerInstanceIDs(Object[] moduleTypes) {
-        return getServerInstanceIDs(moduleTypes, null, null);
+        return getServerInstanceIDs(moduleTypes, (Profile) null, null);
     }
 
     /**
@@ -346,9 +347,14 @@ public final class Deployment {
      * @return ServerInstanceIDs of all registered server instances that meet 
      *         the specified requirements.
      * @since 1.6
+     * @deprecated use {@link #getServerInstanceIDs(java.lang.Object[], org.netbeans.modules.j2ee.deployment.devmodules.api.Profile)}
      */
     public String[] getServerInstanceIDs(Object[] moduleTypes, String specVersion) {
         return getServerInstanceIDs(moduleTypes, specVersion, null);
+    }
+
+    public String[] getServerInstanceIDs(Object[] moduleTypes, Profile profile) {
+        return getServerInstanceIDs(moduleTypes, profile, null);
     }
     
     /**
@@ -362,6 +368,7 @@ public final class Deployment {
      * @return ServerInstanceIDs of all registered server instances that meet 
      *         the specified requirements.
      * @since 1.6
+     * @deprecated use {@link #getServerInstanceIDs(java.lang.Object[], org.netbeans.modules.j2ee.deployment.capabilities.Profile, java.lang.String[]) }
      */
     public String[] getServerInstanceIDs(Object[] moduleTypes, String specVersion, String[] tools) {
         List result = new ArrayList();
@@ -370,14 +377,14 @@ public final class Deployment {
             J2eePlatform platform = getJ2eePlatform(serverInstanceIDs[i]);
             if (platform != null) {
                 boolean isOk = true;
-		if (moduleTypes != null) {
+                if (moduleTypes != null) {
                     Set platModuleTypes = platform.getSupportedModuleTypes();
                     for (int j = 0; j < moduleTypes.length; j++) {
                         if (!platModuleTypes.contains(moduleTypes[j])) {
                             isOk = false;
                         }
                     }
-		}
+                }
                 if (isOk && specVersion != null) {
                     Set platSpecVers = platform.getSupportedSpecVersions();
                     if (specVersion.equals(J2eeModule.J2EE_13)) { 
@@ -400,6 +407,46 @@ public final class Deployment {
             }
         }
         return (String[])result.toArray(new String[result.size()]);
+    }
+
+    public String[] getServerInstanceIDs(Object[] moduleTypes, Profile profile, String[] tools) {
+        List result = new ArrayList();
+        String[] serverInstanceIDs = getServerInstanceIDs();
+        for (int i = 0; i < serverInstanceIDs.length; i++) {
+            J2eePlatform platform = getJ2eePlatform(serverInstanceIDs[i]);
+            if (platform != null) {
+                boolean isOk = true;
+                if (moduleTypes != null) {
+                    Set platModuleTypes = platform.getSupportedModuleTypes();
+                    for (int j = 0; j < moduleTypes.length; j++) {
+                        if (!platModuleTypes.contains(moduleTypes[j])) {
+                            isOk = false;
+                        }
+                    }
+                }
+                if (isOk && profile != null) {
+                    boolean supported = false;
+                    for (Profile prof : platform.getSupportedProfiles()) {
+                        if (prof == profile) {
+                            supported = true;
+                            break;
+                        }
+                    }
+                    isOk = supported;
+                }
+                if (isOk && tools != null) {
+                    for (int j = 0; j < tools.length; j++) {
+                        if (!platform.isToolSupported(tools[j])) {
+                            isOk = false;
+                        }
+                    }
+                }
+                if (isOk) {
+                    result.add(serverInstanceIDs[i]);
+                }
+            }
+        }
+        return (String[]) result.toArray(new String[result.size()]);
     }
 
     /**
