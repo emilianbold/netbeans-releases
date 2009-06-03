@@ -142,8 +142,9 @@ public class AnnotationsTest extends J2eeTestCase {
 //        runTest("issue110333.css");
 //    }
 
+    //should be 7 after fixing issue 165278
     public void testIssue127289() throws Exception {
-        runTest("issue127289.html", 7);
+        runTest("issue127289.html", 6);
     }
 
     public void testIssue141159() throws Exception{
@@ -172,6 +173,10 @@ public class AnnotationsTest extends J2eeTestCase {
 
     public void testMissingTitle() throws Exception {
         runTest("missingTitle.html", 1);
+    }
+
+    public void testAttributesWarnings() throws Exception {
+        runTest("attributesWarnings.html", 4);
     }
 
     private void runTest(String fileName) throws Exception {
