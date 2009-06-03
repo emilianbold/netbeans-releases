@@ -489,7 +489,9 @@ public class WatchesModel implements TreeModel {
 
         @Override
         public JPDAWatchEvaluating clone() {
-            return new JPDAWatchEvaluating(model, w, debugger, cloneNumber++);
+            JPDAWatchEvaluating clon = new JPDAWatchEvaluating(model, w, debugger, cloneNumber++);
+            clon.setEvaluated(evaluatedWatch);
+            return clon;
         }
         
     }
