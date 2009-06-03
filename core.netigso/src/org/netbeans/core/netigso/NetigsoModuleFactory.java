@@ -153,11 +153,13 @@ implements Stamps.Updater {
             //configMap.put(FelixConstants.EMBEDDED_EXECUTION_PROP, "true");
             // Add core OSGi packages to be exported from the class path
             // via the system bundle.
-            configMap.put(Constants.FRAMEWORK_SYSTEMPACKAGES,
-                "org.osgi.framework; version=1.3.0," +
+/*            configMap.put(Constants.FRAMEWORK_SYSTEMPACKAGES,
+                "org.osgi.framework; version=1.4.0," +
                 "org.osgi.service.packageadmin; version=1.2.0," +
-                "org.osgi.service.startlevel; version=1.0.0," +
+                "org.osgi.service.startlevel; version=1.1.0," +
+                "org.osgi.util.tracker; version=1.3.3,"+
                 "org.osgi.service.url; version=1.0.0");
+ */
             // Explicitly specify the directory to use for caching bundles.
             String ud = System.getProperty("netbeans.user");
             if (ud == null) {
@@ -203,6 +205,7 @@ implements Stamps.Updater {
         man.getMainAttributes().putValue("Manifest-Version", "1.0"); // workaround for JDK bug
         man.getMainAttributes().putValue("Bundle-ManifestVersion", "2"); // NOI18N
         man.getMainAttributes().putValue("Bundle-SymbolicName", m.getCodeName()); // NOI18N
+
         if (m.getSpecificationVersion() != null) {
             String spec = just3Dots(m.getSpecificationVersion().toString());
             man.getMainAttributes().putValue("Bundle-Version", spec.toString()); // NOI18N
@@ -237,7 +240,7 @@ implements Stamps.Updater {
                 activator.register(m);
                 is.close();
             } catch (BundleException ex) {
-                throw new IOException(ex);
+                throw new IOException(ex.getMessage());
             }
             Stamps.getModulesJARs().scheduleSave(this, "felix-bundles", false); // NOI18N
         }
