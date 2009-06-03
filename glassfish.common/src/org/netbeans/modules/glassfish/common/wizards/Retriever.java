@@ -214,9 +214,10 @@ public class Retriever implements Runnable {
             Logger.getLogger("glassfish").log(Level.FINE, "in == "+in);  //NOI18N
             setDownloadState(STATUS_FAILED, "I/O Exception", ex); // NOI18N
             updateMessage(
-                    connection != null ?
+                    in != null ?
                         NbBundle.getMessage(Retriever.class, "MSG_FileProblem", connection.getURL()) :
-                        NbBundle.getMessage(Retriever.class, "MSG_InvalidUrl", targetUrl));
+                        NbBundle.getMessage(Retriever.class, "MSG_InvalidUrl", 
+                            null == connection ? targetUrl : connection.getURL()));
         } catch(RuntimeException ex) {
             Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage(), ex);  //NOI18N
             setDownloadState(STATUS_FAILED, "Runtime Exception", ex); // NOI18N
