@@ -1825,8 +1825,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         ClassPath cp = ClassPath.getClassPath(rootFo, id);
                         if (cp != null) {
                             for (ClassPath.Entry entry : cp.entries()) {
-                                final URL url = entry.getURL();
-                                final URL[] sourceRoots = PathRegistry.getDefault().sourceForBinaryQuery(url, cp, false);
+                                final URL binaryRoot = entry.getURL();
+                                final URL[] sourceRoots = PathRegistry.getDefault().sourceForBinaryQuery(binaryRoot, cp, false);
                                 if (sourceRoots != null) {
                                     for (URL sourceRoot : sourceRoots) {
                                         if (!sourceRoot.equals(rootURL) && !ctx.cycleDetector.contains(sourceRoot)) {
@@ -1841,11 +1841,17 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                                 else {
                                     //What does it mean?
                                     if (ctx.useInitialState) {
-                                        if (!ctx.initialBinaries.contains(url)) {
-                                            ctx.newBinariesToScan.add (url);
+                                        if (!ctx.initialBinaries.contains(binaryRoot)) {
+                                            ctx.newBinariesToScan.add (binaryRoot);
                                         }
-                                        ctx.oldBinaries.remove(url);
+                                        ctx.oldBinaries.remove(binaryRoot);
+                                    } else {
+                                        ctx.newBinariesToScan.add(binaryRoot);
+                                        ctx.oldBinaries.remove(binaryRoot);
                                     }
+
+                                    assert !binaryRoot.equals(rootURL) && !ctx.cycleDetector.contains(binaryRoot);
+                                    deps.add(binaryRoot);
                                 }
                             }
                         }
