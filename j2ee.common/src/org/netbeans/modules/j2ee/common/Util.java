@@ -382,6 +382,7 @@ public class Util {
      *         is not known specification version constant
      * 
      * @since 1.18
+     * @deprecated 
      */    
     public static String getJ2eeSpecificationLabel(String specificationVersion) {
         Parameters.notNull("specificationVersion", specificationVersion); // NOI18N

@@ -27,11 +27,8 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="clientModuleUriCombo" pref="530" max="32767" attributes="0"/>
-                          </Group>
-                          <Component id="jComboBoxServer" alignment="0" pref="530" max="32767" attributes="0"/>
+                          <Component id="clientModuleUriCombo" alignment="0" pref="533" max="32767" attributes="0"/>
+                          <Component id="jComboBoxServer" alignment="0" pref="533" max="32767" attributes="0"/>
                           <Component id="jTextFieldVersion" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -40,7 +37,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <EmptySpace min="21" pref="21" max="21" attributes="0"/>
-                              <Component id="dosDescription" pref="623" max="32767" attributes="0"/>
+                              <Component id="dosDescription" pref="626" max="32767" attributes="0"/>
                           </Group>
                           <Component id="jCheckBoxDeployOnSave" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
@@ -87,7 +84,7 @@
               <Component id="webInfoPanel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="clientInfoPanel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="126" max="32767" attributes="0"/>
+              <EmptySpace pref="114" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -147,7 +144,7 @@
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="jLabelRelativeURL" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jTextFieldRelativeURL" pref="514" max="32767" attributes="0"/>
+                          <Component id="jTextFieldRelativeURL" pref="517" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
@@ -238,10 +235,7 @@
                       <Component id="jLabelVMOptionsExample" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="jTextVMOptions" alignment="1" pref="518" max="32767" attributes="2"/>
                       <Component id="jTextArgs" alignment="1" pref="518" max="32767" attributes="2"/>
-                      <Group type="102" alignment="1" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jTextMainClass" pref="518" max="32767" attributes="2"/>
-                      </Group>
+                      <Component id="jTextMainClass" alignment="1" pref="518" max="32767" attributes="2"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
