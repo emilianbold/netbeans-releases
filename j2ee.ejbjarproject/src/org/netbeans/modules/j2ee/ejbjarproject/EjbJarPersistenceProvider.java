@@ -52,6 +52,7 @@ import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Capabilities;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -222,18 +223,7 @@ public class EjbJarPersistenceProvider implements PersistenceLocationProvider, P
     }
     
     public boolean supportsDefaultProvider() {
-        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
-        J2eePlatform platform  = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
-        
-        if (platform == null){
-            // server probably not registered, can't resolve whether default provider is supported (see #79856)
-            return false;
-        }
-        
-        Set<String> supportedVersions = platform.getSupportedSpecVersions(j2eeModuleProvider.getJ2eeModule().getModuleType());
-        
-        return supportedVersions.contains(J2eeModule.JAVA_EE_5)
-                && platform.isToolSupported("defaultPersistenceProviderJavaEE5"); // NOI18N
+        return Capabilities.forProject(project).hasDefaultPersistenceProvider();
     }
 
     /**

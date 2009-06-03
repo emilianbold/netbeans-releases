@@ -46,6 +46,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.openide.modules.SpecificationVersion;
 
 /**
@@ -134,26 +135,26 @@ final class J2eeVersionWarningPanel extends javax.swing.JPanel {
         }
         return javaPlatformName;
     }
-    
-    public static String findWarningType(String j2eeLevel) {
+
+    public static String findWarningType(Profile j2eeProfile) {
 //        System.out.println("findWarningType: j2eeLevel="+j2eeLevel);
         JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
         SpecificationVersion version = defaultPlatform.getSpecification().getVersion();
         String sourceLevel = version.toString();
         // #89131: these levels are not actually distinct from 1.5.
         if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7"))
-            sourceLevel = "1.5";       
+            sourceLevel = "1.5";
 //        System.out.println("default platform is "+version);
-        
+
         // no warning if 1.4 is the default for j2ee14
-        if (new SpecificationVersion("1.4").equals(version) && j2eeLevel.equals(J2eeModule.J2EE_14)) // NOI18N
+        if (new SpecificationVersion("1.4").equals(version) && j2eeProfile == Profile.J2EE_14) // NOI18N
             return null;
-        
+
         // no warning if 1.5, 1.6, 1.7 is the default for j2ee15
-        if ("1.5".equals(sourceLevel) && j2eeLevel.equals(J2eeModule.JAVA_EE_5)) // NOI18N
+        if ("1.5".equals(sourceLevel) && j2eeProfile == Profile.JAVA_EE_5) // NOI18N
             return null;
-        
-        if (j2eeLevel.equals(J2eeModule.J2EE_14)) {
+
+        if (j2eeProfile == Profile.J2EE_14) {
             JavaPlatform[] java14Platforms = getJavaPlatforms("1.4"); //NOI18N
             if (java14Platforms.length > 0) {
                 // the user has JDK 1.4, so we warn we'll downgrade to 1.4
@@ -162,7 +163,7 @@ final class J2eeVersionWarningPanel extends javax.swing.JPanel {
                 // no JDK 1.4, the best we can do is downgrade the source level to 1.4
                 return WARN_SET_SOURCE_LEVEL_14;
             }
-        } else if (j2eeLevel.equals(J2eeModule.JAVA_EE_5)) {
+        } else if (j2eeProfile == Profile.JAVA_EE_5) {
             JavaPlatform[] java15Platforms = getJavaPlatforms("1.5"); //NOI18N
             if (java15Platforms.length > 0) {
                 // the user has JDK 1.4, so we warn we'll downgrade to 1.4
@@ -175,6 +176,11 @@ final class J2eeVersionWarningPanel extends javax.swing.JPanel {
             //e.g. 1.3, javaee6, etc. - better ignore then assert
             return null;
         }
+    }
+
+    @Deprecated
+    public static String findWarningType(String j2eeLevel) {
+        return findWarningType(Profile.fromPropertiesString(j2eeLevel));
     }
     
     private static JavaPlatform[] getJavaPlatforms(String level) {
