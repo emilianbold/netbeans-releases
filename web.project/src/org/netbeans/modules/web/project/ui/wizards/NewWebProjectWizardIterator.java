@@ -78,6 +78,7 @@ import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.web.project.Utils;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 
@@ -137,7 +138,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         if (createData.getSourceStructure() == null) {
             createData.setSourceStructure(WebProjectUtilities.SRC_STRUCT_BLUEPRINTS);
         }
-        createData.setJavaEEVersion((String) wiz.getProperty(ProjectServerWizardPanel.J2EE_LEVEL));
+        createData.setJavaEEProfile((Profile) wiz.getProperty(ProjectServerWizardPanel.J2EE_LEVEL));
         createData.setContextPath((String) wiz.getProperty(ProjectServerWizardPanel.CONTEXT_PATH));
         createData.setJavaPlatformName((String) wiz.getProperty(ProjectServerWizardPanel.JAVA_PLATFORM));
         createData.setSourceLevel((String) wiz.getProperty(ProjectServerWizardPanel.SOURCE_LEVEL));

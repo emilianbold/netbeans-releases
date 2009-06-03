@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
     <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
       <Dimension value="[400, 280]"/>
     </Property>
   </Properties>
   <AuxValues>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -105,7 +107,7 @@
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/j2ee/common/ui/Bundle.properties" key="LBL_NoSelectedServerWarning_listLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})">
-            <Argument index="0" javacode="Util.getJ2eeSpecificationLabel(j2eeSpec)"/>
+            <Argument index="0" javacode="j2eeProfile.getDisplayName()"/>
           </ResourceString>
         </Property>
       </Properties>

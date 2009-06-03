@@ -37,58 +37,14 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.discovery.project;
+package org.netbeans.modules.maven.execute.cmd;
 
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmInclude;
-import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.openide.util.Utilities;
+import java.util.List;
 
 /**
  *
- * @author Alexander Simon
+ * @author mkleint
  */
-public class ProjectCreationTest extends MakeProjectBase {
-    private static final boolean TRACE = true;
-
-    public ProjectCreationTest() {
-        super("ProjectCreationTest");
-        if (TRACE) {
-            System.setProperty("cnd.discovery.trace.projectimport", "true"); // NOI18N
-        }
-
-    }
-
-    public void testPkgConfig(){
-        performTestProject("http://pkgconfig.freedesktop.org/releases/pkg-config-0.23.tar.gz", null);
-    }
-
-    public void testLiteSql(){
-        if (Utilities.isWindows()) {
-            // make does not work on windows
-            // it start XWin and all hangs
-            // do anybody know how to make litesql on windows?
-            return;
-        }
-        performTestProject("http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/li/litesql/litesql-0.3.3.tar.gz", null);
-    }
-
-    public void testTesseract(){
-        performTestProject("http://tesseract-ocr.googlecode.com/files/tesseract-2.03.tar.gz", null);
-    }
-
-    @Override
-    void perform(CsmProject csmProject) {
-        if (TRACE) {
-            System.err.println("Model content:");
-        }
-        for (CsmFile file : csmProject.getAllFiles()) {
-            if (TRACE) {
-                System.err.println("\t"+file.getAbsolutePath());
-            }
-            for(CsmInclude include : file.getIncludes()){
-                assertTrue("Not resolved include directive "+include.getIncludeName()+" in file "+file.getAbsolutePath(), include.getIncludeFile() != null);
-            }
-        }
-    }
+public interface Constructor {
+    List<String> construct();
 }
