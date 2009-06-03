@@ -43,7 +43,6 @@ package org.netbeans.modules.maven.actions;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -64,8 +63,10 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.maven.dependencies.CheckNode;
 import org.netbeans.modules.maven.dependencies.CheckNodeListener;
 import org.netbeans.modules.maven.dependencies.CheckRenderer;
+import org.openide.DialogDescriptor;
 import org.openide.NotificationLineSupport;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -74,6 +75,7 @@ import org.openide.util.ImageUtilities;
 public class CreateLibraryPanel extends javax.swing.JPanel {
     private DependencyNode rootnode;
     private NotificationLineSupport line;
+    private DialogDescriptor dd;
 
     /** Creates new form CreateLibraryPanel */
     CreateLibraryPanel(DependencyNode root) {
@@ -121,8 +123,9 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
         });
     }
 
-    void setLineSupport(NotificationLineSupport notificationLineSupport) {
+    void setLineSupport(NotificationLineSupport notificationLineSupport, DialogDescriptor dd) {
         line = notificationLineSupport;
+        this.dd = dd;
     }
 
 
@@ -135,7 +138,7 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
 
     private void setLibraryName() {
         LibraryManager manager = (LibraryManager) comManager.getSelectedItem();
-        String currentName = txtName.getText();
+        String currentName = getLibraryName();
         int index = 0;
         while (currentName.trim().length() == 0 || manager.getLibrary(currentName.trim()) != null) {
             currentName = rootnode.getArtifact().getArtifactId();
@@ -144,7 +147,7 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
             }
             index++;
         }
-        if (!currentName.equals(txtName.getText())) {
+        if (!currentName.equals(getLibraryName())) {
             txtName.setText(currentName);
         }
     }
@@ -152,11 +155,17 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
     private void checkLibraryName() {
 
         LibraryManager manager = (LibraryManager) comManager.getSelectedItem();
-        String currentName = txtName.getText();
-        if (manager.getLibrary(currentName) != null) {
-            line.setErrorMessage("Library with given name already exists.");
+        String currentName = getLibraryName();
+        if (currentName.length() == 0) {
+            line.setErrorMessage(NbBundle.getMessage(CreateLibraryPanel.class, "ERR_EmptyName"));
+            dd.setValid(false);
+        }
+        else if (manager.getLibrary(currentName) != null) {
+            line.setErrorMessage(NbBundle.getMessage(CreateLibraryPanel.class, "ERR_NameExists"));
+            dd.setValid(false);
         } else {
             line.clearMessages();
+            dd.setValid(true);
         }
     }
     /** This method is called from within the constructor to
@@ -257,7 +266,11 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
     }
 
     String getLibraryName() {
-        return txtName.getText();
+        String name = txtName.getText().trim();
+//        if (name.length() == 0) {
+//            name = "library"; //NOI18N
+//        }
+        return name;
     }
 
     boolean isAllSourceAndJavadoc() {
@@ -268,7 +281,7 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
         if (!cbCopy.isSelected()) {
             return null;
         }
-        String dir = txtName.getText().trim();
+        String dir = getLibraryName();
         return dir;
     }
 
@@ -301,6 +314,7 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
         }
         return 0;
     }
+
 
     private static class Comp implements Comparator<Artifact> {
 
@@ -335,8 +349,8 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
         private DefaultMutableTreeNode rootNode;
         private DependencyNode root;
         private Stack<DependencyNode> path;
-        private Icon icn = ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/TransitiveDependencyIcon.png", true));
-        private Icon icn2 = ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/DependencyIcon.png", true));
+        private Icon icn = ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/TransitiveDependencyIcon.png", true)); //NOI18N
+        private Icon icn2 = ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/DependencyIcon.png", true)); //NOI18N
 
         Visitor(DefaultMutableTreeNode root) {
             this.rootNode = root;
