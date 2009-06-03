@@ -145,6 +145,7 @@ class ResultViewPanel extends JPanel{
 
     private final JPanel resultsPanel;
     private final JToolBar toolBar;
+    private JSeparator toolbarSeparator;
     private JButton btnShowDetails = new JButton();
     private JButton btnModifySearch = new JButton();
     private JButton btnStop = new JButton();
@@ -231,7 +232,7 @@ class ResultViewPanel extends JPanel{
         });
 
         // Toolbar separator
-        JSeparator toolbarSeparator = new JSeparator();
+        toolbarSeparator = new JSeparator();
         toolbarSeparator.setOrientation(SwingConstants.VERTICAL);
 
         //Buttons panel
@@ -286,34 +287,11 @@ class ResultViewPanel extends JPanel{
         JSeparator buttonsPanelSeparator = new JSeparator();
         buttonsPanelSeparator.setOrientation(SwingConstants.HORIZONTAL);
 
+        add(toolBar, getToolbarConstraints());
+        add(toolbarSeparator, getToolbarSeparatorConstraints());
+        add(resultsPanel, getMainPanelConstraints());
 
-        GridBagConstraints gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
-        add(toolBar, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
-        add(toolbarSeparator, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(resultsPanel, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -687,8 +665,9 @@ class ResultViewPanel extends JPanel{
         if (issuesPanel != null){
             this.issuesPanel = issuesPanel;
             remove(toolBar);
+            remove(toolbarSeparator);
             remove(resultsPanel);
-            add(issuesPanel, BorderLayout.CENTER);
+            add(issuesPanel, getMainPanelConstraints());
             validate();
             repaint();
         }
@@ -699,14 +678,49 @@ class ResultViewPanel extends JPanel{
     void removeIssuesPanel() {
         if (issuesPanel != null) {
             remove(issuesPanel);
-            add(toolBar, BorderLayout.WEST);
-            add(resultsPanel, BorderLayout.CENTER);
+            add(toolBar, getToolbarConstraints());
+            add(toolbarSeparator, getToolbarSeparatorConstraints());
+            add(resultsPanel, getMainPanelConstraints());
             issuesPanel = null;
             validate();
             repaint();
         }
     }
 
+    private GridBagConstraints getMainPanelConstraints(){
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+
+        return gridBagConstraints;
+    }
+
+    private GridBagConstraints getToolbarConstraints(){
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
+        
+        return gridBagConstraints;
+    }
+
+    private GridBagConstraints getToolbarSeparatorConstraints(){
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
+
+        return gridBagConstraints;
+    }
 
     /**
      * Enables or disables the <em>Display Context</em> button,

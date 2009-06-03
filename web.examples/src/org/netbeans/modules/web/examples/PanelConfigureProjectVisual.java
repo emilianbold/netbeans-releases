@@ -42,12 +42,11 @@
 package org.netbeans.modules.web.examples;
 
 import javax.swing.JPanel;
-
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class PanelConfigureProjectVisual extends JPanel implements HelpCtx.Provider {
+class PanelConfigureProjectVisual extends JPanel implements HelpCtx.Provider {
 
     private PanelConfigureProject panel;
 
