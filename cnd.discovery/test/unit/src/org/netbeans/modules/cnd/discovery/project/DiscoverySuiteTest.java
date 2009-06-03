@@ -39,56 +39,28 @@
 
 package org.netbeans.modules.cnd.discovery.project;
 
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmInclude;
-import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.openide.util.Utilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.modules.cnd.test.BaseTestSuite;
 
 /**
  *
  * @author Alexander Simon
  */
-public class ProjectCreationTest extends MakeProjectBase {
-    private static final boolean TRACE = true;
+public class DiscoverySuiteTest extends BaseTestSuite {
 
-    public ProjectCreationTest() {
-        super("ProjectCreationTest");
-        if (TRACE) {
-            System.setProperty("cnd.discovery.trace.projectimport", "true"); // NOI18N
-        }
+    public DiscoverySuiteTest() {
+        super("C/C++ Discovery Test"); // NOI18N
 
+        addTestSuite(PkgConfigTestCase.class);
+        addTestSuite(LiteSqlTestCase.class);
+        addTestSuite(ProjectCreationTestCase.class);
+        addTestSuite(CMakeTestCase.class);
+        addTestSuite(MysqlConnectorTestCase.class);
     }
 
-    public void testPkgConfig(){
-        performTestProject("http://pkgconfig.freedesktop.org/releases/pkg-config-0.23.tar.gz", null);
-    }
-
-    public void testLiteSql(){
-        if (Utilities.isWindows()) {
-            // make does not work on windows
-            // it start XWin and all hangs
-            // do anybody know how to make litesql on windows?
-            return;
-        }
-        performTestProject("http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/li/litesql/litesql-0.3.3.tar.gz", null);
-    }
-
-    public void testTesseract(){
-        performTestProject("http://tesseract-ocr.googlecode.com/files/tesseract-2.03.tar.gz", null);
-    }
-
-    @Override
-    void perform(CsmProject csmProject) {
-        if (TRACE) {
-            System.err.println("Model content:");
-        }
-        for (CsmFile file : csmProject.getAllFiles()) {
-            if (TRACE) {
-                System.err.println("\t"+file.getAbsolutePath());
-            }
-            for(CsmInclude include : file.getIncludes()){
-                assertTrue("Not resolved include directive "+include.getIncludeName()+" in file "+file.getAbsolutePath(), include.getIncludeFile() != null);
-            }
-        }
+    public static Test suite() {
+        TestSuite suite = new DiscoverySuiteTest();
+        return suite;
     }
 }

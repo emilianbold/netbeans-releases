@@ -147,7 +147,11 @@ public class ProjectBridge {
     public void checkForNewExtensions(Set<String> needAdd){
         Set<String> extensions = new HashSet<String>();
         for(String name : needAdd){
-            int i = name.lastIndexOf('.');
+            int i = name.replace('\\', '/').lastIndexOf('/');
+            if (i >= 0){
+                name = name.substring(i+1);
+            }
+            i = name.lastIndexOf('.');
             if (i > 0){
                 String extension = name.substring(i+1);
                 if (extension.length()>0) {
