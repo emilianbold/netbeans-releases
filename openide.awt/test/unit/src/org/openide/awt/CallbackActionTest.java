@@ -44,6 +44,7 @@ package org.openide.awt;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -114,6 +115,7 @@ public class CallbackActionTest extends NbTestCase {
             public int cntEnabled;
             public int cntPerformed;
             
+            @Override
             public boolean isEnabled() {
                 cntEnabled++;
                 return super.isEnabled();
@@ -134,7 +136,7 @@ public class CallbackActionTest extends NbTestCase {
         AbstractLookup al = new AbstractLookup(ic);
         ic.add(tc);
         
-        ContextAwareAction a = Factory.callback("somekey", fallAction, al, false);
+        ContextAwareAction a = callback("somekey", fallAction, al, false);
         CntListener l = new CntListener();
         a.addPropertyChangeListener(l);
 
@@ -164,7 +166,7 @@ public class CallbackActionTest extends NbTestCase {
     
     public void testShareAcceleratorKey() {
         InstanceContent ic = new InstanceContent();
-        ContextAwareAction a = Factory.callback("somekey", null, new AbstractLookup(ic), false);
+        ContextAwareAction a = callback("somekey", null, new AbstractLookup(ic), false);
         Action a2 = a.createContextAwareInstance(Lookup.EMPTY);
 
         KeyStroke ks = org.openide.util.Utilities.stringToKey("C-1");
@@ -174,6 +176,10 @@ public class CallbackActionTest extends NbTestCase {
         map.addActionForKeyStroke(ks, a);
         assertEquals("Changes accelerator for the action", ks, a.getValue(Action.ACCELERATOR_KEY));
         assertEquals("Also Propagated", ks, a2.getValue(Action.ACCELERATOR_KEY));
+    }
+
+    static ContextAwareAction callback(String key, AbstractAction fallAction, Lookup al, boolean b) {
+        return GeneralAction.callback(key, fallAction, al, b);
     }
     
     private static final class CntListener extends Object

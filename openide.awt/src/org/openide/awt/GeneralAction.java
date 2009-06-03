@@ -60,7 +60,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Jaroslav Tulach
  */
-class GeneralAction {
+final class GeneralAction {
 
     /** Creates a new instance of DelegatingAction */
     private GeneralAction() {

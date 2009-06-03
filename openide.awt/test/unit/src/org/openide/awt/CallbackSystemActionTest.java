@@ -72,26 +72,31 @@ public class CallbackSystemActionTest extends NbTestCase {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {
         LOG = Logger.getLogger("TEST-" + getName());
         
         LOG.info("setUp");
     }
     
+    @Override
     protected void tearDown() throws Exception {
         LOG.info("tearDown");
         super.tearDown();
         LOG.info("tearDown super finished");
     }
 
+    @Override
     protected Level logLevel() {
         return Level.FINE;
     }
 
+    @Override
     protected int timeOut() {
         return 5000;
     }
     
+    @Override
     protected boolean runInEQ() {
         return true;
     }
@@ -107,7 +112,7 @@ public class CallbackSystemActionTest extends NbTestCase {
         
         map.put("key", action);
         Lookup context = Lookups.singleton(map);
-        ContextAwareAction systemaction = Factory.callback("key", null, Utilities.actionsGlobalContext(), false);
+        ContextAwareAction systemaction = CallbackActionTest.callback("key", null, Utilities.actionsGlobalContext(), false);
         Action delegateaction = systemaction.createContextAwareInstance(context);
         
         assertEquals("Action is expected to have no listener", 0, action.getPropertyChangeListeners().length);
@@ -138,6 +143,7 @@ public class CallbackSystemActionTest extends NbTestCase {
             public int cntEnabled;
             public int cntPerformed;
             
+            @Override
             public boolean isEnabled() {
                 cntEnabled++;
                 return true;
@@ -155,7 +161,7 @@ public class CallbackSystemActionTest extends NbTestCase {
         InstanceContent ic = new InstanceContent();
         AbstractLookup al = new AbstractLookup(ic);
         
-        ContextAwareAction a = Factory.callback("somekey", null, al, true);
+        ContextAwareAction a = CallbackActionTest.callback("somekey", null, al, true);
         tc.put("somekey", myAction);
         
         ic.add(other);
@@ -169,7 +175,7 @@ public class CallbackSystemActionTest extends NbTestCase {
             WeakReference<?> ref = new WeakReference<Object>(a);
             a = null;
             assertGC("Action can disappear", ref);
-            a = Factory.callback("somekey", null, al, true);
+            a = CallbackActionTest.callback("somekey", null, al, true);
         }
 
         ic.remove(tc);
@@ -197,6 +203,7 @@ public class CallbackSystemActionTest extends NbTestCase {
                 setEnabled(true);
             }
             
+            @Override
             public boolean isEnabled() {
                 cntEnabled++;
                 return super.isEnabled();
@@ -213,7 +220,7 @@ public class CallbackSystemActionTest extends NbTestCase {
 
         InstanceContent ic = new InstanceContent();
         AbstractLookup al = new AbstractLookup(ic);
-        ContextAwareAction a = Factory.callback(DefaultEditorKit.copyAction, null, al, false);
+        ContextAwareAction a = CallbackActionTest.callback(DefaultEditorKit.copyAction, null, al, false);
         
         ic.add(tc);
         assertTrue("MyAction is enabled", a.isEnabled());
@@ -244,7 +251,7 @@ public class CallbackSystemActionTest extends NbTestCase {
         ActionMap map = new ActionMap();
         InstanceContent ic = new InstanceContent();
         AbstractLookup al = new AbstractLookup(ic);
-        ContextAwareAction system = Factory.callback("systemKey", null, al, false);
+        ContextAwareAction system = CallbackActionTest.callback("systemKey", null, al, false);
         map.put("systemKey", action);
         
         

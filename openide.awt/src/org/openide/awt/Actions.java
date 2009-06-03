@@ -84,6 +84,7 @@ import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Keymap;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.actions.BooleanStateAction;
 import org.openide.util.actions.SystemAction;
@@ -426,6 +427,12 @@ public class Actions extends Object {
     // for use from layers
     static Action alwaysEnabled(Map map) {
         return new AlwaysEnabledAction(map);
+    }
+    static ContextAwareAction callback(Map fo) {
+        return GeneralAction.callback(fo);
+    }
+    static ContextAwareAction context(Map fo) {
+        return GeneralAction.context(fo);
     }
 
     

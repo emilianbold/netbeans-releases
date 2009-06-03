@@ -49,6 +49,7 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -95,11 +96,11 @@ implements Lookup.Provider, ContextActionEnabler<ContextActionTest.Openable> {
         lookup = Lookup.EMPTY;
         lookupProxy = Lookups.proxy(this);
         
-        a1 = Factory.context(new SimpleCookieAction(), ContextSelection.EXACTLY_ONE, lookupProxy, Openable.class);
-        a2 = Factory.context(new SimpleCookieAction(), this, ContextSelection.ANY, lookupProxy, Openable.class);
-        any = Factory.context(new SimpleCookieAction(), ContextSelection.ANY, lookupProxy, Openable.class);
-        each = Factory.context(new SimpleCookieAction(), ContextSelection.EACH, lookupProxy, Openable.class);
-        all = Factory.context(new SimpleCookieAction(), ContextSelection.ALL, lookupProxy, Openable.class);
+        a1 = context(new SimpleCookieAction(), null, ContextSelection.EXACTLY_ONE, lookupProxy, Openable.class);
+        a2 = context(new SimpleCookieAction(), this, ContextSelection.ANY, lookupProxy, Openable.class);
+        any = context(new SimpleCookieAction(), null, ContextSelection.ANY, lookupProxy, Openable.class);
+        each = context(new SimpleCookieAction(), null, ContextSelection.EACH, lookupProxy, Openable.class);
+        all = context(new SimpleCookieAction(), null, ContextSelection.ALL, lookupProxy, Openable.class);
         n1 = new LookupWithOpenable();
         n2 = new LookupWithOpenable();
         n3 = new LookupWithOpenable(false);
@@ -108,6 +109,7 @@ implements Lookup.Provider, ContextActionEnabler<ContextActionTest.Openable> {
         SimpleCookieAction.runOn.clear();
     }
     
+    @Override
     protected boolean runInEQ() {
         return true;
     }
@@ -468,7 +470,7 @@ implements Lookup.Provider, ContextActionEnabler<ContextActionTest.Openable> {
             fail("Shall create an action: " + obj);
         }
         ContextAwareAction caa = (ContextAwareAction)obj;
-        Action a2 = caa.createContextAwareInstance(Lookup.EMPTY);
+        Action tmp = caa.createContextAwareInstance(Lookup.EMPTY);
 
         KeyStroke ks = org.openide.util.Utilities.stringToKey("C-1");
         
@@ -476,7 +478,7 @@ implements Lookup.Provider, ContextActionEnabler<ContextActionTest.Openable> {
         assertNotNull("There is a keymap", map);
         map.addActionForKeyStroke(ks, caa);
         assertEquals("Changes accelerator for the action", ks, caa.getValue(Action.ACCELERATOR_KEY));
-        assertEquals("Also Propagated", ks, a2.getValue(Action.ACCELERATOR_KEY));
+        assertEquals("Also Propagated", ks, tmp.getValue(Action.ACCELERATOR_KEY));
     }
     
     public void testBasicUsageWithEnabler() throws Exception {
@@ -590,6 +592,12 @@ implements Lookup.Provider, ContextActionEnabler<ContextActionTest.Openable> {
     
     public static ContextActionEnabler<?> getEnabler() {
         return new ContextActionTest("");
+    }
+
+    private static <T> ContextAwareAction context(
+        ContextActionPerformer<? super T> a, ContextActionEnabler<? super T> e, ContextSelection s, Lookup lookupProxy, Class<T> c
+    ) {
+        return GeneralAction.context(a, e, s, lookupProxy, c);
     }
     
     public static interface Openable {
