@@ -517,6 +517,7 @@ class CategoryPanelFormatters extends StorablePanel {
                 JCheckBox cb = checkBoxComponents.get(vf);
                 if (cb == null) {
                     cb = new JCheckBox(vf.getName(), vf.isEnabled());
+                    cb.setOpaque(true);
                     checkBoxComponents.put(vf, cb);
                 }
                 cb.setEnabled(list.isEnabled());

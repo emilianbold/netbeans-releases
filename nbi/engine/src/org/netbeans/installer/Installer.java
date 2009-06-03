@@ -112,6 +112,7 @@ public class Installer implements FinishHandler {
         
         initializeErrorHandler();
         dumpSystemInfo();
+        EngineUtils.checkEngine();
         initializePlatform();
         
         instance = this;
