@@ -42,26 +42,15 @@
 package org.openide.awt;
 
 import java.awt.EventQueue;
-import java.awt.Image;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.lang.ref.WeakReference;
-import java.net.URL;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.KeyStroke;
-import javax.swing.text.Keymap;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -145,47 +134,7 @@ class GeneralAction {
         throw new IllegalStateException("Cannot parse selectionType value: " + obj); // NOI18N
     }
     static final Object extractCommonAttribute(Map fo, Action action, String name) {
-        if (Action.NAME.equals(name)) {
-            String actionName = localizedName(fo);
-            //return Actions.cutAmpersand(actionName); 
-            return actionName;
-        }
-        if (Action.MNEMONIC_KEY.equals(name)) {
-            String actionName = localizedName(fo);
-            int position = Mnemonics.findMnemonicAmpersand(actionName);
-
-            return position == -1 ? null : Character.valueOf(actionName.charAt(position + 1));
-        }
-        if (Action.SMALL_ICON.equals(name)) {
-            Object icon = fo == null ? null : fo.get("iconBase"); // NOI18N
-            if (icon instanceof Icon) {
-                return (Icon)icon;
-            }
-            if (icon instanceof Image) {
-                return new ImageIcon((Image)icon);
-            }
-            if (icon instanceof String) {
-                icon = GeneralAction.class.getResource((String)icon);
-            }
-            if (icon instanceof URL) {
-                return Toolkit.getDefaultToolkit().getImage((URL)icon);
-            }
-        }
-        if ("iconBase".equals(name)) { // NOI18N
-            return fo == null ? null : fo.get("iconBase"); // NOI18N
-        }
-        if ("noIconInMenu".equals(name)) { // NOI18N
-            return fo == null ? null : fo.get("noIconInMenu"); // NOI18N
-        }
-        if (Action.ACCELERATOR_KEY.equals(name)) {
-            Keymap map = Lookup.getDefault().lookup(Keymap.class);
-            if (map != null) {
-                KeyStroke[] arr = map.getKeyStrokesForAction(action);
-                return arr.length > 0 ? arr[0] : null;
-            }
-        }
-
-        return null;
+        return AlwaysEnabledAction.extractCommonAttribute(fo, action, name);
     }
 
     private static String localizedName(Map fo) {
@@ -227,10 +176,12 @@ class GeneralAction {
             return false;
         }
 
+        @Override
         public int hashCode() {
             return delegate.hashCode() + 117;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (this == obj) {
                 return true;
@@ -243,94 +194,6 @@ class GeneralAction {
         }
     } // end of LazyPerformer
     
-    private static final class AlwaysEnabledAction extends AbstractAction {
-        private Map map;
-        
-        public AlwaysEnabledAction(Map m) {
-            this.map = m;
-        }
-
-        public boolean isEnabled() {
-            assert EventQueue.isDispatchThread();
-            return true;
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            assert EventQueue.isDispatchThread();
-            Object listener = map.get("delegate"); // NOI18N
-            if (!(listener instanceof ActionListener)) {
-                throw new NullPointerException();
-            }
-            ((ActionListener)listener).actionPerformed(e);
-        }
-        
-        public Object getValue(String name) {
-            return extractCommonAttribute(map, this, name);
-        }
-    } // end of AlwaysEnabledAction
-
-    /** A class that listens on changes in enabled state of an action
-     * and updates the state of the action according to it.
-     */
-    private static final class ActionDelegateListener extends WeakReference<Action> implements PropertyChangeListener {
-        private WeakReference delegate;
-
-        public ActionDelegateListener(Action c, Action delegate) {
-            super(c);
-            this.delegate = new WeakReference<Action>(delegate);
-            delegate.addPropertyChangeListener(this);
-        }
-
-        public void clear() {
-            javax.swing.Action a;
-
-            WeakReference d = delegate;
-            a = (d == null) ? null : (javax.swing.Action) d.get();
-
-            if (a == null) {
-                return;
-            }
-
-            delegate = null;
-
-            a.removePropertyChangeListener(this);
-        }
-
-        public void attach(javax.swing.Action action) {
-            WeakReference d = delegate;
-
-            if ((d != null) && (d.get() == action)) {
-                return;
-            }
-
-            Action prev = (Action) d.get();
-
-            // reattaches to different action
-            if (prev != null) {
-                prev.removePropertyChangeListener(this);
-            }
-
-            this.delegate = new WeakReference<Action>(action);
-            action.addPropertyChangeListener(this);
-        }
-
-        public void propertyChange(java.beans.PropertyChangeEvent evt) {
-            //synchronized (LISTENER) {
-                WeakReference d = delegate;
-
-                if ((d == null) || (d.get() == null)) {
-                    return;
-                }
-            //}
-
-            Action c = get();
-
-            if (c != null) {
-            //    c.updateEnabled();
-            }
-        }
-    }
-
     /** A delegate action that is usually associated with a specific lookup and
      * extract the nodes it operates on from it. Otherwise it delegates to the
      * regular NodeAction.
@@ -385,6 +248,7 @@ class GeneralAction {
         }
 
         /** Overrides superclass method, adds delegate description. */
+        @Override
         public String toString() {
             return super.toString() + "[key=" + key + "]"; // NOI18N
         }
@@ -486,6 +350,7 @@ class GeneralAction {
             }
         }
 
+        @Override
         public int hashCode() {
             int k = key == null ? 37 : key.hashCode();
             int m = map == null ? 17 : map.hashCode();
@@ -494,6 +359,7 @@ class GeneralAction {
             return (k << 2) + (m << 1) + f;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (obj == this) {
                 return true;
