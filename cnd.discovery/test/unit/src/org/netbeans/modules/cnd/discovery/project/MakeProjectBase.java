@@ -80,7 +80,6 @@ public abstract class MakeProjectBase extends BaseTestCase {
         }
         //System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
         //System.setProperty("cnd.mode.unittest", "true");
-        System.setProperty("cnd.make.project.creation.skip.notify.header.extension", "true");
         //Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
     }
 
@@ -177,12 +176,17 @@ public abstract class MakeProjectBase extends BaseTestCase {
             importer.setUILessMode();
             importer.create();
             OpenProjects.getDefault().open(new Project[]{importer.getProject()}, false);
+            int i = 0;
             while(!importer.isFinished()) {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 }
+                if (i > 10 && !OpenProjects.getDefault().isProjectOpen(importer.getProject())){
+                    break;
+                }
+                i++;
             }
             CsmModel model = CsmModelAccessor.getModel();
             Project makeProject = importer.getProject();
