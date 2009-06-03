@@ -188,19 +188,19 @@ public class RepositoryValidationBase extends TraceModelTestBase {
             }
         };
         NativeExecutor ne = null;
-        File file = new File(dataPath + "/pkgconfig-0.18");
+        File file = new File(dataPath + "/pkg-config-0.23");
         if (!file.exists()){
             file.mkdirs();
         }
         if (file.list().length == 0){
             ne = new NativeExecutor(dataPath,"wget",
-                    "http://pkgconfig.freedesktop.org/releases/pkgconfig-0.18.tar.gz",new String[0],"wget","run",false,false);
+                    "http://pkgconfig.freedesktop.org/releases/pkg-config-0.23.tar.gz",new String[0],"wget","run",false,false);
             waitExecution(ne, listener, finish);
             ne = new NativeExecutor(dataPath,"gzip",
-                    "-d pkgconfig-0.18.tar.gz",new String[0],"gzip","run",false,false);
+                    "-d pkg-config-0.23.tar.gz",new String[0],"gzip","run",false,false);
             waitExecution(ne, listener, finish);
             ne = new NativeExecutor(dataPath,"tar",
-                    "xf pkgconfig-0.18.tar",new String[0],"tar","run",false,false);
+                    "xf pkg-config-0.23.tar",new String[0],"tar","run",false,false);
             waitExecution(ne, listener, finish);
         }
 
@@ -219,7 +219,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
                     "xf litesql-0.3.3.tar",new String[0],"tar","run",false,false);
             waitExecution(ne, listener, finish);
         }
-        list.add(dataPath + "/pkgconfig-0.18"); //NOI18N
+        list.add(dataPath + "/pkg-config-0.23"); //NOI18N
         list.add(dataPath + "/litesql-0.3.3"); //NOI18N
         for(String f : list){
             file = new File(f);
@@ -227,7 +227,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         }
         list = expandAndSort(list);
         list.add("-DHAVE_CONFIG_H");
-        list.add("-I"+dataPath + "/pkgconfig-0.18");
+        list.add("-I"+dataPath + "/pkg-config-0.23");
         list.add("-I"+dataPath + "/litesql-0.3.3");
         return list;
     }
