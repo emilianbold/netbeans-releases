@@ -98,6 +98,35 @@ made subject to such option by the copyright holder.
                     <attr name='delegate' methodvalue='org.openide.awt.AlwaysEnabledActionTest.myNamedAction'/>
                     <attr name='displayName' stringvalue='Name1'/>
                 </file>
+                <file name="testCallback.instance">
+                    <attr name='instanceCreate' methodvalue='org.openide.awt.Factory.callback'/>
+                    <attr name='delegate' methodvalue='org.openide.awt.CallbackActionTest.myListener'/>
+                    <attr name='SystemFileSystem.localizingBundle' stringvalue='org/netbeans/modules/actions/support/TestBundle'/>
+                    <attr name='iconBase' methodvalue='org.openide.awt.CallbackActionTest.myIconResource'/>
+                    <attr name='noIconInMenu' boolvalue="true"/>
+                    <attr name='key' stringvalue='somekey'/>
+                </file>
+                <file name="testContext.instance">
+                    <attr name='instanceCreate' methodvalue='org.openide.awt.Factory.context'/>
+                    <attr name='delegate' newvalue='org.openide.awt.ContextActionTest$SimpleCookieAction'/>
+                    <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
+                    <attr name='SystemFileSystem.localizingBundle' stringvalue='org/netbeans/modules/actions/support/TestBundle'/>
+                    <attr name='iconBase' methodvalue='org.openide.awt.ContextActionTest.myIconResource'/>
+                    <attr name='noIconInMenu' boolvalue="true"/>
+                    <attr name='key' stringvalue='contextKey'/>
+                    <attr name="type" stringvalue="org.openide.awt.ContextActionTest$Openable"/>
+                </file>
+                <file name="testContextEnabler.instance">
+                    <attr name='instanceCreate' methodvalue='org.openide.awt.Factory.context'/>
+                    <attr name='delegate' newvalue='org.openide.awt.ContextActionTest$SimpleCookieAction'/>
+                    <attr name='enabler' methodvalue='org.openide.awt.ContextActionTest.getEnabler'/>
+                    <attr name="selectionType" stringvalue="ANY"/>
+                    <attr name='SystemFileSystem.localizingBundle' stringvalue='org/netbeans/modules/actions/support/TestBundle'/>
+                    <attr name='iconBase' methodvalue='org.openide.awt.ContextActionTest.myIconResource'/>
+                    <attr name='noIconInMenu' boolvalue="true"/>
+                    <attr name='key' stringvalue='contextKey'/>
+                    <attr name="type" stringvalue="org.openide.awt.ContextActionTest$Openable"/>
+                </file>
             </folder>
         </folder>
     </folder> 
