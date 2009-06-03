@@ -46,6 +46,9 @@ import java.io.FileFilter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Collections;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -168,7 +171,12 @@ public abstract class BaseTestCase extends NbTestCase {
         
         Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
         System.setProperty("cnd.mode.unittest", "true");
-        MockServices.setServices(MockMimeLookup.class);
+        List<Class> list = new ArrayList<Class>();
+        list.add(MockMimeLookup.class);
+        for(Class cls : getServises()){
+            list.add(cls);
+        }
+        MockServices.setServices(list.toArray(new Class[list.size()]));
         MimePath mimePath = MimePath.parse(MIMENames.CPLUSPLUS_MIME_TYPE); 
         MockMimeLookup.setInstances(mimePath, new CCKit());
         mimePath = MimePath.parse(MIMENames.HEADER_MIME_TYPE);
@@ -177,6 +185,10 @@ public abstract class BaseTestCase extends NbTestCase {
         MockMimeLookup.setInstances(mimePath, new CKit());
         mimePath = MimePath.parse(MIMENames.FORTRAN_MIME_TYPE); 
         MockMimeLookup.setInstances(mimePath, new FKit());
+    }
+
+    protected List<Class> getServises(){
+        return Collections.<Class>emptyList();
     }
 
     /**

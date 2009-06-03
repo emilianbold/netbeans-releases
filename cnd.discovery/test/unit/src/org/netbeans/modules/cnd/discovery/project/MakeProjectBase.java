@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.discovery.project;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -48,9 +49,10 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -59,6 +61,8 @@ import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.openide.WizardDescriptor;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
@@ -68,22 +72,34 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Alexander Simon
  */
-public abstract class MakeProjectBase  extends NbTestCase {
+public abstract class MakeProjectBase extends BaseTestCase {
     private static final boolean OPTIMIZE_NATIVE_EXECUTIONS =true;
+    private static final boolean TRACE = true;
 
     public MakeProjectBase(String name) {
         super(name);
-        System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
-        System.setProperty("cnd.mode.unittest", "true");
+        if (TRACE) {
+            System.setProperty("cnd.discovery.trace.projectimport", "true"); // NOI18N
+        }
+        //System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
+        //System.setProperty("cnd.mode.unittest", "true");
         System.setProperty("cnd.make.project.creation.skip.notify.header.extension", "true");
-        Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
+        //Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MockServices.setServices(MakeProjectType.class);
+        //MockServices.setServices(MakeProjectType.class);
         startupModel();
+    }
+
+    @Override
+    protected List<Class> getServises() {
+        List<Class> list = new ArrayList<Class>();
+        list.add(MakeProjectType.class);
+        list.addAll(super.getServises());
+        return list;
     }
 
     private void startupModel() {
@@ -143,7 +159,11 @@ public abstract class MakeProjectBase  extends NbTestCase {
                             return path+"/configure";
                         }
                     } else if ("realFlags".equals(name)) {
-                        return "CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\"";
+                        if (path.indexOf("cmake-")>0) {
+                            return "CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\" CMAKE_BUILD_TYPE=Debug CMAKE_CXX_FLAGS_DEBUG=\"-g3 -gdwarf-2\" CMAKE_C_FLAGS_DEBUG=\"-g3 -gdwarf-2\"";
+                        } else {
+                            return "CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\"";
+                        }
                     } else if ("buildProject".equals(name)) {
                         if (OPTIMIZE_NATIVE_EXECUTIONS && makeFile.exists() && findObjectFiles(path)) {
                             // optimization on developer computer:
@@ -204,33 +224,27 @@ public abstract class MakeProjectBase  extends NbTestCase {
         return false;
     }
 
-    abstract void perform(CsmProject csmProject);
+    protected void perform(CsmProject csmProject) {
+        if (TRACE) {
+            System.err.println("Model content:");
+        }
+        for (CsmFile file : csmProject.getAllFiles()) {
+            if (TRACE) {
+                System.err.println("\t"+file.getAbsolutePath());
+            }
+            for(CsmInclude include : file.getIncludes()){
+                assertTrue("Not resolved include directive "+include.getIncludeName()+" in file "+file.getAbsolutePath(), include.getIncludeFile() != null);
+            }
+        }
+    }
 
     private String download(String urlName, List<String> additionalScripts) throws IOException {
         String zipName = urlName.substring(urlName.lastIndexOf('/')+1);
         String tarName = zipName.substring(0, zipName.lastIndexOf('.'));
         String packageName = tarName.substring(0, tarName.lastIndexOf('.'));
+        File fileDataPath = CndCoreTestUtils.getDownloadBase();
+        String dataPath = fileDataPath.getAbsolutePath();
 
-        String dataPath;
-        if (false) {
-            // local downloads
-            dataPath = getDataDir().getAbsolutePath();
-            if (dataPath.endsWith("/data") || dataPath.endsWith("\\data")) {
-                dataPath = dataPath.substring(0, dataPath.length()-4)+"downloads";
-            }
-        } else {
-            // downloads in tmp dir
-            dataPath = System.getProperty("java.io.tmpdir");
-            if (dataPath.endsWith(File.separator)) {
-                dataPath += System.getProperty("user.name") +  "-cnd-test-downloads";
-            } else {
-                dataPath += File.separator + System.getProperty("user.name") +  "-cnd-test-downloads";
-            }
-        }
-        File fileDataPath = new File(dataPath);
-        if (!fileDataPath.exists()) {
-            fileDataPath.mkdirs();
-        }
         String createdFolder = dataPath+"/"+packageName;
         final AtomicBoolean finish = new AtomicBoolean(false);
         ExecutionListener listener = new ExecutionListener() {
