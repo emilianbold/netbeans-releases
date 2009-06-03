@@ -131,6 +131,7 @@ public abstract class J2eePlatformImpl {
      * class.
      *
      * @return list of supported J2EE specification versions.
+     * @deprecated override {@link #getSupportedProfiles()} and {@link #getSupportedProfiles(java.lang.Object)}
      */
     public abstract Set<String> getSupportedSpecVersions();
     
@@ -147,6 +148,7 @@ public abstract class J2eePlatformImpl {
      * @param moduleType one of the constants defined in 
      *   {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule}
      * @return list of supported J2EE specification versions.
+     * @deprecated override {@link #getSupportedProfiles()} and {@link #getSupportedProfiles(java.lang.Object)}
      */
     public Set <String> getSupportedSpecVersions(Object moduleType) {
         return getSupportedSpecVersions();
@@ -155,7 +157,7 @@ public abstract class J2eePlatformImpl {
     public Set<Profile> getSupportedProfiles() {
         Set<Profile> set = new HashSet<Profile>();
         for (String spec : getSupportedSpecVersions()) {
-            Profile profile = Profile.fromDeprecated(spec);
+            Profile profile = Profile.fromPropertiesString(spec);
             if (profile != null) {
                 set.add(profile);
             }
@@ -166,7 +168,7 @@ public abstract class J2eePlatformImpl {
     public Set<Profile> getSupportedProfiles(Object moduleType) {
         Set<Profile> set = new HashSet<Profile>();
         for (String spec : getSupportedSpecVersions(moduleType)) {
-            Profile profile = Profile.fromDeprecated(spec);
+            Profile profile = Profile.fromPropertiesString(spec);
             if (profile != null) {
                 set.add(profile);
             }

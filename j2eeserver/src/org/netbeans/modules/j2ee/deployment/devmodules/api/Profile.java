@@ -115,16 +115,4 @@ public final class Profile implements Comparable<Profile> {
             return null;
         }
     }
-
-    public static Profile fromDeprecated(String value) {
-        if (J2eeModule.J2EE_13.equals(value)) {
-            return J2EE_13;
-        } else if (J2eeModule.J2EE_14.equals(value)) {
-            return J2EE_14;
-        } else if (J2eeModule.JAVA_EE_5.equals(value)) {
-            return JAVA_EE_5;
-        }
-
-        return null;
-    }
 }
