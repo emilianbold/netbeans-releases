@@ -32,6 +32,8 @@ import org.junit.Test;
 import org.netbeans.api.java.source.*;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.source.save.PositionEstimator;
+import org.netbeans.modules.java.source.query.CommentHandler;
+import org.netbeans.modules.java.source.builder.CommentHandlerService;
 
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
@@ -66,18 +68,49 @@ public class CommentsManipulationTest extends GeneratorTest {
         return "";
     }
 
+    @Test
+    public void testCollector() throws Exception {
+        File testFile = new File(getWorkDir(), "Test.java");
+        String origin = "/**" +
+                " * This is comment *" +
+                "/*" +
+                "public class EncapsulateField {\n" +
+                "\n\n\n//TODO: Hello world" +
+                "\n\n" +
+                "/** Level of encapsulation */\n\n\n\n\n\n" +
+                "public int encapsulate = 5;\n\n //TODO: Implement body" +
+                "}\n";
+        TestUtilities.copyStringToFile(testFile, origin);
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.PARSED);
+                CommentCollector cc = new CommentCollector();
+                cc.collect(workingCopy);                
+//                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+//                GeneratorUtilities gu = GeneratorUtilities.get(workingCopy);
+//                CompilationUnitTree tree = gu.importComments(cut, cut);
+//                tree = gu.importFQNs(tree);
+            }
+        };
+        ModificationResult mr = src.runModificationTask(task);        
+    }
+
     /**
      * Simulates encapsulate field refactoring with copy javadoc feature.
      *
      * @throws Exception if something goes wrong.
      */
-/*    @Test
-    public void testEncapsulateField() throws Exception {
-        File testFile = new File(getWorkDir(), "Test.java");
-        String origin =
-                "public class EncapsulateField {\n" +
-                        "\n" +
-                        "*//** Level of encapsulation *//*\n" +
+    /*    @Test
+public void testEncapsulateField() throws Exception {
+File testFile = new File(getWorkDir(), "Test.java");
+String origin =
+"public class EncapsulateField {\n" +
+    "\n" +
+    "*//**
+     * Level of encapsulation
+     *//*\n" +
                         "public int encapsulate = 5;" +
                         "}\n";
         TestUtilities.copyStringToFile(testFile, origin);
@@ -113,7 +146,6 @@ public class CommentsManipulationTest extends GeneratorTest {
         System.out.println(res);
 //        assertEquals(golden, res);
     }*/
-
     private Tree createSetter(TreeMaker make, String name) {
         VariableTree parameter = make.Variable(make.Modifiers(EnumSet.of(Modifier.FINAL)), "encapsulate", make.PrimitiveType(TypeKind.INT), null);
         return make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC)),
@@ -138,9 +170,8 @@ public class CommentsManipulationTest extends GeneratorTest {
         throw new IllegalStateException("There is no array declaration in expected place.");
 
     }
-
-    @Test
-    public void testAddCommentOnClassTree() throws Exception {
+    
+    private void testAddCommentOnClassTree() throws Exception {
         File testFile = new File(getWorkDir(), "Test.java");
         String origin =
                 "public class EncapsulateField {\n" +
@@ -197,7 +228,7 @@ public class CommentsManipulationTest extends GeneratorTest {
             }
 
         };
-        src.runModificationTask(task).commit();        
+        src.runModificationTask(task).commit();
         System.out.println(TestUtilities.copyFileToString(testFile));
     }
 
