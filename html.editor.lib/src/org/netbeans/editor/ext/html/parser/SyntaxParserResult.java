@@ -36,45 +36,67 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.editor.ext.html.parser;
 
-package org.netbeans.editor.ext.html;
-
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import org.netbeans.editor.ext.html.test.TestBase;
+import java.util.List;
+import org.netbeans.editor.ext.html.dtd.DTD;
 
 /**
- *
- * @author marekfukala
+ * Html parser result.
+ * 
+ * @author mfukala@netbeans.org
  */
-public class HtmlSyntaxSupportTest extends TestBase {
+public class SyntaxParserResult {
 
-    public HtmlSyntaxSupportTest() {
-        super(HtmlSyntaxSupportTest.class.getName());
+    private static final String FALLBACK_DOCTYPE =
+            "-//W3C//DTD HTML 4.01 Transitional//EN";  // NOI18N
+    
+    private CharSequence source;
+    private List<SyntaxElement> elements;
+    private String publicID;
+    private AstNode astRoot;
+
+    public SyntaxParserResult(CharSequence source, List<SyntaxElement> elements) {
+        this.source = source;
+        this.elements = elements;
     }
 
-    public void testCheckOpenCompletion() throws BadLocationException {
-        Document doc = createDocument();
-        
-        doc.insertString(0, "<", null);
-        assertTrue(HtmlSyntaxSupport.checkOpenCompletion(doc, 1, "<"));
-
-        doc.insertString(1, "div", null);
-        assertFalse(HtmlSyntaxSupport.checkOpenCompletion(doc, 4, "div"));
-
-        doc.insertString(4, " ", null);
-        assertTrue(HtmlSyntaxSupport.checkOpenCompletion(doc, 5, " "));
-
-        doc.insertString(5, "/>", null);
-        assertFalse(HtmlSyntaxSupport.checkOpenCompletion(doc, 7, "/>"));
-
-        doc.insertString(7, "</", null);
-        assertTrue(HtmlSyntaxSupport.checkOpenCompletion(doc, 9, "</"));
-
-        doc.insertString(9, "div> &", null);
-        assertTrue(HtmlSyntaxSupport.checkOpenCompletion(doc, 15, "div> &"));
-
+    public CharSequence getSource() {
+        return source;
     }
 
+    public List<SyntaxElement> getElements() {
+        return elements;
+    }
+
+    public synchronized AstNode getASTRoot() {
+        if(this.astRoot == null) {
+            this.astRoot = SyntaxTree.makeTree(getElements(), getDTD());
+        }
+        return astRoot;
+    }
+
+    public synchronized String getPublicID() {
+        if (this.publicID == null) {
+            for (SyntaxElement e : elements) {
+                if (e.type() == SyntaxElement.TYPE_DECLARATION) {
+                    String _publicID = ((SyntaxElement.Declaration) e).getPublicIdentifier();
+                    if (_publicID != null) {
+                        this.publicID = _publicID;
+                        break;
+                    }
+                }
+            }
+        }
+        return this.publicID;
+    }
+
+    public DTD getDTD() {
+        if(getPublicID() == null) {
+            return org.netbeans.editor.ext.html.dtd.Registry.getDTD(FALLBACK_DOCTYPE, null);
+        } else {
+            return org.netbeans.editor.ext.html.dtd.Registry.getDTD(getPublicID(), null);
+        }
+    }
     
 }

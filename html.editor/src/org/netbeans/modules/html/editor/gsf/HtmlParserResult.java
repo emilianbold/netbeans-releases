@@ -39,7 +39,6 @@
 package org.netbeans.modules.html.editor.gsf;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -50,14 +49,13 @@ import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.SyntaxElement.TagAttribute;
-import org.netbeans.editor.ext.html.parser.SyntaxTree;
+import org.netbeans.editor.ext.html.parser.SyntaxParserResult;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -65,20 +63,13 @@ import org.openide.filesystems.FileObject;
  */
 public class HtmlParserResult extends ParserResult {
 
-    private static final String FALLBACK_DOCTYPE = "-//W3C//DTD HTML 4.01 Transitional//EN";  // NOI18N
     private static final String ID_ATTR_NAME = "id"; //NOI18N
-    private List<SyntaxElement> elements;
-    private AstNode parseTreeRoot = null;
-    private DTD dtd = null;
+    private SyntaxParserResult result;
     private List<Error> errors;
 
-    HtmlParserResult(Parser parser, Snapshot snapshot, List<SyntaxElement> elements) {
+    HtmlParserResult(Parser parser, Snapshot snapshot, SyntaxParserResult result) {
         super(snapshot);
-        this.elements = elements;
-
-        //init the parse tree se we are able to provide the diagnostics
-        //consider toPhase usage here.
-        root();
+        this.result = result;
     }
 
     /** @return a root node of the hierarchical parse tree of the document.
@@ -87,40 +78,18 @@ public class HtmlParserResult extends ParserResult {
      * Use the flat parse tree results if you do not need the tree structure since
      * the postprocessing takes some time and is done lazily.
      */
-    public synchronized AstNode root() {
-        if (parseTreeRoot == null) {
-            parseTreeRoot = SyntaxTree.makeTree(elementsList(), dtd());
-            //analyze the parser result for errors if not disable by hint
-            analyzeParseResult();
-        }
-        return parseTreeRoot;
+    public AstNode root() {
+        return result.getASTRoot();
     }
 
     /** @return a list of SyntaxElement-s representing parse elements of the html source. */
     public List<SyntaxElement> elementsList() {
-        return this.elements;
+        return result.getElements();
     }
 
     /** @return an instance of DTD bound to the html document. */
-    public synchronized DTD dtd() {
-        if (dtd == null) {
-            //find document type declaration
-            for (SyntaxElement e : elementsList()) {
-                if (e.type() == SyntaxElement.TYPE_DECLARATION) {
-                    String publicID = ((SyntaxElement.Declaration) e).getPublicIdentifier();
-                    if (publicID != null) {
-                        dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(publicID, null);
-                        break;
-                    }
-                }
-            }
-
-            if (dtd == null) {
-                //nothing found, use fallback dtd
-                dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(FALLBACK_DOCTYPE, null);
-            }
-        }
-        return dtd;
+    public DTD dtd() {
+        return result.getDTD();
     }
 
     /** @return a set of html document element's ids. */
@@ -138,7 +107,10 @@ public class HtmlParserResult extends ParserResult {
     }
 
     @Override
-    public List<? extends Error> getDiagnostics() {
+    public synchronized List<? extends Error> getDiagnostics() {
+        if(errors == null) {
+            errors = new ArrayList<Error>(findErrors());
+        }
         return errors;
     }
 
@@ -147,7 +119,7 @@ public class HtmlParserResult extends ParserResult {
         //todo
     }
 
-    private void analyzeParseResult() {
+    private List<Error> findErrors() {
         final List<Error> _errors = new ArrayList<Error>();
         AstNodeUtils.visitChildren(root(),
                 new AstNodeVisitor() {
@@ -178,7 +150,7 @@ public class HtmlParserResult extends ParserResult {
                     }
                 });
 
-        this.errors = _errors;
+        return _errors;
 
     }
 }

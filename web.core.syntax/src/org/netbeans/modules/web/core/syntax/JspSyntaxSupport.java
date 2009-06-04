@@ -49,7 +49,6 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
-import javax.swing.JEditorPane;
 import javax.swing.text.JTextComponent;
 import javax.servlet.jsp.tagext.*;
 import org.netbeans.api.lexer.Language;
@@ -73,7 +72,6 @@ import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
-import org.netbeans.editor.ext.html.HtmlTokenContext;
 import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.html.editor.completion.HtmlCompletionItem;
@@ -324,25 +322,6 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
         return null;
     }
 
-    /** Returns SyntaxSupport corresponding to content type of JSP data object.
-     *  HtmlSyntaxSupport is used when we can't find it. */
-    protected ExtSyntaxSupport getContentLanguageSyntaxSupport() {
-        if (contentLanguageSyntaxSupport != null) {
-            return contentLanguageSyntaxSupport;
-        }
-
-        EditorKit kit =
-                JEditorPane.createEditorKitForContentType(JspUtils.getContentLanguage());
-        if (kit instanceof BaseKit) {
-            SyntaxSupport support = ((BaseKit)kit).createSyntaxSupport(getDocument());
-            if (support != null && support instanceof ExtSyntaxSupport) {
-                contentLanguageSyntaxSupport = (ExtSyntaxSupport) support;
-                return contentLanguageSyntaxSupport;
-            }
-        }
-        return (ExtSyntaxSupport)get( org.netbeans.editor.ext.html.HtmlSyntaxSupport.class );
-    }
-
     /** This method decides what kind of completion (html, java, jsp-tag, ...) should be opened
      * or whether the completion window should be closed if it is opened.
      */
@@ -360,15 +339,6 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
         if (item == null) return COMPLETION_HIDE;
 
         TokenContextPath tcp = item.getTokenContextPath();
-
-        if(tcp.contains(HtmlTokenContext.contextPath)) {
-            //we are in content language
-            if (err.isLoggable(Level.FINE)) err.log(Level.FINE, "CONTENTL_COMPLETION_CONTEXT");   // NOI18N
-            ExtSyntaxSupport support = getContentLanguageSyntaxSupport();
-            if (support != null) {
-                return support.checkCompletion( target, typedText, visible );
-            }
-        }
 
         if(tcp.contains(JavaTokenContext.contextPath)) {
             return COMPLETION_CANCEL; //the JavaCompletionProvider handles this
@@ -1859,31 +1829,28 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
 
         TokenItem token = getItemAtOrBefore((offset<getDocument().getLength())?offset+1:offset);
         if (token != null){
-            if (token.getTokenContextPath().contains(HtmlTokenContext.contextPath)){
-                r_value = getContentLanguageSyntaxSupport().findMatchingBlock(offset, simpleSearch);
+            //do we need to match jsp comment?
+            if (token.getTokenID() == JspTagTokenContext.COMMENT) {
+                return findMatchingJspComment(token, offset);
+            }
+            // Is it matching of scriptlet delimiters?
+            if (token.getTokenContextPath().contains(JspTagTokenContext.contextPath)
+                    && token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL2_ID){
+                return findMatchingScripletDelimiter(token);
+            }
+            // Try to match the tags.
+            if (token.getTokenContextPath().contains(JspTagTokenContext.contextPath)){
+                return findMatchingTag(token);
             } else {
-                //do we need to match jsp comment?
-                if (token.getTokenID() == JspTagTokenContext.COMMENT) {
-                    return findMatchingJspComment(token, offset);
-                }
-                // Is it matching of scriptlet delimiters?
-                if (token.getTokenContextPath().contains(JspTagTokenContext.contextPath)
-                        && token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL2_ID){
-                    return findMatchingScripletDelimiter(token);
-                }
-                // Try to match the tags.
-                if (token.getTokenContextPath().contains(JspTagTokenContext.contextPath)){
-                    return findMatchingTag(token);
+                if (isScriptingOrContentToken(token)) {
+                    useCustomBracketFinder = false;
                 } else {
-                    if (isScriptingOrContentToken(token)) {
-                        useCustomBracketFinder = false;
-                    } else {
-                        useCustomBracketFinder = true;
-                    }
-                    r_value =  super.findMatchingBlock(offset, simpleSearch);
+                    useCustomBracketFinder = true;
                 }
+                r_value =  super.findMatchingBlock(offset, simpleSearch);
             }
         }
+
 
         return r_value;
     }
