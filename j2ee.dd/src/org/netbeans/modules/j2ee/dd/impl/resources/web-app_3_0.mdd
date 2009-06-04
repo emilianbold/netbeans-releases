@@ -132,17 +132,20 @@
                     org.netbeans.modules.j2ee.dd.api.web.FilterMapping
                 </implements>
                 <user-code>
-public void setUrlPatterns(java.lang.String[] values) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-    throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.web.WebApp.VERSION_2_5);
+public String getServletName() {
+    return (String)this.getValue(SERVLET_NAME, 0);
 }
-public java.lang.String[] getUrlPatterns() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-    throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.web.WebApp.VERSION_2_5);
+
+public void setServletName(String value) {
+    this.setValue(SERVLET_NAME, 0, value);
 }
-public void setServletNames(java.lang.String[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-    throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.web.WebApp.VERSION_2_5);
+
+public String getUrlPattern() {
+    return (String)this.getValue(URL_PATTERN, 0);
 }
-public java.lang.String[] getServletNames() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-    throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.web.WebApp.VERSION_2_5);
+
+public void setUrlPattern(String value) {
+    this.setValue(URL_PATTERN, 0, value);
 }
                 </user-code>
         </meta-element>

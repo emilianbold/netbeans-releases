@@ -5,10 +5,10 @@
 	    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	    elementFormDefault="qualified"
 	    attributeFormDefault="unqualified"
-	    version="2.5">
+	    version="3.0">
   <xsd:annotation>
     <xsd:documentation>
-      @(#)web-app_2_5.xsds	1.68 07/03/09
+      @(#)web-common_3_0.xsds	1.68 08/26/08
     </xsd:documentation>
   </xsd:annotation>
 
@@ -60,10 +60,10 @@
     <xsd:documentation>
       <![CDATA[
 
-	This is the XML Schema for the Servlet 2.5 deployment descriptor.
-	The deployment descriptor must be named "WEB-INF/web.xml" in the
+	This is the common XML Schema for the Servlet 3.0 deployment descriptor.
+	This file is in turn used by web.xml and web-fragment.xml
 	web application's war file.  All Servlet deployment descriptors
-	must indicate the web application schema by using the Java EE
+	must indicate the web common schema by using the Java EE
 	namespace:
 
 	http://java.sun.com/xml/ns/javaee
@@ -74,7 +74,7 @@
 	    <web-app xmlns="http://java.sun.com/xml/ns/javaee"
 	      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	      xsi:schemaLocation="..."
-	      version="2.5">
+	      version="3.0">
 	      ...
 	    </web-app>
 
@@ -82,7 +82,7 @@
 	the schema using the xsi:schemaLocation attribute for Java EE
 	namespace with the following location:
 
-	http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd
+	http://java.sun.com/xml/ns/javaee/web-common_3_0.xsd
 
 	]]>
     </xsd:documentation>
@@ -108,184 +108,6 @@
 
   <xsd:include schemaLocation="javaee_5.xsd"/>
   <xsd:include schemaLocation="jsp_2_1.xsd"/>
-
-
-<!-- **************************************************** -->
-
-  <xsd:element name="web-app" type="javaee:web-appType">
-    <xsd:annotation>
-      <xsd:documentation>
-
-	The web-app element is the root of the deployment
-	descriptor for a web application.  Note that the sub-elements
-	of this element can be in the arbitrary order. Because of
-	that, the multiplicity of the elements of distributable,
-	session-config, welcome-file-list, jsp-config, login-config,
-	and locale-encoding-mapping-list was changed from "?" to "*"
-	in this schema.  However, the deployment descriptor instance
-	file must not contain multiple elements of session-config,
-	jsp-config, and login-config. When there are multiple elements of
-	welcome-file-list or locale-encoding-mapping-list, the container
-	must concatenate the element contents.  The multiple occurence
-	of the element distributable is redundant and the container
-	treats that case exactly in the same way when there is only
-	one distributable.
-
-      </xsd:documentation>
-    </xsd:annotation>
-
-    <xsd:unique name="web-app-servlet-name-uniqueness">
-      <xsd:annotation>
-	<xsd:documentation>
-
-	  The servlet element contains the name of a servlet.
-	  The name must be unique within the web application.
-
-	</xsd:documentation>
-      </xsd:annotation>
-      <xsd:selector xpath="javaee:servlet"/>
-      <xsd:field    xpath="javaee:servlet-name"/>
-    </xsd:unique>
-
-    <xsd:unique name="web-app-filter-name-uniqueness">
-      <xsd:annotation>
-	<xsd:documentation>
-
-	  The filter element contains the name of a filter.
-	  The name must be unique within the web application.
-
-	</xsd:documentation>
-      </xsd:annotation>
-      <xsd:selector xpath="javaee:filter"/>
-      <xsd:field    xpath="javaee:filter-name"/>
-    </xsd:unique>
-
-    <xsd:unique name="web-app-ejb-local-ref-name-uniqueness">
-      <xsd:annotation>
-	<xsd:documentation>
-
-	  The ejb-local-ref-name element contains the name of an EJB
-	  reference. The EJB reference is an entry in the web
-	  application's environment and is relative to the
-	  java:comp/env context.  The name must be unique within
-	  the web application.
-
-	  It is recommended that name is prefixed with "ejb/".
-
-	</xsd:documentation>
-      </xsd:annotation>
-      <xsd:selector xpath="javaee:ejb-local-ref"/>
-      <xsd:field    xpath="javaee:ejb-ref-name"/>
-    </xsd:unique>
-
-    <xsd:unique name="web-app-ejb-ref-name-uniqueness">
-      <xsd:annotation>
-	<xsd:documentation>
-
-	  The ejb-ref-name element contains the name of an EJB
-	  reference. The EJB reference is an entry in the web
-	  application's environment and is relative to the
-	  java:comp/env context.  The name must be unique within
-	  the web application.
-
-	  It is recommended that name is prefixed with "ejb/".
-
-	</xsd:documentation>
-      </xsd:annotation>
-      <xsd:selector xpath="javaee:ejb-ref"/>
-      <xsd:field    xpath="javaee:ejb-ref-name"/>
-    </xsd:unique>
-
-    <xsd:unique name="web-app-resource-env-ref-uniqueness">
-      <xsd:annotation>
-	<xsd:documentation>
-
-	  The resource-env-ref-name element specifies the name of
-	  a resource environment reference; its value is the
-	  environment entry name used in the web application code.
-	  The name is a JNDI name relative to the java:comp/env
-	  context and must be unique within a web application.
-
-	</xsd:documentation>
-      </xsd:annotation>
-      <xsd:selector xpath="javaee:resource-env-ref"/>
-      <xsd:field    xpath="javaee:resource-env-ref-name"/>
-    </xsd:unique>
-
-    <xsd:unique name="web-app-message-destination-ref-uniqueness">
-      <xsd:annotation>
-	<xsd:documentation>
-
-	  The message-destination-ref-name element specifies the name of
-	  a message destination reference; its value is the
-	  environment entry name used in the web application code.
-	  The name is a JNDI name relative to the java:comp/env
-	  context and must be unique within a web application.
-
-	</xsd:documentation>
-      </xsd:annotation>
-      <xsd:selector xpath="javaee:message-destination-ref"/>
-      <xsd:field    xpath="javaee:message-destination-ref-name"/>
-    </xsd:unique>
-
-    <xsd:unique name="web-app-res-ref-name-uniqueness">
-      <xsd:annotation>
-	<xsd:documentation>
-
-	  The res-ref-name element specifies the name of a
-	  resource manager connection factory reference.  The name
-	  is a JNDI name relative to the java:comp/env context.
-	  The name must be unique within a web application.
-
-	</xsd:documentation>
-      </xsd:annotation>
-      <xsd:selector xpath="javaee:resource-ref"/>
-      <xsd:field    xpath="javaee:res-ref-name"/>
-    </xsd:unique>
-
-    <xsd:unique name="web-app-env-entry-name-uniqueness">
-      <xsd:annotation>
-	<xsd:documentation>
-
-	  The env-entry-name element contains the name of a web
-	  application's environment entry.  The name is a JNDI
-	  name relative to the java:comp/env context.  The name
-	  must be unique within a web application.
-
-	</xsd:documentation>
-      </xsd:annotation>
-
-      <xsd:selector xpath="javaee:env-entry"/>
-      <xsd:field    xpath="javaee:env-entry-name"/>
-    </xsd:unique>
-
-    <xsd:key name="web-app-role-name-key">
-      <xsd:annotation>
-	<xsd:documentation>
-
-	  A role-name-key is specified to allow the references
-	  from the security-role-refs.
-
-	</xsd:documentation>
-      </xsd:annotation>
-      <xsd:selector xpath="javaee:security-role"/>
-      <xsd:field    xpath="javaee:role-name"/>
-    </xsd:key>
-
-    <xsd:keyref name="web-app-role-name-references"
-		refer="javaee:web-app-role-name-key">
-      <xsd:annotation>
-	<xsd:documentation>
-
-	  The keyref indicates the references from
-	  security-role-ref to a specified role-name.
-
-	</xsd:documentation>
-      </xsd:annotation>
-      <xsd:selector xpath="javaee:servlet/javaee:security-role-ref"/>
-      <xsd:field    xpath="javaee:role-link"/>
-    </xsd:keyref>
-  </xsd:element>
 
 
 <!-- **************************************************** -->
@@ -490,10 +312,7 @@
     <xsd:sequence>
       <xsd:element name="filter-name"
 		   type="javaee:filter-nameType"/>
-<!-- TODO: fix this!
       <xsd:choice minOccurs="1" maxOccurs="unbounded">
--->
-      <xsd:choice>
 	<xsd:element name="url-pattern"
 		     type="javaee:url-patternType"/>
 	<xsd:element name="servlet-name"
@@ -558,6 +377,12 @@
 
 	  </xsd:documentation>
 	</xsd:annotation>
+      <xsd:element name="async-support"
+		   type="javaee:generic-booleanType"
+		   minOccurs="0"/>
+      <xsd:element name="async-timeout"
+		   type="javaee:xsdIntegerType"
+		   minOccurs="0"/>
       </xsd:element>
 
       <xsd:element name="init-param"
@@ -970,6 +795,15 @@
 	  </xsd:documentation>
 	</xsd:annotation>
       </xsd:element>
+      <xsd:element name="enabled"
+		   type="javaee:generic-booleanType"
+		   minOccurs="0"/>
+      <xsd:element name="async-support"
+		   type="javaee:generic-booleanType"
+		   minOccurs="0"/>
+      <xsd:element name="async-timeout"
+		   type="javaee:xsdIntegerType"
+		   minOccurs="0"/>
       <xsd:element name="run-as"
 		   type="javaee:run-asType"
 		   minOccurs="0"/>
@@ -1108,7 +942,7 @@
       </xsd:documentation>
     </xsd:annotation>
     <xsd:restriction base="xsd:token">
-      <xsd:enumeration value="2.5"/>
+      <xsd:enumeration value="3.0"/>
     </xsd:restriction>
   </xsd:simpleType>
 
