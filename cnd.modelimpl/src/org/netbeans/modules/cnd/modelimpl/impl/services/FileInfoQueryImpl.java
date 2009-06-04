@@ -228,17 +228,21 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                                 return Collections.<CsmReference>emptyList();
                             } else if (handlers.size() == 1) {
                                 APTPreprocHandler handler = handlers.iterator().next();
-                                APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(handler, true);
+                                // ask for concurrent entry if absent
+                                APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(handler, Boolean.FALSE);
                                 APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, cacheEntry);
                                 out = walker.collectMacros();
+                                // remember walk info
                                 fileImpl.setAPTCacheEntry(handler, cacheEntry, false);
                             } else {
                                 Comparator<CsmReference> comparator = new OffsetableComparator<CsmReference>();
                                 TreeSet<CsmReference> result = new TreeSet<CsmReference>(comparator);
                                 for (APTPreprocHandler handler : handlers) {
-                                    APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(handler, true);
+                                    // ask for concurrent entry if absent
+                                    APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(handler, Boolean.FALSE);
                                     APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, cacheEntry);
                                     result.addAll(walker.collectMacros());
+                                    // remember walk info
                                     fileImpl.setAPTCacheEntry(handler, cacheEntry, false);
                                 }
                                 out = new ArrayList<CsmReference>(result);

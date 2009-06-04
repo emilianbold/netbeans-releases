@@ -422,8 +422,9 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             return code;
         }
         ProjectBase base = (ProjectBase) project;
-        
-        APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(handler, false);
+
+        // create concurrent entry if absent
+        APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(handler, Boolean.FALSE);
         StopOnOffsetParseFileWalker walker = new StopOnOffsetParseFileWalker(base, aptLight, fileImpl, offset, handler,cacheEntry);
         walker.visit();
         // we do not remember cache entry because it is stopped before end of file
