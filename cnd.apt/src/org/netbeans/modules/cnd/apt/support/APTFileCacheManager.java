@@ -155,7 +155,7 @@ public final class APTFileCacheManager {
                 }
             }
         }
-        assert out != null;
+        assert createExclusiveIfAbsent == null || out != null;
         return out;
     }
 

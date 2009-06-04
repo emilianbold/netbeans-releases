@@ -924,7 +924,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             return null;
         }
         APTFileCacheEntry out = APTFileCacheManager.getEntry(getAbsolutePath(), preprocHandler, createExclusiveIfAbsent);
-        assert out != null;
+        assert createExclusiveIfAbsent == null || out != null;
         return out;
     }
 
