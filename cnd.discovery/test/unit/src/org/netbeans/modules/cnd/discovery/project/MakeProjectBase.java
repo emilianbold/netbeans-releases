@@ -41,7 +41,10 @@ package org.netbeans.modules.cnd.discovery.project;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,6 +60,7 @@ import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
@@ -66,6 +70,7 @@ import org.openide.WizardDescriptor;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -134,8 +139,13 @@ public abstract class MakeProjectBase extends NbTestCase { //BaseTestCase {
     }
 
     public void performTestProject(String URL, List<String> additionalScripts){
+        Map<String, String> tools = findTools();
+        if (tools == null) {
+            System.err.println("Test did not run because required tools do not found");
+            return;
+        }
         try {
-            final String path = download(URL, additionalScripts);
+            final String path = download(URL, additionalScripts, tools);
             final File configure = new File(path+File.separator+"configure");
             final File makeFile = new File(path+File.separator+"Makefile");
             if (!configure.exists()) {
@@ -229,6 +239,62 @@ public abstract class MakeProjectBase extends NbTestCase { //BaseTestCase {
         return false;
     }
 
+    protected List<String> requiredTools(){
+        List<String> list = new ArrayList<String>();
+        list.add("wget");
+        list.add("gzip");
+        list.add("tar");
+        list.add("rm");
+        return list;
+    }
+
+    private Map<String, String> findTools(){
+        Map<String, String> map = new HashMap<String, String>();
+        for(String t: requiredTools()){
+            map.put(t, null);
+        }
+        if (findTools(map)){
+            return map;
+        }
+        return null;
+    }
+
+    private boolean findTools(Map<String, String> map){
+        if (map.isEmpty()) {
+            return true;
+        }
+        ArrayList<String> list = new ArrayList<String>(Path.getPath());
+        String additionalPath = CndCoreTestUtils.getDownloadBase().getAbsolutePath()+File.separatorChar+"cmake-2.6.4/bin";
+        list.add(additionalPath);
+        for (String path : list) {
+            for(Map.Entry<String, String> entry : map.entrySet()){
+                if (entry.getValue() == null) {
+                    String task = path+File.separatorChar+entry.getKey();
+                    File tool = new File(task);
+                    if (tool.exists() && tool.isFile()) {
+                        entry.setValue(task);
+                    } else if (Utilities.isWindows()) {
+                        task = task+".exe";
+                        tool = new File(task);
+                        if (tool.exists() && tool.isFile()) {
+                            entry.setValue(task);
+                        }   
+                    }
+                }
+            }
+        }
+        boolean res = true;
+        for(Map.Entry<String, String> entry : map.entrySet()){
+           if (entry.getValue() == null) {
+               System.err.println("Not found required tool: "+entry.getKey());
+               res =false;
+           } else {
+               System.err.println("Found required tool: "+entry.getKey()+"="+entry.getValue());
+           }
+        }
+        return res;
+    }
+
     protected void perform(CsmProject csmProject) {
         if (TRACE) {
             System.err.println("Model content:");
@@ -244,7 +310,7 @@ public abstract class MakeProjectBase extends NbTestCase { //BaseTestCase {
         }
     }
 
-    private String download(String urlName, List<String> additionalScripts) throws IOException {
+    private String download(String urlName, List<String> additionalScripts, Map<String, String> tools) throws IOException {
         String zipName = urlName.substring(urlName.lastIndexOf('/')+1);
         String tarName = zipName.substring(0, zipName.lastIndexOf('.'));
         String packageName = tarName.substring(0, tarName.lastIndexOf('.'));
@@ -265,34 +331,51 @@ public abstract class MakeProjectBase extends NbTestCase { //BaseTestCase {
         if (!fileCreatedFolder.exists()){
             fileCreatedFolder.mkdirs();
         }
+        String command;
         if (fileCreatedFolder.list().length == 0){
-            System.err.println(dataPath+"#wget "+urlName);
-            ne = new NativeExecutor(dataPath,"wget", urlName, new String[0], "wget", "run", false, false);
+            command = tools.get("wget");
+            System.err.println(dataPath+"#"+command+" "+urlName);
+            ne = new NativeExecutor(dataPath, command, urlName, new String[0], "wget", "run", false, false);
             waitExecution(ne, listener, finish);
-            System.err.println(dataPath+"#gzip -d "+zipName);
-            ne = new NativeExecutor(dataPath,"gzip", "-d "+zipName, new String[0], "gzip", "run", false, false);
+
+            command = tools.get("gzip");
+            System.err.println(dataPath+"#"+command+" -d "+zipName);
+            ne = new NativeExecutor(dataPath, command, "-d "+zipName, new String[0], "gzip", "run", false, false);
             waitExecution(ne, listener, finish);
-            System.err.println(dataPath+"#tar xf "+tarName);
-            ne = new NativeExecutor(dataPath,"tar", "xf "+tarName, new String[0], "tar", "run", false, false);
+
+            command = tools.get("tar");
+            System.err.println(dataPath+"#"+command+" xf "+tarName);
+            ne = new NativeExecutor(dataPath, command, "xf "+tarName, new String[0], "tar", "run", false, false);
             waitExecution(ne, listener, finish);
-            if (additionalScripts != null) {
-                for(String s: additionalScripts){
-                    int i = s.indexOf(' ');
-                    String command = s.substring(0,i);
-                    String arguments = s.substring(i+1);
-                    if (command.startsWith(".")) {
-                        command = createdFolder+"/"+command;
-                    }
-                    System.err.println(createdFolder+"#"+command+" "+arguments);
-                    ne = new NativeExecutor(createdFolder, command, arguments, new String[0], command, "run", false, false);
-                    waitExecution(ne, listener, finish);
+
+            execAdditionalScripts(finish, listener, createdFolder, additionalScripts, tools);
+        } else {
+            final File configure = new File(createdFolder+File.separator+"configure");
+            final File makeFile = new File(createdFolder+File.separator+"Makefile");
+            if (!configure.exists()) {
+                if (!makeFile.exists()){
+            execAdditionalScripts(finish, listener, createdFolder, additionalScripts, tools);
                 }
             }
         }
-        System.err.println(createdFolder+"#rm -rf nbproject");
-        ne = new NativeExecutor(createdFolder, "rm", "-rf nbproject", new String[0], "rm", "run", false, false);
+
+        command = tools.get("rm");
+        System.err.println(createdFolder+"#"+command+" -rf nbproject");
+        ne = new NativeExecutor(createdFolder, tools.get("rm"), "-rf nbproject", new String[0], "rm", "run", false, false);
         waitExecution(ne, listener, finish);
         return createdFolder;
+    }
+    private void execAdditionalScripts(final AtomicBoolean finish, ExecutionListener listener, String createdFolder, List<String> additionalScripts, Map<String, String> tools) throws IOException {
+        if (additionalScripts != null) {
+            for(String s: additionalScripts){
+                int i = s.indexOf(' ');
+                String command = s.substring(0,i);
+                String arguments = s.substring(i+1);
+                System.err.println(createdFolder+"#"+tools.get(command)+" "+arguments);
+                NativeExecutor ne = new NativeExecutor(createdFolder, tools.get(command), arguments, new String[0], command, "run", false, false);
+                waitExecution(ne, listener, finish);
+            }
+        }
     }
 
     private void waitExecution(NativeExecutor ne, ExecutionListener listener, AtomicBoolean finish){

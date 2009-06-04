@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.discovery.project;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.junit.Test;
 
 /**
@@ -51,6 +52,13 @@ public class QT_QLifeTestCase extends MakeProjectBase {
 
     public QT_QLifeTestCase() {
         super("QLife");
+    }
+
+    @Override
+    protected List<String> requiredTools() {
+        List<String> res = new ArrayList<String>(super.requiredTools());
+        res.add("qmake");
+        return res;
     }
 
     @Test

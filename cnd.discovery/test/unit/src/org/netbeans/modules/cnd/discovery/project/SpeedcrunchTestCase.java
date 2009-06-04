@@ -53,11 +53,19 @@ public class SpeedcrunchTestCase extends MakeProjectBase {
         super("QT");
     }
 
+    @Override
+    protected List<String> requiredTools() {
+        List<String> res = new ArrayList<String>(super.requiredTools());
+        res.add("qmake");
+        res.add("cmake");
+        return res;
+    }
+
     @Test
     public void testSpeedcrunch(){
         List<String> list = new ArrayList<String>();
         // need QT4.3
-        list.add("../cmake-2.6.4/bin/cmake src/ -G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=\"-g3 -gdwarf-2\" -DCMAKE_C_FLAGS_DEBUG=\"-g3 -gdwarf-2\"");
+        list.add("cmake src/ -G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=\"-g3 -gdwarf-2\" -DCMAKE_C_FLAGS_DEBUG=\"-g3 -gdwarf-2\"");
         performTestProject("http://speedcrunch.googlecode.com/files/speedcrunch-0.10.1.tar.gz", list);
     }
 }
