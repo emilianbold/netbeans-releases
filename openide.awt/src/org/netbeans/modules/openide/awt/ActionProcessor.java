@@ -53,6 +53,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
 import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.annotations.LayerBuilder.File;
@@ -120,14 +121,24 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
         }
 
         VariableElement ve = (VariableElement)ee.getParameters().get(0);
+        DeclaredType dt = (DeclaredType)ve.asType();
+        String dtName = processingEnv.getElementUtils().getBinaryName((TypeElement)dt.asElement()).toString();
+        if ("java.util.Collection".equals(dtName)) {
+            f.stringvalue("type", dt.getTypeArguments().get(0).toString());
+            f.methodvalue("delegate", "org.openide.awt.Actions", "inject");
+            f.stringvalue("injectable", processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString());
+            f.stringvalue("selectionType", "ANY");
+            f.methodvalue("instanceCreate", "org.openide.awt.Actions", "context");
+            return;
+        }
+        if (!dt.getTypeArguments().isEmpty()) {
+            throw new LayerGenerationException("No type parameters allowed in " + ee);
+        }
+
         f.stringvalue("type", ve.asType().toString());
         f.methodvalue("delegate", "org.openide.awt.Actions", "inject");
         f.stringvalue("injectable", processingEnv.getElementUtils().getBinaryName((TypeElement)e).toString());
         f.stringvalue("selectionType", "EXACTLY_ONE");
         f.methodvalue("instanceCreate", "org.openide.awt.Actions", "context");
-/*        System.err.println("s   : " + ve.asType().toString());
-        System.err.println("type: " + ve.asType().getKind());
-        System.err.println("kind: " + Arrays.asList(ee.getParameters().get(0).getClass().getInterfaces()));
- */
     }
 }

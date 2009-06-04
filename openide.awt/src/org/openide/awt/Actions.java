@@ -436,7 +436,14 @@ public class Actions extends Object {
         return GeneralAction.context(fo);
     }
     static ContextActionPerformer<?> inject(final Map fo) {
-        return new InjectorExactlyOne(fo);
+        Object t = fo.get("selectionType"); // NOI18N
+        if (ContextSelection.EXACTLY_ONE.toString().equals(t)) {
+            return new InjectorExactlyOne(fo);
+        }
+        if (ContextSelection.ANY.toString().equals(t)) {
+            return new InjectorAny(fo);
+        }
+        throw new IllegalStateException("no selectionType parameter in " + fo); // NOI18N
     }
 
     
