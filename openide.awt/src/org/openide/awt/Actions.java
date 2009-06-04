@@ -85,6 +85,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Keymap;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.actions.BooleanStateAction;
 import org.openide.util.actions.SystemAction;
@@ -433,6 +434,9 @@ public class Actions extends Object {
     }
     static ContextAwareAction context(Map fo) {
         return GeneralAction.context(fo);
+    }
+    static ContextActionPerformer<?> inject(final Map fo) {
+        return new InjectorExactlyOne(fo);
     }
 
     

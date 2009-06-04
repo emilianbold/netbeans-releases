@@ -41,17 +41,9 @@ package org.netbeans.modules.openide.awt;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Set;
-import javax.annotation.processing.RoundEnvironment;
-import javax.lang.model.element.TypeElement;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
 import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
@@ -150,6 +142,50 @@ public class ActionProcessorTest extends NbTestCase {
         clone.actionPerformed(new ActionEvent(this, 200, ""));
         assertEquals("Local Action stays", 300, my.cnt);
         assertEquals("Global Action called", 200, Callback.cnt);
+    }
+
+    @ActionRegistration(
+        category="Tools",
+        displayName="#OnInt",
+        id="on-int"
+    )
+    public static final class Context implements ActionListener {
+        private final int context;
+        
+        public Context(Integer context) {
+            this.context = context;
+        }
+
+        static int cnt;
+
+        public void actionPerformed(ActionEvent e) {
+            cnt += context;
+        }
+
+    }
+
+    public void testContextAction() throws Exception {
+        FileObject fo = FileUtil.getConfigFile(
+            "Actions/Tools/on-int.instance"
+        );
+        assertNotNull("File found", fo);
+        Object obj = fo.getAttribute("instanceCreate");
+        assertNotNull("Attribute present", obj);
+        assertTrue("It is context aware action", obj instanceof ContextAwareAction);
+        ContextAwareAction a = (ContextAwareAction)obj;
+
+        InstanceContent ic = new InstanceContent();
+        AbstractLookup lkp = new AbstractLookup(ic);
+        Action clone = a.createContextAwareInstance(lkp);
+        ic.add(10);
+
+        assertEquals("Number lover!", clone.getValue(Action.NAME));
+        clone.actionPerformed(new ActionEvent(this, 300, ""));
+        assertEquals("Global Action not called", 10, Context.cnt);
+
+        ic.remove(10);
+        clone.actionPerformed(new ActionEvent(this, 200, ""));
+        assertEquals("Global Action stays same", 10, Context.cnt);
     }
 
 }

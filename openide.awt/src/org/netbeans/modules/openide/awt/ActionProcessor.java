@@ -40,6 +40,7 @@
 package org.netbeans.modules.openide.awt;
 
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 import java.util.Set;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
@@ -47,7 +48,12 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.ElementFilter;
 import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
@@ -82,11 +88,46 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                 f.methodvalue("fallback", "org.openide.awt.Actions", "alwaysEnabled");
                 f.stringvalue("key", ar.key());
             }
-            f.instanceAttribute("delegate", ActionListener.class);
+            try {
+                f.instanceAttribute("delegate", ActionListener.class);
+            } catch (LayerGenerationException ex) {
+                generateContext(e, f);
+            }
             f.boolvalue("noIconInMenu", !ar.iconInMenu());
             f.write();
         }
         return true;
     }
 
+    private void generateContext(Element e, File f) throws LayerGenerationException {
+        ExecutableElement ee = null;
+        for (ExecutableElement element : ElementFilter.constructorsIn(e.getEnclosedElements())) {
+            if (!element.getModifiers().contains(Modifier.PUBLIC)) {
+                continue;
+            }
+
+            if (element.getKind() == ElementKind.CONSTRUCTOR) {
+                if (ee != null) {
+                    throw new LayerGenerationException("Only one public constructor allowed in " + e); // NOI18N
+                }
+                ee = element;
+            }
+
+        }
+        
+        if (ee.getParameters().size() != 1) {
+            throw new LayerGenerationException("Constructor must have one argument: " + ee);
+        }
+
+        VariableElement ve = (VariableElement)ee.getParameters().get(0);
+        f.stringvalue("type", ve.asType().toString());
+        f.methodvalue("delegate", "org.openide.awt.Actions", "inject");
+        f.stringvalue("injectable", processingEnv.getElementUtils().getBinaryName((TypeElement)e).toString());
+        f.stringvalue("selectionType", "EXACTLY_ONE");
+        f.methodvalue("instanceCreate", "org.openide.awt.Actions", "context");
+/*        System.err.println("s   : " + ve.asType().toString());
+        System.err.println("type: " + ve.asType().getKind());
+        System.err.println("kind: " + Arrays.asList(ee.getParameters().get(0).getClass().getInterfaces()));
+ */
+    }
 }
