@@ -63,12 +63,12 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
  */
 public class ProcDataProviderSolaris implements ProcDataProvider.Engine {
 
-    private final ProcDataProvider provider;
+    private final DataRowConsumer consumer;
     private final int cpuCount;
     private final ServiceInfoDataStorage serviceInfoStorage;
 
-    public ProcDataProviderSolaris(ProcDataProvider provider, ServiceInfoDataStorage serviceInfoStorage, ExecutionEnvironment env) {
-        this.provider = provider;
+    public ProcDataProviderSolaris(DataRowConsumer consumer, ServiceInfoDataStorage serviceInfoStorage, ExecutionEnvironment env) {
+        this.consumer = consumer;
         this.serviceInfoStorage = serviceInfoStorage;
         int cpus = 1;
 
@@ -142,7 +142,7 @@ public class ProcDataProviderSolaris implements ProcDataProvider.Engine {
                                 Arrays.asList(usrPercent,
                                               sysPercent,
                                               threads));
-                        provider.notifyIndicators(row);
+                        consumer.consume(row);
                     }
                 }
             } catch (NoSuchElementException ex) {

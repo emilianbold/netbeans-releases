@@ -59,12 +59,12 @@ public class ProcDataProviderLinux implements ProcDataProvider.Engine {
 
     private static final BigInteger PERCENT = BigInteger.valueOf(100);
 
-    private final ProcDataProvider provider;
+    private final DataRowConsumer consumer;
     private final ServiceInfoDataStorage serviceInfoStorage;
     private final boolean decreaseThreads;
 
-    public ProcDataProviderLinux(ProcDataProvider provider, ServiceInfoDataStorage serviceInfoStorage) {
-        this.provider = provider;
+    public ProcDataProviderLinux(DataRowConsumer consumer, ServiceInfoDataStorage serviceInfoStorage) {
+        this.consumer = consumer;
         this.serviceInfoStorage = serviceInfoStorage;
         String[] idps = this.serviceInfoStorage == null || 
                 serviceInfoStorage.getValue(ServiceInfoDataStorage.IDP_NAMES) == null? null :
@@ -114,7 +114,7 @@ public class ProcDataProviderLinux implements ProcDataProvider.Engine {
                                 Arrays.asList(usrPercent,
                                               sysPercent,
                                               threads));
-                        provider.notifyIndicators(row);
+                        consumer.consume(row);
                     }
                 }
             } catch (IllegalArgumentException ex) {

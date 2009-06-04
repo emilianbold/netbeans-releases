@@ -77,7 +77,7 @@ import org.openide.windows.InputOutput;
  *
  * @author Alexey Vladykin
  */
-public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConfiguration> {
+public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConfiguration> implements DataRowConsumer {
 
     private static final String NAME = "ProcReader"; // NOI18N
     private static final DataTableMetadata TABLE = new DataTableMetadata(
@@ -278,7 +278,7 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
      *
      * @param row  new data row
      */
-    /*package*/ void notifyIndicators(DataRow row) {
+    public void consume(DataRow row) {
         super.notifyIndicators(Collections.singletonList(row));
     }
 
