@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -170,7 +169,7 @@ public class PersistentUtils {
         int handler = input.readInt();
         assert handler == FILE_BUFFER_FILE;
         CharSequence absPath = PersistentUtils.readUTF(input, FilePathCache.getManager());
-        buffer = new FileBufferFile(new File(absPath.toString()));
+        buffer = new FileBufferFile(absPath);
         return buffer;
     }
 
