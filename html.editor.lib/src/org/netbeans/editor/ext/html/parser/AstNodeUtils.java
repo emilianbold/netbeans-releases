@@ -38,9 +38,9 @@
  */
 package org.netbeans.editor.ext.html.parser;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
 import java.util.StringTokenizer;
 import org.netbeans.editor.ext.html.dtd.DTD;
 
@@ -189,8 +189,8 @@ public class AstNodeUtils {
         return null;
     }
 
-    public static List<DTD.Element> getPossibleOpenTagElements(AstNode root, int astPosition) {
-        List<DTD.Element> elements = new ArrayList<DTD.Element>();
+    public static Collection<DTD.Element> getPossibleOpenTagElements(AstNode root, int astPosition) {
+        HashSet<DTD.Element> elements = new HashSet<DTD.Element>();
 
         assert root.type() == AstNode.NodeType.ROOT;
 

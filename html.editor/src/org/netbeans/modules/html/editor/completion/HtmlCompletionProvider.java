@@ -141,7 +141,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
                     //(not ivoked by selecting a completion item in the list)
                     HtmlCompletionQuery.CompletionResult result = new HtmlCompletionQuery(doc, caretOffset).query();
                     if (result != null && result.getItems().size() > 0) {
-                        item = result.getItems().get(0);
+                        item = result.getItems().iterator().next();
                     }
                 } catch (ParseException ex) {
                     Exceptions.printStackTrace(ex);

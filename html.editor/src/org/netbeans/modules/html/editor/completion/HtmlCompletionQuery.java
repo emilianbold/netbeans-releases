@@ -143,7 +143,7 @@ public class HtmlCompletionQuery extends UserTask {
         TokenId id = item.id();
         boolean inside = ts.offset() < astOffset; // are we inside token or between tokens?
 
-        List<HtmlCompletionItem> result = null;
+        Collection<HtmlCompletionItem> result = null;
         int len = 1;
 
         //adjust the astOffset if at the end of the file
@@ -171,7 +171,7 @@ public class HtmlCompletionQuery extends UserTask {
             anchor = documentItemOffset;
             //we are inside a tagname, the real content is the position before the tag
             astOffset -= (preText.length() + 1); // +"<" len
-            List<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
+            Collection<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
             result = translateTags(documentItemOffset - 1,
                     filterElements(openTags, preText),
                     filterElements(dtd.getElementList(null),
@@ -180,7 +180,7 @@ public class HtmlCompletionQuery extends UserTask {
         } else if (id != HTMLTokenId.BLOCK_COMMENT && preText.endsWith("<")) { // NOI18N
             //complete open tags with no prefix
             anchor = offset;
-            List<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
+            Collection<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
             result = translateTags(offset - 1, openTags, dtd.getElementList(null));
 
         } else if ((id == HTMLTokenId.TEXT && preText.endsWith("</")) ||
@@ -304,7 +304,7 @@ public class HtmlCompletionQuery extends UserTask {
         }
 
         return result == null ? null : new CompletionResult(result, anchor);
-
+ 
     }
 
     private boolean usesLowerCase(HtmlParserResult result, int astOffset) {
@@ -409,7 +409,7 @@ public class HtmlCompletionQuery extends UserTask {
 
     }
 
-    private List<DTD.Element> filterElements(List<DTD.Element> elements, String elementNamePrefix) {
+    private Collection<DTD.Element> filterElements(Collection<DTD.Element> elements, String elementNamePrefix) {
         List<DTD.Element> filtered = new ArrayList<DTD.Element>();
         elementNamePrefix = elementNamePrefix.toLowerCase(Locale.ENGLISH);
         for (DTD.Element e : elements) {
@@ -420,7 +420,7 @@ public class HtmlCompletionQuery extends UserTask {
         return filtered;
     }
 
-    List<HtmlCompletionItem> translateTags(int offset, List<DTD.Element> possible, List<DTD.Element> all) {
+    List<HtmlCompletionItem> translateTags(int offset, Collection<DTD.Element> possible, Collection<DTD.Element> all) {
         List<HtmlCompletionItem> result = new ArrayList<HtmlCompletionItem>(all.size());
         all.removeAll(possible); //remove possible elements
         for (DTD.Element e : possible) {
@@ -476,10 +476,10 @@ public class HtmlCompletionQuery extends UserTask {
 
     public static class CompletionResult {
 
-        private List<HtmlCompletionItem> items;
+        private Collection<HtmlCompletionItem> items;
         int anchor;
 
-        CompletionResult(List<HtmlCompletionItem> items, int anchor) {
+        CompletionResult(Collection<HtmlCompletionItem> items, int anchor) {
             this.items = items;
             this.anchor = anchor;
         }
@@ -488,7 +488,7 @@ public class HtmlCompletionQuery extends UserTask {
             return anchor;
         }
 
-        public List<HtmlCompletionItem> getItems() {
+        public Collection<HtmlCompletionItem> getItems() {
             return items;
         }
     }

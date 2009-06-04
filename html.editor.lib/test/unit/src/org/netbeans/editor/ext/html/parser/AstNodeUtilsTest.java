@@ -40,6 +40,7 @@ package org.netbeans.editor.ext.html.parser;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.text.BadLocationException;
@@ -199,12 +200,12 @@ public class AstNodeUtilsTest extends TestBase {
     }
 
     private void assertPossibleElements(AstNode rootNode, int offset, String[] expected, Match type) {
-        List<DTD.Element> possible = AstNodeUtils.getPossibleOpenTagElements(rootNode, offset);
+        Collection<DTD.Element> possible = AstNodeUtils.getPossibleOpenTagElements(rootNode, offset);
         assertNotNull(possible); 
         assertDTDElements(expected, possible, type);
     }
 
-    private void assertDTDElements(String[] expected, List<DTD.Element> elements, Match type) {
+    private void assertDTDElements(String[] expected, Collection<DTD.Element> elements, Match type) {
         List<String> real = new ArrayList<String>();
         for (DTD.Element ccp : elements) {
             real.add(ccp.getName().toLowerCase());
