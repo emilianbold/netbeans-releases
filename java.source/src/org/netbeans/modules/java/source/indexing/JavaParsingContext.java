@@ -41,12 +41,14 @@ package org.netbeans.modules.java.source.indexing;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Collection;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
+import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
@@ -71,12 +73,21 @@ class JavaParsingContext {
         sa = uq != null ? uq.getSourceAnalyser() : null;
     }
 
-    public JavaParsingContext(final FileObject root, final ClassPath bootPath, final ClassPath compilePath, final ClassPath sourcePath, boolean checkForModifications) throws IOException {
-        cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath, compilePath, sourcePath, null, !checkForModifications, false, false);
+    public JavaParsingContext(final FileObject root, final ClassPath bootPath, final ClassPath compilePath, final ClassPath sourcePath,
+            final boolean checkForModifications,
+            final Collection<? extends CompileTuple> virtualSources) throws IOException {
+        cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath, compilePath, sourcePath, null, !checkForModifications, false, !virtualSources.isEmpty());
+        registerVirtualSources(cpInfo, virtualSources);
         sourceLevel = SourceLevelQuery.getSourceLevel(root);
         filter = JavaFileFilterQuery.getFilter(root);
         encoding = FileEncodingQuery.getEncoding(root);
         uq = ClassIndexManager.getDefault().createUsagesQuery(root.getURL(), true);
         sa = uq != null ? uq.getSourceAnalyser() : null;
+    }
+
+    private static void registerVirtualSources(final ClasspathInfo cpInfo, final Collection<? extends CompileTuple> virtualSources) {
+        for (CompileTuple compileTuple : virtualSources) {
+            ClasspathInfoAccessor.getINSTANCE().registerVirtualSource(cpInfo, compileTuple.jfo);
+        }
     }
 }
