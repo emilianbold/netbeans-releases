@@ -73,7 +73,7 @@ class PackagedClassPathImpl extends AbstractProjectClassPathImpl {
         
         List<File> assemblies = new ArrayList<File>();
         for (Artifact art : arts) {
-            String key = art.getGroupId() + ":" + art.getArtifactId() + ":" + art.getType(); //NOI18N
+            String key = art.getGroupId() + ":" + art.getArtifactId() + ":" + art.getType() + (art.getClassifier() != null ? (":" + art.getClassifier()) : ""); //NOI18N
             if (art.getFile() != null && packagedIds.contains(key)) {
                 File fil = FileUtil.normalizeFile(art.getFile());
                 // the assemblied jars go as last ones, otherwise source for binaries don't really work.

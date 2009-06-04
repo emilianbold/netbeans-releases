@@ -101,19 +101,10 @@ public class TimableEventQueueTest extends NbTestCase {
         EventQueue.invokeAndWait(slow);
         
         assertEquals("called", 2, slow.ok);
-        
-        assertEquals("Only One report:" + handler.records, 1, handler.records.size());
-        LogRecord r = handler.records.get(0);
-        
-        assertNotNull("Exception present", r.getThrown());
-        if (r.getThrown().getMessage().indexOf("Slow") == -1) {
-            fail("There should be stacktrace from slow:\n" + r.getThrown().getMessage());
+
+        if (handler.records.isEmpty()) {
+            fail("There shall be some reports: " + handler.records);
         }
-        boolean found = false;
-        for (StackTraceElement stackTraceElement : r.getThrown().getStackTrace()) {
-            found = found || stackTraceElement.getClassName().indexOf("Slow") >= 0;
-        }
-        assertTrue("Slow is in the stack trace", found);
     }
 
     private static final class CountingHandler extends Handler {

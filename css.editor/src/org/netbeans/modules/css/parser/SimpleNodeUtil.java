@@ -39,6 +39,7 @@
 package org.netbeans.modules.css.parser;
 
 import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 /**
  *
@@ -152,4 +153,49 @@ public class SimpleNodeUtil {
         }
         return sibling;
     }
+
+     /** find an SimpleNode according to the path
+     * example of path: html/body/table|2/tr -- find a second table tag in body tag
+     *
+     */
+    public static SimpleNode query(SimpleNode base, String path) {
+        StringTokenizer st = new StringTokenizer(path, "/");
+        SimpleNode found = base;
+        while(st.hasMoreTokens()) {
+            String token = st.nextToken();
+            int indexDelim = token.indexOf('|');
+
+            String nodeName = indexDelim >= 0 ? token.substring(0, indexDelim) : token;
+            String sindex = indexDelim >= 0 ? token.substring(indexDelim + 1, token.length()) : "0";
+            int index = Integer.parseInt(sindex);
+
+            int count = 0;
+            SimpleNode foundLocal = null;
+            if(found.children != null) {
+                for(Node _child : found.children) {
+                    SimpleNode child = (SimpleNode)_child;
+
+                    if(CssParserTreeConstants.jjtNodeName[child.kind()].equals(nodeName) && count++ == index) {
+                        foundLocal = child;
+                        break;
+                    }
+                }
+            }
+            if(foundLocal != null) {
+                found = foundLocal;
+
+                if(!st.hasMoreTokens()) {
+                    //last token, we may return
+                    assert CssParserTreeConstants.jjtNodeName[found.kind()].equals(nodeName);
+                    return found;
+                }
+
+            } else {
+                return null; //no found
+            }
+        }
+
+        return null;
+    }
+
 }

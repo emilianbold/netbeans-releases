@@ -1373,6 +1373,9 @@ class DTDParser extends Object {
                     return ((DTD.Attribute)o).getDefaultMode().equals( DTD.Attribute.MODE_REQUIRED );
                 }
             });
+            if(prefix == null) {
+                prefix = "";
+            }
             prefix = xmlDTD ? prefix : prefix.toLowerCase();
             Iterator i = attributes.tailMap(prefix).entrySet().iterator();
             

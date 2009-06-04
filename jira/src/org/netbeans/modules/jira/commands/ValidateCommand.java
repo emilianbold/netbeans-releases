@@ -39,8 +39,15 @@
 
 package org.netbeans.modules.jira.commands;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.commons.net.AbstractWebLocation;
+import org.eclipse.mylyn.internal.jira.core.JiraClientFactory;
+import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
 
 /**
  *
@@ -55,14 +62,10 @@ public class ValidateCommand extends JiraCommand {
     }
 
     @Override
-    public void execute() throws CoreException {
-        throw new UnsupportedOperationException();
-//        try {
-//            JiraClient client = Jira.getInstance().getRepositoryConnector().getClientManager().getClient(taskRepository, new NullProgressMonitor());
-//            client.validate(new NullProgressMonitor());
-//        } catch (IOException ex) {
-//            Jira.LOG.log(Level.SEVERE, null, ex); // XXX handle errors
-//        }
+    public void execute() throws CoreException, MalformedURLException, JiraException {
+        new URL(taskRepository.getRepositoryUrl());
+        AbstractWebLocation location = new TaskRepositoryLocationFactory().createWebLocation(taskRepository);
+        JiraClientFactory.getDefault().validateConnection(location, new NullProgressMonitor());
     }
 
 }

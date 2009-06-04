@@ -1510,6 +1510,11 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
             </classpath>
             <sysproperty key="nb_all" file=".."/>
             <sysproperty key="netbeans.dest.dir.work" file="${netbeans.dest.dir}"/>
+            <sysproperty key="nbjunit.workdir" file="build/test/unit/work"/>
+            <syspropertyset>
+                <propertyref prefix="test-unit-sys-prop."/>
+                <mapper type="glob" from="test-unit-sys-prop.*" to="*"/>
+            </syspropertyset>
             <formatter type="brief" usefile="false"/>
             <formatter type="xml"/>
             <jvmarg value="-ea"/>

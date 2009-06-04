@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright (c) 2008 Sun Microsystems, Inc. All rights reserved.
+*     Copyright (c) 2009 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 
@@ -65,7 +65,6 @@
 <mapID target="xml_XMLCat"     url="xml/samples/XMLCat_sample.html" />
 <mapID target="xml_aboutsax"     url="xml/sax/sax_about.html" />
 <mapID target="xml_generatesax"     url="xml/sax/sax_generate.html" />
-<mapID target="xml_schemas" url="xml/schema/schemas.html" />
 <mapID target="xml_xslabout"     url="xml/xsl/xsl_about.html" />
 <mapID target="xml_xsltransform"     url="xml/xsl/xsl_transform.html" />
 <mapID target="css_editcss"     url="xml/css/css_edit.html" />
@@ -219,10 +218,10 @@
 
 
 <!--CSH for plain text editor-->
-<mapID target="text.plain" url="pending.html" />
+<mapID target="text.plain" url="editing/editor_quickref.html" />
 
 <!--CSH for css text editor-->
-<mapID target="text.x-css" url="pending.html" />
+<mapID target="text.x-css" url="xml/css/css_edit.html" />
 
 <!--Add New Class dialog box-->
 <mapID target="org.netbeans.modules.java.ui.nodes.elements.SourceEditSupport$AddNewClass" url="pending.html"/>
@@ -513,6 +512,7 @@
 
 <!-- Issue tracking csh topic for Options window -->
 <mapID target="org.netbeans.modules.bugzilla.options.BugzillaOptionsController" url="collab/csh/issues_options.html" />
+<mapID target="org.netbeans.modules.bugtracking.util.BugtrackingOptions" url="collab/csh/issues_options.html" />
 
 <!-- JIRA csh topic for dialog invoked when JIRA is not installed but user clicks My Issues or All Issues in Kenai Dashboard. JIRA support requires adding a plugin from Beta UC -->
 <mapID target="org.netbeans.modules.bugtracking.kenai.FakeJiraSupport" url="collab/issues_about.html" />

@@ -298,6 +298,10 @@ public class Controller {
             components.remove(tab);
         }
 
+        // workaround for JDK bug (http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6670274)
+        // NB issue #113388
+        private final boolean dontUseHtml = System.getProperty("java.version").startsWith("1.6.0_14");
+
         public void run() {
             for (OutputTab t : components) {
                 NbIO io = t.getIO();
@@ -314,7 +318,8 @@ public class Controller {
                 } catch (CharConversionException e) {
                     escaped = io.getName();
                 }
-                String name = io.isStreamClosed() ?  io.getName() + " " : "<html><b>" + escaped + " </b>&nbsp;</html>";  //NOI18N
+                String name = io.isStreamClosed() ?  io.getName() + " " : //NOI18N
+                    (dontUseHtml ? io.getName() + " * " : "<html><b>" + escaped + " </b>&nbsp;</html>"); //NOI18N
 
                 if (LOG) {
                     log("  set name to " + name);

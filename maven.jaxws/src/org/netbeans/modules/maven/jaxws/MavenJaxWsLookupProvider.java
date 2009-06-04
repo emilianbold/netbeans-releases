@@ -72,17 +72,17 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
         LookupMerger<WebServiceDataProvider> wsDataProviderMerger =
                 LookupMergerSupport.createWebServiceDataProviderMerger();
 
-        final FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
-        if (wsdlFolder != null) {
+        //final FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
+        //if (wsdlFolder != null) {
             RequestProcessor.getDefault().post(new Runnable() {
 
                 public void run() {                    
-                    WSUtils.detectWsdlClients(prj, jaxWsSupport, wsdlFolder);
+                    WSUtils.detectWsdlClients(prj, jaxWsSupport);
                 }
 
             });
             
-        }
+        //}
 
         return Lookups.fixed(jaxWsSupportProvider, jaxWsServiceDataProvider, wsDataProviderMerger);
     }

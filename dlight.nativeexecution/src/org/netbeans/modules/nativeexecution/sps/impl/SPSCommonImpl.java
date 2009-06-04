@@ -45,6 +45,7 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupport;
 import org.netbeans.modules.nativeexecution.sps.impl.RequestPrivilegesTask.RequestPrivilegesTaskParams;
 import org.netbeans.modules.nativeexecution.support.ObservableActionListener;
@@ -114,7 +115,10 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
 
     public boolean hasPrivileges(
             final List<String> privs) {
-
+        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)){
+            invalidate();
+            return false;
+        }
         List<String> real_privs = getExecutionPrivileges();
         if (real_privs == null) {
             return false;
@@ -174,6 +178,10 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
 
     private void invalidateCache() {
         cachedPrivilegesFetcher.remove(execEnv);
+    }
+
+    public void invalidate() {
+        invalidateCache();
     }
 
     private static String loc(String key, String... params) {

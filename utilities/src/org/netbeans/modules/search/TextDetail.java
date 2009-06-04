@@ -55,6 +55,8 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
@@ -134,9 +136,9 @@ final class TextDetail {
             edCookie.open();
 	}
         if (how == DH_SHOW) {
-            lineObj.show(Line.SHOW_TRY_SHOW, column - 1);
+            lineObj.show(ShowOpenType.NONE, ShowVisibilityType.NONE, column - 1);
         } else if (how == DH_GOTO) {
-            lineObj.show(Line.SHOW_GOTO, column - 1);
+            lineObj.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column - 1);
         }
         if ((markLength > 0) && (edCookie != null)) {
             final JEditorPane[] panes = edCookie.getOpenedPanes();

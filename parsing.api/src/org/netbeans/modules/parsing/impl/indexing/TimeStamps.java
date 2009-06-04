@@ -101,7 +101,7 @@ public final class TimeStamps {
         }
     }
 
-    public Set<String> store () throws IOException {
+    public void store () throws IOException {
         if (true) {
             FileObject cacheDir = CacheFolder.getDataFolder(root);
             FileObject f = FileUtil.createData(cacheDir, TIME_STAMPS_FILE);
@@ -123,7 +123,10 @@ public final class TimeStamps {
             }
         }
         changed = false;
-        return this.unseen;
+    }
+
+    public Set<String> getUnseenFiles() {
+        return unseen;
     }
 
     public boolean checkAndStoreTimestamp(final FileObject f) {

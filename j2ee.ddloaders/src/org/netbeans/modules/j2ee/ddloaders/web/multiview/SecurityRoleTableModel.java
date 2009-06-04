@@ -42,8 +42,6 @@
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
-import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
-import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.common.SecurityRole;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.openide.util.NbBundle;
@@ -66,6 +64,7 @@ public class SecurityRoleTableModel extends DDBeanTableModel {
         return columnNames;
     }
     
+    @Override
     public void setValueAt(Object value, int row, int column) {
         SecurityRole role = getSecurityRole(row);
         

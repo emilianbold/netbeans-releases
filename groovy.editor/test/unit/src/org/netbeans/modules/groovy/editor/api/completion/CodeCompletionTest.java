@@ -116,7 +116,7 @@ public class CodeCompletionTest extends GroovyTestBase {
     public void testClassMethodFieldString2() throws Exception {
         checkCompletion(TEST_BASE + "ClassMethodFieldString2.groovy", "stringField.spli^", false);
     }
-    
+
     public void testClassMethodFieldLong1() throws Exception {
         checkCompletion(TEST_BASE + "ClassMethodFieldLong1.groovy", "longField.MAX^", false);
     }
@@ -147,6 +147,10 @@ public class CodeCompletionTest extends GroovyTestBase {
 
     public void testKeywordAboveClass1() throws Exception {
         checkCompletion(TEST_BASE + "KeywordAboveClass1.groovy", "ab^", false);
+    }
+
+    public void testKeywordAboveClass2() throws Exception {
+        checkCompletion(TEST_BASE + "KeywordAboveClass2.groovy", "ab^", false);
     }
 
     // Closure items named and unnamed

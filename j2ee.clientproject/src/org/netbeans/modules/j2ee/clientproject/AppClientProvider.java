@@ -61,6 +61,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
@@ -145,8 +146,8 @@ public final class AppClientProvider extends J2eeModuleProvider
     
     /** Package-private for unit test only. */
     static boolean needConfigurationFolder(final String version) {
-        return J2EEProjectProperties.J2EE_1_3.equals(version) ||
-                J2EEProjectProperties.J2EE_1_4.equals(version);
+        return EjbProjectConstants.J2EE_13_LEVEL.equals(version) ||
+                EjbProjectConstants.J2EE_13_LEVEL.equals(version);
     }
     
     public File getMetaInfAsFile() {

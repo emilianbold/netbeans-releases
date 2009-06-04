@@ -70,7 +70,7 @@ import org.netbeans.modules.wag.codegen.util.Util;
  */
 public class JavaUtil {
 
-    private static final String WAG_LIB = "wag";     //NOI18N
+    private static final String WAG_LIB = "wag4j";     //NOI18N
     public static final Modifier[] PUBLIC = new Modifier[]{Modifier.PUBLIC};
     public static final Modifier[] PRIVATE = new Modifier[]{Modifier.PRIVATE};
     public static final Modifier[] PROTECTED = new Modifier[]{Modifier.PROTECTED};

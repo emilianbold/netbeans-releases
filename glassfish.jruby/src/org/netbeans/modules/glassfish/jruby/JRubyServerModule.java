@@ -210,6 +210,9 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie, Recogn
             applicationName = appname.replaceAll("[ \t]", "_");
             applicationDir = appdir;
             contextRoot = calculateContextRoot(module, appname);
+            if("".equals(contextRoot)) {
+                contextRoot = "/";
+            }
             doStart = startRequired;
             step = "start";
         }
@@ -521,7 +524,7 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie, Recogn
     private static String calculateContextRoot(GlassfishModule commonModule, String applicationName) {
         boolean useRootContext = Boolean.valueOf(
                 commonModule.getInstanceProperties().get(USE_ROOT_CONTEXT_ATTR));
-        return useRootContext ? "/" : "/" + applicationName.replaceAll("[ \t]", "_");
+        return useRootContext ? "" : "/" + applicationName.replaceAll("[ \t]", "_");
     }
 
     /**

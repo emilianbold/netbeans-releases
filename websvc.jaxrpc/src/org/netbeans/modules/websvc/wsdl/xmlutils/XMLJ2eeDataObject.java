@@ -48,13 +48,14 @@ import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.XMLDataObject;
 import org.openide.ErrorManager;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.windows.*;
 import org.openide.util.NbBundle;
 
 import java.text.MessageFormat;
 import java.io.*;
 import org.xml.sax.*;
-import org.openide.xml.*;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
 import org.netbeans.spi.xml.cookies.*;
 
@@ -350,12 +351,12 @@ public abstract class XMLJ2eeDataObject extends XMLDataObject implements CookieS
 
         public void outputLineSelected (OutputEvent ev) {
             errorAnnotation.attach(xline);
-            xline.show(Line.SHOW_TRY_SHOW);
+            xline.show(ShowOpenType.NONE, ShowVisibilityType.NONE);
         }
 
         public void outputLineAction (OutputEvent ev) {
             errorAnnotation.attach(xline);
-            xline.show(Line.SHOW_TRY_SHOW);
+            xline.show(ShowOpenType.NONE, ShowVisibilityType.NONE);
         }
 
         public void outputLineCleared (OutputEvent ev) {

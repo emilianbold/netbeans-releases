@@ -36,8 +36,15 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.nativeexecution.api;
+
+import java.util.Collection;
+import java.util.concurrent.CopyOnWriteArrayList;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.netbeans.modules.nativeexecution.ExecutionEnvironmentFactoryServiceImpl;
+import org.netbeans.modules.nativeexecution.spi.ExecutionEnvironmentFactoryService;
 
 /**
  * A factory for ExecutionEnvironment.
@@ -56,18 +63,56 @@ package org.netbeans.modules.nativeexecution.api;
  */
 public class ExecutionEnvironmentFactory {
 
-    private static final ExecutionEnvironment LOCAL = new ExecutionEnvironment();
-    public static final int DEFAULT_PORT = Integer.getInteger("cnd.remote.port", 22); //NOI18N
+    private static final ExecutionEnvironmentFactoryService defaultFactory =
+            new ExecutionEnvironmentFactoryServiceImpl();
+    private static final Collection<ExecutionEnvironmentFactoryService> allFactories =
+            new CopyOnWriteArrayList<ExecutionEnvironmentFactoryService>();
+    private static final Lookup.Result<ExecutionEnvironmentFactoryService> lookupResult =
+            Lookup.getDefault().lookupResult(ExecutionEnvironmentFactoryService.class);
+    private static final LookupListener ll;
+
+
+    static {
+        ll = new LookupListener() {
+
+            public synchronized void resultChanged(LookupEvent ev) {
+                Collection<? extends ExecutionEnvironmentFactoryService> newSet =
+                        lookupResult.allInstances();
+                allFactories.retainAll(newSet);
+
+                for (ExecutionEnvironmentFactoryService impl : newSet) {
+                    if (!allFactories.contains(impl)) {
+                        allFactories.add(impl);
+                    }
+                }
+            }
+        };
+
+        lookupResult.addLookupListener(ll);
+        ll.resultChanged(null);
+    }
 
     /** prevents instantiation */
     private ExecutionEnvironmentFactory() {
+    }
+
+    public static ExecutionEnvironmentFactoryService getDefault() {
+        return defaultFactory;
     }
 
     /**
      * Returns an instance of <tt>ExecutionEnvironment</tt> for localexecution.
      */
     public static ExecutionEnvironment getLocal() {
-        return LOCAL;
+        ExecutionEnvironment result;
+
+        for (ExecutionEnvironmentFactoryService f : allFactories) {
+            if ((result = f.getLocal()) != null) {
+                return result;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -81,7 +126,15 @@ public class ExecutionEnvironmentFactory {
      * @param host host identification string (either hostname or IP address)
      */
     public static ExecutionEnvironment createNew(String user, String host) {
-        return createNew(user, host, DEFAULT_PORT);
+        ExecutionEnvironment result;
+
+        for (ExecutionEnvironmentFactoryService f : allFactories) {
+            if ((result = f.createNew(user, host)) != null) {
+                return result;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -98,7 +151,15 @@ public class ExecutionEnvironmentFactory {
      * @param sshPort port to be used to establish ssh connection.
      */
     public static ExecutionEnvironment createNew(String user, String host, int port) {
-        return new ExecutionEnvironment(user, host, port);
+        ExecutionEnvironment result;
+
+        for (ExecutionEnvironmentFactoryService f : allFactories) {
+            if ((result = f.createNew(user, host, port)) != null) {
+                return result;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -108,17 +169,15 @@ public class ExecutionEnvironmentFactory {
      * either user@host or "localhost"
      */
     public static String toUniqueID(ExecutionEnvironment executionEnvironment) {
-        if (executionEnvironment.isLocal()) {
-            // "localhost" is for compatibility with remote development 6.5
-            return "localhost"; //NOI18N
-        } else {
-            String hostAndPort = executionEnvironment.getHost() + ':' + executionEnvironment.getSSHPort();
-            if (executionEnvironment.getUser() == null || executionEnvironment.getUser().length() == 0) {
-                return hostAndPort;
-            } else {
-                return executionEnvironment.getUser() + '@' + hostAndPort;
+        String result;
+
+        for (ExecutionEnvironmentFactoryService f : allFactories) {
+            if ((result = f.toUniqueID(executionEnvironment)) != null) {
+                return result;
             }
         }
+
+        return null;
     }
 
     /**
@@ -127,32 +186,14 @@ public class ExecutionEnvironmentFactory {
      * @param hostKey a string that was returned by toUniqueID() method.
      */
     public static ExecutionEnvironment fromUniqueID(String hostKey) {
-        // TODO: remove this check and refactor clients to use getLocal() instead
-        if ("localhost".equals(hostKey) || "127.0.0.1".equals(hostKey)) { //NOI18N
-            return LOCAL;
-        }
-        String user;
-        String host;
-        int pos = hostKey.indexOf('@', 0); //NOI18N
-        if (pos < 0) {
-            user = "";
-            host = hostKey;
-        } else {
-            user = hostKey.substring(0, pos);
-            host = hostKey.substring(pos + 1);
-        }
-        int colonPos = host.indexOf(':');
-        if (colonPos > 0) {
-            String strPort = host.substring(colonPos+1);
-            host = host.substring(0, colonPos);
-            try {
-                int port = Integer.parseInt(strPort);
-                return createNew(user, host, port);
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
-                return createNew(user, host);
+        ExecutionEnvironment result;
+
+        for (ExecutionEnvironmentFactoryService f : allFactories) {
+            if ((result = f.fromUniqueID(hostKey)) != null) {
+                return result;
             }
         }
-        return createNew(user, host);
+
+        return null;
     }
 }

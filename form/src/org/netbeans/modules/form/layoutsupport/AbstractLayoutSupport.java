@@ -529,7 +529,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * convert the previous constrainst of components to constraints of the new
      * layout (this layout). The default implementation does nothing.
      * @param previousConstraints [input] layout constraints of components in
-     *                                    the previous layout
+     *                                    the previous layout (can be {@code null})
      * @param currentConstraints [output] array of converted constraints for
      *                                    the new layout - to be filled
      * @param components [input] real components in a real container having the

@@ -84,7 +84,11 @@ public class LoginPanel extends javax.swing.JPanel {
 
     public void showError(KenaiException ex) {
         progressBar.setVisible(false);
-        error.setText(ex.getMessage());
+        String errorMessage = ex.getMessage();
+        if (errorMessage==null || "".equals(errorMessage.trim())) {
+            errorMessage = NbBundle.getMessage(LoginPanel.class, "LBL_AuthenticationFailed");
+        }
+        error.setText(errorMessage);
         error.setVisible(true);
         password.requestFocus();
         setLoginButtonEnabled(true);

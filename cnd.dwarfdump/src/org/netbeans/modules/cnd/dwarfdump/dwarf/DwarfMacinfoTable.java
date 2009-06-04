@@ -120,13 +120,34 @@ public class DwarfMacinfoTable {
         ArrayList<DwarfMacinfoEntry> entries = getBaseSourceTable();
         int size = entries.size();
         
-        if (size == 0 || entries.get(0).lineNum == 0) {
+        if (size == 0) {
             return entries;
         }
-        
-        ArrayList<DwarfMacinfoEntry> result = new ArrayList<DwarfMacinfoEntry>();
+
         int idx = 0;
-        int currLine = entries.get(0).lineNum;
+        if (size > 2) {
+            DwarfMacinfoEntry firstEntry = entries.get(0);
+            DwarfMacinfoEntry secondEntry = entries.get(1);
+            if (firstEntry.fileIdx == -1 && secondEntry.fileIdx == -1 &&
+                firstEntry.lineNum == secondEntry.lineNum) {
+                // there is a section with same line index information, so we
+                // can not extract predefined compiler macros for sure;
+                // return all entries with "-1" information in file index
+                // and let client filter them out
+                ArrayList<DwarfMacinfoEntry> retain = new ArrayList<DwarfMacinfoEntry>();
+                for (int i = idx; i < entries.size(); i++) {
+                    DwarfMacinfoEntry entry = entries.get(i);
+                    if (entry.fileIdx == -1) {
+                        retain.add(entry);
+                    } else {
+                        break;
+                    }
+                }
+                return retain;
+            }
+        }
+        ArrayList<DwarfMacinfoEntry> result = new ArrayList<DwarfMacinfoEntry>();
+        int currLine = entries.get(idx).lineNum;
         int prevLine = -1;
         int count = 0;
         // Skip non-command-line entries... 

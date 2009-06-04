@@ -379,5 +379,36 @@ public abstract class QueryParameter {
             if(value instanceof ParameterValue) value = ((ParameterValue)value).getDisplayName();
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }
-    }   
+    }
+
+    public static class SimpleQueryParameter extends QueryParameter {
+        private final String[] values;
+
+        public SimpleQueryParameter(String parameter, String[] values) {
+            super(parameter);
+            this.values = values;
+        }
+
+        @Override
+        ParameterValue[] getValues() {
+            if(values == null || values.length == 0) {
+                return EMPTY_PARAMETER_VALUE;
+            }
+            ParameterValue[] ret = new ParameterValue[values.length];
+            for (int i = 0; i < values.length; i++) {
+                ret[i] = new ParameterValue(values[i]);
+            }
+            return ret;
+        }
+
+        @Override
+        void setValues(ParameterValue[] values) {
+            // not interested
+        }
+        
+        @Override
+        void setEnabled(boolean  b) {
+            // interested
+        }
+    }
 }

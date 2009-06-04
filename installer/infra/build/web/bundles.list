@@ -4,6 +4,6 @@ java=nb-base, nb-javase, nb-webcommon, nb-javaee, nb-groovy, nb-javame, nb-ergon
 ruby=nb-base, nb-webcommon, nb-ruby, glassfish-mod-sun
 cpp=nb-base, nb-cnd
 php=nb-base, nb-webcommon, nb-php
-all=nb-base, nb-webcommon, nb-javase, nb-javaee, nb-javame, nb-cnd, nb-ruby, nb-groovy, nb-php, nb-ergonomics, sjsas, glassfish-mod-sun, openesb, tomcat
-hidden=openesb, nb-base, nb-webcommon, nb-ergonomics
+all=nb-base, nb-webcommon, nb-javase, nb-javaee, nb-javame, nb-cnd, nb-ruby, nb-groovy, nb-php, nb-ergonomics, sjsas, glassfish-mod-sun, tomcat
+hidden=nb-base, nb-webcommon, nb-ergonomics
 

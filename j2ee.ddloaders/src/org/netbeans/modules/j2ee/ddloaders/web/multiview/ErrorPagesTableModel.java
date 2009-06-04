@@ -59,6 +59,7 @@ public class ErrorPagesTableModel extends DDBeanTableModel
             return columnNames;
         }
 
+    @Override
 	public void setValueAt(Object value, int row, int column)
 	{
 		ErrorPage page = (ErrorPage)getChildren().get(row);
@@ -82,7 +83,7 @@ public class ErrorPagesTableModel extends DDBeanTableModel
             try {
                 ErrorPage page = (ErrorPage)((WebApp)getParent()).createBean("ErrorPage"); //NOI18N
                 page.setLocation((String)values[0]);
-                if (values[1]!=null) page.setErrorCode((Integer)values[1]);;
+                if (values[1]!=null) page.setErrorCode((Integer)values[1]);
                 if (values[2]!=null) page.setExceptionType((String)values[2]);
                 ((WebApp)getParent()).addErrorPage(page);
                 getChildren().add(page);

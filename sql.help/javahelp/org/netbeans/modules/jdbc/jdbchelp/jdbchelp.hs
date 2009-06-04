@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1'?>
 <!--
-* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Copyright 2009 Sun Microsystems, Inc. All rights reserved.
 * Use is subject to license terms.
 -->
 <!DOCTYPE helpset PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp HelpSet Version 2.0//EN"

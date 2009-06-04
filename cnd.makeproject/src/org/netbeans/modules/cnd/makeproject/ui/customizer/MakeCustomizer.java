@@ -1627,7 +1627,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
 
         @Override
         public synchronized CustomToolConfiguration getCustomToolConfiguration() {
-            if (getTool() == Tool.FortranCompiler) {
+            if (getTool() == Tool.CustomTool) {
                 return super.getCustomToolConfiguration();
             } else {
                 if (customToolConfiguration == null) {

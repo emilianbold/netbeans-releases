@@ -4,7 +4,15 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.libs.jaxb</code-name-base>
-            <module-dependencies/>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.jaxb.api</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.aspect.editor</friend>
                 <friend>org.netbeans.modules.compapp.projects.jbi</friend>
@@ -81,35 +89,22 @@
                 <package>com.sun.xml.bind.v2.schemagen.episode</package>
                 <package>com.sun.xml.bind.v2.schemagen.xmlschema</package>
                 <package>com.sun.xml.bind.v2.util</package>
-                <package>javax.activation</package>
-                <package>javax.xml.bind</package>
-                <package>javax.xml.bind.annotation</package>
-                <package>javax.xml.bind.annotation.adapters</package>
-                <package>javax.xml.bind.attachment</package>
-                <package>javax.xml.bind.helpers</package>
-                <package>javax.xml.bind.util</package>
-                <package>javax.xml.stream</package>
-                <package>com.sun.istack</package>
                 <package>com.sun.codemodel</package>
                 <package>com.sun.dtdparser</package>
-                <package>com.sun.istack.tools</package>
-                <package>com.sun.tools.xjc</package>
+                <package>com.sun.istack</package>
                 <package>com.sun.istack.localization</package>
+                <package>com.sun.istack.tools</package>
+                <package>com.sun.org.apache.xml.internal.resolver</package>
+                <package>com.sun.org.apache.xml.internal.resolver.helpers</package>
+                <package>com.sun.org.apache.xml.internal.resolver.readers</package>
+                <package>com.sun.org.apache.xml.internal.resolver.tools</package>
+                <package>com.sun.tools.xjc</package>
             </friend-packages>
-            <class-path-extension>
-                <runtime-relative-path>ext/jaxb/activation.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jaxb/api/jaxb-api.jar</runtime-relative-path>
-            </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxb/jaxb-impl.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxb/jaxb-xjc.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jaxb/api/jsr173_api.jar</runtime-relative-path>
             </class-path-extension>
         </data>
     </configuration>

@@ -72,6 +72,34 @@ public interface ServerRecord {
     public boolean isOffline();
 
     public boolean isDeleted();
+
+    /**
+     * Determines whether the record is set up
+     * (record can be not set up, for example, if I clean user dir, but host
+     * is stored somewhere in project).
+     *
+     * It should work fast.
+     *
+     * It should be called before selecting host, say, in project properties.
+     * In the case it returns false, setUp should be called before selecting this record.
+     * If it returns true, then record can be selected, otherewise it can not.
+     *
+     * @return true in the case record is correctly set up, otherwise false.
+     */
+    public boolean isSetUp();
+
+    /**
+     * Should be called in the case isSetUp() returned false.
+     * In this case client should call setUp and check return value;
+     * if it returns true, record can be selected, otherewise it can not.
+     *
+     * Setup can take a while; however it's natural to call this method from UI thread.
+     * Implementor carries a responsibility of displaying a modal message dialog
+     * and giving user ability to cancel (in which case the function should return false)
+     *
+     * @return true in the case the record was set up successfully, otherwise false
+     */
+    public boolean setUp();
     
     public void validate(boolean force);
 

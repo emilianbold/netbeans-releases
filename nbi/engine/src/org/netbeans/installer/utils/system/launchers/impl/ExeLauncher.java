@@ -76,7 +76,9 @@ public class ExeLauncher extends CommonLauncher {
     public static final String EXE_LAUNCHER_STUB =
             DEFAULT_WINDOWS_RESOURCE_SUFFIX + EXE_LAUNCHER_STUB_NAME;
     public static final String DEFAULT_WINDOWS_RESOURCE_I18N =
-            DEFAULT_WINDOWS_RESOURCE_SUFFIX + I18N;
+            DEFAULT_WINDOWS_RESOURCE_SUFFIX + I18N + "/";//NOI18N
+    public static final String DEFAULT_WINDOWS_RESOURCE_I18N_BUNDLE_NAME =
+            "launcher"; //NOI18N
     /**
      * See <code>ShLauncher#MIN_JAVA_VERSION_UNIX</code> for details.
      */
@@ -412,7 +414,14 @@ public class ExeLauncher extends CommonLauncher {
     public String getExtension() {
         return EXE_EXT;
     }
-    protected String getI18NResourcePrefix() {
-        return DEFAULT_WINDOWS_RESOURCE_SUFFIX;
+    @Override
+    public String getI18NResourcePrefix() {
+        return i18nPrefix !=null ? i18nPrefix :
+            DEFAULT_WINDOWS_RESOURCE_I18N;
+    }
+    @Override
+    public String getI18NBundleBaseName() {
+        return i18nBundleBaseName != null ? i18nBundleBaseName :
+            DEFAULT_WINDOWS_RESOURCE_I18N_BUNDLE_NAME;
     }
 }

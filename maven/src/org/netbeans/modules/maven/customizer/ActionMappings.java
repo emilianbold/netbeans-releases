@@ -1190,7 +1190,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         private NbMavenProjectImpl project;
 
         PluginPropertyAction(JTextArea area, JTextField goals, NbMavenProjectImpl prj) {
-            putValue(Action.NAME, "Plugin Expression Property");
+            putValue(Action.NAME, NbBundle.getMessage(ActionMappings.class, "TXT_PLUGIN_EXPRESSION"));
             this.area = area;
             this.goals = goals;
             this.project = prj;
@@ -1200,7 +1200,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             GoalsProvider provider = Lookup.getDefault().lookup(GoalsProvider.class);
             if (provider != null) {
                 AddPropertyDialog panel = new AddPropertyDialog(project, goals.getText());
-                DialogDescriptor dd = new DialogDescriptor(panel, "Add Plugin Expression Property");
+                DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(ActionMappings.class, "TIT_PLUGIN_EXPRESSION"));
                 dd.setOptions(new Object[] {panel.getOkButton(), DialogDescriptor.CANCEL_OPTION});
                 dd.setClosingOptions(new Object[] {panel.getOkButton(), DialogDescriptor.CANCEL_OPTION});
                 DialogDisplayer.getDefault().notify(dd);

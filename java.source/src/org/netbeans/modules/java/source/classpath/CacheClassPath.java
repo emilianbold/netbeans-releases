@@ -60,7 +60,6 @@ import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -170,7 +169,7 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
                 try {
                     File sigs = JavaIndex.getClassFolder(url);
                     URL orl = sigs.toURI ().toURL ();
-                    if (!sigs.exists ()) {
+                    if (!sigs.isDirectory()) {
                         // #155742 - URL for folder must always end with slash
                         if (!orl.toExternalForm ().endsWith("/")) {
                             //TODO: string concatenation
