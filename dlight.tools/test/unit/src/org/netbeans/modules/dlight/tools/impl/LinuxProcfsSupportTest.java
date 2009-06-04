@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.dlight.tools.impl;
 
-import org.junit.Ignore;
+import java.math.BigInteger;
 import org.junit.Test;
 import org.netbeans.modules.dlight.tools.impl.LinuxProcfsSupport.CpuStat;
 import org.netbeans.modules.dlight.tools.impl.LinuxProcfsSupport.ProcessStat;
@@ -55,29 +55,31 @@ public class LinuxProcfsSupportTest {
     @Test
     public void testParseCpuStat() {
         CpuStat cpu = LinuxProcfsSupport.parseCpuStat("cpu  328580 17 62773 2588401 225175 2687 3643 0 0");
-        assertEquals(328580, cpu.user());
-        assertEquals(17, cpu.nice());
-        assertEquals(62773, cpu.system());
-        assertEquals(2588401, cpu.idle());
-        assertEquals(225175, cpu.iowait());
-        assertEquals(2687, cpu.irq());
-        assertEquals(3643, cpu.softirq());
-        assertEquals(0, cpu.steal());
-        assertEquals(0, cpu.guest());
+        assertEquals(BigInteger.valueOf(328580), cpu.user());
+        assertEquals(BigInteger.valueOf(17), cpu.nice());
+        assertEquals(BigInteger.valueOf(62773), cpu.system());
+        assertEquals(BigInteger.valueOf(2588401), cpu.idle());
+        assertEquals(BigInteger.valueOf(225175), cpu.iowait());
+        assertEquals(BigInteger.valueOf(2687), cpu.irq());
+        assertEquals(BigInteger.valueOf(3643), cpu.softirq());
+        assertEquals(BigInteger.ZERO, cpu.steal());
+        assertEquals(BigInteger.ZERO, cpu.guest());
+        assertEquals(BigInteger.valueOf(3211276), cpu.all());
     }
 
     @Test
     public void testParseCpuStatMandatory() {
         CpuStat cpu = LinuxProcfsSupport.parseCpuStat("cpu  166207 9 31650 1308271");
-        assertEquals(166207, cpu.user());
-        assertEquals(9, cpu.nice());
-        assertEquals(31650, cpu.system());
-        assertEquals(1308271, cpu.idle());
-        assertEquals(0, cpu.iowait());
-        assertEquals(0, cpu.irq());
-        assertEquals(0, cpu.softirq());
-        assertEquals(0, cpu.steal());
-        assertEquals(0, cpu.guest());
+        assertEquals(BigInteger.valueOf(166207), cpu.user());
+        assertEquals(BigInteger.valueOf(9), cpu.nice());
+        assertEquals(BigInteger.valueOf(31650), cpu.system());
+        assertEquals(BigInteger.valueOf(1308271), cpu.idle());
+        assertNull(cpu.iowait());
+        assertNull(cpu.irq());
+        assertNull(cpu.softirq());
+        assertNull(cpu.steal());
+        assertNull(cpu.guest());
+        assertEquals(BigInteger.valueOf(1506137), cpu.all());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -90,13 +92,32 @@ public class LinuxProcfsSupportTest {
         LinuxProcfsSupport.parseCpuStat(null);
     }
 
-    @Test @Ignore // fails -- ignore until it's fixed
+    @Test
     public void testParseProcessStat() {
         ProcessStat proc = LinuxProcfsSupport.parseProcessStat("28601 (java) S 28470 2698 2698 0 -1 4202496 1263184 338414 45 57 21887 2104 1177 195 20 0 30 0 1568161 1366188032 165844 18446744073709551615 1073741824 1073778376 140734855863392 18446744073709551615 139712515037029 0 0 536870914 16801021 18446744073709551615 0 0 17 0 0 0 0 0 0");
         assertEquals(28601, proc.pid());
         assertEquals("java", proc.comm());
         assertEquals('S', proc.state());
+        assertEquals(BigInteger.valueOf(21887), proc.utime());
+        assertEquals(BigInteger.valueOf(2104), proc.stime());
+        assertEquals(BigInteger.valueOf(1177), proc.cutime());
+        assertEquals(BigInteger.valueOf(195), proc.cstime());
         assertEquals(28470, proc.ppid());
+        assertEquals(20, proc.priority());
+        assertEquals(0, proc.nice());
+        assertEquals(30, proc.num_threads());
+        assertEquals(BigInteger.valueOf(1568161), proc.starttime());
+        assertEquals(BigInteger.ZERO, proc.delayacct_blkio_ticks());
+        assertEquals(BigInteger.ZERO, proc.guest_time());
+        assertEquals(BigInteger.ZERO, proc.cguest_time());
+    }
+
+    @Test
+    public void testParseProcessStatComm() {
+        ProcessStat proc = LinuxProcfsSupport.parseProcessStat("28601 ( )( )( ) S 28470 2698 2698 0 -1 4202496 1263184 338414 45 57 21887 2104 1177 195 20 0 30 0 1568161 1366188032 165844 18446744073709551615 1073741824 1073778376 140734855863392 18446744073709551615 139712515037029 0 0 536870914 16801021 18446744073709551615 0 0 17 0 0 0 0 0 0");
+        assertEquals(28601, proc.pid());
+        assertEquals(" )( )( ", proc.comm());
+        assertEquals('S', proc.state());
     }
 
     @Test(expected = IllegalArgumentException.class)
