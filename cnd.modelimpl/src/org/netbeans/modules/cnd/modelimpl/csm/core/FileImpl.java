@@ -959,7 +959,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         try {
             // use cached TS
-            TokenStream tokenStream = getTokenStream(0, 0, 0, true);
+            TokenStream tokenStream = getTokenStream(0, Integer.MAX_VALUE, 0, true);
             if (tokenStream != null) {
                 CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), tokenStream, flags);
                 parser.setErrorDelegate(delegate);
