@@ -271,7 +271,9 @@ public class WatchesModel implements TreeModel {
             this.w = w;
             this.debugger = debugger;
             parseExpression(w.getExpression());
-            debugger.varChangeSupport.addPropertyChangeListener(WeakListeners.propertyChange(this, debugger.varChangeSupport));
+            if (cloneNumber == 0) {
+                debugger.varChangeSupport.addPropertyChangeListener(WeakListeners.propertyChange(this, debugger.varChangeSupport));
+            }
         }
         
         private void parseExpression(String exprStr) {
