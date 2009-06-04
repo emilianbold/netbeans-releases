@@ -96,6 +96,7 @@ public class NativeExecutionTest extends NbTestCase {
 
     public NativeExecutionTest(String name) {
         super(name);
+        System.setProperty("nativeexecution.mode.unittest", "true");
     }
 
     private static ExecutionEnvironment testExecutionEnvironment;
