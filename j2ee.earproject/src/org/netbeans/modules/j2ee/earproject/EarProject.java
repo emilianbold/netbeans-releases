@@ -67,6 +67,7 @@ import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.earproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.earproject.classpath.ClassPathSupportCallbackImpl;
@@ -640,8 +641,13 @@ public final class EarProject implements Project, AntProjectListener {
         return helper.getStandardPropertyEvaluator().getProperty(EarProjectProperties.J2EE_SERVER_INSTANCE);
     }
     
+    @Deprecated
     public String getJ2eePlatformVersion() {
-        return  helper.getStandardPropertyEvaluator().getProperty(EarProjectProperties.J2EE_PLATFORM);
+        return helper.getStandardPropertyEvaluator().getProperty(EarProjectProperties.J2EE_PLATFORM);
+    }
+
+    public Profile getJ2eeProfile() {
+        return  Profile.fromPropertiesString(helper.getStandardPropertyEvaluator().getProperty(EarProjectProperties.J2EE_PLATFORM));
     }
     
     public GeneratedFilesHelper getGeneratedFilesHelper() {

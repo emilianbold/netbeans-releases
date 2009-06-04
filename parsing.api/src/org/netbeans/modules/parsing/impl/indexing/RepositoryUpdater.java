@@ -954,16 +954,24 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 return false;
             }
         };
-        private final boolean supportsProgress;
+        private final String progressTitle;
         private ProgressHandle progressHandle = null;
 
 //        private int allLanguagesParsersCount = -1;
 //        private int allLanguagesTasksCount = -1;
 
         protected Work(boolean followUpJob, boolean checkEditor, boolean supportsProgress) {
+            this(
+                followUpJob,
+                checkEditor,
+                supportsProgress ? NbBundle.getMessage(RepositoryUpdater.class, "MSG_BackgroundCompileStart") : null //NOI18N
+            );
+        }
+
+        protected Work(boolean followUpJob, boolean checkEditor, String progressTitle) {
             this.followUpJob = followUpJob;
             this.checkEditor = checkEditor;
-            this.supportsProgress = supportsProgress;
+            this.progressTitle = progressTitle;
         }
 
         protected final boolean isFollowUpJob() {
@@ -1321,8 +1329,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             return finished.get();
         }
 
-        public final boolean supportsProgress() {
-            return supportsProgress;
+        public final String getProgressTitle() {
+            return progressTitle;
         }
 
         public final void setProgressHandle(ProgressHandle progressHandle) {
@@ -1360,7 +1368,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         private final Collection<FileObject> files = new HashSet<FileObject>();
 
         public FileListWork (URL root, boolean followUpJob, boolean checkEditor) {
-            super(followUpJob, checkEditor, false);
+            super(followUpJob, checkEditor, true);
 
             assert root != null;
             this.root = root;
@@ -1385,7 +1393,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         protected @Override boolean getDone() {
-//            updateProgress(root);
+            updateProgress(root);
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo != null) {
                 try {
@@ -1527,7 +1535,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         private final Map<URL, List<URL>> scannedRoots2Dependencies;
 
         public RefreshIndices(Set<String> indexerMimeTypes, CustomIndexerFactory indexerFactory, Map<URL, List<URL>> scannedRoots2Depencencies) {
-            super(false, false, true);
+            super(false, false, NbBundle.getMessage(RepositoryUpdater.class, "MSG_RefreshingIndices", indexerFactory.getIndexerName())); //NOI18N
             this.indexerMimeTypes = indexerMimeTypes;
             this.indexerFactory = indexerFactory;
             this.scannedRoots2Dependencies = scannedRoots2Depencencies;
@@ -1540,6 +1548,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     return true;
                 }
 
+                this.updateProgress(root);
                 try {
                     final FileObject rootFo = URLMapper.findFileObject(root);
                     if (rootFo != null) {
@@ -1816,8 +1825,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         ClassPath cp = ClassPath.getClassPath(rootFo, id);
                         if (cp != null) {
                             for (ClassPath.Entry entry : cp.entries()) {
-                                final URL url = entry.getURL();
-                                final URL[] sourceRoots = PathRegistry.getDefault().sourceForBinaryQuery(url, cp, false);
+                                final URL binaryRoot = entry.getURL();
+                                final URL[] sourceRoots = PathRegistry.getDefault().sourceForBinaryQuery(binaryRoot, cp, false);
                                 if (sourceRoots != null) {
                                     for (URL sourceRoot : sourceRoots) {
                                         if (!sourceRoot.equals(rootURL) && !ctx.cycleDetector.contains(sourceRoot)) {
@@ -1832,11 +1841,17 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                                 else {
                                     //What does it mean?
                                     if (ctx.useInitialState) {
-                                        if (!ctx.initialBinaries.contains(url)) {
-                                            ctx.newBinariesToScan.add (url);
+                                        if (!ctx.initialBinaries.contains(binaryRoot)) {
+                                            ctx.newBinariesToScan.add (binaryRoot);
                                         }
-                                        ctx.oldBinaries.remove(url);
+                                        ctx.oldBinaries.remove(binaryRoot);
+                                    } else {
+                                        ctx.newBinariesToScan.add(binaryRoot);
+                                        ctx.oldBinaries.remove(binaryRoot);
                                     }
+
+                                    assert !binaryRoot.equals(rootURL) && !ctx.cycleDetector.contains(binaryRoot);
+                                    deps.add(binaryRoot);
                                 }
                             }
                         }
@@ -2336,10 +2351,19 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             ProgressHandle progressHandle = null;
             try {
                 for(Work work = getWork(); work != null; work = getWork()) {
-                    if (progressHandle == null && work.supportsProgress()) {
-                        progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryUpdater.class, "MSG_BackgroundCompileStart")); //NOI18N
-                        progressHandle.start();
+                    if (progressHandle == null) {
+                        if (work.getProgressTitle() != null) {
+                            progressHandle = ProgressHandleFactory.createHandle(work.getProgressTitle());
+                            progressHandle.start();
+                        }
+                    } else {
+                        if (work.getProgressTitle() != null) {
+                            progressHandle.setDisplayName(work.getProgressTitle());
+                        } else {
+                            progressHandle.setDisplayName(NbBundle.getMessage(RepositoryUpdater.class, "MSG_BackgroundCompileStart")); //NOI18N
+                        }
                     }
+
                     work.setProgressHandle(progressHandle);
                     try {
                         work.doTheWork();

@@ -67,7 +67,6 @@ import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.netbeans.spi.server.ServerInstanceProvider;
-import org.openide.filesystems.FileUtil;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -202,9 +201,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
 
     /** Factory method providing catalog for XML completion of DD */
     public static synchronized RunTimeDDCatalog getPreludeRunTimeDDCatalog(){
-        // FIXME -- avoid dereferencing the property.
-        if ((preludeDDCatalog==null) &&
-                !("true".equals(System.getProperty("org.glassfish.v3.disablePreludeSupport")))) {
+        if (preludeDDCatalog==null) {
             preludeDDCatalog = new RunTimeDDCatalog();
             preludeDDCatalog.displayNameKey = "LBL_PreludeRunTimeDDCatalog"; // NOI18N
             preludeDDCatalog.shortDescriptionKey = "DESC_PreludeRunTimeDDCatalog"; // NOI18N
@@ -214,10 +211,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
 
     /** Factory method providing catalog for XML completion of DD */
     public static synchronized RunTimeDDCatalog getEE6RunTimeDDCatalog(){
-        // FIXME -- avoid dereferencing the property.
-        if ((javaEE6DDCatalog==null) &&
-                (("true".equals(System.getProperty("org.glassfish.v3.enableExperimentalFeatures"))) ||
-                null != FileUtil.getConfigFile("GlassFish v3/EnableExperimental Features")))  {
+        if (javaEE6DDCatalog==null) {
             javaEE6DDCatalog = new RunTimeDDCatalog();
             javaEE6DDCatalog.displayNameKey = "LBL_V3RunTimeDDCatalog"; // NOI18N
             javaEE6DDCatalog.shortDescriptionKey = "DESC_V3RunTimeDDCatalog"; // NOI18N

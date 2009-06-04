@@ -368,7 +368,7 @@ public class CosChecker implements PrerequisitesChecker {
             @SuppressWarnings("unchecked")
             List<Dependency> deps = config.getMavenProject().getTestDependencies();
             for (Dependency d : deps) {
-                if (testng.equals(d.getManagementKey())) {
+                if (d.getManagementKey().startsWith(testng)) {
                     //skip tests that are invoked by testng, no support for it yet.
                     //#149464
                     return true;

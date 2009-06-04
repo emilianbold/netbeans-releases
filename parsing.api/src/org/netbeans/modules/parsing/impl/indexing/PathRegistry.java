@@ -494,6 +494,10 @@ public final class PathRegistry implements Runnable {
                         libraryResult.addAll(srcRoots);
                     }
                     translatedRoots.put(url, cacheURLs.toArray(new URL[cacheURLs.size()]));
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("T: " + url + " -> " + cacheURLs); //NOI18N
+                    }
+
                     if (isNewSR) {
                         sr.addChangeListener(request.changeListener);
                     }
