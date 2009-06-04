@@ -73,8 +73,8 @@ public class HtmlCompletionItem implements CompletionItem {
         return new Tag(name, substitutionOffset, helpId);
     }
 
-    public static HtmlCompletionItem createEndTag(String name, int substitutionOffset, String helpId, int order) {
-        return new EndTag(name, substitutionOffset, helpId, order);
+    public static HtmlCompletionItem createEndTag(String name, int substitutionOffset, String helpId, int order, EndTag.Type type) {
+        return new EndTag(name, substitutionOffset, helpId, order, type);
     }
 
     public static HtmlCompletionItem createAutocompleteEndTag(String name, int substitutionOffset) {
@@ -335,12 +335,33 @@ public class HtmlCompletionItem implements CompletionItem {
      * Completion item representing a JSP tag including its prefix eg. <jsp:useBean />
      */
     public static class EndTag extends HtmlCompletionItem {
+ 
+        public enum Type {
+            DEFAULT("0000ff", false, DEFAULT_SORT_PRIORITY),
+            OPTIONAL_EXISTING(hexColorCode(Color.GRAY), false, DEFAULT_SORT_PRIORITY),
+            OPTIONAL_MISSING(hexColorCode(Color.GRAY), true, DEFAULT_SORT_PRIORITY),
+            REQUIRED_EXISTING("0000ff", false, DEFAULT_SORT_PRIORITY),
+            REQUIRED_MISSING("0000ff", true, DEFAULT_SORT_PRIORITY - 1); //NOI18N
+                    
+            private String colorCode;
+            private boolean bold;
+            private int sortPriority;
+
+            private Type(String colorCode, boolean bold, int sortPriority) {
+                this.colorCode = colorCode;
+                this.bold = bold;
+                this.sortPriority = sortPriority;
+            }
+
+        }
 
         private int orderIndex;
+        private Type type;
 
-        EndTag(String text, int substitutionOffset, String helpId, int order) {
+        EndTag(String text, int substitutionOffset, String helpId, int order, Type type) {
             super(text, substitutionOffset, helpId);
             this.orderIndex = order;
+            this.type = type;
         }
 
         @Override
@@ -364,15 +385,22 @@ public class HtmlCompletionItem implements CompletionItem {
         }
 
         @Override
+        public int getSortPriority() {
+            return this.type.sortPriority;
+        }
+
+        @Override
         protected String getLeftHtmlText() {
-            return "<font color=#0000ff>&lt;/" + getItemText() + "&gt;</font>";
+            return (type.bold ? "<b>" : "") +
+                    "<font color=#" + type.colorCode + ">&lt;/" + getItemText() + "&gt;</font>" +
+                    (type.bold ? "</b>" : "");
         }
     }
 
     public static class AutocompleteEndTag extends EndTag {
 
         public AutocompleteEndTag(String text, int substitutionOffset) {
-            super(text, substitutionOffset, null, -1);
+            super(text, substitutionOffset, null, -1, Type.DEFAULT);
         }
 
         @Override

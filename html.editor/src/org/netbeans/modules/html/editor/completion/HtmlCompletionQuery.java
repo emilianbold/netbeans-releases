@@ -115,21 +115,21 @@ public class HtmlCompletionQuery extends UserTask {
         assert ts != null; //should be ensured by the parsing.api that we always get html token sequence from the snapshot
 
         int diff = ts.move(astOffset);
-        if(ts.moveNext()) {
-            if(diff == 0 && (ts.token().id() == HTMLTokenId.TEXT || ts.token().id() == HTMLTokenId.WS)) {
+        if (ts.moveNext()) {
+            if (diff == 0 && (ts.token().id() == HTMLTokenId.TEXT || ts.token().id() == HTMLTokenId.WS)) {
                 //looks like we are on a boundary of a text or whitespace, need the previous token
-                if(!ts.movePrevious()) {
+                if (!ts.movePrevious()) {
                     //we cannot get previous token
                     return null;
                 }
             }
         } else {
-            if(!ts.movePrevious()) {
+            if (!ts.movePrevious()) {
                 //can't get previous token
                 return null;
             }
         }
-        
+
         int anchor = -1;
 
         //get text before cursor
@@ -317,7 +317,7 @@ public class HtmlCompletionQuery extends UserTask {
         }
         if (commonLength == preText.trim().length()) {
             tagName = isXHtml ? tagName : (lowerCase ? tagName.toLowerCase(Locale.ENGLISH) : tagName);
-            return Collections.singletonList(HtmlCompletionItem.createEndTag(tagName, offset - commonLength, null, -1));
+            return Collections.singletonList(HtmlCompletionItem.createEndTag(tagName, offset - commonLength, null, -1, HtmlCompletionItem.EndTag.Type.DEFAULT));
         }
         return null;
     }
@@ -370,6 +370,7 @@ public class HtmlCompletionQuery extends UserTask {
 
     private List<HtmlCompletionItem> getPossibleEndTags(AstNode leaf, int offset, String prefix) {
         List<HtmlCompletionItem> items = new ArrayList<HtmlCompletionItem>();
+
         int order = 0;
         for (;;) {
             if (leaf.type() == AstNode.NodeType.ROOT) {
@@ -382,7 +383,7 @@ public class HtmlCompletionQuery extends UserTask {
                 if (tagName.startsWith(prefix.toLowerCase(Locale.ENGLISH))) {
                     //TODO - distinguish unmatched and matched tags in the completion!!!
                     //TODO - mark required and optional end tags somehow
-                    items.add(HtmlCompletionItem.createEndTag(tagName, offset - 2 - prefix.length(), tagName, order++));
+                    items.add(HtmlCompletionItem.createEndTag(tagName, offset - 2 - prefix.length(), tagName, order++, getEndTagType(leaf)));
                 }
             }
             leaf = leaf.parent();
@@ -392,6 +393,21 @@ public class HtmlCompletionQuery extends UserTask {
         }
 
         return items;
+    }
+
+    private HtmlCompletionItem.EndTag.Type getEndTagType(AstNode leaf) {
+        if (leaf.getMatchingTag() != null) {
+            //matched
+            return leaf.needsToHaveMatchingTag() ? 
+                HtmlCompletionItem.EndTag.Type.REQUIRED_EXISTING :
+                HtmlCompletionItem.EndTag.Type.OPTIONAL_EXISTING;
+        } else {
+            //unmatched
+            return leaf.needsToHaveMatchingTag() ? 
+                HtmlCompletionItem.EndTag.Type.REQUIRED_MISSING :
+                HtmlCompletionItem.EndTag.Type.OPTIONAL_MISSING;
+        }
+
     }
 
     private List<DTD.Element> filterElements(List<DTD.Element> elements, String elementNamePrefix) {
