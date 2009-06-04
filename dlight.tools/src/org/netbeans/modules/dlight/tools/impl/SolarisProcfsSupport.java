@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.tools.impl;
 
+import java.math.BigDecimal;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
@@ -53,7 +54,9 @@ public final class SolarisProcfsSupport {
      */
     public static final class Timespec {
 
-        private Timespec() {
+        private Timespec(long sec, long nsec) {
+            this.sec = sec;
+            this.nsec = nsec;
         }
 
         /**
@@ -62,7 +65,7 @@ public final class SolarisProcfsSupport {
         public long sec() {
             return sec;
         }
-        private long sec;
+        private final long sec;
 
         /**
          * Nanoseconds.
@@ -70,7 +73,14 @@ public final class SolarisProcfsSupport {
         public long nsec() {
             return nsec;
         }
-        private long nsec;
+        private final long nsec;
+
+        /**
+         * @return value in seconds as BigDecimal.
+         */
+        public BigDecimal toBigDecimal() {
+            return BigDecimal.valueOf(sec).add(BigDecimal.valueOf(nsec, 9));
+        }
     }
 
     /**
@@ -311,8 +321,7 @@ public final class SolarisProcfsSupport {
 
     /**
      * Parses prusage structure from hex dump, as printed by <code>od -v -t x4</code>.
-     * Invoke this method with each line of the dump (in proper order)
-     * and single Prusage structure.
+     * Invoke this method with each line of the dump in proper order.
      *
      * <p>Here is an idea of how the hex dump look like:
      * <pre>
@@ -339,15 +348,21 @@ public final class SolarisProcfsSupport {
             if ("0000000".equals(lineNumber)) { // NOI18N
                 proc.lwpid = parseHex(t.nextToken());
                 proc.count = (int)parseHex(t.nextToken());
-                Timespec tstamp = new Timespec();
-                tstamp.sec = parseHex(t.nextToken());
-                tstamp.nsec = parseHex(t.nextToken());
-                proc.tstamp = tstamp;
+                proc.tstamp = parseTimespec(t);
+            } else if ("0000040".equals(lineNumber)) { // NOI18N
+                proc.rtime = parseTimespec(t);
+                proc.utime = parseTimespec(t);
+            } else if ("0000060".equals(lineNumber)) { // NOI18N
+                proc.stime = parseTimespec(t);
             }
         } catch (NoSuchElementException ex) {
             throw new IllegalArgumentException("Too few elements in line", ex); // NOI18N
         }
         return proc;
+    }
+
+    private static Timespec parseTimespec(StringTokenizer t) {
+        return new Timespec(parseHex(t.nextToken()), parseHex(t.nextToken()));
     }
 
     private static long parseHex(String value) {

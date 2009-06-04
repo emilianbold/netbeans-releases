@@ -238,7 +238,7 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
                 engine = new ProcDataProviderLinux(this, getServiceInfoDataStorage());
                 break;
             case SUNOS:
-                engine = new ProcDataProviderSolaris(this, getServiceInfoDataStorage(), env);
+                engine = new ProcDataProviderSolaris(this, getServiceInfoDataStorage(), hostInfo.getCpuNum());
                 break;
             default:
                 DLightLogger.instance.severe("Called ProcDataProvider.targetStarted() on unsupported OS"); // NOI18N

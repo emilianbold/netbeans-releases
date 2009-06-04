@@ -38,20 +38,15 @@
  */
 package org.netbeans.modules.dlight.tools.impl;
 
-import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.Arrays;
-import java.util.NoSuchElementException;
-import java.util.StringTokenizer;
-import java.util.concurrent.CancellationException;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
+import org.netbeans.modules.dlight.tools.impl.SolarisProcfsSupport.Prusage;
 import static org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration.*;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 /**
  * ProcDataProvider engine for Solaris.
@@ -63,23 +58,16 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
  */
 public class ProcDataProviderSolaris implements ProcDataProvider.Engine {
 
+    private static final BigDecimal PERCENT = BigDecimal.valueOf(100);
+
     private final DataRowConsumer consumer;
     private final int cpuCount;
     private final ServiceInfoDataStorage serviceInfoStorage;
 
-    public ProcDataProviderSolaris(DataRowConsumer consumer, ServiceInfoDataStorage serviceInfoStorage, ExecutionEnvironment env) {
+    public ProcDataProviderSolaris(DataRowConsumer consumer, ServiceInfoDataStorage serviceInfoStorage, int cpuCount) {
         this.consumer = consumer;
         this.serviceInfoStorage = serviceInfoStorage;
-        int cpus = 1;
-
-        try {
-            HostInfo info = HostInfoUtils.getHostInfo(env);
-            cpus = info.getCpuNum();
-        } catch (IOException ex) {
-        } catch (CancellationException ex) {
-        }
-
-        this.cpuCount = cpus;
+        this.cpuCount = cpuCount;
     }
 
     public String getCommand(int pid) {
@@ -92,90 +80,71 @@ public class ProcDataProviderSolaris implements ProcDataProvider.Engine {
 
     private class SolarisProcLineProcessor implements LineProcessor {
 
-        private double prevTime;
-        private double currTime;
-        private double prevUsrTime;
-        private double currUsrTime;
-        private double prevSysTime;
-        private double currSysTime;
+        private Prusage prevPrusage;
+        private Prusage currPrusage;
 
         @Override
         public void processLine(String line) {
-            // Output looks like:
-            // 0000000 00000000 00000002 00011964 26bfb1c0
-            // 0000020 00011923 26fdb58a 00000000 00000000
-            // 0000040 00000081 20cd90ca 0000007e 2b4e8e04
-            // 0000060 00000000 14c34ae9 00000000 060272d8
-            // 0000100
-            StringTokenizer tokenizer = new StringTokenizer(line);
             try {
-                String firstToken = tokenizer.nextToken();
-                if ("0000000".equals(firstToken)) { // NOI18N
-                    prevTime = currTime;
-                    tokenizer.nextToken();
-                    tokenizer.nextToken();
-                    long seconds = parseHex(tokenizer.nextToken());
-                    long nanos = parseHex(tokenizer.nextToken());
-                    currTime = time(seconds, nanos);
-                } else if ("0000040".equals(firstToken)) { // NOI18N
-                    prevUsrTime = currUsrTime;
-                    tokenizer.nextToken();
-                    tokenizer.nextToken();
-                    long usrSeconds = parseHex(tokenizer.nextToken());
-                    long usrNanos = parseHex(tokenizer.nextToken());
-                    currUsrTime = time(usrSeconds, usrNanos);
-                } else if ("0000060".equals(firstToken)) { // NOI18N
-                    prevSysTime = currSysTime;
-                    long sysSeconds = parseHex(tokenizer.nextToken());
-                    long sysNanos = parseHex(tokenizer.nextToken());
-                    currSysTime = time(sysSeconds, sysNanos);
-                } else if (firstToken.length() < 7 && !tokenizer.hasMoreTokens()) {
+            String firstToken = getFirstToken(line);
+            if (firstToken.length() == 7) {
+                currPrusage = SolarisProcfsSupport.parsePrusage(line, currPrusage);
+            } else {
+                if (prevPrusage != null) {
                     int threads = Integer.parseInt(firstToken);
-                    if (0 < prevTime) {
-                        double deltaTime = (currTime - prevTime) * cpuCount;
-                        float usrPercent = percent(currUsrTime - prevUsrTime, deltaTime);
-                        float sysPercent = percent(currSysTime - prevSysTime, deltaTime);
-                        DataRow row = new DataRow(
-                                Arrays.asList(USR_TIME.getColumnName(),
-                                              SYS_TIME.getColumnName(),
-                                              THREADS.getColumnName()),
-                                Arrays.asList(usrPercent,
-                                              sysPercent,
-                                              threads));
-                        consumer.consume(row);
-                    }
+                    BigDecimal cpuTime = currPrusage.tstamp().toBigDecimal()
+                            .subtract(prevPrusage.tstamp().toBigDecimal())
+                            .multiply(BigDecimal.valueOf(cpuCount));
+                    BigDecimal usrTime = currPrusage.utime().toBigDecimal()
+                            .subtract(prevPrusage.utime().toBigDecimal());
+                    BigDecimal sysTime = currPrusage.stime().toBigDecimal()
+                            .subtract(prevPrusage.stime().toBigDecimal());
+                    float usrPercent = percent(usrTime, cpuTime);
+                    float sysPercent = percent(sysTime, cpuTime);
+                    DataRow row = new DataRow(
+                            Arrays.asList(
+                                    USR_TIME.getColumnName(),
+                                    SYS_TIME.getColumnName(),
+                                    THREADS.getColumnName()),
+                            Arrays.asList(
+                                    usrPercent,
+                                    sysPercent,
+                                    threads));
+                    consumer.consume(row);
                 }
-            } catch (NoSuchElementException ex) {
-                // silently ignore malformed line
-            } catch (NumberFormatException ex) {
+                prevPrusage = currPrusage;
+                currPrusage = null;
+            }
+            } catch (IllegalArgumentException ex) {
                 // silently ignore malformed line
             }
         }
 
         public void reset() {
+            prevPrusage = currPrusage = null;
         }
 
         public void close() {
         }
     }
 
-    private static long parseHex(String value) {
-        return Long.parseLong(value, 16);
+    private static String getFirstToken(String line) {
+        int endIdx = line.indexOf(' ');
+        if (endIdx < 0) {
+            endIdx = line.length();
+        }
+        return line.substring(0, endIdx);
     }
 
-    private static double time(long seconds, long nanos) {
-        return seconds + nanos / 1e9;
-    }
-
-    private static float percent(double value, double total) {
-        if (0 < total) {
-            if (value <= 0) {
+    private static float percent(BigDecimal value, BigDecimal total) {
+        if (BigDecimal.ZERO.compareTo(total) < 0) { // 0 < total
+            if (value.compareTo(BigDecimal.ZERO) <= 0) { // value <= 0
                 return 0f;
             }
-            if (total <= value) {
+            if (total.compareTo(value) <= 0) { // total <= value
                 return 100f;
             } else {
-                return (float) (100f * value / total);
+                return value.multiply(PERCENT).divideToIntegralValue(total).floatValue();
             }
         } else {
             return 0f;
