@@ -1,4 +1,4 @@
-#!/usr/sbin/dtrace -s
+#!/usr/sbin/dtrace -Zs
 
 #pragma D option quiet
 

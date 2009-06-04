@@ -93,17 +93,7 @@ public final class FileIndexer extends CustomIndexer {
 
         @Override
         public void filesDirty(Collection<? extends Indexable> dirty, Context context) {
-            try {
-                IndexingSupport is = IndexingSupport.getInstance(context);
-                for(Indexable i : dirty) {
-                    is.markDirtyDocuments(i);
-                    if (LOG.isLoggable(Level.FINEST)) {
-                        LOG.finest("dirty " + i.getURL() + "/" + i.getRelativePath());
-                    }
-                }
-            } catch (IOException ioe) {
-                LOG.log(Level.WARNING, null, ioe);
-            }
+            // no need to do anything, we are not indexing anythong from inside of the file
         }
 
         @Override

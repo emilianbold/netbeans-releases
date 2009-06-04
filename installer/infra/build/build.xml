@@ -318,7 +318,7 @@
              value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
 
         <set property="nb.bundle.files.prefix"
-             value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
+             value="${nb.files.prefix}${nb.build.suffix}"/>
 
         <set property="jdk.bundle.files.suffix"
              value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
@@ -505,6 +505,10 @@
 	     <property name="javafx.full.version"
 		       value="1.0.0.0.${javafx.build.number}"/>
          </if>
+
+        <!-- fake JavaFX version just to be shown on the d/l page -->
+        <property name="javafx.full.version" value="1.0.0.0.0"/>
+
         <delete file="${temp.file}" failonerror="false"/>
     </target>
     
@@ -793,7 +797,7 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-netbeans-components" if="do.build.netbeans">
 	<set property="netbeans.group.uid" value=""/>
 	<antcall target="build-list">
-	    <param name="build.list" value="nb-base nb-javase nb-webcommon nb-javaee nb-javame nb-ruby nb-groovy nb-cnd nb-php nb-ergonomics runtimes-group ${server-uid} glassfish-mod-sun tomcat openesb"/>
+	    <param name="build.list" value="nb-base nb-javase nb-webcommon nb-javaee nb-javame nb-javafx nb-ruby nb-groovy nb-cnd nb-php nb-ergonomics runtimes-group ${server-uid} glassfish-mod-sun tomcat"/>
         </antcall>
      </target>
 
@@ -1385,7 +1389,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        <component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>
                        <component uid="glassfish-mod-sun"  version="3.0.0.${glassfish-mod-sun.milestone.number}.${glassfish-mod-sun.build.number}"/>
                        <component uid="tomcat"         version="${tomcat.full.version}"/>
-                   <component uid="openesb"        version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>
+                       <!--<component uid="openesb"        version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>-->
                    </create-bundle>
             </if>
             <if property="is.solaris.platform" value="true">	    
@@ -1408,7 +1412,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        <component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>
                        <component uid="glassfish-mod-sun"  version="3.0.0.${glassfish-mod-sun.milestone.number}.${glassfish-mod-sun.build.number}"/>
                        <component uid="tomcat"         version="${tomcat.full.version}"/>
-                       <component uid="openesb"        version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>
+                       <!--<component uid="openesb"        version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>-->
                    </create-bundle>
             </if>
         </if>
@@ -1433,7 +1437,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>
             <component uid="glassfish-mod-sun" version="3.0.0.${glassfish-mod-sun.milestone.number}.${glassfish-mod-sun.build.number}"/>
             <component uid="tomcat"        version="${tomcat.full.version}"/>
-            <component uid="openesb"       version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>
+            <!--<component uid="openesb"       version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>-->
         </create-bundle>
         </if>
 	<antcall target="convert-netbeans-bundle"/>
@@ -1745,6 +1749,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase"             version="${nb.full.version}"/>
             <component uid="nb-webcommon"          version="${nb.full.version}"/>
             <component uid="nb-javaee"             version="${nb.full.version}"/>
+            <component uid="nb-groovy"             version="${nb.full.version}"/>
             <component uid="nb-soa"                version="${nb.full.version}"/>
             <component uid="nb-portalpack"         version="3.0.0.0.${portalpack.build.number}"/>
             <component uid="sjsas"                 version="2.1.${sjsas.milestone.number}.${sjsas.build.number}"/>
@@ -1867,7 +1872,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	<antcall target="generate-jdk-bundle-single">
 	    <param name="jdk.bundle.files.prefix"     value="jdk-1_5_0_19"/>
 	    <param name="jdk.full.version"            value="1.5.0.19.2"/>
-      	    <param name="bundled.jvm.file.prefix"     value="jre-1_5_0_15"/>
+      	    <param name="bundled.jvm.file.prefix"     value="jre-1_5_0_19"/>
     	    <param name="license.resource"            value="$S{nbi.overall.license.jdk5.resource}"/>
 	</antcall>
     </target>
@@ -1877,7 +1882,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	<antcall target="generate-jdk-bundle-single">
 	    <param name="jdk.bundle.files.prefix"     value="jdk-6u14"/>
 	    <param name="jdk.full.version"            value="1.6.0.14.8"/>
-            <param name="bundled.jvm.file.prefix"     value="jre-6u7"/>
+            <param name="bundled.jvm.file.prefix"     value="jre-6u14"/>
 	    <param name="license.resource"            value="$S{nbi.overall.license.jdk6.resource}"/>
 	</antcall>
     </target>

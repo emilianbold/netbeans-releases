@@ -622,7 +622,8 @@ ExplorerManager.Provider, PropertyChangeListener {
         int[] order = new int[n];
         int ci = 0;
         for (int i = 0; i < n; i++, ci++) {
-            while (columns[ci].isHidden()) ci++;
+            while (ci < columns.length && columns[ci].isHidden()) ci++;
+            if (ci >= columns.length) break;
             order[i] = columnVisibleMap[ci];
             logger.fine("    order["+i+"] = "+order[i]);
         }

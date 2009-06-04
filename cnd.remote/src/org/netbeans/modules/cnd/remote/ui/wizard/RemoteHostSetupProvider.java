@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.remote.ui.wizard;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupProvider;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupWorker;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,5 +66,17 @@ public class RemoteHostSetupProvider implements HostSetupProvider {
 
     public boolean isApplicable() {
         return true;
+    }
+
+    public boolean canCheckSetup(ExecutionEnvironment execEnv) {
+        return false; //TODO: implement for "ssh://"
+    }
+
+    public boolean isSetUp(ExecutionEnvironment execEnv) {
+        return true; //TODO: implement for "ssh://"
+    }
+
+    public boolean setUp(ExecutionEnvironment execEnv) {
+        return true; //TODO: implement for "ssh://"
     }
 }

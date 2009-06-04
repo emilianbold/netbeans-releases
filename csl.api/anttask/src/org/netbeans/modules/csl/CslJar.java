@@ -95,6 +95,7 @@ public class CslJar extends JarWithModuleAttributes {
     private static final String INTVALUE = "intvalue"; // NOI18N
     private static final String STRINGVALUE = "stringvalue"; // NOI18N
     private static final String BUNDLEVALUE = "bundlevalue"; // NOI18N
+    private static final String METHODVALUE = "methodvalue"; // NOI18N
     private static final String USECUSTOMEDITORKIT = "useCustomEditorKit"; // NOI18N
     private static final String TRUE = "true"; // NOI18N
     private static final String FILESYSTEM = "filesystem"; // NOI18N
@@ -329,6 +330,7 @@ public class CslJar extends JarWithModuleAttributes {
 
 
                     registerLoader(doc, mimeType, displayName);
+                    registerPathRecognizer(doc, mimeType);
                     registerEditorServices(doc, mimeType, cslLanguageClass, linePrefix, displayName, hasStructureScanner, hasDeclarationFinder);
                 }
             }
@@ -513,9 +515,37 @@ public class CslJar extends JarWithModuleAttributes {
         return attributes;
     }
 
+    private String makeFilesystemName(String s) {
+        StringBuilder sb = new StringBuilder(s.length());
+        for(int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (Character.isLetterOrDigit(c)) {
+                sb.append(c);
+            } else {
+                sb.append("-"); //NOI18N
+            }
+        }
+        return sb.toString();
+    }
+
     private void registerStructureScanner(Document doc, String mimeType) {
         Element navigatorFolder = mkdirs(doc, "Navigator/Panels/" + mimeType); // NOI18N
         createFile(doc, navigatorFolder, "org-netbeans-modules-csl-navigation-ClassMemberPanel.instance"); // NOI18N
+    }
+
+    private void registerPathRecognizer(Document doc, String mimeType) {
+        Element servicesFolder = mkdirs(doc, "Services/Hidden/PathRecognizers"); // NOI18N
+        String instanceFile = "org-netbeans-modules-csl-core-PathRecognizerImpl-" + makeFilesystemName(mimeType) + ".instance"; //NOI18N
+
+        if (findPath(servicesFolder, instanceFile) != null) {
+            // Already registered!
+            return;
+        }
+
+        Element file = createFile(doc, servicesFolder, instanceFile);
+        setFileAttribute(doc, file, "mimeType", STRINGVALUE, mimeType); // NOI18N
+        setFileAttribute(doc, file, "instanceOf", STRINGVALUE, "org.netbeans.modules.parsing.spi.indexing.PathRecognizer"); // NOI18N
+        setFileAttribute(doc, file, "instanceCreate", METHODVALUE, "org.netbeans.modules.csl.core.PathRecognizerImpl.createInstance"); // NOI18N
     }
 
     private void registerEditorServices(Document doc, String mimeType, String gsfLanguageClass, String linePrefix, String displayName, boolean hasStructureScanner, boolean hasDeclarationFinder) {

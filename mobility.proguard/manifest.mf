@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.mobility.proguard
-OpenIDE-Module-Specification-Version: 1.6
+OpenIDE-Module-Specification-Version: 1.6.1
 OpenIDE-Module-Layer: org/netbeans/modules/mobility/proguard/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/mobility/proguard/Bundle.properties
 AutoUpdate-Show-In-Client: false

@@ -4,5 +4,5 @@ OpenIDE-Module: org.netbeans.modules.maven.graph/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/maven/graph/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/maven/graph/layer.xml
 OpenIDE-Module-Public-Packages: -
-OpenIDE-Module-Specification-Version: 1.1.1
+OpenIDE-Module-Specification-Version: 1.1.2
 
