@@ -51,7 +51,6 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.html.HtmlSyntaxSupport;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.modules.css.formatting.api.LexUtilities;
@@ -60,6 +59,7 @@ import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.HtmlAutoCompletion;
+import org.netbeans.modules.html.editor.Utils;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -183,7 +183,7 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
         //add the text nodes into the ast due to performance reasons
         Document doc = info.getSnapshot().getSource().getDocument(true);
         TokenHierarchy hierarchy = TokenHierarchy.get(doc);
-        TokenSequence ts = HtmlSyntaxSupport.getJoinedHtmlSequence(doc);
+        TokenSequence ts = Utils.getJoinedHtmlSequence(doc);
         if(ts == null) {
             return Collections.emptyList();
         }

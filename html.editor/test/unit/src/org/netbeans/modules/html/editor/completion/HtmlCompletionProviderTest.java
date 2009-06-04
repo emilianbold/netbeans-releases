@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,36 +31,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.editor.ext.html;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+package org.netbeans.modules.html.editor.completion;
+
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.modules.html.editor.test.TestBase;
 
 /**
  *
- * @author marek
+ * @author marekfukala
  */
-public class Utils {
+public class HtmlCompletionProviderTest extends TestBase {
 
-    static String readFileContentToString(File file) throws IOException {
-        StringBuffer buff = new StringBuffer();
-
-        BufferedReader rdr = new BufferedReader(new FileReader(file));
-
-        String line;
-
-        try{
-            while ((line = rdr.readLine()) != null){
-                buff.append(line + "\n");
-            }
-        } finally{
-            rdr.close();
-        }
-        
-        return buff.toString();
+    public HtmlCompletionProviderTest(String testName) {
+        super(testName);
     }
-    
+
+    public void testCheckOpenCompletion() throws BadLocationException {
+        Document doc = createDocument();
+
+        doc.insertString(0, "<", null);
+        assertTrue(HtmlCompletionProvider.checkOpenCompletion(doc, 1, "<"));
+
+        doc.insertString(1, "div", null);
+        assertFalse(HtmlCompletionProvider.checkOpenCompletion(doc, 4, "div"));
+
+        doc.insertString(4, " ", null);
+        assertTrue(HtmlCompletionProvider.checkOpenCompletion(doc, 5, " "));
+
+        doc.insertString(5, "/>", null);
+        assertFalse(HtmlCompletionProvider.checkOpenCompletion(doc, 7, "/>"));
+
+        doc.insertString(7, "</", null);
+        assertTrue(HtmlCompletionProvider.checkOpenCompletion(doc, 9, "</"));
+
+        doc.insertString(9, "div> &", null);
+        assertTrue(HtmlCompletionProvider.checkOpenCompletion(doc, 15, "div> &"));
+
+    }
+
+
 }

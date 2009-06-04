@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,22 +31,48 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.editor.ext.html.parser;
 
-import javax.swing.text.BadLocationException;
+import org.netbeans.editor.ext.html.dtd.DTD;
+import org.netbeans.editor.ext.html.test.TestBase;
+import org.netbeans.modules.html.editor.NbReaderProvider;
 
 /**
  *
- * @author marek
+ * @author marekfukala
  */
-public interface ParserSource {
+public class SyntaxParserResultTest extends TestBase {
+
+    public SyntaxParserResultTest(String testName) {
+        super(testName);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        NbReaderProvider.setupReaders();
+    }
     
-    public CharSequence getText(int offset, int length) throws BadLocationException;
+    public void testBasic() {
+        String code = "<html><head><title>xxx</title></head><body>yyy</body></html>";
+        SyntaxParserResult result = SyntaxParser.parse(code);
+
+        assertNotNull(result);
+        assertNotNull(result.getSource());
+        assertNotNull(result.getElements());
+
+        assertNull(result.getPublicID()); //not specified
+        DTD dtd = result.getDTD(); //fallback
+        assertNotNull(dtd);
+
+        assertNotNull(result.getASTRoot());
+
+    }
     
 }
