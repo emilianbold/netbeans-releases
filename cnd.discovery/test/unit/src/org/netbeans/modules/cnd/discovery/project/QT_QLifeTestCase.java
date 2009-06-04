@@ -41,8 +41,8 @@ package org.netbeans.modules.cnd.discovery.project;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import org.junit.Test;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -65,6 +65,10 @@ public class QT_QLifeTestCase extends MakeProjectBase {
     public void testQLife(){
         List<String> list = new ArrayList<String>();
         list.add("qmake qlife.pro");
-        performTestProject("http://personal.inet.fi/koti/rkauppila/projects/life/qlife-qt4-0.9.tar.gz", list);
+        if (!Utilities.isWindows()) {
+            // There are troubles with generated Makefile on Windows.
+            // Disable the test for now.
+            performTestProject("http://personal.inet.fi/koti/rkauppila/projects/life/qlife-qt4-0.9.tar.gz", list);
+        }
     }
 }
