@@ -79,15 +79,6 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
         assert (stopDirective != null);
     }
     
-    /** Creates a new instance of APTRestorePreprocStateWalker */
-    public APTRestorePreprocStateWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
-        super(base, apt, file, preprocHandler, cacheEntry);
-        this.searchInterestedFile = false;
-        this.interestedFile = null;
-        this.inclStack = null;
-        this.stopDirective = null;
-    }
-    
     protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt, APTMacroMap.State postIncludeState) throws IOException {
         FileImpl csmFile = null;
         boolean foundDirective = false;
@@ -136,9 +127,9 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
                 APTFile aptLight = inclFileOwner.getAPTLight(csmFile);
                 if (aptLight != null) {
                     APTPreprocHandler preprocHandler = getPreprocHandler();
-                    // only ask for cached entry
+                    // only ask for cached entry and visit with it #include directive
                     APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(preprocHandler, null);
-                    APTWalker walker = new APTRestorePreprocStateWalker(getStartProject(), aptLight, csmFile, preprocHandler,cacheEntry);
+                    APTWalker walker = new APTSelfWalker(aptLight, preprocHandler, cacheEntry);
                     walker.visit();
                     // does not remember walk info to safe memory
                     // csmFile.setAPTCacheEntry(preprocHandler, cacheEntry, false);

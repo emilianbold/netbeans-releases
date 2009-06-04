@@ -85,9 +85,10 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
  */
 public final class APTFindMacrosWalker extends APTSelfWalker {
     private final List<CsmReference> references = new ArrayList<CsmReference>();
-
+    private final CsmFile csmFile;
     public APTFindMacrosWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
-        super(apt, csmFile, preprocHandler, cacheEntry);
+        super(apt, preprocHandler, cacheEntry);
+        this.csmFile = csmFile;
     }
 
     @Override
