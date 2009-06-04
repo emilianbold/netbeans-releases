@@ -172,13 +172,16 @@ public class HtmlCompletionQuery extends UserTask {
             //we are inside a tagname, the real content is the position before the tag
             astOffset -= (preText.length() + 1); // +"<" len
             List<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
-            result = translateTags(documentItemOffset - 1, filterElements(openTags, preText));
+            result = translateTags(documentItemOffset - 1,
+                    filterElements(openTags, preText),
+                    filterElements(dtd.getElementList(null),
+                    preText));
 
         } else if (id != HTMLTokenId.BLOCK_COMMENT && preText.endsWith("<")) { // NOI18N
             //complete open tags with no prefix
             anchor = offset;
             List<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
-            result = translateTags(offset - 1, openTags);
+            result = translateTags(offset - 1, openTags, dtd.getElementList(null));
 
         } else if ((id == HTMLTokenId.TEXT && preText.endsWith("</")) ||
                 (id == HTMLTokenId.TAG_OPEN_SYMBOL && preText.endsWith("</"))) { // NOI18N
@@ -398,14 +401,10 @@ public class HtmlCompletionQuery extends UserTask {
     private HtmlCompletionItem.EndTag.Type getEndTagType(AstNode leaf) {
         if (leaf.getMatchingTag() != null) {
             //matched
-            return leaf.needsToHaveMatchingTag() ? 
-                HtmlCompletionItem.EndTag.Type.REQUIRED_EXISTING :
-                HtmlCompletionItem.EndTag.Type.OPTIONAL_EXISTING;
+            return leaf.needsToHaveMatchingTag() ? HtmlCompletionItem.EndTag.Type.REQUIRED_EXISTING : HtmlCompletionItem.EndTag.Type.OPTIONAL_EXISTING;
         } else {
             //unmatched
-            return leaf.needsToHaveMatchingTag() ? 
-                HtmlCompletionItem.EndTag.Type.REQUIRED_MISSING :
-                HtmlCompletionItem.EndTag.Type.OPTIONAL_MISSING;
+            return leaf.needsToHaveMatchingTag() ? HtmlCompletionItem.EndTag.Type.REQUIRED_MISSING : HtmlCompletionItem.EndTag.Type.OPTIONAL_MISSING;
         }
 
     }
@@ -421,15 +420,22 @@ public class HtmlCompletionQuery extends UserTask {
         return filtered;
     }
 
-    List<HtmlCompletionItem> translateTags(int offset, List tags) {
-        List result = new ArrayList(tags.size());
-        String name;
-        for (Iterator i = tags.iterator(); i.hasNext();) {
-            name = ((DTD.Element) i.next()).getName();
-            name = isXHtml ? name : (lowerCase ? name.toLowerCase(Locale.ENGLISH) : name.toUpperCase());
-            result.add(HtmlCompletionItem.createTag(name, offset, name));
+    List<HtmlCompletionItem> translateTags(int offset, List<DTD.Element> possible, List<DTD.Element> all) {
+        List<HtmlCompletionItem> result = new ArrayList<HtmlCompletionItem>(all.size());
+        all.removeAll(possible); //remove possible elements
+        for (DTD.Element e : possible) {
+            result.add(item4Element(e, offset, true));
+        }
+        for (DTD.Element e : all) {
+            result.add(item4Element(e, offset, false));
         }
         return result;
+    }
+
+    private HtmlCompletionItem item4Element(DTD.Element e, int offset, boolean possible) {
+        String name = e.getName();
+        name = isXHtml ? name : (lowerCase ? name.toLowerCase(Locale.ENGLISH) : name.toUpperCase());
+        return HtmlCompletionItem.createTag(name, offset, name, possible);
     }
 
     List<HtmlCompletionItem> translateAttribs(int offset, List<DTD.Attribute> attribs, DTD.Element tag) {

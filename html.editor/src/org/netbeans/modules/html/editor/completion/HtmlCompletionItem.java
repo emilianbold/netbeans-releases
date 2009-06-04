@@ -69,10 +69,10 @@ public class HtmlCompletionItem implements CompletionItem {
     private static final int DEFAULT_SORT_PRIORITY = 20;
 
     //----------- Factory methods --------------
-    public static HtmlCompletionItem createTag(String name, int substitutionOffset, String helpId) {
-        return new Tag(name, substitutionOffset, helpId);
+    public static HtmlCompletionItem createTag(String name, int substitutionOffset, String helpId, boolean possible) {
+        return new Tag(name, substitutionOffset, helpId, possible);
     }
-
+ 
     public static HtmlCompletionItem createEndTag(String name, int substitutionOffset, String helpId, int order, EndTag.Type type) {
         return new EndTag(name, substitutionOffset, helpId, order, type);
     }
@@ -316,8 +316,12 @@ public class HtmlCompletionItem implements CompletionItem {
      */
     public static class Tag extends HtmlCompletionItem {
 
-        Tag(String text, int substitutionOffset, String helpId) {
+        private String GRAY_COLOR_CODE = hexColorCode(Color.GRAY);
+        private boolean possible;
+
+        Tag(String text, int substitutionOffset, String helpId, boolean possible) {
             super(text, substitutionOffset, helpId);
+            this.possible = possible;
         }
 
         @Override
@@ -326,8 +330,15 @@ public class HtmlCompletionItem implements CompletionItem {
         }
 
         @Override
+        public int getSortPriority() {
+            return super.getSortPriority() + (possible ? -1 : 0);
+        }
+
+        @Override
         protected String getLeftHtmlText() {
-            return "<font color=#0000ff>&lt;" + getItemText() + "&gt;</font>";
+            return possible ? 
+                "<b><font color=#0000ff>&lt;" + getItemText() + "&gt;</font></b>" :
+                "<font color=#" + GRAY_COLOR_CODE + ">&lt;" + getItemText() + "&gt;</font>";
         }
     }
 
