@@ -43,7 +43,7 @@ import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
 /**
- * Helper class for dealing with <code>/proc</code> contents.
+ * Helper class for dealing with <code>/proc</code> contents on Linux.
  *
  * @author Alexey Vladykin
  */
@@ -194,7 +194,7 @@ public final class LinuxProcfsSupport {
         } catch (NoSuchElementException ex) {
             if (!gotMandatoryFields) {
                 throw new IllegalArgumentException(
-                        "CPU line must have at least 4 counters: user, nice, system, idle"); // NOI18N
+                        "CPU line must have at least 4 counters: user, nice, system, idle", ex); // NOI18N
             }
         }
         return cpu;
@@ -642,7 +642,7 @@ public final class LinuxProcfsSupport {
             proc.cguest_time = new BigInteger(t.nextToken());
         } catch (NoSuchElementException ex) {
             if (!gotMandatoryFields) {
-                throw new IllegalArgumentException("Fields up to cnswap must be here"); // NOI18N
+                throw new IllegalArgumentException("Fields up to cnswap must be here", ex); // NOI18N
             }
         }
         return proc;
