@@ -58,6 +58,8 @@ public class QT_QLifeTestCase extends MakeProjectBase {
     protected List<String> requiredTools() {
         List<String> res = new ArrayList<String>(super.requiredTools());
         res.add("qmake");
+        res.add("sed");
+        res.add("mv");
         return res;
     }
 
@@ -65,10 +67,12 @@ public class QT_QLifeTestCase extends MakeProjectBase {
     public void testQLife(){
         List<String> list = new ArrayList<String>();
         list.add("qmake qlife.pro");
-        if (!Utilities.isWindows()) {
-            // There are troubles with generated Makefile on Windows.
-            // Disable the test for now.
-            performTestProject("http://personal.inet.fi/koti/rkauppila/projects/life/qlife-qt4-0.9.tar.gz", list);
+        if (Utilities.isWindows()) {
+            // There are troubles with generated Makefile on Windows - attempt to fix it.
+            // Note: MSYS make is required to run patched Makefile.
+            list.add("sed -e 's:\\\\\\(.\\):/\\1:g' Makefile >Makefile.tmp");
+            list.add("mv Makefile.tmp Makefile");
         }
+        performTestProject("http://personal.inet.fi/koti/rkauppila/projects/life/qlife-qt4-0.9.tar.gz", list);
     }
 }
