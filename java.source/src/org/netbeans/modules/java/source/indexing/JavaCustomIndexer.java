@@ -45,6 +45,7 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,12 +65,15 @@ import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.parsing.FileObjects.InferableJavaFileObject;
+import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.tasklist.RebuildOraculum;
 import org.netbeans.modules.java.source.tasklist.TaskCache;
 import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.Pair;
+import org.netbeans.modules.java.source.usages.VirtualSourceProviderQuery;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
@@ -77,12 +81,13 @@ import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex.ExceptionAction;
 
 /**
  *
- * @author Jan Lahoda, Dusan Balek
+ * @author Jan Lahoda, Dusan Balek, Tomas Zezula
  */
 public class JavaCustomIndexer extends CustomIndexer {
 
@@ -92,7 +97,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         new OnePassCompileWorker(),
         new MultiPassCompileWorker()
     };
-    
+        
     @Override
     protected void index(final Iterable<? extends Indexable> files, final Context context) {
         JavaIndex.LOG.log(Level.FINE, context.isSupplementaryFilesIndexing() ? "index suplementary({0})" :"index({0})", files);
@@ -119,24 +124,34 @@ public class JavaCustomIndexer extends CustomIndexer {
                 JavaIndex.LOG.warning("Source root: " + FileUtil.getFileDisplayName(root) + " is not on its sourcepath"); // NOI18N
                 return;
             }
+            final List<Indexable> javaSources = new ArrayList<Indexable>();
+            final Collection<? extends CompileTuple> virtualSourceTuples = translateVirtualSources (
+                    splitSources(files,javaSources),
+                    context.getRootURI());
+
             ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
                 public Void run() throws IOException, InterruptedException {
                     return TaskCache.getDefault().refreshTransaction(new ExceptionAction<Void>() {
                         public Void run() throws Exception {
-                            final JavaParsingContext javaContext = new JavaParsingContext(root, bootPath, compilePath, sourcePath, context.checkForEditorModifications());
+                            final JavaParsingContext javaContext = new JavaParsingContext(root, bootPath, compilePath, sourcePath, context.checkForEditorModifications(), virtualSourceTuples);
                             if (javaContext.uq == null)
-                                return null; //IDE is exiting, indeces are already closed.
+                                return null; //IDE is exiting, indeces are already closed.                            
                             final List<URL> errUrls = context.isSupplementaryFilesIndexing() ? null : TaskCache.getDefault().getAllFilesInError(context.getRootURI());
                             final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
                             final Set<File> removedFiles = new HashSet<File> ();
+                            final List<CompileTuple> toCompile = new ArrayList<CompileTuple>(javaSources.size()+virtualSourceTuples.size());
                             javaContext.uq.setDirty(null);
-                            for (Indexable i : files) {
+                            for (Indexable i : javaSources) {
+                                final CompileTuple tuple = createTuple(context, javaContext, i);
+                                if (tuple != null) {
+                                    toCompile.add(tuple);
+                                }
                                 clear(context, javaContext, i.getRelativePath(), removedTypes, removedFiles);
                             }
-
+                            toCompile.addAll(virtualSourceTuples);
                             CompileWorker.ParsingOutput compileResult = null;
                             for (CompileWorker w : WORKERS) {
-                                compileResult = w.compile(compileResult, context, javaContext, files);
+                                compileResult = w.compile(compileResult, context, javaContext, toCompile);
                                 if (compileResult.success) {
                                     break;
                                 }
@@ -189,6 +204,36 @@ public class JavaCustomIndexer extends CustomIndexer {
         }
     }
 
+    private static final List<? extends Indexable> splitSources(final Iterable<? extends Indexable> indexables, final List<? super Indexable> javaSources) {
+        List<Indexable> virtualSources = new LinkedList<Indexable>();
+        for (Indexable indexable : indexables) {
+            if (VirtualSourceProviderQuery.hasVirtualSource(indexable)) {
+                virtualSources.add(indexable);
+            }
+            else {
+                javaSources.add(indexable);
+            }
+        }
+        return virtualSources;
+    }
+
+    private static Collection<? extends CompileTuple> translateVirtualSources(final Iterable<? extends Indexable> virtualSources, final URL rootURL) throws IOException {
+        final File root = new File (URI.create(rootURL.toString()));
+        return VirtualSourceProviderQuery.translate(virtualSources, root);
+    }
+
+    private static CompileTuple createTuple(Context context, JavaParsingContext javaContext, Indexable indexable) {
+        File root = null;
+        if (!context.checkForEditorModifications() && "file".equals(indexable.getURL().getProtocol()) && (root = FileUtil.toFile(context.getRoot())) != null) { //NOI18N
+            try {
+                File file = new File(indexable.getURL().toURI().getPath());
+                return new CompileTuple(FileObjects.fileFileObject(file, root, null, javaContext.encoding), indexable);
+            } catch (Exception ex) {}
+        }
+        FileObject fo = URLMapper.findFileObject(indexable.getURL());
+        return fo != null ? new CompileTuple(SourceFileObject.create(fo, context.getRoot()), indexable) : null;
+    }
+
     private static void clearFiles(final Context context, final Iterable<? extends Indexable> files) {
         try {
             if (context.getRoot() == null) {
@@ -230,9 +275,17 @@ public class JavaCustomIndexer extends CustomIndexer {
     private static void clear(final Context context, final JavaParsingContext javaContext, final String sourceRelative, final Set<ElementHandle<TypeElement>> removedTypes, final Set<File> removedFiles) throws IOException {
         final List<Pair<String,String>> toDelete = new ArrayList<Pair<String,String>>();
         final File classFolder = JavaIndex.getClassFolder(context);
-        String withoutExt = FileObjects.stripExtension(sourceRelative);
-        File file = new File(classFolder, withoutExt + '.' + FileObjects.RS);
-        boolean cont = true;
+        final String ext = FileObjects.getExtension(sourceRelative);
+        final String withoutExt = FileObjects.stripExtension(sourceRelative);
+        File file;
+        final boolean dieIfNoRefFile = VirtualSourceProviderQuery.hasVirtualSource(ext);
+        if (dieIfNoRefFile) {
+            file = new File(classFolder, sourceRelative + '.' + FileObjects.RX);
+        }
+        else {
+            file = new File(classFolder, withoutExt + '.' + FileObjects.RS);
+        }
+        boolean cont = !dieIfNoRefFile;
         if (file.exists()) {
             cont = false;
             try {
@@ -245,7 +298,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         removedFiles.add(f);
                         f.delete();
                     } else {
-                        cont = true;
+                        cont = !dieIfNoRefFile;
                     }
                 }
             } catch (IOException ioe) {
@@ -301,9 +354,19 @@ public class JavaCustomIndexer extends CustomIndexer {
     public static Collection<? extends ElementHandle<TypeElement>> getRelatedTypes (final File source, final File root) throws IOException {
         final List<ElementHandle<TypeElement>> result = new LinkedList<ElementHandle<TypeElement>>();
         final File classFolder = JavaIndex.getClassFolder(root);
-        String path = FileObjects.stripExtension(FileObjects.getRelativePath(root, source));
-        File file = new File (classFolder, path + '.' + FileObjects.RS); //NOI18N
-        boolean cont = true;
+        final String path = FileObjects.getRelativePath(root, source);
+        final String ext = FileObjects.getExtension(path);
+        final String pathNoExt = FileObjects.stripExtension(path);
+        final boolean dieIfNoRefFile = VirtualSourceProviderQuery.hasVirtualSource(ext);
+        File file;
+        if (dieIfNoRefFile) {
+            file = new File (classFolder, path + '.' + FileObjects.RX); //NOI18N
+        }
+        else {
+            file = new File (classFolder, pathNoExt + '.' + FileObjects.RS); //NOI18N
+        }
+        
+        boolean cont = !dieIfNoRefFile;
         if (file.exists()) {
             cont = false;
             try {
@@ -312,7 +375,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     if (!binaryName.equals(className)) {
                         result.add(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, className));
                     } else {
-                        cont = true;
+                        cont = !dieIfNoRefFile;
                     }
                 }
             } catch (IOException ioe) {
@@ -320,7 +383,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 Exceptions.printStackTrace(ioe);
             }
         }
-        if (cont && (file = new File(classFolder, path + '.' + FileObjects.SIG)).exists()) {
+        if (cont && (file = new File(classFolder, pathNoExt + '.' + FileObjects.SIG)).exists()) {
             String fileName = file.getName();
             fileName = fileName.substring(0, fileName.lastIndexOf('.'));
             final String[] patterns = new String[] {fileName + '.', fileName + '$'}; //NOI18N
@@ -358,7 +421,7 @@ public class JavaCustomIndexer extends CustomIndexer {
     }
 
     public static class Factory extends CustomIndexerFactory {
-
+        
         @Override
         public CustomIndexer createIndexer() {
             return new JavaCustomIndexer();
@@ -383,12 +446,31 @@ public class JavaCustomIndexer extends CustomIndexer {
 
         @Override
         public boolean supportsEmbeddedIndexers() {
-            return false;
+            return true;
         }
 
         @Override
         public int getIndexVersion() {
             return JavaIndex.VERSION;
+        }
+    }
+
+    public static final class CompileTuple {
+        public final InferableJavaFileObject jfo;
+        public final Indexable indexable;
+        public final boolean virtual;
+        public final boolean index;        
+
+        public CompileTuple (final InferableJavaFileObject jfo, final Indexable indexable,
+                final boolean virtual, final boolean index) {
+            this.jfo = jfo;
+            this.indexable = indexable;
+            this.virtual = virtual;
+            this.index = index;
+        }
+
+        public CompileTuple (final InferableJavaFileObject jfo, final Indexable indexable) {
+            this(jfo,indexable,false, true);
         }
     }
 }
