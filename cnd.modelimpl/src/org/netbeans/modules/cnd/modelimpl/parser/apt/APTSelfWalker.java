@@ -70,7 +70,7 @@ public class APTSelfWalker extends APTAbstractWalker {
             try {
                 APTFile apt = APTDriver.getInstance().findAPTLight(new FileBufferFile(new File(resolvedPath.getPath().toString())));
                 APTPreprocHandler preprocHandler = getPreprocHandler();
-                APTFileCacheEntry cache = APTFileCacheManager.getEntry(resolvedPath.getPath(),preprocHandler, true);
+                APTFileCacheEntry cache = APTFileCacheManager.getEntry(resolvedPath.getPath(),preprocHandler, null);
                 createIncludeWalker(apt, this, resolvedPath.getPath(), cache).visit();
                 // does not remember walk to safe memory
                 // APTFileCacheManager.setAPTCacheEntry(resolvedPath.getPath(), preprocHandler, cache, false);
