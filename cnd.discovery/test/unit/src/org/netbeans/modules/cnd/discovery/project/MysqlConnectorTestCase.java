@@ -62,8 +62,6 @@ public class MysqlConnectorTestCase extends MakeProjectBase {
 
     @Test
     public void testMysqlConnector(){
-        List<String> list = new ArrayList<String>();
-        list.add("cmake -G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=\"-g3 -gdwarf-2\" -DCMAKE_C_FLAGS_DEBUG=\"-g3 -gdwarf-2\"");
-        performTestProject("http://download.softagency.net/MySQL/Downloads/Connector-C/mysql-connector-c-6.0.1.tar.gz", list);
+        performTestProject("http://download.softagency.net/MySQL/Downloads/Connector-C/mysql-connector-c-6.0.1.tar.gz", null);
     }
 }

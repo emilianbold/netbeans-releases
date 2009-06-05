@@ -60,7 +60,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.actions.CMakeAction;
 import org.netbeans.modules.cnd.actions.MakeAction;
+import org.netbeans.modules.cnd.actions.QMakeAction;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -85,6 +87,7 @@ import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.ProjectBridge;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
+import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -95,6 +98,7 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -406,14 +410,17 @@ public class ImportProject implements PropertyChangeListener {
             FileObject configureFileObject = FileUtil.toFileObject(configureFile);
             DataObject dObj = DataObject.find(configureFileObject);
             Node node = dObj.getNodeDelegate();
+            String mime = FileUtil.getMIMEType(configureFileObject);
             // Add arguments to configure script?
             if (configureArguments != null) {
-                ShellExecSupport ses = node.getCookie(ShellExecSupport.class);
-                try {
-                    // Keep user arguments as is in args[0]
-                    ses.setArguments(new String[]{configureArguments});
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                if (MIMENames.SHELL_MIME_TYPE.equals(mime)){
+                    ShellExecSupport ses = node.getCookie(ShellExecSupport.class);
+                    try {
+                        // Keep user arguments as is in args[0]
+                        ses.setArguments(new String[]{configureArguments});
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
             // If no makefile, create empty one so it shows up in Interesting Files
@@ -442,9 +449,15 @@ public class ImportProject implements PropertyChangeListener {
                 }
             };
             if (TRACE) {
-                logger.log(Level.INFO, "#configure " + configureArguments); // NOI18N
+                logger.log(Level.INFO, "#" + configureFile + " " + configureArguments); // NOI18N
             }
-            ShellRunAction.performAction(node, listener, null, makeProject); //, new BufferedWriter(new FileWriter(configureLog)));
+            if (MIMENames.SHELL_MIME_TYPE.equals(mime)){
+                ShellRunAction.performAction(node, listener, null, makeProject, ImportUtils.parseEnvironment(configureArguments));
+            } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){
+                CMakeAction.performAction(node, listener, null, makeProject, ImportUtils.parseEnvironment(configureArguments));
+            } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
+                QMakeAction.performAction(node, listener, null, makeProject, ImportUtils.parseEnvironment(configureArguments));
+            }
         } catch (DataObjectNotFoundException e) {
             isFinished = true;
         }
@@ -514,7 +527,7 @@ public class ImportProject implements PropertyChangeListener {
         if (TRACE) {
             logger.log(Level.INFO, "#make "+arguments); // NOI18N
         }
-        MakeAction.execute(node, arguments, listener, null, makeProject); // NOI18N
+        MakeAction.execute(node, arguments, listener, null, makeProject, null); // NOI18N
     }
 
     private void postMake(Node node) {
@@ -552,7 +565,7 @@ public class ImportProject implements PropertyChangeListener {
         if (TRACE) {
             logger.log(Level.INFO, "#make "+arguments+" > " + makeLog.getAbsolutePath()); // NOI18N
         }
-        MakeAction.execute(node, arguments, listener, outputListener, makeProject); // NOI18N
+        MakeAction.execute(node, arguments, listener, outputListener, makeProject, ImportUtils.parseEnvironment(configureArguments)); // NOI18N
     }
 
     private String getArguments(String command){

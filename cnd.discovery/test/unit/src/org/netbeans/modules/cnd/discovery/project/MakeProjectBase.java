@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor.Task;
@@ -138,6 +139,27 @@ public abstract class MakeProjectBase extends NbTestCase { //BaseTestCase {
         }
     }
 
+    private File detectConfigure(String path){
+        File configure = new File(path+File.separator+"configure");
+        if (configure.exists()) {
+            return configure;
+        }
+        configure = new File(path+File.separator+"CMakeLists.txt");
+        if (configure.exists()) {
+            return configure;
+        }
+        File base = new File(path);
+        File[] files = base.listFiles();
+        if (files != null){
+            for(File file : files) {
+                if (file.getAbsolutePath().endsWith(".pro")){
+                    return file;
+                }
+            }
+        }
+        return new File(path+File.separator+"configure");
+    }
+
     public void performTestProject(String URL, List<String> additionalScripts){
         Map<String, String> tools = findTools();
         if (tools == null) {
@@ -146,7 +168,8 @@ public abstract class MakeProjectBase extends NbTestCase { //BaseTestCase {
         }
         try {
             final String path = download(URL, additionalScripts, tools);
-            final File configure = new File(path+File.separator+"configure");
+
+            final File configure = detectConfigure(path);
             final File makeFile = new File(path+File.separator+"Makefile");
             if (!configure.exists()) {
                 if (!makeFile.exists()){
@@ -161,18 +184,24 @@ public abstract class MakeProjectBase extends NbTestCase { //BaseTestCase {
                     } else if ("path".equals(name)) {
                         return path;
                     } else if ("configureName".equals(name)) {
-                        if (OPTIMIZE_NATIVE_EXECUTIONS && makeFile.exists()) {
+                        if (OPTIMIZE_NATIVE_EXECUTIONS && makeFile.exists() && !configure.getAbsolutePath().endsWith("CMakeLists.txt")) {
                             // optimization on developer computer:
                             // run configure only once
                             return null;
                         } else {
-                            return path+"/configure";
+                            return configure.getAbsolutePath();
                         }
                     } else if ("realFlags".equals(name)) {
                         if (path.indexOf("cmake-")>0) {
                             return "CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\" CMAKE_BUILD_TYPE=Debug CMAKE_CXX_FLAGS_DEBUG=\"-g3 -gdwarf-2\" CMAKE_C_FLAGS_DEBUG=\"-g3 -gdwarf-2\"";
                         } else {
-                            return "CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\"";
+                            if (configure.getAbsolutePath().endsWith("configure")) {
+                                return "CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\"";
+                            } else if (configure.getAbsolutePath().endsWith("CMakeLists.txt")) {
+                                return "-G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS=\"-g3 -gdwarf-2\" -DCMAKE_C_FLAGS=\"-g3 -gdwarf-2\"";
+                            } else if (configure.getAbsolutePath().endsWith(".pro")) {
+                                return "QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
+                            }
                         }
                     } else if ("buildProject".equals(name)) {
                         if (OPTIMIZE_NATIVE_EXECUTIONS && makeFile.exists() && findObjectFiles(path)) {
@@ -186,6 +215,7 @@ public abstract class MakeProjectBase extends NbTestCase { //BaseTestCase {
                     return null;
                 }
             };
+
             ImportProject importer = new ImportProject(wizard);
             importer.setUILessMode();
             importer.create();
@@ -264,8 +294,8 @@ public abstract class MakeProjectBase extends NbTestCase { //BaseTestCase {
             return true;
         }
         ArrayList<String> list = new ArrayList<String>(Path.getPath());
-        String additionalPath = CndCoreTestUtils.getDownloadBase().getAbsolutePath()+File.separatorChar+"cmake-2.6.4/bin";
-        list.add(additionalPath);
+        //String additionalPath = CndCoreTestUtils.getDownloadBase().getAbsolutePath()+File.separatorChar+"cmake-2.6.4/bin";
+        //list.add(additionalPath);
         for (String path : list) {
             for(Map.Entry<String, String> entry : map.entrySet()){
                 if (entry.getValue() == null) {
@@ -333,15 +363,17 @@ public abstract class MakeProjectBase extends NbTestCase { //BaseTestCase {
         }
         String command;
         if (fileCreatedFolder.list().length == 0){
-            command = tools.get("wget");
-            System.err.println(dataPath+"#"+command+" "+urlName);
-            ne = new NativeExecutor(dataPath, command, urlName, new String[0], "wget", "run", false, false);
-            waitExecution(ne, listener, finish);
+            if (!new File(dataPath+"/"+tarName).exists()) {
+                command = tools.get("wget");
+                System.err.println(dataPath+"#"+command+" "+urlName);
+                ne = new NativeExecutor(dataPath, command, urlName, new String[0], "wget", "run", false, false);
+                waitExecution(ne, listener, finish);
 
-            command = tools.get("gzip");
-            System.err.println(dataPath+"#"+command+" -d "+zipName);
-            ne = new NativeExecutor(dataPath, command, "-d "+zipName, new String[0], "gzip", "run", false, false);
-            waitExecution(ne, listener, finish);
+                command = tools.get("gzip");
+                System.err.println(dataPath+"#"+command+" -d "+zipName);
+                ne = new NativeExecutor(dataPath, command, "-d "+zipName, new String[0], "gzip", "run", false, false);
+                waitExecution(ne, listener, finish);
+            }
 
             command = tools.get("tar");
             System.err.println(dataPath+"#"+command+" xf "+tarName);
@@ -351,13 +383,16 @@ public abstract class MakeProjectBase extends NbTestCase { //BaseTestCase {
             execAdditionalScripts(finish, listener, createdFolder, additionalScripts, tools);
         } else {
             final File configure = new File(createdFolder+File.separator+"configure");
-            final File makeFile = new File(createdFolder+File.separator+"Makefile");
+            final File makeFile = detectConfigure(createdFolder);
             if (!configure.exists()) {
                 if (!makeFile.exists()){
-            execAdditionalScripts(finish, listener, createdFolder, additionalScripts, tools);
+                    execAdditionalScripts(finish, listener, createdFolder, additionalScripts, tools);
                 }
             }
         }
+
+        //System.getenv().put("CFLAGS", "-g3 -gdwarf-2");
+        //System.getenv().put("CXXFLAGS", "-g3 -gdwarf-2");
 
         command = tools.get("rm");
         System.err.println(createdFolder+"#"+command+" -rf nbproject");

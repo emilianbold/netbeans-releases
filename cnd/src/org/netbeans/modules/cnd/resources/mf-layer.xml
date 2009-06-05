@@ -159,6 +159,11 @@ made subject to such option by the copyright holder.
         
         <folder name="MIMEResolver">
             
+            <file name="mime-resolver-name-ext.xml" url="mime-resolver-name-ext.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/MakefileDataIcon.gif"/>
+                <attr name="position" intvalue="138"/>
+            </file>
             <file name="cnd-ext-based-mime-resolver.xml" url="mime-resolver-ext-based.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/MakefileDataIcon.gif"/>
@@ -1065,6 +1070,74 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
 
+            <folder name="x-cmake">
+                <folder name="Factories">
+                    <file name="CMakeDataLoader.instance">
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/MakefileDataIcon.gif"/>
+                        <attr name="dataObjectClass" stringvalue="org.netbeans.modules.cnd.loaders.CMakeDataObject"/>
+                        <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
+                        <attr name="mimeType" stringvalue="text/x-cmake"/>
+                    </file>
+                </folder>
+                <folder name="Actions">
+                    <file name="org-openide-actions-OpenAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                    <file name="CMakeAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.actions.CMakeAction"/>
+                        <attr name="position" intvalue="240"/>
+                    </file>
+                    <file name="sep-1.1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="260"/>
+                    </file>
+                    <file name="org-openide-actions-CutAction.instance">
+                        <attr name="position" intvalue="300"/>
+                    </file>
+                    <file name="org-openide-actions-CopyAction.instance">
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="org-openide-actions-DeleteAction.instance">
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                    <file name="org-openide-actions-RenameAction.instance">
+                        <attr name="position" intvalue="700"/>
+                    </file>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="org-openide-actions-FileSystemAction.instance">
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                    <file name="sep-5.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="org-openide-actions-ToolsAction.instance">
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.instance">
+                        <attr name="position" intvalue="1400"/>
+                    </file>
+                </folder>
+            </folder>
+
             <folder name="x-qtproject">
                 <folder name="Factories">
                     <file name="QtProjectDataLoader.instance">
@@ -1081,6 +1154,14 @@ made subject to such option by the copyright holder.
                     <file name="sep-1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="200"/>
+                    </file>
+                    <file name="QMakeAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.actions.QMakeAction"/>
+                        <attr name="position" intvalue="240"/>
+                    </file>
+                    <file name="sep-1.1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="260"/>
                     </file>
                     <file name="org-openide-actions-CutAction.instance">
                         <attr name="position" intvalue="300"/>

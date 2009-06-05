@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,6 +31,10 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.actions;
@@ -47,54 +45,52 @@ import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
-import org.netbeans.modules.cnd.builds.MakeExecSupport;
-import org.netbeans.modules.cnd.loaders.MakefileDataObject;
-import org.netbeans.modules.cnd.settings.MakeSettings;
+import org.netbeans.modules.cnd.loaders.CMakeDataObject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
 /**
- * Base class for Make Actions ...
+ *
+ * @author Alexander Simon
  */
-public abstract class MakeBaseAction extends AbstractExecutorRunAction {
+public class CMakeAction extends AbstractExecutorRunAction {
+
+    @Override
+    public String getName () {
+        return getString("BTN_Cmake"); // NOI18N
+    }
 
     @Override
     protected boolean accept(DataObject object) {
-        return object instanceof MakefileDataObject;
+        return object instanceof CMakeDataObject;
     }
 
     protected void performAction(Node[] activatedNodes) {
         for (int i = 0; i < activatedNodes.length; i++){
-            performAction(activatedNodes[i], "");
+            performAction(activatedNodes[i]);
         }
     }
 
-    protected void performAction(Node node, String target) {
-        performAction(node, target, null, null, null, null);
+    protected void performAction(Node node) {
+        performAction(node, null, null, null, null);
     }
 
-    protected void performAction(Node node, String target, ExecutionListener listener, Writer outputListener, Project project, List<String> additionalEnvironment) {
-        if (MakeSettings.getDefault().getSaveAll()) {
-            LifecycleManager.getDefault().saveAll();
-        }
+    public static void performAction(Node node, ExecutionListener listener, Writer outputListener, Project project, List<String> additionalEnvironment) {
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
-        File makefile = FileUtil.toFile(fileObject);
+        File proFile = FileUtil.toFile(fileObject);
         // Build directory
-        File buildDir = getBuildDirectory(node);
+        File buildDir = getCBuildDirectory(node);
         // Executable
-        String executable = getMakeCommand(node, project);
+        String executable = getCMakeCommand(node, project);
         // Arguments
-        String arguments = "-f " + makefile.getName() + " " + target; // NOI18N
+        //String arguments = proFile.getName();
+        String arguments = "-G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS=\"-g3 -gdwarf-2\" -DCMAKE_C_FLAGS=\"-g3 -gdwarf-2\""; // NOI18N
         // Tab Name
-        String tabName = getString("MAKE_LABEL", node.getName());
-        if (target != null && target.length() > 0) {
-            tabName += " " + target; // NOI18N
-        } // NOI18N
+        String tabName = getString("CMAKE_LABEL", node.getName());
 
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
         String[] env = prepareEnv(execEnv);
@@ -116,7 +112,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
                 arguments,
                 env,
                 tabName,
-                "make", // NOI18N
+                "cmake", // NOI18N
                 false,
                 true,
                 false);
@@ -124,5 +120,18 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
             nativeExecutor.setOutputListener(outputListener);
         }
         new ShellExecuter(nativeExecutor, listener).execute();
+    }
+
+    private static String getCMakeCommand(Node node, Project project){
+        return findTools("cmake"); // NOI18N
+    }
+
+    private static File getCBuildDirectory(Node node){
+        DataObject dataObject = node.getCookie(DataObject.class);
+        FileObject fileObject = dataObject.getPrimaryFile();
+        File qMakefile = FileUtil.toFile(fileObject);
+        String bdir = qMakefile.getParent();
+        File buildDir = getAbsoluteBuildDir(bdir, qMakefile);
+        return buildDir;
     }
 }

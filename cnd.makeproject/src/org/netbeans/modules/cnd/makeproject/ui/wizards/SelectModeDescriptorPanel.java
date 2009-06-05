@@ -47,6 +47,7 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.actions.AbstractExecutorRunAction;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -182,8 +183,40 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
                 return file.getAbsolutePath();
             }
         }
+        String res = detectQTProject(new File(folder));
+        if (res != null) {
+            return res;
+        }
+        res = detectCMake(folder);
+        if (res != null) {
+            return res;
+        }
         return null;
     }
+
+
+    private static String detectQTProject(File folder){
+        for(File file : folder.listFiles()){
+            if (file.getAbsolutePath().endsWith(".pro")){
+                if (AbstractExecutorRunAction.findTools("qmake") != null){
+                    return file.getAbsolutePath();
+                }
+                break;
+            }
+        }
+        return null;
+    }
+
+    private static String detectCMake(String path){
+        File configure = new File(path+File.separator+"CMakeLists.txt");
+        if (configure.exists()) {
+            if (AbstractExecutorRunAction.findTools("cmake") != null){
+                return configure.getAbsolutePath();
+            }
+        }
+        return null;
+    }
+
 
     public static boolean isRunnable(File file) {
         if (file.exists() && file.isFile() && file.canRead()) {
