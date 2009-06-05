@@ -1,4 +1,4 @@
-<style>
+<style type="text/css">
     day { 
         background-color: black;
     color: rgb(${"R"},${"G"},${"B"});
