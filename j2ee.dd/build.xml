@@ -132,6 +132,23 @@ made subject to such option by the copyright holder.
         <replacevalue>org.netbeans.modules.j2ee.dd.api.web.ServletMapping</replacevalue>
     </replace>
 
+    <replace file="${s2b_root_web_2_5}/FilterMapping.java" summary="true">
+        <replacetoken>public java.lang.String[] getUrlPattern() {</replacetoken>
+        <replacevalue>public java.lang.String[] getUrlPatterns() {</replacevalue>
+    </replace>
+    <replace file="${s2b_root_web_2_5}/FilterMapping.java" summary="true">
+        <replacetoken>public void setUrlPattern(java.lang.String[] value) {</replacetoken>
+        <replacevalue>public void setUrlPatterns(java.lang.String[] value) {</replacevalue>
+    </replace>
+    <replace file="${s2b_root_web_2_5}/FilterMapping.java" summary="true">
+        <replacetoken>public java.lang.String[] getServletName() {</replacetoken>
+        <replacevalue>public java.lang.String[] getServletNames() {</replacevalue>
+    </replace>
+    <replace file="${s2b_root_web_2_5}/FilterMapping.java" summary="true">
+        <replacetoken>public void setServletName(java.lang.String[] value) {</replacetoken>
+        <replacevalue>public void setServletNames(java.lang.String[] value) {</replacevalue>
+    </replace>
+
     <replace file="${s2b_root_web_3_0}/ServletMapping.java" summary="true">
         <replacetoken>public java.lang.String[] getUrlPattern() {</replacetoken>
         <replacevalue>public java.lang.String[] getUrlPatterns() {</replacevalue>

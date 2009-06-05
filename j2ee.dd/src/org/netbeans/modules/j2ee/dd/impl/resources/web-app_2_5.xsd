@@ -490,10 +490,7 @@
     <xsd:sequence>
       <xsd:element name="filter-name"
 		   type="javaee:filter-nameType"/>
-<!-- TODO: fix this!
       <xsd:choice minOccurs="1" maxOccurs="unbounded">
--->
-      <xsd:choice>
 	<xsd:element name="url-pattern"
 		     type="javaee:url-patternType"/>
 	<xsd:element name="servlet-name"
