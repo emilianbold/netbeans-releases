@@ -109,6 +109,15 @@ made subject to such option by the copyright holder.
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
 	  rootDir="src"/>
+	<schema2beans schema="${s2b_res_root}/web-fragment_3_0.xsd"
+	  mddFile="${s2b_res_root}/web-fragment_3_0.mdd"
+	  package="org.netbeans.modules.j2ee.dd.impl.web.model_3_0"
+	  schemaType="xmlschema"
+	  useInterfaces="true"
+	  validate="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+	  rootDir="src"/>
 
     <replace file="${s2b_root_web_2_5}/ServletMapping.java" summary="true">
         <replacetoken>public java.lang.String[] getUrlPattern() {</replacetoken>
@@ -153,8 +162,10 @@ made subject to such option by the copyright holder.
         <replacevalue>public void setServletNames(java.lang.String[] value) {</replacevalue>
     </replace>
 
-
-
+    <replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true">
+        <replacetoken>org.netbeans.modules.j2ee.dd.api.web.ServletMapping25</replacetoken>
+        <replacevalue>org.netbeans.modules.j2ee.dd.api.web.ServletMapping</replacevalue>
+    </replace>
 
 	<schema2beans schema="${s2b_res_root}/ejb-jar_1_1.dtd"
  	  mddFile="${s2b_res_root}/ejb-jar_1_1.mdd"

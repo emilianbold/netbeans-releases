@@ -1,13 +1,22 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <metaDD>
         <meta-element>
-            <dtd-name>web-app</dtd-name>
+
+
+<!--
+For now, web-fragment is defined exactly the same way as web-app.
+I believe the XSD for web-fragment should be changed before final release
+of Java EE 6 specification.
+TODO: adapt this to final version of web-fragment XSD
+-->
+  
+            <dtd-name>web-fragment</dtd-name>
             <namespace>http://java.sun.com/xml/ns/javaee</namespace>
-            <bean-name>WebApp</bean-name>
+            <bean-name>WebFragment</bean-name>
             <comparator-class>org.netbeans.modules.j2ee.dd.impl.common.Comparator</comparator-class>
             <extends>org.netbeans.modules.j2ee.dd.impl.common.ComponentBeanMultiple</extends>
             <implements> 
-                    org.netbeans.modules.j2ee.dd.api.web.WebApp
+                    org.netbeans.modules.j2ee.dd.api.web.WebFragment
             </implements>
             <user-code>
                     public org.xml.sax.SAXParseException getError() {
