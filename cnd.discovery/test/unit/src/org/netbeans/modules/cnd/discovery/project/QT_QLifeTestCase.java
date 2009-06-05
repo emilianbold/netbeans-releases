@@ -66,7 +66,7 @@ public class QT_QLifeTestCase extends MakeProjectBase {
     @Test
     public void testQLife(){
         List<String> list = new ArrayList<String>();
-        list.add("qmake qlife.pro");
+        //list.add("qmake qlife.pro");
         if (Utilities.isWindows()) {
             // There are troubles with generated Makefile on Windows - attempt to fix it.
             // Note: MSYS make is required to run patched Makefile.

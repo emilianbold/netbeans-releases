@@ -53,8 +53,7 @@ public class CMakeTestCase extends MakeProjectBase {
 
     @Test
     public void testCmake(){
-        //Test fails. Let's disable it until we can make it pass.
-        //performTestProject("http://www.cmake.org/files/v2.6/cmake-2.6.4.tar.gz", null);
+        performTestProject("http://www.cmake.org/files/v2.6/cmake-2.6.4.tar.gz", null);
     }
 }
 

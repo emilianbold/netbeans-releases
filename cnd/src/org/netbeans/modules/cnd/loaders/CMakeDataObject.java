@@ -37,34 +37,39 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.discovery.project;
+package org.netbeans.modules.cnd.loaders;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.junit.Test;
+import java.io.IOException;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.MultiFileLoader;
+import org.openide.nodes.CookieSet;
+import org.openide.nodes.Node;
+import org.openide.nodes.Children;
+import org.openide.util.Lookup;
+import org.openide.text.DataEditorSupport;
 
 /**
  *
  * @author Alexander Simon
  */
-public class SpeedcrunchTestCase extends MakeProjectBase {
+public class CMakeDataObject extends MultiDataObject {
 
-    public SpeedcrunchTestCase() {
-        super("QT");
+    public CMakeDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
+        super(pf, loader);
+        CookieSet cookies = getCookieSet();
+        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
     }
 
     @Override
-    protected List<String> requiredTools() {
-        List<String> res = new ArrayList<String>(super.requiredTools());
-        res.add("qmake");
-        res.add("cmake");
-        return res;
+    protected Node createNodeDelegate() {
+        return new DataNode(this, Children.LEAF, getLookup());
     }
 
-    @Test
-    public void testSpeedcrunch(){
-        // need QT4.3
-        performTestProject("http://speedcrunch.googlecode.com/files/speedcrunch-0.10.1.tar.gz", null);
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
     }
 }
-

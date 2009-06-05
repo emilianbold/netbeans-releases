@@ -52,7 +52,7 @@ public class LongDiscovery1SuiteTest extends BaseTestSuite {
     public LongDiscovery1SuiteTest() {
         super("C/C++ Discovery Test"); // NOI18N
 
-        addTestSuite(CMakeTestCase.class);
+        //addTestSuite(CMakeTestCase.class);
         addTestSuite(MysqlConnectorTestCase.class);
     }
 
