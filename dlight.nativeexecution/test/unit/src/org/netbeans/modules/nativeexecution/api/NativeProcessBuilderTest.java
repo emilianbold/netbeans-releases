@@ -50,13 +50,13 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.netbeans.modules.nativeexecution.NativeExecutionTest;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import static org.junit.Assert.*;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Exceptions;
 
-public class NativeProcessBuilderTest extends NativeExecutionTest {
+public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
 
     public NativeProcessBuilderTest(String name) {
         super(name);

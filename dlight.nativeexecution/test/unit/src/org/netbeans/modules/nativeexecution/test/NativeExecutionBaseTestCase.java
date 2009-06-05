@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.nativeexecution;
+package org.netbeans.modules.nativeexecution.test;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -57,7 +57,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 
-public class NativeExecutionTest extends NbTestCase {
+public class NativeExecutionBaseTestCase extends NbTestCase {
     static {
         String dirs = System.getProperty("netbeans.dirs", ""); // NOI18N
         File junitWorkdir = new File(System.getProperty("nbjunit.workdir")); // NOI18N
@@ -94,7 +94,7 @@ public class NativeExecutionTest extends NbTestCase {
         });
     }
 
-    public NativeExecutionTest(String name) {
+    public NativeExecutionBaseTestCase(String name) {
         super(name);
         System.setProperty("nativeexecution.mode.unittest", "true");
     }
@@ -102,7 +102,7 @@ public class NativeExecutionTest extends NbTestCase {
     private static ExecutionEnvironment testExecutionEnvironment;
 
     protected static ExecutionEnvironment getTestExecutionEnvironment() throws IOException, CancellationException {
-        synchronized(NativeExecutionTest.class) {
+        synchronized(NativeExecutionBaseTestCase.class) {
             if (testExecutionEnvironment == null) {
                 String ui = System.getProperty("cnd.remote.testuserinfo"); // NOI18N
                 char[] passwd = null;
