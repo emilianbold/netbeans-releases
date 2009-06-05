@@ -61,7 +61,7 @@ import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.Registry;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.html.editor.NbReaderProvider;
-import org.netbeans.modules.html.editor.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
 import org.netbeans.modules.html.editor.test.TestBase;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;

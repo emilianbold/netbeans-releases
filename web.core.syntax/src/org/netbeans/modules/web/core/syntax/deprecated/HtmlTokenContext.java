@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.editor.ext.html;
+package org.netbeans.modules.web.core.syntax.deprecated;
 
 import org.netbeans.editor.BaseTokenCategory;
 import org.netbeans.editor.BaseTokenID;

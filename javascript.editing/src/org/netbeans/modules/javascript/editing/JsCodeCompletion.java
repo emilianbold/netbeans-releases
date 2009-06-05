@@ -76,7 +76,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.html.editor.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
 import org.netbeans.modules.javascript.editing.JsParser.Sanitize;
 import org.netbeans.modules.javascript.editing.lexer.Call;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;

@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.editor.ext.html.javadoc;
+package org.netbeans.modules.html.editor.javadoc;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -100,7 +100,7 @@ public class HelpManager {
             if (helpMap == null){
                 //Parse the config file
                 InputStream in = HelpManager.class.getClassLoader()
-                .getResourceAsStream("org/netbeans/editor/ext/html/javadoc/resources/HtmlHelp.xml"); //NOI18N
+                .getResourceAsStream("org/netbeans/modules/html/editor/resources/HtmlHelp.xml"); //NOI18N
                 if (in == null){
                     helpMap = new Hashtable();
                     return;

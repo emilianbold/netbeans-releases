@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.editor.ext.html.javadoc;
+package org.netbeans.modules.html.editor.javadoc;
 
 import java.util.Hashtable;
 import org.xml.sax.Attributes;

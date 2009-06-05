@@ -54,7 +54,7 @@ import java.awt.Color;
 import java.awt.event.KeyEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import org.netbeans.editor.ext.html.javadoc.HelpManager;
+import org.netbeans.modules.html.editor.javadoc.HelpManager;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 import org.openide.xml.XMLUtil;

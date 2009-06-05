@@ -44,7 +44,7 @@ package org.netbeans.modules.html.editor.completion;
 import java.net.URL;
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
-import org.netbeans.editor.ext.html.javadoc.HelpManager;
+import org.netbeans.modules.html.editor.javadoc.HelpManager;
 import org.netbeans.modules.html.editor.*;
 import java.util.List;
 import javax.swing.text.Document;

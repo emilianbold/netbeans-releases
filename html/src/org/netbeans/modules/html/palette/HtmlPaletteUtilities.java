@@ -54,8 +54,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.TokenItem;
-import org.netbeans.editor.ext.html.HtmlTokenContext;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;

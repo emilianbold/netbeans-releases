@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.gsf;
+package org.netbeans.modules.html.editor.gsf.api;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -54,12 +54,14 @@ import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.html.editor.gsf.HtmlGSFParser;
+import org.netbeans.modules.html.editor.gsf.HtmlParserResultAccessor;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.Parser;
 
 /**
+ * HTML parser result
  *
- * @author marek
+ * @author mfukala@netbeans.org
  */
 public class HtmlParserResult extends ParserResult {
 
@@ -67,7 +69,7 @@ public class HtmlParserResult extends ParserResult {
     private SyntaxParserResult result;
     private List<Error> errors;
 
-    HtmlParserResult(Parser parser, Snapshot snapshot, SyntaxParserResult result) {
+    private HtmlParserResult(Snapshot snapshot, SyntaxParserResult result) {
         super(snapshot);
         this.result = result;
     }
@@ -108,7 +110,7 @@ public class HtmlParserResult extends ParserResult {
 
     @Override
     public synchronized List<? extends Error> getDiagnostics() {
-        if(errors == null) {
+        if (errors == null) {
             errors = new ArrayList<Error>(findErrors());
         }
         return errors;
@@ -129,8 +131,8 @@ public class HtmlParserResult extends ParserResult {
                                 node.type() == AstNode.NodeType.ENDTAG ||
                                 node.type() == AstNode.NodeType.UNKNOWN_TAG) {
 
-                            for(Description desc : node.getDescriptions()) {
-                                if(desc.getType() < Description.WARNING) {
+                            for (Description desc : node.getDescriptions()) {
+                                if (desc.getType() < Description.WARNING) {
                                     continue;
                                 }
                                 //some error in the node, report
@@ -152,5 +154,16 @@ public class HtmlParserResult extends ParserResult {
 
         return _errors;
 
+    }
+
+    static {
+        HtmlParserResultAccessor.set(new Accessor());
+    }
+
+    private static class Accessor extends HtmlParserResultAccessor {
+
+        public HtmlParserResult createInstance(Snapshot snapshot, SyntaxParserResult result) {
+            return new HtmlParserResult(snapshot, result);
+        }
     }
 }

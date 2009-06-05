@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.html.editor.gsf;
 
+import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
