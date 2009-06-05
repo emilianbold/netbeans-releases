@@ -70,10 +70,10 @@ public class APTSelfWalker extends APTAbstractWalker {
             try {
                 APTFile apt = APTDriver.getInstance().findAPTLight(new FileBufferFile(new File(resolvedPath.getPath().toString())));
                 APTPreprocHandler preprocHandler = getPreprocHandler();
-                APTFileCacheEntry cache = APTFileCacheManager.getEntry(resolvedPath.getPath(),preprocHandler, false);
+                APTFileCacheEntry cache = APTFileCacheManager.getEntry(resolvedPath.getPath(),preprocHandler, true);
                 createIncludeWalker(apt, this, resolvedPath.getPath(), cache).visit();
-                // remember walk
-                APTFileCacheManager.setAPTCacheEntry(resolvedPath.getPath(), preprocHandler, cache, false);
+                // does not remember walk to safe memory
+                // APTFileCacheManager.setAPTCacheEntry(resolvedPath.getPath(), preprocHandler, cache, false);
             } catch (FileNotFoundException ex) {
                 APTUtils.LOG.log(Level.WARNING, "APTSelfWalker: file {0} not found", new Object[] {resolvedPath.getPath()});// NOI18N
 		DiagnosticExceptoins.register(ex);
@@ -96,3 +96,4 @@ public class APTSelfWalker extends APTAbstractWalker {
         return false;
     }
 }
+

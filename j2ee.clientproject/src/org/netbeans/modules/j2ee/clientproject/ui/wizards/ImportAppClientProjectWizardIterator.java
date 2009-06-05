@@ -54,6 +54,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.modules.j2ee.clientproject.Utils;
+import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectCreateData;
 import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
@@ -61,6 +62,7 @@ import org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPa
 import org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
@@ -113,22 +115,21 @@ public class ImportAppClientProjectWizardIterator implements WizardDescriptor.Pr
         if (dirF != null) {
             dirF = FileUtil.normalizeFile(dirF);
         }
-        String name = (String) wiz.getProperty(ProjectLocationWizardPanel.NAME);
-//        File dirSrcF = (File) wiz.getProperty (WizardProperties.SOURCE_ROOT);
-        File[] sourceFolders = (File[]) wiz.getProperty(WizardProperties.JAVA_ROOT);
-        File[] testFolders = (File[]) wiz.getProperty(WizardProperties.TEST_ROOT);
-        File configFilesFolder = (File) wiz.getProperty(WizardProperties.CONFIG_FILES_FOLDER);
-        File libName = (File) wiz.getProperty(WizardProperties.LIB_FOLDER);
-        String serverInstanceID = (String) wiz.getProperty(ProjectServerWizardPanel.SERVER_INSTANCE_ID);
-        String j2eeLevel = (String) wiz.getProperty(ProjectServerWizardPanel.J2EE_LEVEL);
-        
-        String librariesDefinition =
-                SharabilityUtility.getLibraryLocation((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SHARED_LIBRARIES));
-        String serverLibraryName = (String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SERVER_LIBRARY);
-        
-        AntProjectHelper h = AppClientProjectGenerator.importProject(dirF, name,
-                sourceFolders, testFolders, configFilesFolder, libName, j2eeLevel,
-                serverInstanceID, librariesDefinition, serverLibraryName);
+
+        AppClientProjectCreateData createData = new AppClientProjectCreateData();
+        createData.setProjectDir(dirF);
+        createData.setName((String) wiz.getProperty(ProjectLocationWizardPanel.NAME));
+        createData.setSourceFolders((File[]) wiz.getProperty(WizardProperties.JAVA_ROOT));
+        createData.setTestFolders((File[]) wiz.getProperty(WizardProperties.TEST_ROOT));
+        createData.setConfFolder((File) wiz.getProperty(WizardProperties.CONFIG_FILES_FOLDER));
+        createData.setLibFolder((File) wiz.getProperty(WizardProperties.LIB_FOLDER));
+        createData.setServerInstanceID((String) wiz.getProperty(ProjectServerWizardPanel.SERVER_INSTANCE_ID));
+        createData.setJavaEEProfile((Profile) wiz.getProperty(ProjectServerWizardPanel.J2EE_LEVEL));
+        createData.setLibrariesDefinition(
+                SharabilityUtility.getLibraryLocation((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SHARED_LIBRARIES)));
+        createData.setServerLibraryName((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SERVER_LIBRARY));
+
+        AntProjectHelper h = AppClientProjectGenerator.importProject(createData);
         
         handle.progress(2);
         
@@ -151,7 +152,7 @@ public class ImportAppClientProjectWizardIterator implements WizardDescriptor.Pr
         }
         
         // remember last used server
-        UserProjectSettings.getDefault().setLastUsedServer(serverInstanceID);
+        UserProjectSettings.getDefault().setLastUsedServer(createData.getServerInstanceID());
         
         // downgrade the Java platform or src level to 1.4
         String platformName = (String)wiz.getProperty(ProjectServerWizardPanel.JAVA_PLATFORM);

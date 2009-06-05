@@ -78,7 +78,7 @@ public final class APTFileCacheEntry {
     }
 
     private static APTFileCacheEntry create(CharSequence filePath, boolean serial) {
-        return new APTFileCacheEntry(filePath, serial, serial ? new HashMap<Integer, IncludeData>() : new ConcurrentHashMap<Integer, IncludeData>(), new HashMap<Integer, Boolean>());
+        return new APTFileCacheEntry(filePath, serial, serial ? new HashMap<Integer, IncludeData>() : new ConcurrentHashMap<Integer, IncludeData>(), serial ? new HashMap<Integer, Boolean>() : new ConcurrentHashMap<Integer, Boolean>());
     }
 
     public boolean isSerial() {
