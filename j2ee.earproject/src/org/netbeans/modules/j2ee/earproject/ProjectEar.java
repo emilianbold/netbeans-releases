@@ -74,6 +74,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleListener;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationImplementation;
@@ -262,7 +263,7 @@ public final class ProjectEar extends J2eeApplicationProvider
     private Application getDDFromFile() throws IOException {
         FileObject dd = getDeploymentDescriptor();
         if (dd == null) {
-            dd = EarProjectGenerator.setupDD(project.getJ2eePlatformVersion(), getMetaInf(), project);
+            dd = EarProjectGenerator.setupDD(project.getJ2eeProfile(), getMetaInf(), project);
         }
         return DDProvider.getDefault().getDDRoot(dd);
     }
@@ -348,8 +349,13 @@ public final class ProjectEar extends J2eeApplicationProvider
         return new String[] {};
     }
 
+    // FIXME mix of two apis
     public String getJ2eePlatformVersion () {
-        return project.getJ2eePlatformVersion(); // helper.getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_PLATFORM);
+        return project.getJ2eePlatformVersion();
+    }
+
+    public Profile getJ2eeProfile() {
+        return project.getJ2eeProfile();
     }
     
     @Override

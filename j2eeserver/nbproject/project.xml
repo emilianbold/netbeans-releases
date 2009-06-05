@@ -334,6 +334,7 @@ made subject to such option by the copyright holder.
             <public-packages>
                 <package>org.netbeans.modules.j2ee.deployment.common.api</package>
                 <package>org.netbeans.modules.j2ee.deployment.devmodules.api</package>
+                <package>org.netbeans.modules.j2ee.deployment.devmodules.capabilities</package>
                 <package>org.netbeans.modules.j2ee.deployment.devmodules.spi</package>
                 <package>org.netbeans.modules.j2ee.deployment.plugins.api</package>
                 <package>org.netbeans.modules.j2ee.deployment.plugins.spi</package>

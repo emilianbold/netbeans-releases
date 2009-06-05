@@ -59,6 +59,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
@@ -71,7 +72,6 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
-import org.openide.util.Utilities;
 
 
 /**
@@ -390,8 +390,15 @@ public final class J2eePlatform {
      * class.
      *
      * @return list of supported J2EE specification versions.
+     * @deprecated use {@link #getSupportedProfiles()}
      */
     public Set/*<String>*/ getSupportedSpecVersions() {
+        boolean assertsEnabled = false;
+        assert assertsEnabled = true;
+        if (assertsEnabled) {
+            LOGGER.log(Level.INFO, "Call to deprecated method " + J2eePlatform.class.getName() + "getSupportedSpecVersions", new Exception());
+        }
+
         return impl.getSupportedSpecVersions();
     }
 
@@ -402,9 +409,23 @@ public final class J2eePlatform {
      * @param moduleType one of the constants defined in
      *   {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule}
      * @return list of supported J2EE specification versions.
+     * @deprecated use {@link #getSupportedProfiles(java.lang.Object)}
      */
     public Set <String> getSupportedSpecVersions(Object moduleType) {
+        boolean assertsEnabled = false;
+        assert assertsEnabled = true;
+        if (assertsEnabled) {
+            LOGGER.log(Level.INFO, "Call to deprecated method " + J2eePlatform.class.getName() + "getSupportedSpecVersions", new Exception());
+        }
         return impl.getSupportedSpecVersions(moduleType);
+    }
+
+    public Set<Profile> getSupportedProfiles() {
+        return impl.getSupportedProfiles();
+    }
+
+    public Set<Profile> getSupportedProfiles(Object moduleType) {
+        return impl.getSupportedProfiles(moduleType);
     }
 
     /**

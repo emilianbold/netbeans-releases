@@ -231,8 +231,15 @@ public class DataEditorSupport extends CloneableEditorSupport {
             }
         }
 
-        return NbBundle.getMessage (DataObject.class, "LAB_EditorName",
-		new Integer (version), name );
+        try {
+            return NbBundle.getMessage(DataObject.class, "LAB_EditorName",
+                    new Integer(version), name);
+        } catch (IllegalArgumentException iae) {
+            // #166035 - formatting someimes fail, so report input parameters
+            String pattern = NbBundle.getMessage(DataObject.class, "LAB_EditorName");
+            ERR.log(Level.WARNING, "Formatting failed. pattern=" + pattern + ", version=" + version + ", name=" + name, iae);  //NOI18N
+            return name;
+        }
     }
     
     @Override

@@ -135,11 +135,11 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
                 APTFile aptLight = inclFileOwner.getAPTLight(csmFile);
                 if (aptLight != null) {
                     APTPreprocHandler preprocHandler = getPreprocHandler();
-                    APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(preprocHandler, false);
+                    APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(preprocHandler, true);
                     APTWalker walker = new APTRestorePreprocStateWalker(getStartProject(), aptLight, csmFile, preprocHandler,cacheEntry);
                     walker.visit();
-                    // remember walk info
-                    csmFile.setAPTCacheEntry(preprocHandler, cacheEntry, false);
+                    // does not remember walk info to safe memory
+                    // csmFile.setAPTCacheEntry(preprocHandler, cacheEntry, false);
                 } else {
                     // expected #included file was deleted
                     csmFile = null;

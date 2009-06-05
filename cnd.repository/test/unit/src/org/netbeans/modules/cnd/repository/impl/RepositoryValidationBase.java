@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Tracer;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.openide.util.Exceptions;
 
 /**
@@ -163,22 +163,8 @@ public class RepositoryValidationBase extends TraceModelTestBase {
     // tar xf pkgconfig-0.18.tar
     private List<String> download() throws IOException{
         List<String> list = new ArrayList<String>();
-        String dataPath;
-        if (false) {
-            // local downloads
-            dataPath = getDataDir().getAbsolutePath();
-            if (dataPath.endsWith("/data") || dataPath.endsWith("\\data")) {
-                dataPath = dataPath.substring(0, dataPath.length()-4)+"downloads";
-            }
-        } else {
-            // downloads in tmp dir
-            dataPath = System.getProperty("java.io.tmpdir");
-            if (dataPath.endsWith(File.separator)) {
-                dataPath += System.getProperty("user.name") +  "-cnd-test-downloads";
-            } else {
-                dataPath += File.separator + System.getProperty("user.name") +  "-cnd-test-downloads";
-            }
-        }
+        File fileDataPath = CndCoreTestUtils.getDownloadBase();
+        String dataPath = fileDataPath.getAbsolutePath();
         final AtomicBoolean finish = new AtomicBoolean(false);
         ExecutionListener listener = new ExecutionListener() {
             public void executionStarted() {
@@ -188,19 +174,19 @@ public class RepositoryValidationBase extends TraceModelTestBase {
             }
         };
         NativeExecutor ne = null;
-        File file = new File(dataPath + "/pkgconfig-0.18");
+        File file = new File(dataPath + "/pkg-config-0.23");
         if (!file.exists()){
             file.mkdirs();
         }
         if (file.list().length == 0){
             ne = new NativeExecutor(dataPath,"wget",
-                    "http://pkgconfig.freedesktop.org/releases/pkgconfig-0.18.tar.gz",new String[0],"wget","run",false,false);
+                    "http://pkgconfig.freedesktop.org/releases/pkg-config-0.23.tar.gz",new String[0],"wget","run",false,false);
             waitExecution(ne, listener, finish);
             ne = new NativeExecutor(dataPath,"gzip",
-                    "-d pkgconfig-0.18.tar.gz",new String[0],"gzip","run",false,false);
+                    "-d pkg-config-0.23.tar.gz",new String[0],"gzip","run",false,false);
             waitExecution(ne, listener, finish);
             ne = new NativeExecutor(dataPath,"tar",
-                    "xf pkgconfig-0.18.tar",new String[0],"tar","run",false,false);
+                    "xf pkg-config-0.23.tar",new String[0],"tar","run",false,false);
             waitExecution(ne, listener, finish);
         }
 
@@ -219,7 +205,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
                     "xf litesql-0.3.3.tar",new String[0],"tar","run",false,false);
             waitExecution(ne, listener, finish);
         }
-        list.add(dataPath + "/pkgconfig-0.18"); //NOI18N
+        list.add(dataPath + "/pkg-config-0.23"); //NOI18N
         list.add(dataPath + "/litesql-0.3.3"); //NOI18N
         for(String f : list){
             file = new File(f);
@@ -227,7 +213,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         }
         list = expandAndSort(list);
         list.add("-DHAVE_CONFIG_H");
-        list.add("-I"+dataPath + "/pkgconfig-0.18");
+        list.add("-I"+dataPath + "/pkg-config-0.23");
         list.add("-I"+dataPath + "/litesql-0.3.3");
         return list;
     }
