@@ -39,13 +39,13 @@
 package org.netbeans.modules.cnd.repository.util;
 
 import org.netbeans.modules.cnd.repository.disk.RepositoryCacheMap;
-import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 
 /**
  * test case for RepositoryCacheMap
  * @author Vladimir Kvashin
  */
-public class RepositoryCacheMapTest extends BaseTestCase {
+public class RepositoryCacheMapTest extends CndBaseTestCase {
 
     public RepositoryCacheMapTest(String testName) {
         super(testName);

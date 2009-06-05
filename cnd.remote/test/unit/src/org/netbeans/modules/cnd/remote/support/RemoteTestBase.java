@@ -50,14 +50,14 @@ import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescripto
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 
 /**
  * A common base class for remote "unit" tests
  * @author Sergey Grinev
  */
-public abstract class RemoteTestBase extends BaseTestCase {
+public abstract class RemoteTestBase extends CndBaseTestCase {
 
     protected RemoteTestBase(String testName) {
         super(testName);

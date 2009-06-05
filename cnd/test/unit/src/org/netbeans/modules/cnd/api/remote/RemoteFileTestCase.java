@@ -43,14 +43,14 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author Sergey Grinev
  */
-public class RemoteFileTestCase extends BaseTestCase {
+public class RemoteFileTestCase extends CndBaseTestCase {
 
     public RemoteFileTestCase(String name) {
         super(name);

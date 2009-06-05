@@ -48,13 +48,13 @@ import java.util.Comparator;
 import java.util.List;
 import org.netbeans.editor.Analyzer;
 import org.netbeans.modules.cnd.editor.parser.CppFoldRecord;
-import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public class APTFoldingProviderTestCase extends BaseTestCase {
+public class APTFoldingProviderTestCase extends CndBaseTestCase {
 
     private static final boolean TRACE = false;
 

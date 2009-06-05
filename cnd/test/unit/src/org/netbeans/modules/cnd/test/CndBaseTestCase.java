@@ -93,7 +93,7 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
  * ${xtest.data} vallue is usually ${module}/test/unit/data folder
  * @author Vladimir Voskresensky
  */
-public abstract class BaseTestCase extends NativeExecutionBaseTestCase {
+public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
 
     static {
         // Setting netbeans.dirs makes installedFileLocator work properly
@@ -154,7 +154,7 @@ public abstract class BaseTestCase extends NativeExecutionBaseTestCase {
     }
     
     /** Creates a new instance of BaseTestCase */
-    public BaseTestCase(String testName) {
+    public CndBaseTestCase(String testName) {
         super(testName);
     }
     
