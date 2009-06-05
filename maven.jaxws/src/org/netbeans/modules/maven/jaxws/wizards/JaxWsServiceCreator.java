@@ -274,16 +274,17 @@ public class JaxWsServiceCreator implements ServiceCreator {
                 DialogDisplayer.getDefault().notify(desc);
             }
 
-            Preferences prefs = ProjectUtils.getPreferences(project, MavenWebService.class,true);
-            if (prefs != null) {
-                // remember original WSDL URL for service
-                prefs.put(MavenWebService.SERVICE_PREFIX+wsdlFo.getName(), wsdlUrl);
-            }
-
             if (wsdlFo != null) {
                 final boolean isJaxWsLibrary = MavenModelUtils.isJaxWs21Library(project);
                 final String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
                 final String serviceName = wsdlFo.getName();
+
+                Preferences prefs = ProjectUtils.getPreferences(project, MavenWebService.class,true);
+                if (prefs != null) {
+                    // remember original WSDL URL for service
+                    prefs.put(MavenWebService.SERVICE_PREFIX+WSUtils.getUniqueId(wsdlFo.getName(), jaxWsSupport.getServices()), wsdlUrl);
+                }
+                
                 ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
                     public void performOperation(POMModel model) {
                         if (!isJaxWsLibrary) {

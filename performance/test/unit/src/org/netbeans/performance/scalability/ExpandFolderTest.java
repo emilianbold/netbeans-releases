@@ -79,6 +79,7 @@ public class ExpandFolderTest extends NbTestCase implements Callable<Long> {
         Configuration config = NbModuleSuite.createConfiguration(ExpandFolderTest.class)
             .clusters(clusters)
             .enableModules(modules)
+            .honorAutoloadEager(true)
             .gui(false);
         return NbModuleSuite.create(config);
     }

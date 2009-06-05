@@ -51,7 +51,7 @@ import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**Copied from editor/codetemplates and adjusted for the needs of the instant rename.
  * 
@@ -137,7 +137,7 @@ public final class SyncDocumentRegion {
                 firstRegion.setStartPosition(newStartPos);
                 
             } catch (BadLocationException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
             
         }
@@ -157,7 +157,7 @@ public final class SyncDocumentRegion {
                         doc.remove(offset + firstRegionText.length(), length);
                     }
                 } catch (BadLocationException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                 }
 
             }
@@ -175,7 +175,7 @@ public final class SyncDocumentRegion {
             int length = region.getEndOffset() - offset;
             return doc.getText(offset, length);
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
             return null;
         }
     }

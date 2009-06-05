@@ -45,7 +45,6 @@ import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.j2ee.ddloaders.web.DDDataObject;
-import org.netbeans.modules.j2ee.dd.api.web.JspPropertyGroup;
 
 /**
  * @author mkuchtiak

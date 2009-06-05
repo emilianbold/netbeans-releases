@@ -48,10 +48,9 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.netbeans.modules.wag.manager.model.WagService;
 import org.netbeans.modules.wag.manager.model.WagServiceParameter;
-import com.sun.zembly.oauth.api.Parameter;
-import com.sun.zembly.popzcl.Zembly;
-import com.sun.zembly.popzcl.config.Configuration;
-import com.sun.zembly.popzcl.config.impl.DefaultConfiguration;
+import com.zembly.oauth.api.Parameter;
+import com.zembly.gateway.client.Zembly;
+
 
 /**
  *
@@ -81,14 +80,11 @@ public class SearchEngine {
     private Zembly zembly;
 
     private SearchEngine() {
-        Configuration config = new DefaultConfiguration();
-        config.setBaseUrl(BASE_URL);
-        config.setHttpMethod(HTTP_METHOD);
-
-        try {
-            zembly = new Zembly(config);
+        try {        
+            zembly = Zembly.getInstance();
         } catch (Exception ex) {
-            // RESOLVE need to figure what to do when getting an exception;
+            ex.printStackTrace();
+            // ignore
         }
     }
 

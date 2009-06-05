@@ -228,7 +228,7 @@ public abstract class SQLDataStorage extends DataStorage {
                 }));
         sb.append(")" + getSQLQueriesDelimeter()); //NOI18N
 
-        logger.info("About to execute query: " + sb.toString()); //NOI18N
+        logger.fine("About to execute query: " + sb.toString()); //NOI18N
 
         try {
             connection.prepareCall(sb.toString()).execute();
@@ -237,7 +237,7 @@ public abstract class SQLDataStorage extends DataStorage {
             return false;
         }
 
-        logger.info("Table " + tableName + " created"); //NOI18N
+        logger.fine("Table " + tableName + " created"); //NOI18N
 
         tables.put(tableName, metadata);
 

@@ -75,6 +75,13 @@ public class PlainDocumentTest extends NbTestCase {
         Element lineElem = doc.getDefaultRootElement().getElement(0);
         assertEquals(0, lineElem.getStartOffset());
         assertEquals(doc.getLength() + 1, lineElem.getEndOffset());
+
+        // Test that once position gets to zero it won't go anywhere else (unless undo performed)
+        pos = doc.createPosition(1);
+        doc.remove(0, 1);
+        assertEquals(0, pos.getOffset());
+        doc.insertString(0, "b", null);
+        assertEquals(0, pos.getOffset());
     }
     
 }

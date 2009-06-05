@@ -71,6 +71,8 @@ public abstract class KeyBasedUID<T> implements CsmUID<T>, KeyHolder, SelfPersis
         return key;
     }
 
+    public abstract void dispose(T obj);
+
     @Override
     public String toString() {
         String retValue;

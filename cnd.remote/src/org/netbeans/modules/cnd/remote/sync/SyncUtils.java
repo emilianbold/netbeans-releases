@@ -71,8 +71,10 @@ public class SyncUtils {
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 RemoteSyncFactory factory = (RemoteSyncFactory) value;
-                label.setText(factory.getDisplayName());
-                label.setToolTipText(factory.getDescription());
+                if (factory != null) {
+                    label.setText(factory.getDisplayName());
+                    label.setToolTipText(factory.getDescription());
+                }
                 return label;
             }
         });

@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -54,45 +52,66 @@ import org.openide.util.Parameters;
 public final class FileObjectIndexable implements IndexableImpl {
 
     private final FileObject root;
-    private final FileObject file;
-    private String relativePath;
+    private final String relativePath;
+    private final String mimeType;
 
-    public FileObjectIndexable (final FileObject root, final FileObject file) {
+    private Object url;
+
+    public FileObjectIndexable (FileObject root, FileObject file) {
+        this(root, FileUtil.getRelativePath(root, file), file.getMIMEType());
+    }
+
+    public FileObjectIndexable (FileObject root, String relativePath, String mimeType) {
         Parameters.notNull("root", root); //NOI18N
-        Parameters.notNull("file", file); //NOI18N
+        Parameters.notNull("relativePath", relativePath); //NOI18N
+        Parameters.notNull("mimeType", mimeType); //NOI18N
         this.root = root;
-        this.file = file;
+        this.relativePath = relativePath;
+        this.mimeType = mimeType;
     }
 
-    public long getLastModified() {
-        return this.file.lastModified().getTime();
-    }
-
-    public String getName() {
-        return this.file.getName();
-    }
+//    public long getLastModified() {
+//        return this.getFile().lastModified().getTime();
+//    }
+//
+//    public String getName() {
+//        if (name == null) {
+//            int idx = relativePath.lastIndexOf('/'); //NOI18N
+//            if (idx != -1) {
+//                name = relativePath.substring(idx + 1);
+//            } else {
+//                name = relativePath;
+//            }
+//        }
+//        return name;
+//    }
 
     public String getRelativePath() {
-        if (relativePath == null) {
-            String path = FileUtil.getRelativePath(root, file);
-            assert path != null : "File not under root: file=" + file + ", root" + root; //NOI18N
-            relativePath = path;
-        }
         return relativePath;
     }
 
     public URL getURL() {
-        try {
-            return this.file.getURL();
-        } catch (FileStateInvalidException ex) {
-            //deleted
-            return null;
+        if (url == null) {
+            try {
+                FileObject file = root.getFileObject(relativePath);
+                if (file != null) {
+                    url = file.getURL();
+                }
+            } catch (FileStateInvalidException ex) {
+                url = ex;
+            }
         }
+
+        return url instanceof URL ? (URL) url : null;
     }
 
-    public InputStream openInputStream() throws IOException {
-        return this.file.getInputStream();
+    public String getMimeType() {
+        return mimeType;
     }
+
+//    public InputStream openInputStream() throws IOException {
+//        return this.getFile().getInputStream();
+//    }
 
     @Override
     public boolean equals(Object obj) {
@@ -103,7 +122,10 @@ public final class FileObjectIndexable implements IndexableImpl {
             return false;
         }
         final FileObjectIndexable other = (FileObjectIndexable) obj;
-        if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
+        if (this.root != other.root && (this.root == null || !this.root.equals(other.root))) {
+            return false;
+        }
+        if (this.relativePath != other.relativePath && (this.relativePath == null || !this.relativePath.equals(other.relativePath))) {
             return false;
         }
         return true;
@@ -112,13 +134,21 @@ public final class FileObjectIndexable implements IndexableImpl {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 83 * hash + (this.file != null ? this.file.hashCode() : 0);
+        hash = 83 * hash + (this.root != null ? this.root.hashCode() : 0);
+        hash = 83 * hash + (this.relativePath != null ? this.relativePath.hashCode() : 0);
         return hash;
     }
 
     @Override
     public String toString() {
-        return "FileObjectIndexable@" + Integer.toHexString(System.identityHashCode(this)) + " [" + getURL() + "]"; //NOI18N
+        return "FileObjectIndexable@" + Integer.toHexString(System.identityHashCode(this)) + " [" + toURL(root) + "/" + getRelativePath() + "]"; //NOI18N
     }
 
+    private static String toURL(FileObject f) {
+        try {
+            return f.getURL().toString();
+        } catch (FileStateInvalidException ex) {
+            return f.getPath();
+        }
+    }
 }

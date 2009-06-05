@@ -91,7 +91,7 @@ public class MakeTemplateListener implements OperationListener {
             return null;
         }
 
-        return (MakeConfigurationDescriptor) pdp.getConfigurationDescriptor();
+        return pdp.getConfigurationDescriptor();
     }
 
     public void operationCreateFromTemplate(OperationEvent.Copy copy) {

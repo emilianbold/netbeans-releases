@@ -816,6 +816,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             depPanel.setSearchInProgressUI(true);
 
             final List<QueryField> fields = new ArrayList<QueryField>();
+            final List<QueryField> fieldsNonClasses = new ArrayList<QueryField>();
             String q = queryText.trim();
             String[] splits = q.split(" "); //NOI118N
 
@@ -833,6 +834,9 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                     f.setField(fld);
                     f.setValue(curText);
                     fields.add(f);
+                    if (!QueryField.FIELD_CLASSES.equals(fld)) {
+                        fieldsNonClasses.add(f);
+                    }
                 }
             }
 
@@ -841,17 +845,24 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                 public void run() {
                     List<NBVersionInfo> tempInfos = null;
                     boolean tempIsError = false;
-
+                    //first try with classes search included,
                     try {
                         tempInfos = RepositoryQueries.find(fields);
                     } catch (BooleanQuery.TooManyClauses exc) {
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                depPanel.searchField.setForeground(Color.RED);
-                                depPanel.nls.setWarningMessage(NbBundle.getMessage(AddDependencyPanel.class, "MSG_TooGeneral"));
-                            }
-                        });
-                        tempIsError = true;
+                        // if failing, then exclude classes from search..
+                        try {
+                            tempInfos = RepositoryQueries.find(fieldsNonClasses);
+                            //TODO show that classes were excluded somehow?
+                        } catch (BooleanQuery.TooManyClauses exc2) {
+                            // if still failing, report to the user
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    depPanel.searchField.setForeground(Color.RED);
+                                    depPanel.nls.setWarningMessage(NbBundle.getMessage(AddDependencyPanel.class, "MSG_TooGeneral"));
+                                }
+                            });
+                            tempIsError = true;
+                        }
                     }
 
                     final List<NBVersionInfo> infos = tempInfos;
@@ -973,7 +984,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                 } else if (index2 < 0) {
                     return -1;
                 }
-                return index1 - index2;
+                return s1.compareTo(s2);
             } else {
                 return s1.compareTo(s2);
             }

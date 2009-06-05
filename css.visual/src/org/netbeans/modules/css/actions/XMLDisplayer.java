@@ -53,6 +53,8 @@ import org.openide.nodes.*;
 import org.openide.cookies.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.NbBundle;
 import org.openide.windows.*;
 
@@ -222,7 +224,7 @@ public class XMLDisplayer {
         public void outputLineSelected (OutputEvent ev) {
             try {
                 xline.markError();
-                xline.show(Line.SHOW_TRY_SHOW, column);
+                xline.show(ShowOpenType.NONE, ShowVisibilityType.NONE, column);
             } catch (IndexOutOfBoundsException ex) {
             } catch (ClassCastException ex) {
                 // This is hack because of CloneableEditorSupport error -- see CloneableEditorSupport:1193
@@ -232,7 +234,7 @@ public class XMLDisplayer {
         public void outputLineAction (OutputEvent ev) {
             try {
                 xline.markError();
-                xline.show(Line.SHOW_GOTO, column);
+                xline.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
             } catch (IndexOutOfBoundsException ex) {
             } catch (ClassCastException ex) {
                 // This is hack because of CloneableEditorSupport error -- see CloneableEditorSupport:1193

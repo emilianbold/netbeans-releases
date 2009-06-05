@@ -80,7 +80,7 @@ public class MavenWebService implements WebServiceImplementation {
         if (service.isServiceProvider()) {
             return service.getImplementationClass();
         } else {
-            return service.getLocalWsdl();
+            return service.getId();
         }
     }
 

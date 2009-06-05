@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
@@ -69,7 +70,9 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.InstanceDataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex.Action;
 import org.openide.util.test.MockLookup;
 import org.openide.xml.EntityCatalog;
 import org.xml.sax.InputSource;
@@ -175,6 +178,9 @@ public class LibrariesStorageTest extends NbTestCase {
     }
     
     static void registerLibraryTypeProvider () throws Exception {
+        registerLibraryTypeProvider(TestLibraryTypeProvider.class);
+    }
+    static void registerLibraryTypeProvider (Class<? extends LibraryTypeProvider> type) throws Exception {
         StringTokenizer tk = new StringTokenizer("org-netbeans-api-project-libraries/LibraryTypeProviders","/");
         FileObject root = FileUtil.getConfigRoot();
         while (tk.hasMoreElements()) {
@@ -188,7 +194,7 @@ public class LibrariesStorageTest extends NbTestCase {
         if (root.getChildren().length == 0) {
 //            FileObject inst = root.createData("TestLibraryTypeProvider","instance");
 //            inst.setAttribute("newvalue","")
-            InstanceDataObject.create (DataFolder.findFolder(root),"TestLibraryTypeProvider",TestLibraryTypeProvider.class);
+            InstanceDataObject.create (DataFolder.findFolder(root),"TestLibraryTypeProvider", type);
         }
     }
     
@@ -316,11 +322,12 @@ public class LibrariesStorageTest extends NbTestCase {
         }
 
         public LibraryImplementation createLibrary() {
+            assert !ProjectManager.mutex().isReadAccess();
             return new TestLibrary ();
         }
         
     }
-    
+
     private static class TestLibrary implements LibraryImplementation {
         
         private String name;

@@ -378,10 +378,9 @@ public final class LayoutSupportManager implements LayoutSupportContext {
                              comp : (Component) metacomp.getBeanInstance();
         }
 
-        if (oldConstraints != null)
-            layoutDelegate.convertConstraints(oldConstraints,
-                                              newConstraints,
-                                              designComps);
+        layoutDelegate.convertConstraints(oldConstraints,
+                                          newConstraints,
+                                          designComps);
 
         if (componentCount > 0) {
             layoutDelegate.acceptNewComponents(compExps, newConstraints, 0);

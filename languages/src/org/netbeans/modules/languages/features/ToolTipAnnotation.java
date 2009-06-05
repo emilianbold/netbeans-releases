@@ -41,13 +41,12 @@
 
 package org.netbeans.modules.languages.features;
 
-
-import java.util.Collections;
 import java.util.Iterator;
 
 import org.netbeans.api.languages.ASTItem;
-import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
+import org.netbeans.api.languages.ASTPath;
+import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -56,15 +55,11 @@ import org.netbeans.api.languages.Context;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
-import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
-import org.netbeans.api.languages.ParserResult;
+import org.netbeans.modules.languages.ParserManagerImpl;
 import org.netbeans.api.languages.SyntaxContext;
+import org.netbeans.api.languages.ASTNode;
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.modules.languages.parser.SyntaxError;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.text.Annotation;
@@ -89,15 +84,15 @@ public class ToolTipAnnotation extends Annotation {
             Line line = lp.getLine ();
             DataObject dob = DataEditorSupport.findDataObject (line);
             EditorCookie ec = dob.getCookie (EditorCookie.class);
-            final NbEditorDocument document = (NbEditorDocument) ec.getDocument ();
+            NbEditorDocument document = (NbEditorDocument) ec.getDocument ();
             String mimeType = (String) document.getProperty ("mimeType");
-            final int offset = NbDocument.findLineOffset ( 
+            int offset = NbDocument.findLineOffset ( 
                     ec.getDocument (),
                     lp.getLine ().getLineNumber ()
                 ) + lp.getColumn ();
             TokenHierarchy tokenHierarchy = TokenHierarchy.get (document);
             if (tokenHierarchy == null) return null;
-            final Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
+            Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
             document.readLock ();
             try {
                 TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
@@ -106,7 +101,7 @@ public class ToolTipAnnotation extends Annotation {
                 tokenSequence.move (offset);
                 if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) return null;
                 Token token = tokenSequence.token ();
-                Feature tooltip = language.getFeatureList ().getFeature (TOOLTIP, token.id ().name ());
+                Feature tooltip = l.getFeatureList ().getFeature (TOOLTIP, token.id ().name ());
                 if (tooltip != null) {
                     String s = c ((String) tooltip.getValue (Context.create (document, offset)));
                     return s;
@@ -114,39 +109,31 @@ public class ToolTipAnnotation extends Annotation {
             } finally {
                 document.readUnlock ();
             }
-            Source source = Source.create (document);
-            try {
-                ParserManager.parse (Collections.<Source>singleton (source), new UserTask () {
-                    @Override
-                    public void run (ResultIterator resultIterator) throws ParseException {
-                        ParserResult parserResult = (ParserResult) resultIterator.getParserResult ();
-                        ASTNode ast = parserResult.getRootNode ();
-                        ASTPath path = ast.findPath (offset);
-                        if (path == null) return;
-                        int i, k = path.size ();
-                        for (i = 0; i < k; i++) {
-                            ASTPath p = path.subPath (i);
-                            Feature tooltip = language.getFeatureList ().getFeature (TOOLTIP, p);
-                            if (tooltip == null) continue;
-                            String s = c ((String) tooltip.getValue (SyntaxContext.create (document, p)));
-    //                        firePropertyChange (s, path, path)
-                            //!return s;
-                        }
-                        Iterator<SyntaxError> it = parserResult.getSyntaxErrors ().iterator ();
-                        while (it.hasNext ()) {
-                            SyntaxError syntaxError = it.next ();
-                            ASTItem item = syntaxError.getItem ();
-                            if (item.getOffset () == ast.getEndOffset ())
-                                item = ast.findPath (item.getOffset () - 1).getLeaf ();
-                            if (item.getOffset () > offset) break;
-                            if (item.getEndOffset () > offset) {
-                                //!return syntaxError.getMessage ();
-                            }
-                        }
-                    }
-                });
-            } catch (ParseException ex) {
-                ex.printStackTrace ();
+            ASTNode ast = null;
+            ParserManagerImpl parserManager = ParserManagerImpl.getImpl (document);
+            if (parserManager == null) return null;
+            ast = parserManager.getAST ();
+            if (ast == null) return null;
+            ASTPath path = ast.findPath (offset);
+            if (path == null) return null;
+            int i, k = path.size ();
+            for (i = 0; i < k; i++) {
+                ASTPath p = path.subPath (i);
+                Feature tooltip = l.getFeatureList ().getFeature (TOOLTIP, p);
+                if (tooltip == null) continue;
+                String s = c ((String) tooltip.getValue (SyntaxContext.create (document, p)));
+                return s;
+            }
+            Iterator<SyntaxError> it = parserManager.getSyntaxErrors ().iterator ();
+            while (it.hasNext ()) {
+                SyntaxError syntaxError = it.next ();
+                ASTItem item = syntaxError.getItem ();
+                if (item.getOffset () == ast.getEndOffset ())
+                    item = ast.findPath (item.getOffset () - 1).getLeaf ();
+                if (item.getOffset () > offset) break;
+                if (item.getEndOffset () > offset) {
+                    return syntaxError.getMessage ();
+                }
             }
         } catch (LanguageDefinitionNotFoundException ex) {
         }

@@ -46,6 +46,7 @@ import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
@@ -98,6 +99,7 @@ public class AstPathTest extends GroovyTestBase {
         assertEquals(MethodCallExpression.class, it.next().getClass());
         assertEquals(ExpressionStatement.class, it.next().getClass());
         assertEquals(BlockStatement.class, it.next().getClass());
+        assertEquals(MethodNode.class, it.next().getClass());
         assertEquals(ClassNode.class, it.next().getClass());
         assertEquals(ModuleNode.class, it.next().getClass());
         assertFalse(it.hasNext());

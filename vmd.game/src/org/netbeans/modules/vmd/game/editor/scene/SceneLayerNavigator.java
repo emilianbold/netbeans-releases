@@ -57,6 +57,7 @@ import java.awt.dnd.DropTargetAdapter;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.io.IOException;
+import java.util.logging.Logger;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
@@ -68,169 +69,201 @@ import org.netbeans.modules.vmd.game.editor.common.NonEmptyStringTableCellEditor
 import org.netbeans.modules.vmd.game.model.Layer;
 import org.netbeans.modules.vmd.game.model.LayerDataFlavor;
 import org.netbeans.modules.vmd.game.model.Scene;
+import org.netbeans.modules.vmd.game.model.SceneSelectionListener;
 import org.netbeans.modules.vmd.game.model.adapter.SceneLayerTableAdapter;
 
 public class SceneLayerNavigator extends JTable {
-	
-	public static final boolean DEBUG = false;
-	
-	public static final int PAD_X = 4;
-	public static final int PAD_Y = 4;
-	
-	private static final int IMG_PREVIEW_WIDTH = 40;
-	private static final int IMG_PREVIEW_HEIGHT = 30;
-	
-	private Scene scene;
-	
-	public SceneLayerNavigator(Scene layerModel) {
-		this.scene = layerModel;
-		this.setModel(new SceneLayerTableAdapter(layerModel));
-		this.getColumnModel().setColumnMargin(0);
-		
-		//Dnd
-		DragSource dragSource = new DragSource();
-		DragGestureRecognizer dragGestureRecognizer = dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_MOVE, new DGL());
-		DropTarget dropTarget = new DropTarget(this, new TableDropTarget());
-		dropTarget.setActive(true);
-		this.setDropTarget(dropTarget);
-		
-		
-		this.getSelectionModel().addListSelectionListener(new SceneTableSelectionListener());
-		
-		this.setRowHeight(IMG_PREVIEW_HEIGHT);
-		int width = IMG_PREVIEW_WIDTH /* + 2*PAD_X */ + this.getColumnModel().getColumnMargin();
-		
-		TableColumn typeColumn = this.getColumnModel().getColumn(SceneLayerTableAdapter.COL_INDEX_LAYER_TYPE);
-		typeColumn.setPreferredWidth(width);
-		typeColumn.setMaxWidth(width);
-		typeColumn.setMinWidth(width);
-		
-		
-		TableColumn indexColumn = this.getColumnModel().getColumn(SceneLayerTableAdapter.COL_INDEX_LAYER_INDEX);
-		indexColumn.setPreferredWidth(width);
-		indexColumn.setMaxWidth(width);
-		indexColumn.setMinWidth(width);
-		
-		TableColumn visibilityColumn = this.getColumnModel().getColumn(SceneLayerTableAdapter.COL_INDEX_LAYER_VISIBILITY_INDICATOR);
-		visibilityColumn.setPreferredWidth(width);
-		visibilityColumn.setMaxWidth(width);
-		visibilityColumn.setMinWidth(width);
-		
-		TableColumn lockColumn = this.getColumnModel().getColumn(SceneLayerTableAdapter.COL_INDEX_LAYER_LOCK_INDICATOR);
-		lockColumn.setPreferredWidth(width);
-		lockColumn.setMaxWidth(width);
-		lockColumn.setMinWidth(width);
-		
-		this.setDefaultEditor(Boolean.class, new BooleanTableCellRenderer(PAD_X, PAD_Y));
-		this.setDefaultRenderer(Boolean.class, new BooleanTableCellRenderer(PAD_X, PAD_Y));
-		
-		this.setDefaultRenderer(Layer.class, new LayerTableCellRenderer());
-                
-                this.setDefaultEditor(String.class, new NonEmptyStringTableCellEditor());
 
-		this.setDefaultRenderer(Integer.class, new DefaultTableCellRenderer() {
-                        @Override
-			public Component getTableCellRendererComponent(JTable table, Object value,
-					boolean isSelected, boolean hasFocus, int row, int column) {
-				this.setHorizontalAlignment(SwingConstants.CENTER);
-				return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-			}
-                });
+    public static final boolean DEBUG = false;
+    public static final int PAD_X = 4;
+    public static final int PAD_Y = 4;
+    private static final int IMG_PREVIEW_WIDTH = 40;
+    private static final int IMG_PREVIEW_HEIGHT = 30;
+    private static final Logger LOG = Logger.getLogger(SceneLayerNavigator.class.getName());
+    private Scene scene;
 
-                TableColumn posXColumn = this.getColumnModel().getColumn(SceneLayerTableAdapter.COL_INDEX_LAYER_POS_X);
-		posXColumn.setPreferredWidth(width + 10);
-		posXColumn.setMaxWidth(width + 10);
-		posXColumn.setMinWidth(width + 10);
-		
-		TableColumn posYColumn = this.getColumnModel().getColumn(SceneLayerTableAdapter.COL_INDEX_LAYER_POS_Y);
-		posYColumn.setPreferredWidth(width + 10);
-		posYColumn.setMaxWidth(width + 10);
-		posYColumn.setMinWidth(width + 10);
-		
-		
-		this.setShowVerticalLines(false);
-		this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		
-	}
-	
+    public SceneLayerNavigator(Scene layerModel) {
+        this.scene = layerModel;
+        this.setModel(new SceneLayerTableAdapter(layerModel));
+        this.getColumnModel().setColumnMargin(0);
+
+        //Dnd
+        DragSource dragSource = new DragSource();
+        DragGestureRecognizer dragGestureRecognizer = dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_MOVE, new DGL());
+        DropTarget dropTarget = new DropTarget(this, new TableDropTarget());
+        dropTarget.setActive(true);
+        this.setDropTarget(dropTarget);
+
+
+        this.getSelectionModel().addListSelectionListener(new SceneTableSelectionListener());
+        this.scene.addSceneListener(new ExternalSceneSelectionListener());
+
+        this.setRowHeight(IMG_PREVIEW_HEIGHT);
+        int width = IMG_PREVIEW_WIDTH /* + 2*PAD_X */ + this.getColumnModel().getColumnMargin();
+
+        TableColumn typeColumn = this.getColumnModel().getColumn(SceneLayerTableAdapter.COL_INDEX_LAYER_TYPE);
+        typeColumn.setPreferredWidth(width);
+        typeColumn.setMaxWidth(width);
+        typeColumn.setMinWidth(width);
+
+
+        TableColumn indexColumn = this.getColumnModel().getColumn(SceneLayerTableAdapter.COL_INDEX_LAYER_INDEX);
+        indexColumn.setPreferredWidth(width);
+        indexColumn.setMaxWidth(width);
+        indexColumn.setMinWidth(width);
+
+        TableColumn visibilityColumn = this.getColumnModel().getColumn(SceneLayerTableAdapter.COL_INDEX_LAYER_VISIBILITY_INDICATOR);
+        visibilityColumn.setPreferredWidth(width);
+        visibilityColumn.setMaxWidth(width);
+        visibilityColumn.setMinWidth(width);
+
+        TableColumn lockColumn = this.getColumnModel().getColumn(SceneLayerTableAdapter.COL_INDEX_LAYER_LOCK_INDICATOR);
+        lockColumn.setPreferredWidth(width);
+        lockColumn.setMaxWidth(width);
+        lockColumn.setMinWidth(width);
+
+        this.setDefaultEditor(Boolean.class, new BooleanTableCellRenderer(PAD_X, PAD_Y));
+        this.setDefaultRenderer(Boolean.class, new BooleanTableCellRenderer(PAD_X, PAD_Y));
+
+        this.setDefaultRenderer(Layer.class, new LayerTableCellRenderer());
+
+        this.setDefaultEditor(String.class, new NonEmptyStringTableCellEditor());
+
+        this.setDefaultRenderer(Integer.class, new DefaultTableCellRenderer() {
+
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                this.setHorizontalAlignment(SwingConstants.CENTER);
+                return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            }
+        });
+
+        TableColumn posXColumn = this.getColumnModel().getColumn(SceneLayerTableAdapter.COL_INDEX_LAYER_POS_X);
+        posXColumn.setPreferredWidth(width + 10);
+        posXColumn.setMaxWidth(width + 10);
+        posXColumn.setMinWidth(width + 10);
+
+        TableColumn posYColumn = this.getColumnModel().getColumn(SceneLayerTableAdapter.COL_INDEX_LAYER_POS_Y);
+        posYColumn.setPreferredWidth(width + 10);
+        posYColumn.setMaxWidth(width + 10);
+        posYColumn.setMinWidth(width + 10);
+
+
+        this.setShowVerticalLines(false);
+        this.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+
+    }
+
+    @Override
+    public Dimension getPreferredScrollableViewportSize() {
+        return super.getPreferredSize();
+    }
+
+    private class SceneTableSelectionListener implements ListSelectionListener {
+
+        public void valueChanged(ListSelectionEvent e) {
+            if (e.getValueIsAdjusting()) {
+                return;
+            }
+
+            int minIndex = e.getFirstIndex();
+            int maxIndex = e.getLastIndex();
+            // if the last index is removed, it still can be here.
+            int maxToTest = Math.min(maxIndex, scene.getLayerCount() - 1);
+            Layer layer;
+            for (int i = minIndex; i <= maxToTest; i++) {
+                layer = scene.getLayerAt(i);
+                scene.setLayerSelected(layer, getSelectionModel().isSelectedIndex(i));
+                //layer.getGameDesign().getMainView().requestPreview(layer);
+            }
+        }
+    }
+
+    private class ExternalSceneSelectionListener implements SceneSelectionListener{
+
+        public void layerSelectionChanged(Scene sourceScene, Layer layer, boolean selected) {
+            int index = SceneLayerNavigator.this.scene.indexOf(layer);
+            if (selected){
+                getSelectionModel().addSelectionInterval(index, index);
+            } else {
+                getSelectionModel().removeSelectionInterval(index, index);
+            }
+        }
+
+    }
+
+    //DnD implementation
+    private class DGL extends DragSourceAdapter implements DragGestureListener {
+
+        public void dragGestureRecognized(DragGestureEvent dge) {
+            Point dragOrigin = dge.getDragOrigin();
+            int srcRow = SceneLayerNavigator.this.rowAtPoint(dragOrigin);
+            if (DEBUG) {
+                System.out.println("dragGestureRecognized @ " + dragOrigin + " row: " + srcRow); // NOI18N
+            }
+            Layer payload = (Layer) SceneLayerNavigator.this.scene.getLayerAt(srcRow);
+            //Cursor.getPredefinedCursor(Cursor.getSystemCustomCursor(null));
+            if (DEBUG) {
+                System.out.println("payload = " + payload); // NOI18N
+            }
+            SceneLayerNavigator.this.setRowSelectionInterval(srcRow, srcRow);
+            dge.startDrag(null, payload, this);
+        }
+
         @Override
-	public Dimension getPreferredScrollableViewportSize() {
-		return super.getPreferredSize();
-	}
-	
-        private class SceneTableSelectionListener implements ListSelectionListener {
-		
-		public void valueChanged(ListSelectionEvent e) {
-			if (e.getValueIsAdjusting()){
-				return;
-			}
-			ListSelectionModel lsm = (ListSelectionModel) e.getSource();
-			if (lsm.isSelectionEmpty())
-				return;
-			int selectedLayerIndex = SceneLayerNavigator.this.getSelectionModel().getAnchorSelectionIndex();
-			Layer selectedLayer = SceneLayerNavigator.this.scene.getLayerAt(selectedLayerIndex);
-			if (DEBUG) System.out.println(selectedLayer + " has been selected."); // NOI18N
-			selectedLayer.getGameDesign().getMainView().requestPreview(selectedLayer);
-		}
-	}
-	
-	
-	//DnD implementation
-	private class DGL extends DragSourceAdapter implements DragGestureListener {
-		public void dragGestureRecognized(DragGestureEvent dge) {
-			Point dragOrigin = dge.getDragOrigin();
-			int srcRow = SceneLayerNavigator.this.rowAtPoint(dragOrigin);
-			if (DEBUG) System.out.println("dragGestureRecognized @ " + dragOrigin + " row: " + srcRow); // NOI18N
-			Layer payload = (Layer) SceneLayerNavigator.this.scene.getLayerAt(srcRow);
-			//Cursor.getPredefinedCursor(Cursor.getSystemCustomCursor(null));
-			if (DEBUG) System.out.println("payload = " + payload); // NOI18N
-			SceneLayerNavigator.this.setRowSelectionInterval(srcRow, srcRow);
-			dge.startDrag(null, payload, this);
-		}
-		
+        public void dragDropEnd(DragSourceDropEvent dsde) {
+            super.dragDropEnd(dsde);
+            if (dsde.getDropSuccess()) {
+                if (DEBUG) {
+                    System.out.println("Drop End - success"); // NOI18N
+                }
+            } else {
+                if (DEBUG) {
+                    System.out.println("Drop End - failure!!!"); // NOI18N
+                }
+            }
+        }
+    }
+
+    private class TableDropTarget extends DropTargetAdapter {
+
+        public void drop(DropTargetDropEvent dtde) {
+            Point dropPoint = dtde.getLocation();
+            if (DEBUG) {
+                System.out.println("Start drop @: " + dropPoint); // NOI18N
+            }
+            int dropRow = SceneLayerNavigator.this.rowAtPoint(dropPoint);
+            Transferable transferable = dtde.getTransferable();
+            try {
+                LayerDataFlavor layerFlavor = new LayerDataFlavor();
+                if (transferable.isDataFlavorSupported(layerFlavor)) {
+                    dtde.acceptDrop(DnDConstants.ACTION_MOVE);
+                    Layer layer = (Layer) transferable.getTransferData(layerFlavor);
+                    SceneLayerNavigator.this.scene.insert(layer, dropRow);
+                    dtde.dropComplete(true);
+                } else {
+                    if (DEBUG) {
+                        System.out.println("NOT a Layer ... weird."); // NOI18N
+                    }
+                }
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+                dtde.dropComplete(false);
+            } catch (UnsupportedFlavorException e) {
+                e.printStackTrace();
+                dtde.dropComplete(false);
+            } catch (IOException e) {
+                e.printStackTrace();
+                dtde.dropComplete(false);
+            }
+        }
+
         @Override
-		public void dragDropEnd(DragSourceDropEvent dsde) {
-			super.dragDropEnd(dsde);
-			if (dsde.getDropSuccess()) {
-				if (DEBUG) System.out.println("Drop End - success"); // NOI18N
-			} 
-			else {
-				if (DEBUG) System.out.println("Drop End - failure!!!"); // NOI18N
-			}
-		}
-	}
-	
-	private class TableDropTarget extends DropTargetAdapter {
-		public void drop(DropTargetDropEvent dtde) {
-			Point dropPoint = dtde.getLocation();
-			if (DEBUG) System.out.println("Start drop @: " + dropPoint); // NOI18N
-			int dropRow = SceneLayerNavigator.this.rowAtPoint(dropPoint);
-			Transferable transferable = dtde.getTransferable();
-			try {
-				LayerDataFlavor layerFlavor = new LayerDataFlavor();
-				if (transferable.isDataFlavorSupported(layerFlavor)) {
-					dtde.acceptDrop(DnDConstants.ACTION_MOVE);
-					Layer layer = (Layer) transferable.getTransferData(layerFlavor);
-					SceneLayerNavigator.this.scene.insert(layer, dropRow);
-					dtde.dropComplete(true);
-				} 
-				else {
-					if (DEBUG) System.out.println("NOT a Layer ... weird."); // NOI18N
-				}
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-				dtde.dropComplete(false);
-			} catch (UnsupportedFlavorException e) {
-				e.printStackTrace();
-				dtde.dropComplete(false);
-			} catch (IOException e) {
-				e.printStackTrace();
-				dtde.dropComplete(false);
-			}
-		}
-        @Override
-		public void dragExit(DropTargetEvent dte) {
-			if (DEBUG) System.out.println("dragExit"); // NOI18N
-		}
-	}
+        public void dragExit(DropTargetEvent dte) {
+            if (DEBUG) {
+                System.out.println("dragExit"); // NOI18N
+            }
+        }
+    }
 }
