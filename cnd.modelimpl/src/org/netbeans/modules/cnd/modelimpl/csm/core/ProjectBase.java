@@ -1231,7 +1231,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     return csmFile;
                 }
                 synchronized (entry.getLock()) {
-                    Collection<PreprocessorStatePair> statesToKeep = new ArrayList<PreprocessorStatePair>();
+                    List<PreprocessorStatePair> statesToKeep = new ArrayList<PreprocessorStatePair>();
                     AtomicBoolean newStateFound = new AtomicBoolean();
                     // Phase 1: check preproc states of entry comparing to current state
                     ComparisonResult comparisonResult = fillStatesToKeepBasedOnPPState(newState, entry.getStatePairs(), statesToKeep, newStateFound);
@@ -1259,7 +1259,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
                     boolean clean;
 
-                    Collection<APTPreprocHandler.State> statesToParse = new ArrayList<APTPreprocHandler.State>();
+                    List<APTPreprocHandler.State> statesToParse = new ArrayList<APTPreprocHandler.State>();
                     statesToParse.add(newState);
 
                     if (comparisonResult == ComparisonResult.BETTER) {
@@ -1489,8 +1489,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      */
     private ComparisonResult fillStatesToKeepBasedOnPCState(
             FilePreprocessorConditionState pcState,
-            Collection<PreprocessorStatePair> oldStates,
-            Collection<PreprocessorStatePair> statesToKeep) {
+            List<PreprocessorStatePair> oldStates,
+            List<PreprocessorStatePair> statesToKeep) {
 
         boolean isSuperset = true; // true if this state is a superset of each old state
 
@@ -1501,8 +1501,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         // so we do *not* check isValid & isCompileContext
 
         statesToKeep.clear();
-
-        for (PreprocessorStatePair old : oldStates) {
+        // in this place use direct for loop over list with known size
+        // instead of "for (PreprocessorStatePair old : oldStates)"
+        // due to performance problem of iterator.hasNext
+        int size = oldStates.size();
+        for (int i = 0; i < size; i++) {
+            PreprocessorStatePair old = oldStates.get(i);
             if (old.pcState == FilePreprocessorConditionState.PARSING) {
                 isSuperset = false;
                 // not yet filled - file parsing is filling it right now => we don't know what it will be => keep it
