@@ -28,6 +28,14 @@
         </xsl:element>
     </xsl:template>
 
+    <xsl:template match="filesystem/folder[@name='J2EE']/folder[@name='DeploymentPlugins']
+        /folder/file[attr/@stringvalue='org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory']">
+        <xsl:element name="folder">
+            <xsl:attribute name="name">Servers</xsl:attribute>
+                <xsl:apply-templates mode="j2ee-server-types" select="."/>
+        </xsl:element>
+    </xsl:template>
+
     <xsl:template match="filesystem/folder[@name='Servers']/folder[@name='Actions']">
         <xsl:element name="folder">
             <xsl:attribute name="name">Servers</xsl:attribute>
@@ -170,6 +178,15 @@
         <xsl:copy-of select="."/>
     </xsl:template>
 
+    <!-- j2ee server type -->
+    <xsl:template match="file" mode="j2ee-server-types">
+        <xsl:element name="file">
+            <xsl:attribute name="name">WizardProvider-<xsl:value-of select="../@name"/>.instance</xsl:attribute>
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.ide.ergonomics.ServerWizardProviderProxy.create"/>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.ide.ergonomics.ServerWizardProviderProxy"/>
+            <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerWizardProvider"/>
+        </xsl:element>
+    </xsl:template>
 
     <!-- actions -->
     <xsl:template match="file" mode="actions">
