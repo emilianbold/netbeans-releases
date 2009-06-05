@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -427,6 +428,7 @@ public final class J2eePlatform {
      * @see Profile
      * @since 1.58
      */
+    @NonNull
     public Set<Profile> getSupportedProfiles() {
         return impl.getSupportedProfiles();
     }
@@ -442,7 +444,8 @@ public final class J2eePlatform {
      * @see Profile
      * @since 1.58
      */
-    public Set<Profile> getSupportedProfiles(Object moduleType) {
+    @NonNull
+    public Set<Profile> getSupportedProfiles(@NonNull Object moduleType) {
         return impl.getSupportedProfiles(moduleType);
     }
 

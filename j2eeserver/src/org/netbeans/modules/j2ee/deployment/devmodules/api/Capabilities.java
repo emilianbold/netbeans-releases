@@ -40,6 +40,7 @@
 package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
 import java.util.Set;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
@@ -57,6 +58,7 @@ public final class Capabilities {
         this.provider = provider;
     }
 
+    @CheckForNull
     public static Capabilities forProject(Project project) {
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         if (provider == null) {
@@ -65,22 +67,26 @@ public final class Capabilities {
         return new Capabilities(provider);
     }
 
-    public boolean isEJB20Supported(Object moduleType) {
+    public boolean isEJB20Supported() {
+        Object moduleType = provider.getJ2eeModule().getModuleType();
         // TODO consider additional capabilities not matching the Profile (?)
         return isProfileSupported(moduleType, Profile.J2EE_13);
     }
 
-    public boolean isEJB21Supported(Object moduleType) {
+    public boolean isEJB21Supported() {
+        Object moduleType = provider.getJ2eeModule().getModuleType();
         // TODO consider additional capabilities not matching the Profile (?)
         return isProfileSupported(moduleType, Profile.J2EE_14);
     }
 
-    public boolean isEJB30Supported(Object moduleType) {
+    public boolean isEJB30Supported() {
+        Object moduleType = provider.getJ2eeModule().getModuleType();
         // TODO consider additional capabilities not matching the Profile (?)
         return isProfileSupported(moduleType, Profile.JAVA_EE_5);
     }
 
-    public boolean isEJB31Supported(Object moduleType) {
+    public boolean isEJB31Supported() {
+        Object moduleType = provider.getJ2eeModule().getModuleType();
         // TODO consider additional capabilities not matching the Profile (?)
         return isProfileSupported(moduleType, Profile.JAVA_EE_6_FULL);
     }
