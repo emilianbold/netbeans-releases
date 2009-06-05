@@ -48,7 +48,7 @@ import java.util.List;
  *
  * @author Jaroslav Tulach
  */
-public interface ContextActionPerformer<T> {
+interface ContextActionPerformer<T> {
     /** Performs action initiated by the event <code>ev</code> on
      * given data. 
      * 

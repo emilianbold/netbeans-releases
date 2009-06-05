@@ -51,7 +51,7 @@ import java.util.List;
  *
  * @author Jaroslav Tulach
  */
-public interface ContextActionEnabler<T> {
+interface ContextActionEnabler<T> {
     /** Shall the associated action be enabled on given data?
      * 
      * @param data the unmodifiable list of elements to potentially operate on
