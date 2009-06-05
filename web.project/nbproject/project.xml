@@ -501,7 +501,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.websvc.manager</friend>
                 <friend>org.netbeans.modules.visualweb.project.jsf</friend>
                 <friend>org.netbeans.modules.visualweb.project.jsfproject</friend>
-                <friend>org.netbeans.modules.web.frameworks.facelets</friend>
+                <friend>org.netbeans.modules.web.facelets</friend>
                 <friend>org.netbeans.modules.web.frameworks.struts2</friend>
                 <friend>org.netbeans.modules.portalpack.portlets.genericportlets</friend>
                 <friend>org.netbeans.modules.portalpack.commons</friend>
