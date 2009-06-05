@@ -105,63 +105,43 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     }
 
     public static synchronized GlassfishInstanceProvider getEe6() {
-        FileObject fo = FileUtil.getConfigFile("GlassFish v3/Enable Experimental Features"); // NOI18N
-        String v3Root = System.getProperty(EE6_INSTALL_ROOT_PROP);
-        if ("true".equals(System.getProperty(PRELUDE_PROP_ROOT + ENABLE_EXPERIMENTAL_SUFFIX)) || // NOI18N
-               (null != v3Root && v3Root.trim().length() > 0) || null != fo) {
-            if (ee6Provider == null) {
-                ee6Provider = new GlassfishInstanceProvider(new String[] {EE6_DEPLOYER_FRAGMENT},
-                        new String[] {EE6_INSTANCES_PATH},
-                        org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V3_SERVER_NAME", new Object[] {}),
-                        EE6_INSTALL_ROOT_PROP,
-                        org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V3_AUTO_REGISTERED_NAME", new Object[] {}),
-                        org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V3_AUTO_CREATED_NAME", new Object[] {}),
-                        "GlassFish_v3", // NOI18N
-                        "http://java.net/download/glassfish/v3-preview/promoted/latest-glassfish.zip", // NOI18N
-                        "http://serverplugins.netbeans.org/glassfishv3/ee6zipfilename.txt",  // NOI18N
-                        "last-v3ee6-install-root",  // NOI18N
-                        new String[] { "lib"+File.separator+"schemas"+File.separator+"web-app_3_0.xsd" }, // NOI18N
-                        new String[0],
-                        true, new String[] { "docs/javadocee6.jar"} );
-            }
+        if (ee6Provider == null) {
+            ee6Provider = new GlassfishInstanceProvider(new String[]{EE6_DEPLOYER_FRAGMENT},
+                    new String[]{EE6_INSTANCES_PATH},
+                    org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V3_SERVER_NAME", new Object[]{}), // NOI18N
+                    EE6_INSTALL_ROOT_PROP,
+                    org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V3_AUTO_REGISTERED_NAME", new Object[]{}),  // NOI18N
+                    org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V3_AUTO_CREATED_NAME", new Object[]{}),  // NOI18N
+                    "GlassFish_v3", // NOI18N
+                    "http://java.net/download/glassfish/v3/promoted/latest-glassfish.zip", // NOI18N
+                    "http://serverplugins.netbeans.org/glassfishv3/v3fcszipfilename.txt", // NOI18N
+                    "last-v3ee6-install-root", // NOI18N
+                    new String[]{"lib" + File.separator + "schemas" + File.separator + "web-app_3_0.xsd"}, // NOI18N
+                    new String[0],
+                    true, new String[]{"docs/javadocee6.jar"}); // NOI18N
         }
         return ee6Provider;
     }
 
     public static synchronized GlassfishInstanceProvider getPrelude() {
-        if ("true".equals(System.getProperty(PRELUDE_PROP_ROOT + DISABLE_PRELUDE_SUFFIX))) { // NOI18N
-            return preludeProvider;
-        }
         String[] uriFragments;
         String[] instanceDirs;
-        FileObject fo = FileUtil.getConfigFile("GlassFish v3/Enable Experimental Features"); // NOI18N
-        String v3Root = System.getProperty(EE6_INSTALL_ROOT_PROP);
-        if (!("true".equals(System.getProperty(PRELUDE_PROP_ROOT + ENABLE_EXPERIMENTAL_SUFFIX))) &&  // NOI18N
-                null == fo  &&
-               (null == v3Root || v3Root.trim().length() < 1) ) {
-            // make sure v3 Servers do not cause problems if the user forgets to
-            // define the enableExperimentalFeatures property after they have registered
-            // a v3 domain.
-            uriFragments = new String[] { PRELUDE_DEPLOYER_FRAGMENT, EE6_DEPLOYER_FRAGMENT };
-            instanceDirs = new String[] { PRELUDE_INSTANCES_PATH, EE6_INSTANCES_PATH };
-        } else {
-            uriFragments = new String[] { PRELUDE_DEPLOYER_FRAGMENT };
-            instanceDirs = new String[] { PRELUDE_INSTANCES_PATH };
-        }
-        if(preludeProvider == null) {
+        uriFragments = new String[]{PRELUDE_DEPLOYER_FRAGMENT};
+        instanceDirs = new String[]{PRELUDE_INSTANCES_PATH};
+        if (preludeProvider == null) {
             preludeProvider = new GlassfishInstanceProvider(uriFragments, instanceDirs,
-                    org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_PRELUDE_SERVER_NAME", new Object[] {}),
+                    org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_PRELUDE_SERVER_NAME", new Object[]{}), // NOI18N
                     PRELUDE_PROP_ROOT + INSTALL_ROOT_SUFFIX,
-                    org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_PRELUDE_AUTO_REGISTERED_NAME", new Object[] {}),
-                    org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_PRELUDE_AUTO_CREATED_NAME", new Object[] {}),
+                    org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_PRELUDE_AUTO_REGISTERED_NAME", new Object[]{}),  // NOI18N
+                    org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_PRELUDE_AUTO_CREATED_NAME", new Object[]{}),  // NOI18N
                     "GlassFish_v3_Prelude", // NOI18N
-                    "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip",  // NOI18N
-                    "http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.txt",  // NOI18N
+                    "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip", // NOI18N
+                    "http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.txt", // NOI18N
                     "last-install-root", // NOI18N
                     new String[0],
-                    new String[] { "lib"+File.separator+"schemas"+File.separator+"web-app_3_0.xsd" }, // NOI18N
+                    new String[]{"lib" + File.separator + "schemas" + File.separator + "web-app_3_0.xsd"}, // NOI18N
                     false,
-                    new String[] { "docs/javaee5-doc-api.zip" });
+                    new String[]{"docs/javaee5-doc-api.zip"}); // NOI18N
         }
         return preludeProvider;
     }

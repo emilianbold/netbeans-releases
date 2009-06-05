@@ -11,6 +11,7 @@ taglib-extension [0..unbounded]
 tlib-version [1..1]
 uri [0..1]
 validator [0..1]
+/taglib
 End cursor position = 468
 [<|, tag-file [0..unbounded], <tag-file, 547]
 description [0..unbounded]
@@ -25,6 +26,7 @@ taglib-extension [0..unbounded]
 tlib-version [1..1]
 uri [0..1]
 validator [0..1]
+/taglib
 End cursor position = 557
 [<d|, description [0..unbounded], <description, 644]
 description [0..unbounded]

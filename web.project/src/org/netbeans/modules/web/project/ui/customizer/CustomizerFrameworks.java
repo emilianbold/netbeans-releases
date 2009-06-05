@@ -52,6 +52,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.ExtenderController.Properties;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
@@ -110,10 +112,12 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
             return;
         }
         initialized = true;
-        String j2eeVersion = uiProperties.getProject().evaluator().getProperty(WebProjectProperties.J2EE_PLATFORM);
+        Profile j2eeProfile = Profile.fromPropertiesString(uiProperties.getProject().evaluator().getProperty(WebProjectProperties.J2EE_PLATFORM));
         String serverInstanceID = uiProperties.getProject().evaluator().getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
         Properties properties = controller.getProperties();
-        properties.setProperty("j2eeLevel", j2eeVersion); // NOI18N
+
+        // FIXME I left string here for compatibility reasons (frameworks)
+        properties.setProperty(ProjectServerWizardPanel.J2EE_LEVEL, j2eeProfile.toPropertiesString()); // NOI18N
         properties.setProperty("serverInstanceID", serverInstanceID); // NOI18N
         
         jListFrameworks.setModel(new DefaultListModel());
