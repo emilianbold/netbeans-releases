@@ -197,8 +197,8 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
 
     private static String detectQTProject(File folder){
         for(File file : folder.listFiles()){
-            if (file.getAbsolutePath().endsWith(".pro")){
-                if (AbstractExecutorRunAction.findTools("qmake") != null){
+            if (file.getAbsolutePath().endsWith(".pro")){ // NOI18N
+                if (AbstractExecutorRunAction.findTools("qmake") != null){ // NOI18N
                     return file.getAbsolutePath();
                 }
                 break;
@@ -208,9 +208,9 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
     }
 
     private static String detectCMake(String path){
-        File configure = new File(path+File.separator+"CMakeLists.txt");
+        File configure = new File(path+File.separator+"CMakeLists.txt"); // NOI18N
         if (configure.exists()) {
-            if (AbstractExecutorRunAction.findTools("cmake") != null){
+            if (AbstractExecutorRunAction.findTools("cmake") != null) { // NOI18N
                 return configure.getAbsolutePath();
             }
         }
