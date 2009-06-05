@@ -47,6 +47,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.earproject.test.TestUtil;
 import org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIteratorTest;
 import org.openide.filesystems.FileObject;
@@ -73,9 +74,9 @@ public class ProjectEarProviderTest extends NbTestCase {
     public void testFindEarJavaEE() throws Exception {
         File earDirF = new File(getWorkDir(), "testEA");
         String name = "Test EnterpriseApplication";
-        String j2eeLevel = J2eeModule.JAVA_EE_5;
+        Profile j2eeProfile = Profile.JAVA_EE_5;
         String ejbName = "testEA-ejb";
-        NewEarProjectWizardIteratorTest.generateEARProject(earDirF, name, j2eeLevel, serverID);
+        NewEarProjectWizardIteratorTest.generateEARProject(earDirF, name, j2eeProfile, serverID);
         FileObject earDirFO = FileUtil.toFileObject(earDirF);
         Project createdEjbJarProject = ProjectManager.getDefault().findProject(earDirFO);
         assertNotNull("Ear found", Ear.getEar(earDirFO));
@@ -88,9 +89,9 @@ public class ProjectEarProviderTest extends NbTestCase {
     public void testFindEarJ2EE() throws Exception {
         File earDirF = new File(getWorkDir(), "testEA");
         String name = "Test EnterpriseApplication";
-        String j2eeLevel = J2eeModule.J2EE_14;
+        Profile j2eeProfile = Profile.J2EE_14;
         String ejbName = "testEA-ejb";
-        NewEarProjectWizardIteratorTest.generateEARProject(earDirF, name, j2eeLevel, serverID);
+        NewEarProjectWizardIteratorTest.generateEARProject(earDirF, name, j2eeProfile, serverID);
         FileObject earDirFO = FileUtil.toFileObject(earDirF);
         Project createdEjbJarProject = ProjectManager.getDefault().findProject(earDirFO);
         assertNotNull("Ear found", Ear.getEar(earDirFO));

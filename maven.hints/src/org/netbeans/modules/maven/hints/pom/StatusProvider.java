@@ -218,17 +218,20 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                 FileObject fo = NbEditorUtilities.getFileObject(document);
                 boolean ok = false;
                 try {
-                    DataObject dobj = DataObject.find(fo);
-                    EditorCookie ed = dobj.getCookie(EditorCookie.class);
-                    if (ed != null) {
-                        JEditorPane[] panes = ed.getOpenedPanes();
-                        if (panes != null && panes.length > 0 && panes[0].getSelectionStart() != panes[0].getSelectionEnd()) {
-                            HintsController.setErrors(document, LAYER_POM_SELECTION, findHints(model, project, panes[0].getSelectionStart(), panes[0].getSelectionEnd()));
-                            ok = true;
+                    if (fo.isValid()) {
+                        DataObject dobj = DataObject.find(fo);
+                        EditorCookie ed = dobj.getCookie(EditorCookie.class);
+                        if (ed != null) {
+                            JEditorPane[] panes = ed.getOpenedPanes();
+                            if (panes != null && panes.length > 0 && panes[0].getSelectionStart() != panes[0].getSelectionEnd()) {
+                                HintsController.setErrors(document, LAYER_POM_SELECTION, findHints(model, project, panes[0].getSelectionStart(), panes[0].getSelectionEnd()));
+                                ok = true;
+                            }
                         }
                     }
                 } catch (DataObjectNotFoundException ex) {
-                    Exceptions.printStackTrace(ex);
+                    //#166011 just a minor issue, just log, but don't show to user directly
+                    Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Touched somehow invalidated FileObject", ex);
                 } finally {
                     if (!ok) {
                         HintsController.setErrors(document, LAYER_POM_SELECTION, Collections.<ErrorDescription>emptyList());
