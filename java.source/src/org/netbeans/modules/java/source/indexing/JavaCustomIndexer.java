@@ -51,23 +51,28 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.FileObjects.InferableJavaFileObject;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
-import org.netbeans.modules.java.source.tasklist.RebuildOraculum;
 import org.netbeans.modules.java.source.tasklist.TaskCache;
 import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
@@ -92,6 +97,7 @@ import org.openide.util.Mutex.ExceptionAction;
 public class JavaCustomIndexer extends CustomIndexer {
 
     private static final String SOURCE_LEVEL_ROOT = "sourceLevel"; //NOI18N
+    private static final Pattern ANONYMOUS = Pattern.compile("\\$[0-9]"); //NOI18N
 
     private static final CompileWorker[] WORKERS = {
         new OnePassCompileWorker(),
@@ -100,16 +106,16 @@ public class JavaCustomIndexer extends CustomIndexer {
         
     @Override
     protected void index(final Iterable<? extends Indexable> files, final Context context) {
-        JavaIndex.LOG.log(Level.FINE, context.isSupplementaryFilesIndexing() ? "index suplementary({0})" :"index({0})", files);
+        JavaIndex.LOG.log(Level.FINE, context.isSupplementaryFilesIndexing() ? "index suplementary({0})" :"index({0})", files); //NOI18N
         try {
             final FileObject root = context.getRoot();
             if (root == null) {
-                JavaIndex.LOG.fine("Ignoring request with no root");
+                JavaIndex.LOG.fine("Ignoring request with no root"); //NOI18N
                 return;
             }
             String sourceLevel = SourceLevelQuery.getSourceLevel(root);
             if (JavaIndex.ensureAttributeValue(context.getRootURI(), SOURCE_LEVEL_ROOT, sourceLevel, true)) {
-                JavaIndex.LOG.fine("forcing reindex due to source level change");
+                JavaIndex.LOG.fine("forcing reindex due to source level change"); //NOI18N
                 IndexingManager.getDefault().refreshIndex(context.getRootURI(), null);
                 return;
             }
@@ -133,7 +139,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 public Void run() throws IOException, InterruptedException {
                     return TaskCache.getDefault().refreshTransaction(new ExceptionAction<Void>() {
                         public Void run() throws Exception {
-                            final JavaParsingContext javaContext = new JavaParsingContext(root, bootPath, compilePath, sourcePath, context.checkForEditorModifications(), virtualSourceTuples);
+                            final JavaParsingContext javaContext = new JavaParsingContext(context, bootPath, compilePath, sourcePath, virtualSourceTuples);
                             if (javaContext.uq == null)
                                 return null; //IDE is exiting, indeces are already closed.                            
                             final List<URL> errUrls = context.isSupplementaryFilesIndexing() ? null : TaskCache.getDefault().getAllFilesInError(context.getRootURI());
@@ -167,31 +173,32 @@ public class JavaCustomIndexer extends CustomIndexer {
                             compileResult.addedTypes.retainAll(removedTypes); //Changed types
 
                             if (!context.isSupplementaryFilesIndexing()) {
-                                for (Map.Entry<URL, Collection<URL>> entry : RebuildOraculum.findAllDependent(context.getRootURI(), null, javaContext.cpInfo.getClassIndex(), _rt).entrySet()) {
-                                    Set<URL> urls = compileResult.root2Rebuild.get(entry.getKey());
-                                    if (urls == null) {
-                                        compileResult.root2Rebuild.put(entry.getKey(), urls = new HashSet<URL>());
-                                    }
-                                    urls.addAll(entry.getValue());
-                                }
+                                compileResult.modifiedTypes.addAll(_rt);
+                                Map<URL, Set<URL>> root2Rebuild = findDependent(context.getRootURI(), javaContext.cpInfo.getClassIndex(), compileResult.modifiedTypes);
+                                Set<URL> urls = root2Rebuild.get(context.getRootURI());
                                 if (!errUrls.isEmpty() && !_af.isEmpty()) {
                                     //new type creation may cause/fix some errors
                                     //not 100% correct (consider eg. a file that has two .* imports
                                     //new file creation may cause new error in this case
-                                    Set<URL> urls = compileResult.root2Rebuild.get(context.getRootURI());
                                     if (urls == null) {
-                                        compileResult.root2Rebuild.put(context.getRootURI(), urls = new HashSet<URL>());
+                                        root2Rebuild.put(context.getRootURI(), urls = new HashSet<URL>());
                                     }
                                     urls.addAll(errUrls);
                                 }
+                                if (urls != null) {
+                                    for (CompileTuple ct : toCompile)
+                                        urls.remove(ct.indexable.getURL());
+                                    if (urls.isEmpty())
+                                        root2Rebuild.remove(context.getRootURI());
+                                }
+                                for (Map.Entry<URL, Set<URL>> entry : root2Rebuild.entrySet()) {
+                                    context.addSupplementaryFiles(entry.getKey(), entry.getValue());
+                                }
                             }
+                            javaContext.checkSums.store();
                             javaContext.sa.store();
                             javaContext.uq.typesEvent(_at, _rt, compileResult.addedTypes);
                             BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, compileResult.createdFiles);
-
-                            for (Map.Entry<URL, Set<URL>> entry : compileResult.root2Rebuild.entrySet()) {
-                                context.addSupplementaryFiles(entry.getKey(), entry.getValue());
-                            }
                             return null;
                         }
                     });
@@ -237,14 +244,14 @@ public class JavaCustomIndexer extends CustomIndexer {
     private static void clearFiles(final Context context, final Iterable<? extends Indexable> files) {
         try {
             if (context.getRoot() == null) {
-                JavaIndex.LOG.fine("Ignoring request with no root");
+                JavaIndex.LOG.fine("Ignoring request with no root"); //NOI18N
                 return;
             }
             ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
                 public Void run() throws IOException, InterruptedException {
                     return TaskCache.getDefault().refreshTransaction(new ExceptionAction<Void>() {
                         public Void run() throws Exception {
-                            final JavaParsingContext javaContext = new JavaParsingContext(context.getRoot());
+                            final JavaParsingContext javaContext = new JavaParsingContext(context);
                             if (javaContext.uq == null)
                                 return null; //IDE is exiting, indeces are already closed.
                             final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
@@ -252,14 +259,15 @@ public class JavaCustomIndexer extends CustomIndexer {
                             for (Indexable i : files) {
                                 clear(context, javaContext, i.getRelativePath(), removedTypes, removedFiles);
                                 TaskCache.getDefault().dumpErrors(context.getRootURI(), i.getURL(), Collections.<Diagnostic>emptyList());
+                                javaContext.checkSums.remove(i.getURL());
                             }
-                            Map<URL, Collection<URL>> root2Rebuild = RebuildOraculum.findAllDependent(context.getRootURI(), null, javaContext.cpInfo.getClassIndex(), removedTypes);
+                            for (Map.Entry<URL, Set<URL>> entry : findDependent(context.getRootURI(), javaContext.cpInfo.getClassIndex(), removedTypes).entrySet()) {
+                                context.addSupplementaryFiles(entry.getKey(), entry.getValue());
+                            }
+                            javaContext.checkSums.store();
                             javaContext.sa.store();
                             BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, Collections.<File>emptySet());
                             javaContext.uq.typesEvent(null, removedTypes, null);
-                            for (Map.Entry<URL, Collection<URL>> entry : root2Rebuild.entrySet()) {
-                                context.addSupplementaryFiles(entry.getKey(), entry.getValue());
-                            }
                             return null;
                         }
                     });
@@ -346,7 +354,7 @@ public class JavaCustomIndexer extends CustomIndexer {
 
     public static void verifySourceLevel(URL root, String sourceLevel) throws IOException {
         if (JavaIndex.ensureAttributeValue(root, SOURCE_LEVEL_ROOT, sourceLevel, true)) {
-            JavaIndex.LOG.fine("forcing reindex due to source level change");
+            JavaIndex.LOG.fine("forcing reindex due to source level change"); //NOI18N
             IndexingManager.getDefault().refreshIndex(root, null);
         }
     }
@@ -408,7 +416,7 @@ public class JavaCustomIndexer extends CustomIndexer {
 
     private static List<String> readRSFile (final File file, final File root) throws IOException {
         final List<String> binaryNames = new LinkedList<String>();
-        BufferedReader in = new BufferedReader (new InputStreamReader ( new FileInputStream (file), "UTF-8"));
+        BufferedReader in = new BufferedReader (new InputStreamReader ( new FileInputStream (file), "UTF-8")); //NOI18N
         try {
             String binaryName;
             while ((binaryName=in.readLine())!=null) {
@@ -420,6 +428,35 @@ public class JavaCustomIndexer extends CustomIndexer {
         return binaryNames;
     }
 
+    private static Map<URL, Set<URL>> findDependent(URL root, ClassIndex ci, Collection<ElementHandle<TypeElement>> classes) throws IOException {
+        //performance: filter out anonymous innerclasses:
+        for (Iterator<ElementHandle<TypeElement>> i = classes.iterator(); i.hasNext(); ) {
+            if (ANONYMOUS.matcher(i.next().getBinaryName()).find()) {
+                i.remove();
+            }
+        }
+
+        Set<ElementHandle<TypeElement>> toHandle = new HashSet<ElementHandle<TypeElement>>();
+        Queue<ElementHandle<TypeElement>> queue = new LinkedList<ElementHandle<TypeElement>>(classes);
+        while (!queue.isEmpty()) {
+            ElementHandle<TypeElement> e = queue.poll();
+            if (toHandle.add(e))
+                queue.addAll(ci.getElements(e, EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+        }
+
+        Set<FileObject> files = new HashSet<FileObject>();
+        for (ElementHandle<TypeElement> e : toHandle)
+            files.addAll(ci.getResources(e, EnumSet.complementOf(EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS)), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+
+        Map<URL, Set<URL>> ret = new HashMap<URL, Set<URL>>();
+        Set<URL> urls = new HashSet<URL>();
+        for (FileObject file : files)
+            urls.add(file.getURL());
+        if (!urls.isEmpty())
+            ret.put(root, urls);
+        return ret;
+    }
+
     public static class Factory extends CustomIndexerFactory {
         
         @Override
@@ -429,13 +466,13 @@ public class JavaCustomIndexer extends CustomIndexer {
 
         @Override
         public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
-            JavaIndex.LOG.log(Level.FINE, "filesDeleted({0})", deleted);
+            JavaIndex.LOG.log(Level.FINE, "filesDeleted({0})", deleted); //NOI18N
             clearFiles(context, deleted);
         }
 
         @Override
         public void filesDirty(Collection<? extends Indexable> dirty, Context context) {
-            JavaIndex.LOG.log(Level.FINE, "filesDirty({0})", dirty);
+            JavaIndex.LOG.log(Level.FINE, "filesDirty({0})", dirty); //NOI18N
             markDirtyFiles(context, dirty);
         }
 

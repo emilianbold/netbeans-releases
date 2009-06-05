@@ -44,8 +44,6 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import java.io.File;
 import java.net.URI;
-import java.net.URL;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -95,15 +93,15 @@ abstract class CompileWorker {
         final Set<ElementHandle<TypeElement>> addedTypes;
         final Set<File> createdFiles;
         final Set<Indexable> finishedFiles;
-        final Map<URL, Set<URL>> root2Rebuild;
+        final Set<ElementHandle<TypeElement>> modifiedTypes;
 
-        public ParsingOutput(boolean success, Map<URI, List<String>> file2FQNs, Set<ElementHandle<TypeElement>> addedTypes, Set<File> createdFiles, Set<Indexable> finishedFiles, Map<URL, Set<URL>> root2Rebuild) {
+        public ParsingOutput(boolean success, Map<URI, List<String>> file2FQNs, Set<ElementHandle<TypeElement>> addedTypes, Set<File> createdFiles, Set<Indexable> finishedFiles, Set<ElementHandle<TypeElement>> modifiedTypes) {
             this.success = success;
             this.file2FQNs = file2FQNs;
             this.addedTypes = addedTypes;
             this.createdFiles = createdFiles;
             this.finishedFiles = finishedFiles;
-            this.root2Rebuild = root2Rebuild;
+            this.modifiedTypes = modifiedTypes;
         }
     }    
 }
