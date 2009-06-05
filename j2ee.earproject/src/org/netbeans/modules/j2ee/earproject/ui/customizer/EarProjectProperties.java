@@ -123,11 +123,6 @@ import org.openide.util.NbBundle;
  */
 public final class EarProjectProperties {
     
-    public static final String J2EE_SPEC_14_LABEL =
-            NbBundle.getMessage(EarProjectProperties.class, "J2EESpecLevel_14");
-    public static final String JAVA_EE_SPEC_50_LABEL =
-            NbBundle.getMessage(EarProjectProperties.class, "JavaEESpecLevel_50");
-    
     // Special properties of the project
     public static final String WEB_PROJECT_NAME = "web.project.name"; //NOI18N
     public static final String JAVA_PLATFORM = "platform.active"; //NOI18N

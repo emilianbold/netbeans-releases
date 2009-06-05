@@ -54,6 +54,7 @@ import org.netbeans.modules.j2ee.common.project.ui.MessageUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.openide.util.HelpCtx;
@@ -102,13 +103,10 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jCheckBoxDeployOnSave.setModel(uiProperties.DEPLOY_ON_SAVE_MODEL);
         jComboBoxServer.setModel( uiProperties.J2EE_SERVER_INSTANCE_MODEL );
         
-        String j2eeVersion = jTextFieldJ2EE.getText().trim();
-        if (j2eeVersion.equalsIgnoreCase(WebModule.J2EE_13_LEVEL))
-            jTextFieldJ2EE_Display.setText(NbBundle.getMessage(CustomizerRun.class, "J2EESpecLevel_13")); //NOI18N;
-        else if (j2eeVersion.equalsIgnoreCase(WebModule.J2EE_14_LEVEL))
-            jTextFieldJ2EE_Display.setText(NbBundle.getMessage(CustomizerRun.class, "J2EESpecLevel_14")); //NOI18N;
-        else if (j2eeVersion.equalsIgnoreCase(WebModule.JAVA_EE_5_LEVEL))
-            jTextFieldJ2EE_Display.setText(NbBundle.getMessage(CustomizerRun.class, "JavaEESpecLevel_50")); //NOI18N;
+        Profile j2eeProfile = Profile.fromPropertiesString(jTextFieldJ2EE.getText().trim());
+        if (j2eeProfile != null) {
+            jTextFieldJ2EE_Display.setText(j2eeProfile.getDisplayName());
+        }
 
         setDeployOnSaveState();
     }

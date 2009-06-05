@@ -174,7 +174,7 @@ public class PkgConfigImpl implements PkgConfig {
                 return new ResolvedPathImpl(pairs.get(0).path, pairs.get(0).configurations);
             } else {
                 String path = pairs.get(0).path;
-                Set set = new LinkedHashSet<PackageConfiguration>();
+                Set<PackageConfiguration> set = new LinkedHashSet<PackageConfiguration>();
                 for(Pair p : pairs){
                     set.addAll(p.configurations);
                 }
@@ -339,7 +339,7 @@ public class PkgConfigImpl implements PkgConfig {
                         }
                         List<Pair> list = res.get(key);
                         if (list == null){
-                            list = new ArrayList(1);
+                            list = new ArrayList<Pair>(1);
                             res.put(key, list);
                         }
                         if (!list.contains(pkg)){
