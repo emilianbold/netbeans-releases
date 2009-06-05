@@ -153,6 +153,7 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="test-build" description="Compile all tests">
+        <subant target="test-build" buildpath="../dlight.nativeexecution"/>
         <subant target="test-build" buildpath="../cnd"/>
         <subant target="test-build" buildpath="../cnd.editor"/>
         <subant target="test-build" buildpath="../cnd.lexer"/>
