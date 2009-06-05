@@ -43,9 +43,7 @@ package org.netbeans.modules.cnd.test;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
@@ -58,7 +56,6 @@ import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
 import org.netbeans.modules.cnd.editor.cplusplus.CKit;
@@ -66,6 +63,7 @@ import org.netbeans.modules.cnd.editor.cplusplus.HKit;
 import org.netbeans.modules.cnd.editor.fortran.FKit;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 
 /**
  * IMPORTANT NOTE:
@@ -95,7 +93,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  * ${xtest.data} vallue is usually ${module}/test/unit/data folder
  * @author Vladimir Voskresensky
  */
-public abstract class BaseTestCase extends NbTestCase {
+public abstract class BaseTestCase extends NativeExecutionBaseTestCase {
 
     static {
         // Setting netbeans.dirs makes installedFileLocator work properly
@@ -279,26 +277,6 @@ public abstract class BaseTestCase extends NbTestCase {
         compareReferenceFiles(this.getName()+".ref",this.getName()+".ref"); // NOI18N
     }
     
-    protected static void writeFile(File file, CharSequence content) throws IOException {
-        Writer writer = new FileWriter(file);
-        writer.write(content.toString());
-        writer.close();
-    }
-
-    protected static File createTempFile(String prefix, String suffix, boolean directory) throws IOException {
-        File tmpFile = File.createTempFile(prefix, suffix);
-        if (directory) {
-            if(!(tmpFile.delete())) {
-                throw new IOException("Could not delete temp file: " + tmpFile.getAbsolutePath());
-            }
-            if (!(tmpFile.mkdir())) {
-                throw new IOException("Could not create temp directory: " + tmpFile.getAbsolutePath());
-            }
-        }
-        tmpFile.deleteOnExit();
-        return tmpFile;
-    }
-
     ////////////////////////////////////////////////////////////////////////////
     // <editor-fold defaultstate="collapsed" desc="Remote tests support">
 
