@@ -41,14 +41,14 @@ package org.netbeans.modules.cnd.gizmo;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory.CPPCompiler;
 import static org.junit.Assert.*;
 
 /**
  * @author Alexey Vladykin
  */
-public class CppSymbolDemanglerImplTest extends BaseTestCase {
+public class CppSymbolDemanglerImplTest extends CndBaseTestCase {
 
     private static final List<String> UNMANGLED_NAMES = Arrays.asList(
             "_start",
