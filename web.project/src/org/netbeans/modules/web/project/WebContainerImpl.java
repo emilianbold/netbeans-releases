@@ -76,6 +76,7 @@ import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -311,7 +312,7 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
     }
     
     private static boolean isDescriptorMandatory(String j2eeVersion) {
-        if ("1.3".equals(j2eeVersion) || "1.4".equals(j2eeVersion)) {
+        if (WebModule.J2EE_13_LEVEL.equals(j2eeVersion) || WebModule.J2EE_14_LEVEL.equals(j2eeVersion)) {
             return true;
         }
         return false;

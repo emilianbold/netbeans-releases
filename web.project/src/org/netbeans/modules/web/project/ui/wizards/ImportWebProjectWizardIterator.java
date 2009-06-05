@@ -76,6 +76,7 @@ import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.web.project.Utils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
@@ -140,7 +141,7 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
         File[] testFolders = (File[]) wiz.getProperty(WizardProperties.TEST_ROOT);
         String libName = (String) wiz.getProperty(WizardProperties.LIB_FOLDER);
         String serverInstanceID = (String) wiz.getProperty(ProjectServerWizardPanel.SERVER_INSTANCE_ID);
-        String j2eeLevel = (String) wiz.getProperty(ProjectServerWizardPanel.J2EE_LEVEL);
+        Profile j2eeProfile = (Profile) wiz.getProperty(ProjectServerWizardPanel.J2EE_LEVEL);
         String webInfFolder = (String) wiz.getProperty(WizardProperties.WEBINF_FOLDER);
         
         FileObject wmFO = FileUtil.toFileObject (dirSrcF);
@@ -171,8 +172,8 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
             libFolder = FileUtil.toFileObject(f);
         }
 
-        if(j2eeLevel == null) {
-            j2eeLevel = WebModule.J2EE_14_LEVEL;
+        if(j2eeProfile == null) {
+            j2eeProfile = Profile.J2EE_14;
         }
 
         String buildfile = projectLocationWizardPanel.getBuildFile();
@@ -185,7 +186,7 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
         createData.setTestFolders(testFolders);
         createData.setDocBase(docBase);
         createData.setLibFolder(libFolder);
-        createData.setJavaEEVersion(j2eeLevel);
+        createData.setJavaEEProfile(j2eeProfile);
         createData.setServerInstanceID(serverInstanceID);
         createData.setBuildfile(buildfile);
         createData.setJavaPlatformName((String) wiz.getProperty(ProjectServerWizardPanel.JAVA_PLATFORM));

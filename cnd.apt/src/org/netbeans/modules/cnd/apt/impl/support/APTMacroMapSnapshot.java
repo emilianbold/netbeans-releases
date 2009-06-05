@@ -46,6 +46,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.*;
+import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
@@ -170,6 +171,10 @@ public final class APTMacroMapSnapshot {
 
         public TokenStream getBody() {
             throw new UnsupportedOperationException("Not supported in fake impl"); // NOI18N
+        }
+
+        public APTDefine getDefineNode() {
+            throw new UnsupportedOperationException("Not supported in fake impl."); // NOI18N
         }
 
     }

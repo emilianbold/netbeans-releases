@@ -261,8 +261,8 @@ public final class Unresolved implements Disposable {
     }
     
     public void dispose() {
-        onDispose();
         disposeAll();
+        onDispose();
     }
     
     private synchronized void onDispose() {

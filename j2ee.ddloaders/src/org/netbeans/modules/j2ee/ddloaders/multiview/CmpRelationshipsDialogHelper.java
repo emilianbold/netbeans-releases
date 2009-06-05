@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
+import java.awt.Dialog;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmrField;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelation;
@@ -49,13 +50,18 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.CmpRelationshipsForm;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Vector;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import org.openide.util.Utilities;
 
 /**

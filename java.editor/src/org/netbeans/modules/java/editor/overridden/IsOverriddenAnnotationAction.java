@@ -57,6 +57,7 @@ import org.netbeans.editor.Utilities;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -151,7 +152,7 @@ public final class IsOverriddenAnnotationAction extends AbstractAction {
                         p[0] = comp.modelToView(startOffset).getLocation();
                         annotation[0] = findAnnotation(comp, desc, startOffset);
                     }  catch (BadLocationException ex) {
-                        ErrorManager.getDefault().notify(ex);
+                        Exceptions.printStackTrace(ex);
                     }
                 }
             });

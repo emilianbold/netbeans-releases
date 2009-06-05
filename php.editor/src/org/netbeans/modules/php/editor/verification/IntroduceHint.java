@@ -130,7 +130,7 @@ public class IntroduceHint implements AstRule {
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
-        if (lineBegin != -1 && lineEnd != -1) {
+        if (lineBegin != -1 && lineEnd != -1 && caretOffset > lineBegin) {
             Model model = ModelFactory.getModel(context.parserResult);
             IntroduceFixVisitor introduceFixVisitor = new IntroduceFixVisitor(model, doc, caretOffset, lineBegin, lineEnd);
             phpParseResult.getProgram().accept(introduceFixVisitor);
@@ -189,9 +189,17 @@ public class IntroduceHint implements AstRule {
         public void visit(ClassInstanceCreation instanceCreation) {
             if (isInside(instanceCreation.getStartOffset(), lineBegin, lineEnd)) {
                 String clzName = CodeUtils.extractClassName(instanceCreation.getClassName());
-                IndexedClass clz = clzName != null ? getIndexedClass(clzName) : null;
-                if (clz == null && clzName != null) {
-                    fix = IntroduceClassFix.getInstance(clzName, model, instanceCreation);
+                clzName = (clzName != null && clzName.trim().length() > 0) ? clzName : null;
+                PHPIndex index = model.getIndexScope().getIndex();
+                Collection<IndexedClass> classes = Collections.emptyList();
+                if (clzName != null) {
+                    classes = index.getClasses(null, clzName, Kind.EXACT);
+                }
+                if (clzName != null && classes.isEmpty()) {
+                    IndexedClass clz = clzName != null ? getIndexedClass(clzName) : null;
+                    if (clz == null && clzName != null) {
+                        fix = IntroduceClassFix.getInstance(clzName, model, instanceCreation);
+                    }
                 }
             }
             super.visit(instanceCreation);
@@ -202,7 +210,7 @@ public class IntroduceHint implements AstRule {
             if (isInside(methodInvocation.getStartOffset(), lineBegin, lineEnd)) {
                 String methName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
                 if (methName != null) {
-                    Collection<? extends TypeScope> allTypes = ModelUtils.typeOfVariableBase(model, methodInvocation);
+                    Collection<? extends TypeScope> allTypes = ModelUtils.resolveType(model, methodInvocation);
                     if (allTypes.size() == 1) {
                         TypeScope type = ModelUtils.getFirst(allTypes);
                         PHPIndex index = model.getIndexScope().getIndex();
@@ -248,7 +256,7 @@ public class IntroduceHint implements AstRule {
             if (isInside(fieldAccess.getStartOffset(), lineBegin, lineEnd)) {
                 String fieldName = CodeUtils.extractVariableName(fieldAccess.getField());
                 if (fieldName != null) {
-                    Collection<? extends TypeScope> allTypes = ModelUtils.typeOfVariableBase(model, fieldAccess);
+                    Collection<? extends TypeScope> allTypes = ModelUtils.resolveType(model, fieldAccess);
                     if (allTypes.size() == 1) {
                         TypeScope type = ModelUtils.getFirst(allTypes);
                         PHPIndex index = model.getIndexScope().getIndex();

@@ -41,7 +41,6 @@ package org.netbeans.modules.subversion.client.commands;
 
 import org.netbeans.modules.subversion.client.AbstractCommandTest;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Date;
 import org.tigris.subversion.svnclientadapter.ISVNAnnotations;
@@ -235,9 +234,9 @@ public class BlameTest extends AbstractCommandTest {
         assertEquals(author2, a1.getAuthor(1));
         assertEquals(author3, a1.getAuthor(2));
 
-        assertEquals(date1, a1.getChanged(0));
-        assertEquals(date2, a1.getChanged(1));
-        assertEquals(date3, a1.getChanged(2));
+        assertEquals(date1.toString(), a1.getChanged(0).toString());
+        assertEquals(date2.toString(), a1.getChanged(1).toString());
+        assertEquals(date3.toString(), a1.getChanged(2).toString());
 
         assertEquals(rev1.getNumber(), a1.getRevision(0));
         assertEquals(rev2.getNumber(), a1.getRevision(1));
@@ -356,7 +355,7 @@ public class BlameTest extends AbstractCommandTest {
         for (int i = 0; i < ref.numberOfLines(); i++) {
             assertEquals(ref.getLine(i), a.getLine(i));            
             assertEquals(ref.getAuthor(i), a.getAuthor(i));
-            if(!ignoreDate) assertEquals(ref.getChanged(i), a.getChanged(i));
+            if(!ignoreDate) assertEquals(ref.getChanged(i).toString(), a.getChanged(i).toString());
             assertEquals(ref.getRevision(i), a.getRevision(i));
         }
         assertInputStreams(ref.getInputStream(), a.getInputStream());                

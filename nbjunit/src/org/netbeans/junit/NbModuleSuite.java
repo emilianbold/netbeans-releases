@@ -60,6 +60,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -571,6 +572,61 @@ public class NbModuleSuite {
                 result.addError(this, ex);
             }
         }
+        
+        private static String[] tokenizePath(String path) {
+            List<String> l = new ArrayList<String>();
+            StringTokenizer tok = new StringTokenizer(path, ":;", true); // NOI18N
+            char dosHack = '\0';
+            char lastDelim = '\0';
+            int delimCount = 0;
+            while (tok.hasMoreTokens()) {
+                String s = tok.nextToken();
+                if (s.length() == 0) {
+                    // Strip empty components.
+                    continue;
+                }
+                if (s.length() == 1) {
+                    char c = s.charAt(0);
+                    if (c == ':' || c == ';') {
+                        // Just a delimiter.
+                        lastDelim = c;
+                        delimCount++;
+                        continue;
+                    }
+                }
+                if (dosHack != '\0') {
+                    // #50679 - "C:/something" is also accepted as DOS path
+                    if (lastDelim == ':' && delimCount == 1 && (s.charAt(0) == '\\' || s.charAt(0) == '/')) {
+                        // We had a single letter followed by ':' now followed by \something or /something
+                        s = "" + dosHack + ':' + s;
+                        // and use the new token with the drive prefix...
+                    } else {
+                        // Something else, leave alone.
+                        l.add(Character.toString(dosHack));
+                        // and continue with this token too...
+                    }
+                    dosHack = '\0';
+                }
+                // Reset count of # of delimiters in a row.
+                delimCount = 0;
+                if (s.length() == 1) {
+                    char c = s.charAt(0);
+                    if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
+                        // Probably a DOS drive letter. Leave it with the next component.
+                        dosHack = c;
+                        continue;
+                    }
+                }
+                l.add(s);
+            }
+            if (dosHack != '\0') {
+                //the dosHack was the last letter in the input string (not followed by the ':')
+                //so obviously not a drive letter.
+                //Fix for issue #57304
+                l.add(Character.toString(dosHack));
+            }
+            return l.toArray(new String[l.size()]);
+        }
 
         static void findClusters(Collection<File> clusters, List<String> regExps) throws IOException {
             File plat = findPlatform().getCanonicalFile();
@@ -578,7 +634,7 @@ public class NbModuleSuite {
             Set<File> path = null;
             if (selectiveClusters != null) {
                 path = new HashSet<File>();
-                for (String p : selectiveClusters.split(File.pathSeparator)) {
+                for (String p : tokenizePath(selectiveClusters)) {
                     File f = new File(p);
                     path.add(f.getCanonicalFile());
                 }
@@ -784,7 +840,7 @@ public class NbModuleSuite {
                 // find "cluster" from
                 // k/o.n.m.a.p.N/csam/testModule/build/cluster/modules/org-example-testModule.jar
                 // tested in apisupport.project
-                for (String s : System.getProperty("java.class.path").split(File.pathSeparator)) {
+                for (String s : tokenizePath(System.getProperty("java.class.path"))) {
                     File module = new File(s);
                     File cluster = module.getParentFile().getParentFile();
                     File m = new File(new File(cluster, "config"), "Modules");
@@ -880,7 +936,7 @@ public class NbModuleSuite {
             Pattern tests = Pattern.compile(".*\\" + File.separator + "([^\\" + File.separator + "]+)\\" + File.separator + "tests\\.jar");
             StringBuilder sb = new StringBuilder();
             String sep = "";
-            for (String jar : path.split(File.pathSeparator)) {
+            for (String jar : tokenizePath(path)) {
                 Matcher m = tests.matcher(jar);
                 if (m.matches()) {
                     // in case we need it one day, let's add a switch to Configuration

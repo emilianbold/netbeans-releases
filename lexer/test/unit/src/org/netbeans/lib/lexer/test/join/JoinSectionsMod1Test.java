@@ -183,6 +183,9 @@ public class JoinSectionsMod1Test extends NbTestCase {
         
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TAG, "<c[z]>", -1);
+        // Extra ending newline of the document gets lexed too
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TEXT, "\n", -1);
         assertFalse(ts.moveNext());
 
         LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
@@ -359,7 +362,7 @@ public class JoinSectionsMod1Test extends NbTestCase {
         token = ts.token();
         assertEquals(PartType.END, token.partType());
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinTextTokenId.TEXT, "n", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTextTokenId.TEXT, "n\n", -1);
         assertFalse(ts.moveNext());
         
 
@@ -376,6 +379,9 @@ public class JoinSectionsMod1Test extends NbTestCase {
         doc.remove(0, doc.getLength());
         LexerTestUtilities.assertConsistency(hi);
         ts = hi.tokenSequence();
+        // Extra newline contained in DocumentUtilities.getText(doc) that gets lexed
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TEXT, "\n", -1);
         assertFalse(ts.moveNext());
         doc.insertString(0, text, null);
 
@@ -424,7 +430,8 @@ public class JoinSectionsMod1Test extends NbTestCase {
         token = ts.token();
         assertEquals(PartType.END, token.partType());
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinTextTokenId.TEXT, "n", -1);
+        // Includes extra ending newline
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTextTokenId.TEXT, "n\n", -1);
         assertFalse(ts.moveNext());
     }
 

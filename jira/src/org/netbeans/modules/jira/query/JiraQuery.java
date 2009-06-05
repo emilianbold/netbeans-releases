@@ -48,6 +48,7 @@ import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
+import org.eclipse.mylyn.internal.jira.core.model.NamedFilter;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
@@ -128,7 +129,12 @@ public class JiraQuery extends Query {
     }
 
     protected QueryController createControler(JiraRepository r, JiraQuery q, JiraFilter jiraFilter) {
-        return new QueryController(r, q, jiraFilter);
+        if(jiraFilter == null || jiraFilter instanceof FilterDefinition) {
+            return new QueryController(r, q, (FilterDefinition) jiraFilter);
+        } else if(jiraFilter instanceof NamedFilter) {
+            return new QueryController(r, q, jiraFilter, false);
+        }
+        throw new IllegalStateException("wrong fileter type : " + jiraFilter.getClass().getName());
     }
 
     @Override
@@ -305,7 +311,7 @@ public class JiraQuery extends Query {
      * @return an instance of FilterDefinition set in UI
      */
     public FilterDefinition getFilterDefinition () {
-        return getController().getFilterDefinition();
+        return (FilterDefinition) getController().getJiraFilter();
     }
     
     boolean wasRun() {

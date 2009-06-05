@@ -75,7 +75,7 @@ public class TypeVisitor extends ClassCodeVisitorSupport {
     protected final ASTNode leaf;
 
     protected final BaseDocument doc;
-    
+
     protected final int cursorOffset;
 
     private final boolean visitOtherClasses;

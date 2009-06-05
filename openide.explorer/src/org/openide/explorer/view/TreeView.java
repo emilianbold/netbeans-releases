@@ -313,7 +313,8 @@ public abstract class TreeView extends JScrollPane {
         // Init of the editor
         tree.setCellEditor(new TreeViewCellEditor(tree));
         tree.setEditable(true);
-        tree.setRowHeight(16);
+        int rowHeight = rend.getTreeCellRendererComponent(tree, null, false, false, false, 0, true).getPreferredSize().height;
+        tree.setRowHeight(rowHeight);
         tree.setLargeModel(true);
 
         // set selection mode to DISCONTIGUOUS_TREE_SELECTION as default

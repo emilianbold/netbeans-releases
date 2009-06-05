@@ -47,6 +47,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
@@ -76,6 +77,12 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
     }
 
     protected abstract CsmUID<?> createUID();
+
+    @Override
+    public void dispose() {
+        RepositoryUtils.disposeUID(uid, this);
+        super.dispose();
+    }
 
     @SuppressWarnings("unchecked")
     public CsmUID<T> getUID() {

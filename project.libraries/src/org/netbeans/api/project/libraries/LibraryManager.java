@@ -49,6 +49,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -114,6 +115,8 @@ public final class LibraryManager {
     /** null for default manager */
     private final LibraryStorageArea area;
     private LookupListener lookupListener;
+    /**Event lamport's clock**/
+    private long eventId;
 
     private LibraryManager () {
         alp = null;
@@ -175,53 +178,60 @@ public final class LibraryManager {
      * @return library definitions (never <code>null</code>)
      */
     public Library[] getLibraries() {
-        //Threading: first take the public project mutex
-        //than the private lock.
-        //The per project libraries require project mutex
-        return ProjectManager.mutex().readAccess(new Mutex.Action<Library[]>() {
-            public Library[] run() {
-                synchronized (LibraryManager.this) {
-                    if (cache == null) {
-                        List<Library> l = new ArrayList<Library>();
-                        if (area == null) {
-                            if (result == null) {
-                                result = Lookup.getDefault().lookupResult(LibraryProvider.class);
-                                lookupListener = new LookupListener() {
-                                    public void resultChanged(LookupEvent ev) {
-                                        resetCache();
-                                    }
-                                };
-                                result.addLookupListener(WeakListeners.create(LookupListener.class, lookupListener, result));
-                            }
-                            Collection<? extends LibraryProvider> instances = result.allInstances();
-                            Collection<LibraryProvider> added = new HashSet<LibraryProvider>(instances);
-                            added.removeAll(currentStorages);
-                            Collection<LibraryProvider> removed = new HashSet<LibraryProvider>(currentStorages);
-                            removed.removeAll(instances);
-                            currentStorages.clear();
-                            for (LibraryProvider storage : instances) {
-                                currentStorages.add(storage);
-                                for (LibraryImplementation impl : storage.getLibraries()) {
-                                    l.add(new Library(impl, LibraryManager.this));
-                                }
-                            }
-                            for (LibraryProvider p : removed) {
-                                p.removePropertyChangeListener(plistener);
-                            }
-                            for (LibraryProvider p : added) {
-                                p.addPropertyChangeListener(plistener);
-                            }
-                        } else {
-                            for (LibraryImplementation impl : currentStorages.iterator().next().getLibraries()) {
-                                l.add(new Library(impl, LibraryManager.this));
-                            }
-                        }
-                        cache = l;
-                    }
-                    return cache.toArray(new Library[cache.size()]);
-                }
+
+        final List<Library> l = new ArrayList<Library>();
+        final Collection<? extends LibraryProvider> instances;
+        long myId;
+        synchronized (this) {
+            if (cache != null) {
+                return cache.toArray(new Library[0]);
             }
-        });
+            if (area == null) {
+                if (result == null) {
+                    result = Lookup.getDefault().lookupResult(LibraryProvider.class);
+                    lookupListener = new LookupListener() {
+                        public void resultChanged(LookupEvent ev) {
+                            resetCache();
+                        }
+                    };
+                    result.addLookupListener(WeakListeners.create(LookupListener.class, lookupListener, result));
+                }
+                instances = result.allInstances();
+                Collection<LibraryProvider> added = new HashSet<LibraryProvider>(instances);
+                added.removeAll(currentStorages);
+                Collection<LibraryProvider> removed = new HashSet<LibraryProvider>(currentStorages);
+                removed.removeAll(instances);
+                currentStorages.clear();
+                for (LibraryProvider storage : instances) {
+                    currentStorages.add(storage);
+                }
+                for (LibraryProvider p : removed) {
+                    p.removePropertyChangeListener(plistener);
+                }
+                for (LibraryProvider p : added) {
+                    p.addPropertyChangeListener(plistener);
+                }
+            } else {
+                instances = Collections.singleton(currentStorages.iterator().next());
+            }
+            myId = this.eventId;
+        }
+        assert instances != null;
+        for (LibraryProvider storage : instances) {
+            for (LibraryImplementation impl : storage.getLibraries()) {
+                l.add(new Library(impl, LibraryManager.this));
+            }
+        }
+        synchronized (this) {
+            assert l != null;
+            if (this.eventId == myId) {
+                cache = l;
+                return cache.toArray(new Library[0]);
+            }
+            else {
+                return l.toArray(new Library[0]);
+            }
+        }
     }
     
     
@@ -372,9 +382,10 @@ public final class LibraryManager {
         this.listeners.removePropertyChangeListener (listener);
     }
 
-    private void resetCache () {
+    final void resetCache () {
         synchronized (this) {
             this.cache = null;
+            this.eventId++;
         }
         this.listeners.firePropertyChange(PROP_LIBRARIES, null, null);
     }

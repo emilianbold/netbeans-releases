@@ -44,6 +44,7 @@ package org.netbeans.modules.web.core.syntax;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -73,6 +74,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import static org.netbeans.api.jsp.lexer.JspTokenId.JavaCodeType;
 
@@ -107,13 +109,15 @@ public class SimplifiedJspServlet extends JSPProcessor {
     private CharSequence charSequence;
     private final Snapshot snapshot;
     private final ArrayList<Embedding> codeBlocks = new ArrayList<Embedding>();
+    private List<String> localImportsFound = new ArrayList<String>();
+    private List<String> localBeansFound = new ArrayList<String>();
 
     private Embedding header;
     private List<Embedding> scriptlets = new LinkedList<Embedding>();
     private List<Embedding> declarations = new LinkedList<Embedding>();
     private List<Embedding> localImports = new LinkedList<Embedding>();
     // keep bean declarations separate to avoid duplicating the declaration, see #130745
-    private Embedding beanDeclarations;
+    List<Embedding> beanDeclarations = new LinkedList<Embedding>();;
     
     private List<Embedding> implicitImports = new LinkedList<Embedding>();;
     private int expressionIndex = 1;
@@ -143,40 +147,19 @@ public class SimplifiedJspServlet extends JSPProcessor {
         this.snapshot = snapshot;
     }
 
-    public void process() throws BadLocationException{
-        process(false);
-    }
-
-    public void process(final boolean processAsIncluded) throws BadLocationException {
-        processCalled = true;
-
-        if( fobj == null) {
-            //do not handle non fileobject documents like coloring properties preview document
-            processingSuccessful = false;
-            return;
-        }
-
+    /* process under document readlock */
+    @Override
+    protected void renderProcess() throws BadLocationException{
+        //check servlet API on classpath
         if (!isServletAPIOnClasspath()){
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     displayServletAPIMissingWarning();
                 }
             });
-
             processingSuccessful = false;
             return;
         }
-         //Workaround of issue #120195 - Deadlock in jspparser while reformatting JSP
-        //Needs to be removed after properly fixing the issue
-        if (!DocumentUtilities.isWriteLocked(doc)) {
-            JspParserAPI.ParseResult parseResult = JspUtils.getCachedParseResult(fobj, false, false);
-            if (parseResult == null || !parseResult.isParsingSuccess()) {
-                processingSuccessful = false;
-                return;
-            }
-        }
-
-        final BadLocationException[] ex = new BadLocationException[1];
 
         processIncludes();
 
@@ -197,35 +180,26 @@ public class SimplifiedJspServlet extends JSPProcessor {
                 int blockStart = token.offset(tokenHierarchy);
 
                 JavaCodeType blockType = (JavaCodeType) token.getProperty(JspTokenId.SCRIPTLET_TOKEN_TYPE_PROPERTY);
-
-//                String blockBody = charSequence.subSequence(blockStart, blockEnd).toString(); //doc.getText(blockStart, blockEnd - blockStart);
                 List<Embedding> buff = blockType == JavaCodeType.DECLARATION ? declarations : scriptlets;
 
                 if (blockType == JavaCodeType.EXPRESSION) {
-                    // ignore JSP expressions in included files
-                    if (!processAsIncluded){
-                        // the "" + (...) construction is used to preserve compatibility with pre-autoboxing java
-                        // see issue #116598
-                        buff.add(snapshot.create(String.format("\t\tObject expr%1$d = \"\" + (", expressionIndex++), "text/x-java")); //NOI18N
-                        buff.add(snapshot.create(blockStart, token.length(), "text/x-java"));
-                        buff.add(snapshot.create(");\n", "text/x-java")); //NOI18N
-                    }
+                    // the "" + (...) construction is used to preserve compatibility with pre-autoboxing java
+                    // see issue #116598
+                    buff.add(snapshot.create(String.format("\t\tObject expr%1$d = \"\" + (", expressionIndex++), "text/x-java")); //NOI18N
+                    buff.add(snapshot.create(blockStart, token.length(), "text/x-java"));
+                    buff.add(snapshot.create(");\n", "text/x-java")); //NOI18N
                 } else {
-                        buff.add(snapshot.create(blockStart, token.length(), "text/x-java"));
-                        buff.add(snapshot.create("\n", "text/x-java")); //NOI18N
+                    buff.add(snapshot.create(blockStart, token.length(), "text/x-java"));
+                    buff.add(snapshot.create("\n", "text/x-java")); //NOI18N
                 }
             }
         } while (tokenSequence.moveNext());
 
-        List<String> localImports = processImportDirectives();
-
-        if (ex[0] != null) {
-            throw ex[0];
-        }
+        processImportsAndBeanDeclarations();
 
         header = snapshot.create(getClassHeader(), "text/x-java");
-        implicitImports.add(snapshot.create(createImplicitImportStatements(localImports), "text/x-java"));
-        beanDeclarations = snapshot.create("\n" + createBeanVarDeclarations(), "text/x-java");
+        implicitImports.add(snapshot.create(createImplicitImportStatements(localImportsFound), "text/x-java"));
+        beanDeclarations.add(snapshot.create("\n" + createBeanVarDeclarations(localBeansFound), "text/x-java"));
     }
 
     
@@ -248,38 +222,92 @@ public class SimplifiedJspServlet extends JSPProcessor {
      *
      * additionaly it returns a list of imports found
      */
-    private List<String> processImportDirectives() {
-        List<String> imports = new ArrayList<String>();
+    private void processImportsAndBeanDeclarations() {
         TokenHierarchy tokenHierarchy = TokenHierarchy.create(charSequence, JspTokenId.language());//TokenHierarchy.get(doc);
         TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
         tokenSequence.moveStart();
 
         while (tokenSequence.moveNext()) {
-            PieceOfCode pieceOfCode = extractCodeFromTagAttribute(tokenSequence, "page", "import"); //NOI18N
+            PieceOfCode pieceOfCode = extractCodeFromTagAttribute(tokenSequence,
+                    Arrays.asList("page", "tag"), //NOI18N
+                    Arrays.asList("import"));     //NOI18N
 
             if (pieceOfCode != null){
-                localImports.add(snapshot.create("import ", "text/x-java")); //NOI18N
-                localImports.add(snapshot.create(pieceOfCode.getStartOffset(), pieceOfCode.getLength(), "text/x-java")); //NOI18N
-                localImports.add(snapshot.create(";\n", "text/x-java")); //NOI18N
-            } else {
-                pieceOfCode = extractCodeFromTagAttribute(tokenSequence, "tag", "import"); //NOI18N
+                String importContent = pieceOfCode.getContent();
+                int startOffset = 0;
+                boolean moreToProcess = true;
 
-                if (pieceOfCode != null) {
+                int endOffset;
+
+                do {
+                    // the JSP directive can take a comma separated list of imports
+                    endOffset = importContent.indexOf(',', startOffset);
+
+                    if (endOffset == -1) {
+                        endOffset = importContent.length();
+                        moreToProcess = false;
+                    }
+
                     localImports.add(snapshot.create("import ", "text/x-java")); //NOI18N
-                    localImports.add(snapshot.create(pieceOfCode.getStartOffset(), pieceOfCode.getLength(), "text/x-java")); //NOI18N
+
+                    localImports.add(snapshot.create(pieceOfCode.getStartOffset() + startOffset,
+                            endOffset - startOffset,
+                            "text/x-java")); //NOI18N
+
                     localImports.add(snapshot.create(";\n", "text/x-java")); //NOI18N
+
+                    String singleImport = importContent.substring(startOffset, endOffset).trim();
+                    localImportsFound.add(singleImport);
+                    startOffset = endOffset + 1;
+                    
+                } while (moreToProcess);
+            } else {
+                pieceOfCode = extractCodeFromTagAttribute(tokenSequence,
+                    Arrays.asList("jsp:useBean"), //NOI18N
+                    Arrays.asList("class", "type"));     //NOI18N
+
+
+                if (pieceOfCode != null){
+                    PieceOfCode id = extractCodeFromTagAttribute(tokenSequence,
+                        Arrays.asList("jsp:useBean"), //NOI18N
+                        Arrays.asList("id"));     //NOI18N
+
+                    // id may be null in broken (incomplete) code
+                    if (id != null){
+                        beanDeclarations.add(snapshot.create(
+                                pieceOfCode.getStartOffset(),
+                                pieceOfCode.getLength(), "text/x-java")); //NOI18N
+
+                        beanDeclarations.add(snapshot.create(" ", "text/x-java")); //NOI18N
+
+                        beanDeclarations.add(snapshot.create(
+                                id.getStartOffset(),
+                                id.getLength(), "text/x-java")); //NOI18N
+
+                        beanDeclarations.add(snapshot.create(";\n", "text/x-java")); //NOI18N
+
+                        String beanId = id.getContent();
+                        localBeansFound.add(beanId);
+                    }
                 }
+
             }
         }
-        return imports;
     }
 
-    private PieceOfCode extractCodeFromTagAttribute(TokenSequence tokenSequence, String tagName, String attrName) {
-        if (tokenSequence.token().id() == JspTokenId.TAG && TokenUtilities.equals(tagName, tokenSequence.token().text())) { //NOI18N
+    private PieceOfCode extractCodeFromTagAttribute(TokenSequence tokenSequence, List<String> tagName, List<String> attrName) {
+        PieceOfCode pieceOfCode = null;
+        
+        if (tokenSequence.token().id() == JspTokenId.TAG && tagName.contains(tokenSequence.token().text().toString())) { //NOI18N
 
-            if (tokenSequence.moveNext() && consumeWS(tokenSequence)) {
+            int startPos = tokenSequence.offset();
 
-                if (tokenSequence.token().id() == JspTokenId.ATTRIBUTE && TokenUtilities.equals(attrName, tokenSequence.token().text())) { //NOI18N
+            tokensearchloop:
+            while (tokenSequence.moveNext() && consumeWS(tokenSequence)
+                    && !(tokenSequence.token().id() == JspTokenId.SYMBOL
+                    && TokenUtilities.equals(tokenSequence.token().text(), "%>"))) {
+
+                if (tokenSequence.token().id() == JspTokenId.ATTRIBUTE && attrName.contains(tokenSequence.token().text().toString())) { //NOI18N
 
                     if (tokenSequence.moveNext() && consumeWS(tokenSequence) && tokenSequence.token().id() == JspTokenId.SYMBOL && TokenUtilities.equals("=", tokenSequence.token().text())) {
 
@@ -287,22 +315,28 @@ public class SimplifiedJspServlet extends JSPProcessor {
 
                             String val = tokenSequence.token().text().toString();
 
-                            if (val.length() > 2 && val.charAt(0) == '"' && val.charAt(val.length() - 1) == '"') {
+                            // extract the content of quoted string
+                            if (val.length() > 2
+                                    // attr values can be specified using double or single quotes
+                                    && (val.charAt(0) == '"' || val.charAt(0) == '\'')
+                                    && val.charAt(val.length() - 1) == val.charAt(0)) {
 
                                 int startOffset = tokenSequence.offset() + 1;
-                                int len = val.length() - 2;
+                                int len = val.length() - 1;
                                 String imprt = val.substring(1, len);
-                                PieceOfCode pieceOfCode = new PieceOfCode(imprt, startOffset, len);
-                                
-                                return pieceOfCode;
+                                pieceOfCode = new PieceOfCode(imprt, startOffset, imprt.length());
+                                break tokensearchloop;
                             }
                         }
                     }
                 }
             }
+
+            tokenSequence.move(startPos);
+            tokenSequence.moveNext();
         }
 
-        return null;
+        return pieceOfCode;
     }
 
     
@@ -317,6 +351,7 @@ public class SimplifiedJspServlet extends JSPProcessor {
         return false;
     }
 
+    @Override
     protected void processIncludedFile(IncludedJSPFileProcessor includedJSPFileProcessor) {
         implicitImports.add(snapshot.create(includedJSPFileProcessor.getImports(), "text/x-java"));
         declarations.add(snapshot.create(includedJSPFileProcessor.getDeclarations(), "text/x-java"));
@@ -386,12 +421,19 @@ public class SimplifiedJspServlet extends JSPProcessor {
         content.addAll(localImports);
         content.add(header);
         content.addAll(declarations);
-        content.add(beanDeclarations);
+        content.addAll(beanDeclarations);
         content.add(snapshot.create(METHOD_HEADER, "text/x-java"));
         content.addAll(scriptlets);
         content.add(snapshot.create(CLASS_FOOTER, "text/x-java"));
 
-        return Embedding.create(content);
+        Embedding embedding = Embedding.create(content);
+
+        if (logger.isLoggable(Level.FINEST)){
+            String msg = "---\n" + embedding.getSnapshot().getText() + "\n---";
+            logger.finest(msg);
+        }
+        
+        return embedding;
     }
 
     public static abstract class VirtualJavaClass {

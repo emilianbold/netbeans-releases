@@ -12,6 +12,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -32,20 +33,20 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="mainClassTextField" pref="319" max="32767" attributes="2"/>
+                      <Component id="mainClassTextField" pref="350" max="32767" attributes="2"/>
                       <EmptySpace min="74" pref="74" max="74" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="jTextFieldContextPath" pref="319" max="32767" attributes="2"/>
+                      <Component id="jTextFieldContextPath" pref="350" max="32767" attributes="2"/>
                       <EmptySpace min="74" pref="74" max="74" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="serverInstanceComboBox" pref="324" max="32767" attributes="0"/>
+                      <Component id="serverInstanceComboBox" pref="350" max="32767" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="addServerButton" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="serverLibraryCheckbox" pref="319" max="32767" attributes="2"/>
+                      <Component id="serverLibraryCheckbox" pref="350" max="32767" attributes="2"/>
                       <EmptySpace min="74" pref="74" max="74" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -56,7 +57,7 @@
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="mainClassLabel" min="-2" pref="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="423" max="32767" attributes="0"/>
+              <EmptySpace pref="463" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="1" attributes="0">
@@ -76,11 +77,11 @@
               </Group>
               <EmptySpace min="-2" pref="74" max="-2" attributes="0"/>
           </Group>
-          <Component id="warningPlaceHolderPanel" alignment="0" pref="477" max="32767" attributes="0"/>
+          <Component id="warningPlaceHolderPanel" alignment="0" pref="541" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <Component id="jLabelEnterprise" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="jComboBoxEnterprise" pref="330" max="32767" attributes="0"/>
+              <Component id="jComboBoxEnterprise" pref="342" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

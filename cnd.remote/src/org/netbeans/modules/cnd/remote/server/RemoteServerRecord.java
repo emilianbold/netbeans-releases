@@ -40,16 +40,20 @@
 package org.netbeans.modules.cnd.remote.server;
 
 import java.beans.PropertyChangeSupport;
+import java.util.Collection;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
+import org.netbeans.modules.cnd.remote.ui.wizard.RemoteHostSetupProvider;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.spi.remote.setup.HostSetupProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -264,4 +268,26 @@ public class RemoteServerRecord implements ServerRecord {
     /*package*/void setState(State state) {
         this.state = state;
     }
+
+    @Override
+    public boolean isSetUp() {
+        final Collection<? extends HostSetupProvider> providers = Lookup.getDefault().lookupAll(HostSetupProvider.class);
+        for (HostSetupProvider provider : providers) {
+            if (provider.canCheckSetup(executionEnvironment)) {
+                return provider.isSetUp(executionEnvironment);
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean setUp() {
+        final Collection<? extends HostSetupProvider> providers = Lookup.getDefault().lookupAll(HostSetupProvider.class);
+        for (HostSetupProvider provider : providers) {
+            if (provider.canCheckSetup(executionEnvironment)) {
+                return provider.setUp(executionEnvironment);
+            }
+        }
+        return true;
+    }    
 }

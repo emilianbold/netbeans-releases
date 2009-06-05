@@ -67,7 +67,7 @@ public class ModuleActionsTest extends TestBase {
         // Track down #47012.
         Project freeform = ProjectManager.getDefault().findProject(FileUtil.toFileObject(file("ant.freeform")));
         assertNotNull("have project in ant/freeform", freeform);
-        ActionProvider ap = (ActionProvider) freeform.getLookup().lookup(ActionProvider.class);
+        ActionProvider ap = freeform.getLookup().lookup(ActionProvider.class);
         assertNotNull("have ActionProvider", ap);
         FileObject actionsJava = FileUtil.toFileObject(file("ant.freeform/src/org/netbeans/modules/ant/freeform/Actions.java"));
         assertNotNull("have Actions.java", actionsJava);

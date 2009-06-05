@@ -52,7 +52,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
  *
  * @author Richard Michalsky
  */
-public class JavadocRootsSupport implements JavadocRootsProvider {
+public final class JavadocRootsSupport implements JavadocRootsProvider {
 
     private URL[] javadocRoots;
     private JavadocRootsProvider delegate;
@@ -112,8 +112,14 @@ public class JavadocRootsSupport implements JavadocRootsProvider {
      * Add given javadoc root to the current javadoc root list and save the
      * result into the global properties in the <em>userdir</em> (see {@link
      * PropertyUtils#putGlobalProperties})
+     * @param root
+     * @throws java.io.IOException
+     * @throws java.lang.IllegalArgumentException When root already present in javadoc.
      */
-    public void addJavadocRoot(URL root) throws IOException {
+    public void addJavadocRoot(URL root) throws IOException, IllegalArgumentException {
+        org.openide.util.Parameters.notNull("root", root);    // NOI18N
+        if (containsRoot(this, root))
+            throw new IllegalArgumentException("Root '" + root + "' already present in javadoc.");    // NOI18N
         maybeUpdateDefaultJavadoc();
         URL[] newJavadocRoots = new URL[javadocRoots.length + 1];
         System.arraycopy(javadocRoots, 0, newJavadocRoots, 0, javadocRoots.length);
@@ -130,6 +136,8 @@ public class JavadocRootsSupport implements JavadocRootsProvider {
         maybeUpdateDefaultJavadoc();
         Collection<URL> newJavadocs = new ArrayList<URL>(Arrays.asList(javadocRoots));
         newJavadocs.removeAll(Arrays.asList(urlsToRemove));
+        assert newJavadocs.size() + urlsToRemove.length >= javadocRoots.length :
+            "Too many roots removed, one of " + Arrays.toString(urlsToRemove) + " was contained more than once";
         URL[] javadocs = new URL[newJavadocs.size()];
         setJavadocRootsInternal(newJavadocs.toArray(javadocs));
     }
@@ -176,5 +184,21 @@ public class JavadocRootsSupport implements JavadocRootsProvider {
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         pcs.removePropertyChangeListener(listener);
+    }
+
+    /**
+     * Queries the provider if already contains given source root.
+     * @param provider
+     * @param root
+     * @return <tt>true</tt> if provider already contains the root.
+     */
+    public static boolean containsRoot(JavadocRootsProvider provider, URL root) {
+        org.openide.util.Parameters.notNull("provider", provider);    // NOI18N
+        org.openide.util.Parameters.notNull("root", root);    // NOI18N
+        for (URL r2 : provider.getJavadocRoots()) {
+            if (root.equals(r2))
+                return true;
+        }
+        return false;
     }
 }

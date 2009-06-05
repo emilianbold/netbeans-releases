@@ -156,6 +156,8 @@ public class ConstructorGenerator implements CodeGenerator {
     public void invoke() {
         final List<ElementHandle<? extends Element>> fieldHandles;
         final List<ElementHandle<? extends Element>> constrHandles;
+        final int caretOffset = component.getCaretPosition();
+
         if (constructorDescription != null || fieldsDescription != null) {
             ConstructorPanel panel = new ConstructorPanel(constructorDescription, fieldsDescription);
             DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_constructor")); //NOI18N
@@ -176,7 +178,6 @@ public class ConstructorGenerator implements CodeGenerator {
         JavaSource js = JavaSource.forDocument(component.getDocument());
         if (js != null) {
             try {
-                final int caretOffset = component.getCaretPosition();
                 ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
                     public void run(WorkingCopy copy) throws IOException {
                         copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);

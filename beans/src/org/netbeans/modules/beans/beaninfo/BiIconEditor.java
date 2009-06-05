@@ -151,7 +151,7 @@ final class BiIconEditor extends PropertyEditorSupport implements ExPropertyEdit
         }
         if (env != null) {
             BiImageIcon newval = (BiImageIcon) value;
-            env.setState(newval != null && newval.url == null ? PropertyEnv.STATE_INVALID : PropertyEnv.STATE_VALID);
+            env.setState(newval != null && (newval.url == null || newval.getIcon() == null) ? PropertyEnv.STATE_INVALID : PropertyEnv.STATE_VALID);
         }
         super.setValue(value);
     }
@@ -212,7 +212,8 @@ final class BiIconEditor extends PropertyEditorSupport implements ExPropertyEdit
             }
             else {
                 ClassPath cp = ClassPath.getClassPath( sourceFileObject, ClassPath.SOURCE );                
-                FileObject res = cp.findResource(string.substring(1));
+                string = string.charAt(0) != '/' ? string : string.substring(1);
+                FileObject res = cp.findResource(string);
                 if (res == null) {
                     ii = new BiImageIcon(null, string);
                 } else {
@@ -265,7 +266,7 @@ final class BiIconEditor extends PropertyEditorSupport implements ExPropertyEdit
     public void attachEnv(PropertyEnv env) {
         this.env = env;
         BiImageIcon val = getValue();
-        if (val != null && val.url == null) {
+        if (val != null && (val.url == null || val.getIcon() == null)) {
             env.setState(PropertyEnv.STATE_INVALID);
         }
     }
@@ -294,6 +295,9 @@ final class BiIconEditor extends PropertyEditorSupport implements ExPropertyEdit
                 }
                 try {
                     Image image = ImageIO.read(url);
+                    if (image == null) {
+                        return null;
+                    }
                     icon = new ImageIcon(image);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
@@ -495,9 +499,10 @@ final class BiIconEditor extends PropertyEditorSupport implements ExPropertyEdit
             String s = tfName.getText().trim();
             if (rbClasspath.isSelected() && s.length() != 0 ) {                    
                 ClassPath cp = ClassPath.getClassPath( editor.sourceFileObject, ClassPath.SOURCE );
-                FileObject f = cp.findResource( s.substring(1) );
+                String path = s.charAt(0) != '/' ? s : s.substring(1);
+                FileObject f = cp.findResource( path );
                 try{
-                    ii = new BiImageIcon(f.getURL(), s);
+                    ii = new BiImageIcon(f.getURL(), path);
                 }
                 catch(java.lang.Throwable t){
                     throw new PropertyVetoException(

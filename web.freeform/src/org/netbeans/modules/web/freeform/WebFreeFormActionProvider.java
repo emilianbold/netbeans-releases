@@ -72,7 +72,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
@@ -618,12 +619,12 @@ public class WebFreeFormActionProvider implements ActionProvider {
         LineCookie lines = (LineCookie) fileDO.getCookie(LineCookie.class);
         if (lines != null) {
             try {
-                lines.getLineSet().getCurrent(line).show(Line.SHOW_GOTO);
+                lines.getLineSet().getCurrent(line).show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
             } catch (IndexOutOfBoundsException e) {
                 // XXX reproducibly thrown if the document was already open. Why?? (file.refresh() above does not help.)
                 Logger.getLogger(WebFreeFormActionProvider.class.getName()).log(
                         Level.WARNING, e + " [file=" + file + " match=" + match + " line=" + line + "]"); // NOI18N
-                lines.getLineSet().getCurrent(0).show(Line.SHOW_GOTO);
+                lines.getLineSet().getCurrent(0).show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
             }
         }
     }

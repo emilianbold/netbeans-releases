@@ -515,6 +515,9 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
     }
 
     private static void renameInCustomCode(Node.Property[] properties, String oldName, String newName) {
+        if (properties == null) {
+            return;
+        }
         for (Node.Property prop : properties) {
             if (prop instanceof FormProperty) {
                 FormProperty formProp = (FormProperty) prop;

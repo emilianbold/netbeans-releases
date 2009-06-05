@@ -92,25 +92,32 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
         }
 
         FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(getProject());
-
         if (!sourcesFilesOnly(sources, selectedFiles)) {
             return;
         }
 
         InputOutput remoteLog = getRemoteLog(getRemoteConfiguration().getDisplayName());
         RemoteClient remoteClient = getRemoteClient(remoteLog);
-        String progressTitle = NbBundle.getMessage(UploadCommand.class, "MSG_DownloadingFiles", getProject().getName());
+        download(remoteClient, remoteLog, getProject().getName(), true, sources, selectedFiles);
+    }
+
+    public String getDisplayName() {
+        return DISPLAY_NAME;
+    }
+
+    public static void download(RemoteClient remoteClient, InputOutput remoteLog, String projectName, boolean showDownloadDialog,
+            FileObject sources, FileObject... filesToDownload) {
+        String progressTitle = NbBundle.getMessage(DownloadCommand.class, "MSG_DownloadingFiles", projectName);
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
         TransferInfo transferInfo = null;
         try {
             progressHandle.start();
-            Set<TransferFile> forDownload = remoteClient.prepareDownload(sources, selectedFiles);
-            // avoid timeout errors
-            remoteClient.disconnect();
+            Set<TransferFile> forDownload = remoteClient.prepareDownload(sources, filesToDownload);
 
-            forDownload = TransferFilter.showDownloadDialog(forDownload);
-            if (forDownload.size() == 0) {
-                return;
+            if (showDownloadDialog) {
+                // avoid timeout errors
+                remoteClient.disconnect();
+                forDownload = TransferFilter.showDownloadDialog(forDownload);
             }
 
             if (forDownload.size() > 0) {
@@ -119,7 +126,7 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
                 progressHandle.start();
                 transferInfo = remoteClient.download(sources, forDownload);
                 StatusDisplayer.getDefault().setStatusText(
-                        NbBundle.getMessage(UploadCommand.class, "MSG_DownloadFinished", getProject().getName()));
+                        NbBundle.getMessage(DownloadCommand.class, "MSG_DownloadFinished", projectName));
             }
         } catch (RemoteException ex) {
             processRemoteException(ex);
@@ -134,9 +141,5 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
             }
             progressHandle.finish();
         }
-    }
-
-    public String getDisplayName() {
-        return DISPLAY_NAME;
     }
 }

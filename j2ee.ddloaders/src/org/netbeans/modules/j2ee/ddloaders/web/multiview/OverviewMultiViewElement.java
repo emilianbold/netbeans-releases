@@ -42,14 +42,11 @@
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
 import org.netbeans.core.api.multiview.MultiViewPerspective;
-import org.netbeans.core.spi.multiview.*;
 import org.openide.nodes.*;
 import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.netbeans.modules.j2ee.ddloaders.web.*;
 import org.netbeans.modules.xml.multiview.ui.*;
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
-import org.netbeans.modules.xml.multiview.Error;
-import org.openide.util.NbBundle;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.HelpCtx;
@@ -92,6 +89,7 @@ public class OverviewMultiViewElement extends ToolBarMultiViewElement implements
         return view;
     }
     
+    @Override
     public void componentShowing() {
         super.componentShowing();
         dObj.setLastOpenView(index);
@@ -115,11 +113,13 @@ public class OverviewMultiViewElement extends ToolBarMultiViewElement implements
         dObj.checkParseable();
     }
 
+    @Override
     public void componentOpened() {
         super.componentOpened();
         dObj.getWebApp().addPropertyChangeListener(this);
     }
     
+    @Override
     public void componentClosed() {
         super.componentClosed();
         dObj.getWebApp().removePropertyChangeListener(this);
@@ -183,6 +183,7 @@ public class OverviewMultiViewElement extends ToolBarMultiViewElement implements
             setDisplayName(NbBundle.getMessage(PagesMultiViewElement.class,"TTL_Overview"));
             setIconBaseWithExtension("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/class.gif"); //NOI18N
         }    
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"overviewNode"); //NOI18N
         }
@@ -194,6 +195,7 @@ public class OverviewMultiViewElement extends ToolBarMultiViewElement implements
             setDisplayName(NbBundle.getMessage(PagesMultiViewElement.class,"TTL_ContextParams"));
             setIconBaseWithExtension("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/paramsNode.gif"); //NOI18N
         }
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"contextParamsNode"); //NOI18N
         }
@@ -205,6 +207,7 @@ public class OverviewMultiViewElement extends ToolBarMultiViewElement implements
             setDisplayName(NbBundle.getMessage(PagesMultiViewElement.class,"TTL_Listeners"));
             setIconBaseWithExtension("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/class.gif"); //NOI18N
         }
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"listenersNode"); //NOI18N
         }

@@ -82,6 +82,7 @@ import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  *
@@ -148,8 +149,9 @@ public class CsmContextUtilities {
     }
 
 
-    private static List<CsmMacro> findMacros(CsmContext context, String strPrefix, 
+    private static List<CsmMacro> findMacros(CsmContext context, CharSequence strPrefix,
             boolean match, boolean caseSensitive, int kind) {
+        strPrefix = CharSequenceKey.create(strPrefix);
         List<CsmMacro> res = new ArrayList<CsmMacro>();
         for (Iterator itContext = context.iterator(); itContext.hasNext();) {
             CsmContext.CsmContextEntry entry = (CsmContext.CsmContextEntry) itContext.next();
@@ -158,7 +160,7 @@ public class CsmContextUtilities {
                 CsmFile file = (CsmFile)scope;
                 switch (kind) {
                     case FILE_LOCAL_MACROS:
-                        getFileLocalMacros(file, res, new HashSet<String>(), strPrefix, match, caseSensitive);
+                        getFileLocalMacros(file, res, new HashSet<CharSequence>(), strPrefix, match, caseSensitive);
                         break;
                     case FILE_PROJECT_LOCAL_MACROS:
                         gatherProjectIncludedMacros(file, res, false, strPrefix, match, caseSensitive);
@@ -178,15 +180,15 @@ public class CsmContextUtilities {
         return res;
     }
     
-    private static void getFileLocalMacros(CsmFile file, List<CsmMacro> res, Set<String> alredyInList,
-            String strPrefix, boolean match, boolean caseSensitive){
+    private static void getFileLocalMacros(CsmFile file, List<CsmMacro> res, Set<CharSequence> alredyInList,
+            CharSequence strPrefix, boolean match, boolean caseSensitive){
         CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(strPrefix, match, caseSensitive, false);
         for (Iterator itFile = CsmSelect.getMacros(file, filter); itFile.hasNext();) {
             CsmMacro macro = (CsmMacro) itFile.next();
             //if (macro.getStartOffset() > offsetInScope) {
             //    break;
             //}
-            String name = macro.getName().toString();
+            CharSequence name = macro.getName();
             if (!alredyInList.contains(name) && CsmSortUtilities.matchName(name, strPrefix, match, caseSensitive)) {
                 res.add(macro);
                 alredyInList.add(name);
@@ -195,12 +197,12 @@ public class CsmContextUtilities {
     }
 
     private static void gatherProjectIncludedMacros(CsmFile file, List<CsmMacro> res,
-            boolean all, String strPrefix,  boolean match, boolean caseSensitive) {
+            boolean all, CharSequence strPrefix,  boolean match, boolean caseSensitive) {
         CsmProject prj = file.getProject();
         if (!all) {
-            gatherIncludeMacros(file, prj, true, new HashSet<CsmFile>(), new HashSet<String>(), res, strPrefix, match, caseSensitive);
+            gatherIncludeMacros(file, prj, true, new HashSet<CsmFile>(), new HashSet<CharSequence>(), res, strPrefix, match, caseSensitive);
         } else {
-            Set<String> alredyInList = new HashSet<String>();
+            Set<CharSequence> alredyInList = new HashSet<CharSequence>();
             for(Iterator i = prj.getHeaderFiles().iterator(); i.hasNext();){
                 getFileLocalMacros((CsmFile)i.next(), res, alredyInList, strPrefix, match, caseSensitive);
             }
@@ -208,12 +210,12 @@ public class CsmContextUtilities {
     }
 
     private static void gatherLibIncludedMacros(CsmFile file, List<CsmMacro> res, boolean all,
-            String strPrefix, boolean match, boolean caseSensitive) {
+            CharSequence strPrefix, boolean match, boolean caseSensitive) {
         CsmProject prj = file.getProject();
         if (!all) {
-            gatherIncludeMacros(file, prj, false, new HashSet<CsmFile>(), new HashSet<String>(), res, strPrefix, match, caseSensitive);
+            gatherIncludeMacros(file, prj, false, new HashSet<CsmFile>(), new HashSet<CharSequence>(), res, strPrefix, match, caseSensitive);
         } else {
-            Set<String> alredyInList = new HashSet<String>();
+            Set<CharSequence> alredyInList = new HashSet<CharSequence>();
             for(Iterator p = prj.getLibraries().iterator(); p.hasNext();){
                 CsmProject lib = (CsmProject)p.next();
                 for(Iterator i = lib.getHeaderFiles().iterator(); i.hasNext();){
@@ -225,8 +227,8 @@ public class CsmContextUtilities {
     }
     
     private static void gatherIncludeMacros(CsmFile file, CsmProject prj, boolean own,
-            Set<CsmFile> visitedFiles, Set<String> alredyInList, 
-            List<CsmMacro> res, String strPrefix, boolean match, boolean caseSensitive) {
+            Set<CsmFile> visitedFiles, Set<CharSequence> alredyInList,
+            List<CsmMacro> res, CharSequence strPrefix, boolean match, boolean caseSensitive) {
         if( visitedFiles.contains(file) ) {
             return;
         }

@@ -41,8 +41,10 @@ package org.netbeans.modules.java.hints;
 
 import com.sun.source.util.TreePath;
 import java.util.List;
+import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
+import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
 /**
@@ -51,8 +53,11 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  */
 public class WrongStringComparisonTest extends TreeRuleTestBase {
 
+    private WrongStringComparison wsc;
+
     public WrongStringComparisonTest(String name) {
         super(name);
+        wsc = new WrongStringComparison();
     }
 
     public void testSimple() throws Exception {
@@ -82,9 +87,56 @@ public class WrongStringComparisonTest extends TreeRuleTestBase {
         performAnalysisTest("test/Test.java", code + codeAfter, code.length());
     }
 
+    public void testFixWithTernaryNullCheck() throws Exception {
+        performFixTest("test/Test.java",
+                            "package test;" +
+                            "public class Test {" +
+                            "    private String s;" +
+                            "    private void test() {" +
+                            "        String t = null;" +
+                            "        if (s =|= t);" +
+                            "    }" +
+                            "}",
+                            "0:114-0:120:verifier:Comparing Strings using == or !=",
+                            "[WrongStringComparisonFix:Use equals() with null check (ternary)]",
+                            "package test;public class Test { private String s; private void test() { String t = null; if (s == null ? t == null : s.equals(t)); }}");
+    }
+
+    public void testFixWithoutNullCheck() throws Exception {
+        WrongStringComparison.setTernaryNullCheck(wsc.getPreferences(HintsSettings.getCurrentProfileId()), false);
+        performFixTest("test/Test.java",
+                            "package test;" +
+                            "public class Test {" +
+                            "    private String s;" +
+                            "    private void test() {" +
+                            "        String t = null;" +
+                            "        if (s =|= t);" +
+                            "    }" +
+                            "}",
+                            "0:114-0:120:verifier:Comparing Strings using == or !=",
+                            "[WrongStringComparisonFix:Use equals() without null check]",
+                            "package test;public class Test { private String s; private void test() { String t = null; if (s.equals(t)); }}");
+    }
+
+    public void testFixWithNullCheck() throws Exception {
+        WrongStringComparison.setTernaryNullCheck(wsc.getPreferences(HintsSettings.getCurrentProfileId()), false);
+        performFixTest("test/Test.java",
+                            "package test;" +
+                            "public class Test {" +
+                            "    private String s;" +
+                            "    private void test() {" +
+                            "        String t = null;" +
+                            "        if (s =|= t);" +
+                            "    }" +
+                            "}",
+                            "0:114-0:120:verifier:Comparing Strings using == or !=",
+                            "[WrongStringComparisonFix:Use equals() with null check]",
+                            "package test;public class Test { private String s; private void test() { String t = null; if ((s == null && t == null) || (s != null && s.equals(t))); }}");
+    }
+
     @Override
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
-        return new WrongStringComparison().run(info, path);
+        return wsc.run(info, path);
     }
 
 }

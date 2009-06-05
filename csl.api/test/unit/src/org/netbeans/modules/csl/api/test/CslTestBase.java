@@ -185,6 +185,7 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.loaders.DataObject;
@@ -215,7 +216,7 @@ public abstract class CslTestBase extends NbTestCase {
         CacheFolder.setCacheFolder(cache);
 
         // This has to be before touching ClassPath class
-        MockLookup.setInstances(new TestClassPathProvider());
+        MockLookup.setInstances(new TestClassPathProvider(), new TestPathRecognizer());
 
         classPathsForTest = createClassPathsForTest();
         if (classPathsForTest != null) {
@@ -239,7 +240,7 @@ public abstract class CslTestBase extends NbTestCase {
 
     @Override
     protected void tearDown() throws Exception {
-        if (classPathsForTest != null) {
+        if (classPathsForTest != null && !classPathsForTest.isEmpty()) {
             Logger logger = Logger.getLogger(RepositoryUpdater.class.getName() + ".tests");
             logger.setLevel(Level.FINEST);
             Waiter w = new Waiter();
@@ -1429,7 +1430,8 @@ public abstract class CslTestBase extends NbTestCase {
                 factory.getIndexVersion(),
                 tifi,
                 false,
-                false
+                false,
+                null
         );
 
         try {
@@ -4239,6 +4241,30 @@ public abstract class CslTestBase extends NbTestCase {
             }
         }
     } // End of TestClassPathProvider class
+
+    private class TestPathRecognizer extends PathRecognizer {
+
+        @Override
+        public Set<String> getSourcePathIds() {
+            return CslTestBase.this.getPreferredLanguage().getSourcePathIds();
+        }
+
+        @Override
+        public Set<String> getLibraryPathIds() {
+            return CslTestBase.this.getPreferredLanguage().getLibraryPathIds();
+        }
+
+        @Override
+        public Set<String> getBinaryLibraryPathIds() {
+            return CslTestBase.this.getPreferredLanguage().getBinaryLibraryPathIds();
+        }
+
+        @Override
+        public Set<String> getMimeTypes() {
+            return Collections.singleton(CslTestBase.this.getPreferredMimeType());
+        }
+
+    } // End of TestPathRecognizer class
 
     private static final class Waiter extends Handler {
 
