@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
@@ -186,21 +185,6 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
             }
         }
         return result;
-    }
-
-    private static boolean hasConditionalsDirectives(APTFile apt) {
-        if (apt == null) {
-            return false;
-        }
-        APT node = apt.getFirstChild();
-        while (node != null) {
-            if (node.getType() == APT.Type.CONDITION_CONTAINER || node.getType() == APT.Type.ERROR) {
-                return true;
-            }
-            assert node.getFirstChild() == null;
-            node = node.getNextSibling();
-        }
-        return false;
     }
 
     private final ConcurrentMap<CsmFile, String> macroUsagesLocks = new ConcurrentHashMap<CsmFile, String>();
