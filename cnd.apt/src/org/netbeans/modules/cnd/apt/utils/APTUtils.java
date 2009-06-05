@@ -108,6 +108,19 @@ public class APTUtils {
         return h ^ (h >>> 16);
     }
 
+    public static int hash(List<?> list) {
+        if (list == null) {
+            return 0;
+        }
+        int hashCode = 1;
+        int size = list.size();
+        for (int i = 0; i < size; i++) {
+            Object obj = list.get(i);
+            hashCode = 31 * hashCode + (obj == null ? 0 : obj.hashCode());
+        }
+        return hash(hashCode);
+    }
+
     public static boolean equalArrayLists(List<?> l1, List<?> l2) {
         if (l1 != l2) {
             if (l1 == null || l2 == null) {
