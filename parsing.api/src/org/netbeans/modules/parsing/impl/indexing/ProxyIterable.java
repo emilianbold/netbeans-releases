@@ -61,6 +61,11 @@ class ProxyIterable<T> implements Iterable {
         return new ProxyIterator<T>(delegates.iterator());
     }
 
+    @Override
+    public String toString() {
+        return "ProxyIterable@" + Integer.toHexString(System.identityHashCode(this)) + " [" + delegates + "]"; //NOI18N
+    }
+
     private class ProxyIterator<T> implements Iterator {
 
         private Iterator<? extends Collection< ? extends T>> it;
