@@ -136,13 +136,22 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         ExecutionEnvironment result = null;
 
         if (mspec == null) {
-            return result;
+            return null;
         }
 
-        String rcFile = System.getProperty("cnd.remote.testuserinfo.rcfile"); // NOI18N
+        String rcFileName = System.getProperty("cnd.remote.testuserinfo.rcfile"); // NOI18N
+        File rcFile = null;
         
-        if (rcFile == null) {
-            return result;
+        if (rcFileName == null) {
+            String homePath = System.getProperty("user.home");
+            if (homePath != null) {
+                File homeDir = new File(homePath);
+                rcFile = new File(homeDir, ".testuserinfo");
+            }
+        }
+
+        if (rcFile == null || ! rcFile.exists()) {
+            return null;
         }
 
         BufferedReader rcReader = new BufferedReader(new FileReader(rcFile));
