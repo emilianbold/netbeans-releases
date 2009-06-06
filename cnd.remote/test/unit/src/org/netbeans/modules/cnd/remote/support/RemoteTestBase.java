@@ -68,7 +68,8 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         super.setUp();
         final ExecutionEnvironment execEnv = getRemoteExecutionEnvironment();
         if (execEnv != null) {
-            ConnectionManager.getInstance().connectTo(execEnv,getRemotePassword(), false);
+            // the password should be stored in the initialization phase
+            ConnectionManager.getInstance().connectTo(execEnv);
         }
     }
 

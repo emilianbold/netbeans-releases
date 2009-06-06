@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.editor.cplusplus.HKit;
 import org.netbeans.modules.cnd.editor.fortran.FKit;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 
 /**
@@ -288,17 +289,8 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
         return isRemoteSupported;
     }
 
-//    protected String getHKey(){
-//        assert execEnv != null : "Run canTestRemote() before any remote development tests logic."; //NOI18N
-//        return ExecutionEnvironmentFactory.toString(execEnv);
-//    }
-//
     protected ExecutionEnvironment getRemoteExecutionEnvironment() {
         return execEnv;
-    }
-
-    public char[] getRemotePassword() {
-        return remotePassword;
     }
 
     /*
@@ -317,6 +309,7 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
                 String remoteHKey = ui.substring(0,m) + ui.substring(n);
                 execEnv = ExecutionEnvironmentFactory.fromUniqueID(remoteHKey);
                 remotePassword = passwd.toCharArray();
+                PasswordManager.getInstance().put(execEnv, remotePassword, false);
                 //System.err.println("mode 0. hkey: " + remoteHKey + ", pkey: " + passwd);
             } else {
                 String remoteHKey = ui;
