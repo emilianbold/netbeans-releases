@@ -101,7 +101,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
 
     private static ExecutionEnvironment testExecutionEnvironment;
 
-    protected static ExecutionEnvironment getTestExecutionEnvironment() throws IOException, CancellationException {
+    protected ExecutionEnvironment getTestExecutionEnvironment() throws IOException, CancellationException {
         synchronized(NativeExecutionBaseTestCase.class) {
             if (testExecutionEnvironment == null) {
                 String ui = System.getProperty("cnd.remote.testuserinfo"); // NOI18N

@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
 import java.util.TreeSet;
+import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Assert;
@@ -278,49 +279,7 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
         compareReferenceFiles(this.getName()+".ref",this.getName()+".ref"); // NOI18N
     }
     
-    ////////////////////////////////////////////////////////////////////////////
-    // <editor-fold defaultstate="collapsed" desc="Remote tests support">
-
-    private ExecutionEnvironment execEnv;
-    private final boolean isRemoteSupported = initRemoteUserInfo();
-    private char[] remotePassword;
-
-    protected boolean canTestRemote()  {
-        return isRemoteSupported;
+    protected boolean canTestRemote() throws CancellationException, IOException  {
+        return getTestExecutionEnvironment() != null;
     }
-
-    protected ExecutionEnvironment getRemoteExecutionEnvironment() {
-        return execEnv;
-    }
-
-    /*
-     * Format: user:password@server
-     */
-    private boolean initRemoteUserInfo() {
-        String ui = System.getProperty("cnd.remote.testuserinfo");
-        if( ui == null ) {
-            ui = System.getenv("CND_REMOTE_TESTUSERINFO");
-        }
-        if (ui != null) {
-            int m = ui.indexOf(':');
-            if (m>-1) {
-                int n = ui.indexOf('@');
-                String passwd = ui.substring(m+1, n);
-                String remoteHKey = ui.substring(0,m) + ui.substring(n);
-                execEnv = ExecutionEnvironmentFactory.fromUniqueID(remoteHKey);
-                remotePassword = passwd.toCharArray();
-                PasswordManager.getInstance().put(execEnv, remotePassword, false);
-                //System.err.println("mode 0. hkey: " + remoteHKey + ", pkey: " + passwd);
-            } else {
-                String remoteHKey = ui;
-                //System.err.println("mode 1. hkey: " + remoteHKey );
-                execEnv = ExecutionEnvironmentFactory.fromUniqueID(remoteHKey);
-            }
-            return true;
-        }
-//        System.err.println("initRemoteUserInfo:debug. No info found");
-        return false;
-    }
-
-    //</editor-fold>
 }

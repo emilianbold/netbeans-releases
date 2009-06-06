@@ -56,12 +56,12 @@ public class RemoteFileTestCase extends CndBaseTestCase {
         super(name);
     }
 
-    public void testPlainFile() {
+    public void testPlainFile() throws Exception {
         if (canTestRemote()) {
             CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
             final String tmpFile = getTempName();
-            assert cmd.run(getRemoteExecutionEnvironment(), "rm "+ tmpFile + "; touch " + tmpFile, null) == 0;
-            File remoteFile = RemoteFile.create(getRemoteExecutionEnvironment(), tmpFile);
+            assert cmd.run(getTestExecutionEnvironment(), "rm "+ tmpFile + "; touch " + tmpFile, null) == 0;
+            File remoteFile = RemoteFile.create(getTestExecutionEnvironment(), tmpFile);
             assert remoteFile instanceof RemoteFile;
             assert remoteFile.exists();
             assert remoteFile.isFile();
@@ -75,12 +75,12 @@ public class RemoteFileTestCase extends CndBaseTestCase {
         return "/tmp/nb65tempdir" + Math.random() + ".bak";
     }
 
-    public void testDirectoryStructure() {
+    public void testDirectoryStructure() throws Exception {
         if (canTestRemote()) {
             final String tempDir = getTempName();
             CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
-            assert cmd.run(getRemoteExecutionEnvironment(), String.format("rm -rf %1$s; mkdir %1$s; touch %1$s/1; touch %1$s/2; touch %1$s/3; ", tempDir), null) == 0;
-            File remoteFile = RemoteFile.create(getRemoteExecutionEnvironment(), tempDir);
+            assert cmd.run(getTestExecutionEnvironment(), String.format("rm -rf %1$s; mkdir %1$s; touch %1$s/1; touch %1$s/2; touch %1$s/3; ", tempDir), null) == 0;
+            File remoteFile = RemoteFile.create(getTestExecutionEnvironment(), tempDir);
             assert remoteFile instanceof RemoteFile;
             assert !remoteFile.isFile();
             assert remoteFile.isDirectory();
@@ -102,8 +102,8 @@ public class RemoteFileTestCase extends CndBaseTestCase {
         if (canTestRemote()) {
             final String tempFile = getTempName();
             CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
-            assert cmd.run(getRemoteExecutionEnvironment(), String.format("rm -rf %1$s; echo 1 > %1$s; echo 2 >> %1$s; echo 3 >> %1$s; echo 4 >> %1$s", tempFile), null) == 0;
-            BufferedReader in = new BufferedReader(RemoteFile.createReader( RemoteFile.create(getRemoteExecutionEnvironment(), tempFile) ));
+            assert cmd.run(getTestExecutionEnvironment(), String.format("rm -rf %1$s; echo 1 > %1$s; echo 2 >> %1$s; echo 3 >> %1$s; echo 4 >> %1$s", tempFile), null) == 0;
+            BufferedReader in = new BufferedReader(RemoteFile.createReader( RemoteFile.create(getTestExecutionEnvironment(), tempFile) ));
             int i = 1;
             while (true) {
                 String line = in.readLine();
@@ -117,8 +117,8 @@ public class RemoteFileTestCase extends CndBaseTestCase {
         }
     }
 
-    private void clean(String path) {
+    private void clean(String path) throws Exception {
         CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
-        cmd.run(getRemoteExecutionEnvironment(), "rm -rf " + path, null);
+        cmd.run(getTestExecutionEnvironment(), "rm -rf " + path, null);
     }
 }
