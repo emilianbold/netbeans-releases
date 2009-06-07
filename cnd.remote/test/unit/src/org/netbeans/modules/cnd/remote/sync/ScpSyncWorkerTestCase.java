@@ -67,31 +67,34 @@ public class ScpSyncWorkerTestCase extends RemoteTestBase {
 
     public void testSyncWorker_simple() throws Exception {
         if (canTestRemote()) {
-            ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-            assertNotNull(execEnv);
-            File src = createTestDir();
-            doTest(src, execEnv, getDestDir(execEnv));
+            for (ExecutionEnvironment execEnv : getTestExecutionEnvironments()) {
+                assertNotNull(execEnv);
+                File src = createTestDir();
+                doTest(src, execEnv, getDestDir(execEnv));
+            }
         }
     }
 
     public void testSyncWorker_nb_platform_lib() throws Exception {
         if (canTestRemote()) {
-            ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-            assertNotNull(execEnv);
-            File netBeansDir = getIdeUtilJar(). // should be ${NBDIST}/platform10/lib/org-openide-util.jar
-                    getParentFile();  // platform10/lib
-            doTest(netBeansDir, execEnv, getDestDir(execEnv));
+            for (ExecutionEnvironment execEnv : getTestExecutionEnvironments()) {
+                assertNotNull(execEnv);
+                File netBeansDir = getIdeUtilJar(). // should be ${NBDIST}/platform10/lib/org-openide-util.jar
+                        getParentFile();  // platform10/lib
+                doTest(netBeansDir, execEnv, getDestDir(execEnv));
+            }
         }
     }
 
     public void testSyncWorker_nb_platform() throws Exception {
         if (canTestRemote()) {
-            ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-            assertNotNull(execEnv);
-            File netBeansDir = getIdeUtilJar(). // should be ${NBDIST}/platform10/lib/org-openide-util.jar
-                    getParentFile().  // platform10/lib
-                    getParentFile();  // platform10
-            doTest(netBeansDir, execEnv, getDestDir(execEnv));
+            for (ExecutionEnvironment execEnv : getTestExecutionEnvironments()) {
+                assertNotNull(execEnv);
+                File netBeansDir = getIdeUtilJar(). // should be ${NBDIST}/platform10/lib/org-openide-util.jar
+                        getParentFile().  // platform10/lib
+                        getParentFile();  // platform10
+                doTest(netBeansDir, execEnv, getDestDir(execEnv));
+            }
         }
     }
 
@@ -135,7 +138,7 @@ public class ScpSyncWorkerTestCase extends RemoteTestBase {
         System.err.printf("testUploadFile: %s to %s:%s\n", src.getAbsolutePath(), execEnv.getDisplayName(), dst);
         ScpSyncWorker worker = new ScpSyncWorker(src, execEnv, out, err);
         worker.synchronizeImpl(dst);
-        CommonTasksSupport.rmDir(execEnv, dst, true, err);
+        CommonTasksSupport.rmDir(execEnv, dst, true, err).get();
     }
 
     private File createTestDir() throws IOException {

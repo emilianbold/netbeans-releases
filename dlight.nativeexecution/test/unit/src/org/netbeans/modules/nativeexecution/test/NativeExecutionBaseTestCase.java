@@ -100,6 +100,23 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     }
 
     private static ExecutionEnvironment testExecutionEnvironment;
+    private static RcFile rcFile;
+
+    protected synchronized RcFile getRcFile() throws IOException, RcFile.FormatException {
+        if (rcFile == null) {
+
+
+            String rcFileName = System.getProperty("cnd.remote.rcfile"); // NOI18N
+            if (rcFileName == null) {
+                String homePath = System.getProperty("user.home");
+                if (homePath != null) {
+                    File homeDir = new File(homePath);
+                    rcFile = new RcFile(new File(homeDir, ".cndtestrc"));
+                }
+            }
+        }
+        return rcFile;
+    }
 
     protected ExecutionEnvironment getTestExecutionEnvironment() throws IOException, CancellationException {
         synchronized(NativeExecutionBaseTestCase.class) {
