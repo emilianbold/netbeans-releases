@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.remote.support;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -52,12 +53,15 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.test.RcFile;
 
 /**
  * A common base class for remote "unit" tests
  * @author Sergey Grinev
  */
 public abstract class RemoteTestBase extends CndBaseTestCase {
+
+    private static ExecutionEnvironment[] testEnvironments;
 
     protected RemoteTestBase(String testName) {
         super(testName);
@@ -73,6 +77,23 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         }
     }
 
+    protected synchronized  ExecutionEnvironment[] getTestExecutionEnvironments() throws IOException, RcFile.FormatException {
+        if (testEnvironments == null) {
+            List<ExecutionEnvironment> envs = new ArrayList<ExecutionEnvironment>();
+            for (String platform : getRcFile().getKeys("remote.platforms")) {
+                envs.add(getTestExecutionEnvironment(platform));
+            }
+            testEnvironments = envs.toArray(new ExecutionEnvironment[envs.size()]);
+            // backup to the old-style
+            if (testEnvironments.length == 0) {
+                ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+                if (execEnv != null) {
+                    testEnvironments = new ExecutionEnvironment[] { execEnv };
+                }
+            }
+        }
+        return testEnvironments;
+    }
 
     public static class FakeCompilerSet extends CompilerSet {
 
