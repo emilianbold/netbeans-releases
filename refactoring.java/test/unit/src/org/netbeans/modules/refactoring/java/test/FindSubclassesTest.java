@@ -85,10 +85,6 @@ public class FindSubclassesTest extends RefPerfTestCase {
         String work = getWorkDirPath();
         System.setProperty("netbeans.user", work);
         projectDir = openProject("SimpleJ2SEApp", getDataDir());
-        
-        boot = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
-        source = createSourcePath(projectDir);
-        compile = createEmptyPath();
     }
 
     public void testFindSub()
