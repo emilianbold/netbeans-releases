@@ -543,7 +543,7 @@ public class Widget implements Accessible {
      * @return the background paint
      */
     public final Paint getBackground () {
-        return background != null ? background : parentWidget.getBackground ();
+        return background != null ? background : parentWidget != null ? parentWidget.getBackground () : null;
     }
 
     /**
@@ -615,7 +615,7 @@ public class Widget implements Accessible {
      * @return the foreground color
      */
     public final Color getForeground () {
-        return foreground != null ? foreground : parentWidget.getForeground ();
+        return foreground != null ? foreground : parentWidget != null ? parentWidget.getForeground () : null;
     }
 
     /**
