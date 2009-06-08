@@ -7,15 +7,15 @@
     <property name="install.dir" value="/Applications/NetBeans"/>
     
     <!-- Base IDE properties   -->       
-    <property name="baseide.version" value="6.7 RC2"/>
-    <property name="appname" value="NetBeans 6.7 RC2"/>
-    <property name="mpkg.name_nb" value="NetBeans 6.7 RC2"/>
+    <property name="baseide.version" value="6.7 RC3"/>
+    <property name="appname" value="NetBeans 6.7 RC3"/>
+    <property name="mpkg.name_nb" value="NetBeans 6.7 RC3"/>
     <property name="app.name" value="${install.dir}/${appname}.app"/>
     <property name="nbClusterDir" value="nb6.7"/>      
 
-    <property name="appversion" value="6.7 RC2"/>
-    <property name="nb.display.version.long"  value="6.7 RC2"/>
-    <property name="nb.display.version.short" value="6.7 RC2"/>
+    <property name="appversion" value="6.7 RC3"/>
+    <property name="nb.display.version.long"  value="6.7 RC3"/>
+    <property name="nb.display.version.short" value="6.7 RC3"/>
 
     <property name="servicetag.source" value="NetBeans ${nb.display.version.short} Installer"/>
     
