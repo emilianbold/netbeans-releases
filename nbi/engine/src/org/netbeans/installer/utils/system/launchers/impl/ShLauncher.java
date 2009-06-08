@@ -70,6 +70,10 @@ public class ShLauncher extends CommonLauncher {
     public static final String I18N = "i18n"; //NOI18N
     public static final String SH_LAUNCHER_STUB =
             DEFAULT_UNIX_RESOURCE_SUFFIX + SH_LAUNCHER_STUB_NAME;
+    public static final String DEFAULT_UNIX_RESOURCE_I18N =
+            DEFAULT_UNIX_RESOURCE_SUFFIX + I18N + "/"; //NOI18N
+    public static final String DEFAULT_UNIX_RESOURCE_I18N_BUNDLE_NAME =
+            "launcher"; //NOI18N
     
     private static final String SH_EXT = ".sh"; //NOI18N
     private static final int SH_BLOCK = 1024;
@@ -288,8 +292,15 @@ public class ShLauncher extends CommonLauncher {
                 escapeVarSign(escapeSlashesAndChars(path)));
         
     }
-    protected String getI18NResourcePrefix() {
-        return DEFAULT_UNIX_RESOURCE_SUFFIX;
+    @Override
+    public String getI18NResourcePrefix() {
+        return i18nPrefix != null ? i18nPrefix :
+            DEFAULT_UNIX_RESOURCE_I18N;
+    }
+    @Override
+    public String getI18NBundleBaseName() {
+        return i18nBundleBaseName != null ? i18nBundleBaseName :
+            DEFAULT_UNIX_RESOURCE_I18N_BUNDLE_NAME;
     }
     
     public String getExtension() {

@@ -204,7 +204,8 @@ public class NbObjectOutputStream extends ObjectOutputStream {
         Boolean okay = examinedClasses.get(classname);
         
         if (okay == null) {
-            if (classname.equals("java.util.HashSet") || classname.equals("java.util.ArrayList") || clazz.isEnum()) { // NOI18N
+            if (classname.equals("java.util.HashSet") || classname.equals("java.util.ArrayList") || // NOI18N
+                clazz.isEnum() || classname.equals("java.lang.Enum")) { // NOI18N
                 okay = Boolean.TRUE;
             } else {
                 okay = Boolean.FALSE;
@@ -222,7 +223,7 @@ public class NbObjectOutputStream extends ObjectOutputStream {
 
             examinedClasses.put(clazz.getName(), okay);
         }
-
+        
         return okay.booleanValue();
     }
 }

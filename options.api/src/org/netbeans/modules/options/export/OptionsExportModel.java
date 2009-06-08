@@ -143,19 +143,13 @@ public final class OptionsExportModel {
      * enabled items are considered.
      * @param targetUserdir target userdir
      */
-    void doImport(File targetUserdir) {
-        try {
-            if (source.isFile()) {
-                // zip file
-                extractZipFile(targetUserdir);
-            } else {
-                // userdir
-                copy(targetUserdir);
-            }
-        } catch (IOException ex) {
-            Exceptions.attachLocalizedMessage(ex,
-                    NbBundle.getMessage(OptionsExportModel.class, "OptionsExportModel.import.error"));
-            Exceptions.printStackTrace(ex);
+    void doImport(File targetUserdir) throws IOException {
+        if (source.isFile()) {
+            // zip file
+            extractZipFile(targetUserdir);
+        } else {
+            // userdir
+            copy(targetUserdir);
         }
     }
 
@@ -626,8 +620,8 @@ public final class OptionsExportModel {
         Enumeration enumeration = zipFile.entries();
         while (enumeration.hasMoreElements()) {
             ZipEntry zipEntry = (ZipEntry) enumeration.nextElement();
-            if (!applicablePaths.contains(zipEntry.getName())) {
-                // skip not matching entries
+            if (zipEntry.isDirectory() || !applicablePaths.contains(zipEntry.getName())) {
+                // skip directories and not matching entries
                 continue;
             }
             LOGGER.fine("Extracting:" + zipEntry.getName());  //NOI18N
@@ -662,9 +656,10 @@ public final class OptionsExportModel {
         // Enumerate each entry
         Enumeration entries = zipFile.entries();
         while (entries.hasMoreElements()) {
-            // Get the entry name
-            String zipEntryName = ((ZipEntry) entries.nextElement()).getName();
-            relativePaths.add(zipEntryName);
+            ZipEntry zipEntry = (ZipEntry) entries.nextElement();
+            if (!zipEntry.isDirectory()) {
+                relativePaths.add(zipEntry.getName());
+            }
         }
         return relativePaths;
     }
