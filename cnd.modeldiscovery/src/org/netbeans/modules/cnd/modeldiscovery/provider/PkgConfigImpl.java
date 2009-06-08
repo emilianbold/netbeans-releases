@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.RemoteFile;
+import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
@@ -116,27 +117,40 @@ public class PkgConfigImpl implements PkgConfig {
 
     private void initPackagesFromSet(CompilerSet set) {
         if (pi.isWindows()){
-            String baseDirectory = null;
-            if (set == null) {
-                set = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.toFlavor("Cygwin", Platform.PLATFORM_WINDOWS)); // NOI18N
-            }
-            if (set != null){
-                baseDirectory = set.getDirectory();
-                //"C:\cygwin\bin"
-                if (baseDirectory != null && baseDirectory.endsWith("bin")){ // NOI18N
-                    drivePrefix = baseDirectory.substring(0, baseDirectory.length()-4);
-                    baseDirectory = baseDirectory.substring(0, baseDirectory.length()-3)+"lib/pkgconfig/"; // NOI18N
-                }
-            }
+            // at first find pkg-config.exe in paths
+            String baseDirectory = getPkgConfihPath();
             if (baseDirectory == null) {
-                drivePrefix = "c:/cygwin"; // NOI18N
-                baseDirectory = "c:/cygwin/lib/pkgconfig/"; // NOI18N
+                if (set == null) {
+                    set = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.toFlavor("Cygwin", Platform.PLATFORM_WINDOWS)); // NOI18N
+                }
+                if (set != null){
+                    baseDirectory = set.getDirectory();
+                    //"C:\cygwin\bin"
+                    if (baseDirectory != null && baseDirectory.endsWith("bin")){ // NOI18N
+                        drivePrefix = baseDirectory.substring(0, baseDirectory.length()-4);
+                        baseDirectory = baseDirectory.substring(0, baseDirectory.length()-3)+"lib/pkgconfig/"; // NOI18N
+                    }
+                }
+                if (baseDirectory == null) {
+                    drivePrefix = "c:/cygwin"; // NOI18N
+                    baseDirectory = "c:/cygwin/lib/pkgconfig/"; // NOI18N
+                }
             }
             initPackages(envPaths(baseDirectory)); // NOI18N
         } else {
             //initPackages("/net/elif/export1/sside/as204739/pkgconfig/"); // NOI18N
             initPackages(envPaths("/usr/lib/pkgconfig/")); // NOI18N
         }
+    }
+
+    private String getPkgConfihPath(){
+        for(String path : Path.getPath()){
+            File file = new File(path+File.separator+"pkg-config.exe");
+            if (file.exists()) {
+                return path;
+            }
+        }
+        return null;
     }
 
     private void initPackages(List<String> folders) {
