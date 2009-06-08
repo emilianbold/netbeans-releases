@@ -573,4 +573,12 @@ public class Mercurial {
         providersList.addAll(providersCol);
         return Collections.unmodifiableList(providersList);
     }
+
+    /**
+     * Returns scanned version or null if has not been scanned yet
+     * @return
+     */
+    public String getVersion () {
+        return version;
+    }
 }
