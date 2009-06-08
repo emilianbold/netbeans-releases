@@ -449,9 +449,8 @@ public class Annotator {
     }
 
     private static boolean isNothingVersioned(File[] files) {
-        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         for (File file : files) {
-            if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) return false;
+            if (CvsVersioningSystem.isManaged(file)) return false;
         }
         return true;
     }
@@ -468,7 +467,11 @@ public class Annotator {
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         for (int i = 0; i < files.length; i++) {
             if (files[i].isFile()) return false;
-            if (!files[i].exists() && !cache.getStatus(files[i]).isDirectory()) return false;
+            FileInformation status = cache.getCachedStatus(files[i]);
+            if (status == null // be optimistic, this can be a file
+                        || (!files[i].exists() && !status.isDirectory())) {
+                return false;
+            }
         }
         return true;
     }
