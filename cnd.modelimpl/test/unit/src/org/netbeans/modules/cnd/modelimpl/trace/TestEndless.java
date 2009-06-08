@@ -45,14 +45,14 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  * Test that goes forever
  * (Created for the sake of investigation IZ #106124)
  * @author Vladimir Kvashin
  */
-public class TestEndless extends BaseTestSuite {
+public class TestEndless extends CndBaseTestSuite {
 
     public TestEndless() {
         super("C/C++ Endless Test");

@@ -42,13 +42,13 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  * A class for "temporary" tests that are to be moved to FileModelTest
  * @author Vladimir Kvashin
  */
-public class FileModelTestFailed extends BaseTestSuite {
+public class FileModelTestFailed extends CndBaseTestSuite {
 
     public FileModelTestFailed() {
         super("C/C++ Failed Code Model");

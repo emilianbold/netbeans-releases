@@ -45,13 +45,13 @@ import org.netbeans.modules.cnd.remote.mapper.MappingsTestCase;
 import org.netbeans.modules.cnd.remote.support.RemoteUtilTestCase;
 import org.netbeans.modules.cnd.remote.support.ServerListTestCase;
 import org.netbeans.modules.cnd.remote.support.TransportTestCase;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
  * @author Sergey Grinev
  */
-public class RemoteDevelopmentTest extends BaseTestSuite {
+public class RemoteDevelopmentTest extends CndBaseTestSuite {
 
 //    static {
 //        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
