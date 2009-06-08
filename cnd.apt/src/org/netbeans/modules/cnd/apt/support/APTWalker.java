@@ -99,8 +99,8 @@ public abstract class APTWalker {
         return new WalkerTokenStream();
     }
     
-    private class WalkerTokenStream implements TokenStream, APTTokenStream {
-        public WalkerTokenStream() {
+    private final class WalkerTokenStream implements TokenStream, APTTokenStream {
+        private WalkerTokenStream() {
             init(true);
         }
         

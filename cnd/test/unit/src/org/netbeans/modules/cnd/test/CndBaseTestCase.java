@@ -43,13 +43,12 @@ package org.netbeans.modules.cnd.test;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
 import java.util.TreeSet;
+import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Assert;
@@ -58,7 +57,6 @@ import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
 import org.netbeans.modules.cnd.editor.cplusplus.CKit;
@@ -66,6 +64,8 @@ import org.netbeans.modules.cnd.editor.cplusplus.HKit;
 import org.netbeans.modules.cnd.editor.fortran.FKit;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 
 /**
  * IMPORTANT NOTE:
@@ -95,7 +95,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  * ${xtest.data} vallue is usually ${module}/test/unit/data folder
  * @author Vladimir Voskresensky
  */
-public abstract class BaseTestCase extends NbTestCase {
+public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
 
     static {
         // Setting netbeans.dirs makes installedFileLocator work properly
@@ -156,7 +156,7 @@ public abstract class BaseTestCase extends NbTestCase {
     }
     
     /** Creates a new instance of BaseTestCase */
-    public BaseTestCase(String testName) {
+    public CndBaseTestCase(String testName) {
         super(testName);
     }
     
@@ -279,77 +279,7 @@ public abstract class BaseTestCase extends NbTestCase {
         compareReferenceFiles(this.getName()+".ref",this.getName()+".ref"); // NOI18N
     }
     
-    protected static void writeFile(File file, CharSequence content) throws IOException {
-        Writer writer = new FileWriter(file);
-        writer.write(content.toString());
-        writer.close();
+    protected boolean canTestRemote() throws CancellationException, IOException  {
+        return getTestExecutionEnvironment() != null;
     }
-
-    protected static File createTempFile(String prefix, String suffix, boolean directory) throws IOException {
-        File tmpFile = File.createTempFile(prefix, suffix);
-        if (directory) {
-            if(!(tmpFile.delete())) {
-                throw new IOException("Could not delete temp file: " + tmpFile.getAbsolutePath());
-            }
-            if (!(tmpFile.mkdir())) {
-                throw new IOException("Could not create temp directory: " + tmpFile.getAbsolutePath());
-            }
-        }
-        tmpFile.deleteOnExit();
-        return tmpFile;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // <editor-fold defaultstate="collapsed" desc="Remote tests support">
-
-    private ExecutionEnvironment execEnv;
-    private final boolean isRemoteSupported = initRemoteUserInfo();
-    private char[] remotePassword;
-
-    protected boolean canTestRemote()  {
-        return isRemoteSupported;
-    }
-
-//    protected String getHKey(){
-//        assert execEnv != null : "Run canTestRemote() before any remote development tests logic."; //NOI18N
-//        return ExecutionEnvironmentFactory.toString(execEnv);
-//    }
-//
-    protected ExecutionEnvironment getRemoteExecutionEnvironment() {
-        return execEnv;
-    }
-
-    public char[] getRemotePassword() {
-        return remotePassword;
-    }
-
-    /*
-     * Format: user:password@server
-     */
-    private boolean initRemoteUserInfo() {
-        String ui = System.getProperty("cnd.remote.testuserinfo");
-        if( ui == null ) {
-            ui = System.getenv("CND_REMOTE_TESTUSERINFO");
-        }
-        if (ui != null) {
-            int m = ui.indexOf(':');
-            if (m>-1) {
-                int n = ui.indexOf('@');
-                String passwd = ui.substring(m+1, n);
-                String remoteHKey = ui.substring(0,m) + ui.substring(n);
-                execEnv = ExecutionEnvironmentFactory.fromUniqueID(remoteHKey);
-                remotePassword = passwd.toCharArray();
-                //System.err.println("mode 0. hkey: " + remoteHKey + ", pkey: " + passwd);
-            } else {
-                String remoteHKey = ui;
-                //System.err.println("mode 1. hkey: " + remoteHKey );
-                execEnv = ExecutionEnvironmentFactory.fromUniqueID(remoteHKey);
-            }
-            return true;
-        }
-//        System.err.println("initRemoteUserInfo:debug. No info found");
-        return false;
-    }
-
-    //</editor-fold>
 }

@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.actions;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
@@ -84,10 +85,10 @@ public class ShellRunAction extends AbstractExecutorRunAction {
 
 
     public static void performAction(Node node) {
-        performAction(node, null, null, null);
+        performAction(node, null, null, null, null);
     }
 
-    public static void performAction(Node node, ExecutionListener listener, Writer outputListener, Project project) {
+    public static void performAction(Node node, ExecutionListener listener, Writer outputListener, Project project, List<String> additionalEnvironment) {
         ShellExecSupport bes = node.getCookie(ShellExecSupport.class);
         if (bes == null) {
             return;
@@ -141,15 +142,26 @@ public class ShellRunAction extends AbstractExecutorRunAction {
             argsFlat.append(" "); // NOI18N
             argsFlat.append(args[i]);
         }
+        String[] env = prepareEnv(execEnv);
+        if (additionalEnvironment != null && additionalEnvironment.size()>0){
+            String[] tmp = new String[env.length + additionalEnvironment.size()];
+            for(int i=0; i < env.length; i++){
+                tmp[i] = env[i];
+            }
+            for(int i=0; i < additionalEnvironment.size(); i++){
+                tmp[env.length + i] = additionalEnvironment.get(i);
+            }
+            env = tmp;
+        }
        
         // Execute the shellfile
-
+        
         NativeExecutor nativeExecutor = new NativeExecutor(
             execEnv,
             buildDir.getPath(),
             shellCommand,
             argsFlat.toString(),
-            prepareEnv(execEnv),
+            env,
             tabName,
             "Run", // NOI18N
             false,
