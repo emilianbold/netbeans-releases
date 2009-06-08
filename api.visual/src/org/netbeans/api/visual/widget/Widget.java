@@ -1405,7 +1405,8 @@ public class Widget implements Accessible {
             gr.clip (bounds);
         }
 
-        if (! checkClipping  ||  bounds.intersects (gr.getClipBounds ())) {
+        Rectangle clipBounds;
+        if (! checkClipping  ||  (clipBounds = gr.getClipBounds ()) == null   ||  bounds.intersects (clipBounds)) {
             if (opaque)
                 paintBackground ();
 
@@ -1466,7 +1467,7 @@ public class Widget implements Accessible {
                 Point location = child.getLocation ();
                 Rectangle bounds = child.getBounds ();
                 bounds.translate (location.x, location.y);
-                if (bounds.intersects (clipBounds))
+                if (clipBounds == null  ||  bounds.intersects (clipBounds))
                     child.paint ();
             }
         } else
