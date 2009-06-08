@@ -51,11 +51,9 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.ext.html.HtmlSyntaxSupport;
-import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
-import org.netbeans.modules.html.editor.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -75,18 +73,16 @@ import org.openide.util.Exceptions;
 public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
 
     private MatcherContext context;
-    private LanguagePath htmlLanguagePath;
     private static final String BLOCK_COMMENT_START = "<!--"; //NOI18N
     private static final String BLOCK_COMMENT_END = "-->"; //NOI18N
     static boolean testMode = false;
 
     public HtmlBracesMatching() {
-        this(null, null);
+        this(null);
     }
 
-    private HtmlBracesMatching(MatcherContext context, LanguagePath htmlLanguagePath) {
+    private HtmlBracesMatching(MatcherContext context) {
         this.context = context;
-        this.htmlLanguagePath = htmlLanguagePath;
     }
 
     public int[] findOrigin() throws InterruptedException, BadLocationException {
@@ -95,7 +91,7 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
             if (!testMode && MatcherContext.isTaskCanceled()) {
                 return null;
             }
-            TokenSequence ts = HtmlSyntaxSupport.getJoinedHtmlSequence(context.getDocument());
+            TokenSequence ts = Utils.getJoinedHtmlSequence(context.getDocument());
             TokenHierarchy th = TokenHierarchy.get(context.getDocument());
 
             if (ts.language() == HTMLTokenId.language()) {
@@ -279,7 +275,7 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
 
                 //test if the html sequence is the top level one
                 if (hierarchy.tokenSequence().language() == HTMLTokenId.language()) {
-                    ret[0] = new HtmlBracesMatching(context, hierarchy.tokenSequence().languagePath());
+                    ret[0] = new HtmlBracesMatching(context);
                     return;
                 }
 
@@ -288,7 +284,7 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                 for (TokenSequence ts : ets) {
                     Language language = ts.language();
                     if (language == HTMLTokenId.language()) {
-                        ret[0] = new HtmlBracesMatching(context, ts.languagePath());
+                        ret[0] = new HtmlBracesMatching(context);
                         return;
                     }
                 }

@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 
 /**
  * Base class for each gdb test case should extend this class. It provides a handle
@@ -68,7 +68,7 @@ import org.netbeans.modules.cnd.test.BaseTestCase;
  *
  * @author gordonp
  */
-public abstract class GdbTestCase extends BaseTestCase implements ContextProvider {
+public abstract class GdbTestCase extends CndBaseTestCase implements ContextProvider {
 
     protected ProjectActionEvent pae = null;
     protected Project project = null;

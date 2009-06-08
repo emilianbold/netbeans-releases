@@ -47,7 +47,7 @@ import org.netbeans.modules.web.core.syntax.deprecated.JspJavaFakeTokenContext;
 import org.netbeans.editor.BaseTokenID;
 import org.netbeans.editor.TokenContext;
 import org.netbeans.editor.TokenContextPath;
-import org.netbeans.editor.ext.html.HtmlTokenContext;
+import org.netbeans.modules.web.core.syntax.deprecated.HtmlTokenContext;
 import org.netbeans.editor.ext.plain.PlainTokenContext;
 import org.netbeans.modules.web.core.syntax.deprecated.ELTokenContext;
 

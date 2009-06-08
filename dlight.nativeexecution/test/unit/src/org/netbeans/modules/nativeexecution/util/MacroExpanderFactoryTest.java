@@ -50,7 +50,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.modules.nativeexecution.NativeExecutionTest;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -63,7 +63,7 @@ import org.openide.windows.InputOutput;
  *
  * @author ak119685
  */
-public class MacroExpanderFactoryTest extends NativeExecutionTest {
+public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
 
     public MacroExpanderFactoryTest(String name) {
         super(name);
