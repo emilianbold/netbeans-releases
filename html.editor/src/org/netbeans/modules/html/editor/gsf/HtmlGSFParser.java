@@ -38,16 +38,16 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
+import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
 import java.util.List;
-import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
-import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.SyntaxParser;
+import org.netbeans.editor.ext.html.parser.SyntaxParserResult;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.NbReaderProvider;
@@ -109,8 +109,9 @@ public class HtmlGSFParser extends Parser {
 
     private HtmlParserResult parse(Snapshot snapshot, SourceModificationEvent event) {
 
-        List<SyntaxElement> elements = SyntaxParser.parseImmutableSource(snapshot.getText());
-        HtmlParserResult result = new HtmlParserResult(this, snapshot, elements);
+        SyntaxParserResult spresult = SyntaxParser.parse(snapshot.getText());
+        
+        HtmlParserResult result = HtmlParserResultAccessor.get().createInstance(snapshot, spresult);
 
         if (TIMERS.isLoggable(Level.FINE)) {
             LogRecord rec = new LogRecord(Level.FINE, "HTML parse result"); // NOI18N
