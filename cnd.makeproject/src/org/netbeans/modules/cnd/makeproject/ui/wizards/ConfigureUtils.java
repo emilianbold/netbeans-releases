@@ -63,7 +63,7 @@ public final class ConfigureUtils {
             return null;
         }
         for (String name : pattern) {
-            file = new File(folder+"/"+name); // NOI18N
+            file = new File(folder+File.separator+name); // NOI18N
             if (isRunnable(file)){
                 return file.getAbsolutePath();
             }
@@ -141,7 +141,7 @@ public final class ConfigureUtils {
             return null;
         }
         for (String name : pattern) {
-            file = new File(folder+"/"+name); // NOI18N
+            file = new File(folder+File.separator+name); // NOI18N
             if (file.exists() && file.isFile() && file.canRead()) {
                 return file.getAbsolutePath();
             }
@@ -150,14 +150,14 @@ public final class ConfigureUtils {
     }
 
     public static String getConfigureArguments(String configure){
-        if (configure.endsWith("configure")) {
-            return "CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\"";
-        } else if (configure.endsWith("CMakeLists.txt")) {
-            return "-G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS=\"-g3 -gdwarf-2\" -DCMAKE_C_FLAGS=\"-g3 -gdwarf-2\"";
-        } else if (configure.endsWith(".pro")) {
-            return "QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
+        if (configure.endsWith("configure")) { // NOI18N
+            return "CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\""; // NOI18N
+        } else if (configure.endsWith("CMakeLists.txt")) { // NOI18N
+            return "-G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS=\"-g3 -gdwarf-2\" -DCMAKE_C_FLAGS=\"-g3 -gdwarf-2\""; // NOI18N
+        } else if (configure.endsWith(".pro")) { // NOI18N
+            return "QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\""; // NOI18N
         }
-        return "";
+        return ""; // NOI18N
     }
 
 }
