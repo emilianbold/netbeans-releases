@@ -133,7 +133,7 @@ import org.w3c.dom.Text;
 public final class MakeProject implements Project, AntProjectListener {
 
     public static final boolean TRACE_MAKE_PROJECT_CREATION = Boolean.getBoolean("cnd.make.project.creation.trace"); // NOI18N
-    public static final boolean SKIP_NOTIFY_NEW_HEADER_EXTENSION = Boolean.getBoolean("cnd.make.project.creation.skip.notify.header.extension"); // NOI18N
+    private static final boolean UNIT_TEST_MODE = Boolean.getBoolean("cnd.mode.unittest"); // NOI18N
 
 //    private static final Icon MAKE_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif")); // NOI18N
     private static final String HEADER_EXTENSIONS = "header-extensions"; // NOI18N
@@ -324,6 +324,9 @@ public final class MakeProject implements Project, AntProjectListener {
     }
 
     private void checkNeededExtensions() {
+        if (UNIT_TEST_MODE) {
+            return;
+        }
         Set<String> unknownC = getUnknownExtensions(MakeProject.getCSuffixes(), cExtensions);
         Set<String> unknownCpp = getUnknownExtensions(MakeProject.getCppSuffixes(), cppExtensions);
         Set<String> unknownH = getUnknownExtensions(MakeProject.getHeaderSuffixes(), headerExtensions);
@@ -400,6 +403,9 @@ public final class MakeProject implements Project, AntProjectListener {
     }
 
     private boolean addNewExtensionDialog(Set<String> usedExtension, String type) {
+        if (UNIT_TEST_MODE){
+            return true;
+        }
         String message = getString("ADD_EXTENSION_QUESTION" + type + (usedExtension.size() == 1 ? "" : "S")); // NOI18N
         StringBuilder extensions = new StringBuilder();
         for (String ext : usedExtension) {
@@ -407,9 +413,6 @@ public final class MakeProject implements Project, AntProjectListener {
                 extensions.append(',');
             }
             extensions.append(ext);
-        }
-        if (SKIP_NOTIFY_NEW_HEADER_EXTENSION){
-            return true;
         }
         NotifyDescriptor d = new NotifyDescriptor.Confirmation(
                 MessageFormat.format(message, new Object[]{extensions.toString()}),

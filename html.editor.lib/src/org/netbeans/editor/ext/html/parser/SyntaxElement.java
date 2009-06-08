@@ -44,8 +44,6 @@ package org.netbeans.editor.ext.html.parser;
 
 
 import java.util.*;
-import javax.swing.text.*;
-import org.openide.ErrorManager;
 
 /**
  * Represents a semantic element of html code.
@@ -66,13 +64,16 @@ public class SyntaxElement {
     public static final String[] TYPE_NAMES =
             new String[]{"comment","declaration","error","text","tag","endtag","entity reference"}; //NOI18N
     
-    private ParserSource source;
+    private CharSequence source;
     
     private int offset;
     private int length;
     private int type;
     
-    SyntaxElement( ParserSource doc, int offset, int length, int type ) {
+    SyntaxElement( CharSequence doc, int offset, int length, int type ) {
+        assert offset >=0 : "start offset must be >= 0 !";
+        assert length >=0 : "element length must be positive!";
+
         this.offset = offset;
         this.length = length;
         this.type = type;
@@ -91,19 +92,14 @@ public class SyntaxElement {
         return type;
     }
     
-    public String text() {
-        try {
-            return source.getText(offset(), length()).toString();
-        }catch(BadLocationException ble) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, ble);
-        }
-        return null;
+    public CharSequence text() {
+        return source.subSequence(offset(), offset() + length());
     }
 
     @Override
     public String toString() {
         //String textContent = type() == TYPE_TEXT ? text() : "";
-        String textContent = text();
+        CharSequence textContent = text();
         return "Element(" +TYPE_NAMES[type]+")[" + offset + "," + (offset+length-1) + "] \"" + textContent + "\""; // NOI18N
     }
     
@@ -130,7 +126,7 @@ public class SyntaxElement {
          * @param doctypeFile system identifier for this DOCTYPE, if available.
          *  null otherwise.
          */
-        public Declaration( ParserSource document, int from, int length,
+        public Declaration( CharSequence document, int from, int length,
                 String doctypeRootElement,
                 String doctypePI, String doctypeFile
                 ) {
@@ -170,7 +166,7 @@ public class SyntaxElement {
     public static class Named extends SyntaxElement {
         String name;
         
-        public Named( ParserSource document, int from, int to, int type, String name ) {
+        public Named( CharSequence document, int from, int to, int type, String name ) {
             super( document, from, to, type );
             this.name = name;
         }
@@ -190,7 +186,7 @@ public class SyntaxElement {
         private List<TagAttribute> attribs;
         private boolean empty, openTag;
                 
-        public Tag( ParserSource document, int from, int length, String name, List attribs, boolean openTag, boolean isEmpty ) {
+        public Tag( CharSequence document, int from, int length, String name, List attribs, boolean openTag, boolean isEmpty ) {
             super( document, from, length, openTag ? TYPE_TAG : TYPE_ENDTAG, name );
             this.attribs = attribs;
             this.openTag = openTag;

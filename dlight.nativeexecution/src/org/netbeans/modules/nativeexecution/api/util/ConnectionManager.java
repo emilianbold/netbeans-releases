@@ -249,18 +249,19 @@ public final class ConnectionManager {
 
             env.prepareForConnection();
 
+            boolean isUnitTest = Boolean.getBoolean("nativeexecution.mode.unittest");
             final char[] passwd = PasswordManager.getInstance().get(env);
 
             if (passwd == null || passwd.length == 0) {
                 // I don't know the password: trying with user-interaction
-                result = doConnect(env, RemoteUserInfoProvider.getUserInfo(env, true));
+                result = doConnect(env, RemoteUserInfoProvider.getUserInfo(env, isUnitTest ? false : true));
             } else {
                 try {
                     result = connectTo(env, passwd, false);
                 } catch (ConnectException ex) {
                     if (ex.getMessage().equals("Auth fail")) { // NOI18N
                         // Try with user-interaction
-                        result = doConnect(env, RemoteUserInfoProvider.getUserInfo(env, true));
+                        result = doConnect(env, RemoteUserInfoProvider.getUserInfo(env, isUnitTest ? false : true));
                     } else {
                         throw ex;
                     }

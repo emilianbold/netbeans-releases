@@ -38,17 +38,16 @@
  */
 package org.netbeans.modules.dlight.tools.impl;
 
+import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.StringTokenizer;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
+import org.netbeans.modules.dlight.tools.impl.LinuxProcfsSupport.CpuStat;
+import org.netbeans.modules.dlight.tools.impl.LinuxProcfsSupport.ProcessStat;
 import static org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration.*;
 
 /**
@@ -58,20 +57,14 @@ import static org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration.*;
  */
 public class ProcDataProviderLinux implements ProcDataProvider.Engine {
 
-    private static final Set<Integer> USR_TIME_IDX = new HashSet<Integer>(Arrays.asList(
-            /* utime */ 13, /* cutime */ 15, /* guest_time */ 42, /* cguest_time */ 43));
+    private static final BigInteger PERCENT = BigInteger.valueOf(100);
 
-    private static final Set<Integer> SYS_TIME_IDX = new HashSet<Integer>(Arrays.asList(
-            /* stime */ 14, /* cstime */ 16, /* delayacct_blkio_ticks */ 41));
-
-    private static final int THREADS_IDX = 19; /* num_threads */
-
-    private final ProcDataProvider provider;
+    private final DataRowConsumer consumer;
     private final ServiceInfoDataStorage serviceInfoStorage;
     private final boolean decreaseThreads;
 
-    public ProcDataProviderLinux(ProcDataProvider provider, ServiceInfoDataStorage serviceInfoStorage) {
-        this.provider = provider;
+    public ProcDataProviderLinux(DataRowConsumer consumer, ServiceInfoDataStorage serviceInfoStorage) {
+        this.consumer = consumer;
         this.serviceInfoStorage = serviceInfoStorage;
         String[] idps = this.serviceInfoStorage == null || 
                 serviceInfoStorage.getValue(ServiceInfoDataStorage.IDP_NAMES) == null? null :
@@ -90,53 +83,30 @@ public class ProcDataProviderLinux implements ProcDataProvider.Engine {
 
     private class LinuxProcLineProcessor implements LineProcessor {
 
-        private int threads;
-        private long prevTicks;
-        private long currTicks;
-        private long prevUsrTicks;
-        private long currUsrTicks;
-        private long prevSysTicks;
-        private long currSysTicks;
+        private CpuStat prevCpuStat;
+        private CpuStat currCpuStat;
+        private ProcessStat prevProcessStat;
+        private ProcessStat currProcessStat;
 
         @Override
         public void processLine(String line) {
-            StringTokenizer tokenizer = new StringTokenizer(line);
             try {
-                if (tokenizer.nextToken().equals("cpu")) { // NOI18N
-                    // cpu  3357 0 4313 1362393
-                    // The amount of time, that the system spent in user mode, user mode
-                    // with low priority (nice), system mode, and the idle task, respectively.
-                    // In later Linuxes there are more counters. Sum them all.
-                    prevTicks = currTicks;
-                    long ticks = 0;
-                    while (tokenizer.hasMoreTokens()) {
-                        ticks += Long.parseLong(tokenizer.nextToken());
-                    }
-                    currTicks = ticks;
+                if (line.startsWith("cpu")) { // NOI18N
+                    prevCpuStat = currCpuStat;
+                    currCpuStat = LinuxProcfsSupport.parseCpuStat(line);
                 } else {
-                    prevUsrTicks = currUsrTicks;
-                    prevSysTicks = currSysTicks;
-                    long usrTicks = 0;
-                    long sysTicks = 0;
-                    for (int i = 1; tokenizer.hasMoreTokens(); ++i) {
-                        String token = tokenizer.nextToken();
-                        if (USR_TIME_IDX.contains(i)) {
-                            usrTicks += Long.parseLong(token);
-                        } else if (SYS_TIME_IDX.contains(i)) {
-                            sysTicks += Long.parseLong(token);
-                        } else if (THREADS_IDX == i) {
-                            threads = Integer.parseInt(token);
+                    prevProcessStat = currProcessStat;
+                    currProcessStat = LinuxProcfsSupport.parseProcessStat(line);
+                    if (prevProcessStat != null) {
+                        BigInteger cpuTicks = currCpuStat.all().subtract(prevCpuStat.all());
+                        BigInteger usrTicks = usrTicks(currProcessStat).subtract(usrTicks(prevProcessStat));
+                        BigInteger sysTicks = sysTicks(currProcessStat).subtract(sysTicks(prevProcessStat));
+                        long threads = currProcessStat.num_threads();
+                        if (decreaseThreads){
+                            --threads;
                         }
-                    }
-                    if (decreaseThreads){
-                        threads--;
-                    }
-                    currUsrTicks = usrTicks;
-                    currSysTicks = sysTicks;
-                    if (0 < prevTicks) {
-                        long deltaTicks = currTicks - prevTicks;
-                        float usrPercent = percent(currUsrTicks - prevUsrTicks, deltaTicks);
-                        float sysPercent = percent(currSysTicks - prevSysTicks, deltaTicks);
+                        float usrPercent = percent(usrTicks, cpuTicks);
+                        float sysPercent = percent(sysTicks, cpuTicks);
                         DataRow row = new DataRow(
                                 Arrays.asList(USR_TIME.getColumnName(),
                                               SYS_TIME.getColumnName(),
@@ -144,35 +114,54 @@ public class ProcDataProviderLinux implements ProcDataProvider.Engine {
                                 Arrays.asList(usrPercent,
                                               sysPercent,
                                               threads));
-                        provider.notifyIndicators(row);
+                        consumer.consume(row);
                     }
                 }
-            } catch (NoSuchElementException ex) {
-                // silently ignore malformed line
-            } catch (NumberFormatException ex) {
+            } catch (IllegalArgumentException ex) {
                 // silently ignore malformed line
             }
         }
 
         public void reset() {
+            prevCpuStat = currCpuStat = null;
+            prevProcessStat = currProcessStat = null;
         }
 
         public void close() {
         }
     }
 
-    private static float percent(long value, long total) {
-        if (0 < total) {
-            if (value <= 0) {
+    private static float percent(BigInteger value, BigInteger total) {
+        if (BigInteger.ZERO.compareTo(total) < 0) { // 0 < total
+            if (value.compareTo(BigInteger.ZERO) <= 0) { // value <= 0
                 return 0f;
             }
-            if (total <= value) {
+            if (total.compareTo(value) <= 0) { // total <= value
                 return 100f;
             } else {
-                return 100f * value / total;
+                return value.multiply(PERCENT).divide(total).floatValue();
             }
         } else {
             return 0f;
         }
+    }
+
+    private static BigInteger usrTicks(ProcessStat proc) {
+        BigInteger result = proc.utime().add(proc.cutime());
+        if (proc.guest_time() != null) {
+            result = result.add(proc.guest_time());
+        }
+        if (proc.cguest_time() != null) {
+            result = result.add(proc.cguest_time());
+        }
+        return result;
+    }
+
+    private static BigInteger sysTicks(ProcessStat proc) {
+        BigInteger result = proc.stime().add(proc.cstime());
+        if (proc.delayacct_blkio_ticks() != null) {
+            result = result.add(proc.delayacct_blkio_ticks());
+        }
+        return result;
     }
 }

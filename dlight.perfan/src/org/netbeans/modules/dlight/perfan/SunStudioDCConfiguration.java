@@ -65,37 +65,40 @@ import org.openide.util.NbBundle;
 public final class SunStudioDCConfiguration
         implements DataCollectorConfiguration, IndicatorDataProviderConfiguration {
 
+    private static final String CPU_TABLE_NAME = "SunStudioCPUDetailedData";//NOI18N
+    private static final String SYNC_TABLE_NAME = "SunStudioSyncDetailedData";//NOI18N
+    private static final String MEM_TABLE_NAME = "SunStudioMemDetailedData";//NOI18N
     public static final Column c_name = new Column("name", String.class, loc("SSDataCollector.ColumnName.name"), null);    // NOI18N
-    public static final Column c_eUser = 
-        new Column(TimeMetric.UserFuncTimeExclusive.getMetricID(), 
-        TimeMetric.UserFuncTimeExclusive.getMetricValueClass(),
-        TimeMetric.UserFuncTimeExclusive.getMetricDisplayedName(), null);
+    public static final Column c_eUser =
+            new Column(TimeMetric.UserFuncTimeExclusive.getMetricID(),
+            TimeMetric.UserFuncTimeExclusive.getMetricValueClass(),
+            TimeMetric.UserFuncTimeExclusive.getMetricDisplayedName(), null);
     public static final Column c_iUser =
-        new Column(TimeMetric.UserFuncTimeInclusive.getMetricID(),
-        TimeMetric.UserFuncTimeInclusive.getMetricValueClass(),
-        TimeMetric.UserFuncTimeInclusive.getMetricDisplayedName(), null);
+            new Column(TimeMetric.UserFuncTimeInclusive.getMetricID(),
+            TimeMetric.UserFuncTimeInclusive.getMetricValueClass(),
+            TimeMetric.UserFuncTimeInclusive.getMetricDisplayedName(), null);
     public static final Column c_iSync =
-        new Column(TimeMetric.SyncWaitTimeInclusive.getMetricID(),
+            new Column(TimeMetric.SyncWaitTimeInclusive.getMetricID(),
             TimeMetric.SyncWaitTimeInclusive.getMetricValueClass(),
             TimeMetric.SyncWaitTimeInclusive.getMetricDisplayedName(), null);
     public static final Column c_iSyncn =
-        new Column(TimeMetric.SyncWaitCallInclusive.getMetricID(),
+            new Column(TimeMetric.SyncWaitCallInclusive.getMetricID(),
             TimeMetric.SyncWaitCallInclusive.getMetricValueClass(),
             TimeMetric.SyncWaitCallInclusive.getMetricDisplayedName(), null);
     public static final Column c_eSync =
-        new Column(TimeMetric.SyncWaitTimeExclusive.getMetricID(),
+            new Column(TimeMetric.SyncWaitTimeExclusive.getMetricID(),
             TimeMetric.SyncWaitTimeExclusive.getMetricValueClass(),
             TimeMetric.SyncWaitTimeExclusive.getMetricDisplayedName(), null);
     public static final Column c_eSyncn =
-        new Column(TimeMetric.SyncWaitCallExclusive.getMetricID(),
+            new Column(TimeMetric.SyncWaitCallExclusive.getMetricID(),
             TimeMetric.SyncWaitCallExclusive.getMetricValueClass(),
             TimeMetric.SyncWaitCallExclusive.getMetricDisplayedName(), null);
     public static final Column c_leakCount =
-        new Column(MemoryMetric.LeaksCountMetric.getMetricID(),
+            new Column(MemoryMetric.LeaksCountMetric.getMetricID(),
             MemoryMetric.LeaksCountMetric.getMetricValueClass(),
             MemoryMetric.LeaksCountMetric.getMetricDisplayedName(), null);
-    public static final Column c_leakSize = 
-        new Column(MemoryMetric.LeakBytesMetric.getMetricID(),
+    public static final Column c_leakSize =
+            new Column(MemoryMetric.LeakBytesMetric.getMetricID(),
             MemoryMetric.LeakBytesMetric.getMetricValueClass(),
             MemoryMetric.LeakBytesMetric.getMetricDisplayedName(), null);
     public static final Column c_ulockSummary = new Column("user_lock", Long.class, loc("SSDataCollector.ColumnName.user_lock"), null); // NOI18N
@@ -137,17 +140,17 @@ public final class SunStudioDCConfiguration
     }
 
     public static final DataTableMetadata getSyncTableMetadata(Column... columns) {
-        return getTableMetadata("SunStudioSyncDetailedData", // NOI18N
+        return getTableMetadata(SYNC_TABLE_NAME,
                 columns, Arrays.asList(c_iSync, c_iSyncn, c_eSync, c_eSyncn));
     }
 
     public static final DataTableMetadata getCPUTableMetadata(Column... columns) {
-        return getTableMetadata("SunStudioCPUDetailedData", // NOI18N
+        return getTableMetadata(CPU_TABLE_NAME,
                 columns, Arrays.asList(c_iUser, c_eUser));
     }
 
     public static final DataTableMetadata getMemTableMetadata(Column... columns) {
-        return getTableMetadata("SunStudioMemDetailedData", // NOI18N
+        return getTableMetadata(MEM_TABLE_NAME,
                 columns, Arrays.asList(c_leakCount, c_leakSize));
     }
 
@@ -168,7 +171,6 @@ public final class SunStudioDCConfiguration
         cols.add(c_name);
         return new DataTableMetadata(tableName, cols, null);
     }
-
 
     /**
      * Return name of the column which represents Function name
@@ -191,6 +193,18 @@ public final class SunStudioDCConfiguration
         @Override
         public List<CollectedInfo> getCollectedInfo(SunStudioDCConfiguration configuration) {
             return configuration.getCollectedInfoList();
+        }
+
+        public String getCPUTableName() {
+            return CPU_TABLE_NAME;
+        }
+
+        public String getSyncTableName() {
+            return SYNC_TABLE_NAME;
+        }
+
+        public String getMemTableName() {
+            return MEM_TABLE_NAME;
         }
     }
 

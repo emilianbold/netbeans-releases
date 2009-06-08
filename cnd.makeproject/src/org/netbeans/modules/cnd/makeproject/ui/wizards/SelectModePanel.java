@@ -302,10 +302,10 @@ public class SelectModePanel extends javax.swing.JPanel {
                     }
                 }
             }
-            if (SelectModeDescriptorPanel.findMakefile(path) != null){
+            if (ConfigureUtils.findMakefile(path) != null){
                 return true;
             }
-            if (SelectModeDescriptorPanel.findConfigureScript(path) != null){
+            if (ConfigureUtils.findConfigureScript(path) != null){
                 return true;
             }
             if (simpleMode.isSelected()) {

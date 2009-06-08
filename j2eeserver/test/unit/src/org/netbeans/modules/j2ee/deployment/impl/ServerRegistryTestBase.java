@@ -144,6 +144,7 @@ public class ServerRegistryTestBase extends NbTestCase {
             }
         }
         NbTestCase.assertTrue("project directory has to exists: " + f, f.exists());
+        FileUtil.refreshFor(test.getDataDir());
         return f;
     }
 

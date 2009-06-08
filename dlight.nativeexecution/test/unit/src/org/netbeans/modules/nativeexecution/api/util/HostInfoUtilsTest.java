@@ -48,7 +48,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.netbeans.modules.nativeexecution.NativeExecutionTest;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
@@ -56,7 +56,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
  *
  * @author Vladimir Kvashin
  */
-public class HostInfoUtilsTest extends NativeExecutionTest {
+public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
 
     public HostInfoUtilsTest(String name) {
         super(name);

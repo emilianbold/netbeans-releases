@@ -570,27 +570,6 @@ public class NbJiraIssue extends Issue {
         ta.setValue(operation.getOperationId());
     }
 
-    public void resolveFixed(String val) {
-//        try {
-//            Resolution[] res = Jira.getInstance().getResolutions(getTaskRepository());
-//            Resolution resolution = null;
-//            if(res != null) {
-//                for (Resolution r : res) {
-//                    // XXX HACK
-//                    if(r.getName().equals("Fixed")) {
-//                        resolution = r;
-//                    }
-//                }
-//            }
-//            if(resolution == null) {
-//                Jira.LOG.severe("Can't close issue " + getKey() + " as 'Fixed'");
-//            }
-//            resolve(resolution, val);
-//        } catch (JiraException ex) {
-//            Jira.LOG.log(Level.SEVERE, null, ex);
-//        }
-    }
-
     @Override
     public String getDisplayName() {
         return taskData.isNew() ?

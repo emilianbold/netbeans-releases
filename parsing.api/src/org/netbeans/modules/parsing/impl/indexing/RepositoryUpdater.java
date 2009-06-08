@@ -56,7 +56,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -1053,23 +1056,40 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 // determine the total number of files
                 int scannedFilesCount = 0;
                 int totalFilesCount = 0;
-                for (String mimeType : resources.keySet()) {
-                    final Collection<? extends Indexable> indexables = resources.get(mimeType);
-                    if (indexables != null) {
-                        totalFilesCount += indexables.size();
-                    }
+                final Map<CustomIndexerFactory,Collection<String>> custom2mime = new IdentityHashMap<CustomIndexerFactory, Collection<String>>();
+                List<String> customOrder = new LinkedList<String>();
+                List<String> embeddedOrder = new LinkedList<String>();
+                for (Map.Entry<String,Collection<Indexable>> entry : resources.entrySet()) {
+                    if (entry.getValue() != null) {
+                        totalFilesCount += entry.getValue().size();
+                        final boolean hasEmbeddings = MimeLookup.getLookup(entry.getKey()).lookup(EmbeddingIndexerFactory.class)!=null;
+                        final Collection<? extends CustomIndexerFactory> cifs = MimeLookup.getLookup(entry.getKey()).lookupAll(CustomIndexerFactory.class);
+                        for (final CustomIndexerFactory cif : cifs) {
+                            Collection<String> mimes = custom2mime.get(cif);
+                            if (mimes == null) {
+                                mimes = new LinkedList<String>();
+                                custom2mime.put(cif, mimes);
+                            }
+                            mimes.add(entry.getKey());
+                        }
+
+                        if (!(cifs.isEmpty() || hasEmbeddings)) {
+                            customOrder.add(entry.getKey());
+                        }
+                        else if (hasEmbeddings) {
+                            embeddedOrder.add(entry.getKey());
+                        }
+                    }                    
                 }
+                final LinkedHashSet<String> order = new LinkedHashSet<String>(customOrder);
+                order.addAll(embeddedOrder);
 
                 final FileObject cacheRoot = CacheFolder.getDataFolder(root);
-                for (String mimeType : resources.keySet()) {
+out:            for (String mimeType : order) {
                     if (getShuttdownRequest().isRaised()) {
                         return false;
                     }
-                    
-                    final Collection<? extends Indexable> indexables = resources.get(mimeType);
-                    if (indexables == null) {
-                        continue;
-                    }
+                                        
                     
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine("-- Indexing " + mimeType + " in " + root); //NOI18N
@@ -1090,17 +1110,33 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         supportsEmbeddings &= b;
                         final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor, getShuttdownRequest());
                         transactionContexts.add(ctx);
+                        
+                        Collection<? extends String> mimes = custom2mime.get(factory);
+                        if (mimes == null) {
+                            continue out;
+                        }
+                        List<Collection<? extends Indexable>> listsToAdd = new LinkedList<Collection<? extends Indexable>>();
+                        int isize = 0;
+                        for (String mime : mimes) {
+                            final Collection<? extends Indexable> ilist = resources.get(mime);
+                            isize+= ilist.size();
+                            listsToAdd.add(ilist);
+                        }
+                        final ProxyIterable<Indexable> indexables = new ProxyIterable<Indexable>(listsToAdd);
+                        if (isize == 0) {
+                            continue out;
+                        }
 
                         // some CustomIndexers (eg. java) need to know about roots even when there
                         // are no modified Inexables at the moment (eg. java checks source level in
                         // the associated project, etc)
                         final CustomIndexer indexer = factory.createIndexer();
                         if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine("Indexing " + indexables.size() + " indexables; using " + indexer + "; mimeType='" + mimeType + "'"); //NOI18N
+                            LOGGER.fine("Indexing " + isize + " indexables; using " + indexer + "; mimeType='" + mimeType + "'"); //NOI18N
 //                            LOGGER.fine("Indexing " + indexables + "; using " + indexer + "; mimeType='" + mimeType + "'"); //NOI18N
                         }
                         try {
-                            SPIAccessor.getInstance().index(indexer, Collections.unmodifiableCollection(indexables), ctx);
+                            SPIAccessor.getInstance().index(indexer, indexables, ctx);
                         } catch (ThreadDeath td) {
                             throw td;
                         } catch (Throwable t) {
@@ -1110,6 +1146,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
                     if (supportsEmbeddings) {
                         if (Util.canBeParsed(mimeType)) {
+                            final Collection<? extends Indexable> indexables = resources.get(mimeType);
+                            if (indexables == null) {
+                                continue;
+                            }
                             //Then use slow gsf like indexers
                             LOGGER.log(Level.FINE, "Using EmbeddingIndexers for {0}", indexables); //NOI18N
 
@@ -1134,7 +1174,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         LOGGER.fine("-- Finished indexing " + mimeType + " in " + root); //NOI18N
                     }
 
-                    scannedFilesCount += indexables.size();
+//                    scannedFilesCount += is;
                 }
             } finally {
                 for(Context ctx : transactionContexts) {
