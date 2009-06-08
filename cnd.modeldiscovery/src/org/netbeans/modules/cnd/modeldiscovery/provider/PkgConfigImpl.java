@@ -136,24 +136,33 @@ public class PkgConfigImpl implements PkgConfig {
                     baseDirectory = "c:/cygwin/lib/pkgconfig/"; // NOI18N
                 }
             }
-            initPackages(envPaths(baseDirectory)); // NOI18N
+            initPackages(envPaths(baseDirectory), true); // NOI18N
         } else {
             //initPackages("/net/elif/export1/sside/as204739/pkgconfig/"); // NOI18N
-            initPackages(envPaths("/usr/lib/pkgconfig/")); // NOI18N
+            initPackages(envPaths("/usr/lib/pkgconfig/"), false); // NOI18N
         }
     }
 
     private String getPkgConfihPath(){
         for(String path : Path.getPath()){
-            File file = new File(path+File.separator+"pkg-config.exe");
+            File file = new File(path+File.separator+"pkg-config.exe"); // NOI18N
             if (file.exists()) {
-                return path;
+                path = path.replace('\\', '/'); // NOI18N
+                if (path.endsWith("/")){ // NOI18N
+                    path = path.substring(0, path.length()-1);
+                }
+                int i = path.lastIndexOf('/'); // NOI18N
+                if (i > 0){
+                    path = path.substring(0, i + 1 )+"lib/pkgconfig/"; // NOI18N
+                    return path;
+                }
+                return null;
             }
         }
         return null;
     }
 
-    private void initPackages(List<String> folders) {
+    private void initPackages(List<String> folders, boolean isWindows) {
         Set<File> done = new HashSet<File>();
         for(String folder:folders) {
             File file = RemoteFile.create(pi.getExecutionEnvironment(), folder);
@@ -167,7 +176,7 @@ public class PkgConfigImpl implements PkgConfig {
                     if (name.endsWith(".pc") && fpc.canRead() && fpc.isFile()) { // NOI18N
                         String pkgName = name.substring(0, name.length()-3);
                         PackageConfigurationImpl pc = new PackageConfigurationImpl(pkgName);
-                        readConfig(fpc, pc);
+                        readConfig(fpc, pc,  isWindows);
                         configurations.put(pkgName, pc);
                     }
                 }
@@ -386,7 +395,7 @@ public class PkgConfigImpl implements PkgConfig {
 //Libs: -L${libdir} -lgtk-${target}-2.0
 //Cflags: -I${includedir}/gtk-2.0
 
-    private void readConfig(File file, PackageConfigurationImpl pc) {
+    private void readConfig(File file, PackageConfigurationImpl pc, boolean isWindows) {
         try {
             Map<String, String> vars = new HashMap<String, String>();
             vars.put("pcfiledir", file.getParent()); // NOI18N
@@ -448,6 +457,9 @@ public class PkgConfigImpl implements PkgConfig {
                     int i = line.indexOf("="); // NOI18N
                     String name = line.substring(0, i).trim();
                     String value = line.substring(i+1).trim();
+                    if (isWindows) {
+                        value = fixPrefixPath(name, value, file);
+                    }
                     vars.put(name, expandMacros(value, vars));
                 }
             }
@@ -457,6 +469,61 @@ public class PkgConfigImpl implements PkgConfig {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+    private String fixPrefixPath(String name, String value, File file){
+        //prefix=c:/devel/target/e1cabcfbab6c7ee30ed3ffc781169bba
+        if (name.equals("prefix")){ // NOI18N
+            StringTokenizer st = new StringTokenizer(value, "\\/"); // NOI18N
+            while(st.hasMoreTokens()){
+                String s = st.nextToken();
+                if (s.length() == 32) {
+                    boolean isHashCode = true;
+                    for(int i = 0; i < 32; i++){
+                        char c = s.charAt(i);
+                        switch(c){
+                            case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': // NOI18N
+                            case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': // NOI18N
+                            case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': // NOI18N
+                                continue;
+                            default:
+                                isHashCode = false;
+                                break;
+                        }
+                    }
+                    if (isHashCode) {
+                        file = file.getParentFile();
+                        if (file != null) {
+                            file = file.getParentFile();
+                        }
+                        if (file != null) {
+                            file = file.getParentFile();
+                        }
+                        if (file != null) {
+                            return file.getAbsolutePath();
+                        }
+                    }
+                }
+            }
+            if (value.startsWith("/")) { // NOI18N
+                int i = value.indexOf('/', 1); // NOI18N
+                file = file.getParentFile();
+                if (file != null) {
+                    file = file.getParentFile();
+                }
+                if (file != null) {
+                    file = file.getParentFile();
+                }
+                if (file != null) {
+                    if (i > 0) {
+                        return file.getAbsolutePath()+value.substring(i);
+                    } else {
+                        return file.getAbsolutePath();
+                    }
+                }
+            }
+        }
+        return value;
     }
 
     private String expandMacros(String value, Map<String, String> vars){
