@@ -180,9 +180,7 @@ public class KenaiConnection implements PropertyChangeListener {
     }
 
     private void connect() throws XMPPException {
-        connection = new XMPPConnection(XMPP_SERVER);
-        connection.connect();
-        login();
+        connection = Kenai.getDefault().getXMPPConnection();
         connection.addPacketListener(new PacketL(), new MessageTypeFilter(Type.chat));
     }
 
@@ -237,10 +235,6 @@ public class KenaiConnection implements PropertyChangeListener {
                 });
             }
         }
-    }
-
-    private void login() throws XMPPException {
-        connection.login(USER, PASSWORD);
     }
 
     private void initChats() {
@@ -319,7 +313,6 @@ public class KenaiConnection implements PropertyChangeListener {
                             }
                         }
                         chats.clear();
-                        connection.disconnect();
                         messageQueue.clear();
                         listeners.clear();
                     }
