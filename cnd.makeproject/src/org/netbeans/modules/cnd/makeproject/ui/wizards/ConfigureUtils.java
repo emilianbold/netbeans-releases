@@ -124,11 +124,11 @@ public final class ConfigureUtils {
             if (ses != null) {
                 return true;
             }
-            if (file.getAbsolutePath().endsWith("CMakeLists.txt")){
-                return AbstractExecutorRunAction.findTools("cmake") != null;
+            if (file.getAbsolutePath().endsWith("CMakeLists.txt")){ // NOI18N
+                return AbstractExecutorRunAction.findTools("cmake") != null; // NOI18N
             }
-            if (file.getAbsolutePath().endsWith(".pro")){
-                return AbstractExecutorRunAction.findTools("qmake") != null;
+            if (file.getAbsolutePath().endsWith(".pro")){ // NOI18N
+                return AbstractExecutorRunAction.findTools("qmake") != null; // NOI18N
             }
         }
         return false;
