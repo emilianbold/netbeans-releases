@@ -38,7 +38,6 @@ package org.netbeans.installer.utils.system.launchers;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.installer.utils.helper.JavaCompatibleProperties;
 import org.netbeans.installer.utils.helper.Version;
@@ -58,6 +57,4 @@ public abstract class Launcher extends LauncherProperties {
     public abstract String [] getExecutionCommand();
     public abstract List <JavaCompatibleProperties> getDefaultCompatibleJava(Version version);
     public abstract String getExtension();
-    protected abstract String getI18NResourcePrefix();
-    
 }

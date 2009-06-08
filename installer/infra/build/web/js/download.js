@@ -686,7 +686,7 @@ function write_files_list(title,directory) {
     document.write('<h1>' + title + '</h1>');
     document.write('<ul>');
  
-    var lang_id = get_language_id()
+    var lang_id = get_language_id();
     if(lang_id=="") lang_id = "en";
     var lst = get_file_list(directory, lang_id);
     for(var i=0;i<lst.length;i++) {

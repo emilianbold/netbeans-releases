@@ -184,7 +184,7 @@ import org.openide.util.NbBundle;
         long time = 0;
         
         if (logger.isLoggable(Level.FINE)) {
-            System.out.printf("Uploading %s ...\n", localDir.getAbsolutePath()); // NOI18N
+            System.out.printf("Uploading %s to %s ...\n", localDir.getAbsolutePath(), executionEnvironment); // NOI18N
             time = System.currentTimeMillis();
         }
 
