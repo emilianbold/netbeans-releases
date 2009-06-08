@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.trace;
 
 import junit.framework.Test;
@@ -53,12 +52,11 @@ public class FileModelTestFailed extends BaseTestSuite {
 
     public FileModelTestFailed() {
         super("C/C++ Failed Code Model");
-	this.addTestSuite(FileModelTest.Failed.class);
+        this.addTestSuite(FileModelTest.Failed.class);
     }
-    
+
     public static Test suite() {
         TestSuite suite = new FileModelTestFailed();
         return suite;
     }
-    
 }
