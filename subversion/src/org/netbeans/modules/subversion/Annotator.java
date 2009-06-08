@@ -563,9 +563,8 @@ public class Annotator {
     }
 
     private static boolean isNothingVersioned(File[] files) {
-        FileStatusCache cache = Subversion.getInstance().getStatusCache();
         for (File file : files) {
-            if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) return false;
+            if (SvnUtils.isManaged(file)) return false;
         }
         return true;
     }
