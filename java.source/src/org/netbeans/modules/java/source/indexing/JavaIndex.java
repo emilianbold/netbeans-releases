@@ -69,7 +69,7 @@ import org.openide.util.Exceptions;
 public final class JavaIndex {
 
     public static final String NAME = "java"; //NOI18N
-    public static final int VERSION = 13;
+    public static final int VERSION = 14;
     static final Logger LOG = Logger.getLogger(JavaIndex.class.getName());
     private static final String CLASSES = "classes"; //NOI18N
     private static final String ATTR_FILE_NAME = "attributes.properties"; //NOI18N

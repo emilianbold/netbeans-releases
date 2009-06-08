@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.nativeexecution;
+package org.netbeans.modules.nativeexecution.test;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -57,7 +57,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 
-public class NativeExecutionTest extends NbTestCase {
+public class NativeExecutionBaseTestCase extends NbTestCase {
     static {
         String dirs = System.getProperty("netbeans.dirs", ""); // NOI18N
         File junitWorkdir = new File(System.getProperty("nbjunit.workdir")); // NOI18N
@@ -94,14 +94,32 @@ public class NativeExecutionTest extends NbTestCase {
         });
     }
 
-    public NativeExecutionTest(String name) {
+    public NativeExecutionBaseTestCase(String name) {
         super(name);
+        System.setProperty("nativeexecution.mode.unittest", "true");
     }
 
     private static ExecutionEnvironment testExecutionEnvironment;
+    private static RcFile rcFile;
 
-    protected static ExecutionEnvironment getTestExecutionEnvironment() throws IOException, CancellationException {
-        synchronized(NativeExecutionTest.class) {
+    protected synchronized RcFile getRcFile() throws IOException, RcFile.FormatException {
+        if (rcFile == null) {
+
+
+            String rcFileName = System.getProperty("cnd.remote.rcfile"); // NOI18N
+            if (rcFileName == null) {
+                String homePath = System.getProperty("user.home");
+                if (homePath != null) {
+                    File homeDir = new File(homePath);
+                    rcFile = new RcFile(new File(homeDir, ".cndtestrc"));
+                }
+            }
+        }
+        return rcFile;
+    }
+
+    protected ExecutionEnvironment getTestExecutionEnvironment() throws IOException, CancellationException {
+        synchronized(NativeExecutionBaseTestCase.class) {
             if (testExecutionEnvironment == null) {
                 String ui = System.getProperty("cnd.remote.testuserinfo"); // NOI18N
                 char[] passwd = null;
@@ -135,13 +153,22 @@ public class NativeExecutionTest extends NbTestCase {
         ExecutionEnvironment result = null;
 
         if (mspec == null) {
-            return result;
+            return null;
         }
 
-        String rcFile = System.getProperty("cnd.remote.testuserinfo.rcfile"); // NOI18N
+        String rcFileName = System.getProperty("cnd.remote.testuserinfo.rcfile"); // NOI18N
+        File rcFile = null;
         
-        if (rcFile == null) {
-            return result;
+        if (rcFileName == null) {
+            String homePath = System.getProperty("user.home");
+            if (homePath != null) {
+                File homeDir = new File(homePath);
+                rcFile = new File(homeDir, ".testuserinfo");
+            }
+        }
+
+        if (rcFile == null || ! rcFile.exists()) {
+            return null;
         }
 
         BufferedReader rcReader = new BufferedReader(new FileReader(rcFile));

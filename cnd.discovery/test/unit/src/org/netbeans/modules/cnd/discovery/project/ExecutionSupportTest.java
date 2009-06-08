@@ -39,17 +39,43 @@
 
 package org.netbeans.modules.cnd.discovery.project;
 
+import java.util.List;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.cnd.discovery.projectimport.ImportUtils;
+
 /**
  *
  * @author Alexander Simon
  */
-public class ProjectCreationTestCase extends MakeProjectBase {
+public class ExecutionSupportTest extends NbTestCase {
 
-    public ProjectCreationTestCase() {
-        super("Tesseract");
+    public ExecutionSupportTest(String testName) {
+        super(testName);
     }
 
-    public void testTesseract(){
-        performTestProject("http://tesseract-ocr.googlecode.com/files/tesseract-2.03.tar.gz", null);
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
+
+    public void testExecutionSupport() throws Exception {
+        List<String> res = ImportUtils.parseEnvironment("configure -DM=\"CPU = 6\" CPPFLAGS=-g3 CFLAGS=\'-g3 -gdwarf-2\' -DH --help -DM=\"'6\" CXXFLAGS=\"-g3 -gdwarf-2\"");
+        assert res.size() == 3;
+        for(int i = 0; i < res.size(); i++){
+            String p = res.get(i);
+            //System.err.println(p);
+            if (i == 0) {
+                assert "CPPFLAGS=-g3".equals(p);
+            } else if (i == 1) {
+                assert "CFLAGS=-g3 -gdwarf-2".equals(p);
+            } else if (i == 2) {
+                assert "CXXFLAGS=-g3 -gdwarf-2".equals(p);
+            }
+        }
     }
 }
