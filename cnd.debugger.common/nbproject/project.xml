@@ -65,11 +65,12 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
                 <package>org.netbeans.modules.cnd.debugger.common</package>
                 <package>org.netbeans.modules.cnd.debugger.common.breakpoints</package>
                 <package>org.netbeans.modules.cnd.debugger.common.utils</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>
