@@ -582,19 +582,16 @@ public class Annotator {
     private static boolean onlyFolders(File[] files) {
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         boolean onlyFolders = true;
-        List<File> filesToRefresh = new LinkedList<File>();
         for (int i = 0; i < files.length; i++) {
             if (files[i].isFile()) return false;
             FileInformation status = cache.getCachedStatus(files[i]);
             if (status == null) {
-                filesToRefresh.add(files[i]);
                 onlyFolders = false; // be optimistic, this can be a file
             } else if (!files[i].exists() && !status.isDirectory()) {
                 onlyFolders = false;
                 break;
             }
         }
-        cache.refreshAsync(filesToRefresh);
         return onlyFolders;
     }
 
