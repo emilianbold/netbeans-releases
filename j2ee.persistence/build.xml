@@ -45,6 +45,8 @@ made subject to such option by the copyright holder.
 
     <property name="s2b_root_orm_1_0" location="src/org/netbeans/modules/j2ee/persistence/dd/orm/model_1_0"/>
     <property name="s2b_root_persistence_1_0" location="src/org/netbeans/modules/j2ee/persistence/dd/persistence/model_1_0"/>
+    <property name="s2b_root_orm_2_0" location="src/org/netbeans/modules/j2ee/persistence/dd/orm/model_2_0"/>
+    <property name="s2b_root_persistence_2_0" location="src/org/netbeans/modules/j2ee/persistence/dd/persistence/model_2_0"/>
     <property name="s2b_res_root" location="src/org/netbeans/modules/j2ee/persistence/dd/resources"/>
 
     <target name="s2binit" depends="build-init">
@@ -78,6 +80,25 @@ made subject to such option by the copyright holder.
         attrProp="true"
         removeUnreferencedNodes="true"
         rootDir="src"/> 
+        <schema2beans schema="${s2b_res_root}/orm_2_0.xsd"
+        docRoot="entity-mappings"
+        mddFile="${s2b_res_root}/orm_2_0.mdd"
+        package="org.netbeans.modules.j2ee.persistence.dd.orm.model_2_0"
+        schemaType="xmlschema"
+        useInterfaces="true"
+        validate="true"
+        attrProp="true"
+        removeUnreferencedNodes="true"
+        rootDir="src"/>
+        <schema2beans schema="${s2b_res_root}/persistence_2_0.xsd"
+        mddFile="${s2b_res_root}/persistence_2_0.mdd"
+        package="org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0"
+        schemaType="xmlschema"
+        useInterfaces="true"
+        validate="true"
+        attrProp="true"
+        removeUnreferencedNodes="true"
+        rootDir="src"/>
     </target>
 
     <target name="compile" depends="dd2beansgen,projectized-common.compile"/>
@@ -99,6 +120,20 @@ made subject to such option by the copyright holder.
             </fileset>
         </delete>
         <delete dir="${s2b_root_persistence_1_0}"/>
+        <mkdir dir="${s2b_root_orm_2_0}"/>
+        <mkdir dir="${s2b_root_persistence_2_0}"/>
+        <delete>
+            <fileset dir="${s2b_root_orm_2_0}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_orm_2_0}"/>
+        <delete>
+            <fileset dir="${s2b_root_persistence_2_0}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_persistence_2_0}"/>
     </target>
         
 </project>

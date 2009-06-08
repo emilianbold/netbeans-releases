@@ -60,10 +60,7 @@ public class ImageWidget extends Widget {
     private ImageObserver observer = new ImageObserver() {
         public boolean imageUpdate (Image img, int infoflags, int x, int y, int width, int height) {
 //            System.out.println ("INFO: " + infoflags);
-            if ((infoflags & (ImageObserver.HEIGHT | ImageObserver.WIDTH)) != 0)
-                revalidate ();
-            else
-                repaint ();
+            setImageCore (image);
             getScene ().validate ();
             return (infoflags & (ImageObserver.ABORT | ImageObserver.ERROR)) == 0;
         }
@@ -102,6 +99,10 @@ public class ImageWidget extends Widget {
     public void setImage (Image image) {
         if (this.image == image)
             return;
+        setImageCore (image);
+    }
+
+    private void setImageCore (Image image) {
         int oldWidth = width;
         int oldHeight = height;
 

@@ -46,6 +46,7 @@ import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -133,7 +134,9 @@ public abstract class J2eePlatformImpl {
      * @return list of supported J2EE specification versions.
      * @deprecated override {@link #getSupportedProfiles()} and {@link #getSupportedProfiles(java.lang.Object)}
      */
-    public abstract Set<String> getSupportedSpecVersions();
+    public Set<String> getSupportedSpecVersions() {
+        return Collections.emptySet();
+    }
     
     /**
      * Return a list of supported J2EE specification versions for
@@ -154,6 +157,15 @@ public abstract class J2eePlatformImpl {
         return getSupportedSpecVersions();
     }
 
+    /**
+     * Returns a set of supported profiles. By default method converts
+     * specification version returned by {@link #getSupportedSpecVersions()}
+     * to profiles.
+     *
+     * @return set of supported profiles
+     * @see Profile
+     * @since 1.58
+     */
     public Set<Profile> getSupportedProfiles() {
         Set<Profile> set = new HashSet<Profile>();
         for (String spec : getSupportedSpecVersions()) {
@@ -165,6 +177,18 @@ public abstract class J2eePlatformImpl {
         return set;
     }
 
+    /**
+     * Returns a set of supported profiles for the given module type
+     * (one of {@link J2eeModule#EAR}, {@link J2eeModule#EJB},
+     * {@link J2eeModule#WAR}, {@link J2eeModule#RAR} and {@link J2eeModule#CAR}).
+     * By default method converts specification version returned by
+     * {@link #getSupportedSpecVersions(java.lang.Object)} to profiles.
+     *
+     * @param moduleType type of the module
+     * @return set of supported profiles
+     * @see Profile
+     * @since 1.58
+     */
     public Set<Profile> getSupportedProfiles(Object moduleType) {
         Set<Profile> set = new HashSet<Profile>();
         for (String spec : getSupportedSpecVersions(moduleType)) {

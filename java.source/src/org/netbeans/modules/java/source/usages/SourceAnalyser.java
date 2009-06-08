@@ -96,6 +96,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
+import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.openide.filesystems.FileObject;
@@ -135,11 +136,12 @@ public class SourceAnalyser {
     }
     
     public void analyse (final Iterable<? extends CompilationUnitTree> data, JavacTaskImpl jt, JavaFileManager manager,
-        boolean virtual, boolean storeIndex, javax.tools.JavaFileObject sibling,
+        final CompileTuple tuple,
         Set<? super ElementHandle<TypeElement>> newTypes, /*out*/boolean[] mainMethod) throws IOException {
         final Map<Pair<String, String>,Data> usages = new HashMap<Pair<String,String>,Data>();
         for (CompilationUnitTree cu : data) {
-            UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, sibling, newTypes, virtual, storeIndex);
+            UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, tuple.jfo, newTypes,
+                    tuple.virtual, tuple.index);
             uv.scan(cu,usages);
             mainMethod[0] |= uv.mainMethod;
             if (uv.sourceName != null && uv.rsList != null && uv.rsList.size()>0) {
@@ -147,14 +149,14 @@ public class SourceAnalyser {
                 final String pkg = index == -1 ? "" : uv.sourceName.substring(0,index);    //NOI18N
                 final String simpleName = index == -1 ? uv.sourceName : uv.sourceName.substring(index+1);
                 String ext;
-                if (virtual) {
-                    ext = ((FileObjects.Base)sibling).getExt() +'.'+ FileObjects.RX;    //NOI18N
+                if (tuple.virtual) {
+                    ext = FileObjects.getExtension(tuple.indexable.getURL().getPath()) +'.'+ FileObjects.RX;    //NOI18N
                 }
                 else {
                     ext = FileObjects.RS;
                 }
                 final String rsName = simpleName + '.' + ext;   //NOI18N
-                javax.tools.FileObject fo = manager.getFileForOutput(StandardLocation.CLASS_OUTPUT, pkg, rsName, sibling);
+                javax.tools.FileObject fo = manager.getFileForOutput(StandardLocation.CLASS_OUTPUT, pkg, rsName, tuple.jfo);
                 assert fo != null;
                 try {
                     BufferedReader in = new BufferedReader ( new InputStreamReader (fo.openInputStream(), "UTF-8"));
@@ -185,7 +187,7 @@ public class SourceAnalyser {
         }
         //Ideally not even usegas will be calculated but it will propagate the storeIndex
         //through the UsagesVisitor
-        if (storeIndex) {
+        if (tuple.index) {
             for (Map.Entry<Pair<String,String>,Data> oe : usages.entrySet()) {
                 final Pair<String,String> key = oe.getKey();
                 final Data value = oe.getValue();            

@@ -40,6 +40,9 @@
 package org.netbeans;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
@@ -55,10 +58,10 @@ public class StampsIdeLessThanPlatformTest extends NbTestCase {
     private File ide;
     private File platform;
     private File install;
+    private File nonexist;
     
     
     public static Test suite() {
-        //return new StampsTest("testStampsInvalidatedWhenClustersChange");
         return new NbTestSuite(StampsIdeLessThanPlatformTest.class);
     }
     
@@ -72,11 +75,12 @@ public class StampsIdeLessThanPlatformTest extends NbTestCase {
         
         install = new File(getWorkDir(), "install");
         platform = new File(install, "platform7");
+        nonexist = new File(install, "nonexist7");
         ide = new File(install, "ide8");
         userdir = new File(getWorkDir(), "tmp");
         
         System.setProperty("netbeans.home", platform.getPath());
-        System.setProperty("netbeans.dirs", ide.getPath());
+        System.setProperty("netbeans.dirs", ide.getPath() + File.pathSeparator + nonexist.getPath());
         System.setProperty("netbeans.user", userdir.getPath());
         
         StampsTest.createModule("org.openide.awt", platform, 50000L);
@@ -98,13 +102,31 @@ public class StampsIdeLessThanPlatformTest extends NbTestCase {
         super.tearDown();
     }
     
-    public void testGenerateTimeStamps() {
+    public void testGenerateTimeStamps() throws IOException {
         long stamp = Stamps.moduleJARs();
         assertEquals("Timestamp is taken from nodes module", 60000L, stamp);
         
         StampsTest.assertStamp(60000L, platform, false, true);
         StampsTest.assertStamp(50000L, ide, false, true);
         StampsTest.assertStamp(-1L, userdir, false, false);
+
+
+        File checkSum = new File(new File(new File(new File(userdir, "var"), "cache"), "lastModified"), "all-checksum.txt");
+        assertTrue("Checksum created" , checkSum.isFile());
+
+        byte[] arr = new byte[30000];
+        int len = new FileInputStream(checkSum).read(arr);
+
+        String r = new String(arr, 0, len);
+        if (r.contains("nonexist")) {
+            fail(r);
+        }
+
+        Properties p = new Properties();
+        p.load(new FileInputStream(checkSum));
+
+        assertEquals("60000", p.get(platform.getPath()));
+        assertEquals("50000", p.get(ide.getPath()));
     }        
     
 

@@ -313,16 +313,18 @@ public final class Stamps {
         Set<File> processedDirs = new HashSet<File>();
         String home = System.getProperty ("netbeans.home"); // NOI18N
         if (home != null) {
-            stampForCluster (new File (home), result, processedDirs, checkStampFile, true);
-            sb.append(home).append('=').append(result.longValue()).append('\n');
+            long stamp = stampForCluster (new File (home), result, processedDirs, checkStampFile, true);
+            sb.append(home).append('=').append(stamp).append('\n');
         }
         String nbdirs = System.getProperty("netbeans.dirs"); // NOI18N
         if (nbdirs != null) {
             StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
             while (tok.hasMoreTokens()) {
                 String t = tok.nextToken();
-                stampForCluster(new File(t), result, processedDirs, checkStampFile, true);
-                sb.append(t).append('=').append(result.longValue()).append('\n');
+                long stamp = stampForCluster(new File(t), result, processedDirs, checkStampFile, true);
+                if (stamp != -1) {
+                    sb.append(t).append('=').append(stamp).append('\n');
+                }
             }
         }
         String user = getUserDir();
@@ -340,7 +342,7 @@ public final class Stamps {
         return result;
     }
     
-    private static void stampForCluster(
+    private static long stampForCluster(
         File cluster, AtomicLong result, Set<File> hashSet, 
         boolean checkStampFile, boolean createStampFile
     ) {
@@ -350,7 +352,7 @@ public final class Stamps {
             if (time > result.longValue()) {
                 result.set(time);
             }
-            return;
+            return time;
         }
         String user = getUserDir();
         if (user != null) {
@@ -360,7 +362,7 @@ public final class Stamps {
                 if (time > result.longValue()) {
                     result.set(time);
                 }
-                return;
+                return time;
             }
         } else {
             createStampFile = false;
@@ -375,7 +377,7 @@ public final class Stamps {
         } else {
             if (!cluster.isDirectory()) {
                 // skip non-existing clusters`
-                return;
+                return -1;
             }
         }
 
@@ -392,6 +394,7 @@ public final class Stamps {
                 System.err.println("Cannot write timestamp to " + stamp); // NOI18N
             }
         }
+        return clusterResult.longValue();
     }
 
     private static boolean highestStampForDir(File file, AtomicLong result) {

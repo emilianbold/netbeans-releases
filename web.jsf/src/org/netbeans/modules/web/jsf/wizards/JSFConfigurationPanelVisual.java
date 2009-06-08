@@ -123,8 +123,11 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 if (Util.containsClass(content, JSFUtils.FACES_EXCEPTION)) {
                     items.add(library.getDisplayName());
                     boolean isJSF12 = Util.containsClass(content, JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
+                    boolean isJSF20 = Util.containsClass(content, JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
                     if (isJSF12) {
                         jsfLibraries.add(new LibraryItem(library, JSFVersion.JSF_1_2));
+                    } else if (isJSF20){
+                        jsfLibraries.add(new LibraryItem(library, JSFVersion.JSF_2_0));
                     } else {
                         jsfLibraries.add(new LibraryItem(library, JSFVersion.JSF_1_1));
                     }

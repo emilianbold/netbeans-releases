@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
+import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Map;
