@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import java.io.IOException;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -51,7 +52,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.util.Exceptions;
 import static org.junit.Assert.*;
 
-public class HostInfoTest extends NativeExecutionTest {
+public class HostInfoTest extends NativeExecutionBaseTestCase {
 
     private final static String password = ""; // NOI18N
 

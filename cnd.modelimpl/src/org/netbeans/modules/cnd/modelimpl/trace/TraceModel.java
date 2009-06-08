@@ -941,7 +941,7 @@ public class TraceModel extends TraceModelBase {
     }
 
     private long testAPTParser(NativeFileItem item, boolean cleanAPT) throws IOException, RecognitionException, TokenStreamException {
-        FileBuffer buffer = new FileBufferFile(item.getFile());
+        FileBuffer buffer = new FileBufferFile(item.getFile().getAbsolutePath());
         print("Testing APT Parser"); // NOI18N
         int flags = CPPParserEx.CPP_CPLUSPLUS;
         File file = buffer.getFile();
@@ -963,7 +963,7 @@ public class TraceModel extends TraceModelBase {
 
     private void testAPT(NativeFileItem item) throws FileNotFoundException, RecognitionException, TokenStreamException, IOException, ClassNotFoundException {
         File file = item.getFile();
-        FileBuffer buffer = new FileBufferFile(file);
+        FileBuffer buffer = new FileBufferFile(file.getAbsolutePath());
         print("Testing APT: " + file.getName()); // NOI18N
         long minLexer = Long.MAX_VALUE;
         long maxLexer = Long.MIN_VALUE;

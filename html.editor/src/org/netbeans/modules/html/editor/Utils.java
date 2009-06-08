@@ -39,9 +39,16 @@
 
 package org.netbeans.modules.html.editor;
 
+import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.Document;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.openide.filesystems.FileObject;
@@ -139,6 +146,66 @@ public class Utils {
             Logger.getLogger(Utils.class.getName()).log(Level.INFO, "Cannot find icon for " + fo.getNameExt(), e);
         }
         return null;
+    }
+
+    /** returns top most joined html token seuence for the document. */
+    public static TokenSequence<HTMLTokenId> getJoinedHtmlSequence(Document doc) {
+         LanguagePath path = findTopMostHtml(doc);
+         if(path == null) {
+             return null;
+         }
+
+         return getJoinedHtmlSequence(doc, path);
+    }
+
+    //-------------- private methods ---------------
+
+    private static LanguagePath findTopMostHtml(Document doc) {
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        for(LanguagePath path : (Set<LanguagePath>)th.languagePaths()) {
+            if(path.innerLanguage() == HTMLTokenId.language()) { //is this always correct???
+                return path;
+            }
+        }
+        return null;
+    }
+
+
+    /*
+     * supposes html tokens are always joined - just one joined sequence over the document!
+     */
+    private static TokenSequence<HTMLTokenId> getJoinedHtmlSequence(Document doc, LanguagePath languagePath) {
+        //find html token sequence, in joined version if embedded
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        List<TokenSequence> tslist = th.tokenSequenceList(languagePath, 0, Integer.MAX_VALUE);
+        if(tslist.isEmpty()) {
+            return  null; //no such sequence
+        }
+        TokenSequence first = tslist.get(0);
+        first.moveStart();
+        if(!first.moveNext()) {
+            return null; //likely empty input (document)
+        }
+
+        List<TokenSequence> embedded = th.embeddedTokenSequences(first.offset(), false);
+        TokenSequence sequence = null;
+        for (TokenSequence ts : embedded) {
+            if (ts.language() == HTMLTokenId.language()) {
+                if (sequence == null) {
+                    //html is top level
+                    sequence = ts;
+                    break;
+                } else {
+                    //the sequence is my master language
+                    //get joined html sequence from it
+                    sequence = sequence.embeddedJoined(HTMLTokenId.language());
+                    assert sequence != null;
+                    break;
+                }
+            }
+            sequence = ts;
+        }
+        return sequence;
     }
 
 

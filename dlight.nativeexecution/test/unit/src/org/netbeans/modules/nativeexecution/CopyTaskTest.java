@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.PrintWriter;
@@ -55,7 +56,7 @@ import org.openide.util.Exceptions;
  *
  * @author ak119685
  */
-public class CopyTaskTest extends NativeExecutionTest {
+public class CopyTaskTest extends NativeExecutionBaseTestCase {
 
     public CopyTaskTest(String name) {
         super(name);
