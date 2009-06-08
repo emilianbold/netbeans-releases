@@ -739,7 +739,11 @@ public class MercurialAnnotator extends VCSAnnotator {
     private boolean onlyFolders(File[] files) {
         for (int i = 0; i < files.length; i++) {
             if (files[i].isFile()) return false;
-            if (!files[i].exists() && !cache.getStatus(files[i]).isDirectory()) return false;
+            FileInformation status = cache.getCachedStatus(files[i]);
+            if (status == null // be optimistic, this can be a file
+                    || (!files[i].exists() && !status.isDirectory())) {
+                return false;
+            }
         }
         return true;
     }
