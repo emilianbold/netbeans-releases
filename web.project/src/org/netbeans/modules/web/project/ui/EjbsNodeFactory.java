@@ -52,6 +52,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Capabilities;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
 import org.netbeans.modules.web.project.WebProject;
+import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.nodes.Node;
@@ -116,12 +117,14 @@ public class EjbsNodeFactory implements NodeFactory {
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            System.out.println("Property changed: " + evt.getPropertyName());
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    changeSupport.fireChange();
-                }
-            });
+            String p = evt.getPropertyName();
+            if (p != null && p.equals(WebProjectProperties.J2EE_PLATFORM)){
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        changeSupport.fireChange();
+                    }
+                });
+            }
         }
     }
 }
