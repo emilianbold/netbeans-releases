@@ -390,7 +390,12 @@ public class AutoupdateInfoParser extends DefaultHandler {
     // package-private only for unit testing purpose
     static InputSource getAutoupdateInfoInputStream (File nbmFile) throws IOException, SAXException {
         // find info.xml entry
-        JarFile jf = new JarFile (nbmFile);
+        JarFile jf = null;
+        try {
+            jf = new JarFile (nbmFile);
+        } catch (IOException ex) {
+            throw new IOException("Cannot open NBM file " + nbmFile, ex);
+        }
         String locale = Locale.getDefault ().toString ();
         ZipEntry entry = jf.getEntry (INFO_DIR + '/' + INFO_LOCALE + '/' + INFO_NAME + '_' + locale + INFO_EXT);
         if (entry == null) {
