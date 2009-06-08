@@ -48,12 +48,10 @@ import org.openide.util.NbBundle;
  */
 public abstract class CompletionActionsMainMenu extends MainMenuAction implements Action {
 
-    private JMenuItem menuItem;
     private AbstractAction delegate;
         
     public CompletionActionsMainMenu() {
         super();
-        menuItem = new JMenuItem(getMenuItemText());
         delegate = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 // Does nothing;
@@ -63,10 +61,6 @@ public abstract class CompletionActionsMainMenu extends MainMenuAction implement
         setMenu();
     }
     
-    public JMenuItem getMenuPresenter() {
-        return menuItem;
-    }
-
     public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
         delegate.removePropertyChangeListener(listener);
     }
@@ -87,12 +81,12 @@ public abstract class CompletionActionsMainMenu extends MainMenuAction implement
         delegate.setEnabled(newValue);
     }
 
-    public boolean isEnabled() {
+    public @Override boolean isEnabled() {
         return delegate.isEnabled();
     }
 
     /** Sets the state of JMenuItem*/
-    protected void setMenu(){
+    protected @Override void setMenu(){
         
         ActionMap am = getContextActionMap();
         Action action = null;

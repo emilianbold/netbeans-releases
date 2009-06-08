@@ -49,6 +49,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import javax.enterprise.deploy.shared.ModuleType;
 import org.openide.filesystems.FileObject;
 import java.util.Iterator;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.openide.util.Parameters;
 
@@ -152,6 +153,7 @@ public class J2eeModule {
      * 
      * @return module type.
      */
+    @NonNull
     public Object getModuleType() {
         return impl.getModuleType();
     }

@@ -38,7 +38,11 @@
  */
 package org.netbeans.editor.ext.html.parser;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.StringTokenizer;
+import org.netbeans.editor.ext.html.dtd.DTD;
 
 /**
  *
@@ -48,10 +52,11 @@ public class AstNodeUtils {
 
     private static final String INDENT = "   ";
 
-    public static void dumpTree(AstNode node) {
+    public static String dumpTree(AstNode node) {
         StringBuffer buf = new StringBuffer();
         dumpTree(node, buf);
         System.out.println(buf.toString());
+        return buf.toString();
     }
 
     public static void dumpTree(AstNode node, StringBuffer buf) {
@@ -77,14 +82,23 @@ public class AstNodeUtils {
     }
 
     public static AstNode findDescendant(AstNode node, int astOffset) {
+        return findDescendant(node, astOffset, false);
+    }
+
+    public static AstNode findDescendant(AstNode node, int astOffset, boolean exclusiveStartOffset) {
         int[] nodeRange = node.getLogicalRange();
 
         int so = nodeRange[0];
         int eo = nodeRange[1];
 
+
         if (astOffset < so || astOffset > eo) {
             //we are out of the scope - may happen just with the first client call
-            return null;
+            return node;
+        }
+
+        if (exclusiveStartOffset) {
+            so++;
         }
 
         if (astOffset >= so && astOffset < eo && node.children().isEmpty()) {
@@ -95,10 +109,15 @@ public class AstNodeUtils {
         for (AstNode child : node.children()) {
             int[] childNodeRange = child.getLogicalRange();
             int ch_so = childNodeRange[0];
+
+            if (exclusiveStartOffset) {
+                ch_so++;
+            }
+
             int ch_eo = childNodeRange[1];
             if (astOffset >= ch_so && astOffset < ch_eo) {
                 //the child is or contains the searched node
-                return findDescendant(child, astOffset);
+                return findDescendant(child, astOffset, true);
             }
 
         }
@@ -106,13 +125,13 @@ public class AstNodeUtils {
         return node;
     }
 
-    public  static AstNode getTagNode(AstNode node, int astOffset) {
-        if(node.type() == AstNode.NodeType.OPEN_TAG) {
+    public static AstNode getTagNode(AstNode node, int astOffset) {
+        if (node.type() == AstNode.NodeType.OPEN_TAG) {
             if (astOffset >= node.startOffset() && astOffset < node.endOffset()) {
                 //the offset falls directly to the tag
                 return node;
             }
-            
+
             AstNode match = node.getMatchingTag();
             if (match != null && match.type() == AstNode.NodeType.ENDTAG) {
                 //end tag is possibly the searched node
@@ -125,7 +144,7 @@ public class AstNodeUtils {
             //the open or end tag ranges.
             return null;
         }
-        
+
         return node;
     }
 
@@ -137,7 +156,7 @@ public class AstNodeUtils {
     public static AstNode query(AstNode base, String path) {
         StringTokenizer st = new StringTokenizer(path, "/");
         AstNode found = base;
-        while(st.hasMoreTokens()) {
+        while (st.hasMoreTokens()) {
             String token = st.nextToken();
             int indexDelim = token.indexOf('|');
 
@@ -147,16 +166,16 @@ public class AstNodeUtils {
 
             int count = 0;
             AstNode foundLocal = null;
-            for(AstNode child : found.children()) {
-                if(child.type() == AstNode.NodeType.OPEN_TAG && child.name().equals(nodeName) && count++ == index) {
+            for (AstNode child : found.children()) {
+                if (child.type() == AstNode.NodeType.OPEN_TAG && child.name().equals(nodeName) && count++ == index) {
                     foundLocal = child;
                     break;
                 }
             }
-            if(foundLocal != null) {
+            if (foundLocal != null) {
                 found = foundLocal;
 
-                if(!st.hasMoreTokens()) {
+                if (!st.hasMoreTokens()) {
                     //last token, we may return
                     assert found.name().equals(nodeName);
                     return found;
@@ -170,6 +189,74 @@ public class AstNodeUtils {
         return null;
     }
 
+    public static Collection<DTD.Element> getPossibleOpenTagElements(AstNode root, int astPosition) {
+        HashSet<DTD.Element> elements = new HashSet<DTD.Element>();
+
+        assert root.type() == AstNode.NodeType.ROOT;
+
+        //exlusive to start offset so |<div> won't return the div tag but <|div> will
+        AstNode leafNodeForPosition = AstNodeUtils.findDescendant(root, astPosition, true);
+
+        //search first dtd element node in the tree path
+        while(leafNodeForPosition.getDTDElement() == null &&
+                leafNodeForPosition.type() != AstNode.NodeType.ROOT) {
+            leafNodeForPosition = leafNodeForPosition.parent();
+        }
+
+        assert leafNodeForPosition != null;
+
+        //root allows all dtd elements
+        if (leafNodeForPosition == root) {
+            return root.getAllPossibleElements();
+        }
+
+        //check if the ast offset falls into the node range (not logical range!!!)
+        if (leafNodeForPosition.startOffset() <= astPosition && leafNodeForPosition.endOffset() > astPosition) {
+            //if so return empty list - nothing is allowed inside tag content
+            return Collections.EMPTY_LIST;
+        }
+
+        assert leafNodeForPosition.type() == AstNode.NodeType.OPEN_TAG; //nothing else than open tag can contain non-tag content
+
+        DTD.ContentModel contentModel = leafNodeForPosition.getDTDElement().getContentModel();
+        DTD.Content content = contentModel.getContent();
+        //resolve all preceding siblings before the astPosition
+        for (AstNode sibling : leafNodeForPosition.children()) {
+            if (sibling.startOffset() >= astPosition) {
+                //process only siblings before the offset!
+                break;
+            }
+            if (sibling.type() == AstNode.NodeType.OPEN_TAG) {
+                DTD.Content subcontent = content.reduce(sibling.getDTDElement().getName());
+                assert subcontent != null : "content is null after sibling '" + sibling.name() + "'; known to happen after meta tag in head - see HtmlCompletionQueryTest.testOpenTagAtMetaTagEnd()"; //NOI18N
+                content = subcontent;
+            }
+        }
+
+        if (!leafNodeForPosition.needsToHaveMatchingTag()) {
+            //optional end, we need to also add results for the situation
+            //the node is automatically closed - which is before the node start
+
+            //but do not do that on the root level
+            if(leafNodeForPosition.parent().type() != AstNode.NodeType.ROOT) {
+                elements.addAll(getPossibleOpenTagElements(root, leafNodeForPosition.startOffset()));
+            }
+        }
+
+        elements.addAll(content.getPossibleElements());
+        elements.addAll(contentModel.getIncludes());
+        elements.removeAll(contentModel.getExcludes());
+
+        return elements;
+    }
+
+    public static boolean hasForbiddenEndTag(AstNode node) {
+        DTD.Element e = node.getDTDElement();
+        assert e != null;
+
+        return e.isEmpty();
+    }
+   
     public static void visitChildren(AstNode node, AstNodeVisitor visitor) {
         for (AstNode n : node.children()) {
             visitor.visit(n);
