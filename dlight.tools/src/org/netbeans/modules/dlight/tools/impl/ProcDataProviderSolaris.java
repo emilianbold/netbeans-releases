@@ -129,6 +129,7 @@ public class ProcDataProviderSolaris implements ProcDataProvider.Engine {
     }
 
     private static String getFirstToken(String line) {
+        line = line.trim();
         int endIdx = line.indexOf(' ');
         if (endIdx < 0) {
             endIdx = line.length();
