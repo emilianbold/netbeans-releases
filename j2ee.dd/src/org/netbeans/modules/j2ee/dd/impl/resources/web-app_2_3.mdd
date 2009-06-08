@@ -190,6 +190,18 @@
                 public int removeDispatcher(java.lang.String value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(WebApp.VERSION_2_3);
                 }
+public void setUrlPatterns(java.lang.String[] values) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+    throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(WebApp.VERSION_2_3);
+}
+public java.lang.String[] getUrlPatterns() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+    throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(WebApp.VERSION_2_3);
+}
+public void setServletNames(java.lang.String[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+    throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(WebApp.VERSION_2_3);
+}
+public java.lang.String[] getServletNames() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+    throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(WebApp.VERSION_2_3);
+}
             </user-code>
 	</meta-element>
 	<meta-element>

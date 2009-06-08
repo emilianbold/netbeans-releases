@@ -45,15 +45,13 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.html.HtmlSyntaxSupport;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.Registry;
 import org.netbeans.editor.ext.html.dtd.Utils;
 import org.netbeans.editor.ext.html.parser.AstNode.Description;
 import org.netbeans.editor.ext.html.test.TestBase;
+import org.netbeans.modules.html.editor.NbReaderProvider;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -64,15 +62,19 @@ public class SyntaxTreeTest extends TestBase {
 
     private static final String DATA_DIR_BASE = "testfiles/syntaxtree/";
 
-    private static final LanguagePath languagePath = LanguagePath.get(HTMLTokenId.language());
-
     public SyntaxTreeTest(String testName) {
         super(testName);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        NbReaderProvider.setupReaders();
+    }
+
     public static Test xsuite(){
 	TestSuite suite = new TestSuite();
-        suite.addTest(new SyntaxTreeTest("testLogicalRangesOfBrokenSource"));
+        suite.addTest(new SyntaxTreeTest("testLogicalEndOfTagWithOptinalEnd"));
         return suite;
     }
 
@@ -177,7 +179,7 @@ public class SyntaxTreeTest extends TestBase {
     }
 
     public void testIssue162576() throws Exception {
-        String code = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\"" +
+        String code = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" " +
                 "\"http://www.w3.org/TR/html4/strict.dtd\">" +
                 "<form action=''>" +
                 "<fieldset title=\"requestMethod\">" +
@@ -361,6 +363,21 @@ public class SyntaxTreeTest extends TestBase {
                 desc(SyntaxTree.UNKNOWN_ATTRIBUTE_KEY, 48, 53, Description.WARNING));
     }
 
+    public void testLogicalEndOfUnclosedTag() throws BadLocationException {
+        String code = "<div></";
+        //             01234567
+        AstNode root = parse(code, null);
+
+        AstNode divNode = root.children().get(0);
+        AstNode errorNode = divNode.children().get(0);
+
+        assertEquals(5, errorNode.startOffset());
+        assertEquals(7, errorNode.endOffset());
+
+        //check div logical end
+        assertEquals(7, divNode.getLogicalRange()[1]);
+    }
+
     public void testErrorDescriptionsOnOpenTags() throws Exception {
         //error descriptions attached to open tags should span either the whole
         //tag area if there are no attributes or just the opening symbol and
@@ -409,13 +426,8 @@ public class SyntaxTreeTest extends TestBase {
     private void testSyntaxTree(String testFile) throws Exception {
         FileObject source = getTestFile(DATA_DIR_BASE + testFile);
         BaseDocument doc = getDocument(source);
-        HtmlSyntaxSupport sup = HtmlSyntaxSupport.get(doc);
-        assertNotNull(sup);
-        DTD dtd = sup.getDTD();
-        assertNotNull(dtd);
-        SyntaxParser parser = SyntaxParser.get(doc, languagePath);
-        parser.forceParse();
-        AstNode root = SyntaxTree.makeTree(parser.elements(), dtd);
+        String code = doc.getText(0, doc.getLength());
+        AstNode root = SyntaxParser.parse(code).getASTRoot();
         StringBuffer output = new StringBuffer();
         AstNodeUtils.dumpTree(root, output);
         assertDescriptionMatches(source, output.toString(), false, ".pass", true);
@@ -512,23 +524,17 @@ public class SyntaxTreeTest extends TestBase {
     }
 
     private AstNode parse(String code, String publicId) throws BadLocationException {
-        BaseDocument doc = createDocument();
-        doc.insertString(0, code, null);
-        HtmlSyntaxSupport sup = HtmlSyntaxSupport.get(doc);
-        assertNotNull(sup);
-
+        SyntaxParserResult result = SyntaxParser.parse(code);
         DTD dtd;
         if(publicId == null) {
-            dtd = sup.getDTD();
+            dtd = result.getDTD();
+            assertNotNull("Likely invalid public id: " + result.getPublicID(), dtd);
         } else {
             dtd = Registry.getDTD(publicId, null);
             assertEquals(publicId, dtd.getIdentifier());
         }
-
         assertNotNull(dtd);
-        SyntaxParser parser = SyntaxParser.get(doc, languagePath);
-        parser.forceParse();
-        return SyntaxTree.makeTree(parser.elements(), dtd);
+        return SyntaxTree.makeTree(result.getElements(), dtd);
     }
 
 }

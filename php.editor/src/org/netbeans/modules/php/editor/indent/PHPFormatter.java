@@ -103,6 +103,8 @@ public class PHPFormatter implements Formatter {
         // end of hotfix
 
         reindent(context, null);
+//        PHPNewLineIndenter indenter = new PHPNewLineIndenter(context);
+//        indenter.process();
     }
 
     public void reformat(Context context, ParserResult info) {
