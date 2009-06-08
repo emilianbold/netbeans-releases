@@ -1067,6 +1067,12 @@ jarsigner.storepass=${jarsigner.storepass}
         </antcall>
     </target>
 
+    <target name="build-nb-python">	
+	<antcall target="build-nb-product">
+	    <param name="component.uid"  value="nb-python"/>
+        </antcall>
+    </target>
+
     <target name="build-nb-groovy">        
 	<antcall target="build-nb-product">
 	    <param name="component.uid"  value="nb-groovy"/>
@@ -1352,6 +1358,23 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-webcommon" version="${nb.full.version}"/>
             <component uid="nb-php"       version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="php"/>
+        </create-bundle>
+
+	<antcall target="convert-netbeans-bundle"/>
+    </target>
+
+
+    <target name="generate-netbeans-python-bundle">
+	<property name="bundle.prefix" 
+             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-python-${bundle.platform}"/>
+
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="${bundle.platform}" 
+                       target="${bundle.prefix}.${bundle.extension}">
+            <component uid="nb-base"      version="${nb.full.version}"/>
+            <component uid="nb-webcommon" version="${nb.full.version}"/>
+            <component uid="nb-python"       version="${nb.full.version}"/>
+	    <bundleProperty name="${welcome.type}" value="python"/>
         </create-bundle>
 
 	<antcall target="convert-netbeans-bundle"/>
@@ -1658,6 +1681,34 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="bundle.extension" value="zip"/>
         </antcall>
 	<antcall target="generate-netbeans-php-bundle">	
+	    <param name="bundle.platform"  value="macosx-ppc"/>
+	    <param name="bundle.extension" value="zip"/>
+        </antcall>
+    </target>
+
+    <target name="generate-netbeans-python-bundles">
+        <!-- Python bundles -->
+	<antcall target="generate-netbeans-python-bundle">	
+	    <param name="bundle.platform"  value="windows"/>
+	    <param name="bundle.extension" value="exe"/>
+        </antcall>
+	<antcall target="generate-netbeans-python-bundle">	
+	    <param name="bundle.platform"  value="linux"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-netbeans-python-bundle">	
+	    <param name="bundle.platform"  value="solaris-x86"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-netbeans-python-bundle">	
+	    <param name="bundle.platform"  value="solaris-sparc"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-netbeans-python-bundle">	
+	    <param name="bundle.platform"  value="macosx-x86"/>
+	    <param name="bundle.extension" value="zip"/>
+        </antcall>
+	<antcall target="generate-netbeans-python-bundle">	
 	    <param name="bundle.platform"  value="macosx-ppc"/>
 	    <param name="bundle.extension" value="zip"/>
         </antcall>

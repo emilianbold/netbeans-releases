@@ -1005,6 +1005,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         RUBY("ruby"),
         CND("cnd"),
         PHP("php"),
+        PYTHON("python"),
         JAVAFX("javafx"),
         CUSTOMIZE("customize"),
         JAVASE_JDK("javase.jdk"),
