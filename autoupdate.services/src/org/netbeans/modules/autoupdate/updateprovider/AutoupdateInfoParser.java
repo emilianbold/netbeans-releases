@@ -394,7 +394,7 @@ public class AutoupdateInfoParser extends DefaultHandler {
         try {
             jf = new JarFile (nbmFile);
         } catch (IOException ex) {
-            throw new IOException("Cannot open NBM file " + nbmFile, ex);
+            throw (IOException) new IOException("Cannot open NBM file " + nbmFile + ": " + ex).initCause(ex);
         }
         String locale = Locale.getDefault ().toString ();
         ZipEntry entry = jf.getEntry (INFO_DIR + '/' + INFO_LOCALE + '/' + INFO_NAME + '_' + locale + INFO_EXT);
