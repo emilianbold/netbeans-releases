@@ -102,7 +102,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     private static ExecutionEnvironment testExecutionEnvironment;
     private static RcFile rcFile;
 
-    protected synchronized RcFile getRcFile() throws IOException, RcFile.FormatException {
+    protected static synchronized RcFile getRcFile() throws IOException, RcFile.FormatException {
         if (rcFile == null) {
 
 
@@ -118,7 +118,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         return rcFile;
     }
 
-    protected ExecutionEnvironment getTestExecutionEnvironment() throws IOException, CancellationException {
+    protected static ExecutionEnvironment getTestExecutionEnvironment() throws IOException, CancellationException {
         synchronized(NativeExecutionBaseTestCase.class) {
             if (testExecutionEnvironment == null) {
                 String ui = System.getProperty("cnd.remote.testuserinfo"); // NOI18N
@@ -157,21 +157,21 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         }
 
         String rcFileName = System.getProperty("cnd.remote.testuserinfo.rcfile"); // NOI18N
-        File rcFile = null;
+        File userInfoFile = null;
         
         if (rcFileName == null) {
             String homePath = System.getProperty("user.home");
             if (homePath != null) {
                 File homeDir = new File(homePath);
-                rcFile = new File(homeDir, ".testuserinfo");
+                userInfoFile = new File(homeDir, ".testuserinfo");
             }
         }
 
-        if (rcFile == null || ! rcFile.exists()) {
+        if (userInfoFile == null || ! userInfoFile.exists()) {
             return null;
         }
 
-        BufferedReader rcReader = new BufferedReader(new FileReader(rcFile));
+        BufferedReader rcReader = new BufferedReader(new FileReader(userInfoFile));
         String str;
         Pattern infoPattern = Pattern.compile("^([^#].*)[ \t]+(.*)"); // NOI18N
         Pattern pwdPattern = Pattern.compile("([^:]+):(.*)@(.*)"); // NOI18N
@@ -222,13 +222,13 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         super.tearDown();
     }
 
-    protected void writeFile(File file, CharSequence content) throws IOException {
+    public static void writeFile(File file, CharSequence content) throws IOException {
         Writer writer = new FileWriter(file);
         writer.write(content.toString());
         writer.close();
     }
 
-    protected File createTempFile(String prefix, String suffix, boolean directory) throws IOException {
+    public static File createTempFile(String prefix, String suffix, boolean directory) throws IOException {
         File tmpFile = File.createTempFile(prefix, suffix);
         if (directory) {
             if(!(tmpFile.delete())) {

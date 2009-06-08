@@ -219,23 +219,36 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
          * @return the flags
          */
         public String getRealFlags() {
-            StringBuilder buf = new StringBuilder();
-            if (flags.indexOf("CFLAGS=") < 0) { // NOI18N
-                buf.append("CFLAGS="+PREDEFINED_FLAGS); // NOI18N
-            }
-            if (flags.indexOf("CXXFLAGS=") < 0 ){ // NOI18N
-                if (buf.length() > 0) {
-                    buf.append(' '); // NOI18N
+            String configure = getConfigure();
+            StringBuilder buf = new StringBuilder(flags);
+            if (configure.endsWith("CMakeLists.txt")){ // NOI18N
+                //"-G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS=\"-g3 -gdwarf-2\" -DCMAKE_CXX_FLAGS=\"-g3 -gdwarf-2\"";
+                if (flags.indexOf("-G ") < 0 ){ // NOI18N
+                    if (buf.length() > 0) {
+                        buf.append(' '); // NOI18N
+                    }
+                    buf.append("-G \"Unix Makefiles\""); // NOI18N
                 }
-                buf.append("CXXFLAGS="+PREDEFINED_FLAGS); // NOI18N
-            }
-            if (flags.length() > 0) {
-                if (buf.length() > 0) {
-                    buf.append(' '); // NOI18N
-                }
-                buf.append(flags);
+                appendIfNeed("-DCMAKE_C_FLAGS=", flags, buf); // NOI18N
+                appendIfNeed("-DCMAKE_CXX_FLAGS=", flags, buf); // NOI18N
+            } else if (configure.endsWith(".pro")){ // NOI18N
+                //"QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
+                appendIfNeed("QMAKE_CFLAGS=", flags, buf); // NOI18N
+                appendIfNeed("QMAKE_CXXFLAGS=", flags, buf); // NOI18N
+            } else {
+                appendIfNeed("CFLAGS=", flags, buf); // NOI18N
+                appendIfNeed("CXXFLAGS=", flags, buf); // NOI18N
             }
             return buf.toString();
+        }
+
+        private void appendIfNeed(String key, String flags, StringBuilder buf){
+            if (flags.indexOf(key) < 0 ){ // NOI18N
+                if (buf.length() > 0) {
+                    buf.append(' '); // NOI18N
+                }
+                buf.append(key+PREDEFINED_FLAGS); // NOI18N
+            }
         }
 
         /**
