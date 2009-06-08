@@ -721,13 +721,6 @@ public class MercurialAnnotator extends VCSAnnotator {
         }
     }
     
-    private boolean isNothingVersioned(File[] files) {
-        for (File file : files) {
-            if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) return false;
-        }
-        return true;
-    }
-    
     private static boolean onlyProjects(Node[] nodes) {
         if (nodes == null) return false;
         for (Node node : nodes) {
