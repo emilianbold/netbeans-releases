@@ -58,14 +58,24 @@ import org.openide.util.Exceptions;
  * @author Tomasz.Slota@Sun.COM
  */
 public class PHPNewLineIndenter {
-    Collection<ScopeDelimiter> scopeDelimiters = Arrays.asList(
+    private Context context;
+
+    private Collection<ScopeDelimiter> scopeDelimiters = null;
+
+    public PHPNewLineIndenter(Context context) {
+        this.context = context;
+
+        int indentSize = CodeStyle.get(context.document()).getIndentSize();
+
+        scopeDelimiters = Arrays.asList(
             new ScopeDelimiter(PHPTokenId.PHP_SEMICOLON, 0),
-            new ScopeDelimiter(PHPTokenId.PHP_CURLY_OPEN, 3)
-    );
+            new ScopeDelimiter(PHPTokenId.PHP_CURLY_OPEN, indentSize)
+        );
+    }
 
-    public void process(final Context context, final BaseDocument doc,
-            final int offset) {
-
+    public void process() {
+        final BaseDocument doc = (BaseDocument) context.document();
+        final int offset = context.caretOffset();
 
         doc.runAtomic(new Runnable() {
 
