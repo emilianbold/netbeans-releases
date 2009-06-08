@@ -149,27 +149,33 @@ public abstract class CommonLauncher extends Launcher {
     private void checkI18N() throws IOException {
         // i18n properties suffix
         LogManager.log(ErrorLevel.DEBUG, "Check i18n...");
-        String suffix = getI18NResourcePrefix();
-        if(i18nMap.isEmpty() && suffix!=null) {
-            // load from engine`s entries list
+        String prefix   = getI18NResourcePrefix();
+        String baseName = getI18NBundleBaseName();
+
+        if(i18nMap.isEmpty() && prefix!=null && baseName!=null) {
             LogManager.log("... i18n properties were not set. using default from resources");
-            InputStream is = ResourceUtils.getResource(EngineResources.ENGINE_CONTENTS_LIST);
-            String [] resources = StringUtils.splitByLines(
-                    StreamUtils.readStream(is));
-            List <String> list = new ArrayList <String> ();
-            LogManager.log("... total engine resources: " + resources.length); //NOI18N
-            for(String res : resources) {
-                if(res.startsWith(suffix) &&
-                        res.endsWith(FileUtils.PROPERTIES_EXTENSION)) {
-                    list.add(res);
-                }
-            }
-            LogManager.log("... total i18n resources: " + list.size()); //NOI18N
-            setI18n(list);
+            loadI18n(prefix, baseName);
         }
     }
-    
-    
+
+    private void loadI18n(String prefix, String baseName) throws IOException {
+        // load from engine`s entries list
+        LogManager.log("... loading i18n properties using prefix \"" + prefix + "\" with base name \"" + baseName + "\"");
+        InputStream is = ResourceUtils.getResource(EngineResources.ENGINE_CONTENTS_LIST);
+        String[] resources = StringUtils.splitByLines(StreamUtils.readStream(is));
+        is.close();
+        List<String> list = new ArrayList<String>();
+        LogManager.log("... total engine resources: " + resources.length); //NOI18N
+        for (String res : resources) {
+            if (res.startsWith(prefix + baseName) &&
+                    res.endsWith(FileUtils.PROPERTIES_EXTENSION)) {
+                list.add(res);
+            }
+        }
+        LogManager.log("... total i18n resources: " + list.size()); //NOI18N
+        setI18n(list);
+    }
+
     protected void checkBundledJars()  throws IOException  {
         LogManager.log(ErrorLevel.DEBUG, "Checking bundled jars...");
         for(LauncherResource f : jars) {

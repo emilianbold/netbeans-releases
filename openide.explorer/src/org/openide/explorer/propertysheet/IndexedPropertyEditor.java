@@ -328,7 +328,7 @@ class IndexedPropertyEditor extends Object implements ExPropertyEditor {
         }
 
         MyIndexedRootNode idr = new MyIndexedRootNode(n);
-        Index ind = (Index) idr.getCookie(Index.class);
+        Index ind = idr.getCookie(Index.class);
 
         for (int i = 0; i < n.length; i++) {
             ind.addChangeListener(org.openide.util.WeakListeners.change(n[i], ind));
@@ -477,7 +477,7 @@ class IndexedPropertyEditor extends Object implements ExPropertyEditor {
          */
         public void stateChanged(ChangeEvent e) {
             Node parent = getParentNode();
-            Index i = (Index) parent.getCookie(Index.class);
+            Index i = parent.getCookie(Index.class);
 
             if (i != null) {
                 int currentIndex = i.indexOf(this);
@@ -562,7 +562,7 @@ class IndexedPropertyEditor extends Object implements ExPropertyEditor {
                         DisplayIndexedNode din = new DisplayIndexedNode(array.length - 1);
                         getChildren().add(new Node[] { din });
 
-                        Index i = (Index) getCookie(Index.class);
+                        Index i = getCookie(Index.class);
                         i.addChangeListener(org.openide.util.WeakListeners.change(din, i));
                     }
                 };

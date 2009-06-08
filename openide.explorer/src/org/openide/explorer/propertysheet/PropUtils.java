@@ -346,7 +346,7 @@ final class PropUtils {
 
     static void focusEventToString(FocusEvent fe, final StringBuffer sb) {
         Component target = (Component) fe.getSource();
-        Component opposite = (Component) fe.getOppositeComponent();
+        Component opposite = fe.getOppositeComponent();
         sb.append(" focus "); //NOI18N
         sb.append((fe.getID() == FocusEvent.FOCUS_GAINED) ? " gained by " : " lost by "); //NOI18N
         compToString(target, sb);
