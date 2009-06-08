@@ -58,7 +58,7 @@ import org.openide.util.datatransfer.PasteType;
 
 public class EvaluatorNodeModelFilter implements ExtendedNodeModelFilter {
 
-    private Collection<ModelListener> listeners = new HashSet<ModelListener>();
+    private final Collection<ModelListener> listeners = new HashSet<ModelListener>();
 
     public void addModelListener(ModelListener l) {
         synchronized (listeners) {
@@ -125,9 +125,6 @@ public class EvaluatorNodeModelFilter implements ExtendedNodeModelFilter {
         if (node == CodeEvaluator.getResult()) {
             return "org/netbeans/modules/debugger/jpda/resources/evaluator_result_16.png"; // NOI18N
         }
-        if (shouldIgnore(node)) {
-            return WatchesNodeModel.WATCH;
-        }
         return original.getIconBaseWithExtension(node);
     }
 
@@ -137,9 +134,6 @@ public class EvaluatorNodeModelFilter implements ExtendedNodeModelFilter {
         }
         if (node == CodeEvaluator.getResult()) {
             return "org/netbeans/modules/debugger/jpda/resources/evaluator_result_16.png"; // NOI18N
-        }
-        if (shouldIgnore(node)) {
-            return WatchesNodeModel.WATCH;
         }
         return original.getIconBase(node);
     }
@@ -153,9 +147,6 @@ public class EvaluatorNodeModelFilter implements ExtendedNodeModelFilter {
             if (str != null) {
                 return str;
             }
-        }
-        if (shouldIgnore(node)) {
-            return "";
         }
         return original.getDisplayName(node);
     }
@@ -179,15 +170,7 @@ public class EvaluatorNodeModelFilter implements ExtendedNodeModelFilter {
                 return buf.toString();
             }
         }
-        if (shouldIgnore(node)) {
-            return "";
-        }
         return original.getShortDescription(node);
-    }
-
-    private boolean shouldIgnore(Object node) {
-        String name = node.getClass().getSimpleName();
-        return "AbstractVariable".equals(name) || "AbstractObjectVariable".equals(name); // [TODO]
     }
 
 }

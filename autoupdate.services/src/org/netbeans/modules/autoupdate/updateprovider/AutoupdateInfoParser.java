@@ -201,7 +201,6 @@ public class AutoupdateInfoParser extends DefaultHandler {
                     buf.append (line);
                 }
                 md.appendNotification (buf.toString ());
-                lines.clear ();
                 break;
             case external_package :
                 ERR.info ("Not supported yet.");
@@ -219,7 +218,6 @@ public class AutoupdateInfoParser extends DefaultHandler {
                 currentUpdateLicenseImpl.setAgreement (sb.toString ());
                 
                 currentLicense.pop ();
-                lines.clear ();
                 break;
             default:
                 ERR.warning ("Unknown element " + qName);
@@ -238,6 +236,7 @@ public class AutoupdateInfoParser extends DefaultHandler {
 
     @Override
     public void startElement (String uri, String localName, String qName, Attributes attributes) throws SAXException {
+        lines.clear();
         switch (ELEMENTS.valueOf (qName)) {
             case module :
                 ModuleDescriptor md = new ModuleDescriptor (nbmFile);
@@ -272,7 +271,6 @@ public class AutoupdateInfoParser extends DefaultHandler {
                 ERR.info ("Not supported yet.");
                 break;
             case license :
-                assert lines.isEmpty (): "No other license is processing at start of new license.";
                 currentLicense.push (attributes.getValue (LICENSE_ATTR_NAME));
                 break;
             default:

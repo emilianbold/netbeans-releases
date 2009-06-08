@@ -189,8 +189,9 @@ public class AutoupdateCatalogCache {
     }
     
     private String readFile(File file) {
+        FileInputStream fr = null;
         try {
-                FileInputStream fr = new FileInputStream(file);
+                fr = new FileInputStream(file);
                 byte[] buffer = new byte[8192];
                 int n = 0;
                 StringBuilder sb = new StringBuilder();
@@ -201,6 +202,14 @@ public class AutoupdateCatalogCache {
             } catch (IOException e) {
                 err.log(Level.INFO, "Can`t read license from file " + file, e);
                 return null;
+            } finally {
+                if(fr != null) {
+                    try {
+                        fr.close();
+                    } catch (IOException e) {
+                        err.log(Level.INFO, "Can`t read close input stream for " + file, e);
+                    }
+                }
             }
     }
     private void writeToFile(String content, File file) {

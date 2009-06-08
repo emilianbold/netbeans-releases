@@ -359,7 +359,7 @@ final class DragDropUtilities extends Object {
 
     /** If our clipboard is not found return the default system clipboard. */
     private static Clipboard getClipboard() {
-        Clipboard c = (Clipboard) Lookup.getDefault().lookup(Clipboard.class);
+        Clipboard c = Lookup.getDefault().lookup(Clipboard.class);
 
         if (c == null) {
             c = Toolkit.getDefaultToolkit().getSystemClipboard();

@@ -129,6 +129,25 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
                     }
                 }
             }
+            //TODO refactor to reuse in both java and groovy mimetype
+            grp = srcs.getSourceGroups(MavenSourcesImpl.TYPE_GROOVY);
+            if ("text/x-groovy".equals(fo.getMIMEType())) {//NOI18N
+                for (int i = 0; i < grp.length; i++) {
+                    relPath = FileUtil.getRelativePath(grp[i].getRootFolder(), fo);
+                    if (relPath != null) {
+                        group = grp[i];
+                        replaceMap.put(CLASSNAME_EXT, fo.getNameExt());
+                        replaceMap.put(CLASSNAME, fo.getName());
+                        String pack = FileUtil.getRelativePath(grp[i].getRootFolder(), fo.getParent());
+                        if (pack != null) { //#141175
+                            replaceMap.put(PACK_CLASSNAME, (pack + (pack.length() > 0 ? "." : "") + fo.getName()).replace('/', '.')); //NOI18N
+                        } else {
+                            replaceMap.put(PACK_CLASSNAME, fo.getName());//NOI18N
+                        }
+                        break;
+                    }
+                }
+            }
             if (relPath == null) {
                 replaceMap.put(CLASSNAME_EXT, "");//NOI18N
                 replaceMap.put(CLASSNAME, "");//NOI18N
@@ -224,6 +243,12 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
                             }
                         }
                     }
+                }
+                if ("text/x-groovy".equals(fo.getMIMEType())) {
+                    //TODO this only applies to groovy files with main() method.
+                    // we should have a way to execute any groovy script? how?
+                    // running groovy tests is another specialized usecase.
+                    return action + ".main";
                 }
             }
         }
