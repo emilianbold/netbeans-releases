@@ -60,7 +60,7 @@ import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
  *
  * @author Sergey Grinev
  */
-public class RemoteDevelopmentTest extends CndBaseTestSuite {
+public class RemoteDevelopmentTestSuite extends CndBaseTestSuite {
 
 //    static {
 //        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
@@ -68,7 +68,7 @@ public class RemoteDevelopmentTest extends CndBaseTestSuite {
 //        System.setProperty("nativeexecution.support.logger.level", "0");
 //    }
 
-    public RemoteDevelopmentTest() {
+    public RemoteDevelopmentTestSuite() {
         super("Remote Development"); // NOI18N
         try {
             addTest(MappingsTestCase.class, getTestExecutionEnvironments());
@@ -84,7 +84,7 @@ public class RemoteDevelopmentTest extends CndBaseTestSuite {
     }
 
     public static Test suite() {
-        TestSuite suite = new RemoteDevelopmentTest();
+        TestSuite suite = new RemoteDevelopmentTestSuite();
         return suite;
     }
 
