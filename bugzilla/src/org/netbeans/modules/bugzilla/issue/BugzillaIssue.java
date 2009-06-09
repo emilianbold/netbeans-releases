@@ -197,7 +197,12 @@ public class BugzillaIssue extends Issue {
     }
 
     void opened() {
-        seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
+        if(!data.isNew()) {
+            // 1.) to get seen attributes makes no sense for new issues
+            // 2.) set seenAtributes on issue open, before its actuall
+            //     state is written via setSeen().
+            seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
+        }
         String refresh = System.getProperty("org.netbeans.modules.bugzilla.noIssueRefresh"); // NOI18N
         if(refresh != null && refresh.equals("true")) {                                      // NOI18N
             return;
@@ -835,7 +840,6 @@ public class BugzillaIssue extends Issue {
         }
         return true;
     }
-
 
     private Map<String, String> getSeenAttributes() {
         if(seenAtributes == null) {
