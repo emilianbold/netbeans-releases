@@ -50,8 +50,8 @@ made subject to such option by the copyright holder.
     <Toolbar name="UndoRedo" />
     <Toolbar name="Build" />
     <Toolbar name="Debug" />
-    <Toolbar name="Memory"/>
-    <Toolbar name="QuickSearch" align="right" />
+    <Toolbar name="Memory" visible="false"/>
+    <Toolbar name="QuickSearch" align="right" dragable="false" />
   </Row>
 
 </Configuration>
