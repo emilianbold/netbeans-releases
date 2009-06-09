@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
@@ -97,7 +98,7 @@ public abstract class APTIfConditionBaseNode extends APTTokenAndChildBasedNode
         return condition != null ? new ListBasedTokenStream(condition) : APTUtils.EMPTY_STREAM;
     }
     
-    public boolean accept(APTToken token) {
+    public boolean accept(APTFile curFile,APTToken token) {
         assert (token != null);
         int ttype = token.getType();
         assert (!APTUtils.isEOF(ttype)) : "EOF must be handled in callers"; // NOI18N

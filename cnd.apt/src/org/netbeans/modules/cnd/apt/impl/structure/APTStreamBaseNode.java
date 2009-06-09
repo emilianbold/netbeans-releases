@@ -47,6 +47,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.apt.structure.APT;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
@@ -81,7 +82,7 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
     ////////////////////////////////////////////////////////////////////////////
     // implementation of abstract methods
     
-    public boolean accept(APTToken token) {
+    public boolean accept(APTFile curFile,APTToken token) {
         boolean accepted = false;
         if (validToken(token)) {
             accepted = true;
