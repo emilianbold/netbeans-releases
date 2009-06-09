@@ -90,7 +90,7 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
                 // init macro name only once
                 if (DebugUtils.STANDALONE) {
                     System.err.printf("%s, line %d: warning: extra tokens at end of %s directive\n", // NOI18N
-                            curFile == null ? "<no file>" : curFile.getPath(), getToken().getLine(), getToken().getText().trim());
+                            curFile == null ? "<no file>" : curFile.getPath(), getToken().getLine(), getToken().getText().trim()); // NOI18N
                 } else {
                     APTUtils.LOG.log(Level.WARNING, "line {1}: warning: extra tokens at end of {2} directive", // NOI18N
                             new Object[] {curFile == null ? "<no file>" : curFile.getPath(), getToken().getLine(), getToken().getText().trim()} ); // NOI18N

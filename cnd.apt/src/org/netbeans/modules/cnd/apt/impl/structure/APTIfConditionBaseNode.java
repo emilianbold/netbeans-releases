@@ -107,11 +107,11 @@ public abstract class APTIfConditionBaseNode extends APTTokenAndChildBasedNode
             endOffset = token.getOffset();
             if (condition == null) {
                 if (DebugUtils.STANDALONE) {
-                    System.err.printf("line %d: %s with no expression\n", // NOI18N
-                        getToken().getLine(), getToken().getText().trim());
+                    System.err.printf("%s, line %d: %s with no expression\n", // NOI18N
+                        curFile == null ? "<no file>" : curFile.getPath(), getToken().getLine(), getToken().getText().trim()); // NOI18N
                 } else {
-                    APTUtils.LOG.log(Level.SEVERE, "line {0}: {1} with no expression", // NOI18N
-                            new Object[] {getToken().getLine(), getToken().getText().trim()} );                
+                    APTUtils.LOG.log(Level.SEVERE, "{0}, line {1}: {2} with no expression", // NOI18N
+                            new Object[] {curFile == null ? "<no file>" : curFile.getPath(), getToken().getLine(), getToken().getText().trim()} );  // NOI18N
                 }
             }
             if (condition != null){
