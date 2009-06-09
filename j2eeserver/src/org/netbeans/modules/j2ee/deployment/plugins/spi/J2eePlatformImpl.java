@@ -51,6 +51,8 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.util.Lookup;
@@ -187,11 +189,11 @@ public abstract class J2eePlatformImpl {
      * @param moduleType type of the module
      * @return set of supported profiles
      * @see Profile
-     * @since 1.58
+     * @since 1.59
      */
-    public Set<Profile> getSupportedProfiles(Object moduleType) {
+    public Set<Profile> getSupportedProfiles(J2eeModule.Type moduleType) {
         Set<Profile> set = new HashSet<Profile>();
-        for (String spec : getSupportedSpecVersions(moduleType)) {
+        for (String spec : getSupportedSpecVersions(J2eeModuleAccessor.getDefault().getJsrModuleType(moduleType))) {
             Profile profile = Profile.fromPropertiesString(spec);
             if (profile != null) {
                 set.add(profile);
@@ -206,8 +208,27 @@ public abstract class J2eePlatformImpl {
      * class.
      *
      * @return list of supported J2EE module types.
+     * @deprecated override {@link #getSupportedTypes()}
      */
-    public abstract Set/*<Object>*/ getSupportedModuleTypes();
+    public Set getSupportedModuleTypes() {
+        return Collections.emptySet();
+    }
+
+    /**
+     *
+     * @return
+     * @since 1.59
+     */
+    public Set<J2eeModule.Type> getSupportedTypes() {
+        Set<J2eeModule.Type> result = new HashSet<J2eeModule.Type>();
+        for (Object obj : getSupportedModuleTypes()) {
+            J2eeModule.Type type = J2eeModule.Type.fromJsrType(obj);
+            if (type != null) {
+                result.add(type);
+            }
+        }
+        return result;
+    }
     
     /**
      * Return a set of J2SE platform versions this J2EE platform can run with.
