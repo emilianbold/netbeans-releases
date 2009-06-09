@@ -41,13 +41,13 @@ package org.netbeans.modules.cnd.discovery.project;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
  * @author Alexander Simon
  */
-public class DiscoverySuiteTest extends BaseTestSuite {
+public class DiscoverySuiteTest extends CndBaseTestSuite {
 
     public DiscoverySuiteTest() {
         super("C/C++ Discovery Test"); // NOI18N

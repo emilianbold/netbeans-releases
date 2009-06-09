@@ -85,7 +85,9 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         try {
             hinfo = HostInfoUtils.getHostInfo(info.getExecutionEnvironment());
         } catch (IOException ex) {
+            log.log(Level.WARNING, "Exception while getting host info:", ex); //NOI18N
         } catch (CancellationException ex) {
+            // no logging for cancellation
         }
         hostInfo = hinfo;
 

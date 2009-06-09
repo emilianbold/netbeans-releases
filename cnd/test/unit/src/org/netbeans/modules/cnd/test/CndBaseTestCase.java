@@ -57,14 +57,12 @@ import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
 import org.netbeans.modules.cnd.editor.cplusplus.CKit;
 import org.netbeans.modules.cnd.editor.cplusplus.HKit;
 import org.netbeans.modules.cnd.editor.fortran.FKit;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 
 /**
@@ -159,7 +157,11 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
     public CndBaseTestCase(String testName) {
         super(testName);
     }
-    
+
+    public CndBaseTestCase(String name, ExecutionEnvironment testExecutionEnvironment) {
+        super(name, testExecutionEnvironment);
+    }
+
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
@@ -283,3 +285,4 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
         return getTestExecutionEnvironment() != null;
     }
 }
+
