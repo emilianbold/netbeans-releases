@@ -469,6 +469,10 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
     private void displayResult(Variable var) {
         this.result = var;
+        if (var == null) {
+            fireResultChange();
+            return ;
+        }
         //DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(var.getValue()));
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {

@@ -104,7 +104,7 @@ public class KenaiSupportTest extends NbTestCase implements TestConstants {
     }
     
     public void testGetRepositoryFromName () throws Throwable {
-        KenaiProject prj = instance.getProject("koliba");
+        KenaiProject prj = instance.getProject("golden-project-1");
         assertNotNull(prj);
 
         KenaiSupportImpl support = new KenaiSupportImpl();
@@ -116,7 +116,7 @@ public class KenaiSupportTest extends NbTestCase implements TestConstants {
     }
 
     public void testGetRepositoryFromUrl () throws Throwable {
-        KenaiProject prj = KenaiProject.forRepository("https://testkenai.com/svn/koliba~subversion ");
+        KenaiProject prj = KenaiProject.forRepository("https://testkenai.com/svn/golden-project-1~source-code-repository-svn ");
         assertNotNull(prj);
 
         KenaiSupportImpl support = new KenaiSupportImpl();
