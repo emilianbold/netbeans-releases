@@ -83,7 +83,7 @@ public class OpenIssueTest extends NbTestCase implements TestConstants {
         LogHandler handler = new LogHandler("open finish", LogHandler.Compare.ENDS_WITH);
         issue.open();
         handler.waitUntilDone();
-
+        assertTrue(handler.done);
     }
 
     private BugzillaRepository getRepository() {
@@ -130,7 +130,8 @@ public class OpenIssueTest extends NbTestCase implements TestConstants {
             while(!done) {
                 Thread.sleep(200);
                 if(System.currentTimeMillis() - t > TIMEOUT) {
-                    throw new IllegalStateException("timeout");
+//                    throw new IllegalStateException("timeout");
+                    return;
                 }
             }
         }
