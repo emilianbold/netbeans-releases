@@ -114,7 +114,7 @@ public class VCSHooksConfig {
         return new PushAction(values[0], values[1], values[2].equals("1") ? true : false); // NOI18N
     }
 
-    private Format getDefaultHgFormat() {
+    static Format getDefaultHgFormat() {
         return new Format(false, normalizeFormat(new String[] {
             NbBundle.getMessage(VCSHooksConfig.class, "LBL_Changeset"),         // NOI18N
             "{changeset}\n",                                                    // NOI18N
@@ -127,11 +127,11 @@ public class VCSHooksConfig {
         }));
     }
 
-    private Format getDefaultIssueFormat() {
+    static Format getDefaultIssueFormat() {
         return new Format(false, NbBundle.getMessage(VCSHooksConfig.class, "LBL_Issue") + "{id} - {summary}");  // NOI18N
     }
 
-    private Format getDefaultSvnFormat() {
+    static Format getDefaultSvnFormat() {
         return new Format(false, normalizeFormat(new String[] {
             NbBundle.getMessage(VCSHooksConfig.class, "LBL_Revision"),          // NOI18N
             "{revision}\n",                                                     // NOI18N
@@ -155,7 +155,7 @@ public class VCSHooksConfig {
         return format;
     }
 
-    private String normalizeFormat(String [] params) {
+    private static String normalizeFormat(String [] params) {
         int l = 0;
         for (int i = 0; i < params.length; i = i + 2) {
             if(l < params[i].length()) l = params[i].length();
