@@ -135,16 +135,8 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
      * moved to the begin of the stream
      */
     public TokenStream getTokenStream() {
-        return new TokenStreamIterator();
-    }
-    
-    ////////////////////////////////////////////////////////////////////////////
-    // reset tokens
-    @Override
-    public void dispose() {
-        super.dispose();
-        tokens = null;
-    }
+        return new TokenStreamIterator(getToken(), this.tokens);
+    }    
     
     ////////////////////////////////////////////////////////////////////////////
     // help implementation methods
@@ -160,15 +152,23 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
     protected abstract boolean validToken(APTToken t);
     
     /** token stream iterator */
-    private class TokenStreamIterator implements TokenStream {
+    private static class TokenStreamIterator implements TokenStream {
         private int index = -1;
+        private final APTToken firstToken;
+        private final List<APTToken> tokens;
+        private final int size;
+        public TokenStreamIterator(APTToken firstToken, List<APTToken> tokens) {
+            this.firstToken = firstToken;
+            this.tokens = tokens;
+            this.size = tokens.size();
+        }
         
         public APTToken nextToken() throws TokenStreamException {
             APTToken token;
             if (index == -1) {
-                token = getToken();
+                token = firstToken;
                 index++;
-            } else if (tokens != null && index < tokens.size()) {
+            } else if (tokens != null && index < size) {
                 token = tokens.get(index++);
             } else {
                 token = APTUtils.EOF_TOKEN;
