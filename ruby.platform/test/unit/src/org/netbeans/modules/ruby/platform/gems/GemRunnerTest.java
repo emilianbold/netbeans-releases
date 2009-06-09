@@ -45,6 +45,7 @@ import java.util.List;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.api.ruby.platform.RubyTestBase;
+import org.netbeans.modules.ruby.platform.RubyPreferences;
 
 public final class GemRunnerTest extends RubyTestBase {
 
@@ -53,13 +54,28 @@ public final class GemRunnerTest extends RubyTestBase {
     }
 
     public void testGemsAreFetchedWithDescriptions() { // # issue 125508
+        RubyPreferences.setFetchGemDescriptions(true);
+        List<Gem> installed = getInstalledGems();
+        for (Gem gem : installed) {
+            assertNotNull(gem.getName() + " does not have description", gem.getDescription());
+        }
+    }
+
+    public void testGemsAreFetchedWithoutDescriptions() { // # issue 125508
+        RubyPreferences.setFetchGemDescriptions(false);
+        List<Gem> installed = getInstalledGems();
+        for (Gem gem : installed) {
+            assertNull(gem.getName() + " has description", gem.getDescription());
+        }
+    }
+
+    private List<Gem> getInstalledGems() {
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
         GemManager gm = jruby.getGemManager();
+        gm.resetLocal();
         List<String> errors = new ArrayList<String>();
         List<Gem> installed = gm.getInstalledGems(errors);
         assertFalse("has some installed gems in default platform", installed.isEmpty());
-        for (Gem gem : installed) {
-            assertNotNull(gem.getName() + " has description", gem.getDescription());
-        }
+        return installed;
     }
 }

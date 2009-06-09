@@ -52,6 +52,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -190,6 +191,9 @@ public class AppClientProjectGeneratorTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         TestUtil.makeScratchDir(this);
+
+        MockLookup.setLayersAndInstances();
+        
         serverID = TestUtil.registerSunAppServer(this);
     }
     
