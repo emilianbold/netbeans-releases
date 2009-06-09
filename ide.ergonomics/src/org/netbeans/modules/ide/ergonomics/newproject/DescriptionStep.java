@@ -47,6 +47,7 @@ import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -67,8 +68,8 @@ import org.netbeans.modules.ide.ergonomics.fod.ConfigurationPanel;
 import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -77,6 +78,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
@@ -225,13 +227,22 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
         while (fo == null || iterator == null) {
             FoDFileSystem.getInstance().refresh();
             FoDFileSystem.getInstance().waitFinished();
+            // hot-fixed wizard providers - temporary
             if (templateResource.startsWith("Servers/WizardProvider")) {
-                Collection<? extends OptionalDeploymentManagerFactory> c = Lookups.forPath("J2EE/DeploymentPlugins/" +
-                        templateResource.substring(templateResource.indexOf('-') + 1, templateResource.indexOf('.')) + "/").lookupAll(OptionalDeploymentManagerFactory.class);
-                if (!c.isEmpty()) {
-                    OptionalDeploymentManagerFactory f = c.iterator().next();
-                    iterator = f.getAddInstanceIterator();
-                    fo = (FileObject) o;
+                try {
+                    ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+                    Class clazz = Class.forName("org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory", true, loader);
+                    Collection c = Lookups.forPath("J2EE/DeploymentPlugins/" +
+                            templateResource.substring(templateResource.indexOf('-') + 1, templateResource.indexOf('.')) + "/").lookupAll(clazz);
+                    if (!c.isEmpty()) {
+                        Object optFactory = c.iterator().next();
+                        Method m = optFactory.getClass().getMethod("getAddInstanceIterator");
+                        iterator = (InstantiatingIterator) m.invoke(optFactory);
+                        fo = (FileObject) o;
+                    }
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                    break;
                 }
             } else {
                 fo = FileUtil.getConfigFile(templateResource);
