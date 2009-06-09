@@ -1123,9 +1123,6 @@ out:            for (String mimeType : order) {
                             listsToAdd.add(ilist);
                         }
                         final ProxyIterable<Indexable> indexables = new ProxyIterable<Indexable>(listsToAdd);
-                        if (isize == 0) {
-                            continue out;
-                        }
 
                         // some CustomIndexers (eg. java) need to know about roots even when there
                         // are no modified Inexables at the moment (eg. java checks source level in
