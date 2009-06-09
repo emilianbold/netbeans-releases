@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.test;
 
 import junit.framework.TestCase;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 
 /**
  * IMPORTANT NOTE:
@@ -67,12 +67,12 @@ import org.netbeans.junit.NbTestSuite;
  * base class to isolate using of NbJUnit library
  * @author Vladimir Voskresensky
  */
-public class BaseTestSuite extends NbTestSuite {
+public class CndBaseTestSuite extends NativeExecutionBaseTestSuite {
     
     /**
      * Constructs an empty TestSuite.
      */
-    public BaseTestSuite() {
+    public CndBaseTestSuite() {
         super();
     }
 
@@ -81,14 +81,14 @@ public class BaseTestSuite extends NbTestSuite {
      * starting with "test" as test cases to the suite.
      *
      */
-    public BaseTestSuite(Class<? extends TestCase> theClass) {
+    public CndBaseTestSuite(Class<? extends TestCase> theClass) {
         super(theClass);
     }
 
     /**
      * Constructs an empty TestSuite.
      */
-    public BaseTestSuite(String name) {
+    public CndBaseTestSuite(String name) {
         super(name);
     }
 }
