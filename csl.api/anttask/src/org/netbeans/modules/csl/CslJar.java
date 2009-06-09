@@ -669,19 +669,11 @@ public class CslJar extends JarWithModuleAttributes {
 
         // Indexer factory
         item = createFile(doc, mimeFolder, "org-netbeans-modules-csl-core-EmbeddingIndexerFactoryImpl.instance"); // NOI18N
-<<<<<<< /home/hanz/Hanz/Dev/trunk/csl.api/anttask/src/org/netbeans/modules/csl/CslJar.java.orig.2909020279
         setFileAttribute(doc, item, "instanceCreate", METHODVALUE, "org.netbeans.modules.csl.core.EmbeddingIndexerFactoryImpl.create"); //NOI18N
         setFileAttribute(doc, item, "instanceOf", STRINGVALUE, "org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"); //NOI18N
-||||||| /tmp/CslJar.java~base.KyVbEp
-        setFileAttribute(doc, item, "instanceCreate", "methodvalue", "org.netbeans.modules.csl.core.EmbeddingIndexerFactoryImpl.create"); //NOI18N
-        setFileAttribute(doc, item, "instanceOf", "stringvalue", "org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"); //NOI18N
-=======
-        setFileAttribute(doc, item, "instanceCreate", "methodvalue", "org.netbeans.modules.csl.core.EmbeddingIndexerFactoryImpl.create"); //NOI18N
-        setFileAttribute(doc, item, "instanceOf", "stringvalue", "org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"); //NOI18N
 
         // TL Indexer factory
         item = createFile(doc, mimeFolder, "org-netbeans-modules-csl-core-TLIndexerFactory.instance"); // NOI18N
         setFileAttribute(doc, item, "instanceOf", "stringvalue", "org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"); //NOI18N
->>>>>>> /tmp/CslJar.java~other.zNx2_5
     }
 }
