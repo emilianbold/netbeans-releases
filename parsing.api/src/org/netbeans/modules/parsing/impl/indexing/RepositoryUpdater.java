@@ -917,7 +917,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         private final boolean followUpJob;
         private final boolean checkEditor;
         private final CountDownLatch latch = new CountDownLatch(1);
-        private final Map<String,EmbeddingIndexerFactory> embeddedIndexers = new HashMap<String, EmbeddingIndexerFactory>();
+        private final Map<String,List<EmbeddingIndexerFactory>> embeddedIndexers = new HashMap<String, List<EmbeddingIndexerFactory>>();
         private final CancelRequest cancelRequest = new CancelRequest() {
             public boolean isRaised() {
                 if (cancelled.get()) {
@@ -1173,11 +1173,13 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                             @Override
                             public void run(ResultIterator resultIterator) throws Exception {
                                 final String mimeType = src.getMimeType();
-                                final EmbeddingIndexerFactory indexer = findEmbeddingIndexer (mimeType);
-                                if (LOGGER.isLoggable(Level.FINE)) {
-                                    LOGGER.fine("Indexing " + fileObject.getPath() + "; using " + indexer + "; mimeType='" + mimeType + "'"); //NOI18N
+                                final List<EmbeddingIndexerFactory> indexers = findEmbeddingIndexers (mimeType);
+                                for (EmbeddingIndexerFactory indexerFactory : indexers) {
+                                    if (LOGGER.isLoggable(Level.FINE)) {
+                                        LOGGER.fine("Indexing " + fileObject.getPath() + "; using " + indexerFactory + "; mimeType='" + mimeType + "'"); //NOI18N
+                                    }
+                                    visit(resultIterator,indexerFactory);
                                 }
-                                visit(resultIterator,indexer);
                             }
 
                             private void visit (final ResultIterator resultIterator,
@@ -1205,8 +1207,9 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                                 Iterable<? extends Embedding> embeddings = resultIterator.getEmbeddings();
                                 for (Embedding embedding : embeddings) {
                                     final String mimeType = embedding.getMimeType();
-                                    final EmbeddingIndexerFactory indexerFactory = findEmbeddingIndexer(mimeType);
-                                    visit(resultIterator.getResultIterator(embedding), indexerFactory);
+                                    final List<EmbeddingIndexerFactory> indexerFactories = findEmbeddingIndexers(mimeType);
+                                    for (EmbeddingIndexerFactory indexerFactory : indexerFactories)
+                                        visit(resultIterator.getResultIterator(embedding), indexerFactory);
                                 }
                             }
                         });
@@ -1221,13 +1224,13 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             return true;
         }
 
-        private EmbeddingIndexerFactory findEmbeddingIndexer (final String mimeType) {
+        private List<EmbeddingIndexerFactory> findEmbeddingIndexers (final String mimeType) {
             assert mimeType != null;
-            EmbeddingIndexerFactory indexer = embeddedIndexers.get(mimeType);
+            List<EmbeddingIndexerFactory> indexer = embeddedIndexers.get(mimeType);
             if (indexer != null) {
                 return indexer;
             }
-            indexer = MimeLookup.getLookup(mimeType).lookup(EmbeddingIndexerFactory.class);
+            indexer = new ArrayList<EmbeddingIndexerFactory> (MimeLookup.getLookup(mimeType).lookupAll(EmbeddingIndexerFactory.class));
             if (indexer != null) {
                 embeddedIndexers.put(mimeType, indexer);
             }
