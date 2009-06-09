@@ -50,13 +50,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.swing.DefaultListCellRenderer;
@@ -90,11 +88,9 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -113,6 +109,8 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     private final String CPP_NAME = "C++"; // NOI18N
     private final String FORTRAN_NAME = "Fortran"; // NOI18N
     private final String ASSEMBLER_NAME = "Assembler"; // NOI18N
+    private final String QMAKE_NAME = "QMake"; // NOI18N
+    private final String CMAKE_NAME = "CMake"; // NOI18N
 
     public static final String PROP_VALID = "valid"; // NOI18N
 
@@ -217,6 +215,8 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         btVersions.setEnabled(false);
         tfMakePath.setEditable(false);
         tfGdbPath.setEditable(false);
+        tfQMakePath.setEditable(false);
+        tfCMakePath.setEditable(false);
         btVersions.setEnabled(false);
 
         if (model.enableRequiredCompilerCB()) {
@@ -338,6 +338,8 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
                 tfAsPath.setText(""); // NOI18N
                 tfMakePath.setText(""); // NOI18N
                 tfGdbPath.setText(""); // NOI18N
+                tfQMakePath.setText(""); // NOI18N
+                tfCMakePath.setText(""); // NOI18N
                 update(false);
             }
             changed = true;
@@ -403,6 +405,24 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
 
     private void validateAsPathField() {
         setPathFieldValid(tfAsPath, isPathFieldValid(tfAsPath));
+        dataValid();
+    }
+
+     private void setQMakePathField(String path) {
+        tfQMakePath.setText(path); // Validation happens automatically
+    }
+
+    private void validateQMakePathField() {
+        setPathFieldValid(tfQMakePath, isPathFieldValid(tfQMakePath));
+        dataValid();
+    }
+
+     private void setCMakePathField(String path) {
+        tfCMakePath.setText(path); // Validation happens automatically
+    }
+
+    private void validateCMakePathField() {
+        setPathFieldValid(tfCMakePath, isPathFieldValid(tfCMakePath));
         dataValid();
     }
 
@@ -582,6 +602,10 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
             tool.setPath(tfMakePath.getText());
             tool = currentCompilerSet.findTool(Tool.DebuggerTool);
             tool.setPath(tfGdbPath.getText());
+            tool = currentCompilerSet.findTool(Tool.QMakeTool);
+            tool.setPath(tfQMakePath.getText());
+            tool = currentCompilerSet.findTool(Tool.CMakeTool);
+            tool.setPath(tfCMakePath.getText());
         }
 
 
@@ -593,6 +617,8 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         Tool asSelection = cs.getTool(Tool.Assembler);
         Tool makeToolSelection = cs.getTool(Tool.MakeTool);
         Tool debuggerToolSelection = cs.getTool(Tool.DebuggerTool);
+        Tool qmakeToolSelection = cs.getTool(Tool.QMakeTool);
+        Tool cmakeToolSelection = cs.getTool(Tool.CMakeTool);
         if (cSelection != null) {
             setCPathField(cSelection.getPath());
         } else {
@@ -612,6 +638,16 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
             setAsPathField(asSelection.getPath());
         } else {
             tfAsPath.setText("");
+        }
+        if (qmakeToolSelection != null) {
+            setQMakePathField(qmakeToolSelection.getPath());
+        } else {
+            tfQMakePath.setText("");
+        }
+        if (cmakeToolSelection != null) {
+            setCMakePathField(cmakeToolSelection.getPath());
+        } else {
+            tfCMakePath.setText("");
         }
         setMakePathField(makeToolSelection.getPath());
         setGdbPathField(debuggerToolSelection.getPath());
@@ -639,6 +675,8 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
                 cs.getTool(Tool.CCCompiler).setPath(tfCppPath.getText());
                 cs.getTool(Tool.FortranCompiler).setPath(tfFortranPath.getText());
                 cs.getTool(Tool.Assembler).setPath(tfAsPath.getText());
+                cs.getTool(Tool.QMakeTool).setPath(tfQMakePath.getText());
+                cs.getTool(Tool.CMakeTool).setPath(tfCMakePath.getText());
                 model.setCompilerSetName(csm.getDefaultCompilerSet().getName());
                 model.setSelectedCompilerSetName(cs.getName());
             }
@@ -779,6 +817,8 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         btAsBrowse.setEnabled(enableBrowse);
         btMakeBrowse.setEnabled(enableBrowse);
         btDebuggerBrowse.setEnabled(enableBrowse);
+        btQMakeBrowse.setEnabled(enableBrowse);
+        btCMakeBrowse.setEnabled(enableBrowse);
         btVersions.setEnabled(enableVersions);
         updateTextField(tfMakePath, enableText, cleanText);
         updateTextField(tfGdbPath, enableText, cleanText);
@@ -787,6 +827,8 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         updateTextField(tfCppPath, enableText, cleanText);
         updateTextField(tfFortranPath, enableText, cleanText);
         updateTextField(tfAsPath, enableText, cleanText);
+        updateTextField(tfQMakePath, enableText, cleanText);
+        updateTextField(tfCMakePath, enableText, cleanText);
     }
 
     private void updateTextField(JTextField tf, boolean editable, boolean cleanText) {
@@ -964,6 +1006,10 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
             validateFortranPathField();
         } else if (title.equals(ASSEMBLER_NAME)) {
             validateAsPathField();
+        } else if (title.equals(QMAKE_NAME)) {
+            validateQMakePathField();
+        } else if (title.equals(CMAKE_NAME)) {
+            validateCMakePathField();
         }
     }
 
@@ -1091,6 +1137,16 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         btAsBrowse = new javax.swing.JButton();
         btFortranBrowse.addActionListener(this);
         lbFamilyValue = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        tfQMakePath = new javax.swing.JTextField();
+        tfQMakePath.getDocument().putProperty(Document.TitleProperty, QMAKE_NAME);
+        tfQMakePath.getDocument().addDocumentListener(this);
+        tfCMakePath = new javax.swing.JTextField();
+        tfCMakePath.getDocument().putProperty(Document.TitleProperty, CMAKE_NAME);
+        tfCMakePath.getDocument().addDocumentListener(this);
+        btQMakeBrowse = new javax.swing.JButton();
+        btCMakeBrowse = new javax.swing.JButton();
 
         setMinimumSize(new java.awt.Dimension(600, 400));
         setLayout(new java.awt.GridBagLayout());
@@ -1312,7 +1368,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         requiredToolsLabel.setText(bundle.getString("LBL_RequiredTools")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridy = 19;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 10, 0, 0);
         add(requiredToolsLabel, gridBagConstraints);
@@ -1370,7 +1426,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridy = 19;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 2, 0, 6);
@@ -1421,7 +1477,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridy = 18;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 6);
         add(btVersions, gridBagConstraints);
@@ -1451,7 +1507,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 15;
+        gridBagConstraints.gridy = 20;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
@@ -1630,6 +1686,72 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
         add(lbFamilyValue, gridBagConstraints);
+
+        jLabel1.setLabelFor(tfQMakePath);
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "LBL_QMakeCommand")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 13;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
+        add(jLabel1, gridBagConstraints);
+
+        jLabel2.setLabelFor(tfCMakePath);
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "LBL_CMakeCommand")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 14;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
+        add(jLabel2, gridBagConstraints);
+
+        tfQMakePath.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.tfQMakePath.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
+        add(tfQMakePath, gridBagConstraints);
+
+        tfCMakePath.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.tfCMakePath.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
+        add(tfCMakePath, gridBagConstraints);
+
+        btQMakeBrowse.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btQMakeBrowse.text")); // NOI18N
+        btQMakeBrowse.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btQMakeBrowseActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 13;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
+        add(btQMakeBrowse, gridBagConstraints);
+
+        btCMakeBrowse.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btCMakeBrowse.text")); // NOI18N
+        btCMakeBrowse.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btCMakeBrowseActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 14;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
+        add(btCMakeBrowse, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btVersionsActionPerformed
@@ -1638,24 +1760,28 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     RequestProcessor.getDefault().post(new Runnable() {
         public void run() {
             ProgressHandle handle = ProgressHandleFactory.createHandle(getString("LBL_VersionInfo_Progress")); // NOI18N
-            handle.start(gdbEnabled? 6 : 5);
+            handle.start(gdbEnabled? 8 : 7);
 
             StringBuilder versions = new StringBuilder();
-
+            int i = 0;
             versions.append("\n"); // NOI18N
             versions.append(getToolVersion(currentCompilerSet.findTool(Tool.CCompiler), tfCPath)).append("\n"); // NOI18N
-            handle.progress(1);
+            handle.progress(++i);
             versions.append(getToolVersion(currentCompilerSet.findTool(Tool.CCCompiler), tfCppPath)).append("\n"); // NOI18N
-            handle.progress(2);
+            handle.progress(++i);
             versions.append(getToolVersion(currentCompilerSet.findTool(Tool.FortranCompiler), tfFortranPath)).append("\n"); // NOI18N
-            handle.progress(3);
+            handle.progress(++i);
             versions.append(getToolVersion(currentCompilerSet.findTool(Tool.Assembler), tfAsPath)).append("\n"); // NOI18N
-            handle.progress(4);
+            handle.progress(++i);
             versions.append(getToolVersion(currentCompilerSet.findTool(Tool.MakeTool), tfMakePath)).append("\n"); // NOI18N
             if (gdbEnabled) {
-                handle.progress(5);
+                handle.progress(++i);
                 versions.append(getToolVersion(currentCompilerSet.findTool(Tool.DebuggerTool), tfGdbPath)).append("\n"); // NOI18N
             }
+            handle.progress(++i);
+            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.QMakeTool), tfQMakePath)).append("\n"); // NOI18N
+            handle.progress(++i);
+            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.CMakeTool), tfCMakePath)).append("\n"); // NOI18N
             handle.finish();
 
             NotifyDescriptor nd = new NotifyDescriptor.Message(versions.toString());
@@ -1883,6 +2009,14 @@ private void btAsBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     selectCompiler(tfAsPath, currentCompilerSet.getTool(Tool.Assembler));
 }//GEN-LAST:event_btAsBrowseActionPerformed
 
+private void btQMakeBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btQMakeBrowseActionPerformed
+    selectTool(tfQMakePath);
+}//GEN-LAST:event_btQMakeBrowseActionPerformed
+
+private void btCMakeBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCMakeBrowseActionPerformed
+    selectTool(tfCMakePath);
+}//GEN-LAST:event_btCMakeBrowseActionPerformed
+
 
     private static String getString(String key) {
         return NbBundle.getMessage(ToolsPanel.class, key);
@@ -1897,6 +2031,7 @@ private void btAsBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JButton btAsBrowse;
     private javax.swing.JButton btBaseDirectory;
     private javax.swing.JButton btCBrowse;
+    private javax.swing.JButton btCMakeBrowse;
     private javax.swing.JButton btCppBrowse;
     private javax.swing.JButton btDebuggerBrowse;
     private javax.swing.JButton btDefault;
@@ -1904,6 +2039,7 @@ private void btAsBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JButton btEditDevHost;
     private javax.swing.JButton btFortranBrowse;
     private javax.swing.JButton btMakeBrowse;
+    private javax.swing.JButton btQMakeBrowse;
     private javax.swing.JButton btRemove;
     private javax.swing.JButton btRestore;
     private javax.swing.JButton btVersions;
@@ -1916,6 +2052,8 @@ private void btAsBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JCheckBox cbFortranRequired;
     private javax.swing.JCheckBox cbGdbRequired;
     private javax.swing.JCheckBox cbMakeRequired;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel lbAsCommand;
     private javax.swing.JLabel lbBaseDirectory;
     private javax.swing.JLabel lbCCommand;
@@ -1934,11 +2072,13 @@ private void btAsBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JScrollPane spDirlist;
     private javax.swing.JTextField tfAsPath;
     private javax.swing.JTextField tfBaseDirectory;
+    private javax.swing.JTextField tfCMakePath;
     private javax.swing.JTextField tfCPath;
     private javax.swing.JTextField tfCppPath;
     private javax.swing.JTextField tfFortranPath;
     private javax.swing.JTextField tfGdbPath;
     private javax.swing.JTextField tfMakePath;
+    private javax.swing.JTextField tfQMakePath;
     // End of variables declaration//GEN-END:variables
 
 }
