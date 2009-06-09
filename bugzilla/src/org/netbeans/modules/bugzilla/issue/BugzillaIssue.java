@@ -197,6 +197,7 @@ public class BugzillaIssue extends Issue {
     }
 
     void opened() {
+        if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} open start", new Object[] {getID()});
         if(!data.isNew()) {
             // 1.) to get seen attributes makes no sense for new issues
             // 2.) set seenAtributes on issue open, before its actuall
@@ -208,11 +209,14 @@ public class BugzillaIssue extends Issue {
             return;
         }
         repository.scheduleForRefresh(getID());
+        if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} open finish", new Object[] {getID()});
     }
 
     void closed() {
+        if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} close start", new Object[] {getID()});
         repository.stopRefreshing(getID());
         seenAtributes = null;
+        if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} close finish", new Object[] {getID()});
     }
 
     @Override
