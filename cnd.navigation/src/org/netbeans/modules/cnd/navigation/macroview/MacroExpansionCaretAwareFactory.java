@@ -154,10 +154,11 @@ public class MacroExpansionCaretAwareFactory extends CaretAwareCsmFileTaskFactor
                     int docCarretPositionFromDoc2 = MacroExpansionViewUtils.getDocumentOffset(doc,
                             MacroExpansionViewUtils.getFileOffset(doc2, doc2CarretPosition));
                     if (doc2CarretPositionFromDoc >= 0 && doc2CarretPositionFromDoc < doc2.getLength()) {
-                        JEditorPane ep = MacroExpansionViewUtils.getEditor(doc2);
-                        if (ep != null && doc2CarretPosition != doc2CarretPositionFromDoc &&
-                                docCarretPosition != docCarretPositionFromDoc2 && !ep.hasFocus()) {                            
-                            setCaretPosition(ep, doc2CarretPositionFromDoc);
+                        JEditorPane ep = MacroExpansionViewUtils.getEditor(doc);
+                        JEditorPane ep2 = MacroExpansionViewUtils.getEditor(doc2);
+                        if (ep != null && ep2 != null && doc2CarretPosition != doc2CarretPositionFromDoc &&
+                                docCarretPosition != docCarretPositionFromDoc2 && ep.hasFocus() && !ep2.hasFocus()) {
+                            setCaretPosition(ep2, doc2CarretPositionFromDoc);
                         }
                     }
                 }

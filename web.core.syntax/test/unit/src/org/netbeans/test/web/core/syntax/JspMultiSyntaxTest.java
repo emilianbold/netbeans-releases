@@ -44,7 +44,7 @@ package org.netbeans.test.web.core.syntax;
 import java.io.PrintStream;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.TokenID;
-import org.netbeans.editor.ext.html.HtmlSyntax;
+import org.netbeans.modules.web.core.syntax.deprecated.HtmlSyntax;
 import org.netbeans.editor.ext.java.JavaSyntax;
 import org.netbeans.junit.NbTestCase;
 

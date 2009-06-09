@@ -46,7 +46,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 public class APTFindUnusedBlocksWalker extends APTSelfWalker {
 
     private final List<CsmOffsetable> blocks = new ArrayList<CsmOffsetable>();
-
+    private final CsmFile csmFile;
     public List<CsmOffsetable> getBlocks() {
         return blocks;
     }
@@ -56,7 +56,8 @@ public class APTFindUnusedBlocksWalker extends APTSelfWalker {
     }
     
     public APTFindUnusedBlocksWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
-        super(apt, csmFile, preprocHandler, cacheEntry);
+        super(apt, preprocHandler, cacheEntry);
+        this.csmFile = csmFile;
     }
     
     protected @Override boolean onIfdef(APT apt) {

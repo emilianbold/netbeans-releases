@@ -204,7 +204,13 @@ public class Installer extends ModuleInstall implements Runnable {
         // #131128 - suppress repetitive exceptions when config/Preferences/org/netbeans/modules/uihandler.properties
         // is not writable for some reason
         long checkTime = System.currentTimeMillis();
-        prefs.putLong(preferencesWritableKey, checkTime);  //NOI18N
+        try {
+            prefs.putLong(preferencesWritableKey, checkTime);
+        } catch (IllegalArgumentException iae) {
+            // #164580 - ignore IllegalArgumentException: Malformed \\uxxxx encoding.
+            // prefs are now empty, so put again and rewrite broken content.
+            prefs.putLong(preferencesWritableKey, checkTime);
+        }
         try {
             prefs.flush();
             prefs.sync();

@@ -41,7 +41,9 @@ package org.netbeans.modules.cnd.actions;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import javax.swing.AbstractAction;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -55,6 +57,7 @@ import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.settings.CppSettings;
@@ -70,6 +73,7 @@ import org.openide.util.Cancellable;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.actions.NodeAction;
 
 /**
@@ -198,6 +202,24 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         }
         File buildDir = getAbsoluteBuildDir(bdir, makefile);
         return buildDir;
+    }
+
+    public static String findTools(String toolName){
+        List<String> list = new ArrayList<String>(Path.getPath());
+        for (String path : list) {
+            String task = path+File.separatorChar+toolName;
+            File tool = new File(task);
+            if (tool.exists() && tool.isFile()) {
+                return tool.getAbsolutePath();
+            } else if (Utilities.isWindows()) {
+                task = task+".exe"; // NOI18N
+                tool = new File(task);
+                if (tool.exists() && tool.isFile()) {
+                    return tool.getAbsolutePath();
+                }
+            }
+        }
+        return toolName;
     }
 
     protected static String[] prepareEnv(ExecutionEnvironment execEnv) {

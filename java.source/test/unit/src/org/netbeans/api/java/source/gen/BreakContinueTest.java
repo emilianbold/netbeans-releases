@@ -75,7 +75,7 @@ public class BreakContinueTest extends GeneratorTest {
         assertEquals(golden, res);
     }
 
-    public void XtestBreak158130() throws Exception {
+    public void testBreak158130() throws Exception {
         String test = "public class Test { void m(int p) { loop: while (true) { if (p == 0) { b|reak loop; } } } }";
         String golden = "public class Test { void m(int p) { loop: while (true) { if (p == 0) { break; } } } }";
         testHelper(test, golden, Kind.BREAK, new Delegate() {

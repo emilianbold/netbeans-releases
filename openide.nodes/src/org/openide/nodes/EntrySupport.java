@@ -301,6 +301,7 @@ abstract class EntrySupport {
                 LOGGER.finer("setEntries for " + this + " on " + Thread.currentThread()); // NOI18N
                 LOGGER.finer("       values: " + entries); // NOI18N
                 LOGGER.finer("       holder: " + holder); // NOI18N
+                LOGGER.finer("       mustNotifySetEntries: " + mustNotifySetEnties); // NOI18N
             }
 
             Node[] current = holder == null ? null : holder.nodes();
