@@ -49,7 +49,9 @@ import org.openide.filesystems.FileObject;
  * @author Pavel Flaska
  */
 public class ServerWizardProviderProxy implements ServerWizardProvider {
+    
     private FileObject fob;
+    private String displayName;
 
     public static ServerWizardProvider create(FileObject fob) {
         return new ServerWizardProviderProxy(fob);
@@ -60,7 +62,13 @@ public class ServerWizardProviderProxy implements ServerWizardProvider {
     }
     
     public String getDisplayName() {
-        return fob.getName();
+        if (displayName == null) {
+            displayName = (String) fob.getAttribute("displayName"); // NOI18N
+            if (displayName == null) { // attribute not available
+                displayName = fob.getName();
+            }
+        }
+        return displayName;
     }
 
     public InstantiatingIterator getInstantiatingIterator() {
