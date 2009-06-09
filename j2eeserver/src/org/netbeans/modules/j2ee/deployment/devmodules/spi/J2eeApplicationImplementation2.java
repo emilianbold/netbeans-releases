@@ -38,38 +38,44 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator;
 
-import org.netbeans.modules.j2ee.persistence.action.*;
-import com.sun.source.tree.ClassTree;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
-import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+package org.netbeans.modules.j2ee.deployment.devmodules.spi;
 
-/**
- * This interface represents a generation strategy for generating
- * the code needed to access an EntityManager.
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleListener;
+
+/** 
+ * Base SPI interface for {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication}.
+ * Implementation of this interface is used to create
+ * {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication}
+ * instance using the {@link J2eeModuleFactory}.
  * 
- * @author Erno Mononen
+ * @author sherold, Petr Hejl
+ * 
+ * @since 1.59
  */
-public interface EntityManagerGenerationStrategy {
-
-    void setTreeMaker(TreeMaker treeMaker);
-
-    void setClassTree(ClassTree classTree);
-
-    void setWorkingCopy(WorkingCopy workingCopy);
-
-    void setGenUtils(GenerationUtils genUtils);
-
-    void setPersistenceUnit(PersistenceUnit persistenceUnit);
-
-    void setGenerationOptions(GenerationOptions generationOptions);
+public interface J2eeApplicationImplementation2 extends J2eeModuleImplementation2 {
 
     /**
-     * Generate the code needed to access an EntityManager. 
-     * @return the modified ClassTree. 
-     */ 
-    ClassTree generate();
+     * Returns a list of all the J2EEModules which this J2eeApplication contains.
+     * 
+     * @return list of all the child J2EEModules
+     */
+    J2eeModule[] getModules();
+
+    /**
+     * Registers the specified ModuleListener for notification about the module
+     * changes.
+     * 
+     * @param listener ModuleListener
+     */
+    void addModuleListener(ModuleListener listener);
+
+    /**
+     * Unregister the specified ModuleListener.
+     * 
+     * @param listener ModuleListener
+     */
+    void removeModuleListener(ModuleListener listener);
+    
 }

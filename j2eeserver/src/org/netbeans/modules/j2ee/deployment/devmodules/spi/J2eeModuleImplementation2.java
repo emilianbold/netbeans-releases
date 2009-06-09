@@ -38,38 +38,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator;
 
-import org.netbeans.modules.j2ee.persistence.action.*;
-import com.sun.source.tree.ClassTree;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
-import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+package org.netbeans.modules.j2ee.deployment.devmodules.spi;
+
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 
 /**
- * This interface represents a generation strategy for generating
- * the code needed to access an EntityManager.
- * 
- * @author Erno Mononen
+ *
+ * @author Petr Hejl
+ * @since 1.59
  */
-public interface EntityManagerGenerationStrategy {
+public interface J2eeModuleImplementation2 extends J2eeModuleBase {
+    
+    /** 
+     * Returns module type.
+     * 
+     * @return module type.
+     */
+    J2eeModule.Type getModuleType();
 
-    void setTreeMaker(TreeMaker treeMaker);
-
-    void setClassTree(ClassTree classTree);
-
-    void setWorkingCopy(WorkingCopy workingCopy);
-
-    void setGenUtils(GenerationUtils genUtils);
-
-    void setPersistenceUnit(PersistenceUnit persistenceUnit);
-
-    void setGenerationOptions(GenerationOptions generationOptions);
-
-    /**
-     * Generate the code needed to access an EntityManager. 
-     * @return the modified ClassTree. 
-     */ 
-    ClassTree generate();
 }

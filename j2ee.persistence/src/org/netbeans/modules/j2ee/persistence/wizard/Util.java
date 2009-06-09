@@ -63,7 +63,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.moduleinfo.JPAModuleInfo;
@@ -296,7 +296,7 @@ public class Util {
         }
         Object result = DialogDisplayer.getDefault().notify(nd);
         if (result == createPUButton) {
-            PersistenceUnit punit = new PersistenceUnit();
+            PersistenceUnit punit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
             if (isContainerManaged) {
                 PersistenceUnitWizardPanelDS puPanel = (PersistenceUnitWizardPanelDS) panel;
                 if (puPanel.getDatasource() != null && !"".equals(puPanel.getDatasource().trim())){

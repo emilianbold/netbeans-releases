@@ -43,7 +43,7 @@ package org.netbeans.modules.j2ee.persistence.dd;
 
 import java.util.Map;
 import java.util.WeakHashMap;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -89,7 +89,7 @@ public final class PersistenceMetadata {
         synchronized (ddMap) {
             persistence = (Persistence) ddMap.get(fo);
             if (persistence == null) {
-                persistence = Persistence.createGraph(fo.getInputStream());
+                persistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence.createGraph(fo.getInputStream());
                 ddMap.put(fo, persistence);
             }
         }
