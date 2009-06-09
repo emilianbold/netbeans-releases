@@ -209,7 +209,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             createData.setName(warName);
             createData.setServerInstanceID(serverInstanceID);
             createData.setSourceStructure(WebProjectUtilities.SRC_STRUCT_BLUEPRINTS);
-            createData.setJavaEEProfile(EarProjectGenerator.getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.WAR));
+            createData.setJavaEEProfile(EarProjectGenerator.getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.Type.WAR));
             createData.setContextPath('/' + warName); //NOI18N
             createData.setJavaPlatformName(platformName);
             createData.setSourceLevel(sourceLevel);
@@ -238,7 +238,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             createData.setProjectDir(carDir);
             createData.setName(carName);
             createData.setMainClass(mainClass);
-            createData.setJavaEEProfile(EarProjectGenerator.getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.CLIENT));
+            createData.setJavaEEProfile(EarProjectGenerator.getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.Type.CAR));
             createData.setServerInstanceID(serverInstanceID);
             createData.setLibrariesDefinition(librariesDefinition);
             createData.setServerLibraryName(serverLibraryName);
@@ -264,7 +264,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             EjbJarProjectCreateData createData = new EjbJarProjectCreateData();
             createData.setProjectDir(ejbJarDir);
             createData.setName(ejbJarName);
-            createData.setJavaEEProfile(EarProjectGenerator.getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.EJB));
+            createData.setJavaEEProfile(EarProjectGenerator.getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.Type.EJB));
             createData.setServerInstanceID(serverInstanceID);
             createData.setLibrariesDefinition(librariesDefinition);
             createData.setServerLibraryName(serverLibraryName);

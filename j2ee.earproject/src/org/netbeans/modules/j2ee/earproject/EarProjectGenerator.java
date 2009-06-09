@@ -424,7 +424,7 @@ public final class EarProjectGenerator {
         createData.setSourceFolders(new File[] { FileUtil.toFile(javaRoot) });
         createData.setTestFolders(new File[0]);
         createData.setConfFolder(docBase);
-        createData.setJavaEEProfile(getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.CLIENT));
+        createData.setJavaEEProfile(getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.Type.CAR));
         createData.setServerInstanceID(serverInstanceID);
 
         AntProjectHelper subProjHelper = AppClientProjectGenerator.importProject(createData);
@@ -444,7 +444,7 @@ public final class EarProjectGenerator {
         createData.setSourceFolders(new File[] {FileUtil.toFile(javaRoot)});
         createData.setTestFolders(new File[0]);
         createData.setConfigFilesBase(docBase);
-        createData.setJavaEEProfile(getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.EJB));
+        createData.setJavaEEProfile(getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.Type.EJB));
         createData.setServerInstanceID(serverInstanceID);
 
         AntProjectHelper subProjHelper = EjbJarProjectGenerator.importProject(createData);
@@ -463,7 +463,7 @@ public final class EarProjectGenerator {
         createData.setTestFolders(new File[0]);
         createData.setDocBase(FileUtil.createFolder(subprojectRoot, "web")); //NOI18N
         createData.setLibFolder(null);
-        createData.setJavaEEProfile(getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.WAR));
+        createData.setJavaEEProfile(getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.Type.WAR));
         createData.setServerInstanceID(serverInstanceID);
         createData.setBuildfile("build.xml"); //NOI18N
         createData.setJavaPlatformName(platformName);
@@ -548,7 +548,7 @@ public final class EarProjectGenerator {
      * For now the only check is to use J2EE 1.4 if JavaEE5 is not supported.
      * Otherwise use the requestedVersion.
      */
-    public static Profile getAcceptableProfile(Profile requestedProfile, String serverInstanceID, Object moduleType) {
+    public static Profile getAcceptableProfile(Profile requestedProfile, String serverInstanceID, J2eeModule.Type moduleType) {
         J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
         Set<Profile> profiles = platform.getSupportedProfiles(moduleType);
         if (!profiles.contains(requestedProfile) && (profiles.contains(Profile.J2EE_14))) {
