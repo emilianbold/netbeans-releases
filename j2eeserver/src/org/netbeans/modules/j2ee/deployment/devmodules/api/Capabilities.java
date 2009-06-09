@@ -68,25 +68,25 @@ public final class Capabilities {
     }
 
     public boolean isEJB20Supported() {
-        Object moduleType = provider.getJ2eeModule().getModuleType();
+        J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
         // TODO consider additional capabilities not matching the Profile (?)
         return isProfileSupported(moduleType, Profile.J2EE_13);
     }
 
     public boolean isEJB21Supported() {
-        Object moduleType = provider.getJ2eeModule().getModuleType();
+        J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
         // TODO consider additional capabilities not matching the Profile (?)
         return isProfileSupported(moduleType, Profile.J2EE_14);
     }
 
     public boolean isEJB30Supported() {
-        Object moduleType = provider.getJ2eeModule().getModuleType();
+        J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
         // TODO consider additional capabilities not matching the Profile (?)
         return isProfileSupported(moduleType, Profile.JAVA_EE_5);
     }
 
     public boolean isEJB31Supported() {
-        Object moduleType = provider.getJ2eeModule().getModuleType();
+        J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
         // TODO consider additional capabilities not matching the Profile (?)
         return isProfileSupported(moduleType, Profile.JAVA_EE_6_FULL);
     }
@@ -98,12 +98,12 @@ public final class Capabilities {
             return false;
         }
 
-        Set<Profile> profiles = platform.getSupportedProfiles(provider.getJ2eeModule().getModuleType());
+        Set<Profile> profiles = platform.getSupportedProfiles(provider.getJ2eeModule().getType());
         return (profiles.contains(Profile.JAVA_EE_5) || profiles.contains(Profile.JAVA_EE_6_FULL))
                 && platform.isToolSupported("defaultPersistenceProviderJavaEE5");
     }
 
-    private boolean isProfileSupported(Object moduleType, Profile profile) {
+    private boolean isProfileSupported(J2eeModule.Type moduleType, Profile profile) {
         J2eePlatform platform = getPlatform();
         if (platform == null) {
             return false;

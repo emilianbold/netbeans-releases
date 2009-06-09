@@ -7,6 +7,9 @@
 		<meta-property>
 			<bean-name>PersistenceUnit</bean-name>
 		</meta-property>
+                <implements>
+                        org.netbeans.modules.j2ee.persistence.dd.common.Persistence
+                </implements>
 	</meta-element>
 	<meta-element>
 		<dtd-name>persistence-unit</dtd-name>
@@ -39,6 +42,9 @@
 		<meta-property>
 			<bean-name>Properties</bean-name>
 		</meta-property>
+                <implements>
+                        org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit
+                </implements>
 	</meta-element>
 	<meta-element>
 		<dtd-name>string</dtd-name>
@@ -59,10 +65,16 @@
 		<meta-property>
 			<bean-name>Property2</bean-name>
 		</meta-property>
+                <implements>
+                        org.netbeans.modules.j2ee.persistence.dd.common.Properties
+                </implements>
 	</meta-element>
 	<meta-element>
 		<dtd-name>property</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/persistence</namespace>
 		<bean-name>Property</bean-name>
+                <implements>
+                        org.netbeans.modules.j2ee.persistence.dd.common.Property
+                </implements>
 	</meta-element>
 </metaDD>

@@ -830,7 +830,7 @@ public class WebProjectUtilities {
         
         // set j2ee.platform.classpath
         J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
-        if (!j2eePlatform.getSupportedProfiles(J2eeModule.WAR).contains(j2eeProfile)) {
+        if (!j2eePlatform.getSupportedProfiles(J2eeModule.Type.WAR).contains(j2eeProfile)) {
             Logger.getLogger("global").log(Level.WARNING,
                     "J2EE level:" + j2eeProfile.getDisplayName() + " not supported by server " + Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID) + " for module type WAR"); // NOI18N
         }
