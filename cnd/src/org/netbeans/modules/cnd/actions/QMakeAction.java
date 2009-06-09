@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.Writer;
 import java.util.List;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.loaders.QtProjectDataObject;
@@ -85,7 +86,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
         // Build directory
         File buildDir = getQBuildDirectory(node);
         // Executable
-        String executable = getQMakeCommand(node, project);
+        String executable = getCommand(node, project, Tool.QMakeTool, "qmake"); // NOI18N
         // Arguments
         String arguments = proFile.getName(); // NOI18N
         // Tab Name
@@ -119,10 +120,6 @@ public class QMakeAction extends AbstractExecutorRunAction {
             nativeExecutor.setOutputListener(outputListener);
         }
         new ShellExecuter(nativeExecutor, listener).execute();
-    }
-
-    private static String getQMakeCommand(Node node, Project project){
-        return findTools("qmake"); // NOI18N
     }
 
     private static File getQBuildDirectory(Node node){

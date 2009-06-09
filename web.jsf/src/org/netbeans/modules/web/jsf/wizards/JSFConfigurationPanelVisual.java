@@ -85,7 +85,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     public JSFConfigurationPanelVisual(JSFConfigurationPanel panel, boolean customizer) {
         this.panel = panel;
         this.customizer = customizer;
-        
+
         initComponents();
         
         tURLPattern.getDocument().addDocumentListener(this);
@@ -614,12 +614,20 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
             }
             boolean isJSF = Util.containsClass(Arrays.asList(cp), JSFUtils.FACES_EXCEPTION);
             boolean isJSF12 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
-            
+            boolean isJSF20 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
+            String libName = "None"; //NOI18N
+
             if ((isJSF && isJSF12 && webModule25Version) // JSF 1.2 for Java EE 5 
                     || (isJSF && !webModule25Version)){ // JSF 1.1 for J2EE 1.x
+                if (isJSF && !webModule25Version)
+                    libName = "JSF 1.1"; //NOI18N
+                else if (isJSF12) 
+                    libName = "JSF 1.2"; //NOI18N
+                else if (isJSF20)
+                    libName = "JSF 2.0"; //NOI18N
+                rbNoneLibrary.setText(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_Any_Library", libName)); //NOI18N
                 rbNoneLibrary.setSelected(true);
-            }
-            else {
+            } else {
                 Library profferedLibrary = null;
                 if (webModule25Version) {
                     //if the web module follows 2.5 specification, select jsf 1.2, which is budnled
