@@ -185,9 +185,16 @@
             <attr name="instanceCreate" methodvalue="org.netbeans.modules.ide.ergonomics.ServerWizardProviderProxy.create"/>
             <attr name="instanceClass" stringvalue="org.netbeans.modules.ide.ergonomics.ServerWizardProviderProxy"/>
             <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerWizardProvider"/>
+            <xsl:if test="attr[@name='displayName']">
+                <xsl:apply-templates select="attr[@name='displayName']" mode="j2ee-server-types"/>
+            </xsl:if>
         </xsl:element>
     </xsl:template>
 
+    <xsl:template match="attr" mode="j2ee-server-types">
+        <xsl:copy-of select="."/>
+    </xsl:template>
+    
     <!-- actions -->
     <xsl:template match="file" mode="actions">
         <xsl:element name="file">
