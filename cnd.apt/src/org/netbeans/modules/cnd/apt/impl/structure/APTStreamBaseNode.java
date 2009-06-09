@@ -161,7 +161,7 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
         public TokenStreamIterator(APTToken firstToken, List<APTToken> tokens) {
             this.firstToken = firstToken;
             this.tokens = tokens;
-            this.size = tokens.size();
+            this.size = tokens != null ? tokens.size() : 0;
         }
         
         public APTToken nextToken() throws TokenStreamException {
