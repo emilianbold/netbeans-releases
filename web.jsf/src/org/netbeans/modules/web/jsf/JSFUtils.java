@@ -69,6 +69,7 @@ public class JSFUtils {
     // the names of bundled jsf libraries
     public static String DEFAULT_JSF_1_1_NAME = "jsf1102";  //NOI18N
     public static String DEFAULT_JSF_1_2_NAME = "jsf12";    //NOI18N
+    public static String DEFAULT_JSF_2_0_NAME = "jsf20";    //NOI18N
     // the name of jstl libraryr
     public static String DEFAULT_JSTL_1_1_NAME = "jstl11";  //NOI18N
     
