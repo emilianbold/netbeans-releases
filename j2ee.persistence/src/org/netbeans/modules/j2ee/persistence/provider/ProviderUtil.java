@@ -50,9 +50,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Properties;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Property;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.dd.common.Properties;
+import org.netbeans.modules.j2ee.persistence.dd.common.Property;
 import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
 import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider;
 import org.netbeans.modules.j2ee.persistence.unit.*;
@@ -308,7 +308,7 @@ public class ProviderUtil {
         Parameters.notNull("provider", provider);
         Parameters.notNull("connection", connection);
         
-        PersistenceUnit persistenceUnit = new PersistenceUnit();
+        PersistenceUnit persistenceUnit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
         persistenceUnit.setName(name);
         persistenceUnit.setProvider(provider.getProviderClass());
         Properties properties = persistenceUnit.newProperties();

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,39 +31,31 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator;
 
-import org.netbeans.modules.j2ee.persistence.action.*;
-import com.sun.source.tree.ClassTree;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
-import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+package org.netbeans.modules.j2ee.persistence.dd.common;
 
 /**
- * This interface represents a generation strategy for generating
- * the code needed to access an EntityManager.
- * 
- * @author Erno Mononen
+ *
+ * @author sp153251
  */
-public interface EntityManagerGenerationStrategy {
-
-    void setTreeMaker(TreeMaker treeMaker);
-
-    void setClassTree(ClassTree classTree);
-
-    void setWorkingCopy(WorkingCopy workingCopy);
-
-    void setGenUtils(GenerationUtils genUtils);
-
-    void setPersistenceUnit(PersistenceUnit persistenceUnit);
-
-    void setGenerationOptions(GenerationOptions generationOptions);
-
-    /**
-     * Generate the code needed to access an EntityManager. 
-     * @return the modified ClassTree. 
-     */ 
-    ClassTree generate();
+public interface Persistence {
+	static public final String VERSION = "Version";	// NOI18N
+	static public final String PERSISTENCE_UNIT = "PersistenceUnit";	// NOI18N
+        
+        public void setVersion(java.lang.String value);
+        public java.lang.String getVersion();
+        public void setPersistenceUnit(int index, PersistenceUnit value);
+        public PersistenceUnit getPersistenceUnit(int index);
+        public int sizePersistenceUnit();
+        public void setPersistenceUnit(PersistenceUnit[] value);
+        public PersistenceUnit[] getPersistenceUnit();
+        public int addPersistenceUnit(PersistenceUnit value);
+        public int removePersistenceUnit(PersistenceUnit value);
+        public PersistenceUnit newPersistenceUnit();
+        public void validate() throws org.netbeans.modules.schema2beans.ValidateException;
 }
