@@ -146,7 +146,7 @@ public final class AppClientProvider extends J2eeModuleProvider
     /** Package-private for unit test only. */
     static boolean needConfigurationFolder(final String version) {
         return EjbProjectConstants.J2EE_13_LEVEL.equals(version) ||
-                EjbProjectConstants.J2EE_13_LEVEL.equals(version);
+                EjbProjectConstants.J2EE_14_LEVEL.equals(version);
     }
     
     public File getMetaInfAsFile() {
