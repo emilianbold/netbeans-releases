@@ -49,6 +49,7 @@ import org.junit.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.openide.util.Exceptions;
 import static org.junit.Assert.*;
 
@@ -80,7 +81,7 @@ public class HostInfoTest extends NativeExecutionBaseTestCase {
 
     @Test
     public void testGetHostInfo() throws Exception {
-        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        ExecutionEnvironment execEnv = NativeExecutionTestSupport.getDefaultTestExecutionEnvironment(true);
         ConnectionManager cm = ConnectionManager.getInstance();
         try {
             cm.connectTo(execEnv, password.toCharArray(), false);

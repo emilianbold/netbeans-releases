@@ -57,6 +57,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -75,6 +76,9 @@ public class AppClientProjectClassPathExtenderTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         workDir = TestUtil.makeScratchDir(this);
+
+        MockLookup.setLayersAndInstances();
+        
         serverID = TestUtil.registerSunAppServer(this);
     }
 

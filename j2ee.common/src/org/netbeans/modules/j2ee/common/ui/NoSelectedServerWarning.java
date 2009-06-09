@@ -45,6 +45,9 @@ import java.awt.Component;
 import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -54,6 +57,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.openide.DialogDescriptor;
@@ -71,7 +75,7 @@ final class NoSelectedServerWarning extends JPanel {
     
     private final Profile j2eeProfile;
     
-    private NoSelectedServerWarning(Object[] moduleTypes, Profile j2eeProfile) {
+    private NoSelectedServerWarning(J2eeModule.Type[] moduleTypes, Profile j2eeProfile) {
         this.j2eeProfile = j2eeProfile;
         
         initComponents();
@@ -108,10 +112,18 @@ final class NoSelectedServerWarning extends JPanel {
      * @deprecated
      */
     public static String selectServerDialog(Object[] moduleTypes, String j2eeSpec, String title, String description) {
-        return selectServerDialog(moduleTypes, Profile.fromPropertiesString(j2eeSpec), title, description);
+        List<J2eeModule.Type> types = new ArrayList<J2eeModule.Type>(moduleTypes.length);
+        for (Object obj : moduleTypes) {
+            J2eeModule.Type type = J2eeModule.Type.fromJsrType(obj);
+            if (type != null) {
+                types.add(type);
+            }
+        }
+        return selectServerDialog((J2eeModule.Type[]) types.toArray(new J2eeModule.Type[types.size()]),
+                Profile.fromPropertiesString(j2eeSpec), title, description);
     }
 
-    public static String selectServerDialog(Object[] moduleTypes, Profile j2eeProfile, String title, String description) {
+    public static String selectServerDialog(J2eeModule.Type[] moduleTypes, Profile j2eeProfile, String title, String description) {
         NoSelectedServerWarning panel = new NoSelectedServerWarning(moduleTypes, j2eeProfile);
         Object[] options = new Object[] {
             DialogDescriptor.OK_OPTION,
@@ -290,13 +302,13 @@ final class NoSelectedServerWarning extends JPanel {
         
         private String[] instances;
         
-        private final Object[] moduleTypes;
+        private final J2eeModule.Type[] moduleTypes;
         private final Profile j2eeProfile;
         
-        public ServerListModel(Object[] moduleTypes, Profile j2eeProfile) {
+        public ServerListModel(J2eeModule.Type[] moduleTypes, Profile j2eeProfile) {
             this.moduleTypes = moduleTypes;
             this.j2eeProfile = j2eeProfile;
-            instances = Deployment.getDefault().getServerInstanceIDs(moduleTypes, j2eeProfile);
+            instances = Deployment.getDefault().getServerInstanceIDs(Arrays.asList(moduleTypes), j2eeProfile);
         }
         
         public synchronized int getSize() {
@@ -313,7 +325,7 @@ final class NoSelectedServerWarning extends JPanel {
         
         public synchronized void refreshModel() {
             int oldLength = instances.length;
-            instances = Deployment.getDefault().getServerInstanceIDs(moduleTypes, j2eeProfile);
+            instances = Deployment.getDefault().getServerInstanceIDs(Arrays.asList(moduleTypes), j2eeProfile);
             if (instances.length > 0) {
                 fireContentsChanged(this, 0, instances.length - 1);
             } else if (oldLength > 0) {

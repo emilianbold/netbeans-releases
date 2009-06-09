@@ -671,5 +671,9 @@ public class CslJar extends JarWithModuleAttributes {
         item = createFile(doc, mimeFolder, "org-netbeans-modules-csl-core-EmbeddingIndexerFactoryImpl.instance"); // NOI18N
         setFileAttribute(doc, item, "instanceCreate", METHODVALUE, "org.netbeans.modules.csl.core.EmbeddingIndexerFactoryImpl.create"); //NOI18N
         setFileAttribute(doc, item, "instanceOf", STRINGVALUE, "org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"); //NOI18N
+
+        // TL Indexer factory
+        item = createFile(doc, mimeFolder, "org-netbeans-modules-csl-core-TLIndexerFactory.instance"); // NOI18N
+        setFileAttribute(doc, item, "instanceOf", "stringvalue", "org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"); //NOI18N
     }
 }

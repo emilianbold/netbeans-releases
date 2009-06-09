@@ -721,13 +721,6 @@ public class MercurialAnnotator extends VCSAnnotator {
         }
     }
     
-    private boolean isNothingVersioned(File[] files) {
-        for (File file : files) {
-            if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) return false;
-        }
-        return true;
-    }
-    
     private static boolean onlyProjects(Node[] nodes) {
         if (nodes == null) return false;
         for (Node node : nodes) {
@@ -739,7 +732,11 @@ public class MercurialAnnotator extends VCSAnnotator {
     private boolean onlyFolders(File[] files) {
         for (int i = 0; i < files.length; i++) {
             if (files[i].isFile()) return false;
-            if (!files[i].exists() && !cache.getStatus(files[i]).isDirectory()) return false;
+            FileInformation status = cache.getCachedStatus(files[i]);
+            if (status == null // be optimistic, this can be a file
+                    || (!files[i].exists() && !status.isDirectory())) {
+                return false;
+            }
         }
         return true;
     }

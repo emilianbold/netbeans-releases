@@ -2072,8 +2072,13 @@ public class CasualDiff {
                 default:
                     break;
             }
-            if (wasComma = commaNeeded(result, item)) {
+            if (commaNeeded(result, item)) {
                 printer.print(",");
+                wasComma = true;
+            } else {
+                if (item.operation != Operation.DELETE) {
+                    wasComma = false;
+                }
             }
         }
         if (printParens && oldList.isEmpty()) {

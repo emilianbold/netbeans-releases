@@ -68,9 +68,9 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="tServletName" alignment="0" pref="318" max="32767" attributes="0"/>
+                                  <Component id="tServletName" alignment="0" pref="349" max="32767" attributes="0"/>
                                   <Component id="cbVerify" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="tURLPattern" alignment="0" pref="318" max="32767" attributes="0"/>
+                                  <Component id="tURLPattern" alignment="0" pref="349" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -160,9 +160,6 @@
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="CB_Validate_XML" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[0, 0, 0, 0]"/>
-                </Property>
               </Properties>
               <AccessibilityProperties>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -178,9 +175,6 @@
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="CB_Verify_Objects" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[0, 0, 0, 0]"/>
-                </Property>
               </Properties>
               <AccessibilityProperties>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -193,9 +187,6 @@
                 <Property name="selected" type="boolean" value="true"/>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="CB_Package_JARs" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[0, 0, 0, 0]"/>
                 </Property>
               </Properties>
               <AccessibilityProperties>
@@ -231,24 +222,24 @@
                               <Component id="rbRegisteredLibrary" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="cbLibraries" pref="284" max="32767" attributes="0"/>
+                                  <Component id="cbLibraries" pref="326" max="32767" attributes="0"/>
                                   <Group type="102" alignment="1" attributes="0">
                                       <Group type="103" groupAlignment="1" attributes="0">
-                                          <Component id="jtNewLibraryName" alignment="1" pref="175" max="32767" attributes="1"/>
-                                          <Component id="jtFolder" alignment="1" pref="175" max="32767" attributes="1"/>
+                                          <Component id="jtNewLibraryName" alignment="1" pref="231" max="32767" attributes="1"/>
+                                          <Component id="jtFolder" alignment="1" pref="231" max="32767" attributes="1"/>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="jbBrowse" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
-                          <Component id="rbNewLibrary" alignment="1" pref="460" max="32767" attributes="0"/>
-                          <Component id="rbNoneLibrary" alignment="0" pref="460" max="32767" attributes="0"/>
+                          <Component id="rbNewLibrary" alignment="1" pref="493" max="32767" attributes="0"/>
+                          <Component id="rbNoneLibrary" alignment="0" pref="493" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="22" pref="22" max="22" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="lVersion" alignment="1" pref="438" max="32767" attributes="0"/>
-                                  <Component id="lDirectory" alignment="0" pref="438" max="32767" attributes="0"/>
+                                  <Component id="lVersion" alignment="1" pref="471" max="32767" attributes="0"/>
+                                  <Component id="lDirectory" alignment="0" pref="471" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -295,9 +286,6 @@
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="LBL_REGISTERED_LIBRARIES" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                 </Property>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[0, 0, 0, 0]"/>
-                </Property>
               </Properties>
               <Events>
                 <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="rbRegisteredLibraryItemStateChanged"/>
@@ -331,9 +319,6 @@
                 </Property>
                 <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="MSG_CreatingLibraries" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                </Property>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[0, 0, 0, 0]"/>
                 </Property>
               </Properties>
               <Events>
@@ -415,9 +400,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="LBL_Any_Library" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-                </Property>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[0, 0, 0, 0]"/>
                 </Property>
               </Properties>
               <Events>
