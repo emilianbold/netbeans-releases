@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.Writer;
 import java.util.List;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.loaders.CMakeDataObject;
@@ -85,7 +86,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
         // Build directory
         File buildDir = getCBuildDirectory(node);
         // Executable
-        String executable = getCMakeCommand(node, project);
+        String executable = getCommand(node, project, Tool.CMakeTool, "cmake"); // NOI18N
         // Arguments
         //String arguments = proFile.getName();
         String arguments = "-G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS=\"-g3 -gdwarf-2\" -DCMAKE_C_FLAGS=\"-g3 -gdwarf-2\""; // NOI18N
@@ -120,10 +121,6 @@ public class CMakeAction extends AbstractExecutorRunAction {
             nativeExecutor.setOutputListener(outputListener);
         }
         new ShellExecuter(nativeExecutor, listener).execute();
-    }
-
-    private static String getCMakeCommand(Node node, Project project){
-        return findTools("cmake"); // NOI18N
     }
 
     private static File getCBuildDirectory(Node node){
