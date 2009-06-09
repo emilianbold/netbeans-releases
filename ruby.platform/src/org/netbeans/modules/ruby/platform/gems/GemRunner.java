@@ -70,7 +70,6 @@ import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 final class GemRunner {
 
@@ -143,12 +142,12 @@ final class GemRunner {
         return update(gemNames, rdoc, ri, includeDependencies, asyncCompletionTask, parent);
     }
 
-    boolean uninstall(final List<String> gemNames) {
-        return uninstall(gemNames, null, null);
+    boolean uninstall(final List<GemInstallInfo> gems) {
+        return uninstall(gems, null, null);
     }
 
-    boolean uninstallAsynchronously(List<String> gemNames, Runnable asyncCompletionTask, Component parent) {
-        return uninstall(gemNames, asyncCompletionTask, parent);
+    boolean uninstallAsynchronously(List<GemInstallInfo> gems, Runnable asyncCompletionTask, Component parent) {
+        return uninstall(gems, asyncCompletionTask, parent);
     }
 
     private boolean install(final List<String> gems, boolean rdoc, boolean ri, boolean includeDeps,
@@ -244,36 +243,36 @@ final class GemRunner {
         }
     }
 
-    private boolean uninstall(final List<String> gemNames, Runnable asyncCompletionTask, Component parent) {
+    private static String[] uninstallArgsFor(GemInstallInfo info) {
         List<String> argList = new ArrayList<String>();
-
-        // This string is replaced in the loop below, one gem at a time as we iterate over the
-        // deletion results
-        int nameIndex = argList.size();
-        argList.add("placeholder"); // NOI18N
-
-        //argList.add("--verbose"); // NOI18N
-        argList.add("--all"); // NOI18N
+        argList.add(info.getName());
+        if (info.getVersion() == null) {
+            argList.add("--all"); // NOI18N
+        } else {
+            argList.add("-v " + info.getVersion()); // NOI18N
+        }
         argList.add("--executables"); // NOI18N
-        argList.add("--ignore-dependencies"); // NOI18N
+        if (info.isIgnoreDependencies()) {
+            argList.add("--ignore-dependencies"); // NOI18N
+        }
+        return argList.toArray(new String[argList.size()]);
+    }
 
-        String[] args = argList.toArray(new String[argList.size()]);
-        String gemCmd = "uninstall"; // NOI18N
+    private boolean uninstall(final List<GemInstallInfo> gems, Runnable asyncCompletionTask, Component parent) {
+        final String gemCmd = "uninstall"; // NOI18N
 
         if (asyncCompletionTask != null) {
             String title = NbBundle.getMessage(GemRunner.class, "Uninstallation");
             String success = NbBundle.getMessage(GemRunner.class, "UninstallationOk");
             String failure = NbBundle.getMessage(GemRunner.class, "UninstallationFailed");
-            for (String gem : gemNames) {
-                args[nameIndex] = gem;
-                asynchGemRunner(parent, title, success, failure, asyncCompletionTask, gemCmd, args);
+            for (GemInstallInfo gem : gems) {
+                asynchGemRunner(parent, title, success, failure, asyncCompletionTask, gemCmd, uninstallArgsFor(gem));
             }
             return false;
         } else {
             boolean ok = true;
-            for (String gem : gemNames) {
-                args[nameIndex] = gem;
-                ok = runGemTool(gemCmd, args);
+            for (GemInstallInfo gem : gems) {
+                ok = runGemTool(gemCmd, uninstallArgsFor(gem));
             }
             return ok;
         }

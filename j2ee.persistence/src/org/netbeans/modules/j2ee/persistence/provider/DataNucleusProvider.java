@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,45 +31,77 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ruby.platform.gems;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.api.ruby.platform.RubyPlatformManager;
-import org.netbeans.api.ruby.platform.RubyTestBase;
-import org.netbeans.modules.ruby.platform.RubyPreferences;
+package org.netbeans.modules.j2ee.persistence.provider;
 
-public final class GemRunnerTest extends RubyTestBase {
+import java.util.Collections;
+import java.util.Hashtable;
+import java.util.Map;
+import org.openide.util.NbBundle;
 
-    public GemRunnerTest(String testName) {
-        super(testName);
+/**
+ *
+ * @author pblaha
+ */
+
+/**
+ * This class represents DataNucleus provider.
+ *
+ * @author pblaha
+ */
+class DataNucleusProvider extends Provider{
+
+    protected DataNucleusProvider(){
+        super("org.datanucleus.store.appengine.jpa.DatastorePersistenceProvider"); //NOI18N
     }
 
-    public void testGemsAreFetchedWithDescriptions() { // # issue 125508
-        RubyPreferences.setFetchGemDescriptions(true);
-        List<Gem> installed = getInstalledGems();
-        for (Gem gem : installed) {
-            assertNotNull(gem.getName() + " does not have description", gem.getDescription());
-        }
+    public String getDisplayName() {
+        return NbBundle.getMessage(DataNucleusProvider.class, "LBL_DataNucleus"); //NOI18N
     }
 
-    public void testGemsAreFetchedWithoutDescriptions() { // # issue 125508
-        RubyPreferences.setFetchGemDescriptions(false);
-        List<Gem> installed = getInstalledGems();
-        for (Gem gem : installed) {
-            assertNull(gem.getName() + " has description", gem.getDescription());
-        }
+    public String getJdbcUrl() {
+        return "";
     }
 
-    private List<Gem> getInstalledGems() {
-        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
-        GemManager gm = jruby.getGemManager();
-        gm.resetLocal();
-        List<String> errors = new ArrayList<String>();
-        List<Gem> installed = gm.getInstalledGems(errors);
-        assertFalse("has some installed gems in default platform", installed.isEmpty());
-        return installed;
+    public String getJdbcDriver() {
+        return "";
     }
+
+    public String getJdbcUsername() {
+        return "";
+    }
+
+    public String getJdbcPassword() {
+        return "";
+    }
+
+    public String getTableGenerationPropertyName() {
+        return "";
+    }
+
+    public String getTableGenerationDropCreateValue() {
+        return "";
+    }
+
+    public String getTableGenerationCreateValue() {
+        return "";
+    }
+
+    public Map getUnresolvedVendorSpecificProperties() {
+        return Collections.EMPTY_MAP;
+    }
+
+    public Map getDefaultVendorSpecificProperties() {
+        Hashtable<String,String> properties = new Hashtable();
+        properties.put("datanucleus.NontransactionalRead", "true"); //NOI18N
+        properties.put("datanucleus.NontransactionalWrite", "true"); //NOI18N
+        properties.put("datanucleus.ConnectionURL", "appengine"); //NOI18N
+        return properties;
+    }
+
 }

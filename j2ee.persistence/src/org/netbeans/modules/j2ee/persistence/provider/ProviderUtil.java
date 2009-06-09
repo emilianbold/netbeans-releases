@@ -79,6 +79,7 @@ public class ProviderUtil {
     public static final Provider TOPLINK_PROVIDER = ToplinkProvider.create();
     public static final Provider ECLIPSELINK_PROVIDER = new EclipseLinkProvider();
     public static final Provider KODO_PROVIDER = new KodoProvider();
+    public static final Provider DATANUCLEUS_PROVIDER = new DataNucleusProvider();
     public static final Provider OPENJPA_PROVIDER = new OpenJPAProvider();
     public static final Provider DEFAULT_PROVIDER = new DefaultProvider();
     
@@ -646,7 +647,7 @@ public class ProviderUtil {
     public static Provider[] getAllProviders() {
         return new Provider[]{
             TOPLINK_PROVIDER, ECLIPSELINK_PROVIDER, HIBERNATE_PROVIDER, 
-            KODO_PROVIDER, OPENJPA_PROVIDER, TOPLINK_PROVIDER_55_COMPATIBLE};
+            KODO_PROVIDER, DATANUCLEUS_PROVIDER, OPENJPA_PROVIDER, TOPLINK_PROVIDER_55_COMPATIBLE};
     }
     
     /**

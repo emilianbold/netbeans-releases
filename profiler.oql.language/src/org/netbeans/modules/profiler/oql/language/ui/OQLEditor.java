@@ -40,6 +40,7 @@
 package org.netbeans.modules.profiler.oql.language.ui;
 
 import javax.swing.JEditorPane;
+import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -56,27 +57,27 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=OQLEditorImpl.class)
 public class OQLEditor extends OQLEditorImpl{
-    volatile boolean validFlag = false;
-
-    final private TokenHierarchyListener thl = new TokenHierarchyListener() {
-
+    final static private class TokenChangeListener implements TokenHierarchyListener {
+        volatile boolean validFlag;
+        final private Document document;
+        public TokenChangeListener(Document document) {
+            this.document = document;
+        }
         public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
             TokenSequence ts = evt.tokenHierarchy().tokenSequence();
-            boolean oldValidity = validFlag;
+            validFlag = true;
             if (ts.tokenCount() == 0) {
                 validFlag = false;
-                pcs.firePropertyChange(VALIDITY_PROPERTY, oldValidity, validFlag);
-                return;
-            }
-            while (ts.moveNext()) {
-                if (ts.token().id() == OQLTokenId.ERROR) {
-                    validFlag = false;
-                    pcs.firePropertyChange(VALIDITY_PROPERTY, oldValidity, validFlag);
-                    return;
+            } else {
+                while (ts.moveNext()) {
+                    if (ts.token().id() == OQLTokenId.ERROR) {
+                        validFlag = false;
+                        break;
+                    }
                 }
             }
-            validFlag = true;
-            pcs.firePropertyChange(VALIDITY_PROPERTY, oldValidity, validFlag);
+            getValidationCallback(document).callback(validFlag);
+//            parent.firePropertyChange(VALIDITY_PROPERTY, oldValidity, validFlag);
         }
     };
 
@@ -86,7 +87,7 @@ public class OQLEditor extends OQLEditorImpl{
 
         editorPane.setEditorKit(MimeLookup.getLookup(mimeType).lookup(EditorKit.class));
         TokenHierarchy th = TokenHierarchy.get(editorPane.getDocument());
-        th.addTokenHierarchyListener(thl);
+        th.addTokenHierarchyListener(new TokenChangeListener(editorPane.getDocument()));
         return editorPane;
     }
 
