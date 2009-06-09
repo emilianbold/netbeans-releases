@@ -199,4 +199,20 @@ made subject to such option by the copyright holder.
         </alternative_path>
         <version flags="--version" />
     </debugger>
+    <qmake>
+        <tool name="qmake"/>
+        <alternative_path>
+            <path toolchain_name="*"/>
+            <path directory="$PATH"/>
+        </alternative_path>
+        <version flags="-v" />
+    </qmake>
+    <cmake>
+        <tool name="cmake"/>
+        <alternative_path>
+            <path toolchain_name="*"/>
+            <path directory="$PATH"/>
+        </alternative_path>
+        <version flags="--version" />
+    </cmake>
 </toolchaindefinition>

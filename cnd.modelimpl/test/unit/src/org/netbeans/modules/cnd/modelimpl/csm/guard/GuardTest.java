@@ -43,13 +43,13 @@ package org.netbeans.modules.cnd.modelimpl.csm.guard;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
  * @author Alexander Simon
  */
-public class GuardTest extends BaseTestSuite {
+public class GuardTest extends CndBaseTestSuite {
     
     public GuardTest() {
         super("C/C++ Guard block"); // NOI18N

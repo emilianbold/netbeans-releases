@@ -54,8 +54,8 @@ public class RemoteUtilTestCase extends RemoteTestBase {
 //        System.setProperty("cnd.remote.logger.level", "0");
 //        System.setProperty("nativeexecution.support.logger.level", "0");
     }
-    public RemoteUtilTestCase(String testName) {
-        super(testName);
+    public RemoteUtilTestCase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);
     }
 
     public void testGetHomeDirectory() throws Exception {

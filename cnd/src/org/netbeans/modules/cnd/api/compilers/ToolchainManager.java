@@ -95,6 +95,10 @@ public final class ToolchainManager {
         DebuggerDescriptor getDebugger();
 
         String getMakefileWriter();
+
+        QMakeDescriptor getQMake();
+
+        CMakeDescriptor getCMake();
     }
 
     public interface BaseFolder {
@@ -194,6 +198,12 @@ public final class ToolchainManager {
     }
 
     public interface DebuggerDescriptor extends ToolDescriptor {
+    }
+
+    public interface QMakeDescriptor extends ToolDescriptor {
+    }
+
+    public interface CMakeDescriptor extends ToolDescriptor {
     }
 
     public interface LinkerDescriptor {
