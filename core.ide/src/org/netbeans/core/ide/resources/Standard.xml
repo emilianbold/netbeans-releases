@@ -43,6 +43,8 @@ made subject to such option by the copyright holder.
 
 <!DOCTYPE Configuration PUBLIC "-//NetBeans IDE//DTD toolbar 1.1//EN" "http://www.netbeans.org/dtds/toolbar1_1.dtd">
 
+<!-- Do not forget to merge any modifications also into Debugging.xml -->
+
 <Configuration>
   <Row>
     <Toolbar name="File" />
