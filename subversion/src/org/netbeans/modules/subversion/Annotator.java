@@ -486,14 +486,6 @@ public class Annotator {
      * will act on currently activated nodes.
      */
     public static Action [] getActions(VCSContext ctx, VCSAnnotator.ActionDestination destination) {
-        ResourceBundle loc = NbBundle.getBundle(Annotator.class);
-        Node [] nodes = ctx.getElements().lookupAll(Node.class).toArray(new Node[0]);
-        File [] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
-        Lookup context = ctx.getElements();
-        boolean noneVersioned = isNothingVersioned(files);
-        boolean onlyFolders = onlyFolders(files);
-        boolean onlyProjects = onlyProjects(nodes);
-
         List<Action> actions = new ArrayList<Action>(20);
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
             actions.add(SystemAction.get(CheckoutAction.class));
@@ -523,9 +515,16 @@ public class Annotator {
             actions.add(null);
             actions.add(SystemAction.get(SvnPropertiesAction.class));
         } else {
+            ResourceBundle loc = NbBundle.getBundle(Annotator.class);
+            File[] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
+            Lookup context = ctx.getElements();
+            boolean noneVersioned = isNothingVersioned(files);
             if (noneVersioned) {
                 actions.add(SystemActionBridge.createAction(SystemAction.get(ImportAction.class).createContextAwareInstance(context), loc.getString("CTL_PopupMenuItem_Import"), context));
             } else {
+                Node[] nodes = ctx.getElements().lookupAll(Node.class).toArray(new Node[0]);
+                boolean onlyFolders = onlyFolders(files);
+                boolean onlyProjects = onlyProjects(nodes);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status"), context));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(DiffAction.class), loc.getString("CTL_PopupMenuItem_Diff"), context));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(UpdateAction.class), loc.getString("CTL_PopupMenuItem_Update"), context));
@@ -564,9 +563,8 @@ public class Annotator {
     }
 
     private static boolean isNothingVersioned(File[] files) {
-        FileStatusCache cache = Subversion.getInstance().getStatusCache();
         for (File file : files) {
-            if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) return false;
+            if (SvnUtils.isManaged(file)) return false;
         }
         return true;
     }
@@ -582,19 +580,16 @@ public class Annotator {
     private static boolean onlyFolders(File[] files) {
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         boolean onlyFolders = true;
-        List<File> filesToRefresh = new LinkedList<File>();
         for (int i = 0; i < files.length; i++) {
             if (files[i].isFile()) return false;
             FileInformation status = cache.getCachedStatus(files[i]);
             if (status == null) {
-                filesToRefresh.add(files[i]);
                 onlyFolders = false; // be optimistic, this can be a file
             } else if (!files[i].exists() && !status.isDirectory()) {
                 onlyFolders = false;
                 break;
             }
         }
-        cache.refreshAsync(filesToRefresh);
         return onlyFolders;
     }
 
