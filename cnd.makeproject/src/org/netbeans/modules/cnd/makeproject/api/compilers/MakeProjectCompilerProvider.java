@@ -101,6 +101,8 @@ public class MakeProjectCompilerProvider extends CompilerProvider {
         }
         if (kind == Tool.CustomTool) {
             return CustomTool.create(env);
+        } else if (kind == Tool.QMakeTool || kind == Tool.CMakeTool) {
+            return GeneralTool.create(env, kind, flavor, name, displayName, path);
         }
         return null;
     }
