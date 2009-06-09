@@ -146,7 +146,12 @@ public abstract class AbstractProjectClassPathImpl implements ClassPathImplement
     }
 
     private List<PathResourceImplementation> getPath() {
-        return getPath(createPath());
+        List<PathResourceImplementation> base = getPath(createPath());
+        FilteringPathResourceImplementation filtering = getFilteringResources();
+        if (filtering != null) {
+            base.add(filtering);
+        }
+        return Collections.<PathResourceImplementation>unmodifiableList(base);
     }
     
     public static  List<PathResourceImplementation> getPath(URI[] pieces) {
@@ -183,11 +188,7 @@ public abstract class AbstractProjectClassPathImpl implements ClassPathImplement
                 ErrorManager.getDefault().notify(mue);
             }
         }
-//        FilteringPathResourceImplementation filtering = getFilteringResources();
-//        if (filtering != null) {
-//            result.add(filtering);
-//        }
-        return Collections.<PathResourceImplementation>unmodifiableList(result);
+        return result;
     }
     
     public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener) {

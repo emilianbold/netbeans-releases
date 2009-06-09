@@ -39,19 +39,28 @@
 
 package org.netbeans.modules.cnd.remote;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.modules.cnd.remote.mapper.MappingsTestCase;
 import org.netbeans.modules.cnd.remote.support.RemoteUtilTestCase;
 import org.netbeans.modules.cnd.remote.support.ServerListTestCase;
 import org.netbeans.modules.cnd.remote.support.TransportTestCase;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.remote.sync.ScpSyncWorkerTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
+import org.netbeans.modules.nativeexecution.test.RcFile;
+import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 
 /**
  *
  * @author Sergey Grinev
  */
-public class RemoteDevelopmentTest extends BaseTestSuite {
+public class RemoteDevelopmentTestSuite extends CndBaseTestSuite {
 
 //    static {
 //        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
@@ -59,17 +68,44 @@ public class RemoteDevelopmentTest extends BaseTestSuite {
 //        System.setProperty("nativeexecution.support.logger.level", "0");
 //    }
 
-    public RemoteDevelopmentTest() {
+    public RemoteDevelopmentTestSuite() {
         super("Remote Development"); // NOI18N
-        addTestSuite(MappingsTestCase.class);
-        addTestSuite(TransportTestCase.class);
-        addTestSuite(RemoteUtilTestCase.class);
-        addTestSuite(ServerListTestCase.class);
+        try {
+            addTest(MappingsTestCase.class, getTestExecutionEnvironments());
+            addTest(TransportTestCase.class, getTestExecutionEnvironments());
+            addTest(RemoteUtilTestCase.class, getTestExecutionEnvironments());
+            addTest(ServerListTestCase.class, getTestExecutionEnvironments());
+            addTest(ScpSyncWorkerTestCase.class, getTestExecutionEnvironments());            
+        } catch (IOException ex) {
+            addTest(warning("Cannot get execution environment: " + exceptionToString(ex)));
+        } catch (FormatException ex) {
+            addTest(warning("Cannot get execution environment: " + exceptionToString(ex)));
+        }
     }
 
     public static Test suite() {
-        TestSuite suite = new RemoteDevelopmentTest();
+        TestSuite suite = new RemoteDevelopmentTestSuite();
         return suite;
     }
 
+    protected ExecutionEnvironment[] getTestExecutionEnvironments() throws IOException, RcFile.FormatException {
+        ExecutionEnvironment[] testEnvironments;
+        List<ExecutionEnvironment> envs = new ArrayList<ExecutionEnvironment>();
+        try {
+            for (String platform : NativeExecutionTestSupport.getRcFile().getKeys("remote.platforms")) {
+                envs.add(NativeExecutionTestSupport.getTestExecutionEnvironment(platform));
+            }
+        } catch (FileNotFoundException e) {
+            // rcfile just does not exist: use old-style
+        }
+        testEnvironments = envs.toArray(new ExecutionEnvironment[envs.size()]);
+        // backup to the old-style
+        if (testEnvironments.length == 0) {
+            ExecutionEnvironment execEnv = NativeExecutionTestSupport.getDefaultTestExecutionEnvironment(false);
+            if (execEnv != null) {
+                testEnvironments = new ExecutionEnvironment[] { execEnv };
+            }
+        }
+        return testEnvironments;
+    }
 }

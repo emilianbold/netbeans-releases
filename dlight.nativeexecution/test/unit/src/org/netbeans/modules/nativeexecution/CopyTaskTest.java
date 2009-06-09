@@ -50,6 +50,7 @@ import org.junit.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.openide.util.Exceptions;
 
 /**
@@ -262,7 +263,7 @@ public class CopyTaskTest extends NativeExecutionBaseTestCase {
 
     @Test
     public void testCopyToRemote() throws Exception {
-        ExecutionEnvironment execEnv = getTestExecutionEnvironment("intel-S2"); // NOI18N
+        ExecutionEnvironment execEnv = NativeExecutionTestSupport.getTestExecutionEnvironment("intel-S2"); // NOI18N
         assertNotNull(execEnv);
         File src = createTempFile("test-upload-1", null, false); // NOI18N
         writeFile(src, "qwe/nasd/nzxc"); // NOI18N

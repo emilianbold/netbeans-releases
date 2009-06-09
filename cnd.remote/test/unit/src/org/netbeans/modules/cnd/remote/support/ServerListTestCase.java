@@ -56,8 +56,8 @@ public class ServerListTestCase extends RemoteTestBase {
 //        System.setProperty("cnd.remote.logger.level", "0");
 //        System.setProperty("nativeexecution.support.logger.level", "0");
     }
-    public ServerListTestCase(String testName) {
-        super(testName);
+    public ServerListTestCase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);
     }
 
     public void testRun() throws Exception {        

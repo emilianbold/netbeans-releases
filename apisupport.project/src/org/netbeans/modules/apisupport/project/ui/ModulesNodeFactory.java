@@ -112,7 +112,7 @@ public class ModulesNodeFactory implements NodeFactory {
         private SuiteProject suite;
 
         ModulesNode(final SuiteProject suite) {
-            super(new ModuleChildren(suite));
+            super(new ModuleChildren(suite), org.openide.util.lookup.Lookups.fixed(suite));
             this.suite = suite;
             setName("modules"); // NOI18N
             setDisplayName(getMessage("CTL_Modules"));

@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.Writer;
 import java.util.List;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
@@ -87,7 +88,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         // Build directory
         File buildDir = getBuildDirectory(node);
         // Executable
-        String executable = getMakeCommand(node, project);
+        String executable = getCommand(node, project, Tool.MakeTool, "make"); // NOI18N
         // Arguments
         String arguments = "-f " + makefile.getName() + " " + target; // NOI18N
         // Tab Name
