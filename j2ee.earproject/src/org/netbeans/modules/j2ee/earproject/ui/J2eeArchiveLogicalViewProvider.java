@@ -492,7 +492,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
                             "default value will be used instead: "+j2eeProfile); // NOI18N
                     updateJ2EESpec(project, project.getAntProjectHelper(), j2eeProfile);
                 }
-                String instance = BrokenServerSupport.selectServer(j2eeProfile, J2eeModule.EAR);
+                String instance = BrokenServerSupport.selectServer(j2eeProfile, J2eeModule.Type.EAR);
                 if (instance != null) {
                     EarProjectProperties.setServerInstance(
                             project, helper, instance);

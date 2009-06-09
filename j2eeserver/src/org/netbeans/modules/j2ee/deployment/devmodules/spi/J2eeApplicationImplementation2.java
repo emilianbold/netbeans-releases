@@ -41,25 +41,41 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.spi;
 
-/**
- * Base SPI interface for {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule}.
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleListener;
+
+/** 
+ * Base SPI interface for {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication}.
  * Implementation of this interface is used to create
- * {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule}
+ * {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication}
  * instance using the {@link J2eeModuleFactory}.
  * 
- * @author sherold
+ * @author sherold, Petr Hejl
  * 
- * @since 1.23
- * @deprecated implement {@link J2eeModuleImplementation2}
+ * @since 1.59
  */
-public interface J2eeModuleImplementation extends J2eeModuleBase {
-    
-    /** 
-     * Returns module type.
-     * 
-     * @return module type.
-     */
-    Object getModuleType();
-    
+public interface J2eeApplicationImplementation2 extends J2eeModuleImplementation2 {
 
+    /**
+     * Returns a list of all the J2EEModules which this J2eeApplication contains.
+     * 
+     * @return list of all the child J2EEModules
+     */
+    J2eeModule[] getModules();
+
+    /**
+     * Registers the specified ModuleListener for notification about the module
+     * changes.
+     * 
+     * @param listener ModuleListener
+     */
+    void addModuleListener(ModuleListener listener);
+
+    /**
+     * Unregister the specified ModuleListener.
+     * 
+     * @param listener ModuleListener
+     */
+    void removeModuleListener(ModuleListener listener);
+    
 }

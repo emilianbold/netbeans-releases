@@ -41,25 +41,20 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.spi;
 
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+
 /**
- * Base SPI interface for {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule}.
- * Implementation of this interface is used to create
- * {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule}
- * instance using the {@link J2eeModuleFactory}.
- * 
- * @author sherold
- * 
- * @since 1.23
- * @deprecated implement {@link J2eeModuleImplementation2}
+ *
+ * @author Petr Hejl
+ * @since 1.59
  */
-public interface J2eeModuleImplementation extends J2eeModuleBase {
+public interface J2eeModuleImplementation2 extends J2eeModuleBase {
     
     /** 
      * Returns module type.
      * 
      * @return module type.
      */
-    Object getModuleType();
-    
+    J2eeModule.Type getModuleType();
 
 }

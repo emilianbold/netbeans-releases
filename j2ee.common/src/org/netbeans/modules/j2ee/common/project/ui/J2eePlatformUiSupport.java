@@ -50,6 +50,7 @@ import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.openide.util.NbBundle;
@@ -65,10 +66,10 @@ public class J2eePlatformUiSupport {
 
     @Deprecated
     public static ComboBoxModel createPlatformComboBoxModel(String serverInstanceId, String j2eeLevel, Object moduleType) {
-        return new J2eePlatformComboBoxModel(serverInstanceId, Profile.fromPropertiesString(j2eeLevel), moduleType);
+        return new J2eePlatformComboBoxModel(serverInstanceId, Profile.fromPropertiesString(j2eeLevel), J2eeModule.Type.fromJsrType(moduleType));
     }
 
-    public static ComboBoxModel createPlatformComboBoxModel(String serverInstanceId, Profile j2eeProfile, Object moduleType) {
+    public static ComboBoxModel createPlatformComboBoxModel(String serverInstanceId, Profile j2eeProfile, J2eeModule.Type moduleType) {
         return new J2eePlatformComboBoxModel(serverInstanceId, j2eeProfile, moduleType);
     }
 
@@ -81,8 +82,15 @@ public class J2eePlatformUiSupport {
         return new J2eeSpecVersionComboBoxModel(profile);
     }
 
+    @Deprecated
     public static boolean getJ2eePlatformAndSpecVersionMatch(Object j2eePlatformModelObject,
             Object j2eeSpecVersionModelObject, Object moduleType) {
+
+        return getJ2eePlatformAndSpecVersionMatch(j2eePlatformModelObject, j2eeSpecVersionModelObject, J2eeModule.Type.fromJsrType(moduleType));
+    }
+
+    public static boolean getJ2eePlatformAndSpecVersionMatch(Object j2eePlatformModelObject,
+            Object j2eeSpecVersionModelObject, J2eeModule.Type moduleType) {
         if (!(j2eePlatformModelObject instanceof J2eePlatformAdapter
                 && (j2eeSpecVersionModelObject instanceof String || j2eeSpecVersionModelObject instanceof Profile))) {
             return false;
@@ -138,9 +146,9 @@ public class J2eePlatformUiSupport {
         private final String initialJ2eePlatform;
         private J2eePlatformAdapter selectedJ2eePlatform;
         private final Profile j2eeProfile;
-        private final Object moduleType;
+        private final J2eeModule.Type moduleType;
         
-        public J2eePlatformComboBoxModel(String serverInstanceID, Profile j2eeProfile, Object moduleType) {
+        public J2eePlatformComboBoxModel(String serverInstanceID, Profile j2eeProfile, J2eeModule.Type moduleType) {
             initialJ2eePlatform = serverInstanceID;
             this.j2eeProfile = j2eeProfile;
             this.moduleType = moduleType;
@@ -173,7 +181,7 @@ public class J2eePlatformUiSupport {
             }
         }
                 
-        private synchronized J2eePlatformAdapter[] getJ2eePlatforms(Object moduleType) {
+        private synchronized J2eePlatformAdapter[] getJ2eePlatforms(J2eeModule.Type moduleType) {
             if (j2eePlatforms == null) {
                 String[] serverInstanceIDs = Deployment.getDefault().getServerInstanceIDs();
                 Set<J2eePlatformAdapter> orderedNames = new TreeSet<J2eePlatformAdapter>();

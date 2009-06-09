@@ -545,7 +545,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider2 {
                             "default value will be used instead: "+j2eeProfile); // NOI18N
                     updateJ2EESpec(project, project.getAntProjectHelper(), j2eeProfile);
                 }
-                String instance = BrokenServerSupport.selectServer(j2eeProfile, J2eeModule.WAR);
+                String instance = BrokenServerSupport.selectServer(j2eeProfile, J2eeModule.Type.WAR);
                 if (instance != null) {
                     WebProjectProperties.setServerInstance(
                             project, helper, instance);
