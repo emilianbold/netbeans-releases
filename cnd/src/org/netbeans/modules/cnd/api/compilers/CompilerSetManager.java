@@ -832,6 +832,12 @@ public class CompilerSetManager {
             if (d.getDebugger() != null && !d.getDebugger().skipSearch()){
                 initCompiler(Tool.DebuggerTool, path, cs, d.getDebugger().getNames());
             }
+            if (d.getQMake() != null && !d.getQMake().skipSearch()){
+                initCompiler(Tool.QMakeTool, path, cs, d.getQMake().getNames());
+            }
+            if (d.getCMake() != null && !d.getCMake().skipSearch()){
+                initCompiler(Tool.CMakeTool, path, cs, d.getCMake().getNames());
+            }
             return true;
         }
         return false;
@@ -1089,7 +1095,12 @@ public class CompilerSetManager {
         if (cs.findTool(Tool.DebuggerTool) == null) {
             autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getDebugger(), Tool.DebuggerTool);
         }
-
+        if (cs.findTool(Tool.QMakeTool) == null) {
+            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getQMake(), Tool.QMakeTool);
+        }
+        if (cs.findTool(Tool.CMakeTool) == null) {
+            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getCMake(), Tool.CMakeTool);
+        }
     }
 
     /**
