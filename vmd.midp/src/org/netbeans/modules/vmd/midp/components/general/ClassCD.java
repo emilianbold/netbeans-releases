@@ -57,6 +57,7 @@ import org.openide.util.NbBundle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.codegen.ModelUpdatePresenter;
 import org.netbeans.modules.vmd.midp.components.general.ClassCode.CodeClassComponentDependencyPresenter;
 
 /**
@@ -69,6 +70,7 @@ public final class ClassCD extends ComponentDescriptor {
 
     public static final String PROP_INSTANCE_NAME = "instanceName"; // NOI18N
     public static final String PROP_LAZY_INIT = "lazyInit";  // NOI18N
+    public static final String PROP_CODE_GENERATED = "codeGenerated";  // NOI18N
 
     static {
         MidpTypes.registerIcon (TYPEID, null); // TODO - use an empty icon here
@@ -96,7 +98,10 @@ public final class ClassCD extends ComponentDescriptor {
                 false, false, Versionable.FOREVER),
             new PropertyDescriptor (PROP_LAZY_INIT, MidpTypes.TYPEID_BOOLEAN, 
             MidpTypes.createBooleanValue (Boolean.TRUE), false, false,
-                Versionable.FOREVER)
+                Versionable.FOREVER),
+            new PropertyDescriptor (PROP_CODE_GENERATED,
+                MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue (Boolean.FALSE),
+                false, false, Versionable.FOREVER)
        );
     }
 
@@ -136,6 +141,7 @@ public final class ClassCD extends ComponentDescriptor {
             new ClassCode.ClassCodeReferencePresenter (),
             new ClassCode.CodeLazyInitPresenter (),
             new ClassCode.CodeClassNamePresenter (),
+            new ClassCode.GeneratedCodePresenter(),
             new CodeClassComponentDependencyPresenter()
         );
     }

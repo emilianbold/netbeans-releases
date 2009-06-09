@@ -144,8 +144,10 @@ public class FunctionsListViewVisualizer extends JPanel implements
 //    private final FocusTraversalPolicy focusPolicy = new FocusTraversalPolicyImpl() ;
     private JComponent lastFocusedComponent = null;
     private Map<Integer, Boolean> ascColumnValues = new HashMap<Integer, Boolean>();
+    private final SourceSupportProvider sourceSupportProvider;
 
     public FunctionsListViewVisualizer(FunctionsListDataProvider dataProvider, FunctionsListViewVisualizerConfiguration configuration) {
+        sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
         visSupport = new VisualizersSupport(new VisualizerImplSessionStateListener());
         explorerManager = new ExplorerManager();
         this.configuration = configuration;
@@ -259,9 +261,6 @@ public class FunctionsListViewVisualizer extends JPanel implements
         }
         outline.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         outlineView.setProperties(result.toArray(new Property[0]));
-        if (isMacLaf) {
-            buttonsToolbar.setBackground(macBackground);
-        }
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
 
         KeyStroke returnKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true);
@@ -449,6 +448,9 @@ public class FunctionsListViewVisualizer extends JPanel implements
         this.removeAll();
         this.setLayout(new BorderLayout());
         buttonsToolbar = new JToolBar();
+        if (isMacLaf) {
+            buttonsToolbar.setBackground(macBackground);
+        }
         refresh = new JButton();
 
         buttonsToolbar.setFloatable(false);
@@ -697,7 +699,6 @@ public class FunctionsListViewVisualizer extends JPanel implements
         private boolean goToSource() {
             SourceFileInfo source = getSource();
             if (source != null && source.isSourceKnown()) {
-                SourceSupportProvider sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
                 sourceSupportProvider.showSource(source);
                 return true;
             } else {

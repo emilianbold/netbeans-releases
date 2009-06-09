@@ -99,8 +99,8 @@ public abstract class APTWalker {
         return new WalkerTokenStream();
     }
     
-    private class WalkerTokenStream implements TokenStream, APTTokenStream {
-        public WalkerTokenStream() {
+    private final class WalkerTokenStream implements TokenStream, APTTokenStream {
+        private WalkerTokenStream() {
             init(true);
         }
         
@@ -113,7 +113,7 @@ public abstract class APTWalker {
                 //} while (token == null);
                 return nextTokenImpl();
             } catch (TokenStreamException ex) {
-                APTUtils.LOG.log(Level.SEVERE, null, ex);
+                APTUtils.LOG.log(Level.SEVERE, "{0}", new Object[] { ex });
                 return APTUtils.EOF_TOKEN;
             }
         }

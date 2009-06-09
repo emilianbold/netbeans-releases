@@ -108,6 +108,9 @@ public class ImportsTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ImportsTest("testAtVeryBeginning"));
 //        suite.addTest(new ImportsTest("testPackageInfo"));
 //        suite.addTest(new ImportsTest("testRemoveAndAdd"));
+//        suite.addTest(new ImportsTest("test166524a"));
+//        suite.addTest(new ImportsTest("test166524b"));
+//        suite.addTest(new ImportsTest("test166524c"));
         return suite;
     }
 
@@ -1327,6 +1330,107 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    public void test166524a() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package test;\n" +
+            "import org.jdesktop.layout.GroupLayout;\n" +
+            "import org.jdesktop.layout.Baseline;\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "package test;\n" +
+            "import org.jdesktop.layout.Baseline;\n" +
+            "import org.jdesktop.layout.GroupLayout;\n" +
+            "public class Test {\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                ImportTree first = node.getImports().get(0);
+                CompilationUnitTree nue = make.addCompUnitImport(make.removeCompUnitImport(node, first), first);
+                workingCopy.rewrite(node, nue);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void test166524b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package test;\n" +
+            "import org.jdesktop.layout.Baseline;\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "package test;\n" +
+            "import static org.jdesktop.layout.GroupLayout.CENTER;\n" +
+            "public class Test {\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                ImportTree first = node.getImports().get(0);
+                ImportTree nue = make.Import(make.Identifier("org.jdesktop.layout.GroupLayout.CENTER"), true);
+                workingCopy.rewrite(first, nue);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void test166524c() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package test;\n" +
+            "import java.awt.List;\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "package test;\n" +
+            "import java.util.List;\n" +
+            "public class Test {\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                ImportTree first = node.getImports().get(0);
+                ImportTree nue = make.Import(make.MemberSelect(make.MemberSelect(make.Identifier("java"), "util"), "List"), false);
+                workingCopy.rewrite(first, nue);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }

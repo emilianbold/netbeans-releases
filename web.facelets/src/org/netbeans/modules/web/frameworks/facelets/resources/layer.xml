@@ -1,0 +1,281 @@
+<?xml version="1.0"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<filesystem>
+    
+    <folder name="j2ee">
+        <folder name="webtier">
+            <folder name="framework">
+                <file name="org-netbeans-modules-web-frameworks-facelets-FaceletsFrameworkProvider.instance"> 
+                    <attr name="position" intvalue="320"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-facelet+x-jsp">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-web-frameworks-facelets-loaders-FaceletDataLoader.instance"/>
+                </folder> 
+
+                <folder name="Actions">
+                    <file name="org-openide-actions-OpenAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="sep-0.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                    <file name="org-openide-actions-FileSystemAction.instance">
+                        <attr name="position" intvalue="300"/>
+                    </file>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="org-openide-actions-CutAction.instance">
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="org-openide-actions-CopyAction.instance">
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="700"/>
+                    </file>
+                    <file name="org-openide-actions-DeleteAction.instance">
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                    <file name="org-openide-actions-RenameAction.instance">
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="org-openide-actions-ToolsAction.instance">
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.instance">
+                        <attr name="position" intvalue="1400"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="FaceletResolver.xml" url="mime-resolver.xml">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/frameworks/facelets/resources/tag.png"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.frameworks.facelets.resources.Bundle"/>
+                <!-- Must appear before html.xml (in html module) which has position=300 -->
+                <attr name="position" intvalue="290"/>
+            </file>
+        </folder>
+    </folder>
+    
+    <folder name="Templates">
+        <folder name="JSF">
+            <file name="Facelets.xhtml" url="templates/simpleFacelets.template">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/frameworks/facelets/resources/tag.png"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.frameworks.facelets.resources.Bundle"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.frameworks.facelets.ui.FaceletsFileWizardIterator"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/frameworks/facelets/resources/faceletsFile.html"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="position" intvalue="810"/>
+            </file>
+            <file name="Template.xhtml" url="templates/template1.template">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/frameworks/facelets/resources/tag.png"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.frameworks.facelets.resources.Bundle"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/frameworks/facelets/resources/Template.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.frameworks.facelets.ui.TemplateIterator"/>          
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="position" intvalue="820"/>
+            </file>
+            <file name="TemplateClient.xhtml" url="templates/htmlTemplateClient.template">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/frameworks/facelets/resources/tag.png"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.frameworks.facelets.resources.Bundle"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/frameworks/facelets/resources/TemplateClient.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.frameworks.facelets.ui.TemplateClientIterator"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="position" intvalue="830"/>
+            </file>
+        </folder>
+        <folder name="Project">
+            <folder name="Samples">
+                <folder name="Web">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.frameworks.facelets.resources.Bundle"/>
+                    <file name="TemplateExample.zip" url="TemplateExample.zip">
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/frameworks/facelets/resources/TemplateExample.html"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.frameworks.facelets.resources.Bundle"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/frameworks/facelets/resources/tag.png"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.frameworks.facelets.ui.sampleprojects.SampleProjectIterator"/>
+                        <attr name="prjType" stringvalue="web"/>
+                        <attr name="position" intvalue="510"/>
+                    </file>
+                    <file name="NumberGuess.zip" url="NumberGuess.zip">
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/frameworks/facelets/resources/TemplateExample.html"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.frameworks.facelets.resources.Bundle"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/frameworks/facelets/resources/tag.png"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.frameworks.facelets.ui.sampleprojects.SampleProjectIterator"/>
+                        <attr name="prjType" stringvalue="web"/>
+                        <attr name="position" intvalue="520"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>            
+    </folder>
+    
+    <folder name="J2EE">
+        <folder name="JSPSyntaxColoring">
+            <folder name="text">
+                <folder name="x-facelet+x-jsp">
+                    <file name="org-netbeans-modules-web-frameworks-facelets-editor-FaceletsContextInfoImpl.instance">
+                        <attr name="instanceCreate" newvalue="org.netbeans.modules.web.frameworks.facelets.editor.FaceletsContextInfoImpl"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
+    <!--<folder name="Navigator">
+        <folder name="Panels">
+            <folder name="text">
+                <folder name="x-facelet+x-jsp">
+                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>-->
+    
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-facelet+x-jsp">
+                <folder name="HyperlinkProviders">
+                    <file name="org-netbeans-modules-web-frameworks-facelets-editor-FaceletsHyperlinkProvider.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.frameworks.facelets.editor.FaceletsHyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                    </file>
+                </folder>
+                <folder name="AutoTagImportProviders">
+                    <file name="org-netbeans-modules-web-frameworks-facelets-editor-FaceletsAutoTagImporter.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.frameworks.facelets.editor.FaceletsAutoTagImporter"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.modules.web.core.syntax.spi.AutoTagImporterProvider"/>
+                    </file>
+                </folder>
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-web-frameworks-facelets-editor-FaceletsCompletionProvider.instance"/>
+                </folder>
+
+                <!--
+                <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance"/>
+                <file name="org-netbeans-modules-gsfret-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
+
+                <folder name="BracesMatchers">
+                    <file name="org-netbeans-modules-html-editor-HTMLBracesMatching.instance">
+                        <attr name="position" intvalue="50"/>
+                    </file>
+                </folder>
+                -->
+
+                <folder name="FoldManager">
+                    <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerFactory.instance"/>
+                    <file name="org-netbeans-modules-web-core-syntax-folding-JspFoldManagerFactory.instance"/>
+                </folder>
+                <folder name="SideBar">
+                    <file name="org-netbeans-modules-csl-editor-GsfCodeFoldingSideBarFactory.instance">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+        <folder name="AnnotationTypes">
+            <file name="org-netbeans-modules-web-frameworks-facelets-editor-FaceletsErrorAnnotation.xml" url="FaceletsErrorAnnotation.xml"/>
+        </folder>
+    </folder>
+
+    <!--
+    <folder name="GsfPlugins">
+        <folder name="text">
+            <folder name="x-facelet+x-jsp">
+                <attr name="useCustomEditorKit" boolvalue="true"/>
+
+                <file name="language.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.gsf.HtmlLanguage"/>
+                </file>
+
+                <file name="structure.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.gsf.HtmlStructureScanner"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    -->
+
+    <folder name="Menu">
+        <folder name="Tools">
+            
+            <folder name="PaletteManager">
+                <file name="org-netbeans-modules-web-frameworks-facelets-palette-FaceletsPaletteCustomizerAction.instance">
+                    <attr name="position" intvalue="220"/>
+                </file>
+            </folder>
+            
+        </folder>
+    </folder>
+    
+    <folder name="Palettes">
+        <folder name="Facelets">
+            <folder name="HTML.shadow">
+                <attr name="position" intvalue="100"/>
+                <attr name="SystemFileSystem.localizingBundle" 
+                      stringvalue="org.netbeans.modules.web.core.palette.Bundle"/>
+                <attr name="originalFile" 
+                      stringvalue="HTMLPalette/HTML"/>
+            </folder>
+            <folder name="HTML_Forms.shadow">
+                <attr name="position" intvalue="200"/>
+                <attr name="SystemFileSystem.localizingBundle" 
+                      stringvalue="org.netbeans.modules.web.core.palette.Bundle"/>
+                <attr name="originalFile" 
+                      stringvalue="HTMLPalette/HTML_Forms"/>
+            </folder>
+        </folder>
+    </folder>
+    
+</filesystem>

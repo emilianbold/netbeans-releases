@@ -48,6 +48,7 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 
 /**
  * First panel of <code>NewNbModuleWizardIterator</code>. Allows user to enter
@@ -89,7 +90,7 @@ final class BasicInfoWizardPanel extends BasicWizardPanel.NewTemplatePanel imple
     public Component getComponent() {
         if (visualPanel == null) {
             visualPanel = new BasicInfoVisualPanel(getData());
-            visualPanel.addPropertyChangeListener(this);
+            visualPanel.addPropertyChangeListener(WeakListeners.propertyChange(this, visualPanel));
             visualPanel.setName(getMessage("LBL_BasicInfoPanel_Title"));
             visualPanel.updateAndCheck();
         }

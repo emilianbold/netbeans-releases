@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
-import java.util.LinkedList;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -340,6 +339,11 @@ public class StampsTest extends NbTestCase {
             boolean called;
 
             public void flushCaches(DataOutputStream os) throws IOException {
+                for (int i = 0; i < 1024 * 1024; i++) {
+                    os.write(10);
+                }
+                os.flush();
+                os.close();
                 throw new IOException("Not supported yet.");
             }
 
@@ -553,9 +557,9 @@ public class StampsTest extends NbTestCase {
             }
         }
     }
-    
-    
-    private static void assertStamp(long expectedValue, File cluster, boolean global, boolean local) {
+
+
+    static void assertStamp(long expectedValue, File cluster, boolean global, boolean local) {
         File globalStamp = new File(cluster, ".lastModified");
 
         File userDir = new File(System.getProperty("netbeans.user"));
@@ -577,7 +581,7 @@ public class StampsTest extends NbTestCase {
         
     }
 
-    private void createModule(String cnb, File cluster, long accesTime) throws IOException {
+    static void createModule(String cnb, File cluster, long accesTime) throws IOException {
         String dashes = cnb.replace('.', '-');
         
         File config = new File(new File(new File(cluster, "config"), "Modules"), dashes + ".xml");

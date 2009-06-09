@@ -209,7 +209,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                         FileImpl aFile = (FileImpl) getContainingFile();
                         VariableDefinitionImpl var = new VariableDefinitionImpl(fixFakeRegistrationAst, getContainingFile(), getReturnType(), getName().toString());
                         aFile.getProjectImpl(true).unregisterDeclaration(this);
-                        RepositoryUtils.remove(getUID());
+                        RepositoryUtils.remove(getUID(), this);
                         aFile.getProjectImpl(true).registerDeclaration(var);
                         aFile.addDeclaration(var);
                         fixFakeRegistrationAst = null;
@@ -227,7 +227,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                         FileImpl aFile = (FileImpl) getContainingFile();
                         VariableDefinitionImpl var = new VariableDefinitionImpl(fixFakeRegistrationAst, getContainingFile(), getReturnType(), getName().toString());
                         aFile.getProjectImpl(true).unregisterDeclaration(this);
-                        RepositoryUtils.remove(getUID());
+                        RepositoryUtils.remove(getUID(), this);
                         aFile.getProjectImpl(true).registerDeclaration(var);
                         aFile.addDeclaration(var);
                         fixFakeRegistrationAst = null;
@@ -241,7 +241,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                     FunctionImpl fi = new FunctionImpl(fixFakeRegistrationAst, getContainingFile(), this.getScope(), true, true);
                     fixFakeRegistrationAst = null;
                     aFile.getProjectImpl(true).unregisterDeclaration(this);
-                    RepositoryUtils.remove(getUID());
+                    RepositoryUtils.remove(getUID(), this);
                     aFile.addDeclaration(fi);
                     fixed = true;
                     if (NamespaceImpl.isNamespaceScope(fi)) {

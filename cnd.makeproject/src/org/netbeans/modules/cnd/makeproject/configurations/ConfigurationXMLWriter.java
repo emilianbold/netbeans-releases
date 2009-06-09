@@ -44,22 +44,22 @@ package org.netbeans.modules.cnd.makeproject.configurations;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.api.xml.XMLDocWriter;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 public class ConfigurationXMLWriter extends XMLDocWriter {
 
     private FileObject projectDirectory;
-    private ConfigurationDescriptor projectDescriptor;
+    private MakeConfigurationDescriptor projectDescriptor;
 
     private CommonConfigurationXMLCodec encoder;
 
     public ConfigurationXMLWriter(FileObject projectDirectory,
-				  ConfigurationDescriptor projectDescriptor) {
+				  MakeConfigurationDescriptor projectDescriptor) {
         this.projectDirectory = projectDirectory;
         this.projectDescriptor = projectDescriptor;
     }

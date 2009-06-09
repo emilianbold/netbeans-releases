@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.PrintWriter;
@@ -55,7 +56,7 @@ import org.openide.util.Exceptions;
  *
  * @author ak119685
  */
-public class CopyTaskTest extends NativeExecutionTest {
+public class CopyTaskTest extends NativeExecutionBaseTestCase {
 
     public CopyTaskTest(String name) {
         super(name);
@@ -85,8 +86,8 @@ public class CopyTaskTest extends NativeExecutionTest {
     @Test
     public void testCopyToLocal() throws Exception {
         System.out.println("copyTo"); // NOI18N
-        File srcFile = createTempFile("src", null, false);
-        writeFile(srcFile, "123\n456\n789");
+        File srcFile = createTempFile("src", null, false); // NOI18N
+        writeFile(srcFile, "123\n456\n789"); // NOI18N
         String dstFileName = "/tmp/trg_x"; // NOI18N
 
         CharArrayWriter err = new CharArrayWriter();
@@ -261,12 +262,12 @@ public class CopyTaskTest extends NativeExecutionTest {
 
     @Test
     public void testCopyToRemote() throws Exception {
-        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment("intel-S2"); // NOI18N
         assertNotNull(execEnv);
-        File src = createTempFile("test-upload-1", null, false);
-        writeFile(src, "qwe/nasd/nzxc");
-        String dst = "/tmp/" + /* execEnv.getUser() + "/" +  */ src.getName();
-        System.err.printf("testUploadFile: %s to %s:%s\n", src.getAbsolutePath(), execEnv.getDisplayName(), dst);
+        File src = createTempFile("test-upload-1", null, false); // NOI18N
+        writeFile(src, "qwe/nasd/nzxc"); // NOI18N
+        String dst = "/tmp/" + /* execEnv.getUser() + "/" +  */ src.getName(); // NOI18N
+        System.err.printf("testUploadFile: %s to %s:%s\n", src.getAbsolutePath(), execEnv.getDisplayName(), dst); // NOI18N
         Future<Integer> upload = CommonTasksSupport.uploadFile(src.getAbsolutePath(), execEnv, dst, 0755, new PrintWriter(System.err));
         int rc = upload.get();
         assertEquals(0, rc);

@@ -34,6 +34,8 @@ import com.sun.source.util.TreePath;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
+import com.sun.tools.javac.code.Symbol;
+
 import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.Element;
@@ -333,7 +335,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         }
         if (element != null) {
             // solve the imports only when declared type!!!
-            if (element != null && (element.getKind().isClass() || element.getKind().isInterface())) {
+            if (element.getKind().isClass() || element.getKind().isInterface()
+                    || (element.getKind().isField() && ((Symbol) element).isStatic())) {
                 TreePath elmPath = info.getTrees().getPath(element);
                 if ((path == null && element == rootElement)
                         || (path != null && elmPath != null && path.getCompilationUnit().getSourceFile() == elmPath.getCompilationUnit().getSourceFile())) {
@@ -341,7 +344,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
                 } else {
                     return make.QualIdent(element);
                 }
-            }
+            } 
         }
         return node;
     }

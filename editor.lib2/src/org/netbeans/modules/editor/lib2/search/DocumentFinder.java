@@ -42,6 +42,8 @@
 package org.netbeans.modules.editor.lib2.search;
 
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -60,7 +62,8 @@ import org.openide.util.NbBundle;
  */
 public class DocumentFinder
 {
-    
+    private static final Logger LOG = Logger.getLogger(EditorFindSupport.class.getName());
+   
     private static FalseBlocksFinder falseBlocksFinder;
     private static FalseFinder falseFinder;
     private static WholeWordsBlocksFinder wholeWordsBlocksFinder;
@@ -243,6 +246,13 @@ public class DocumentFinder
         Position pos = (Position) props.get(EditorFindSupport.FIND_BLOCK_SEARCH_END);
         int blockSearchEnd = (pos != null) ? pos.getOffset() : doc.getLength();
 
+        if (blockSearchStart > blockSearchEnd) {
+            LOG.log(Level.WARNING, "end="+blockSearchEnd+" < start="+blockSearchStart);
+            //Changing places start and end block position
+            int tmp = blockSearchStart;
+            blockSearchStart = blockSearchEnd;
+            blockSearchEnd = tmp;
+        }
         CharSequence cs = null;
         if (blockSearch) 
             cs = DocumentUtilities.getText(doc, blockSearchStart, blockSearchEnd - blockSearchStart);

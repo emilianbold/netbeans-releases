@@ -42,9 +42,7 @@
 package org.netbeans.modules.languages.features;
 
 import java.util.LinkedList;
-import java.util.Map;
 import javax.swing.event.TreeModelListener;
-import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import javax.swing.tree.TreeModel;
 import java.util.ArrayList;
@@ -52,26 +50,27 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.WeakHashMap;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.tree.TreePath;
 
-import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.Context;
-import org.netbeans.api.languages.ParserResult;
+import org.netbeans.api.languages.ParserManager.State;
+import org.netbeans.api.languages.ParserManagerListener;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.languages.ASTEvaluatorFactory;
 import org.netbeans.modules.languages.Language;
+import org.netbeans.modules.languages.ParserManagerImpl;
 import org.openide.cookies.LineCookie;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.text.NbDocument;
 
 
@@ -130,27 +129,38 @@ class LanguagesNavigatorModel implements TreeModel {
 
     // other methods .......................................................
 
-    private static Map<Document,LanguagesNavigatorModel> documentToModel = 
-        new WeakHashMap<Document,LanguagesNavigatorModel> ();
-            
     void setContext (
         NbEditorDocument    doc
     ) {
-        if (this.document != null) {
-            documentToModel.remove (this.document);
-        }
         this.document = doc;
         if (doc == null) {
             root = new NavigatorNode ("", "", null, true);
             astNode = null;
+            setParserManager (null);
             fire ();
             return;
         }
-        documentToModel.put (document, this);
-        //!refreshASTNode ();
+        ParserManagerImpl parserManager = ParserManagerImpl.getImpl (doc);
+        setParserManager (parserManager);
+        refreshASTNode ();
     }
     
-    private void refreshASTNode (ASTNode astNode) {
+    private ParserListener      parserListener;
+    private ParserManagerImpl   parserManager;
+    
+    private void setParserManager (ParserManagerImpl parserManager) {
+        if (parserManager == this.parserManager) return;
+        if (parserListener == null)
+            parserListener = new ParserListener ();
+        if (this.parserManager != null)
+            this.parserManager.removeListener (parserListener);
+        if (parserManager != null)
+            parserManager.addListener (parserListener);
+        this.parserManager = parserManager;
+    }
+    
+    private void refreshASTNode () {
+        astNode = parserManager.getAST ();
         if (astNode == null) {
             root = new NavigatorNode ("", "", null, true);
             fire ();
@@ -160,13 +170,13 @@ class LanguagesNavigatorModel implements TreeModel {
             List rootNodes = root.getNodes(this);
             if (root instanceof ASTNavigatorNode && ((ASTNavigatorNode)root).document == document &&
                     rootNodes != null && rootNodes.size() > 0) {
-                //if (parserManager.getState () == State.PARSING) return;
+                if (parserManager.getState () == State.PARSING) return;
                 ASTNavigatorNode newASTNode = new ASTNavigatorNode (document, astNode, path, "Root", "", null, false);
                 ((ASTNavigatorNode)root).refreshNode(this, newASTNode, new LinkedList<ASTNavigatorNode>());
             } else {
                 ASTNavigatorNode newASTNode = new ASTNavigatorNode (document, astNode, path, "Root", "", null, false);
                 newASTNode.getNodes (this);
-                //if (parserManager.getState () == State.PARSING) return;
+                if (parserManager.getState () == State.PARSING) return;
                 root = newASTNode;
                 fire();
             }
@@ -199,6 +209,10 @@ class LanguagesNavigatorModel implements TreeModel {
         TreeModelEvent e = new TreeModelEvent (this, path, indices, children);
         for (int i = 0; i < listeners.length; i++)
             listeners [i].treeNodesInserted (e);
+    }
+    
+    private boolean cancel () {
+        return parserManager.getState () == State.PARSING;
     }
 
     TreePath getTreePath (int position) {
@@ -247,40 +261,11 @@ class LanguagesNavigatorModel implements TreeModel {
 
     // innerclasses ........................................................
 
-    public static class AASTEvaluatorFactory implements ASTEvaluatorFactory {
-
-        public ASTEvaluator create (Document document) {
-            return new AASTEvaluator (document);
-        }
+    class ParserListener implements ParserManagerListener {
         
-    }
-    
-    private static class AASTEvaluator extends ASTEvaluator {
-
-        private Document document;
-        
-        private AASTEvaluator (Document document) {
-            this.document = document;
-        }
-        
-        @Override
-        public void beforeEvaluation (ParserResult parserResult) {
-        }
-
-        @Override
-        public void afterEvaluation (ParserResult parserResult) {
-            LanguagesNavigatorModel model = documentToModel.get (document);
-            if (model == null) return;
-            model.refreshASTNode (parserResult.getRootNode ());
-        }
-
-        @Override
-        public void evaluate (List<ASTItem> path, Feature feature) {
-        }
-
-        @Override
-        public String getFeatureName () {
-            return null;
+        public void parsed (State state, ASTNode ast) {
+            if (state == State.PARSING) return;
+            refreshASTNode ();
         }
     }
 
@@ -358,7 +343,7 @@ class LanguagesNavigatorModel implements TreeModel {
             Line.Set lineSet = lineCookie.getLineSet ();
             Line line = lineSet.getCurrent (NbDocument.findLineNumber (document, item.getOffset ()));
             int column = NbDocument.findLineColumn (document, item.getOffset ());
-            line.show (Line.SHOW_GOTO, column);
+            line.show (ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
         }
 
         private List<ASTNavigatorNode> nodes;
@@ -466,7 +451,7 @@ class LanguagesNavigatorModel implements TreeModel {
         ) {
             Iterator<ASTItem> it = item.getChildren ().iterator ();
             while (it.hasNext ()) {
-                if (model != null) {
+                if (model != null && model.cancel ()) {
                     //S ystem.out.println("cancelled");
                     return;
                 }

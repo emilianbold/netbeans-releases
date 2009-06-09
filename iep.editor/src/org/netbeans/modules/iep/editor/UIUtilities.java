@@ -19,31 +19,19 @@
 
 package org.netbeans.modules.iep.editor;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 import javax.swing.text.StyledDocument;
 
 import org.netbeans.modules.iep.editor.validation.ValidationAnnotation;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
-import org.netbeans.modules.xml.xam.ui.customizer.Customizer;
-import org.openide.DialogDescriptor;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.LineCookie;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -85,7 +73,7 @@ public class UIUtilities {
         }
         
         if (shouldShowSource) {
-            l.show(Line.SHOW_GOTO);
+            l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
         }
     }
     

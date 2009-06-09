@@ -69,6 +69,7 @@ import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
 import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
 import org.netbeans.modules.bugzilla.query.QueryController;
+import org.netbeans.modules.bugzilla.query.QueryParameter;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.ImageUtilities;
@@ -282,6 +283,10 @@ public class BugzillaRepository extends Repository {
                 url.append("+");                                                // NOI18N
             }
         }
+        QueryParameter[] additionalParams = getSimpleSearchParameters();
+        for (QueryParameter qp : additionalParams) {
+            url.append(qp.get());
+        }
         PerformQueryCommand queryCmd = new PerformQueryCommand(this, url.toString(), collector);
         getExecutor().execute(queryCmd);
         if(queryCmd.hasFailed()) {
@@ -343,7 +348,9 @@ public class BugzillaRepository extends Repository {
     protected void setTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword, boolean shortLoginEnabled) {
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword, shortLoginEnabled);
         Bugzilla.getInstance().addRepository(this);
-        resetRepository(); // only on url, user or passwd change        
+        resetRepository(); // XXX only on url, user or passwd change
+                           // XXX reset the configuration only if the host changed
+                           //     on psswd and user change reset only taskrepository
     }
 
     static TaskRepository createTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword, boolean shortLoginEnabled) {
@@ -564,4 +571,7 @@ public class BugzillaRepository extends Repository {
         return super.toString() + " (" + getDisplayName() + ')';        //NOI18N
     }
 
+    protected QueryParameter[] getSimpleSearchParameters () {
+        return new QueryParameter[] {};
+    }
 }

@@ -43,7 +43,7 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.netbeans.modules.nativeexecution.NativeExecutionTest;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Exceptions;
 
@@ -51,7 +51,7 @@ import org.openide.util.Exceptions;
  *
  * @author ak119685
  */
-public class ConnectionManagerTest extends NativeExecutionTest {
+public class ConnectionManagerTest extends NativeExecutionBaseTestCase {
 
     public ConnectionManagerTest(String name) {
         super(name);

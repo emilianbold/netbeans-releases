@@ -65,13 +65,13 @@ import org.netbeans.modules.java.j2seproject.api.J2SEProjectConfigurations;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.ErrorManager;
 import org.openide.cookies.CloseCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -184,7 +184,7 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
                     }
                 }
             } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
+                Exceptions.printStackTrace(ioe);
             }
         }
         
@@ -324,7 +324,7 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
             try {
                 jwsProps.store();
             } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
+                Exceptions.printStackTrace(ioe);
             }
             final ProjectConfigurationProvider configProvider = 
                     j2seProject.getLookup().lookup(ProjectConfigurationProvider.class);
@@ -338,7 +338,7 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
                     setActiveConfig(configProvider, NbBundle.getBundle(JWSCompositeCategoryProvider.class).getString("LBL_Category_Default"));
                 }
             } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
+                Exceptions.printStackTrace(ioe);
             }
         }
         
@@ -391,7 +391,7 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
             try {
                 xmlDoc = XMLUtil.parse(new InputSource(buildXmlFile.toURI().toString()), false, true, null, null);
             } catch (SAXException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
             FileObject jnlpBuildFile = projDir.getFileObject("nbproject/jnlp-impl.xml"); // NOI18N
             AntBuildExtender extender = proj.getLookup().lookup(AntBuildExtender.class);

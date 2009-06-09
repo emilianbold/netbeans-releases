@@ -38,6 +38,7 @@ package org.netbeans.installer.products.nb.base;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
@@ -47,6 +48,7 @@ import org.netbeans.installer.product.filters.ProductFilter;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
@@ -633,8 +635,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     // private //////////////////////////////////////////////////////////////////////
     private Shortcut getDesktopShortcut(final File directory) {
         return getShortcut(
-                getString("CL.desktop.shortcut.name"), // NOI18N
-                getString("CL.desktop.shortcut.description"), // NOI18N
+                getStrings("CL.desktop.shortcut.name"), // NOI18N
+                getStrings("CL.desktop.shortcut.description"), // NOI18N
                 getString("CL.desktop.shortcut.path"), // NOI18N
                 directory);
     }
@@ -642,22 +644,22 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     private Shortcut getStartMenuShortcut(final File directory) {
         if (SystemUtils.isMacOS()) {
             return getShortcut(
-                    getString("CL.start.menu.shortcut.name.macosx"), // NOI18N
-                    getString("CL.start.menu.shortcut.description"), // NOI18N
+                    getStrings("CL.start.menu.shortcut.name.macosx"), // NOI18N
+                    getStrings("CL.start.menu.shortcut.description"), // NOI18N
                     getString("CL.start.menu.shortcut.path"), // NOI18N
                     directory);
         } else {
             return getShortcut(
-                    getString("CL.start.menu.shortcut.name"), // NOI18N
-                    getString("CL.start.menu.shortcut.description"), // NOI18N
+                    getStrings("CL.start.menu.shortcut.name"), // NOI18N
+                    getStrings("CL.start.menu.shortcut.description"), // NOI18N
                     getString("CL.start.menu.shortcut.path"), // NOI18N
                     directory);
         }
     }
 
     private Shortcut getShortcut(
-            final String name,
-            final String description,
+            final Map <Locale, String> names,
+            final Map <Locale, String> descriptions,
             final String relativePath,
             final File location) {
         final File icon;
@@ -676,10 +678,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         } else {
             executable = new File(location, EXECUTABLE_UNIX);
         }
-
+        final String name = names.get(new Locale(StringUtils.EMPTY_STRING));
         final FileShortcut shortcut = new FileShortcut(name, executable);
-
-        shortcut.setDescription(description);
+        shortcut.setNames(names);
+        shortcut.setDescriptions(descriptions);
         shortcut.setCategories(SHORTCUT_CATEGORIES);
         shortcut.setFileName(SHORTCUT_FILENAME);
         shortcut.setIcon(icon);

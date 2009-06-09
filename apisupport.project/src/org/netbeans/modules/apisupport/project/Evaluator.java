@@ -392,10 +392,11 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         providers.add(PropertyUtils.fixedPropertyProvider(defaults));
         if (ml != null) {
             providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap("module.classpath", computeModuleClasspath(ml)))); // NOI18N
+            providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap("module.run.classpath", computeRuntimeModuleClasspath(ml)))); // NOI18N
             Map<String,String> buildDefaults = new HashMap<String,String>();
             buildDefaults.put("cp.extra", ""); // NOI18N
             buildDefaults.put("cp", "${module.classpath}:${cp.extra}"); // NOI18N
-            buildDefaults.put("run.cp", computeRuntimeModuleClasspath(ml) + ":${cp.extra}:${build.classes.dir}"); // NOI18N
+            buildDefaults.put("run.cp", "${module.run.classpath}:${cp.extra}:${build.classes.dir}"); // NOI18N
             
             baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
 
@@ -404,9 +405,11 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             for (String testType : testTypes) {
                 buildDefaults.put("test." + testType + ".cp.extra", ""); // NOI18N
                 TestClasspath tcp = TestClasspath.getOrEmpty(testsCPs, testType);
-                buildDefaults.put("test." + testType + ".cp", "${cp}:${cluster}/${module.jar}:${test." + testType + ".cp.extra}:" + tcp.getCompileClasspath()); // NOI18N
+                // #165446: module.run.classpath on both compile and run test CPs
+                String commonCPEntries = "${module.run.classpath}:${cp.extra}:${cluster}/${module.jar}:${test." + testType + ".cp.extra}:";    // NOI18N
+                buildDefaults.put("test." + testType + ".cp", commonCPEntries + tcp.getCompileClasspath()); // NOI18N
                 buildDefaults.put("test." + testType + ".run.cp.extra", ""); // NOI18N
-                buildDefaults.put("test." + testType + ".run.cp", "${test." + testType + ".cp}:${build.test." + testType + ".classes.dir}:${test." + testType + ".run.cp.extra}:" + tcp.getRuntimeClasspath()); // NOI18N
+                buildDefaults.put("test." + testType + ".run.cp", commonCPEntries + "${build.test." + testType + ".classes.dir}:${test." + testType + ".run.cp.extra}:" + tcp.getRuntimeClasspath()); // NOI18N
             }
 
             providers.add(PropertyUtils.fixedPropertyProvider(buildDefaults));

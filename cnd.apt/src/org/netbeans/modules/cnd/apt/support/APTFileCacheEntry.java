@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap.State;
@@ -52,13 +53,36 @@ import org.netbeans.modules.cnd.apt.support.APTMacroMap.State;
  * @author Vladimir Voskresensky
  */
 public final class APTFileCacheEntry {
-    private final ConcurrentMap<Integer, IncludeData> cache = new ConcurrentHashMap<Integer, IncludeData>();
-    private final Map<Integer, Boolean> evalData = new HashMap<Integer, Boolean>();
+    private final Map<Integer, IncludeData> cache;
+    private final Map<Integer, Boolean> evalData;
     private final CharSequence filePath;
-    private static boolean TRACE = false;
-    public APTFileCacheEntry(CharSequence filePath) {
+    private final boolean serial;
+    private APTFileCacheEntry(CharSequence filePath, boolean concurrent, Map<Integer, IncludeData> storage, Map<Integer, Boolean> eval) {
         assert (filePath != null);
         this.filePath = filePath;
+        this.serial = concurrent;
+        this.cache = storage;
+        this.evalData = eval;
+    }
+
+    /*package*/static APTFileCacheEntry toSerial(APTFileCacheEntry entry) {
+        return new APTFileCacheEntry(entry.filePath, true, new HashMap<Integer, IncludeData>(entry.cache), new HashMap<Integer, Boolean>(entry.evalData));
+    }
+
+    /*package*/static APTFileCacheEntry createConcurrentEntry(CharSequence filePath) {
+        return create(filePath, false);
+    }
+
+    /*package*/static APTFileCacheEntry createSerialEntry(CharSequence filePath) {
+        return create(filePath, true);
+    }
+
+    private static APTFileCacheEntry create(CharSequence filePath, boolean serial) {
+        return new APTFileCacheEntry(filePath, serial, serial ? new HashMap<Integer, IncludeData>() : new ConcurrentHashMap<Integer, IncludeData>(), serial ? new HashMap<Integer, Boolean>() : new ConcurrentHashMap<Integer, Boolean>());
+    }
+
+    public boolean isSerial() {
+        return serial;
     }
 
     private static volatile int includeHits = 0;
@@ -69,10 +93,8 @@ public final class APTFileCacheEntry {
         assert data != null;
         if (data.postIncludeMacroState != null) {
             includeHits++;
-            if (TRACE) {
-                if (needTraceValue(includeHits)) {
-                    System.err.println("INCLUDE HIT " + includeHits + " cache for line:" + node.getToken().getLine() + " in " + filePath);
-                }
+            if (APTTraceFlags.TRACE_APT_CACHE && needTraceValue(includeHits)) {
+                System.err.println("INCLUDE HIT " + includeHits + " cache for line:" + node.getToken().getLine() + " in " + filePath);
             }
         }
         return data.postIncludeMacroState;
@@ -91,7 +113,7 @@ public final class APTFileCacheEntry {
 
     /*package*/ Boolean getEvalResult(APT node) {
         Boolean out = evalData.get(node.getOffset());
-        if (TRACE) {
+        if (APTTraceFlags.TRACE_APT_CACHE) {
             if (out != null && needTraceValue(evalHits++)) {
                 System.err.println("EVAL HIT " + evalHits + " cache for line:" + node.getToken().getLine() + " as " + out + " in " + filePath);
             }
@@ -108,7 +130,7 @@ public final class APTFileCacheEntry {
         IncludeData data = cache.get(key);
         if (data == null) {
             data = new IncludeData(null);
-            IncludeData prev = cache.putIfAbsent(key, data);
+            IncludeData prev = serial ? cache.put(key, data) : ((ConcurrentMap<Integer, IncludeData>)cache).putIfAbsent(key, data);
             if (prev != null) {
                 data = prev;
             }

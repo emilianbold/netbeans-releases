@@ -209,10 +209,10 @@ WCHAR * getParentDirectory(WCHAR * dir) {
     WCHAR * ptr = dir;
     WCHAR * res = NULL;
     while(1) {
-        if(wcsstr(ptr, FILE_SEP)==NULL) {
+        if(searchW(ptr, FILE_SEP)==NULL) {
             break;
         }
-        ptr = wcsstr(ptr, FILE_SEP) + 1;
+        ptr = searchW(ptr, FILE_SEP) + 1;
     }
     res = appendStringNW(NULL, 0, dir, getLengthW(dir) - getLengthW(ptr) - 1);
     return res;
@@ -222,9 +222,9 @@ WCHAR * normalizePath(WCHAR * dir) {
     WCHAR * ptr1, *ptr2, *ptr3;
     DWORD i=0;
     DWORD len;
-    ptr1 = wcsstr(dir, L":\\");
-    ptr2 = wcsstr(dir, L":/");
-    ptr3 = wcsstr(dir, L"\\\\");
+    ptr1 = searchW(dir, L":\\");
+    ptr2 = searchW(dir, L":/");
+    ptr3 = searchW(dir, L"\\\\");
     if(ptr1==NULL && ptr2==NULL && dir!=ptr3) { //relative path
         directory = appendStringW(getCurrentDirectory(), FILE_SEP);
         directory = appendStringW(directory, dir);
@@ -453,8 +453,8 @@ WCHAR * getExeName() {
     WCHAR szPath[MAX_PATH];
     if(GetModuleFileNameW( NULL, szPath, MAX_PATH )) {
         WCHAR * lastSlash = szPath;
-        while(wcsstr(lastSlash, FILE_SEP)!=NULL) {
-            lastSlash = wcsstr(lastSlash, FILE_SEP) + 1;
+        while(searchW(lastSlash, FILE_SEP)!=NULL) {
+            lastSlash = searchW(lastSlash, FILE_SEP) + 1;
         }
         return appendStringW(NULL, lastSlash);
     } else {
@@ -466,8 +466,8 @@ WCHAR * getExeDirectory() {
     WCHAR szPath[MAX_PATH];
     if(GetModuleFileNameW( NULL, szPath, MAX_PATH )) {
         WCHAR * lastSlash = szPath;
-        while(wcsstr(lastSlash, FILE_SEP)!=NULL) {
-            lastSlash = wcsstr(lastSlash, FILE_SEP) + 1;
+        while(searchW(lastSlash, FILE_SEP)!=NULL) {
+            lastSlash = searchW(lastSlash, FILE_SEP) + 1;
         }
         
         return appendStringNW(NULL, 0 , szPath,

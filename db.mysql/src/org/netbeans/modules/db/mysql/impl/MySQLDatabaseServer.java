@@ -310,17 +310,16 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
 
     private void updateDisplayInformation() {
         String stateLabel = runstate.toString();
-        String displayNameLabel = "LBL_ServerDisplayName";
         
         String hostPort = getHostPort();
         String user = getUser();
 
         synchronized(this) {
-            setDisplayName(Utils.getMessage(displayNameLabel, hostPort, user, Utils.getMessage(stateLabel)));
+            setDisplayName(Utils.getMessage("LBL_ServerDisplayName", hostPort, user, Utils.getMessage(stateLabel)));
             
             if (runstate != ServerState.CONFIGERR) {
                 icon = ICON;
-                setShortDescription(Utils.getMessage("LBL_ServerShortDescription", hostPort, user));
+                setShortDescription(Utils.getMessage("LBL_ServerShortDescription", hostPort, user, Utils.getMessage(stateLabel)));
             } else {
                 assert(configError != null);
                 icon = ImageUtilities.mergeImages(ICON, ERROR_BADGE, 6, 6);

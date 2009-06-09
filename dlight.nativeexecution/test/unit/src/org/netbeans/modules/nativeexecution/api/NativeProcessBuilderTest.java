@@ -50,13 +50,13 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.netbeans.modules.nativeexecution.NativeExecutionTest;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import static org.junit.Assert.*;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Exceptions;
 
-public class NativeProcessBuilderTest extends NativeExecutionTest {
+public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
 
     public NativeProcessBuilderTest(String name) {
         super(name);
@@ -92,7 +92,7 @@ public class NativeProcessBuilderTest extends NativeExecutionTest {
      */
     @Test
     public void testNewLocalProcessBuilder() throws IOException {
-        System.out.println("newLocalProcessBuilder");
+        System.out.println("newLocalProcessBuilder"); // NOI18N
 
         NativeProcessBuilder npb = NativeProcessBuilder.newLocalProcessBuilder();
         assertNotNull(npb);
@@ -118,7 +118,7 @@ public class NativeProcessBuilderTest extends NativeExecutionTest {
         for (String mspec : mspecs) {
             ee = getTestExecutionEnvironment(mspec); // NOI18N
             if (ee == null) {
-                System.out.println("... skip testing on not configured " + mspec + " ... ");
+                System.out.println("... skip testing on not configured " + mspec + " ... "); // NOI18N
             } else {
                 System.out.println("... test on " + mspec + " [" + ee.toString() + "] ..."); // NOI18N
                 testSetExecutable(ee);
@@ -128,7 +128,7 @@ public class NativeProcessBuilderTest extends NativeExecutionTest {
 
     private void testSetCommandLine(ExecutionEnvironment ee) throws IOException {
         if (ee == null) {
-            System.out.println("null ExecutionEnvironment - skip");
+            System.out.println("null ExecutionEnvironment - skip"); // NOI18N
             return;
         }
 
@@ -149,7 +149,7 @@ public class NativeProcessBuilderTest extends NativeExecutionTest {
 
         // as we use setCommandLine we need to take care of escaping,
         // quoting, etc...
-        
+
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(ee);
         npb.setCommandLine("mkdir \"" + testDir + "\""); // NOI18N
         NativeProcess process = npb.call();
@@ -174,7 +174,7 @@ public class NativeProcessBuilderTest extends NativeExecutionTest {
         System.out.println("Copy file /bin/ls to '" + testDir + "' with name 'copied ls'"); // NOI18N
 
         npb = NativeProcessBuilder.newProcessBuilder(ee);
-        npb.setCommandLine("cp /bin/ls \"" +  testDir + "/copied ls\""); // NOI18N
+        npb.setCommandLine("cp /bin/ls \"" + testDir + "/copied ls\""); // NOI18N
 
         try {
             result = npb.call().waitFor();
@@ -210,7 +210,7 @@ public class NativeProcessBuilderTest extends NativeExecutionTest {
 
     private void testSetExecutable(ExecutionEnvironment ee) throws IOException {
         if (ee == null) {
-            System.out.println("null ExecutionEnvironment - skip");
+            System.out.println("null ExecutionEnvironment - skip"); // NOI18N
             return;
         }
 
@@ -218,7 +218,7 @@ public class NativeProcessBuilderTest extends NativeExecutionTest {
         String testDir = tmpDir + "/path with a space"; // NOI18N
 
         System.out.println("Do remove directory " + testDir); // NOI18N
-        
+
         try {
             CommonTasksSupport.rmDir(ee, testDir, true, null).get();
         } catch (InterruptedException ex) {
@@ -308,12 +308,13 @@ public class NativeProcessBuilderTest extends NativeExecutionTest {
         for (String mspec : mspecs) {
             ee = getTestExecutionEnvironment(mspec); // NOI18N
             if (ee == null) {
-                System.out.println("... skip testing on not configured " + mspec + " ... ");
+                System.out.println("... skip testing on not configured " + mspec + " ... "); // NOI18N
             } else {
                 System.out.println("... test on " + mspec + " [" + ee.toString() + "] ..."); // NOI18N
                 testSetCommandLine(ee);
             }
-        }    }
+        }
+    }
 //
 //    /**
 //     * Test of addNativeProcessListener method, of class NativeProcessBuilder.

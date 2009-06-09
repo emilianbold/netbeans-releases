@@ -52,20 +52,21 @@ import org.netbeans.modules.cnd.apt.support.APTTokenStream;
  * passed list is unchanged
  * @author Vladimir Voskresensky
  */
-public class ListBasedTokenStream implements TokenStream, APTTokenStream {
+public final class ListBasedTokenStream implements TokenStream, APTTokenStream {
     private final List<APTToken> tokens;
-    private Iterator<APTToken> position;
-    
+    private final int size;
+    private int position;
     /** Creates a new instance of ListBasedTokenStream */
     public ListBasedTokenStream(List<APTToken> tokens) {
         assert(tokens != null) : "not valid to pass null list"; // NOI18N
         this.tokens = tokens;
-        position = tokens.iterator();
+        this.size = tokens.size();
+        position = 0;
     }
 
     public APTToken nextToken() {
-        if (position.hasNext()) {
-            return position.next();
+        if (position < size) {
+            return tokens.get(position++);
         } else {
             return APTUtils.EOF_TOKEN;
         }

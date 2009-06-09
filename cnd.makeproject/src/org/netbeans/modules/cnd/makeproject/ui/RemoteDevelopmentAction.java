@@ -138,6 +138,12 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
                 ExecutionEnvironment execEnv = (ExecutionEnvironment) jmi.getClientProperty(HOST_ENV);
                 MakeConfiguration mconf = (MakeConfiguration) jmi.getClientProperty(CONF);
                 if (mconf != null && execEnv != null) {
+                    ServerRecord record = ServerList.get(execEnv);
+                    if (!record.isSetUp()) {
+                        if (!record.setUp()) {
+                            return;
+                        }
+                    }
                     DevelopmentHostConfiguration dhc = new DevelopmentHostConfiguration(execEnv);
                     DevelopmentHostConfiguration oldDhc = mconf.getDevelopmentHost();
                     mconf.setDevelopmentHost(dhc);

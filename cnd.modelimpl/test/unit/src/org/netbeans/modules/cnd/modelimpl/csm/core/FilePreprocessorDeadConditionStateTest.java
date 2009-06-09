@@ -39,13 +39,13 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public class FilePreprocessorDeadConditionStateTest extends BaseTestCase {
+public class FilePreprocessorDeadConditionStateTest extends CndBaseTestCase {
 
     public FilePreprocessorDeadConditionStateTest() {
         super("dead blocks test");

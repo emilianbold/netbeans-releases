@@ -74,9 +74,11 @@ import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -133,13 +135,13 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
 
     public void invoke() {
        try {           
-            Project enterpriseProject = FileOwnerQuery.getOwner(srcFile);
-            EnterpriseReferenceContainer erc = enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
+            final Project enterpriseProject = FileOwnerQuery.getOwner(srcFile);
+            final EnterpriseReferenceContainer erc = enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
             J2eeModuleProvider provider = enterpriseProject.getLookup().lookup(J2eeModuleProvider.class);
             
             MessageDestinationUiSupport.DestinationsHolder holder = 
                     SendJMSMessageUiSupport.getDestinations(provider);
-            SendJmsMessagePanel sendJmsMessagePanel = SendJmsMessagePanel.newInstance(
+            final SendJmsMessagePanel sendJmsMessagePanel = SendJmsMessagePanel.newInstance(
                     provider,
                     holder.getModuleDestinations(),
                     holder.getServerDestinations(),
@@ -175,31 +177,41 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
             }
             
             String serviceLocator = sendJmsMessagePanel.getServiceLocator();
-            ServiceLocatorStrategy serviceLocatorStrategy = null;
+            final ServiceLocatorStrategy serviceLocatorStrategy = serviceLocator != null ?
+                ServiceLocatorStrategy.create(enterpriseProject, srcFile, serviceLocator) : 
+                null;
+
+            
             if (serviceLocator != null) {
-                serviceLocatorStrategy = 
-                        ServiceLocatorStrategy.create(enterpriseProject, srcFile, serviceLocator);
+                erc.setServiceLocatorName(serviceLocator);
             }
             
             MessageDestination messageDestination = sendJmsMessagePanel.getDestination();
             Project mdbHolderProject = sendJmsMessagePanel.getMdbHolderProject();
-            SendJMSGenerator generator = new SendJMSGenerator(messageDestination, mdbHolderProject != null ? mdbHolderProject : enterpriseProject);
-            generator.genMethods(
-                    erc, 
-                    beanClass.getQualifiedName().toString(), 
-                    sendJmsMessagePanel.getConnectionFactory(),
-                    srcFile, 
-                    serviceLocatorStrategy,
-                    enterpriseProject.getLookup().lookup(J2eeModuleProvider.class)
-                    );
-            if (serviceLocator != null) {
-                erc.setServiceLocatorName(serviceLocator);
-            }
+            final SendJMSGenerator generator = new SendJMSGenerator(messageDestination, mdbHolderProject != null ? mdbHolderProject : enterpriseProject);
+
+            //do that not in AWT, may take some time
+            //http://www.netbeans.org/issues/show_bug.cgi?id=164834
+            //http://www.netbeans.org/nonav/issues/showattachment.cgi/82529/error.log
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        generator.genMethods(erc, beanClass.getQualifiedName().toString(), sendJmsMessagePanel.getConnectionFactory(), srcFile, serviceLocatorStrategy, enterpriseProject.getLookup().lookup(J2eeModuleProvider.class));
+                    } catch (IOException ex) {
+                        SendJMSMessageCodeGenerator.notifyExc(ex);
+                    }
+                }
+            });
+            
         } catch (IOException ioe) {
-            NotifyDescriptor notifyDescriptor = new NotifyDescriptor.Message(ioe.getMessage(),
+            notifyExc(ioe);
+        } 
+    }
+
+    private static void notifyExc(Exception e) {
+        NotifyDescriptor notifyDescriptor = new NotifyDescriptor.Message(e.getMessage(),
             NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(notifyDescriptor);
-        } 
     }
     
     private static boolean isEnable(FileObject fileObject, TypeElement typeElement) {

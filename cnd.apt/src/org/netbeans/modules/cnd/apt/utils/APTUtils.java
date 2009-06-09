@@ -97,6 +97,52 @@ public class APTUtils {
     private APTUtils() {
     }
 
+    public static int hash(int h) {
+        // Spread bits to regularize both segment and index locations,
+        // using variant of single-word Wang/Jenkins hash.
+        h += (h <<  15) ^ 0xffffcd7d;
+        h ^= (h >>> 10);
+        h += (h <<   3);
+        h ^= (h >>>  6);
+        h += (h <<   2) + (h << 14);
+        return h ^ (h >>> 16);
+    }
+
+    public static int hash(List<?> list) {
+        if (list == null) {
+            return 0;
+        }
+        int hashCode = 1;
+        int size = list.size();
+        for (int i = 0; i < size; i++) {
+            Object obj = list.get(i);
+            hashCode = 31 * hashCode + (obj == null ? 0 : obj.hashCode());
+        }
+        return hash(hashCode);
+    }
+
+    public static boolean equalArrayLists(List<?> l1, List<?> l2) {
+        if (l1 != l2) {
+            if (l1 == null || l2 == null) {
+                return false;
+            } else {
+                int n1 = l1.size();
+                int n2 = l2.size();
+                if (n1 != n2) {
+                    return false;
+                }
+                for (int i = 0; i < n1; i++) {
+                    if (!l1.get(i).equals(l2.get(i))) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        } else {
+            return true;
+        }
+    }
+
     public static void setTokenText(APTToken _token, char buf[], int start, int count) {
         if (_token instanceof APTBaseToken) {
             _token.setTextID(CharSequenceKey.create(buf, start, count));
@@ -181,7 +227,7 @@ public class APTUtils {
                 }
             }
         } catch (TokenStreamException ex) {
-            LOG.log(Level.SEVERE, "error on converting token stream to text", ex); // NOI18N
+            LOG.log(Level.SEVERE, "error on converting token stream to text\n{0}", new Object[] { ex }); // NOI18N
         }
         return retValue.toString();
     }
@@ -201,7 +247,7 @@ public class APTUtils {
                 token = next;
             }
         } catch (TokenStreamException ex) {
-            LOG.log(Level.SEVERE, "error on stringizing token stream", ex); // NOI18N
+            LOG.log(Level.SEVERE, "error on stringizing token stream\n{0}", new Object[] { ex }); // NOI18N
         }
         return retValue.toString();
     }

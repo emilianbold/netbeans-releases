@@ -81,11 +81,11 @@ public final class DocPositions {
     String tokenSequenceDump;
 
     public static final DocPositions get(CompilationInfo javac, Doc javadoc, TokenSequence<JavadocTokenId> jdts) {
-        return DocPositionsManager.get(javac).get(javadoc, jdts);
+        return DocPositionsManager.get(javac, javadoc, jdts);
     }
     
-    private DocPositions(Doc javadoc, TokenSequence<JavadocTokenId> jdts, Snapshot snapshot) {
-        this.env = new Env(jdts, snapshot, javadoc);
+    private DocPositions(Env env) {
+        this.env = env;
     }
 
     /**
@@ -480,32 +480,29 @@ public final class DocPositions {
     
     private final static class DocPositionsManager {
         
-        private static final Map<CompilationUnitTree, DocPositionsManager> managers
-                = new WeakHashMap<CompilationUnitTree, DocPositions.DocPositionsManager>();
+        private static final Map<CompilationUnitTree, Map<Doc, DocPositions>> cache
+                = new WeakHashMap<CompilationUnitTree, Map<Doc, DocPositions>>();
         
-        private final Map<Doc, DocPositions> cache = new WeakHashMap<Doc, DocPositions>();
-        private final Reference<Snapshot> snapshot;
-
-        public DocPositionsManager(Snapshot snapshot) {
-            this.snapshot = new WeakReference<Snapshot>(snapshot);
+        private DocPositionsManager() {
         }
 
-        public static DocPositionsManager get(CompilationInfo javac) {
-            Snapshot snapshot = javac.getSnapshot();
+        private static Map<Doc, DocPositions> getDocsCache(CompilationInfo javac) {
             CompilationUnitTree cut = javac.getCompilationUnit();
-            DocPositionsManager dpm = managers.get(cut);
-            if (dpm == null) {
-                dpm = new DocPositionsManager(snapshot);
-                managers.put(cut, dpm);
+            Map<Doc, DocPositions> docsCache = cache.get(cut);
+            if (docsCache == null) {
+                docsCache = new WeakHashMap<Doc, DocPositions>();
+                cache.put(cut, docsCache);
             }
-            return dpm;
+            return docsCache;
         }
         
-        public DocPositions get(Doc javadoc, TokenSequence<JavadocTokenId> jdts) {
-            DocPositions dp = cache.get(javadoc);
+        public static DocPositions get(CompilationInfo javac, Doc javadoc, TokenSequence<JavadocTokenId> jdts) {
+            Map<Doc, DocPositions> docsCache = getDocsCache(javac);
+            DocPositions dp = docsCache.get(javadoc);
             if (dp == null) {
-                dp = new DocPositions(javadoc, jdts, snapshot.get());
-                cache.put(javadoc, dp);
+                Snapshot snapshot = javac.getSnapshot();
+                dp = new DocPositions(new Env(jdts, snapshot, javadoc));
+                docsCache.put(javadoc, dp);
             }
             return dp;
         }

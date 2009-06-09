@@ -116,9 +116,15 @@ public abstract class RemoteCommand extends Command {
         return false;
     }
 
-    protected InputOutput getRemoteLog(String displayName) {
+    public static InputOutput getRemoteLog(String displayName) {
+        return getRemoteLog(displayName, true);
+    }
+
+    public static InputOutput getRemoteLog(String displayName, boolean select) {
         InputOutput io = IOProvider.getDefault().getIO(NbBundle.getMessage(Command.class, "LBL_RemoteLog", displayName), false);
-        io.select();
+        if (select) {
+            io.select();
+        }
         try {
             io.getOut().reset();
         } catch (IOException ex) {
@@ -155,7 +161,7 @@ public abstract class RemoteCommand extends Command {
         return ProjectPropertiesSupport.getRemoteDirectory(getProject());
     }
 
-    protected void processRemoteException(RemoteException remoteException) {
+    public static void processRemoteException(RemoteException remoteException) {
         String title = NbBundle.getMessage(Command.class, "LBL_RemoteError");
         StringBuilder message = new StringBuilder(remoteException.getMessage());
         String remoteServerAnswer = remoteException.getRemoteServerAnswer();
@@ -175,7 +181,7 @@ public abstract class RemoteCommand extends Command {
         DialogDisplayer.getDefault().notify(notifyDescriptor);
     }
 
-    protected void processTransferInfo(TransferInfo transferInfo, InputOutput io) {
+    protected static void processTransferInfo(TransferInfo transferInfo, InputOutput io) {
         OutputWriter out = io.getOut();
         OutputWriter err = io.getErr();
 
@@ -245,17 +251,17 @@ public abstract class RemoteCommand extends Command {
         out.println(NbBundle.getMessage(RemoteCommand.class, "MSG_RemoteRuntimeAndSize", params));
     }
 
-    private void printSuccess(OutputWriter writer, int maxRelativePath, TransferFile file) {
+    private static void printSuccess(OutputWriter writer, int maxRelativePath, TransferFile file) {
         String msg = String.format("%-" + MAX_TYPE_SIZE + "s %-" + maxRelativePath + "s", getFileTypeLabel(file), file.getRelativePath());
         writer.println(msg);
     }
 
-    private void printError(OutputWriter writer, int maxRelativePath, TransferFile file, String reason) {
+    private static void printError(OutputWriter writer, int maxRelativePath, TransferFile file, String reason) {
         String msg = String.format("%-" + MAX_TYPE_SIZE + "s %-" + maxRelativePath + "s   %s", getFileTypeLabel(file), file.getRelativePath(), reason);
         writer.println(msg);
     }
 
-    private String getFileTypeLabel(TransferFile file) {
+    private static String getFileTypeLabel(TransferFile file) {
         String type = null;
         if (file.isDirectory()) {
             type = "LBL_TypeDirectory"; // NOI18N
@@ -281,7 +287,7 @@ public abstract class RemoteCommand extends Command {
         return max;
     }
 
-    private int getRelativePathMaxSize(TransferInfo transferInfo) {
+    private static int getRelativePathMaxSize(TransferInfo transferInfo) {
         int max = getRelativePathMaxSize(transferInfo.getTransfered());
         int size = getRelativePathMaxSize(transferInfo.getFailed().keySet());
         if (size > max) {
@@ -298,7 +304,7 @@ public abstract class RemoteCommand extends Command {
         return max + 2;
     }
 
-    private int getRelativePathMaxSize(Collection<TransferFile> files) {
+    private static int getRelativePathMaxSize(Collection<TransferFile> files) {
         int max = 0;
         for (TransferFile file : files) {
             int length = file.getRelativePath().length();

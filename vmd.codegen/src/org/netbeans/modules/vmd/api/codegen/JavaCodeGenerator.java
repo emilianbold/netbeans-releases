@@ -77,10 +77,11 @@ public final class JavaCodeGenerator {
     private JavaCodeGenerator () {
     }
 
-    public void updateUserCodesFromEditor (final StyledDocument document) {
+    public void updateUserCodesFromEditor (final StyledDocument document, 
+            final DesignDocument designDocument) {
         NbDocument.runAtomic (document, new Runnable() {
             public void run () {
-                updateUserCodesFromEditorCore (document);
+                updateUserCodesFromEditorCore (document, designDocument);
             }
         });
     }
@@ -156,7 +157,14 @@ public final class JavaCodeGenerator {
         editableUserCodes.put (multiGuardedID + "|" + editableID, userCode); // NOI18N
     }
 
-    private void updateUserCodesFromEditorCore (StyledDocument document) {
+    private void updateUserCodesFromEditorCore (StyledDocument document, 
+            DesignDocument designDocument)
+    {
+        final Collection<ModelUpdatePresenter> presenters = DocumentSupport.gatherAllPresentersOfClass (designDocument,
+                ModelUpdatePresenter.class);
+        for (ModelUpdatePresenter presenter : presenters) {
+            presenter.modelUpdated();
+        }
         for (GuardedSection section : GuardedSectionManager.getInstance (document).getGuardedSections ()) {
             if (! MultiGuardedSection.isPartOfMultiGuardedSection (section))
                 continue;

@@ -42,7 +42,6 @@
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
 import java.util.List;
-// Swing
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 
@@ -80,11 +79,13 @@ public abstract class DDBeanTableModel extends AbstractTableModel
 	}
 
 
-        public String getColumnName(int column)
-        {
+    @Override
+    public String getColumnName(int column)
+    {
 		return getColumnNames()[column];
 	}
         
+    @Override
 	public boolean isCellEditable(int row, int column)
 	{
 		return (false);
@@ -117,6 +118,6 @@ public abstract class DDBeanTableModel extends AbstractTableModel
                 for(int i=0;i<children.length;i++)
                 this.children.add(children[i]);
 		fireTableDataChanged();
-        }
+    }
         
 }

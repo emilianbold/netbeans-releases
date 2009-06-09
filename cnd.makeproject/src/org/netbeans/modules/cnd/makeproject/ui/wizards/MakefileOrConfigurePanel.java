@@ -123,20 +123,20 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         String path = (String) wizardDescriptor.getProperty("simpleModeFolder"); // NOI18N
         if (path != null) {
             boolean selected = false;
-            String makeFile = SelectModeDescriptorPanel.findMakefile(path);
+            String makeFile = ConfigureUtils.findMakefile(path);
             if (makeFile != null) {
                 makefileNameTextField.setText(makeFile);
                 makefileRadioButton.setSelected(true);
                 selected = true;
             }
-            String configureScript = SelectModeDescriptorPanel.findConfigureScript(path);
+            String configureScript = ConfigureUtils.findConfigureScript(path);
             if (configureScript != null) {
                 if (!selected) {
                     configureRadioButton.setSelected(true);
                     runConfigureCheckBox.setSelected(true);
-                    configureNameTextField.setText(configureScript);
                 }
-                configureArgumentsTextField.setText("CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\""); // NOI18N
+                configureNameTextField.setText(configureScript);
+                configureArgumentsTextField.setText(ConfigureUtils.getConfigureArguments(configureScript)); // NOI18N
             }
         }
     }
@@ -205,8 +205,8 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
             String mn = makefileNameTextField.getText();
             int i = mn.replace('\\', '/').lastIndexOf('/');
             if (i > 0) {
-                String cn = mn.substring(0, i+1) + "configure";  // NOI18N
-                if (new File(cn).exists()) {
+                String cn = ConfigureUtils.findConfigureScript(mn);
+                if (cn != null && new File(cn).exists()) {
                     configureNameTextField.getDocument().removeDocumentListener(documentListener);
                     configureNameTextField.setText(cn);
                     configureMakefileNameTextField.setText(mn);
@@ -226,7 +226,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
                 String msg = NbBundle.getMessage(BuildActionsPanel.class, "CONFIGUREFILEDOESNOTEXIST"); // NOI18N
                 descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
                 return false;
-            } else if (!SelectModeDescriptorPanel.isRunnable(file)) {
+            } else if (!ConfigureUtils.isRunnable(file)) {
                 String msg = NbBundle.getMessage(BuildActionsPanel.class, "CONFIGUREFILEISNOTEXECUTABLE"); // NOI18N
                 descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
                 return false;

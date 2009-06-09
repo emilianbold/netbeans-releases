@@ -65,7 +65,6 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
 import org.netbeans.modules.xml.wsdl.ui.validation.ValidationAnnotation;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.FolderNode;
-import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.RefreshableChildren;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.WSDLElementNode;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
@@ -73,9 +72,10 @@ import org.netbeans.modules.xml.xam.ui.customizer.Customizer;
 import org.openide.DialogDescriptor;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.LineCookie;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -489,7 +489,7 @@ public class UIUtilities {
         }
         
         if (shouldShowSource) {
-            l.show(Line.SHOW_GOTO);
+            l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
         }
     }
     

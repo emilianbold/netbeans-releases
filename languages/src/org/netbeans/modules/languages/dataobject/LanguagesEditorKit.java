@@ -77,6 +77,7 @@ import org.netbeans.modules.languages.features.HyperlinkListener;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.settings.storage.spi.StorageFilter;
 import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
+import org.netbeans.modules.languages.features.DatabaseManager;
 import org.netbeans.modules.languages.features.LanguagesGenerateFoldPopupAction;
 import org.netbeans.modules.languages.features.SyntaxErrorHighlighter;
 import org.netbeans.modules.languages.parser.Pattern;
@@ -89,19 +90,19 @@ import org.netbeans.modules.languages.parser.Pattern;
 public class LanguagesEditorKit extends NbEditorKit {
 
     private final String mimeType;
-
-    /**
-     * Creates a new instance of LanguagesEditorKit
+    
+    /** 
+     * Creates a new instance of LanguagesEditorKit 
      */
-    public LanguagesEditorKit (String mimeType) {
+    public LanguagesEditorKit (String mimeType) { 
         this.mimeType = mimeType;
         if (mimeType == null) {
             throw new NullPointerException ();
         }
     }
-
+    
     private JLabel label;
-
+    
     private JLabel createToolTipComponent () {
         if (label == null) {
             label = new JLabel () {
@@ -184,11 +185,11 @@ public class LanguagesEditorKit extends NbEditorKit {
             new org.netbeans.modules.languages.features.CodeUncommentAction()
         };
         return TextAction.augmentList (
-            super.createActions (),
+            super.createActions (), 
             myActions
         );
     }
-
+    
     public @Override Action getActionByName(String name) {
         if (name == null)
             return super.getActionByName (name);
@@ -202,7 +203,7 @@ public class LanguagesEditorKit extends NbEditorKit {
         }
         return super.getActionByName (name);
     }
-
+    
     protected @Override EditorUI createEditorUI () {
         return new NbEditorUI () {
             private ToolTipSupport toolTipSupport;
@@ -221,19 +222,19 @@ public class LanguagesEditorKit extends NbEditorKit {
             }
         };
     }
-
+    
     public @Override Document createDefaultDocument() {
         Document doc = new LanguagesDocument(mimeType);
         initDocument (doc);
         return doc;
     }
-
+    
     protected void initDocument (Document doc) {
         new AnnotationManager (doc);
         new SyntaxErrorHighlighter (doc);
-        //new DatabaseManager (doc);
+        new DatabaseManager (doc);
     }
-
+    
 //    public Syntax createSyntax (Document doc) {
 //        LanguagesSyntax syntax = (LanguagesSyntax) documentToSyntax.get (doc);
 //        if (syntax == null) {
@@ -253,44 +254,26 @@ public class LanguagesEditorKit extends NbEditorKit {
 //    public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
 //        return new BraceHighlighting (doc);
 //    }
-//
+//    
     public @Override void install (JEditorPane c) {
         super.install (c);
         HyperlinkListener hl = new HyperlinkListener ();
-        c.putClientProperty(HyperlinkListener.class, hl);
         c.addMouseMotionListener (hl);
         c.addMouseListener (hl);
         c.addKeyListener(hl);
-
-        MarkOccurrencesSupport mos = new MarkOccurrencesSupport (c);
-        c.putClientProperty(MarkOccurrencesSupport.class, mos);
-        c.addCaretListener (mos);
+        c.addCaretListener (new MarkOccurrencesSupport (c));
     }
-
-    @Override
-    public void deinstall(JEditorPane c) {
-        HyperlinkListener hl = (HyperlinkListener) c.getClientProperty(HyperlinkListener.class);
-        c.removeMouseMotionListener (hl);
-        c.removeMouseListener (hl);
-        c.removeKeyListener(hl);
-
-        MarkOccurrencesSupport mos = (MarkOccurrencesSupport) c.getClientProperty(MarkOccurrencesSupport.class);
-        c.removeCaretListener (mos);
-
-        super.deinstall(c);
-    }
-
 
     public @Override String getContentType() {
         return mimeType;
     }
-
+    
     public @Override Object clone () {
         return new LanguagesEditorKit (mimeType);
     }
 
     private static final class LanguagesDocument extends NbEditorDocument {
-
+        
         public LanguagesDocument(String mimeType) {
             super(mimeType);
         }
@@ -313,8 +296,7 @@ public class LanguagesEditorKit extends NbEditorKit {
             return super.isIdentifierPart(ch);
         }
     } // End of LanguagesDocument class
-
-    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.editor.settings.storage.spi.StorageFilter.class)
+    
     public static final class EditorSettings extends StorageFilter<String, TypedValue> {
         public EditorSettings() {
             super("Preferences"); //NOI18N

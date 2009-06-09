@@ -121,6 +121,7 @@ public class MavenRepoProvider implements SearchProvider {
         List<String> fields = new ArrayList<String>();
         fields.add(QueryField.FIELD_GROUPID);
         fields.add(QueryField.FIELD_ARTIFACTID);
+        fields.add(QueryField.FIELD_VERSION);
         fields.add(QueryField.FIELD_NAME);
         fields.add(QueryField.FIELD_DESCRIPTION);
         fields.add(QueryField.FIELD_CLASSES);
@@ -158,7 +159,7 @@ public class MavenRepoProvider implements SearchProvider {
                 } else if (index2 < 0) {
                     return -1;
                 }
-                return index1 - index2;
+                return s1.compareTo(s2);
             } else {
                 return s1.compareTo(s2);
             }
