@@ -43,157 +43,49 @@ package org.netbeans.editor.ext.html.parser;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenHierarchyEvent;
-import org.netbeans.api.lexer.TokenHierarchyEventType;
-import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
-import org.openide.util.RequestProcessor;
 
 /**
- * Simple HTML syntax analyzer
+ * Plain HTML syntax analyzer
  *
- * @author Marek.Fukala@Sun.com
+ * @author mfukala@netbeans.org
  */
 public final class SyntaxParser {
 
-    private static final Logger LOGGER = Logger.getLogger(SyntaxParser.class.getName());
-    private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
-    
-    private static final int PARSER_DELAY = 1000; //ms (=1second)
-    
-    private final Document doc;
     private final LanguagePath languagePath;
     private final TokenHierarchy hi;
-    private final RequestProcessor.Task parserTask;
-    private final ArrayList<SyntaxParserListener> listeners = new ArrayList<SyntaxParserListener>();
-    private final TokenHierarchyListener tokenHierarchyListener = new TokenHierarchyListener() {
-
-        public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
-            if (evt.type() == TokenHierarchyEventType.MODIFICATION) {
-                restartParser();
-            }
-        }
-    };
     
     private List<SyntaxElement> EMPTY_ELEMENTS_LIST = Collections.emptyList();
     private List<SyntaxElement> parsedElements;
-    private boolean isSuccessfulyParsed = false;
-
-    protected ParserSource parserSource;
     
-    /** Returns an instance of SyntaxParser for given document.
-     *  The client is supposed to add a SyntaxParserListener to the obtained instance
-     *  to get notification whenever the document changes and is reparsed.
-     */
-    //XXX We cannot create multiple SyntaxParser-s for various languagePaths on one document.
-    public static synchronized SyntaxParser get(Document doc, LanguagePath languagePath) {
-        SyntaxParser parser = (SyntaxParser) doc.getProperty(SyntaxParser.class);
-        if (parser == null) {
-            parser = new SyntaxParser(doc, languagePath);
-            doc.putProperty(SyntaxParser.class, parser);
-        }
-        return parser;
-    }
-
-    /** Creates a new instance of SyntaxParser parsing the immutable source. 
+    protected CharSequence parserSource;
+    
+    /**
+     * Creates a plain parser result for an immutable source
      * 
      * @param source A non null sequence of characters - parser input
      */
-    public static List<SyntaxElement> parseImmutableSource(final CharSequence source) {
+    public static SyntaxParserResult parse(final CharSequence source) {
         if(source == null) {
-            throw new NullPointerException("Parser source cannot be null!");
-        }
-        
-        SyntaxParser parser = new SyntaxParser(source);
-
-        parser.parserSource = new ParserSource() {
-
-            public CharSequence getText(int offset, int length) throws BadLocationException {
-                return source.subSequence(offset, offset + length);
-            }
-        };
-
-        try {
-            return parser.parseDocument();
-        } catch (BadLocationException ex) {
-            LOGGER.log(Level.WARNING, "Error during parsing html content", ex);
-            return null;
-
-        } finally {
-            //help GC - the SyntaxElements returned by the parser
-            //holds references to the parser source 
-            parser.parserSource = null; 
+            throw new NullPointerException("Parser source cannot be null"); //NOI18N
         }
 
+        if(source.length() == 0) {
+            return new SyntaxParserResult(source, Collections.EMPTY_LIST);
+        }
+
+        return new SyntaxParserResult(source, new SyntaxParser(source).parseDocument());
     }
     
     private SyntaxParser(final CharSequence source) {
-        this.parserTask = null;
-        this.doc = null;
+        this.parserSource = source;
         this.parsedElements = EMPTY_ELEMENTS_LIST;
         this.languagePath = LanguagePath.get(HTMLTokenId.language());
         this.hi = TokenHierarchy.create(source, HTMLTokenId.language());
-    }
-    
-    private SyntaxParser(Document document, LanguagePath languagePath) {
-        this.doc = document;
-        this.languagePath = languagePath;
-        this.hi = TokenHierarchy.get(doc);
-
-        if (hi == null) {
-            String mimeType = (String) doc.getProperty("mimeType"); //NOI18N
-            if (mimeType == null) {
-                mimeType = "unknown";
-            }
-            throw new IllegalStateException("Cannot obtain TokenHierarchy instance for document " + document + " with " + mimeType + " mimetype."); //NOI18N
-        }
-
-        this.parserSource = new ParserSource() {
-            public String getText(int offset, int length) throws BadLocationException {
-                return doc.getText(offset, length);
-            }
-        };
-        
-        parsedElements = EMPTY_ELEMENTS_LIST;
-
-        parserTask = RequestProcessor.getDefault().create(new Runnable() {
-            public void run() {
-                parse();
-            }
-        });
-
-        //add itself as token hierarchy listener
-        hi.addTokenHierarchyListener(tokenHierarchyListener);
-
-        //ensure the document is parsed
-        restartParser();
-
-    }
-
-    //---------------------------- public methods ------------------------------
-    public void addSyntaxParserListener(SyntaxParserListener spl) {
-        listeners.add(spl);
-    }
-
-    /** Removes the SyntaxParserListener from the listeners list.*/
-    public void removeSyntaxParserListener(SyntaxParserListener spl) {
-        listeners.remove(spl);
-    }
-    
-    //----------------------- package private methods---------------------------
-    /** used by unit tests */
-    void forceParse() {
-        parserTask.cancel();
-        parse();
     }
     
     public List<SyntaxElement> elements() {
@@ -201,47 +93,19 @@ public final class SyntaxParser {
     }
     
     //---------------------------- private methods -----------------------------
-    private void restartParser() {
-        if (!parserTask.isFinished()) {
-            parserTask.cancel(); //removes the task from the queue AND INTERRUPTS the thread!
-        }
-        parserTask.schedule(PARSER_DELAY);
+ 
+    private void error() {
+        elements.add(new SyntaxElement(parserSource,
+                start,
+                token.offset(hi) + token.length() - start,
+                SyntaxElement.TYPE_ERROR));
     }
 
-    private synchronized void parse() {
-        BaseDocument bdoc = (BaseDocument) doc;
-        bdoc.readLock();
-        try {
-            List<SyntaxElement> newElements = parseDocument();
-            parsedElements = newElements;
-            isSuccessfulyParsed = true;
-        } catch (BadLocationException ble) {
-            isSuccessfulyParsed = false;
-            LOGGER.log(Level.WARNING, "Error during parsing html content", ble);
-        } finally {
-            bdoc.readUnlock();
-        }
-
-        if (isSuccessfulyParsed) {
-            notifyParsingFinished();
-        }
-    }
-
-    private void notifyParsingFinished() {
-        if (!parsedElements.isEmpty()) {
-            
-            //debug messages
-            if(LOG) {
-                for (SyntaxElement se : parsedElements) {
-                    LOGGER.log(Level.FINE, se.toString());
-                    System.out.println(se.toString());
-                }
-            }
-            
-            for (SyntaxParserListener spl : listeners) {
-                spl.parsingFinished(parsedElements);
-            }
-        }
+    private void text() {
+        elements.add(new SyntaxElement(parserSource,
+                start,
+                token.offset(hi) + token.length() - start,
+                SyntaxElement.TYPE_TEXT));
     }
 
     private void entityReference() {
@@ -316,11 +180,25 @@ public final class SyntaxParser {
         attr_keys = new ArrayList<Token>();
         attr_values = new ArrayList<List<Token>>();
     }
-    
-    private void reset() {
+
+    //an error inside a tag, at least the tag name is known
+    private void tag_with_error() {
+        //lets put back the errorneous symbol first
+        backup(1);
+        //make the tag, we do not know if empty or not
+        tag(false);
+        
         state = S_INIT;
         start = -1;
+    }
+
+    //recover from error
+    private void reset() {
         backup(1);
+        //create error element excluding the last token caused the error
+        error();
+        state = S_INIT;
+        start = -1;
     }
     
     private void backup(int tokens) {
@@ -341,6 +219,8 @@ public final class SyntaxParser {
     private static final int S_DOCTYPE_AFTER_ROOT_ELEMENT = 8;
     private static final int S_DOCTYPE_PUBLIC_ID = 9;
     private static final int S_DOCTYPE_FILE = 10;
+    private static final int S_TEXT = 11;
+    private static final int S_TAG_AFTER_NAME = 12;
     
     private int state;
     private int start;
@@ -357,7 +237,7 @@ public final class SyntaxParser {
     private String root_element, doctype_public_id, doctype_file;
     
     //PENDING: we do not handle incomplete tokens yet - should be added
-    private List<SyntaxElement> parseDocument() throws BadLocationException {
+    private List<SyntaxElement> parseDocument() {
         elements = new ArrayList<SyntaxElement>();
         List<TokenSequence<HTMLTokenId>> sequences = hi.tokenSequenceList(languagePath, 0, Integer.MAX_VALUE);
         state = S_INIT;
@@ -399,18 +279,36 @@ public final class SyntaxParser {
                                     state = S_DECLARATION;
                                 }
                                 break;
+                            default:
+                                //everything else is just a text
+                                start = ts.offset();
+                                state = S_TEXT;
+                                break;
                         }
                         break;
-                        
+
+                    case S_TEXT:
+                        switch(id) {
+                            case TEXT:
+                                break;
+                            default:
+                                backup(1);
+                                text();
+                                state = S_INIT;
+                                start = -1;
+                                break;
+                        }
+                        break;
+
                     case S_TAG_OPEN_SYMBOL:
                         switch (id) {
                             case TAG_OPEN:
-                                state = S_TAG;
+                                state = S_TAG_AFTER_NAME;
                                 openTag = true;
                                 tagName = token.text().toString();
                                 break;
                             case TAG_CLOSE:
-                                state = S_TAG;
+                                state = S_TAG_AFTER_NAME;
                                 openTag = false;
                                 tagName = token.text().toString();
                                 break;
@@ -419,7 +317,13 @@ public final class SyntaxParser {
                                 break;
                         }
                         break;
-                        
+
+                    case S_TAG_AFTER_NAME:
+                        //just switch to 'in tag state'
+                        backup(1);
+                        state = S_TAG;
+                        break;
+
                     case S_TAG:
                         switch (id) {
                             case WS:
@@ -437,7 +341,7 @@ public final class SyntaxParser {
                                 start = -1;
                                 break;
                             default:
-                                reset(); //error
+                                tag_with_error();
                                 break;
                         }
                         break;
@@ -463,7 +367,7 @@ public final class SyntaxParser {
                                 backup(1);
                                 break;
                             default:
-                                reset(); //error
+                                tag_with_error();
                                 break;
                         }
                         break;
@@ -483,6 +387,9 @@ public final class SyntaxParser {
                                     attr_values.get(index).add(token);
                                 }
                                 
+                                break;
+                            case ERROR:
+                                tag_with_error();
                                 break;
                             default:
                                 backup(1);
@@ -643,6 +550,20 @@ public final class SyntaxParser {
                 case S_DOCTYPE_FILE:
                 case S_DOCTYPE_PUBLIC_ID:
                     declaration();
+                    break;
+                case S_TEXT:
+                    text();
+                    break;
+                case S_TAG:
+                case S_TAG_ATTR:
+                case S_TAG_VALUE:
+                    tag(false);
+                    break;
+                case S_TAG_AFTER_NAME:
+                    tag(false);
+                    break;
+                default:
+                    error();
                     break;
             }
             

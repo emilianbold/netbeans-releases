@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -69,7 +70,7 @@ import org.openide.windows.InputOutput;
  *
  * @author ak119685
  */
-public class NativeTaskTest extends NativeExecutionTest {
+public class NativeTaskTest extends NativeExecutionBaseTestCase {
 
     public NativeTaskTest(String name) {
         super(name);

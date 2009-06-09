@@ -780,8 +780,61 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         if (var instanceof ObjectReference) {
             var = unboxIfCan(arg0, (ObjectReference) var, evaluationContext);
         }
+        if (var == null) {
+            TreePath currentPath = getCurrentPath();
+            Element elm = null;
+            if (currentPath != null) {
+                TreePath identifierPath = TreePath.getPath(currentPath, arg0.getVariable());
+                if (identifierPath == null) identifierPath = getCurrentPath();
+                elm = evaluationContext.getTrees().getElement(identifierPath);
+                if (elm instanceof TypeElement && ((TypeElement) elm).asType() instanceof ErrorType) {
+                    elm = null; // Elements not resolved correctly
+                }
+            }
+            if (elm == null) {
+                Assert2.error(arg0, "evaluateError", arg0.getVariable(), kind.toString(), arg0.getExpression());
+                //throw new IllegalStateException("Unknown assignment var type: "+arg0.getVariable());
+            }
+            TypeMirror type = elm.asType();
+            switch(type.getKind()) {
+                case BOOLEAN:
+                    var = vm.mirrorOf(false);
+                    break;
+                case BYTE:
+                    var = vm.mirrorOf((byte) 0);
+                    break;
+                case CHAR:
+                    var = vm.mirrorOf((char) 0);
+                    break;
+                case DOUBLE:
+                    var = vm.mirrorOf((double) 0);
+                    break;
+                case FLOAT:
+                    var = vm.mirrorOf((float) 0);
+                    break;
+                case INT:
+                    var = vm.mirrorOf((int) 0);
+                    break;
+                case LONG:
+                    var = vm.mirrorOf((long) 0);
+                    break;
+                case SHORT:
+                    var = vm.mirrorOf((short) 0);
+                    break;
+                default:
+                    if (type.toString().equals("java.lang.String")) {
+                        var = vm.mirrorOf("null");
+                    } else {
+                        Assert2.error(arg0, "evaluateError", arg0.getVariable(), kind.toString(), arg0.getExpression());
+                        //throw new IllegalStateException("Unknown assignment var type: "+type);
+                    }
+            }
+        }
         if (var instanceof BooleanValue) {
             boolean v = ((BooleanValue) var).value();
+            if (!(exp instanceof BooleanValue)) {
+                Assert2.error(arg0, "evaluateError", arg0.getVariable(), kind.toString(), arg0.getExpression());
+            }
             boolean e = ((BooleanValue) exp).value();
             switch (kind) {
                 case AND_ASSIGNMENT:
@@ -790,7 +843,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     v |= e; break;
                 case XOR_ASSIGNMENT:
                     v ^= e; break;
-                default: throw new IllegalStateException("Unknown assignment: "+kind+" of "+arg0);
+                default: Assert2.error(arg0, "evaluateError", arg0.getVariable(), kind.toString(), arg0.getExpression());
             }
             Value value = mirrorOf(evaluationContext, v);
             setToMirror(arg0.getVariable(), value, evaluationContext);
@@ -798,6 +851,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         if (var instanceof DoubleValue) {
             double v = ((DoubleValue) var).value();
+            if (!(exp instanceof PrimitiveValue)) {
+                Assert2.error(arg0, "evaluateError", arg0.getVariable(), kind.toString(), arg0.getExpression());
+            }
             double e = ((PrimitiveValue) exp).doubleValue();
             switch (kind) {
                 case DIVIDE_ASSIGNMENT:
@@ -808,7 +864,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     v *= e; break;
                 case PLUS_ASSIGNMENT:
                     v += e; break;
-                default: throw new IllegalStateException("Unknown assignment: "+kind+" of "+arg0);
+                default: Assert2.error(arg0, "evaluateError", arg0.getVariable(), kind.toString(), arg0.getExpression());
             }
             Value value = mirrorOf(evaluationContext, v);
             setToMirror(arg0.getVariable(), value, evaluationContext);
@@ -816,6 +872,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         if (var instanceof FloatValue) {
             float v = ((FloatValue) var).value();
+            if (!(exp instanceof PrimitiveValue)) {
+                Assert2.error(arg0, "evaluateError", arg0.getVariable(), kind.toString(), arg0.getExpression());
+            }
             float e = ((PrimitiveValue) exp).floatValue();
             switch (kind) {
                 case DIVIDE_ASSIGNMENT:
@@ -826,7 +885,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     v *= e; break;
                 case PLUS_ASSIGNMENT:
                     v += e; break;
-                default: throw new IllegalStateException("Unknown assignment: "+kind+" of "+arg0);
+                default: Assert2.error(arg0, "evaluateError", arg0.getVariable(), kind.toString(), arg0.getExpression());
             }
             Value value = mirrorOf(evaluationContext, v);
             setToMirror(arg0.getVariable(), value, evaluationContext);
@@ -834,6 +893,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         if (var instanceof LongValue) {
             long v = ((LongValue) var).value();
+            if (!(exp instanceof PrimitiveValue)) {
+                Assert2.error(arg0, "evaluateError", arg0.getVariable(), kind.toString(), arg0.getExpression());
+            }
             long e = ((PrimitiveValue) exp).longValue();
             switch (kind) {
                 case AND_ASSIGNMENT:
@@ -858,7 +920,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     v >>>= e; break;
                 case XOR_ASSIGNMENT:
                     v ^= e; break;
-                default: throw new IllegalStateException("Unknown assignment: "+kind+" of "+arg0);
+                default: Assert2.error(arg0, "evaluateError", arg0.getVariable(), kind.toString(), arg0.getExpression());
             }
             Value value = mirrorOf(evaluationContext, v);
             setToMirror(arg0.getVariable(), value, evaluationContext);
@@ -866,6 +928,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         if (var instanceof IntegerValue) {
             int v = ((IntegerValue) var).value();
+            if (!(exp instanceof PrimitiveValue)) {
+                Assert2.error(arg0, "evaluateError", arg0.getVariable(), kind.toString(), arg0.getExpression());
+            }
             int e = ((PrimitiveValue) exp).intValue();
             switch (kind) {
                 case AND_ASSIGNMENT:
@@ -890,7 +955,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     v >>>= e; break;
                 case XOR_ASSIGNMENT:
                     v ^= e; break;
-                default: throw new IllegalStateException("Unknown assignment: "+kind+" of "+arg0);
+                default: Assert2.error(arg0, "evaluateError", arg0.getVariable(), kind.toString(), arg0.getExpression());
             }
             Value value = mirrorOf(evaluationContext, v);
             setToMirror(arg0.getVariable(), value, evaluationContext);
@@ -898,6 +963,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         if (var instanceof ShortValue) {
             short v = ((ShortValue) var).value();
+            if (!(exp instanceof PrimitiveValue)) {
+                Assert2.error(arg0, "evaluateError", arg0.getVariable(), kind.toString(), arg0.getExpression());
+            }
             int e = ((PrimitiveValue) exp).intValue();
             switch (kind) {
                 case AND_ASSIGNMENT:
@@ -922,7 +990,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     v >>>= e; break;
                 case XOR_ASSIGNMENT:
                     v ^= e; break;
-                default: throw new IllegalStateException("Unknown assignment: "+kind+" of "+arg0);
+                default: Assert2.error(arg0, "evaluateError", arg0.getVariable(), kind.toString(), arg0.getExpression());
             }
             Value value = mirrorOf(evaluationContext, v);
             setToMirror(arg0.getVariable(), value, evaluationContext);
@@ -930,6 +998,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         if (var instanceof CharValue) {
             char v = ((CharValue) var).value();
+            if (!(exp instanceof PrimitiveValue)) {
+                Assert2.error(arg0, "evaluateError", arg0.getVariable(), kind.toString(), arg0.getExpression());
+            }
             int e = ((PrimitiveValue) exp).intValue();
             switch (kind) {
                 case AND_ASSIGNMENT:
@@ -954,7 +1025,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     v >>>= e; break;
                 case XOR_ASSIGNMENT:
                     v ^= e; break;
-                default: throw new IllegalStateException("Unknown assignment: "+kind+" of "+arg0);
+                default: Assert2.error(arg0, "evaluateError", arg0.getVariable(), kind.toString(), arg0.getExpression());
             }
             Value value = mirrorOf(evaluationContext, v);
             setToMirror(arg0.getVariable(), value, evaluationContext);
@@ -962,6 +1033,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         if (var instanceof ByteValue) {
             byte v = ((ByteValue) var).value();
+            if (!(exp instanceof PrimitiveValue)) {
+                Assert2.error(arg0, "evaluateError", arg0.getVariable(), kind.toString(), arg0.getExpression());
+            }
             int e = ((PrimitiveValue) exp).intValue();
             switch (kind) {
                 case AND_ASSIGNMENT:
@@ -986,7 +1060,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     v >>>= e; break;
                 case XOR_ASSIGNMENT:
                     v ^= e; break;
-                default: throw new IllegalStateException("Unknown assignment: "+kind+" of "+arg0);
+                default: Assert2.error(arg0, "evaluateError", arg0.getVariable(), kind.toString(), arg0.getExpression());
             }
             Value value = mirrorOf(evaluationContext, v);
             setToMirror(arg0.getVariable(), value, evaluationContext);
@@ -994,16 +1068,20 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         if (var instanceof StringReference) {
             String v = ((StringReference) var).value();
-            String e = ((StringReference) exp).value();
+            if (exp != null && !(exp instanceof StringReference)) {
+                Assert2.error(arg0, "evaluateError", arg0.getVariable(), kind.toString(), arg0.getExpression());
+            }
+            String e = (exp != null) ? ((StringReference) exp).value() : null;
             switch (kind) {
                 case PLUS_ASSIGNMENT:
                     v += e; break;
-                default: throw new IllegalStateException("Unknown assignment: "+kind+" of "+arg0);
+                default: Assert2.error(arg0, "evaluateError", arg0.getVariable(), kind.toString(), arg0.getExpression());
             }
             StringReference value = createStringMirrorWithDisabledCollection(v, vm, evaluationContext);
             setToMirror(arg0.getVariable(), value, evaluationContext);
             return value;
         }
+        Assert2.error(arg0, "evaluateError", arg0.getVariable(), kind.toString(), arg0.getExpression());
         throw new IllegalStateException("Unknown assignment var type: "+var);
     }
 

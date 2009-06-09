@@ -184,7 +184,7 @@ import org.openide.util.NbBundle;
         long time = 0;
         
         if (logger.isLoggable(Level.FINE)) {
-            System.out.printf("Uploading %s ...\n", localDir.getAbsolutePath()); // NOI18N
+            System.out.printf("Uploading %s to %s ...\n", localDir.getAbsolutePath(), executionEnvironment); // NOI18N
             time = System.currentTimeMillis();
         }
 
@@ -223,7 +223,7 @@ import org.openide.util.NbBundle;
             dirCount++;
             int rc = mkDir.get();
             if (rc != 0) {
-                throw new IOException("creating directory " + remoteDir + " on " + executionEnvironment + // NOI18N
+                throw new IOException("creating directory " + executionEnvironment + ':' + remoteDir + // NOI18N
                         " finished with error code " + rc); // NOI18N
             }
             for (File child : file.listFiles(sharabilityFilter)) {
@@ -240,9 +240,9 @@ import org.openide.util.NbBundle;
             int rc = upload.get();
             plainFilesCount++;
             totalSize += file.length();
-            logger.finest("SCP: uploading " + localFile + " to " + remoteFile + " rc=" + rc); //NOI18N
+            logger.finest("SCP: uploading " + localFile + " to " + executionEnvironment + ':' + remoteFile + " rc=" + rc); //NOI18N
             if (rc != 0) {
-                throw new IOException("uploading " + localFile + " to " + remoteFile + // NOI18N
+                throw new IOException("uploading " + localFile + " to " + executionEnvironment + ':' + remoteFile + // NOI18N
                         " finished with error code " + rc); // NOI18N
             }
         }

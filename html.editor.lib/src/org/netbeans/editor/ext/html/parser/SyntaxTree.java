@@ -75,7 +75,7 @@ public class SyntaxTree {
 
         //create a root node, it can contain one or more child nodes
         //normally just <html> node should be its child
-        AstNode rootNode = new AstNode("root", AstNode.NodeType.ROOT, 0, lastEndOffset); //NOI18N
+        AstNode rootNode = AstNode.createRootNode(0, lastEndOffset, dtd);
         LinkedList<AstNode> stack = new LinkedList<AstNode>();
         stack.add(rootNode);
 
@@ -180,7 +180,7 @@ public class SyntaxTree {
 
                              */
 
-                            
+
                             int reduce_index = -1;
                             for (int i = stack.size() - 1; i > 0; i--) {
                                 AstNode node = stack.get(i);
@@ -197,7 +197,7 @@ public class SyntaxTree {
                                 //workaround
                                 stack.remove(lastNode);
                                 lastNode.setLogicalEndOffset(openTagNode.startOffset());
-                                
+
                                 lastNode = stack.getLast();
                                 lastNode.addChild(openTagNode);
 
@@ -275,7 +275,7 @@ public class SyntaxTree {
                     if (tagName.equals(node.name())) {
                         //found the matching open tag, maybe
                         //check if the matching open tag has forbidden end tag
-                        if (hasForbiddedEndTag(node)) {
+                        if (AstNodeUtils.hasForbiddenEndTag(node)) {
                             //cannot match, report error
                             closeTagNode.addDescriptionToNode(FORBIDDEN_END_TAG, NbBundle.getMessage(SyntaxTree.class, "MSG_FORBIDDEN_ENDTAG"), Description.ERROR); //NOI18N
                         } else {
@@ -392,10 +392,10 @@ public class SyntaxTree {
                 nodeOk = false;
             }
 
-            if(nodeOk) {
+//            if(nodeOk) {
                 //if the tag is ok, then close it by the end of the file
                 node.setLogicalEndOffset(lastEndOffset);
-            }
+//            }
 
         }
 
@@ -410,12 +410,7 @@ public class SyntaxTree {
         return s;
     }
 
-    private static boolean hasForbiddedEndTag(AstNode node) {
-        Element e = node.getDTDElement();
-        assert e != null;
-
-        return e.isEmpty();
-    }
+    
 
     private static boolean hasOptionalEndTag(AstNode node) {
         Element e = node.getDTDElement();

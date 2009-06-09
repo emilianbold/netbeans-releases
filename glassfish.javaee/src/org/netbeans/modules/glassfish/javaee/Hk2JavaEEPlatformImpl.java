@@ -45,6 +45,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
@@ -230,6 +232,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * @return 
      */
     public Set getSupportedSpecVersions() {
+        Logger.getLogger("glassfish-javaee").log(Level.INFO,"programmer calling deprecated API", new Exception("deprectaed API usage")); // NOI18N
         return pf.getSupportedSpecVersions();
     }
 

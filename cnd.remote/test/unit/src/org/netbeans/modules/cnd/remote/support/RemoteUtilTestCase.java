@@ -61,7 +61,7 @@ public class RemoteUtilTestCase extends RemoteTestBase {
     public void testGetHomeDirectory() throws Exception {
         if (canTestRemote()) {
             System.out.printf("Testng getHomeDirectory\n");
-            ExecutionEnvironment execEnv = getRemoteExecutionEnvironment();
+            ExecutionEnvironment execEnv = getTestExecutionEnvironment();
             long time1 = System.currentTimeMillis();
             String home = RemoteUtil.getHomeDirectory(execEnv);
             time1 = System.currentTimeMillis() - time1;
@@ -75,7 +75,7 @@ public class RemoteUtilTestCase extends RemoteTestBase {
     public void testGetHomeDirectoryCachingNotNull() throws Exception {
         if (canTestRemote()) {
             System.out.printf("Testng getHomeDirectory caching: returning not null\n");
-            ExecutionEnvironment goodEnv = getRemoteExecutionEnvironment();
+            ExecutionEnvironment goodEnv = getTestExecutionEnvironment();
             long time1 = System.currentTimeMillis();
             String home = RemoteUtil.getHomeDirectory(goodEnv);
             time1 = System.currentTimeMillis() - time1;
