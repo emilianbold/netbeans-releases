@@ -47,6 +47,9 @@ public interface Persistence {
 	static public final String VERSION = "Version";	// NOI18N
 	static public final String PERSISTENCE_UNIT = "PersistenceUnit";	// NOI18N
         
+        public static final String VERSION_2_0="2.0"; //NOI18N
+        public static final String VERSION_1_0="1.0"; //NOI18N
+
         public void setVersion(java.lang.String value);
         public java.lang.String getVersion();
         public void setPersistenceUnit(int index, PersistenceUnit value);
