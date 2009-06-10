@@ -483,7 +483,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider2 {
                             "default value will be used instead: "+j2eeProfile); // NOI18N
                     updateJ2EESpec(project, project.getAntProjectHelper(), j2eeProfile);
                 }
-                String instance = BrokenServerSupport.selectServer(j2eeProfile, J2eeModule.CLIENT);
+                String instance = BrokenServerSupport.selectServer(j2eeProfile, J2eeModule.Type.CAR);
                 if (instance != null) {
                     AppClientProjectProperties.setServerInstance(
                             project, helper.getAntProjectHelper(), instance);
