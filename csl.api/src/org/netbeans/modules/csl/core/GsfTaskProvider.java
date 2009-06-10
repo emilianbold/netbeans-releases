@@ -107,14 +107,14 @@ public class GsfTaskProvider extends PushTaskScanner  {
         for (Project project : scope.getLookup ().lookupAll (Project.class)) {
             Collection<FileObject> fileObjects = QuerySupport.findRoots (
                 project,
-                Collections.<String> singleton (ClassPath.SOURCE),
+                null,
                 Collections.<String> emptyList (),
                 Collections.<String> emptyList ()
             );
             try {
                 QuerySupport querySupport = QuerySupport.forRoots (
-                    "TLIndexer",
-                    1,
+                    TLIndexerFactory.INDEXER_NAME,
+                    TLIndexerFactory.INDEXER_VERSION,
                     fileObjects.toArray (new FileObject [fileObjects.size ()])
                 );
                 Collection<? extends IndexResult> results = querySupport.query (
@@ -168,14 +168,14 @@ public class GsfTaskProvider extends PushTaskScanner  {
         Project project = FileOwnerQuery.getOwner (file);
         Collection<FileObject> fileObjects = QuerySupport.findRoots (
             project,
-            Collections.<String> singleton (ClassPath.SOURCE),
+            null,
             Collections.<String> emptyList (),
             Collections.<String> emptyList ()
         );
         try {
             QuerySupport querySupport = QuerySupport.forRoots (
-                "TLIndexer",
-                1,
+                TLIndexerFactory.INDEXER_NAME,
+                TLIndexerFactory.INDEXER_VERSION,
                 fileObjects.toArray (new FileObject [fileObjects.size ()])
             );
             Collection<? extends IndexResult> results = querySupport.query (

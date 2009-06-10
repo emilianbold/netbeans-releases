@@ -40,9 +40,13 @@
 package org.netbeans.modules.csl.core;
 
 import java.io.IOException;
+import java.lang.Void;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,8 +56,14 @@ import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.hints.infrastructure.GsfHintsManager;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.netbeans.modules.parsing.impl.indexing.SupportAccessor;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
@@ -63,7 +73,9 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex.ExceptionAction;
 
 
 /**
@@ -73,6 +85,9 @@ import org.openide.util.Exceptions;
 public final class TLIndexerFactory extends EmbeddingIndexerFactory {
 
     private static final Logger LOG = Logger.getLogger (TLIndexerFactory.class.getName());
+
+    public static final String  INDEXER_NAME = "TLIndexer";
+    public static final int     INDEXER_VERSION = 1;
 
     @Override
     public EmbeddingIndexer createIndexer (
@@ -88,6 +103,13 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
                                 deleted,
         Context                 context
     ) {
+        try {
+            IndexingSupport indexingSupport = IndexingSupport.getInstance (context);
+            for (Indexable indexable : deleted)
+                indexingSupport.addDocument (indexingSupport.createDocument (indexable));
+        } catch (IOException ex) {
+            LOG.log (Level.WARNING, null, ex);
+        }
     }
 
     @Override
@@ -96,20 +118,29 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
                                 dirty,
         Context                 context
     ) {
+        try {
+            IndexingSupport indexingSupport = IndexingSupport.getInstance (context);
+            for (Indexable indexable : dirty)
+                indexingSupport.addDocument (indexingSupport.createDocument (indexable));
+        } catch (IOException ex) {
+            LOG.log (Level.WARNING, null, ex);
+        }
     }
 
     @Override
     public String getIndexerName () {
-        return "TLIndexer";
+        return INDEXER_NAME;
     }
 
     @Override
     public int getIndexVersion () {
-        return 1;
+        return INDEXER_VERSION;
     }
 
 
     // innerclasses ............................................................
+
+    private static Set<FileObject> karelP = new HashSet<FileObject> ();
 
     private static class TLIndexer extends EmbeddingIndexer {
 
@@ -146,8 +177,23 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
                         saveHints (hints, gsfHintsManager, indexingSupport, indexable, gsfParserResult, language);
                     }
                 }
-                SupportAccessor.getInstance ().store (indexingSupport);
-                GsfTaskProvider.refresh (parserResult.getSnapshot ().getSource ().getFileObject ());
+                final FileObject fileObject = parserResult.getSnapshot ().getSource ().getFileObject ();
+                if (!karelP.contains (fileObject))
+                    try {
+                        karelP.add (fileObject);
+                        TaskProcessor.runWhenScanFinished (
+                            new ExceptionAction<Void> () {
+                                public Void run () throws Exception {
+                                    GsfTaskProvider.refresh (fileObject);
+                                    karelP.remove (fileObject);
+                                    return null;
+                                }
+                            },
+                            Collections.<Source> emptyList ()
+                        );
+                    } catch (ParseException ex) {
+                        Exceptions.printStackTrace (ex);
+                    }
             } catch (IOException ex) {
                 LOG.log (Level.WARNING, null, ex);
             }
