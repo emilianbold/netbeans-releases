@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
@@ -56,7 +57,7 @@ import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 
 /**
  *
@@ -68,17 +69,17 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
 
     TypeScopeImpl(Scope inScope, ClassDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), nodeInfo.getOriginalNode().getBody());
-        List<? extends Identifier> interfaces = nodeInfo.getInterfaces();
-        for (Identifier identifier : interfaces) {
-            ifaces.put(identifier.getName(), null);
+        List<? extends Expression> interfaces = nodeInfo.getInterfaces();
+        for (Expression identifier : interfaces) {
+            ifaces.put(CodeUtils.extractTypeName(identifier), null);
         }
     }
 
     TypeScopeImpl(Scope inScope, InterfaceDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo, new PhpModifiers(PhpModifiers.PUBLIC), nodeInfo.getOriginalNode().getBody());
-        List<? extends Identifier> interfaces = nodeInfo.getInterfaces();
-        for (Identifier identifier : interfaces) {
-            ifaces.put(identifier.getName(), null);
+        List<? extends Expression> interfaces = nodeInfo.getInterfaces();
+        for (Expression identifier : interfaces) {
+            ifaces.put(CodeUtils.extractTypeName(identifier), null);
         }
     }
 

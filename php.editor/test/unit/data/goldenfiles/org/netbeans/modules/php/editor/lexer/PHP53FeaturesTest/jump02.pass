@@ -21,7 +21,7 @@ token #19 WHITESPACE
 token #20 PHP_NUMBER 3
 token #21 PHP_TOKEN )
 token #22 WHITESPACE  
-token #23 PHP_STRING goto
+token #23 PHP_GOTO goto
 token #24 WHITESPACE  
 token #25 PHP_STRING L2
 token #26 PHP_SEMICOLON ;
@@ -38,7 +38,7 @@ token #36 PHP_VARIABLE $n
 token #37 PHP_OPERATOR ++
 token #38 PHP_SEMICOLON ;
 token #39 WHITESPACE \n
-token #40 PHP_STRING goto
+token #40 PHP_GOTO goto
 token #41 WHITESPACE  
 token #42 PHP_STRING L1
 token #43 PHP_SEMICOLON ;

@@ -51,7 +51,9 @@ import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.utils.APTTraceUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
 
@@ -123,7 +125,7 @@ public final class APTDefineNode extends APTMacroBaseNode
     }
     
     @Override
-    public boolean accept(APTToken token) {
+    public boolean accept(APTFile curFile, APTToken token) {
         int ttype = token.getType();
         if (APTUtils.isEndDirectiveToken(ttype)) {
             if (bodyTokens != null){
@@ -142,7 +144,7 @@ public final class APTDefineNode extends APTMacroBaseNode
                 case BEFORE_MACRO_NAME:
                 {
                     // allow base class to remember macro nam
-                    boolean accepted = super.accept(token);
+                    boolean accepted = super.accept(curFile, token);
                     assert(accepted);
                     stateAndHashCode = AFTER_MACRO_NAME;
                     break;
@@ -180,11 +182,11 @@ public final class APTDefineNode extends APTMacroBaseNode
                             if (!(token.getType() == APTTokenTypes.COMMA || APTUtils.isCommentToken(token.getType()))) {
                                 // error check
                                 if (DebugUtils.STANDALONE) {
-                                    System.err.printf("line %d: \"%s\" may not appear in macro parameter list\n", // NOI18N
-                                            getToken().getLine(), token.getText());
+                                    System.err.printf("%s, line %d: \"%s\" may not appear in macro parameter list\n", // NOI18N
+                                            APTTraceUtils.toFileString(curFile), getToken().getLine(), token.getText()); // NOI18N
                                 } else {
-                                    APTUtils.LOG.log(Level.SEVERE, "line {0}: {1} may not appear in macro parameter list", // NOI18N
-                                            new Object[] {getToken().getLine(), token.getText()} );
+                                    APTUtils.LOG.log(Level.SEVERE, "{0} line {1}: {2} may not appear in macro parameter list", // NOI18N
+                                            new Object[] {APTTraceUtils.toFileString(curFile), getToken().getLine(), token.getText()} ); // NOI18N
                                 }                                
                                 stateAndHashCode = ERROR;
                             }
@@ -220,11 +222,11 @@ public final class APTDefineNode extends APTMacroBaseNode
                     }                   
                     if (stateAndHashCode == ERROR) {
                         if (DebugUtils.STANDALONE) {
-                            System.err.printf("line %d: '#' is not followed by a macro parameter\n", // NOI18N
-                                    getToken().getLine());
+                            System.err.printf("%s, line %d: '#' is not followed by a macro parameter\n", // NOI18N
+                                    APTTraceUtils.toFileString(curFile), getToken().getLine());
                         } else {
-                            APTUtils.LOG.log(Level.SEVERE, "line {0}: '#' is not followed by a macro parameter", // NOI18N
-                                    new Object[] {getToken().getLine()} );
+                            APTUtils.LOG.log(Level.SEVERE, "{0}, line {1}: '#' is not followed by a macro parameter", // NOI18N
+                                    new Object[] {APTTraceUtils.toFileString(curFile), getToken().getLine()} );
                         }                                
                     }
                     break;

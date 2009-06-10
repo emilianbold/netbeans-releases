@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
+import org.netbeans.modules.cnd.builds.CMakeExecSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
@@ -48,6 +49,7 @@ import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
+import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 import org.openide.text.DataEditorSupport;
 
@@ -61,15 +63,38 @@ public class CMakeDataObject extends MultiDataObject {
         super(pf, loader);
         CookieSet cookies = getCookieSet();
         cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
+        cookies.add(new CMakeExecSupport(getPrimaryEntry()));
     }
 
     @Override
     protected Node createNodeDelegate() {
-        return new DataNode(this, Children.LEAF, getLookup());
+        return new CMakeDataNode(this, Children.LEAF, getLookup());
     }
 
     @Override
     public Lookup getLookup() {
         return getCookieSet().getLookup();
+    }
+
+    private static class CMakeDataNode extends DataNode {
+        /** Construct the DataNode */
+        public CMakeDataNode(CMakeDataObject obj, Children ch, Lookup lookup) {
+            super(obj, ch, lookup);
+        }
+
+        /** Get the support for methods which need it */
+        private final CMakeExecSupport getSupport() {
+            return getCookie(CMakeExecSupport.class);
+        }
+
+        /** Create the properties sheet for the node */
+        @Override
+        protected Sheet createSheet() {
+            // Just add properties to default property tab (they used to be in a special 'Building Tab')
+            Sheet defaultSheet = super.createSheet();
+            Sheet.Set defaultSet = defaultSheet.get(Sheet.PROPERTIES);
+            getSupport().addProperties(defaultSet);
+            return defaultSheet;
+        }
     }
 }

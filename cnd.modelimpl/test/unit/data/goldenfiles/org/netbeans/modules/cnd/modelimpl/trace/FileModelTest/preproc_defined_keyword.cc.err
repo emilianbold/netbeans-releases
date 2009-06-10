@@ -1,6 +1,6 @@
-line 6: "defined" cannot be used as a macro name
-line 6: no macro name given in #ifndef directive
-line 11: "defined" cannot be used as a macro name
-line 11: no macro name given in #ifdef directive
-line 16: "defined" cannot be used as a macro name
-line 16: no macro name given in #ifdef directive
+FileModelTest/preproc_defined_keyword.cc, line 6: "defined" cannot be used as a macro name
+FileModelTest/preproc_defined_keyword.cc, line 6: no macro name given in #ifndef directive
+FileModelTest/preproc_defined_keyword.cc, line 11: "defined" cannot be used as a macro name
+FileModelTest/preproc_defined_keyword.cc, line 11: no macro name given in #ifdef directive
+FileModelTest/preproc_defined_keyword.cc, line 16: "defined" cannot be used as a macro name
+FileModelTest/preproc_defined_keyword.cc, line 16: no macro name given in #ifdef directive

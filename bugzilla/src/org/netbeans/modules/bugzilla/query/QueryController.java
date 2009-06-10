@@ -729,7 +729,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             };
         }
         post(refreshTask);
-        }
+    }
 
     private void refreshIntern(boolean autoRefresh) {
         if (panel.urlPanel.isVisible()) {

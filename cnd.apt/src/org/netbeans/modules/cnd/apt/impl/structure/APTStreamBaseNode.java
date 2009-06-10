@@ -47,6 +47,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.apt.structure.APT;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
@@ -81,7 +82,7 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
     ////////////////////////////////////////////////////////////////////////////
     // implementation of abstract methods
     
-    public boolean accept(APTToken token) {
+    public boolean accept(APTFile curFile,APTToken token) {
         boolean accepted = false;
         if (validToken(token)) {
             accepted = true;
@@ -135,16 +136,8 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
      * moved to the begin of the stream
      */
     public TokenStream getTokenStream() {
-        return new TokenStreamIterator();
-    }
-    
-    ////////////////////////////////////////////////////////////////////////////
-    // reset tokens
-    @Override
-    public void dispose() {
-        super.dispose();
-        tokens = null;
-    }
+        return new TokenStreamIterator(getToken(), this.tokens);
+    }    
     
     ////////////////////////////////////////////////////////////////////////////
     // help implementation methods
@@ -160,15 +153,23 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
     protected abstract boolean validToken(APTToken t);
     
     /** token stream iterator */
-    private class TokenStreamIterator implements TokenStream {
+    private static class TokenStreamIterator implements TokenStream {
         private int index = -1;
+        private final APTToken firstToken;
+        private final List<APTToken> tokens;
+        private final int size;
+        public TokenStreamIterator(APTToken firstToken, List<APTToken> tokens) {
+            this.firstToken = firstToken;
+            this.tokens = tokens;
+            this.size = tokens != null ? tokens.size() : 0;
+        }
         
         public APTToken nextToken() throws TokenStreamException {
             APTToken token;
             if (index == -1) {
-                token = getToken();
+                token = firstToken;
                 index++;
-            } else if (tokens != null && index < tokens.size()) {
+            } else if (tokens != null && index < size) {
                 token = tokens.get(index++);
             } else {
                 token = APTUtils.EOF_TOKEN;

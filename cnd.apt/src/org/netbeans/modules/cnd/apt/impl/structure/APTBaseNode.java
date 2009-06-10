@@ -59,10 +59,6 @@ public abstract class APTBaseNode implements APT, Serializable {
     protected APTBaseNode() {
     }    
     
-    public void dispose() {
-        // do nothing
-    }
-    
     @Override
     public String toString() {
         return getText();

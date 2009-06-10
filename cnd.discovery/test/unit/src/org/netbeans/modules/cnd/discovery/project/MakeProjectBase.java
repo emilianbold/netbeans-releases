@@ -197,7 +197,7 @@ public abstract class MakeProjectBase extends NbTestCase { //BaseTestCase {
                             if (configure.getAbsolutePath().endsWith("configure")) {
                                 return "CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\"";
                             } else if (configure.getAbsolutePath().endsWith("CMakeLists.txt")) {
-                                return "-G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS=\"-g3 -gdwarf-2\" -DCMAKE_C_FLAGS=\"-g3 -gdwarf-2\"";
+                                return "-G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=\"-g3 -gdwarf-2\" -DCMAKE_C_FLAGS_DEBUG=\"-g3 -gdwarf-2\"";
                             } else if (configure.getAbsolutePath().endsWith(".pro")) {
                                 return "QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
                             }

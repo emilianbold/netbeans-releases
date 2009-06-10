@@ -228,6 +228,7 @@ made subject to such option by the copyright holder.
 
     <folder name="org-netbeans-modules-j2ee-persistence">
         <file name="persistence-1.0.xml" url="persistence-1.0.xml"/>
+        <file name="persistence-2.0.xml" url="persistence-2.0.xml"/>
         <file name="persistence_ORM-1.0.xml" url="persistence_ORM-1.0.xml"/>
     </folder>
 

@@ -42,12 +42,18 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
+import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
+import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 
 /**
  * @author Alexey Vladykin
@@ -67,6 +73,21 @@ public class DtraceParserTest extends NbTestCase {
                         new Column("cpu", Integer.class)),
                 null);
         doTest(getDataFile(), new DtraceParser(metadata));
+    }
+
+    @Test
+    public void testMemD() throws IOException {
+        DataTableMetadata metadata = new DataTableMetadata(
+                "mem",
+                Arrays.asList(
+                        new Column("timestamp", Long.class),
+                        new Column("kind", Integer.class),
+                        new Column("size", Integer.class),
+                        new Column("address", Long.class),
+                        new Column("total", Integer.class),
+                        new Column("stackid", Integer.class)),
+                null);
+        doTest(getDataFile(), new DtraceDataAndStackParser(metadata, new SDSImpl()));
     }
 
     protected File getDataFile() {
@@ -89,5 +110,62 @@ public class DtraceParserTest extends NbTestCase {
             reader.close();
         }
         compareReferenceFiles();
+    }
+
+
+    private class SDSImpl implements StackDataStorage {
+
+        private List<String> knownStacks;
+
+        public SDSImpl() {
+            knownStacks = new ArrayList<String>();
+        }
+
+        public int putStack(List<CharSequence> stack, long sampleDuration) {
+            String stackAsString = stack.toString();
+            int id = 0;
+            while (id < knownStacks.size()) {
+                if (knownStacks.get(id).equals(stackAsString)) {
+                    break;
+                }
+                ++id;
+            }
+            if (knownStacks.size() <= id) {
+                knownStacks.add(id, stackAsString);
+            }
+            ++id;
+            ref("putStack(" + stack + ", " + sampleDuration + ") = " + id);
+            return id;
+        }
+
+        public List<Long> getPeriodicStacks(long startTime, long endTime, long interval) {
+            fail("Parser is not expected to call this method");
+            return null;
+        }
+
+        public List<FunctionMetric> getMetricsList() {
+            fail("Parser is not expected to call this method");
+            return null;
+        }
+
+        public List<FunctionCall> getCallers(FunctionCall[] path, boolean aggregate) {
+            fail("Parser is not expected to call this method");
+            return null;
+        }
+
+        public List<FunctionCall> getCallees(FunctionCall[] path, boolean aggregate) {
+            fail("Parser is not expected to call this method");
+            return null;
+        }
+
+        public List<FunctionCall> getHotSpotFunctions(FunctionMetric metric, int limit) {
+            fail("Parser is not expected to call this method");
+            return null;
+        }
+
+        public List<FunctionCall> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription) {
+            fail("Parser is not expected to call this method");
+            return null;
+        }
     }
 }
