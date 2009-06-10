@@ -75,7 +75,6 @@ import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletion
 import org.netbeans.modules.php.editor.PredefinedSymbols.VariableKind;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
-import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.IndexedInterface;
@@ -89,8 +88,6 @@ import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.ParameterInfoSupport;
 import org.netbeans.modules.php.editor.model.TypeScope;
-import org.netbeans.modules.php.editor.model.VariableName;
-import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
@@ -104,7 +101,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
@@ -458,9 +454,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
         }
         if (enclosingClass != null && offerMagicAndInherited) {
-            Identifier superClass = enclosingClass.getSuperClass();
+            Expression superClass = enclosingClass.getSuperClass();
             if (superClass != null) {
-                String superClsName = superClass.getName();
+                String superClsName = CodeUtils.extractSuperClassName(enclosingClass);
                 Collection<IndexedFunction> superMethods = request.index.getAllMethods(
                         request.result, superClsName, request.prefix,
                         QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
@@ -476,9 +472,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     }
                 }
             }
-            List<Identifier> interfaces = enclosingClass.getInterfaes();
-            for (Identifier identifier : interfaces) {
-                String ifaceName = identifier.getName();
+            List<Expression> interfaces = enclosingClass.getInterfaes();
+            for (Expression identifier : interfaces) {
+                String ifaceName = CodeUtils.extractTypeName(identifier);
                 Collection<IndexedFunction> superMethods = request.index.getAllMethods(
                         request.result, ifaceName, request.prefix,
                         QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
@@ -553,9 +549,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
                 ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
                 if (classDecl != null) {
-                    Identifier superIdentifier = classDecl.getSuperClass();
+                    Expression superIdentifier = classDecl.getSuperClass();
                     if (superIdentifier != null) {
-                        typeName = superIdentifier.getName();
+                        typeName = CodeUtils.extractSuperClassName(classDecl);
                         staticContext = instanceContext = true;
                         attrMask |= Modifier.PROTECTED;
                     }
@@ -997,7 +993,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 if (parameterName instanceof Variable) {
                     String varName = CodeUtils.extractVariableName((Variable) parameterName);
                     if (varName != null) {
-                        String type = param.getParameterType() != null ? param.getParameterType().getName() : null;
+                        String type = CodeUtils.extractParameterTypeName(param);
 
                         if (type == null){
                             type = typeByParamName.get(varName);

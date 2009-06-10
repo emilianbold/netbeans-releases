@@ -233,7 +233,7 @@ public class IntroduceHint implements AstRule {
         public void visit(StaticMethodInvocation methodInvocation) {
             if (isInside(methodInvocation.getStartOffset(), lineBegin, lineEnd)) {
                 String methName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
-                String clzName = methodInvocation.getClassName().getName();
+                String clzName = CodeUtils.extractClassName(methodInvocation);
                 IndexedClass clz = getIndexedClass(clzName);
                 if (clz != null && methName != null) {
                     PHPIndex index = model.getIndexScope().getIndex();
@@ -280,7 +280,7 @@ public class IntroduceHint implements AstRule {
             if (isInside(staticFieldAccess.getStartOffset(), lineBegin, lineEnd)) {
                 final Variable field = staticFieldAccess.getField();
                 String fieldName = CodeUtils.extractVariableName(field);
-                String clzName = staticFieldAccess.getClassName().getName();
+                String clzName = CodeUtils.extractClassName(staticFieldAccess);
                 IndexedClass clz = getIndexedClass(clzName);
                 if (clz != null && fieldName != null) {
                     if (fieldName.startsWith("$")) {//NOI18N
@@ -304,7 +304,7 @@ public class IntroduceHint implements AstRule {
         public void visit(StaticConstantAccess staticConstantAccess) {
             if (isInside(staticConstantAccess.getStartOffset(), lineBegin, lineEnd)) {
                 String constName = staticConstantAccess.getConstant().getName();
-                String clzName = staticConstantAccess.getClassName().getName();
+                String clzName = CodeUtils.extractClassName(staticConstantAccess);
                 IndexedClass clz = getIndexedClass(clzName);
                 if (clz != null && constName != null) {
                     PHPIndex index = model.getIndexScope().getIndex();

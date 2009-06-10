@@ -51,9 +51,12 @@ import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -610,13 +613,17 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     // innerclasses .............................................................
 
     private static class UnionTreeModel implements TreeModel, ExtendedNodeModel,
-            NodeActionsProvider, TableModel, TreeExpansionModel, ModelListener {
+            NodeActionsProvider, TableModel, TreeExpansionModel {
 
         private Collection<CompoundModel> compoundModels;
         private Map<String, CompoundModel> compoundModelsByViewName;
         private List<CompoundModel> orderedModels; // order for getChildren()
         private final Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
         private final Map<Object, CompoundModel> objectModels = Collections.synchronizedMap(new WeakHashMap<Object, CompoundModel>());
+        private final Map<CompoundModel, ModelListener> compoundModelListeners = new HashMap<CompoundModel, ModelListener>();
+        // We do cache all model properties because of refreshes.
+        // Refresh of the tree requested by one model should not refresh data in other models.
+        private final Map<CompoundModel, CachedProperties> cachedProperties = new HashMap<CompoundModel, CachedProperties>();
 
         UnionTreeModel(Map<String, CompoundModel> treeModels, CompoundModel localsCompound) {
             this.compoundModelsByViewName = treeModels;
@@ -624,6 +631,9 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             orderedModels = new ArrayList<CompoundModel>(this.compoundModels);
             orderedModels.remove(localsCompound);
             orderedModels.add(localsCompound);
+            for (CompoundModel cm : compoundModels) {
+                cachedProperties.put(cm, new CachedProperties());
+            }
         }
 
         public Object getRoot() {
@@ -637,12 +647,27 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             return null;
         }
 
+        NodeProperties getPropertiesFor(CompoundModel model, Object node) {
+            CachedProperties cp = cachedProperties.get(model);
+            return cp.getPropertiesFor(node);
+        }
+
         public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
             if (parent == TreeModel.ROOT) {
                 List chList = new ArrayList();
                 for (CompoundModel model : orderedModels) {
-                    try {
-                        Object[] children = model.getChildren(parent, 0, model.getChildrenCount(parent));
+                    NodeProperties np = getPropertiesFor(model, parent);
+                    Object[] children = np.getChildren();
+                    if (children == null) {
+                        try {
+                            children = model.getChildren(parent, 0, model.getChildrenCount(parent));
+                        } catch (UnknownTypeException e) {
+                        }
+                        if (children != null) {
+                            np.setChildren(children);
+                        }
+                    }
+                    if (children != null) {
                         for (int x = 0; x < children.length; x++) {
                             // exclude HistoryNode
                             if (!"HistoryNode".equals(children[x].getClass().getSimpleName())) { // NOI18N [TODO]
@@ -650,7 +675,6 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                                 objectModels.put(children[x], model);
                             }
                         }
-                    } catch (UnknownTypeException e) {
                     }
                 }
                 Object[] result = new Object[chList.size()];
@@ -669,7 +693,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 {
                     CompoundModel model = objectModels.get(parent);
                     if (model != null) {
-                        Object[] children = model.getChildren(parent, from, to);
+                        NodeProperties np = getPropertiesFor(model, parent);
+                        Object[] children = np.getChildren();
+                        if (children == null) {
+                            children = model.getChildren(parent, from, to);
+                            np.setChildren(children);
+                        }
                         for (int x = 0; x < children.length; x++) {
                             objectModels.put(children[x], model);
                         }
@@ -678,7 +707,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 }
                 for (CompoundModel model : compoundModels) {
                     try {
-                        Object[] children = model.getChildren(parent, from, to);
+                        NodeProperties np = getPropertiesFor(model, parent);
+                        Object[] children = np.getChildren();
+                        if (children == null) {
+                            children = model.getChildren(parent, from, to);
+                            np.setChildren(children);
+                        }
                         for (int x = 0; x < children.length; x++) {
                             objectModels.put(children[x], model);
                         }
@@ -690,18 +724,28 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             throw new UnknownTypeException(parent);
         }
 
+        private boolean isLeaf(CompoundModel model, Object node) throws UnknownTypeException {
+            NodeProperties np = getPropertiesFor(model, node);
+            synchronized (np) {
+                if (np.isLeaf == null) {
+                    np.isLeaf = model.isLeaf(node);
+                }
+                return np.isLeaf;
+            }
+        }
+
         public boolean isLeaf(Object node) throws UnknownTypeException {
             {
-                TreeModel model = objectModels.get(node);
+                CompoundModel model = objectModels.get(node);
                 if (model != null) {
-                    return model.isLeaf(node);
+                    return isLeaf(model, node);
                 }
             }
             boolean isLeaf = false;
             boolean recognized = false;
-            for (TreeModel model : compoundModels) {
+            for (CompoundModel model : compoundModels) {
                 try {
-                    isLeaf |= model.isLeaf(node);
+                    isLeaf |= isLeaf(model, node);
                     recognized = true;
                 } catch (UnknownTypeException e) {
                 }
@@ -713,11 +757,21 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             }
         }
 
+        private int getChildrenCount(CompoundModel model, Object node) throws UnknownTypeException {
+            NodeProperties np = getPropertiesFor(model, node);
+            synchronized (np) {
+                if (np.childrenCount == null) {
+                    np.childrenCount = model.getChildrenCount(node);
+                }
+                return np.childrenCount;
+            }
+        }
+
         public int getChildrenCount(Object node) throws UnknownTypeException {
             if (node == TreeModel.ROOT) {
                 int count = 0;
                 for (CompoundModel model : compoundModels) {
-                    int c = model.getChildrenCount(node);
+                    int c = getChildrenCount(model, node);
                     if (c == Integer.MAX_VALUE) {
                         return Integer.MAX_VALUE;
                     }
@@ -728,12 +782,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 {
                     CompoundModel model = objectModels.get(node);
                     if (model != null) {
-                        return model.getChildrenCount(node);
+                        return getChildrenCount(model, node);
                     }
                 }
                 for (CompoundModel model : compoundModels) {
                     try {
-                        return model.getChildrenCount(node);
+                        return getChildrenCount(model, node);
                     } catch (UnknownTypeException e) {
                     }
                 }
@@ -745,7 +799,9 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             synchronized (modelListeners) {
                 if (modelListeners.size() == 0) {
                     for (CompoundModel model : compoundModels) {
-                        model.addModelListener(listener);
+                        CompoundModelListener cml = new CompoundModelListener(model);
+                        compoundModelListeners.put(model, cml);
+                        model.addModelListener(cml);
                     }
                 }
                 modelListeners.add(listener);
@@ -754,21 +810,61 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
         public void removeModelListener (ModelListener listener) {
             synchronized (modelListeners) {
+                if (modelListeners.size() == 0) return ; // Everything was already removed.
                 modelListeners.remove(listener);
                 if (modelListeners.size() == 0) {
                     for (CompoundModel model : compoundModels) {
-                        model.addModelListener(listener);
+                        model.removeModelListener(compoundModelListeners.remove(model));
                     }
                 }
             }
         }
 
-        public void modelChanged(ModelEvent event) {
-            ModelEvent newEvent = translateEvent(event, this);
+        public void modelChanged(CompoundModel cm, ModelEvent event) {
+            //System.err.println("UnionTreeModel.modelChanged("+event+") from "+event.getSource());
+            if (event == null || event instanceof ModelEvent.TreeChanged) {
+                Thread.dumpStack();
+            }
             Collection<ModelListener> listeners;
             synchronized (modelListeners) {
                 listeners = new ArrayList<ModelListener>(modelListeners);
             }
+            if (event == null) {
+                cachedProperties.get(cm).clear();
+            } else if (event instanceof ModelEvent.TreeChanged) {
+                cachedProperties.get(cm).clear();
+                /*List<Reference<Object>> cachedChildren;
+                synchronized (rootChildren) {
+                    cachedChildren = rootChildren.remove(cm);
+                }
+                System.err.println("REMOVED cached children = "+cachedChildren);
+                //Refresh the root children + all nodes of this model recursively
+                if (cachedChildren != null) {
+                    for (Reference<Object> child : cachedChildren) {
+                        Object node = child.get();
+                        if (node != null) {
+                            //nodesToRefresh.add(node);
+                            System.err.println("  refreshing node "+node);
+                            ModelEvent newEvent = new ModelEvent.NodeChanged(this, node, 0xFFFFFFFF); // Everything changed with the node.
+                            for (Iterator<ModelListener> it = listeners.iterator(); it.hasNext(); ) {
+                                it.next().modelChanged(newEvent);
+                            }
+                        }
+                    }
+                }
+                ModelEvent newEvent = new ModelEvent.NodeChanged(this, getRoot(), ModelEvent.NodeChanged.CHILDREN_MASK);
+                for (Iterator<ModelListener> it = listeners.iterator(); it.hasNext(); ) {
+                    it.next().modelChanged(newEvent);
+                }
+                return ;*/
+            } else if (event instanceof ModelEvent.NodeChanged) {
+                ModelEvent.NodeChanged ne = (ModelEvent.NodeChanged) event;
+                cachedProperties.get(cm).clearNode(ne.getNode(), ne.getChange());
+            } else if (event instanceof ModelEvent.TableValueChanged) {
+                ModelEvent.TableValueChanged te = (ModelEvent.TableValueChanged) event;
+                cachedProperties.get(cm).clearTable(te.getNode(), te.getColumnID());
+            }
+            ModelEvent newEvent = translateEvent(event, this);
             for (Iterator<ModelListener> it = listeners.iterator(); it.hasNext(); ) {
                 it.next().modelChanged(newEvent);
             }
@@ -792,51 +888,81 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             return newEvent;
         }
 
+        private boolean canRename(CompoundModel model, Object node) throws UnknownTypeException {
+            NodeProperties np = getPropertiesFor(model, node);
+            synchronized (np) {
+                if (np.canRename == null) {
+                    np.canRename = model.canRename(node);
+                }
+                return np.canRename;
+            }
+        }
+
         public boolean canRename(Object node) throws UnknownTypeException {
             {
                 CompoundModel model = objectModels.get(node);
                 if (model != null) {
-                    return model.canRename(node);
+                    return canRename(model, node);
                 }
             }
             boolean canRename = false;
             for (CompoundModel model : compoundModels) {
                 try {
-                    canRename |= model.canRename(node);
+                    canRename |= canRename(model, node);
                 } catch (UnknownTypeException e) {
                 }
             }
             return canRename;
         }
 
+        private boolean canCopy(CompoundModel model, Object node) throws UnknownTypeException {
+            NodeProperties np = getPropertiesFor(model, node);
+            synchronized (np) {
+                if (np.canCopy == null) {
+                    np.canCopy = model.canCopy(node);
+                }
+                return np.canCopy;
+            }
+        }
+
         public boolean canCopy(Object node) throws UnknownTypeException {
             {
                 CompoundModel model = objectModels.get(node);
                 if (model != null) {
-                    return model.canCopy(node);
+                    return canCopy(model, node);
                 }
             }
             boolean canCopy = false;
             for (CompoundModel model : compoundModels) {
                 try {
-                    canCopy |= model.canCopy(node);
+                    canCopy |= canCopy(model, node);
                 } catch (UnknownTypeException e) {
                 }
             }
             return canCopy;
         }
 
+        private boolean canCut(CompoundModel model, Object node) throws UnknownTypeException {
+            NodeProperties np = getPropertiesFor(model, node);
+            synchronized (np) {
+                if (np.canCut == null) {
+                    np.canCut = model.canCut(node);
+                }
+                return np.canCut;
+            }
+        }
+
         public boolean canCut(Object node) throws UnknownTypeException {
             {
                 CompoundModel model = objectModels.get(node);
                 if (model != null) {
-                    return model.canCut(node);
+                    return canCut(model, node);
                 }
             }
             boolean canCut = false;
             for (CompoundModel model : compoundModels) {
                 try {
-                    canCut |= model.canCut(node);
+                    canCut |= canCut(model, node);
                 } catch (UnknownTypeException e) {
                 }
             }
@@ -910,33 +1036,53 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             throw new UnknownTypeException(node);
         }
 
+        private String getIconBaseWithExtension(CompoundModel model, Object node) throws UnknownTypeException {
+            NodeProperties np = getPropertiesFor(model, node);
+            synchronized (np) {
+                if (np.iconBaseWithExtension == null) {
+                    np.iconBaseWithExtension = model.getIconBaseWithExtension(node);
+                }
+                return np.iconBaseWithExtension;
+            }
+        }
+
         public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
             {
                 CompoundModel model = objectModels.get(node);
                 if (model != null) {
-                    return model.getIconBaseWithExtension(node);
+                    return getIconBaseWithExtension(model, node);
                 }
             }
             for (CompoundModel model : compoundModels) {
                 try {
-                    return model.getIconBaseWithExtension(node);
+                    return getIconBaseWithExtension(model, node);
                 } catch (UnknownTypeException e) {
                 }
             }
             throw new UnknownTypeException(node);
         }
 
+        private String getDisplayName(CompoundModel model, Object node) throws UnknownTypeException {
+            NodeProperties np = getPropertiesFor(model, node);
+            synchronized (np) {
+                if (np.displayName == null) {
+                    np.displayName = model.getDisplayName(node);
+                }
+                return np.displayName;
+            }
+        }
+
         public String getDisplayName(Object node) throws UnknownTypeException {
             {
                 CompoundModel model = objectModels.get(node);
                 if (model != null) {
-                    return model.getDisplayName(node);
+                    return getDisplayName(model, node);
                 }
             }
             String result = null;
             for (CompoundModel model : compoundModels) {
                 try {
-                    result = model.getDisplayName(node);
+                    result = getDisplayName(model, node);
                     if (result != null && result.trim().length() > 0) {
                         return result;
                     }
@@ -950,32 +1096,52 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             }
         }
 
+        private String getIconBase(CompoundModel model, Object node) throws UnknownTypeException {
+            NodeProperties np = getPropertiesFor(model, node);
+            synchronized (np) {
+                if (np.iconBase == null) {
+                    np.iconBase = model.getIconBase(node);
+                }
+                return np.iconBase;
+            }
+        }
+
         public String getIconBase(Object node) throws UnknownTypeException {
             {
                 CompoundModel model = objectModels.get(node);
                 if (model != null) {
-                    return model.getIconBase(node);
+                    return getIconBase(model, node);
                 }
             }
             for (CompoundModel model : compoundModels) {
                 try {
-                    return model.getIconBase(node);
+                    return getIconBase(model, node);
                 } catch (UnknownTypeException e) {
                 }
             }
             throw new UnknownTypeException(node);
         }
 
+        private String getShortDescription(CompoundModel model, Object node) throws UnknownTypeException {
+            NodeProperties np = getPropertiesFor(model, node);
+            synchronized (np) {
+                if (np.shortDescription == null) {
+                    np.shortDescription = model.getShortDescription(node);
+                }
+                return np.shortDescription;
+            }
+        }
+
         public String getShortDescription(Object node) throws UnknownTypeException {
             {
                 CompoundModel model = objectModels.get(node);
                 if (model != null) {
-                    return model.getShortDescription(node);
+                    return getShortDescription(model, node);
                 }
             }
             for (CompoundModel model : compoundModels) {
                 try {
-                    return model.getShortDescription(node);
+                    return getShortDescription(model, node);
                 } catch (UnknownTypeException e) {
                 }
             }
@@ -1040,24 +1206,48 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             return columnID;
         }
 
+        private Object getValueAt(CompoundModel model, Object node, String columnID) throws UnknownTypeException {
+            NodeProperties np = getPropertiesFor(model, node);
+            synchronized (np) {
+                Object value = np.valueAt.get(columnID);
+                if (value == null) {
+                    value = model.getValueAt(node, columnID);
+                    np.valueAt.put(columnID, value);
+                }
+                return value;
+            }
+        }
+
         public Object getValueAt(Object node, String columnID) throws UnknownTypeException {
             {
                 CompoundModel model = objectModels.get(node);
                 if (model != null) {
                     String viewName = findViewName(model);
                     String c = adjustColumn(viewName, columnID);
-                    return model.getValueAt(node, c);
+                    return getValueAt(model, node, c);
                 }
             }
             for (String viewName : compoundModelsByViewName.keySet()) {
                 CompoundModel model = compoundModelsByViewName.get(viewName);
                 String c = adjustColumn(viewName, columnID);
                 try {
-                    return model.getValueAt(node, c);
+                    return getValueAt(model, node, c);
                 } catch (UnknownTypeException e) {
                 }
             }
             throw new UnknownTypeException(node);
+        }
+
+        private boolean isReadOnly(CompoundModel model, Object node, String columnID) throws UnknownTypeException {
+            NodeProperties np = getPropertiesFor(model, node);
+            synchronized (np) {
+                Boolean value = np.isReadOnly.get(columnID);
+                if (value == null) {
+                    value = model.isReadOnly(node, columnID);
+                    np.isReadOnly.put(columnID, value);
+                }
+                return value;
+            }
         }
 
         public boolean isReadOnly(Object node, String columnID) throws UnknownTypeException {
@@ -1066,14 +1256,14 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 if (model != null) {
                     String viewName = findViewName(model);
                     String c = adjustColumn(viewName, columnID);
-                    return model.isReadOnly(node, c);
+                    return isReadOnly(model, node, c);
                 }
             }
             for (String viewName : compoundModelsByViewName.keySet()) {
                 CompoundModel model = compoundModelsByViewName.get(viewName);
                 String c = adjustColumn(viewName, columnID);
                 try {
-                    return model.isReadOnly(node, c);
+                    return isReadOnly(model, node, c);
                 } catch (UnknownTypeException e) {
                 }
             }
@@ -1087,6 +1277,10 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                     String viewName = findViewName(model);
                     String c = adjustColumn(viewName, columnID);
                     model.setValueAt(node, c, value);
+                    NodeProperties np = getPropertiesFor(model, node);
+                    synchronized (np) {
+                        np.valueAt.put(columnID, value);
+                    }
                     return;
                 }
             }
@@ -1095,6 +1289,10 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 String c = adjustColumn(viewName, columnID);
                 try {
                     model.setValueAt(node, c, value);
+                    NodeProperties np = getPropertiesFor(model, node);
+                    synchronized (np) {
+                        np.valueAt.put(columnID, value);
+                    }
                     return;
                 } catch (UnknownTypeException e) {
                 }
@@ -1147,6 +1345,145 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         @Override
         public String toString () {
             return super.toString () + "\n" + compoundModelsByViewName.toString();
+        }
+
+        private class CompoundModelListener implements ModelListener {
+
+            private CompoundModel cm;
+
+            public CompoundModelListener(CompoundModel cm) {
+                this.cm = cm;
+            }
+
+            public void modelChanged(ModelEvent event) {
+                UnionTreeModel.this.modelChanged(cm, event);
+            }
+
+        }
+
+        private static final class CachedProperties extends Object {
+            private final Map<Object, NodeProperties> nodeProperties = new WeakHashMap<Object, NodeProperties>();
+            /**
+             * Cached node properties
+             * @param node the node.
+             * @return the node properties
+             */
+            public synchronized NodeProperties getPropertiesFor(Object node) {
+                NodeProperties np = nodeProperties.get(node);
+                if (np == null) {
+                    np = new NodeProperties();
+                    nodeProperties.put(node, np);
+                }
+                return np;
+            }
+
+            public synchronized void clear() {
+                nodeProperties.clear();
+            }
+
+            private synchronized void clearRecursively(Object node) {
+                NodeProperties np = nodeProperties.remove(node);
+                if (np != null) {
+                    Object[] children = np.getChildren();
+                    if (children != null) {
+                        for (int i = 0; i < children.length; i++) {
+                            clearRecursively(children[i]);
+                        }
+                    }
+                }
+            }
+
+            public void clearNode(Object node, int changeMask) {
+                if (node != null) {
+                    NodeProperties np;
+                    synchronized (this) {
+                        if (changeMask == 0xFFFFFFFF) {
+                            clearRecursively(node);
+                            return ;
+                        }
+                        np = nodeProperties.get(node);
+                    }
+                    if (np != null) {
+                        synchronized (np) {
+                            if ((ModelEvent.NodeChanged.DISPLAY_NAME_MASK & changeMask) != 0) {
+                                np.displayName = null;
+                            }
+                            if ((ModelEvent.NodeChanged.ICON_MASK & changeMask) != 0) {
+                                np.iconBase = null;
+                                np.iconBaseWithExtension = null;
+                            }
+                            if ((ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK & changeMask) != 0) {
+                                np.shortDescription = null;
+                            }
+                            if ((ModelEvent.NodeChanged.CHILDREN_MASK & changeMask) != 0) {
+                                np.childrenCount = null;
+                                np.children = null;
+                                np.isLeaf = null;
+                            }
+                        }
+                    }
+                }
+            }
+
+            public void clearTable(Object node, String column) {
+                if (node != null) {
+                    NodeProperties np;
+                    synchronized (this) {
+                        if (column == null) {
+                            clearRecursively(node);
+                            return ;
+                        }
+                        np = nodeProperties.get(node);
+                    }
+                    if (np != null) {
+                        synchronized (np) {
+                            np.valueAt.clear();
+                            np.isReadOnly.clear();
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * Unknown properties are null
+         */
+        private static final class NodeProperties extends Object {
+            Integer childrenCount;
+            private Reference[] children;
+            Boolean isLeaf;
+            Boolean canRename;
+            Boolean canCopy;
+            Boolean canCut;
+            String displayName;
+            String shortDescription;
+            String iconBase;
+            String iconBaseWithExtension;
+            Map<String, Object> valueAt = new HashMap<String, Object>();
+            Map<String, Boolean> isReadOnly = new HashMap<String, Boolean>();
+
+            synchronized Object[] getChildren() {
+                if (children == null) {
+                    return null;
+                }
+                Object[] ch = new Object[children.length];
+                for (int i = 0; i < ch.length; i++) {
+                    ch[i] = children[i].get();
+                    if (ch[i] == null) {
+                        children = null;
+                        ch = null;
+                        break;
+                    }
+                }
+                return ch;
+            }
+
+            synchronized void setChildren(Object[] ch) {
+                children = new Reference[ch.length];
+                for (int i = 0; i < ch.length; i++) {
+                    children[i] = new WeakReference(ch[i]);
+                }
+            }
         }
 
     }

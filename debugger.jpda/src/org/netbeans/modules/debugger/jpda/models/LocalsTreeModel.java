@@ -726,7 +726,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                             System.out.println("LTM do task " + task);
                         ltm.fireTreeChanged ();
                     }
-                }, 500);
+                }, 100);
                 if (verbose)
                     System.out.println("LTM  create task " + task);
             } else

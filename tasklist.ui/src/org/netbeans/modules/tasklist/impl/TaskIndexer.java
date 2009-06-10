@@ -127,6 +127,8 @@ public class TaskIndexer extends CustomIndexer {
                         for( Task t : tasks ) {
                             doc.addPair(KEY_TASK, encode(t), false, true);
                         }
+                    } else {
+                       is.removeDocuments(idx);
                     }
                 }
             }

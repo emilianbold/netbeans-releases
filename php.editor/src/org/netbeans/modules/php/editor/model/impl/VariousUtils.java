@@ -175,12 +175,7 @@ public class VariousUtils {
         }
         if (expression instanceof ClassInstanceCreation) {
             ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) expression;
-            Expression className = classInstanceCreation.getClassName().getName();
-
-            if (className instanceof Identifier) {
-                Identifier identifier = (Identifier) className;
-                return identifier.getName();
-            }
+            return CodeUtils.extractClassName(classInstanceCreation.getClassName());
         } else if (expression instanceof ArrayCreation) {
             return "array"; //NOI18N
         } else if (expression instanceof VariableBase) {
@@ -499,7 +494,7 @@ public class VariousUtils {
             return "@" + FUNCTION_TYPE_PREFIX + fname;
         } else if (varBase instanceof StaticMethodInvocation) {
             StaticMethodInvocation staticMethodInvocation = (StaticMethodInvocation) varBase;
-            String className = staticMethodInvocation.getClassName().getName();
+            String className = CodeUtils.extractClassName(staticMethodInvocation);
             String methodName = CodeUtils.extractFunctionName(staticMethodInvocation.getMethod());
 
             if (className != null && methodName != null) {
