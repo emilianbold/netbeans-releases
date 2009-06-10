@@ -424,8 +424,7 @@ public class ImportProject implements PropertyChangeListener {
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
-                } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime) ||
-                           MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
+                } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){
                     ExecutionSupport ses = node.getCookie(ExecutionSupport.class);
                     try {
                         List<String> vars = ImportUtils.parseEnvironment(configureArguments);
@@ -437,6 +436,13 @@ public class ImportProject implements PropertyChangeListener {
                         }
                         ses.setArguments(new String[]{configureArguments});
                         ses.setEnvironmentVariables(vars.toArray(new String[vars.size()]));
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
+                    ExecutionSupport ses = node.getCookie(ExecutionSupport.class);
+                    try {
+                        ses.setArguments(new String[]{configureArguments});
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
