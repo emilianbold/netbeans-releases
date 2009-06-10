@@ -442,10 +442,10 @@ public final class J2eePlatform {
      * @param moduleType type of the module
      * @return set of {@link Profile}s supported by the server.
      * @see Profile
-     * @since 1.58
+     * @since 1.59
      */
     @NonNull
-    public Set<Profile> getSupportedProfiles(@NonNull Object moduleType) {
+    public Set<Profile> getSupportedProfiles(@NonNull J2eeModule.Type moduleType) {
         return impl.getSupportedProfiles(moduleType);
     }
 
@@ -455,9 +455,27 @@ public final class J2eePlatform {
      * class.
      *
      * @return list of supported J2EE module types.
+     * @deprecated use {@link #getSupportedTypes()}
      */
-    public Set/*<Object>*/ getSupportedModuleTypes() {
+    public Set getSupportedModuleTypes() {
+        boolean assertsEnabled = false;
+        assert assertsEnabled = true;
+        if (assertsEnabled) {
+            LOGGER.log(Level.INFO, "Call to deprecated method " + J2eePlatform.class.getName() + "getSupportedModuleTypes", new Exception());
+        }
         return impl.getSupportedModuleTypes();
+    }
+
+    /**
+     * Return a list of supported module types. Use module types defined in the
+     * {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type}
+     * class.
+     *
+     * @return set of supported module types
+     * @since 1.59
+     */
+    public Set<J2eeModule.Type> getSupportedTypes() {
+        return impl.getSupportedTypes();
     }
 
     /**

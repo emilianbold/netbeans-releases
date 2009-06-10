@@ -85,13 +85,21 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
     private boolean sharableProject;
 
     private List<Project> earProjects;
-    private Object j2eeModuleType;
+    private final J2eeModule.Type j2eeModuleType;
     private File projectLocation;
     
     private BigDecimal xmlVersion;
-    
-    /** Creates new form ProjectServerPanel */
+
+    @Deprecated
     public ProjectServerPanel(Object j2eeModuleType, String name, String title,
+            ProjectServerWizardPanel wizard, boolean showAddToEar,
+            boolean mainAppClientClass, boolean showContextPath, boolean createProjects) {
+
+        this(J2eeModule.Type.fromJsrType(j2eeModuleType), name, title, wizard, showAddToEar, mainAppClientClass, showContextPath, createProjects);
+    }
+
+    /** Creates new form ProjectServerPanel */
+    public ProjectServerPanel(J2eeModule.Type j2eeModuleType, String name, String title,
             ProjectServerWizardPanel wizard, boolean showAddToEar, 
             boolean mainAppClientClass, boolean showContextPath, boolean createProjects) {
         initComponents();
