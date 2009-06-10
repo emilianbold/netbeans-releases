@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.actions;
 
 import java.io.File;
 import java.io.Writer;
-import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
@@ -58,7 +57,7 @@ import org.openide.nodes.Node;
  * @author Alexander Simon
  */
 public class QMakeAction extends AbstractExecutorRunAction {
-    private static final boolean TRACE = true;
+    private static final boolean TRACE = false;
 
     @Override
     public String getName () {

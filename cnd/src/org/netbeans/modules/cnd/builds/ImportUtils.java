@@ -54,17 +54,17 @@ public final class ImportUtils {
     public static List<String> quoteList(List<String> list){
         List<String> res = new ArrayList<String>();
         for (String s : list){
-            int i = s.indexOf('=');
+            int i = s.indexOf('='); // NOI18N
             if (i > 0){
                 String rest = s.substring(i+1);
                 s = s.substring(0,i+1);
-                if (rest.startsWith("\"")){
-                    rest = "'"+rest+"'";
-                } else if (rest.startsWith("'")){
-                    rest = "\""+rest+"\"";
+                if (rest.startsWith("\"")){ // NOI18N
+                    rest = "'"+rest+"'"; // NOI18N
+                } else if (rest.startsWith("'")){ // NOI18N
+                    rest = "\""+rest+"\""; // NOI18N
                 } else {
-                    if (rest.indexOf(' ')>0) {
-                        rest = "\""+rest+"\"";
+                    if (rest.indexOf(' ')>0) { // NOI18N
+                        rest = "\""+rest+"\""; // NOI18N
                     }
                 }
                 res.add(s+rest);
