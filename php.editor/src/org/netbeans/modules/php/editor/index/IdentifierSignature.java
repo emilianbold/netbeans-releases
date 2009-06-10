@@ -43,7 +43,7 @@ import java.util.Map;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassConstantDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
@@ -253,8 +253,8 @@ public class IdentifierSignature {
             } else if (statement instanceof FieldsDeclaration) {
                 FieldsDeclaration fieldsDeclaration = (FieldsDeclaration) statement;
                 add(fieldsDeclaration, typeName, isClass, results);
-            } else if (statement instanceof ClassConstantDeclaration) {
-                ClassConstantDeclaration constDeclaration = (ClassConstantDeclaration) statement;
+            } else if (statement instanceof ConstantDeclaration) {
+                ConstantDeclaration constDeclaration = (ConstantDeclaration) statement;
                 add(constDeclaration, typeName, isClass, results);
             }
         }
@@ -302,7 +302,7 @@ public class IdentifierSignature {
         }
     }
 
-    private static void add(ClassConstantDeclaration declaration, String typename, Boolean clsMember, List<IdentifierSignature> results) {
+    private static void add(ConstantDeclaration declaration, String typename, Boolean clsMember, List<IdentifierSignature> results) {
         List<Identifier> ids = declaration.getNames();
         for (Identifier identifier : ids) {
             results.add(new IdentifierSignature(identifier, 0, ElementKind.CONSTANT, typename, true, clsMember));

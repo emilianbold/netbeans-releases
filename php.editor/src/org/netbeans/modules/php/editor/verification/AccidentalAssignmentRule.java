@@ -48,6 +48,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -167,7 +168,7 @@ public class AccidentalAssignmentRule extends PHPRule implements PHPRuleWithPref
         addResult(hint);
         super.visit(node);
     }
-    
+
     private class ExpressionFinder extends DefaultVisitor{
         @Override
         public void visit(Assignment node) {

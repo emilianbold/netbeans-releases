@@ -126,7 +126,7 @@ abstract class PHPRule implements AstRule, UserConfigurableRule, Visitor {
     public void visit(CatchClause catchClause) {
     }
 
-    public void visit(ClassConstantDeclaration classConstantDeclaration) {
+    public void visit(ConstantDeclaration classConstantDeclaration) {
     }
 
     public void visit(ClassDeclaration classDeclaration) {
@@ -196,6 +196,27 @@ abstract class PHPRule implements AstRule, UserConfigurableRule, Visitor {
     }
 
     public void visit(Identifier identifier) {
+    }
+
+    public void visit(NamespaceName namespaceName) {
+    }
+
+    public void visit(NamespaceDeclaration declaration) {
+    }
+
+    public void visit(GotoStatement statement) {
+    }
+
+    public void visit(GotoLabel label) {
+    }
+
+    public void visit(LambdaFunctionDeclaration declaration) {
+    }
+
+    public void visit(UseStatement statement) {
+    }
+
+    public void visit(UseStatementPart statementPart) {
     }
 
     public void visit(IfStatement ifStatement) {
