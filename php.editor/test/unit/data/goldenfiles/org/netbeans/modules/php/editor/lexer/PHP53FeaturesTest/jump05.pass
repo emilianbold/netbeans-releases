@@ -58,7 +58,7 @@ token #56 WHITESPACE
 token #57 PHP_CONSTANT_ENCAPSED_STRING "2: ok\n"
 token #58 PHP_SEMICOLON ;
 token #59 WHITESPACE \n\t\t\t
-token #60 PHP_STRING goto
+token #60 PHP_GOTO goto
 token #61 WHITESPACE  
 token #62 PHP_STRING L1
 token #63 PHP_SEMICOLON ;

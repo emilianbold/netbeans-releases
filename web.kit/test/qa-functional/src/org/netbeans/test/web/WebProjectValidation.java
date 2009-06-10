@@ -140,12 +140,12 @@ public class WebProjectValidation extends J2eeTestCase {
         conf = addServerTests(J2eeTestCase.Server.TOMCAT, conf,
                 "testPreconditions", "testNewWebProject", "testRegisterTomcat",
                 "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
-                "testCompileAllJSP", "testCompileJSP",
+                "testNewHTML", "testCreateTLD", "testCreateTagHandler", "testNewSegment", "testNewDocument",
+                "testJSPNavigator", "testHTMLNavigator", "testCompileAllJSP", "testCompileJSP",
                 "testCleanAndBuildProject", "testRunProject", "testRunJSP", "testViewServlet",
-                "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
-                "testNewHTML", "testRunHTML", "testNewSegment", "testNewDocument",
-                "testJSPNavigator", "testHTMLNavigator",
-                "testStopServer", "testStartServer", "testBrowserSettings", "testFinish"
+                "testRunServlet", "testRunHTML", "testRunTag",
+                "testStopServer", "testStartServer", "testBrowserSettings",
+                "testFinish"
                 );
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
@@ -739,6 +739,9 @@ public class WebProjectValidation extends J2eeTestCase {
 //        assertEquals(2, treeOperator.getChildCount(tableChild));// 2 rows
         Object[] pathObjects = {root, htmlChild, bodyChild, tableChild};
         TreePath path = new TreePath(pathObjects);
+        if (root.toString() != null && "Wait".contains(root.toString())){
+            Thread.sleep(5000);
+        }
         treeOperator.clickOnPath(path, 2);
         // wait for editor update
         Thread.sleep(1000);

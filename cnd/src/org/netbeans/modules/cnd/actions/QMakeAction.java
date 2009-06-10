@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.actions;
 
 import java.io.File;
 import java.io.Writer;
-import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
@@ -58,6 +57,7 @@ import org.openide.nodes.Node;
  * @author Alexander Simon
  */
 public class QMakeAction extends AbstractExecutorRunAction {
+    private static final boolean TRACE = false;
 
     @Override
     public String getName () {
@@ -76,40 +76,56 @@ public class QMakeAction extends AbstractExecutorRunAction {
     }
 
     protected void performAction(Node node) {
-        performAction(node, null, null, null, null);
+        performAction(node, null, null, null);
     }
 
-    public static void performAction(Node node, ExecutionListener listener, Writer outputListener, Project project, List<String> additionalEnvironment) {
+    public static void performAction(Node node, ExecutionListener listener, Writer outputListener, Project project) {
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         File proFile = FileUtil.toFile(fileObject);
         // Build directory
-        File buildDir = getQBuildDirectory(node);
+        File buildDir = getBuildDirectory(node,Tool.QMakeTool);
         // Executable
         String executable = getCommand(node, project, Tool.QMakeTool, "qmake"); // NOI18N
         // Arguments
-        String arguments = proFile.getName(); // NOI18N
+        String arguments = proFile.getName();// + " " + getArguments(node, Tool.QMakeTool); // NOI18N
+        String[] args = getArguments(node, Tool.QMakeTool); // NOI18N
         // Tab Name
         String tabName = getString("QMAKE_LABEL", node.getName());
 
+        String[] additionalEnvironment = getAdditionalEnvirounment(node);
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
         String[] env = prepareEnv(execEnv);
-        if (additionalEnvironment != null && additionalEnvironment.size()>0){
-            String[] tmp = new String[env.length + additionalEnvironment.size()];
+        if (additionalEnvironment != null && additionalEnvironment.length>0){
+            String[] tmp = new String[env.length + additionalEnvironment.length];
             for(int i=0; i < env.length; i++){
                 tmp[i] = env[i];
             }
-            for(int i=0; i < additionalEnvironment.size(); i++){
-                tmp[env.length + i] = additionalEnvironment.get(i);
+            for(int i=0; i < additionalEnvironment.length; i++){
+                tmp[env.length + i] = additionalEnvironment[i];
             }
             env = tmp;
+        }
+        StringBuilder argsFlat = new StringBuilder(arguments);
+        for (int i = 0; i < args.length; i++) {
+            argsFlat.append(" "); // NOI18N
+            argsFlat.append(args[i]);
+        }
+        if (TRACE) {
+            System.err.println("Run "+executable);
+            System.err.println("\tin folder   "+buildDir.getPath());
+            System.err.println("\targuments   "+argsFlat);
+            System.err.println("\tenvironment ");
+            for(String v : env) {
+                System.err.println("\t\t"+v);
+            }
         }
         // Execute the makefile
         NativeExecutor nativeExecutor = new NativeExecutor(
                 execEnv,
                 buildDir.getPath(),
                 executable,
-                arguments,
+                argsFlat.toString(),
                 env,
                 tabName,
                 "qmake", // NOI18N
@@ -122,12 +138,4 @@ public class QMakeAction extends AbstractExecutorRunAction {
         new ShellExecuter(nativeExecutor, listener).execute();
     }
 
-    private static File getQBuildDirectory(Node node){
-        DataObject dataObject = node.getCookie(DataObject.class);
-        FileObject fileObject = dataObject.getPrimaryFile();
-        File qMakefile = FileUtil.toFile(fileObject);
-        String bdir = qMakefile.getParent();
-        File buildDir = getAbsoluteBuildDir(bdir, qMakefile);
-        return buildDir;
-    }
 }
