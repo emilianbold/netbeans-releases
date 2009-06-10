@@ -87,7 +87,7 @@ public final class Kenai {
      * fired when user login failed
      */
     public static final String PROP_LOGIN_FAILED = "login_failed";
-    
+
     private static Kenai instance;
     private PasswordAuthentication auth = null;
     private static URL url;
