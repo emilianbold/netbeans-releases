@@ -213,6 +213,35 @@ public final class ServerUtilities {
             return null;
         }
     }
+
+     /**
+     * Returns the fqn jar name with the correct version
+     *
+     * @return the File with full path of the jar or null
+     */
+    public static File getWsJarName(String glassfishInstallRoot, String jarNamePattern) {
+        File modulesDir = new File(glassfishInstallRoot + File.separatorChar + GFV3_MODULES_DIR_NAME);
+        int subindex = jarNamePattern.lastIndexOf("/");
+        if(subindex != -1) {
+            String subdir = jarNamePattern.substring(0, subindex);
+            jarNamePattern = jarNamePattern.substring(subindex+1);
+            modulesDir = new File(modulesDir, subdir);
+        }
+        File candidates[] = modulesDir.listFiles(new VersionFilter(jarNamePattern));
+
+        if(candidates != null && candidates.length > 0) {
+            return candidates[0]; // the first one
+        } else {
+            File endorsed = new File(modulesDir,"endorsed");
+            if (endorsed!= null && endorsed.isDirectory()) {
+                File candidates1[] = endorsed.listFiles(new VersionFilter(jarNamePattern));
+                if (candidates1 != null && candidates1.length > 0) {
+                    return candidates1[0]; // the first one
+                }
+            }
+        }
+        return null;
+    }
    
     private static class VersionFilter implements FileFilter {
        

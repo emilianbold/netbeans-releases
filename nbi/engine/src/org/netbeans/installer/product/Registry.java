@@ -38,7 +38,6 @@ package org.netbeans.installer.product;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -508,13 +507,16 @@ public class Registry implements PropertyContainer {
         LogManager.logExit("initializing product registry properties");
     }
     
-    private void validateDependencies(
-            ) throws InitializationException {
+    private void validateDependencies() throws InitializationException {
         for (Product product: getProducts()) {
-            validateRequirements(product);
-            validateConflicts(product);
-            validateInstallAfters(product);
+            validateDependencies(product);
         }
+    }
+
+    private void validateDependencies(final Product product) throws InitializationException {
+        validateRequirements(product);
+        validateConflicts(product);
+        validateInstallAfters(product);        
     }
     
     private void applyRegistryFilters() {
