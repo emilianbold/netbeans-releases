@@ -135,7 +135,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.38</specification-version>
+                        <specification-version>1.39</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -179,7 +179,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>4</release-version>
-                        <specification-version>1.58</specification-version>
+                        <specification-version>1.59</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -387,6 +387,16 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.openide.util</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.projectui</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.j2ee.sun.appsrv</code-name-base>
                     </test-dependency>
                     <test-dependency>
@@ -403,6 +413,9 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.websvc.core</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.websvc.projectapi</code-name-base>
                     </test-dependency>
                 </test-type>
             </test-dependencies>

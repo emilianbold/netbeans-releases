@@ -1130,7 +1130,7 @@ public final class GemPanel extends JPanel {
         }
         if (!gems.isEmpty()) {
             Runnable completionTask = new GemListRefresher();
-            getGemManager().update(gems.toArray(new Gem[gems.size()]), this, false, false, false, true, completionTask);                                            
+            getGemManager().update(gems.toArray(new Gem[gems.size()]), this, false, false, false, true, completionTask);
         }
     }//GEN-LAST:event_updateButtonActionPerformed
 
@@ -1150,10 +1150,25 @@ public final class GemPanel extends JPanel {
             }
         }
         if (!gems.isEmpty()) {
-            Runnable completionTask = new GemListRefresher();
-            getGemManager().uninstall(gems.toArray(new Gem[gems.size()]), this, true, completionTask);                                               
-        }
+            for (Gem chosen : gems) {
+                // Get some information about the chosen gem
+                UninstallationSettingsPanel panel = new UninstallationSettingsPanel(chosen);
+                panel.getAccessibleContext().setAccessibleDescription(
+                        getMessage("InstallationSettingsPanel.AccessibleContext.accessibleDescription"));
+
+                DialogDescriptor dd = new DialogDescriptor(panel, getMessage("GemUninstallationSettings"));
+                dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
+                dd.setModal(true);
+                dd.setHelpCtx(new HelpCtx(GemPanel.class));
+                Object result = DialogDisplayer.getDefault().notify(dd);
+                if (result.equals(NotifyDescriptor.OK_OPTION)) {
+                    GemInstallInfo gem = new GemInstallInfo(panel.getGemName(), panel.getVersion(), panel.getIgnoreDepencies());
+                    GemListRefresher completionTask = new GemListRefresher();
+                    getGemManager().uninstall(Collections.singletonList(gem), this, true, completionTask);
+                }
+            }
     }//GEN-LAST:event_uninstallButtonActionPerformed
+    }
 
     private void reloadInstalledButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadInstalledButtonActionPerformed
         getGemManager().resetLocal();
