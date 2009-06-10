@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,10 +31,10 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
 
@@ -43,63 +43,72 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Represents a class constant declaration
- * <pre>e.g.<pre> const MY_CONST = 5;
- * const MY_CONST = 5, YOUR_CONSTANT = 8;
+ * Represents namespace name:
+ * <pre>e.g.<pre>MyNamespace;
+ *MyProject\Sub\Level;
+ *namespace\MyProject\Sub\Level;
  */
-public class ClassConstantDeclaration extends Statement {
+public class NamespaceName extends Expression {
 
-    private final ArrayList<Identifier> names = new ArrayList<Identifier>();
-    private final ArrayList<Expression> initializers = new ArrayList<Expression>();
+    protected List<Identifier> segments = new ArrayList<Identifier>();
+    /** Whether the namespace name has '\' prefix, which means it relates to the global scope */
+    private boolean global;
+    /** Whether the namespace name has 'namespace' prefix, which means it relates to the current namespace scope */
+    private boolean current;
 
-    private ClassConstantDeclaration(int start, int end, List<Identifier> names, List<Expression> initializers) {
+    public NamespaceName(int start, int end, Identifier[] segments, boolean global, boolean current) {
         super(start, end);
 
-        if (names == null || initializers == null || names.size() != initializers.size()) {
+        if (segments == null) {
             throw new IllegalArgumentException();
         }
-
-        Iterator<Identifier> iteratorNames = names.iterator();
-        Iterator<Expression> iteratorInitializers = initializers.iterator();
-        Identifier identifier;
-        while (iteratorNames.hasNext()) {
-            identifier = iteratorNames.next();
-//            identifier.setParent(this);
-            this.names.add(identifier);
-            Expression initializer = iteratorInitializers.next();
-            this.initializers.add(initializer);
+        for (Identifier name : segments) {
+            this.segments.add(name);
         }
+
+        this.global = global;
+        this.current = current;
     }
 
-    public ClassConstantDeclaration(int start, int end, List variablesAndDefaults) {
+    public NamespaceName(int start, int end, List segments, boolean global, boolean current) {
         super(start, end);
-        if (variablesAndDefaults == null || variablesAndDefaults == null || variablesAndDefaults.size() == 0) {
+
+        if (segments == null) {
             throw new IllegalArgumentException();
         }
-
-        for (Iterator iter = variablesAndDefaults.iterator(); iter.hasNext();) {
-            ASTNode[] element = (ASTNode[]) iter.next();
-            assert element != null && element.length == 2 && element[0] != null && element[1] != null;
-
-            this.names.add((Identifier) element[0]);
-            this.initializers.add((Expression) element[1]);
+        Iterator<Identifier> it = segments.iterator();
+        while (it.hasNext()) {
+            this.segments.add(it.next());
         }
+
+        this.global = global;
+        this.current = current;
     }
 
     /**
-     * @return constant initializers expressions
+     * Returns whether this namespace name has global context (starts with '\')
+     * @return
      */
-    public List<Expression> getInitializers() {
-        return this.initializers;
+    public boolean isGlobal() {
+        return global;
     }
 
     /**
-     * @return the constant names 
+     * Returns whether this namespace name has current namespace context (starts with 'namespace')
+     * @return
      */
-    public List<Identifier> getNames() {
-        return this.names;
+    public boolean isCurrent() {
+        return current;
     }
-    
+
+    /**
+     * Retrieves names parts of the namespace
+     * @return segments. If names list is empty, that means that this namespace is global.
+     */
+    public List<Identifier> getSegments() {
+        return this.segments;
+    }
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);

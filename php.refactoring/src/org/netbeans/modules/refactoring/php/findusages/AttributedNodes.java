@@ -70,7 +70,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassConstantDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
@@ -98,7 +98,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.refactoring.php.findusages.AttributedNodes.AttributedElement.Kind;
 import org.openide.util.Union2;
 
@@ -301,10 +300,10 @@ public class AttributedNodes extends DefaultVisitor {
 
     @Override
     public void visit(CatchClause node) {
-        Identifier className = node.getClassName();
+        Expression className = node.getClassName();
         AttributedElement ae = null;
         if (className != null) {
-            String name = className.getName();
+            String name = CodeUtils.extractTypeName(className);
             Collection<AttributedElement> namedGlobalElements =
                     getNamedGlobalElements(Kind.CLASS, name);
             if (!namedGlobalElements.isEmpty()) {
@@ -343,7 +342,7 @@ public class AttributedNodes extends DefaultVisitor {
                 scopes.peek().enterWrite(name, Kind.VARIABLE, var);
             }
         }
-        Identifier parameterType = node.getParameterType();
+        Identifier parameterType = node.getParameterType() != null ? CodeUtils.extractIdentifier(node.getParameterType()) : null;
         if (parameterType != null) {
             String name = parameterType.getName();
             if (name != null) {
@@ -404,12 +403,12 @@ public class AttributedNodes extends DefaultVisitor {
             } else {
                 if (par instanceof StaticMethodInvocation) {
                     StaticMethodInvocation smi = (StaticMethodInvocation) par;
-                    Collection<AttributedElement> nn = getNamedGlobalElements(Kind.CLASS, smi.getClassName().getName());
+                    String contextClassName = CodeUtils.extractClassName(smi);
+                    Collection<AttributedElement> nn = getNamedGlobalElements(Kind.CLASS, contextClassName);
                     if (!nn.isEmpty()) {
-                        String contextClassName = smi.getClassName().getName();
-                        if ("parent".equals(smi.getClassName().getName())) {//NOI18N
+                        if ("parent".equals(contextClassName)) {//NOI18N
                             contextClassName = getContextSuperClassName();
-                        } else if ("self".equals(smi.getClassName().getName())) {//NOI18N
+                        } else if ("self".equals(contextClassName)) {//NOI18N
                             contextClassName = getContextClassName();
                         }
                         for (AttributedElement ell : nn) {
@@ -459,9 +458,9 @@ public class AttributedNodes extends DefaultVisitor {
         ClassElement ce = (ClassElement) global.enterWrite(name, Kind.IFACE, node);
 
         node2Element.put(node, ce);
-        List<Identifier> interfaes = node.getInterfaes();
-        for (Identifier identifier : interfaes) {
-            ClassElement iface = (ClassElement) lookup(identifier.getName(), Kind.IFACE);
+        List<Expression> interfaes = node.getInterfaes();
+        for (Expression identifier : interfaes) {
+            ClassElement iface = (ClassElement) lookup(CodeUtils.extractTypeName(identifier), Kind.IFACE);
             ce.ifaces.add(iface);
             node2Element.put(identifier, iface);
         }
@@ -488,11 +487,11 @@ public class AttributedNodes extends DefaultVisitor {
         node2Element.put(node, ce);
 
         if (node.getSuperClass() != null) {
-            ce.superClass = (ClassElement) lookup(node.getSuperClass().getName(), Kind.CLASS);
+            ce.superClass = (ClassElement) lookup(CodeUtils.extractSuperClassName(node), Kind.CLASS);
         }
-        List<Identifier> interfaes = node.getInterfaes();
-        for (Identifier identifier : interfaes) {
-            ClassElement iface = (ClassElement) lookup(identifier.getName(), Kind.IFACE);
+        List<Expression> interfaes = node.getInterfaes();
+        for (Expression identifier : interfaes) {
+            ClassElement iface = (ClassElement) lookup(CodeUtils.extractTypeName(identifier), Kind.IFACE);
             ce.ifaces.add(iface);
             node2Element.put(identifier, iface);
         }
@@ -580,7 +579,7 @@ public class AttributedNodes extends DefaultVisitor {
 
     @Override
     public void visit(StaticConstantAccess node) {
-        String clsName = node.getClassName().getName();
+        String clsName = CodeUtils.extractClassName(node);
         if (clsName.equals("self")) {//NOI18N
             ClassElement c = getCurrentClassElement();
             if (c != null) {
@@ -617,12 +616,12 @@ public class AttributedNodes extends DefaultVisitor {
     @Override
     public void visit(StaticFieldAccess node) {
         Collection<AttributedElement> nn = getNamedGlobalElements(Kind.CLASS,
-                node.getClassName().getName());
+                CodeUtils.extractClassName(node));
         if (!nn.isEmpty()) {
-            String contextClassName = node.getClassName().getName();
-            if ("parent".equals(node.getClassName().getName())) {
+            String contextClassName = CodeUtils.extractClassName(node);
+            if ("parent".equals(contextClassName)) {
                 contextClassName = getContextSuperClassName();
-            } else if ("self".equals(node.getClassName().getName())) {
+            } else if ("self".equals(contextClassName)) {
                 contextClassName = getContextClassName();
             }
             for (AttributedElement ell : nn) {
@@ -839,11 +838,11 @@ public class AttributedNodes extends DefaultVisitor {
                 ClassElement ce = (ClassElement) global.enterWrite(name, Kind.CLASS, node);
                 node2Element.put(node, ce);
                 if (node.getSuperClass() != null) {
-                    ce.superClass = (ClassElement) lookup(node.getSuperClass().getName(), Kind.CLASS);
+                    ce.superClass = (ClassElement) lookup(CodeUtils.extractSuperClassName(node), Kind.CLASS);
                     node2Element.put(node.getSuperClass(), ce.superClass);
                 }
-                List<Identifier> interfaes = node.getInterfaes();
-                for (Identifier identifier : interfaes) {
+                List<Expression> interfaes = node.getInterfaes();
+                for (Expression identifier : interfaes) {
                     //TODO: ifaces must be fixed;
                 }
                 if (node.getBody() != null) {
@@ -851,8 +850,8 @@ public class AttributedNodes extends DefaultVisitor {
                 }
             }
 
-            if (n instanceof ClassConstantDeclaration) {
-                List<Identifier> constNames = ((ClassConstantDeclaration) n).getNames();
+            if (n instanceof ConstantDeclaration) {
+                List<Identifier> constNames = ((ConstantDeclaration) n).getNames();
                 for (Identifier id : constNames) {
                     node2Element.put(n, scope.enterWrite(id.getName(), Kind.CONST, n));
                 }
@@ -1149,7 +1148,7 @@ public class AttributedNodes extends DefaultVisitor {
                 } else if (name.equals("this")) {
                     //NOI18N
                     assert false;
-                } else if (node instanceof ClassConstantDeclaration) {
+                } else if (node instanceof ConstantDeclaration) {
                     modifier |= BodyDeclaration.Modifier.PUBLIC;
                 } else {
                     assert false : name;
