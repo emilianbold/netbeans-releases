@@ -87,7 +87,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
         String executable = getCommand(node, project, Tool.CMakeTool, "cmake"); // NOI18N
         // Arguments
         //String arguments = proFile.getName();
-        String arguments =  getArguments(node, Tool.CMakeTool); // NOI18N
+        String[] arguments =  getArguments(node, Tool.CMakeTool); // NOI18N
         // Tab Name
         String tabName = getString("CMAKE_LABEL", node.getName());
 
@@ -104,10 +104,15 @@ public class CMakeAction extends AbstractExecutorRunAction {
             }
             env = tmp;
         }
+        StringBuilder argsFlat = new StringBuilder();
+        for (int i = 0; i < arguments.length; i++) {
+            argsFlat.append(" "); // NOI18N
+            argsFlat.append(arguments[i]);
+        }
         if (TRACE) {
             System.err.println("Run "+executable);
             System.err.println("\tin folder   "+buildDir.getPath());
-            System.err.println("\targuments   "+arguments);
+            System.err.println("\targuments   "+argsFlat);
             System.err.println("\tenvironment ");
             for(String v : env) {
                 System.err.println("\t\t"+v);
@@ -118,7 +123,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
                 execEnv,
                 buildDir.getPath(),
                 executable,
-                arguments,
+                argsFlat.toString(),
                 env,
                 tabName,
                 "cmake", // NOI18N

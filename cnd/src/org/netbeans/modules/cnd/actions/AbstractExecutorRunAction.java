@@ -233,21 +233,21 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return buildDir;
     }
 
-    protected static String getArguments(Node node, int tool) {
-        String args = null;
+    protected static String[] getArguments(Node node, int tool) {
+        String[] args = null;
         if (tool == Tool.QMakeTool) {
             QMakeExecSupport mes = node.getCookie(QMakeExecSupport.class);
             if (mes != null) {
-                args = mes.getRunDirectory();
+                args = mes.getArguments();
             }
         } else if (tool == Tool.CMakeTool) {
             CMakeExecSupport mes = node.getCookie(CMakeExecSupport.class);
             if (mes != null) {
-                args = mes.getRunDirectory();
+                args = mes.getArguments();
             }
         }
         if (args == null) {
-            args = "";
+            args = new String[0];
         }
         return args;
     }
