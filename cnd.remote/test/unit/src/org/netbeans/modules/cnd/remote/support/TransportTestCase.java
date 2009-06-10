@@ -44,7 +44,9 @@ import java.io.FileWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
+import junit.framework.Test;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -173,4 +175,7 @@ public class TransportTestCase extends RemoteTestBase {
 //    public void testSystemIncludesUtils() throws Exception {
 //        SystemIncludesUtils.load(getHostName(), getUserName(), new SystemIncludesUtils.FakeCompilerSet());
 //    }
+    public static Test suite() {
+        return new RemoteDevelopmentTest(TransportTestCase.class);
+    }
 }

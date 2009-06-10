@@ -41,6 +41,8 @@ package org.netbeans.modules.cnd.remote.mapper;
 
 import java.io.StringReader;
 import java.util.Map;
+import junit.framework.Test;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
@@ -139,4 +141,9 @@ public class MappingsTestCase extends RemoteTestBase {
     public MappingsTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
+
+    public static Test suite() {
+        return new RemoteDevelopmentTest(MappingsTestCase.class);
+    }
+
 }

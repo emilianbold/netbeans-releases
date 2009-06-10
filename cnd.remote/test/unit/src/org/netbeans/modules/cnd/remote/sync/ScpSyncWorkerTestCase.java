@@ -46,12 +46,13 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import junit.framework.Test;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.util.Lookup;
 
 /**
@@ -191,5 +192,9 @@ public class ScpSyncWorkerTestCase extends RemoteTestBase {
             count++;
         }
         return sb;
+    }
+
+    public static Test suite() {
+        return new RemoteDevelopmentTest(ScpSyncWorkerTestCase.class);
     }
 }

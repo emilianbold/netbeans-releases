@@ -38,7 +38,9 @@
  */
 package org.netbeans.modules.cnd.remote.support;
 
+import junit.framework.Test;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
@@ -110,4 +112,9 @@ public class RemoteUtilTestCase extends RemoteTestBase {
             }
         }
     }
+
+    public static Test suite() {
+        return new RemoteDevelopmentTest(RemoteUtilTestCase.class);
+    }
+
 }

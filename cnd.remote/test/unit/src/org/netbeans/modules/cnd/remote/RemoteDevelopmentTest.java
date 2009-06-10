@@ -68,14 +68,26 @@ public class RemoteDevelopmentTest extends CndBaseTestSuite {
 //        System.setProperty("nativeexecution.support.logger.level", "0");
 //    }
 
+    public RemoteDevelopmentTest(Class testClass) {
+        this(testClass.getName(), testClass);
+    }
+
     public RemoteDevelopmentTest() {
-        super("Remote Development"); // NOI18N
+        this("Remote Development", // NOI18N
+             MappingsTestCase.class,
+             TransportTestCase.class,
+             RemoteUtilTestCase.class,
+             ServerListTestCase.class,
+             ScpSyncWorkerTestCase.class);
+    }
+
+
+    private RemoteDevelopmentTest(String name, Class... testClasses) {
+        super(name);
         try {
-            addTest(MappingsTestCase.class, getTestExecutionEnvironments());
-            addTest(TransportTestCase.class, getTestExecutionEnvironments());
-            addTest(RemoteUtilTestCase.class, getTestExecutionEnvironments());
-            addTest(ServerListTestCase.class, getTestExecutionEnvironments());
-            addTest(ScpSyncWorkerTestCase.class, getTestExecutionEnvironments());            
+            for (Class testClass : testClasses) {
+                addTest(testClass, getTestExecutionEnvironments());
+            }
         } catch (IOException ex) {
             addTest(warning("Cannot get execution environment: " + exceptionToString(ex)));
         } catch (FormatException ex) {
