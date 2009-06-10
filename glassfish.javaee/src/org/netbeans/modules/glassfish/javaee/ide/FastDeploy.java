@@ -101,10 +101,10 @@ public class FastDeploy extends IncrementalDeployment {
         // XXX fix cast -- need error instance for ProgressObject to return errors
         Hk2TargetModuleID moduleId = Hk2TargetModuleID.get((Hk2Target) target, moduleName,
                 contextRoot, dir.getAbsolutePath());
-        final MonitorProgressObject progressObject = new MonitorProgressObject(dm, moduleId, ModuleType.EAR.equals(module.getModuleType()));
-        final MonitorProgressObject updateCRObject = new MonitorProgressObject(dm, moduleId, ModuleType.EAR.equals(module.getModuleType()));
-        progressObject.addProgressListener(new UpdateContextRoot(updateCRObject,moduleId, dm.getServerInstance(), J2eeModule.WAR.equals(module.getModuleType())));
-        MonitorProgressObject restartObject = new MonitorProgressObject(dm, moduleId, ModuleType.EAR.equals(module.getModuleType()));
+        final MonitorProgressObject progressObject = new MonitorProgressObject(dm, moduleId, J2eeModule.Type.EAR.equals(module.getType()));
+        final MonitorProgressObject updateCRObject = new MonitorProgressObject(dm, moduleId, J2eeModule.Type.EAR.equals(module.getType()));
+        progressObject.addProgressListener(new UpdateContextRoot(updateCRObject,moduleId, dm.getServerInstance(), J2eeModule.Type.WAR.equals(module.getType())));
+        MonitorProgressObject restartObject = new MonitorProgressObject(dm, moduleId, J2eeModule.Type.EAR.equals(module.getType()));
 
         final GlassfishModule commonSupport = dm.getCommonServerSupport();
         boolean restart = false;
@@ -209,7 +209,7 @@ public class FastDeploy extends IncrementalDeployment {
             return false;
         }
         
-        if (deployable.getModuleType() == ModuleType.CAR) {
+        if (deployable.getType() == J2eeModule.Type.CAR) {
             return false;
         }
 
@@ -222,7 +222,7 @@ public class FastDeploy extends IncrementalDeployment {
      */
     public File getDirectoryForNewApplication(Target target, J2eeModule app, ModuleConfiguration configuration) {
         File dest = null;
-        if (app.getModuleType() == J2eeModule.EAR) {
+        if (app.getType() == J2eeModule.Type.EAR) {
             File tmp = getProjectDir(app);
             if (null == tmp) {
                return dest;
