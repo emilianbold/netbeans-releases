@@ -89,6 +89,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
         String executable = getCommand(node, project, Tool.QMakeTool, "qmake"); // NOI18N
         // Arguments
         String arguments = proFile.getName();// + " " + getArguments(node, Tool.QMakeTool); // NOI18N
+        String[] args = getArguments(node, Tool.QMakeTool); // NOI18N
         // Tab Name
         String tabName = getString("QMAKE_LABEL", node.getName());
 
@@ -105,10 +106,15 @@ public class QMakeAction extends AbstractExecutorRunAction {
             }
             env = tmp;
         }
+        StringBuilder argsFlat = new StringBuilder(arguments);
+        for (int i = 0; i < args.length; i++) {
+            argsFlat.append(" "); // NOI18N
+            argsFlat.append(args[i]);
+        }
         if (TRACE) {
             System.err.println("Run "+executable);
             System.err.println("\tin folder   "+buildDir.getPath());
-            System.err.println("\targuments   "+arguments);
+            System.err.println("\targuments   "+argsFlat);
             System.err.println("\tenvironment ");
             for(String v : env) {
                 System.err.println("\t\t"+v);
@@ -119,7 +125,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
                 execEnv,
                 buildDir.getPath(),
                 executable,
-                arguments,
+                argsFlat.toString(),
                 env,
                 tabName,
                 "qmake", // NOI18N
