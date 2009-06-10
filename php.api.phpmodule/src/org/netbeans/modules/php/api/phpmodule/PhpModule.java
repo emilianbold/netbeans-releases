@@ -57,7 +57,7 @@ public interface PhpModule {
 
     /**
      * Get the test directory for this PHP module.
-     * @return the test directory, can be <code>null</code>
+     * @return the test directory, can be <code>null</code> if not set yet
      */
     FileObject getTestDirectory();
 }
