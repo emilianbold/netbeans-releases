@@ -77,6 +77,8 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.builds.CMakeExecSupport;
+import org.netbeans.modules.cnd.builds.QMakeExecSupport;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.wizard.ConsolidationStrategyPanel;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
@@ -87,7 +89,6 @@ import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.ProjectBridge;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
-import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -417,6 +418,20 @@ public class ImportProject implements PropertyChangeListener {
                     ShellExecSupport ses = node.getCookie(ShellExecSupport.class);
                     try {
                         // Keep user arguments as is in args[0]
+                        ses.setArguments(new String[]{configureArguments});
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){
+                    CMakeExecSupport ses = node.getCookie(CMakeExecSupport.class);
+                    try {
+                        ses.setArguments(new String[]{configureArguments});
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
+                    QMakeExecSupport ses = node.getCookie(QMakeExecSupport.class);
+                    try {
                         ses.setArguments(new String[]{configureArguments});
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
