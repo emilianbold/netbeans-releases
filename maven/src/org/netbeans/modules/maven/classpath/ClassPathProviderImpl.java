@@ -116,10 +116,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
             return getBootClassPath();
         }
         if (ClassPath.COMPILE.equals(type)) {
-            return getCompileTimeClasspath(0);
+            return getCompileTimeClasspath(TYPE_SRC);
         }
         if (ClassPath.SOURCE.equals(type)) {
-            return getSourcepath(0);
+            return getSourcepath(TYPE_SRC);
         }
         assert false;
         return null;
