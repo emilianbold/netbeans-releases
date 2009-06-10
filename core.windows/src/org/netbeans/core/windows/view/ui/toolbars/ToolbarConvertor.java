@@ -76,8 +76,8 @@ public final class ToolbarConvertor extends Convertor {
     private static final String ATT_TOOLBAR_ALIGNMENT = "align"; // NOI18N
     /** xml attribute for toolbar visible */
     private static final String ATT_TOOLBAR_VISIBLE = "visible"; // NOI18N
-    /** xml attribute for toolbar dragable */
-    private static final String ATT_TOOLBAR_DRAGABLE = "dragable"; // NOI18N
+    /** xml attribute for toolbar draggable */
+    private static final String ATT_TOOLBAR_DRAGGABLE = "draggable"; // NOI18N
 
     public static ToolbarConvertor create() {
         return new ToolbarConvertor();
@@ -129,7 +129,7 @@ public final class ToolbarConvertor extends Convertor {
                 w.write(" "); //NOI18N
                 w.write(ATT_TOOLBAR_VISIBLE); w.write("=\""); w.write(tc.isVisible() ? "true" : "false"); w.write("\""); //NOI18N
                 w.write(" "); //NOI18N
-                w.write(ATT_TOOLBAR_DRAGABLE); w.write("=\""); w.write(tc.isDragable() ? "true" : "false"); w.write("\""); //NOI18N
+                w.write(ATT_TOOLBAR_DRAGGABLE); w.write("=\""); w.write(tc.isDraggable() ? "true" : "false"); w.write("\""); //NOI18N
                 w.write(" "); //NOI18N
                 w.write(ATT_TOOLBAR_ALIGNMENT); w.write("=\""); w.write(tc.getAlign().toString()); w.write("\""); //NOI18N
                 w.write("/>"); //NOI18N
@@ -178,15 +178,15 @@ public final class ToolbarConvertor extends Convertor {
 
                 ToolbarConstraints.Align align = ToolbarConstraints.Align.fromString( attributes.getValue(ATT_TOOLBAR_ALIGNMENT) );
 
-                boolean dragable = !"false".equals( attributes.getValue(ATT_TOOLBAR_DRAGABLE) ); //NOI18N
+                boolean draggable = !"false".equals( attributes.getValue(ATT_TOOLBAR_DRAGGABLE) ); //NOI18N
 
                 //#154332 - HACK always dock quick search toolbar to the right
                 //needed when importing toolbar settings from nb 6.5
                 if( "QuickSearch".equals( barName ) ) {
                     align = ToolbarConstraints.Align.right;
-                    dragable = false;
+                    draggable = false;
                 }
-                ToolbarConstraints tc = new ToolbarConstraints(barName, align, visible, dragable);
+                ToolbarConstraints tc = new ToolbarConstraints(barName, align, visible, draggable);
                 if( null != currentRow )
                     currentRow.addConstraint(tc);
             }
