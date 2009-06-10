@@ -382,6 +382,7 @@ public class PhpProject implements Project {
                 new PhpProjectXmlSavedHook(),
                 new PhpActionProvider(this),
                 new PhpConfigurationProvider(this),
+                new PhpModuleImpl(this),
                 helper.createCacheDirectoryProvider(),
                 helper.createAuxiliaryProperties(),
                 new ClassPathProviderImpl(getHelper(), getEvaluator(), getSourceRoots(), getTestRoots(), getSeleniumRoots()),
