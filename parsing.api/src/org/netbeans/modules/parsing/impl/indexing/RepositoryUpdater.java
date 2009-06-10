@@ -1055,6 +1055,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 // determine the total number of files
                 int scannedFilesCount = 0;
                 int totalFilesCount = 0;
+                final Collection<? extends CustomIndexerFactory> allLangCifs = MimeLookup.getLookup(MimePath.EMPTY).lookupAll(CustomIndexerFactory.class);
                 final Map<CustomIndexerFactory,Collection<String>> custom2mime = new IdentityHashMap<CustomIndexerFactory, Collection<String>>();
                 List<String> customOrder = new LinkedList<String>();
                 List<String> embeddedOrder = new LinkedList<String>();
@@ -1064,6 +1065,9 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         final boolean hasEmbeddings = MimeLookup.getLookup(entry.getKey()).lookup(EmbeddingIndexerFactory.class)!=null;
                         final Collection<? extends CustomIndexerFactory> cifs = MimeLookup.getLookup(entry.getKey()).lookupAll(CustomIndexerFactory.class);
                         for (final CustomIndexerFactory cif : cifs) {
+                            if (allLangCifs.contains(cif)) {
+                                continue;
+                            }
                             Collection<String> mimes = custom2mime.get(cif);
                             if (mimes == null) {
                                 mimes = new LinkedList<String>();
@@ -1110,18 +1114,23 @@ out:            for (String mimeType : order) {
                         final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor, allFiles, getShuttdownRequest());
                         transactionContexts.add(ctx);
                         
-                        Collection<? extends String> mimes = custom2mime.get(factory);
-                        if (mimes == null) {
-                            continue out;
-                        }
-                        List<Collection<? extends Indexable>> listsToAdd = new LinkedList<Collection<? extends Indexable>>();
+                        final Iterable<Indexable> indexables;
                         int isize = 0;
-                        for (String mime : mimes) {
-                            final Collection<? extends Indexable> ilist = resources.get(mime);
-                            isize+= ilist.size();
-                            listsToAdd.add(ilist);
+                        Collection<? extends String> mimes = custom2mime.get(factory);
+                        if (mimes != null) {
+                            assert mimes.contains(mimeType);
+                            List<Collection<? extends Indexable>> listsToAdd = new LinkedList<Collection<? extends Indexable>>();
+                            for (String mime : mimes) {
+                                final Collection<? extends Indexable> ilist = resources.get(mime);
+                                isize+= ilist.size();
+                                listsToAdd.add(ilist);
+                            }
+                            indexables = new ProxyIterable<Indexable>(listsToAdd);
+                        } else {
+                            final Collection<Indexable> ilist = resources.get(mimeType);
+                            indexables = ilist;
+                            isize = ilist.size();
                         }
-                        final ProxyIterable<Indexable> indexables = new ProxyIterable<Indexable>(listsToAdd);
 
                         // some CustomIndexers (eg. java) need to know about roots even when there
                         // are no modified Inexables at the moment (eg. java checks source level in
@@ -1286,7 +1295,7 @@ out:            for (String mimeType : order) {
                     LOGGER.log(Level.WARNING, null, e);
                 }
 
-                updateProgress(rootURL, ++scannedFilesCount, totalFilesCount);
+//                updateProgress(rootURL, ++scannedFilesCount, totalFilesCount);
             }
 
             return true;
