@@ -646,7 +646,12 @@ public class FileStatusCache {
                             && ((fi.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) != 0 && !exists || // file was ignored and is now deleted
                             (fi.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) == 0 && (!exists || file.isFile()))) { // file is now up-to-date
                         Mercurial.LOG.log(Level.FINE, "refreshAllRoots() uninteresting file: {0} {1}", new Object[]{file, fi}); // NOI18N
-                        refreshFileStatus(file, FileStatusCache.FILE_INFORMATION_UNKNOWN, interestingFiles); // remove the file from cache
+                        // TODO better way to detect conflicts
+                        if(HgCommand.existsConflictFile(file.getAbsolutePath())) {
+                            refreshFileStatus(file, FileStatusCache.FILE_INFORMATION_CONFLICT, interestingFiles); // set the files status to 'IN CONFLICT'
+                        } else {
+                            refreshFileStatus(file, FileStatusCache.FILE_INFORMATION_UNKNOWN, interestingFiles); // remove the file from cache
+                        }
                     }
                 }
             } catch (HgException ex) {
