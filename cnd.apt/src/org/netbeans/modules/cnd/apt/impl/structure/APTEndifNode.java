@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.apt.impl.structure;
 import java.io.Serializable;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTEndif;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
@@ -80,7 +81,7 @@ public final class APTEndifNode extends APTTokenBasedNode
         return null;
     }
 
-    public boolean accept(APTToken token) {
+    public boolean accept(APTFile curFile,APTToken token) {
         assert (token != null);
         int ttype = token.getType();
         assert (!APTUtils.isEOF(ttype)) : "EOF must be handled in callers"; // NOI18N

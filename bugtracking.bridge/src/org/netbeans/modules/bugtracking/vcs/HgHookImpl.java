@@ -273,14 +273,14 @@ public class HgHookImpl extends HgHook {
     }
 
     private void onShowRevisionFormat() {
-        FormatPanel p = new FormatPanel(VCSHooksConfig.getInstance().getHgCommentFormat());
+        FormatPanel p = new FormatPanel(VCSHooksConfig.getInstance().getHgCommentFormat(), VCSHooksConfig.getDefaultHgFormat());
         if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) {  // NOI18N
             VCSHooksConfig.getInstance().setHgCommentFormat(p.getFormat());
         }
     }
 
     private void onShowIssueFormat() {
-        FormatPanel p = new FormatPanel(VCSHooksConfig.getInstance().getHgIssueFormat());
+        FormatPanel p = new FormatPanel(VCSHooksConfig.getInstance().getHgIssueFormat(), VCSHooksConfig.getDefaultIssueFormat());
         if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) {  // NOI18N
             VCSHooksConfig.getInstance().setHgIssueFormat(p.getFormat());
         }
