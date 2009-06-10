@@ -78,7 +78,7 @@ class DiskMapTurboProvider implements TurboProvider {
     }
 
     synchronized Map<File, FileInformation>  getAllModifiedValues() {
-        if (cachedStoreSerial != storeSerial || cachedValues == null) {
+        if (modifiedFilesChanged() || cachedValues == null) {
             cachedValues = new HashMap<File, FileInformation>();
             File [] files = cacheStore.listFiles();
             if(files == null) {
@@ -274,6 +274,10 @@ class DiskMapTurboProvider implements TurboProvider {
         store.delete();
         storeNew.renameTo(store);
         return true;
+    }
+
+    boolean modifiedFilesChanged() {
+        return cachedStoreSerial != storeSerial;
     }
 
     private void skip(InputStream is, long len) throws IOException {
