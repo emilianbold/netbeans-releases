@@ -142,6 +142,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
+import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbJarSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
@@ -484,7 +485,8 @@ public final class WebProject implements Project, AntProjectListener {
             helper.createAuxiliaryProperties(),
             spp,
             new ProjectWebModuleProvider (),
-            new WebProjectEjbJarProvider(this), 
+            EjbJarSupport.createEjbJarProvider(this, apiEjbJar),
+            EjbJarSupport.createEjbJarsInProject(apiEjbJar),
             new ProjectWebServicesSupportProvider(),
             webModule, //implements J2eeModuleProvider
             enterpriseResourceSupport,
@@ -1304,17 +1306,17 @@ public final class WebProject implements Project, AntProjectListener {
             this.project = project;
         }
         
-        private boolean isEE5 = false;
+        private boolean isEjb30Supported = false;
+        private boolean isEJB31Supported = false;
         private boolean checked = false;
         private boolean isArchive = false;
-        private boolean isEE6 = false;
 
         public String[] getRecommendedTypes() {
             String[] retVal = null;
             checkEnvironment();
             if (isArchive) {
                 retVal = TYPES_ARCHIVE;
-            } else if (isEE6){
+            } else if (isEJB31Supported){
                 retVal = JAVAEE6_TYPES;
             }else{
                 retVal = TYPES;
@@ -1329,7 +1331,7 @@ public final class WebProject implements Project, AntProjectListener {
             if (isArchive) {
                 retVal = PRIVILEGED_NAMES_ARCHIVE;
             } else {
-                if (isEE5) {
+                if (isEjb30Supported) {
                     retVal = getPrivilegedTemplatesEE5();
                 } else {
                     retVal = WebProject.this.getPrivilegedTemplates();
@@ -1345,8 +1347,9 @@ public final class WebProject implements Project, AntProjectListener {
                 if ("false".equals(srcType)) {
                     isArchive = true;
                 }
-                isEE5 = J2eeModule.JAVA_EE_5.equals(getAPIWebModule().getJ2eePlatformVersion());
-                isEE6 = Capabilities.forProject(project).isEJB31Supported();
+                Capabilities projectCap = Capabilities.forProject(project);
+                isEjb30Supported = projectCap.isEJB30Supported();
+                isEJB31Supported = projectCap.isEJB31Supported();
                 checked = true;
             }
         }

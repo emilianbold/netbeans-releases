@@ -122,7 +122,9 @@
             <ExpressionStatement start='317' end='341'>
                 <FunctionInvocation start='317' end='340'>
                     <FucntionName start='317' end='333'>
-                        <Identifier start='317' end='333' name='highlight_string'/>
+                        <NamespaceName start='317' end='333' isCurrent='false' isGlobal='false'>
+                            <Identifier start='317' end='333' name='highlight_string'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Variable start='334' end='339' isDollared='true'>
