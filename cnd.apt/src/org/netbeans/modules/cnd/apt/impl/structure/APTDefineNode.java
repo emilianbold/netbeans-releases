@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.utils.APTTraceUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
 
@@ -182,10 +183,10 @@ public final class APTDefineNode extends APTMacroBaseNode
                                 // error check
                                 if (DebugUtils.STANDALONE) {
                                     System.err.printf("%s, line %d: \"%s\" may not appear in macro parameter list\n", // NOI18N
-                                            curFile == null ? "<no file>" : curFile.getPath(), getToken().getLine(), token.getText()); // NOI18N
+                                            APTTraceUtils.toFileString(curFile), getToken().getLine(), token.getText()); // NOI18N
                                 } else {
                                     APTUtils.LOG.log(Level.SEVERE, "{0} line {1}: {2} may not appear in macro parameter list", // NOI18N
-                                            new Object[] {curFile == null ? "<no file>" : curFile.getPath(), getToken().getLine(), token.getText()} ); // NOI18N
+                                            new Object[] {APTTraceUtils.toFileString(curFile), getToken().getLine(), token.getText()} ); // NOI18N
                                 }                                
                                 stateAndHashCode = ERROR;
                             }
@@ -221,11 +222,11 @@ public final class APTDefineNode extends APTMacroBaseNode
                     }                   
                     if (stateAndHashCode == ERROR) {
                         if (DebugUtils.STANDALONE) {
-                            System.err.printf("line %d: '#' is not followed by a macro parameter\n", // NOI18N
-                                    getToken().getLine());
+                            System.err.printf("%s, line %d: '#' is not followed by a macro parameter\n", // NOI18N
+                                    APTTraceUtils.toFileString(curFile), getToken().getLine());
                         } else {
-                            APTUtils.LOG.log(Level.SEVERE, "line {0}: '#' is not followed by a macro parameter", // NOI18N
-                                    new Object[] {getToken().getLine()} );
+                            APTUtils.LOG.log(Level.SEVERE, "{0}, line {1}: '#' is not followed by a macro parameter", // NOI18N
+                                    new Object[] {APTTraceUtils.toFileString(curFile), getToken().getLine()} );
                         }                                
                     }
                     break;

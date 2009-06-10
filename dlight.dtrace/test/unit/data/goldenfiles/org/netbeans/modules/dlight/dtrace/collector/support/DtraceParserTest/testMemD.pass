@@ -1,0 +1,21 @@
+putStack([main`_start+0x80], 0) = 1
+ *timestamp* | *kind* | *size* | *address* | *total* | *stackid* | *
+7499892113497 | 1 | 2 | 135671736 | 131068 | 1 | 
+putStack([main`_start+0x80], 0) = 1
+ *timestamp* | *kind* | *size* | *address* | *total* | *stackid* | *
+7499892127842 | 1 | 2 | 135671752 | 131070 | 1 | 
+putStack([main`_start+0x80], 0) = 1
+ *timestamp* | *kind* | *size* | *address* | *total* | *stackid* | *
+7499892142566 | 1 | 2 | 135671768 | 131072 | 1 | 
+putStack([ld.so.1`atexit_fini+0x54, ld.so.1`tsort+0xa9, ld.so.1`malloc+0xd1], 0) = 2
+ *timestamp* | *kind* | *size* | *address* | *total* | *stackid* | *
+7499892193386 | 1 | 12 | 4277863000 | 131084 | 2 | 
+putStack([ld.so.1`atexit_fini+0x54, ld.so.1`malloc+0xd1], 0) = 3
+ *timestamp* | *kind* | *size* | *address* | *total* | *stackid* | *
+7499892205053 | 1 | 12 | 4277865232 | 131096 | 3 | 
+putStack([ld.so.1`atexit_fini+0x54, ld.so.1`tsort+0x25d, ld.so.1`free], 0) = 4
+ *timestamp* | *kind* | *size* | *address* | *total* | *stackid* | *
+7499892216233 | -1 | 12 | 4277865232 | 131084 | 4 | 
+putStack([ld.so.1`atexit_fini+0x6f, ld.so.1`call_fini+0x229, ld.so.1`free], 0) = 5
+ *timestamp* | *kind* | *size* | *address* | *total* | *stackid* | *
+7499892231552 | -1 | 12 | 4277863000 | 131072 | 5 | 

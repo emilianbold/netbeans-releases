@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.discovery.projectimport;
 
+import org.netbeans.modules.cnd.builds.ImportUtils;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedWriter;
@@ -77,6 +78,8 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.builds.CMakeExecSupport;
+import org.netbeans.modules.cnd.builds.QMakeExecSupport;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.wizard.ConsolidationStrategyPanel;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
@@ -421,6 +424,28 @@ public class ImportProject implements PropertyChangeListener {
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
+                } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){
+                    ExecutionSupport ses = node.getCookie(ExecutionSupport.class);
+                    try {
+                        List<String> vars = ImportUtils.parseEnvironment(configureArguments);
+                        for (String s : ImportUtils.quoteList(vars)) {
+                            int i = configureArguments.indexOf(s);
+                            if (i >= 0){
+                                configureArguments = configureArguments.substring(0, i) + configureArguments.substring(i + s.length());
+                            }
+                        }
+                        ses.setArguments(new String[]{configureArguments});
+                        ses.setEnvironmentVariables(vars.toArray(new String[vars.size()]));
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
+                    ExecutionSupport ses = node.getCookie(ExecutionSupport.class);
+                    try {
+                        ses.setArguments(new String[]{configureArguments});
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
             // If no makefile, create empty one so it shows up in Interesting Files
@@ -454,9 +479,9 @@ public class ImportProject implements PropertyChangeListener {
             if (MIMENames.SHELL_MIME_TYPE.equals(mime)){
                 ShellRunAction.performAction(node, listener, null, makeProject, ImportUtils.parseEnvironment(configureArguments));
             } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){
-                CMakeAction.performAction(node, listener, null, makeProject, ImportUtils.parseEnvironment(configureArguments));
+                CMakeAction.performAction(node, listener, null, makeProject);
             } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
-                QMakeAction.performAction(node, listener, null, makeProject, ImportUtils.parseEnvironment(configureArguments));
+                QMakeAction.performAction(node, listener, null, makeProject);
             }
         } catch (DataObjectNotFoundException e) {
             isFinished = true;

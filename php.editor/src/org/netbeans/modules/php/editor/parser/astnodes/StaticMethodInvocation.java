@@ -48,7 +48,7 @@ public class StaticMethodInvocation extends StaticDispatch {
 
     private FunctionInvocation method;
 
-    public StaticMethodInvocation(int start, int end, Identifier className, FunctionInvocation method) {
+    public StaticMethodInvocation(int start, int end, Expression className, FunctionInvocation method) {
         super(start, end, className);
         this.method = method;
     }

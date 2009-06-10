@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,45 +31,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.web.project;
-
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
-import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
-import org.openide.filesystems.FileObject;
+package org.netbeans.modules.php.editor.parser.astnodes;
 
 /**
- * Implementing project EjbJar provider/finder. It finds the EjbJars in the
- * given web project.
- * 
- * @author Dongmei Cao
+ * Holds a label declaration that is used in goto expression. 
+ * <pre>e.g.<pre> 
+ *START:
  */
-public class WebProjectEjbJarProvider implements EjbJarProvider, EjbJarsInProject {
+public class GotoLabel extends Statement {
 
-    private WebProject project;
-    
-    public WebProjectEjbJarProvider (WebProject project) {
-        this.project = project;
-    }
-    
-    public EjbJar findEjbJar(FileObject file) {
-        Project owner = FileOwnerQuery.getOwner (file);
-        if (owner != null && owner instanceof WebProject) {
-            return ((WebProject) owner).getAPIEjbJar();
+    private Identifier name;
+
+    public GotoLabel(int start, int end, Identifier name) {
+        super(start, end);
+
+        if (name == null) {
+            throw new IllegalArgumentException();
         }
-        return null;
+        this.name = name;
     }
 
-    public EjbJar[] getEjbJars() {
-        return new EjbJar [] {project.getAPIEjbJar()};
+    /**
+     * Returns the name of this goto label
+     *
+     * @return the label name
+     */
+    public Identifier getName() {
+        return this.name;
     }
 
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
 }

@@ -62,6 +62,8 @@ public class MysqlConnectorTestCase extends MakeProjectBase {
 
     @Test
     public void testMysqlConnector(){
-        performTestProject("http://download.softagency.net/MySQL/Downloads/Connector-C/mysql-connector-c-6.0.1.tar.gz", null);
+        List<String> list = new ArrayList<String>();
+        list.add("rm -f Makefile");
+        performTestProject("http://download.softagency.net/MySQL/Downloads/Connector-C/mysql-connector-c-6.0.1.tar.gz", list);
     }
 }
