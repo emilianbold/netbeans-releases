@@ -49,6 +49,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.utils.APTTraceUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
 
@@ -108,10 +109,10 @@ public abstract class APTIfConditionBaseNode extends APTTokenAndChildBasedNode
             if (condition == null) {
                 if (DebugUtils.STANDALONE) {
                     System.err.printf("%s, line %d: %s with no expression\n", // NOI18N
-                        curFile == null ? "<no file>" : curFile.getPath(), getToken().getLine(), getToken().getText().trim()); // NOI18N
+                        APTTraceUtils.toFileString(curFile), getToken().getLine(), getToken().getText().trim()); // NOI18N
                 } else {
                     APTUtils.LOG.log(Level.SEVERE, "{0}, line {1}: {2} with no expression", // NOI18N
-                            new Object[] {curFile == null ? "<no file>" : curFile.getPath(), getToken().getLine(), getToken().getText().trim()} );  // NOI18N
+                            new Object[] {APTTraceUtils.toFileString(curFile), getToken().getLine(), getToken().getText().trim()} );  // NOI18N
                 }
             }
             if (condition != null){

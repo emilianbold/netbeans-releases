@@ -434,7 +434,7 @@ public class SunONEDeploymentConfiguration extends GlassfishConfiguration implem
     }
 
     public void setMappingInfo(OriginalCMPMapping[] mappings) throws ConfigurationException {
-        if(!J2eeModule.EJB.equals(module.getModuleType())) {
+        if(!J2eeModule.Type.EJB.equals(module.getType())) {
             return; // wrong module type.
         }
         
