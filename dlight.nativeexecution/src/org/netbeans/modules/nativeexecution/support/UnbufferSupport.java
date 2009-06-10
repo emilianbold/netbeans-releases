@@ -157,7 +157,7 @@ public class UnbufferSupport {
                     // with path to it to LD_PRELOAD/DYLD_INSERT_LIBRARIES
                     // Reason: no luck to make it work using PATH ;(
                     ldPreload = ((ldPreload == null) ? "" : (ldPreload + ";")) + // NOI18N
-                            unbufferPath + "/" + unbufferLib; // NOI18N
+                            new File(unbufferPath, unbufferLib).getAbsolutePath(); // NOI18N
 
                     ldPreload = CommandLineHelper.getInstance(execEnv).toShellPaths(ldPreload);
                 } else if (isMacOS) {
