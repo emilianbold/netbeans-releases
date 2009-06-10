@@ -53,20 +53,21 @@ final public class UpgradableProjectLookupProvider implements LookupProvider {
     public Lookup createAdditionalLookup(Lookup baseContext) {
         Project p = baseContext.lookup(Project.class);
         assert p != null;
-        if (ProjectUtils.getPreferences(p, UpgradableProjectLookupProvider.class, true).
-                get("project", null) == null) { // NOI18N
+        if (!isRegistered(p)) { // NOI18N
             // Shortcut, the normal case:
             return Lookup.EMPTY;
         } else {
-            // Keep as separate method to try to delay class initialization:
-            return upgradeLookup(p);
+            return Lookups.fixed(
+                new UpgradableProject(p),
+                new ProjectOpenHookImpl());
         }
     }
 
-    private static Lookup upgradeLookup(Project p) {
-        return Lookups.fixed(
-            new UpgradableProject(p),
-            new ProjectOpenHookImpl());
+    /**
+     * Quickly checks whether a project is registered with the importer.
+     */
+    public static boolean isRegistered(Project p) {
+        return ProjectUtils.getPreferences(p, UpgradableProjectLookupProvider.class, true).get("project", null) != null;
     }
 
 }
