@@ -1105,6 +1105,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 // determine the total number of files
                 int scannedFilesCount = 0;
                 int totalFilesCount = 0;
+                final Collection<? extends CustomIndexerFactory> allLangCifs = MimeLookup.getLookup(MimePath.EMPTY).lookupAll(CustomIndexerFactory.class);
                 final Map<CustomIndexerFactory,Collection<String>> custom2mime = new IdentityHashMap<CustomIndexerFactory, Collection<String>>();
                 List<String> customOrder = new LinkedList<String>();
                 List<String> embeddedOrder = new LinkedList<String>();
@@ -1114,6 +1115,9 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         final boolean hasEmbeddings = MimeLookup.getLookup(entry.getKey()).lookup(EmbeddingIndexerFactory.class)!=null;
                         final Collection<? extends CustomIndexerFactory> cifs = MimeLookup.getLookup(entry.getKey()).lookupAll(CustomIndexerFactory.class);
                         for (final CustomIndexerFactory cif : cifs) {
+                            if (allLangCifs.contains(cif)) {
+                                continue;
+                            }
                             Collection<String> mimes = custom2mime.get(cif);
                             if (mimes == null) {
                                 mimes = new LinkedList<String>();
@@ -1134,7 +1138,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 order.addAll(embeddedOrder);
 
                 final FileObject cacheRoot = CacheFolder.getDataFolder(root);
-out:            for (String mimeType : order) {
+                for (String mimeType : order) {
                     if (getShuttdownRequest().isRaised()) {
                         return false;
                     }
@@ -1176,9 +1180,6 @@ out:            for (String mimeType : order) {
                             final Collection<Indexable> ilist = resources.get(mimeType);
                             indexables = ilist;
                             isize = ilist.size();
-                        }
-                        if (isize == 0) {
-                            continue out;
                         }
 
                         // some CustomIndexers (eg. java) need to know about roots even when there
@@ -1350,7 +1351,7 @@ out:            for (String mimeType : order) {
                     LOGGER.log(Level.WARNING, null, e);
                 }
 
-                updateProgress(rootURL, ++scannedFilesCount, totalFilesCount);
+//                updateProgress(rootURL, ++scannedFilesCount, totalFilesCount);
             }
 
             return true;
