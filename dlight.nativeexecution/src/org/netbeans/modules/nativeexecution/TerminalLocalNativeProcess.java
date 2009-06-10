@@ -239,7 +239,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             if (isWindows) {
                 command.add(hostInfo.getShell());
                 command.add("-c"); // NOI18N
-                command.add("/bin/kill -" + signal + " " + getPID()); // NOI18N
+                command.add("kill -" + signal + " " + getPID()); // NOI18N
             } else {
                 command.add("/bin/kill"); // NOI18N
                 command.add("-" + signal); // NOI18N
