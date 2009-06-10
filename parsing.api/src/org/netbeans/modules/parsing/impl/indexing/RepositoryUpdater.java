@@ -542,7 +542,9 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         if (evt.getPropertyName() == null) {
             components = EditorRegistry.componentList();
 
-        } else if (evt.getPropertyName().equals(EditorRegistry.FOCUS_LOST_PROPERTY)) {
+        } else if (evt.getPropertyName().equals(EditorRegistry.FOCUS_LOST_PROPERTY) || 
+                   evt.getPropertyName().equals(EditorRegistry.LAST_FOCUSED_REMOVED_PROPERTY))
+        {
             if (evt.getOldValue() instanceof JTextComponent) {
                 JTextComponent jtc = (JTextComponent) evt.getOldValue();
                 components = Collections.singletonList(jtc);
@@ -579,11 +581,18 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         Long lastIndexedVersion = (Long) d.getProperty(PROP_LAST_INDEXED_VERSION);
                         boolean reindex = false;
 
-                        if (lastIndexedVersion == null) {
-                            Long lastDirtyVersion = (Long) d.getProperty(PROP_LAST_DIRTY_VERSION);
-                            reindex = lastDirtyVersion != null;
+                        if (jtc.isShowing()) {
+                            if (lastIndexedVersion == null) {
+                                Long lastDirtyVersion = (Long) d.getProperty(PROP_LAST_DIRTY_VERSION);
+                                reindex = lastDirtyVersion != null;
+                            } else {
+                                reindex = lastIndexedVersion < version;
+                            }
                         } else {
-                            reindex = lastIndexedVersion < version;
+                            // editor closed, there were possibly discarded changes and
+                            // so we have to reindex the contents of the file
+                            Long lastDirtyVersion = (Long) d.getProperty(PROP_LAST_DIRTY_VERSION);
+                            reindex = lastIndexedVersion != null || lastDirtyVersion != null;
                         }
 
                         if (reindex) {
@@ -594,9 +603,11 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
                             FileListWork job = jobs.get(root);
                             if (job == null) {
-                                job = new FileListWork(root, Collections.singleton(f), false, true, true);
+                                job = new FileListWork(root, Collections.singleton(f), false, jtc.isShowing(), true);
                                 jobs.put(root, job);
                             } else {
+                                // XXX: strictly speaking we should set 'checkEditor' for each file separately
+                                // and not for each job; in reality we normally do not end up here
                                 job.addFile(f);
                             }
                         }
