@@ -118,7 +118,7 @@ public class PortComponentMetadataReader extends CommonBeanReader {
             if(dc != null) {
                 J2eeModule module = dc.getJ2eeModule();
                 if(module != null) {
-                    if(J2eeModule.WAR.equals(module.getModuleType()) || J2eeModule.EJB.equals(module.getModuleType())) {
+                    if(J2eeModule.Type.WAR.equals(module.getType()) || J2eeModule.Type.EJB.equals(module.getType())) {
                         result = readWebservicesMetadata(module.getMetadataModel(WebservicesMetadata.class));
                     }
                 }

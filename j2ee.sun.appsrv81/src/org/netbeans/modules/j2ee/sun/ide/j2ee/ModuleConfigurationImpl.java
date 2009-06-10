@@ -347,7 +347,7 @@ public class ModuleConfigurationImpl implements
                 if (null == jmp) {
                     return;
                 }
-                String target = ModuleType.EAR.equals(jmp.getJ2eeModule().getModuleType()) ? "pre-dist" : "-pre-dist"; // NOI18N
+                String target = J2eeModule.Type.EAR.equals(jmp.getJ2eeModule().getType()) ? "pre-dist" : "-pre-dist"; // NOI18N
                 try {
                     if (addExtension) {
                         BuildExtension.copyTemplate(p);
