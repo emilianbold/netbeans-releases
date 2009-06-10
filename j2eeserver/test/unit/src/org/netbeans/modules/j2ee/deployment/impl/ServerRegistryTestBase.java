@@ -64,13 +64,6 @@ public class ServerRegistryTestBase extends NbTestCase {
         super (name);
     }
 
-    private File scratchF;
-
-    private void mkdir(String path) {
-//        System.out.println ("mkdir:"+path);
-        new File(scratchF, path.replace('/', File.separatorChar)).mkdirs();
-    }
-
     @Override
     protected boolean runInEQ() {
         return true;

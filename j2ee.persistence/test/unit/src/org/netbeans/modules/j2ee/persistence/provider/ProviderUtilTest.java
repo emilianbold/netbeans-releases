@@ -48,9 +48,8 @@ import junit.framework.*;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Property;
-import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.dd.common.Property;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -67,7 +66,7 @@ public class ProviderUtilTest extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
-        this.persistenceUnit = new PersistenceUnit();
+        this.persistenceUnit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
     }
     
     protected void tearDown() throws Exception {
@@ -149,7 +148,7 @@ public class ProviderUtilTest extends NbTestCase {
     
     public void testRemoveProviderProperties(){
         Provider provider = ProviderUtil.KODO_PROVIDER;
-        PersistenceUnit persistenceUnit = new PersistenceUnit();
+        PersistenceUnit persistenceUnit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
         ProviderUtil.setProvider(persistenceUnit, provider, getConnection(), Provider.TABLE_GENERATION_CREATE);
         //        ProviderUtil.setTableGeneration(persistenceUnit, Provider.TABLE_GENERATION_CREATE, provider);
         

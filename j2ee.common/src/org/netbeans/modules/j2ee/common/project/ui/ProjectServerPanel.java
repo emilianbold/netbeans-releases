@@ -85,13 +85,21 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
     private boolean sharableProject;
 
     private List<Project> earProjects;
-    private Object j2eeModuleType;
+    private final J2eeModule.Type j2eeModuleType;
     private File projectLocation;
     
     private BigDecimal xmlVersion;
-    
-    /** Creates new form ProjectServerPanel */
+
+    @Deprecated
     public ProjectServerPanel(Object j2eeModuleType, String name, String title,
+            ProjectServerWizardPanel wizard, boolean showAddToEar,
+            boolean mainAppClientClass, boolean showContextPath, boolean createProjects) {
+
+        this(J2eeModule.Type.fromJsrType(j2eeModuleType), name, title, wizard, showAddToEar, mainAppClientClass, showContextPath, createProjects);
+    }
+
+    /** Creates new form ProjectServerPanel */
+    public ProjectServerPanel(J2eeModule.Type j2eeModuleType, String name, String title,
             ProjectServerWizardPanel wizard, boolean showAddToEar, 
             boolean mainAppClientClass, boolean showContextPath, boolean createProjects) {
         initComponents();
@@ -654,7 +662,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         for (String serverInstanceID : Deployment.getDefault().getServerInstanceIDs()) {
             String displayName = Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID);
             J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
-            if (displayName != null && j2eePlatform != null && j2eePlatform.getSupportedModuleTypes().contains(j2eeModuleType)) {
+            if (displayName != null && j2eePlatform != null && j2eePlatform.getSupportedTypes().contains(j2eeModuleType)) {
                 ServerInstanceWrapper serverWrapper = new ServerInstanceWrapper(serverInstanceID, displayName);
                 // decide whether this server should be preselected
                 if (selectedItem == null || !gfv3Found) {

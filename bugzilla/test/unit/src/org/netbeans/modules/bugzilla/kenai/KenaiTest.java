@@ -121,7 +121,7 @@ public class KenaiTest extends NbTestCase implements TestConstants {
                 dateString = "";
             }
 
-            String url = "/buglist.cgi?query_format=advanced&product=koliba";
+            String url = "/buglist.cgi?query_format=advanced&product=golden-project-1";
             IRepositoryQuery query = new RepositoryQuery(repository.getConnectorKind(), "");
             query.setUrl(url);
             final List<TaskData> collectedData = new ArrayList<TaskData>();

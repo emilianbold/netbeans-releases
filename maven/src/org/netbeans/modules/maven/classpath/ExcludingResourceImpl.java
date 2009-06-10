@@ -82,7 +82,7 @@ public class ExcludingResourceImpl extends PathResourceBase
     public ExcludingResourceImpl(NbMavenProjectImpl project, boolean test) {
         this(test);
         this.project = project;
-        NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
+        NbMavenProject watch = project.getProjectWatcher();
         watch.addPropertyChangeListener(WeakListeners.propertyChange(this, watch));
     }
     
@@ -125,17 +125,9 @@ public class ExcludingResourceImpl extends PathResourceBase
         for (Resource res : lst) {
             URI uri = FileUtilities.getDirURI(getBase(), res.getDirectory());
             try {
-                URL entry;
-                //TODO what are all the extensions that get into classpath??
-                // resources should be primarily non-jar anyway..
-                if (uri.toString().toLowerCase().endsWith(".jar")  //NOI18N
-                 || uri.toString().toLowerCase().endsWith(".ejb3")) {//NOI18N
-                    entry = FileUtil.getArchiveRoot(uri.toURL());
-                } else {
-                    entry = uri.toURL();
-                    if  (!entry.toExternalForm().endsWith("/")) { //NOI18N
-                        entry = new URL(entry.toExternalForm() + "/"); //NOI18N
-                    }
+                URL entry = uri.toURL();
+                if  (entry != null && !entry.toExternalForm().endsWith("/")) { //NOI18N
+                    entry = new URL(entry.toExternalForm() + "/"); //NOI18N
                 }
                 if (entry != null) {
                     if (!newurls.contains(entry)) {
@@ -161,6 +153,9 @@ public class ExcludingResourceImpl extends PathResourceBase
     public void propertyChange(PropertyChangeEvent evt) {
         if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
             //TODO optimize somehow? it's just too much work to figure if something changed..
+            synchronized (this) {
+                cachedRoots = null;
+            }
              firePropertyChange(PROP_ROOTS, null, null);
 //             super.firePropertyChange(this.PROP_INCLUDES, null, null);
         }

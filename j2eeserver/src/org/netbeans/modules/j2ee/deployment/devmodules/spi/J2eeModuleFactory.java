@@ -75,6 +75,20 @@ public class J2eeModuleFactory {
         }
         return J2eeModuleAccessor.getDefault().createJ2eeModule(impl);
     }
+
+    /**
+     * Creates a J2eeModule for the specified J2eeModuleImplementation2.
+     *
+     * @param impl the J2eeModule SPI object
+     *
+     * @return J2eeModule API instance.
+     */
+    public static J2eeModule createJ2eeModule(J2eeModuleImplementation2 impl) {
+        if (impl == null) {
+            throw new NullPointerException();
+        }
+        return J2eeModuleAccessor.getDefault().createJ2eeModule(impl);
+    }
     
     /**
      * Creates a J2eeApplication for the specified J2eeApplicationImplementation.
@@ -84,6 +98,20 @@ public class J2eeModuleFactory {
      * @return J2eJ2eeApplicationI instance.
      */
     public static J2eeApplication createJ2eeApplication(J2eeApplicationImplementation impl) {
+        if (impl == null) {
+            throw new NullPointerException();
+        }
+        return J2eeApplicationAccessor.DEFAULT.createJ2eeApplication(impl);
+    }
+
+    /**
+     * Creates a J2eeApplication for the specified J2eeApplicationImplementation.
+     *
+     *
+     * @param impl the J2eeApplication SPI object
+     * @return J2eJ2eeApplicationI instance.
+     */
+    public static J2eeApplication createJ2eeApplication(J2eeApplicationImplementation2 impl) {
         if (impl == null) {
             throw new NullPointerException();
         }

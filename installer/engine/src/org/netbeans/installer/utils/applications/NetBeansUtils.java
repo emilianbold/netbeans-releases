@@ -128,6 +128,7 @@ public class NetBeansUtils {
             if(!FileUtils.exists(lastModified)) {
                 try {
                     lastModified.createNewFile();
+                    lastModified.setLastModified(new Date().getTime());
                 } catch (IOException e) {
                     LogManager.log(e);
                 }

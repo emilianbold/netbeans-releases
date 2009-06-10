@@ -94,6 +94,7 @@ public class QueryTest extends NbTestCase implements TestConstants {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        System.out.println("###" + getName());
         BugzillaCorePlugin bcp = new BugzillaCorePlugin();
         try {
             bcp.start(null);

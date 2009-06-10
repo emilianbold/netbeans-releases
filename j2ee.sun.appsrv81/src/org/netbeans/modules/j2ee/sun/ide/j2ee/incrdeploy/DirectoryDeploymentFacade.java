@@ -268,11 +268,11 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
             resourceDirs = Utils.getResourceDirs(module);
             
             //so far only WAR are supported for Directory based deployment
-            if ((module.getModuleType() == ModuleType.CAR)){
+            if ((module.getType() == J2eeModule.Type.CAR)){
                 retVal = false;
             }
             if (retVal && null != issue2999Fixed && !issue2999Fixed) {
-                retVal = module.getModuleType() != ModuleType.EAR;
+                retVal = module.getType() != J2eeModule.Type.EAR;
             }
             
             // What is this ugliness?
@@ -292,7 +292,7 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
             // TODO :: remove this when https://glassfish.dev.java.net/issues/show_bug.cgi?id=3456
             // is fixed.
             //
-            if (retVal && module.getModuleType() == ModuleType.EAR) {
+            if (retVal && module.getType() == J2eeModule.Type.EAR) {
                 try {
                     FileObject fo = module.getContentDirectory();
                     if (null != fo) {

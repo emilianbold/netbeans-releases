@@ -39,25 +39,19 @@
 
 package org.netbeans.modules.nativeexecution.test;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.concurrent.CancellationException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 
 public class NativeExecutionBaseTestCase extends NbTestCase {
+    
     static {
         String dirs = System.getProperty("netbeans.dirs", ""); // NOI18N
         File junitWorkdir = new File(System.getProperty("nbjunit.workdir")); // NOI18N
@@ -94,123 +88,26 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         });
     }
 
+    private final ExecutionEnvironment testExecutionEnvironment;
+
     public NativeExecutionBaseTestCase(String name) {
         super(name);
         System.setProperty("nativeexecution.mode.unittest", "true");
+        testExecutionEnvironment = null;
     }
 
-    private static ExecutionEnvironment testExecutionEnvironment;
-    private static RcFile rcFile;
-
-    protected static synchronized RcFile getRcFile() throws IOException, RcFile.FormatException {
-        if (rcFile == null) {
-
-
-            String rcFileName = System.getProperty("cnd.remote.rcfile"); // NOI18N
-            if (rcFileName == null) {
-                String homePath = System.getProperty("user.home");
-                if (homePath != null) {
-                    File homeDir = new File(homePath);
-                    rcFile = new RcFile(new File(homeDir, ".cndtestrc"));
-                }
-            }
-        }
-        return rcFile;
+    /**
+     * A special constructor for use with NativeExecutionBaseTestSuite
+     * @param name
+     * @param testExecutionEnvironment
+     */
+    /*protected - feel free to make it public in the case you REALLY need this */
+    protected NativeExecutionBaseTestCase(String name, ExecutionEnvironment testExecutionEnvironment) {
+        super(name);
+        System.setProperty("nativeexecution.mode.unittest", "true");
+        this.testExecutionEnvironment = testExecutionEnvironment;
     }
 
-    protected static ExecutionEnvironment getTestExecutionEnvironment() throws IOException, CancellationException {
-        synchronized(NativeExecutionBaseTestCase.class) {
-            if (testExecutionEnvironment == null) {
-                String ui = System.getProperty("cnd.remote.testuserinfo"); // NOI18N
-                char[] passwd = null;
-                if( ui == null ) {
-                    ui = System.getenv("CND_REMOTE_TESTUSERINFO"); // NOI18N
-                }
-                if (ui != null) {
-                    int m = ui.indexOf(':');
-                    if (m>-1) {
-                        int n = ui.indexOf('@');
-                        String strPwd = ui.substring(m+1, n);
-                        String remoteHKey = ui.substring(0,m) + ui.substring(n);
-                        testExecutionEnvironment = ExecutionEnvironmentFactory.fromUniqueID(remoteHKey);
-                        passwd = strPwd.toCharArray();
-                    } else {
-                        String remoteHKey = ui;
-                        testExecutionEnvironment = ExecutionEnvironmentFactory.fromUniqueID(remoteHKey);
-                    }
-                } else {
-                    testExecutionEnvironment = ExecutionEnvironmentFactory.createNew(System.getProperty("user.name"), "127.0.0.1"); // NOI18N
-                }
-                if (testExecutionEnvironment != null) {
-                    ConnectionManager.getInstance().connectTo(testExecutionEnvironment, passwd, false);
-                }
-            }
-        }
-        return testExecutionEnvironment;
-    }
-
-    protected static ExecutionEnvironment getTestExecutionEnvironment(String mspec) throws IOException, CancellationException {
-        ExecutionEnvironment result = null;
-
-        if (mspec == null) {
-            return null;
-        }
-
-        String rcFileName = System.getProperty("cnd.remote.testuserinfo.rcfile"); // NOI18N
-        File userInfoFile = null;
-        
-        if (rcFileName == null) {
-            String homePath = System.getProperty("user.home");
-            if (homePath != null) {
-                File homeDir = new File(homePath);
-                userInfoFile = new File(homeDir, ".testuserinfo");
-            }
-        }
-
-        if (userInfoFile == null || ! userInfoFile.exists()) {
-            return null;
-        }
-
-        BufferedReader rcReader = new BufferedReader(new FileReader(userInfoFile));
-        String str;
-        Pattern infoPattern = Pattern.compile("^([^#].*)[ \t]+(.*)"); // NOI18N
-        Pattern pwdPattern = Pattern.compile("([^:]+):(.*)@(.*)"); // NOI18N
-        char[] passwd = null;
-
-        while ((str = rcReader.readLine()) != null) {
-            Matcher m = infoPattern.matcher(str);
-            String spec = null;
-            String loginInfo;
-
-            if (m.matches()) {
-                spec = m.group(1);
-                loginInfo = m.group(2);
-            } else {
-                continue;
-            }
-
-            if (mspec.equals(spec)) {
-                m = pwdPattern.matcher(loginInfo);
-                String remoteHKey = null;
-                
-                if (m.matches()) {
-                    passwd = m.group(2).toCharArray();
-                    remoteHKey = m.group(1) + "@" + m.group(3); // NOI18N
-                } else {
-                    remoteHKey = loginInfo;
-                }
-
-                result = ExecutionEnvironmentFactory.fromUniqueID(remoteHKey);
-                break;
-            }
-        }
-
-        if (result != null) {
-            ConnectionManager.getInstance().connectTo(result, passwd, false);
-        }
-
-        return result;
-    }
 
     @Override
     protected void setUp() throws Exception {
@@ -220,6 +117,14 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+    }
+
+    /**
+     * Gets execution environment this test was created with.
+     * @return
+     */
+    protected ExecutionEnvironment getTestExecutionEnvironment() {
+        return testExecutionEnvironment;
     }
 
     public static void writeFile(File file, CharSequence content) throws IOException {

@@ -51,6 +51,7 @@ import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.DeployOnSaveManager;
@@ -331,8 +332,23 @@ public final class Deployment {
      * @return ServerInstanceIDs of all registered server instances that meet 
      *         the specified requirements.
      * @since 1.6
+     * @deprecated {@link #getServerInstanceIDs(java.util.Collection)}
      */
     public String[] getServerInstanceIDs(Object[] moduleTypes) {
+        return getServerInstanceIDs(moduleTypes, (String) null, null);
+    }
+
+    /**
+     * Return ServerInstanceIDs of all registered server instances that support
+     * specified module types.
+     *
+     * @param moduleTypes collection of module types that the server instance must support
+     *
+     * @return ServerInstanceIDs of all registered server instances that meet
+     *         the specified requirements.
+     * @since 1.59
+     */
+    public String[] getServerInstanceIDs(Collection<J2eeModule.Type> moduleTypes) {
         return getServerInstanceIDs(moduleTypes, (Profile) null, null);
     }
 
@@ -346,7 +362,7 @@ public final class Deployment {
      * @return ServerInstanceIDs of all registered server instances that meet 
      *         the specified requirements.
      * @since 1.6
-     * @deprecated use {@link #getServerInstanceIDs(java.lang.Object[], org.netbeans.modules.j2ee.deployment.devmodules.api.Profile)}
+     * @deprecated use {@link #getServerInstanceIDs(java.util.Collection, org.netbeans.modules.j2ee.deployment.devmodules.api.Profile)}
      */
     public String[] getServerInstanceIDs(Object[] moduleTypes, String specVersion) {
         return getServerInstanceIDs(moduleTypes, specVersion, null);
@@ -360,9 +376,9 @@ public final class Deployment {
      * @param profile profile that the server instance must support
      * @return ServerInstanceIDs of all registered server instances that meet
      *             the specified requirements
-     * @since 1.58
+     * @since 1.59
      */
-    public String[] getServerInstanceIDs(Object[] moduleTypes, Profile profile) {
+    public String[] getServerInstanceIDs(Collection<J2eeModule.Type> moduleTypes, Profile profile) {
         return getServerInstanceIDs(moduleTypes, profile, null);
     }
     
@@ -377,7 +393,7 @@ public final class Deployment {
      * @return ServerInstanceIDs of all registered server instances that meet 
      *         the specified requirements.
      * @since 1.6
-     * @deprecated use {@link #getServerInstanceIDs(java.lang.Object[], org.netbeans.modules.j2ee.deployment.capabilities.Profile, java.lang.String[]) }
+     * @deprecated use {@link #getServerInstanceIDs(java.util.Collection, org.netbeans.modules.j2ee.deployment.capabilities.Profile, java.lang.String[]) }
      */
     public String[] getServerInstanceIDs(Object[] moduleTypes, String specVersion, String[] tools) {
         Profile profile = specVersion != null ? Profile.fromPropertiesString(specVersion) : null;
@@ -386,7 +402,15 @@ public final class Deployment {
             return new String[0];
         }
 
-        return getServerInstanceIDs(moduleTypes, profile, tools);
+        List<J2eeModule.Type> types = new ArrayList<J2eeModule.Type>(moduleTypes.length);
+        for (Object obj : moduleTypes) {
+            J2eeModule.Type type = J2eeModule.Type.fromJsrType(obj);
+            if (type != null) {
+                types.add(type);
+            }
+        }
+
+        return getServerInstanceIDs(types, profile, tools);
     }
 
     /**
@@ -398,9 +422,9 @@ public final class Deployment {
      * @param tools list of tools that the server instance must support
      * @return ServerInstanceIDs of all registered server instances that meet
      *             the specified requirements
-     * @since 1.58
+     * @since 1.59
      */
-    private String[] getServerInstanceIDs(Object[] moduleTypes, Profile profile, String[] tools) {
+    public String[] getServerInstanceIDs(Collection<J2eeModule.Type> moduleTypes, Profile profile, String[] tools) {
         List result = new ArrayList();
         String[] serverInstanceIDs = getServerInstanceIDs();
         for (int i = 0; i < serverInstanceIDs.length; i++) {
@@ -408,9 +432,9 @@ public final class Deployment {
             if (platform != null) {
                 boolean isOk = true;
                 if (moduleTypes != null) {
-                    Set platModuleTypes = platform.getSupportedModuleTypes();
-                    for (int j = 0; j < moduleTypes.length; j++) {
-                        if (!platModuleTypes.contains(moduleTypes[j])) {
+                    Set<J2eeModule.Type> platModuleTypes = platform.getSupportedTypes();
+                    for (J2eeModule.Type type : moduleTypes) {
+                        if (!platModuleTypes.contains(type)) {
                             isOk = false;
                         }
                     }

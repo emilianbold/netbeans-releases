@@ -54,8 +54,8 @@ import org.openide.filesystems.FileObject;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class PHPNewLineIndentTest extends PHPTestBase {
-    public PHPNewLineIndentTest(String testName) {
+public class PHPNewLineIndenterTest extends PHPTestBase {
+    public PHPNewLineIndenterTest(String testName) {
         super(testName);
     }
 
