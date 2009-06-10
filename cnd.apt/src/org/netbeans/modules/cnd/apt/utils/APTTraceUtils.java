@@ -41,9 +41,11 @@
 
 package org.netbeans.modules.cnd.apt.utils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import org.netbeans.modules.cnd.apt.structure.APT;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 
 /**
  *
@@ -54,7 +56,20 @@ public class APTTraceUtils {
     /** Creates a new instance of APTTraceUtils */
     private APTTraceUtils() {
     }
- 
+
+    public static String toFileString(APTFile aptFile) {
+        if (aptFile == null) {
+            return "<no file>"; // NOI18N
+        } else {
+            File file = new File(aptFile.getPath().toString());
+            File parentFile = file.getParentFile();
+            if (parentFile == null) {
+                return file.getName();
+            }
+            return parentFile.getName() + File.separator + file.getName();
+        }
+    }
+    
     /** Print out a child-sibling tree in LISP notation */
     public static String toStringList(APT t) {
         StringBuilder ts = new StringBuilder();
