@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.discovery.projectimport;
+package org.netbeans.modules.cnd.builds;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +49,28 @@ import java.util.List;
 public final class ImportUtils {
 
     private ImportUtils() {
+    }
+
+    public static List<String> quoteList(List<String> list){
+        List<String> res = new ArrayList<String>();
+        for (String s : list){
+            int i = s.indexOf('=');
+            if (i > 0){
+                String rest = s.substring(i+1);
+                s = s.substring(0,i+1);
+                if (rest.startsWith("\"")){
+                    rest = "'"+rest+"'";
+                } else if (rest.startsWith("'")){
+                    rest = "\""+rest+"\"";
+                } else {
+                    if (rest.indexOf(' ')>0) {
+                        rest = "\""+rest+"\"";
+                    }
+                }
+                res.add(s+rest);
+            }
+        }
+        return res;
     }
 
     public static List<String> parseEnvironment(String s) {

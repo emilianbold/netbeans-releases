@@ -58,6 +58,7 @@ import org.openide.nodes.Node;
  * @author Alexander Simon
  */
 public class CMakeAction extends AbstractExecutorRunAction {
+    private static final boolean TRACE = true;
 
     @Override
     public String getName () {
@@ -76,34 +77,43 @@ public class CMakeAction extends AbstractExecutorRunAction {
     }
 
     protected void performAction(Node node) {
-        performAction(node, null, null, null, null);
+        performAction(node, null, null, null);
     }
 
-    public static void performAction(Node node, ExecutionListener listener, Writer outputListener, Project project, List<String> additionalEnvironment) {
+    public static void performAction(Node node, ExecutionListener listener, Writer outputListener, Project project) {
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
-        File proFile = FileUtil.toFile(fileObject);
         // Build directory
-        File buildDir = getCBuildDirectory(node);
+        File buildDir = getBuildDirectory(node,Tool.CMakeTool);
         // Executable
         String executable = getCommand(node, project, Tool.CMakeTool, "cmake"); // NOI18N
         // Arguments
         //String arguments = proFile.getName();
-        String arguments = "-G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS=\"-g3 -gdwarf-2\" -DCMAKE_C_FLAGS=\"-g3 -gdwarf-2\""; // NOI18N
+        String arguments =  getArguments(node, Tool.CMakeTool); // NOI18N
         // Tab Name
         String tabName = getString("CMAKE_LABEL", node.getName());
 
+        String[] additionalEnvironment = getAdditionalEnvirounment(node);
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
         String[] env = prepareEnv(execEnv);
-        if (additionalEnvironment != null && additionalEnvironment.size()>0){
-            String[] tmp = new String[env.length + additionalEnvironment.size()];
+        if (additionalEnvironment != null && additionalEnvironment.length>0){
+            String[] tmp = new String[env.length + additionalEnvironment.length];
             for(int i=0; i < env.length; i++){
                 tmp[i] = env[i];
             }
-            for(int i=0; i < additionalEnvironment.size(); i++){
-                tmp[env.length + i] = additionalEnvironment.get(i);
+            for(int i=0; i < additionalEnvironment.length; i++){
+                tmp[env.length + i] = additionalEnvironment[i];
             }
             env = tmp;
+        }
+        if (TRACE) {
+            System.err.println("Run "+executable);
+            System.err.println("\tin folder   "+buildDir.getPath());
+            System.err.println("\targuments   "+arguments);
+            System.err.println("\tenvironment ");
+            for(String v : env) {
+                System.err.println("\t\t"+v);
+            }
         }
         // Execute the makefile
         NativeExecutor nativeExecutor = new NativeExecutor(
@@ -121,14 +131,5 @@ public class CMakeAction extends AbstractExecutorRunAction {
             nativeExecutor.setOutputListener(outputListener);
         }
         new ShellExecuter(nativeExecutor, listener).execute();
-    }
-
-    private static File getCBuildDirectory(Node node){
-        DataObject dataObject = node.getCookie(DataObject.class);
-        FileObject fileObject = dataObject.getPrimaryFile();
-        File qMakefile = FileUtil.toFile(fileObject);
-        String bdir = qMakefile.getParent();
-        File buildDir = getAbsoluteBuildDir(bdir, qMakefile);
-        return buildDir;
     }
 }

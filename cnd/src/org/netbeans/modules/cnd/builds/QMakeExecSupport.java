@@ -41,6 +41,8 @@ package org.netbeans.modules.cnd.builds;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
@@ -225,42 +227,45 @@ public class QMakeExecSupport extends ExecutionSupport {
                 PROP_ENVIRONMENT, String.class,
                 getString("PROP_QMAKE_ENVIRONMENT"), getString("HINT_QMAKE_ENVIRONMENT")) { // NOI18N
             public String getValue() {
-                return getEnvironment();
+                String[] args = getEnvironmentVariables();
+                List<String> list = new ArrayList<String>();
+                for (int i = 0; i < args.length; i++) {
+                    list.add(args[i]);
+                }
+                list = ImportUtils.quoteList(list);
+                StringBuilder b = new StringBuilder();
+                for (String s : list) {
+                    b.append(s).append(' '); // NOI18N
+                }
+                return b.toString();
             }
-            public void setValue(String val) {
-                setEnvironment(val);
+            public void setValue(String val) throws InvocationTargetException {
+                if (val != null) {
+                    try {
+                        List<String> vars = ImportUtils.parseEnvironment(val);
+                        setEnvironmentVariables(vars.toArray(new String[vars.size()]));
+                    } catch (IOException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                } else {
+                    throw new IllegalArgumentException();
+                }
             }
             @Override public boolean supportsDefaultValue() {
                 return true;
             }
-            @Override public void restoreDefaultValue() {
-                setValue(null);
+            @Override public void restoreDefaultValue() throws InvocationTargetException {
+                try {
+                    setEnvironmentVariables(null);
+                } catch (IOException e) {
+                    throw new InvocationTargetException(e);
+                }
             }
             @Override public boolean canWrite() {
                 return getEntry().getFile().getParent().canWrite();
             }
         };
         return result;
-    }
-
-    public String getEnvironment() {
-        String env = (String) getEntry().getFile().getAttribute(PROP_ENVIRONMENT);
-        if (env == null) {
-            env = ""; // NOI18N
-            setEnvironment(env);
-        }
-        return env;
-    }
-
-    public void setEnvironment(String env) {
-        FileObject fo = getEntry().getFile();
-        try {
-            fo.setAttribute(PROP_ENVIRONMENT, env);
-        } catch (IOException ex) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
-                ex.printStackTrace();
-            }
-        }
     }
 
     private static String getString(String key){

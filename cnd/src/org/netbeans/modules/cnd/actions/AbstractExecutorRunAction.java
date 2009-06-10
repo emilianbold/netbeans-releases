@@ -59,7 +59,10 @@ import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.builds.CMakeExecSupport;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
+import org.netbeans.modules.cnd.builds.QMakeExecSupport;
+import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -183,6 +186,16 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                 if (mes != null) {
                     command = mes.getMakeCommand();
                 }
+            } else if (tool == Tool.QMakeTool) {
+                QMakeExecSupport mes = node.getCookie(QMakeExecSupport.class);
+                if (mes != null) {
+                    command = mes.getQMakeCommand();
+                }
+            } else if (tool == Tool.CMakeTool) {
+                CMakeExecSupport mes = node.getCookie(CMakeExecSupport.class);
+                if (mes != null) {
+                    command = mes.getCMakeCommand();
+                }
             }
         }
         if (command == null || command.length()==0) {
@@ -191,20 +204,52 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return command;
     }
 
-    protected File getBuildDirectory(Node node){
+    protected static File getBuildDirectory(Node node,int tool){
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         File makefile = FileUtil.toFile(fileObject);
         // Build directory
-        String bdir;
-        MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
-        if (mes != null) {
-            bdir = mes.getBuildDirectory();
-        } else {
+        String bdir = null;
+        if (tool == Tool.MakeTool) {
+            MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
+            if (mes != null) {
+                bdir = mes.getBuildDirectory();
+            }
+        } else if (tool == Tool.QMakeTool) {
+            QMakeExecSupport mes = node.getCookie(QMakeExecSupport.class);
+            if (mes != null) {
+                bdir = mes.getRunDirectory();
+            }
+        } else if (tool == Tool.CMakeTool) {
+            CMakeExecSupport mes = node.getCookie(CMakeExecSupport.class);
+            if (mes != null) {
+                bdir = mes.getRunDirectory();
+            }
+        }
+        if (bdir == null) {
             bdir = makefile.getParent();
         }
         File buildDir = getAbsoluteBuildDir(bdir, makefile);
         return buildDir;
+    }
+
+    protected static String getArguments(Node node, int tool) {
+        String args = null;
+        if (tool == Tool.QMakeTool) {
+            QMakeExecSupport mes = node.getCookie(QMakeExecSupport.class);
+            if (mes != null) {
+                args = mes.getRunDirectory();
+            }
+        } else if (tool == Tool.CMakeTool) {
+            CMakeExecSupport mes = node.getCookie(CMakeExecSupport.class);
+            if (mes != null) {
+                args = mes.getRunDirectory();
+            }
+        }
+        if (args == null) {
+            args = "";
+        }
+        return args;
     }
 
     public static String findTools(String toolName){
@@ -223,6 +268,14 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             }
         }
         return toolName;
+    }
+
+    protected static String[] getAdditionalEnvirounment(Node node){
+        ExecutionSupport mes = node.getCookie(ExecutionSupport.class);
+        if (mes != null) {
+            return mes.getEnvironmentVariables();
+        }
+        return null;
     }
 
     protected static String[] prepareEnv(ExecutionEnvironment execEnv) {
