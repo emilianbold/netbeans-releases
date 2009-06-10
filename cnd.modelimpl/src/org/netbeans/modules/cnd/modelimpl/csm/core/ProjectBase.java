@@ -2131,7 +2131,22 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     @Override
     public final String toString() {
-        return getName().toString() + ' ' + getClass().getName() + " @" + hashCode() + ":" + super.hashCode(); // NOI18N
+        return getName().toString() + ' ' + getClass().getName() + " @" + hashCode() + ":" + System.identityHashCode(this); // NOI18N
+    }
+
+    private volatile int hash = 0;
+
+    @Override
+    public int hashCode() {
+        if (hash == 0) {
+            hash = super.hashCode();
+        }
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj == this;
     }
 
     /**
