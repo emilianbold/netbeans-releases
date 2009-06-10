@@ -241,6 +241,8 @@ public class Mercurial {
             }
             goodVersion = true;
             return true;
+        } else if (version != null) {
+            return true;
         } else if (version == null) {
             Preferences prefs = HgModuleConfig.getDefault().getPreferences();
             prefs.remove(HgModuleConfig.PROP_RUN_VERSION);
