@@ -73,8 +73,8 @@ public final class FileObjectCrawler extends Crawler {
         this.files = null;
     }
 
-    public FileObjectCrawler(FileObject root, FileObject[] files, Set<String> mimeTypesToCheck, CancelRequest cancelRequest) throws IOException {
-        super (root.getURL(), false, mimeTypesToCheck, cancelRequest);
+    public FileObjectCrawler(FileObject root, FileObject[] files, boolean checkTimeStamps, Set<String> mimeTypesToCheck, CancelRequest cancelRequest) throws IOException {
+        super (root.getURL(), checkTimeStamps, mimeTypesToCheck, cancelRequest);
         this.root = root;
         this.files = files;
     }
