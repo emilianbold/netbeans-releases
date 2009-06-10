@@ -206,11 +206,7 @@ public class HgHookImpl extends HgHook {
         File file = context.getFiles()[0];
         LOG.log(Level.FINE, "push hook start for " + file);                     // NOI18N
 
-        Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, true);
-        if(repo == null) {
-            LOG.log(Level.FINE, " could not find issue tracker for " + file);      // NOI18N
-            return;
-        }
+        Repository repo = null;
         LogEntry[] entries = context.getLogEntries();
         for (LogEntry logEntry : entries) {
 
@@ -218,6 +214,14 @@ public class HgHookImpl extends HgHook {
             if(pa == null) {
                 LOG.log(Level.FINE, " no push hook scheduled for " + file);     // NOI18N
                 continue;
+            }
+
+            if(repo == null) { // don't go for the repository until we really need it
+                repo = BugtrackingOwnerSupport.getInstance().getRepository(file, false);
+                if(repo == null) {
+                    LOG.log(Level.WARNING, " could not find issue tracker for " + file);      // NOI18N
+                    break;
+                }
             }
 
             Issue issue = repo.getIssue(pa.getIssueID());
