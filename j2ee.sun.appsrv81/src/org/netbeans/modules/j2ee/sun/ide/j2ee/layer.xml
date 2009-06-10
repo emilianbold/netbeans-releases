@@ -80,7 +80,7 @@ made subject to such option by the copyright holder.
 					<attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.OptionalFactory.createFactoryForGF_V2"/>
 					<attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.OptionalFactory"/>
 					<attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
-                                        <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.sun.ide.j2ee#LBL_GlassFishV2"/>
+                                        <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.sun.ide.Bundle#LBL_GlassFishV2"/>
 				</file>
                                
 				<folder name="DeploymentFileNames">
@@ -134,7 +134,7 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.OptionalFactory.createFactoryForSF_V1"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.OptionalFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.sun.ide.j2ee#LBL_JavaEEPlusSIP"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.sun.ide.Bundle#LBL_JavaEEPlusSIP"/>
                 </file>
                 
                 <folder name="DeploymentFileNames">
@@ -188,7 +188,7 @@ made subject to such option by the copyright holder.
 					<attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.OptionalFactory"/>
 					<attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.OptionalFactory"/>
 					<attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
-                                        <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.sun.ide.dm#FACTORY_DISPLAYNAME"/>
+                                        <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.sun.ide.dm.Bundle#FACTORY_DISPLAYNAME"/>
 				</file>
                                
 				<folder name="DeploymentFileNames">
@@ -242,7 +242,7 @@ made subject to such option by the copyright holder.
 					<attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.OptionalFactory.createFactoryForGF_V1"/>
 					<attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.OptionalFactory"/>
 					<attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
-                                        <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.sun.ide.j2ee#LBL_GlassFishV1"/>
+                                        <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.sun.ide.Bundle#LBL_GlassFishV1"/>
 				</file>
                                
 				<folder name="DeploymentFileNames">
