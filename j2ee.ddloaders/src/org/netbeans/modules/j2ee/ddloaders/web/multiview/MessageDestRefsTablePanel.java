@@ -47,7 +47,6 @@ import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.ddloaders.web.DDDataObject;
 import org.netbeans.modules.xml.multiview.ui.DefaultTablePanel;
 import org.netbeans.modules.xml.multiview.ui.EditDialog;
-import org.netbeans.modules.xml.multiview.ui.SimpleDialogPanel;
 import org.openide.util.NbBundle;
 
 /** MessageDestRefsTablePanel - panel containing table for message destination references
@@ -128,7 +127,7 @@ public class MessageDestRefsTablePanel extends DefaultTablePanel {
             
             if (add) dialog.setValid(false); // disable OK button
             javax.swing.event.DocumentListener docListener = new EditDialog.DocListener(dialog);
-            dialogPanel.getNameTF().getDocument().addDocumentListener(docListener);;
+            dialogPanel.getNameTF().getDocument().addDocumentListener(docListener);
             
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
             d.setVisible(true);

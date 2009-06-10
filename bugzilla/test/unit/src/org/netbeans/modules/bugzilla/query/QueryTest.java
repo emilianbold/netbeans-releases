@@ -41,6 +41,8 @@ package org.netbeans.modules.bugzilla.query;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import org.netbeans.modules.bugzilla.*;
@@ -54,6 +56,7 @@ import java.util.logging.LogRecord;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.BugtrackingConfig;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -77,6 +80,8 @@ public class QueryTest extends NbTestCase implements TestConstants {
         "&chfieldto=Now&chfieldvalue=&cmdtype=doit&order=Reuse+same+sort+as+last+time" + "" +
         "&field0-0-0=noop&type0-0-0=noop&value0-0-0=";
 
+    private int TIMEOUT = 60000;
+
     public QueryTest(String arg0) {
         super(arg0);
     }
@@ -89,25 +94,38 @@ public class QueryTest extends NbTestCase implements TestConstants {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        System.out.println("###" + getName());
         BugzillaCorePlugin bcp = new BugzillaCorePlugin();
         try {
             bcp.start(null);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        cleanupStoredIssues();
     }
 
-    public void testRefresh() throws MalformedURLException, CoreException {
+    public void testRefresh() throws MalformedURLException, CoreException, InterruptedException {
         long ts = System.currentTimeMillis();
         String summary = "somary" + ts;
         String id1 = TestUtil.createIssue(getRepository(), summary);
 
+        LogHandler h = new LogHandler("Finnished populate");
+        Bugzilla.LOG.addHandler(h);
+
         String p =  MessageFormat.format(PARAMETERS_FORMAT, summary);
         BugzillaQuery q = new BugzillaQuery(QUERY_NAME, getRepository(), p, ts, false);
+        ts = System.currentTimeMillis();
+        while(!h.done) {
+            Thread.sleep(500);
+            if(ts + TIMEOUT < System.currentTimeMillis()) throw new IllegalStateException("timeout");
+        }
+
         TestQueryNotifyListener nl = new TestQueryNotifyListener(q);
 
         nl.reset();
         q.refresh();
+        Issue[] is = q.getIssues();
+        assertEquals(1, is.length);
         assertTrue(nl.started);
         assertTrue(nl.finished);
         List<Issue> il = nl.getIssues(Issue.ISSUE_STATUS_ALL);
@@ -115,8 +133,6 @@ public class QueryTest extends NbTestCase implements TestConstants {
         Issue i = il.get(0);
         assertEquals(summary, i.getSummary());
         assertEquals(id1, i.getID());
-//        Issue[] is = q.getIssues();
-//        assertEquals(1, is.length);
 
         nl.reset();
         q.refresh(p, false);
@@ -127,8 +143,8 @@ public class QueryTest extends NbTestCase implements TestConstants {
         i = il.get(0);
         assertEquals(summary, i.getSummary());
         assertEquals(id1, i.getID());
-//        is = q.getIssues();
-//        assertEquals(1, is.length);
+        is = q.getIssues();
+        assertEquals(1, is.length);
     }
 
     public void testGetIssues() throws MalformedURLException, CoreException {
@@ -228,16 +244,22 @@ public class QueryTest extends NbTestCase implements TestConstants {
     public void testSaveAterSearch() throws MalformedURLException, CoreException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, InterruptedException {
         long ts = System.currentTimeMillis();
         String summary = "somary" + ts;
-        String id1 = TestUtil.createIssue(getRepository(), summary);
+        BugzillaRepository repository = getRepository();
+        String id1 = TestUtil.createIssue( repository, summary);
 
-        // create query
-        BugzillaQuery q = new BugzillaQuery(getRepository());
-        LogHandler h = new LogHandler("Finnished populate ");
+        LogHandler h = new LogHandler("Finnished populate");
         Bugzilla.LOG.addHandler(h);
+        
+        // create query
+        BugzillaQuery q = new BugzillaQuery(repository);
 
         // get controler and wait until populated with default values
         QueryController c = q.getController();
-        while(!h.done) Thread.sleep(100);
+        ts = System.currentTimeMillis();
+        while(!h.done) {
+            Thread.sleep(500);
+            if(ts + TIMEOUT < System.currentTimeMillis()) throw new IllegalStateException("timeout");
+        }
 
         // populate with parameters - summary
         populate(c, summary);
@@ -249,7 +271,11 @@ public class QueryTest extends NbTestCase implements TestConstants {
         h = new LogHandler("refresh finish");
         Bugzilla.LOG.addHandler(h);
         search(c); // search button and wait until done
-        while(!h.done) Thread.sleep(100);
+        ts = System.currentTimeMillis();
+        while(!h.done) {
+            Thread.sleep(500);
+            if(ts + TIMEOUT < System.currentTimeMillis()) throw new IllegalStateException("timeout");
+        }
 
         assertTrue(nl.started);
         assertTrue(nl.finished);
@@ -261,18 +287,19 @@ public class QueryTest extends NbTestCase implements TestConstants {
 
         // save
         nl.reset();
-        h = new LogHandler("refresh finish");
         Bugzilla.LOG.addHandler(h);
-        save(c, QUERY_NAME + ts); // save button
-        while(!h.done) Thread.sleep(100);
-
-        assertTrue(nl.started);
-        assertTrue(nl.finished);
-        il = nl.getIssues(Issue.ISSUE_STATUS_ALL);
-        assertEquals(1, il.size());
-        i = il.get(0);
-        assertEquals(summary, i.getSummary());
-        assertEquals(id1, i.getID());
+        String name = QUERY_NAME + ts;
+        save(c, name); // save button
+        assertTrue(q.isSaved());
+        // create a new repo instance and check if our query is between them
+        repository = getRepository();
+        Query[] queries = repository.getQueries();
+        boolean bl = false;
+        for (Query query : queries) {
+            bl = query.getDisplayName().equals(name);
+            if(bl) break;
+        }
+        assertTrue(bl);
     }
 
     public void testSaveBeforeSearch() throws MalformedURLException, CoreException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, InterruptedException {
@@ -280,10 +307,11 @@ public class QueryTest extends NbTestCase implements TestConstants {
         String summary = "somary" + ts;
         String id1 = TestUtil.createIssue(getRepository(), summary);
 
-        // create query
-        BugzillaQuery q = new BugzillaQuery(getRepository());
         LogHandler h = new LogHandler("Finnished populate ");
         Bugzilla.LOG.addHandler(h);
+
+        // create query
+        BugzillaQuery q = new BugzillaQuery(getRepository());
 
         // get controler and wait until populated with default values
         QueryController c = q.getController();
@@ -372,6 +400,11 @@ public class QueryTest extends NbTestCase implements TestConstants {
         QueryPanel p = (QueryPanel) c.getComponent();
         p.summaryTextField.setText(summary);
         p.productList.getSelectionModel().clearSelection(); // no product
+    }
+
+    private void cleanupStoredIssues() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, ClassNotFoundException, NoSuchMethodException, NoSuchMethodException, InstantiationException, InvocationTargetException {
+        getRepository().getIssueCache().storeArchivedQueryIssues(QUERY_NAME, new String[0]);
+        getRepository().getIssueCache().storeQueryIssues(QUERY_NAME, new String[0]);
     }
 
     private class LogHandler extends Handler {

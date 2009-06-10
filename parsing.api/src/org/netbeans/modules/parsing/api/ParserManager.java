@@ -152,7 +152,6 @@ public final class ParserManager {
             Parser parser = null;
             final Collection<Snapshot> snapShots = new LazySnapshots(sources);
             for (Source source : sources) {
-                SourceCache sourceCache = SourceAccessor.getINSTANCE ().getCache (source);
                 if (parser == null) {
                     Lookup lookup = MimeLookup.getLookup (source.getMimeType ());
                     ParserFactory parserFactory = lookup.lookup (ParserFactory.class);
@@ -160,7 +159,8 @@ public final class ParserManager {
                         parser = parserFactory.createParser (snapShots);
                     }
                 }
-                final ResultIterator resultIterator = new ResultIterator (sourceCache, parser, userTask);
+                final SourceCache uncachedSourceCache = new SourceCache(source, null);
+                final ResultIterator resultIterator = new ResultIterator (uncachedSourceCache, parser, userTask);
                 try {
                     userTask.run (resultIterator);
                 } finally {

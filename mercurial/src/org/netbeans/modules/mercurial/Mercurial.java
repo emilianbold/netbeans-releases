@@ -145,7 +145,7 @@ public class Mercurial {
         mercurialInterceptor = new MercurialInterceptor();
         checkVersion(); // Does the Hg check but postpones querying user until menu is activated
     }
-    
+
     private void setDefaultPath() {
         // Set default executable location for mercurial on mac
         if (System.getProperty("os.name").equals("Mac OS X")) { // NOI18N
@@ -178,24 +178,31 @@ public class Mercurial {
         RequestProcessor rp = getRequestProcessor();
         Runnable doCheck = new Runnable() {
             public void run() {
-                version = HgCommand.getHgVersion();
-                LOG.log(Level.FINE, "version: {0}", version); // NOI18N
-                if (version != null) {
-                    goodVersion = isGoodVersion(version);
-                    if (!goodVersion){
-                        Preferences prefs = HgModuleConfig.getDefault().getPreferences();
-                        runVersion = prefs.get(HgModuleConfig.PROP_RUN_VERSION, null);
-                        if (runVersion != null && runVersion.equals(version)) {
-                            goodVersion = true;
-                        }
-                   }
-                } else {
-                    goodVersion = false;
+                synchronized(this) {
+                    checkVersionIntern();
                 }
-                gotVersion = true;
             }
+
         };
         rp.post(doCheck);
+    }
+
+    private void checkVersionIntern() {
+        version = HgCommand.getHgVersion();
+        LOG.log(Level.FINE, "version: {0}", version); // NOI18N
+        if (version != null) {
+            goodVersion = isGoodVersion(version);
+            if (!goodVersion) {
+                Preferences prefs = HgModuleConfig.getDefault().getPreferences();
+                runVersion = prefs.get(HgModuleConfig.PROP_RUN_VERSION, null);
+                if (runVersion != null && runVersion.equals(version)) {
+                    goodVersion = true;
+                }
+            }
+        } else {
+            goodVersion = false;
+        }
+        gotVersion = true;
     }
 
     private boolean isGoodVersion(String version) {
@@ -213,10 +220,15 @@ public class Mercurial {
         return true;
     }
 
-    public void checkVersionNotify() {
-        if (!gotVersion) {
-            LOG.log(Level.FINE, "Call to hg version not finished"); // NOI18N
-            return;
+    public boolean checkVersionNotify(boolean forceCheck) {
+        synchronized(this) {
+            if (!gotVersion) {
+                LOG.log(Level.FINE, "Call to hg version not finished"); // NOI18N
+                if(forceCheck) {
+                    checkVersionIntern();
+                }
+                return true;
+            }
         }
         if (version != null && !goodVersion) {
             if (runVersion == null || !runVersion.equals(version)) {
@@ -228,6 +240,7 @@ public class Mercurial {
                 logger.closeLog();
             }
             goodVersion = true;
+            return true;
         } else if (version == null) {
             Preferences prefs = HgModuleConfig.getDefault().getPreferences();
             prefs.remove(HgModuleConfig.PROP_RUN_VERSION);
@@ -235,7 +248,9 @@ public class Mercurial {
             logger.outputInRed(NbBundle.getMessage(Mercurial.class, "MSG_VERSION_NONE_OUTPUT_MSG")); // NOI18N);
             HgUtils.warningDialog(Mercurial.class, "MSG_VERSION_NONE_TITLE", "MSG_VERSION_NONE_MSG");// NOI18N
             logger.closeLog();
+            return false;
         }
+        return false;
     }
 
     public MercurialAnnotator getMercurialAnnotator() {
@@ -344,7 +359,7 @@ public class Mercurial {
                 break;
             }
             if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
-            if (canWrite(file)){ 
+            if (canWrite(file)){
                 LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
                 done.clear();   // all folders added before must be removed, they ARE in fact managed by hg
                 topmost =  file;
@@ -422,7 +437,7 @@ public class Mercurial {
     }
     public boolean isGoodVersionAndNotify() {
         if (checkedVersion == false) {
-            checkVersionNotify();
+            checkVersionNotify(false);
             checkedVersion = true;
         }
         return goodVersion;
@@ -557,5 +572,13 @@ public class Mercurial {
         List<HyperlinkProvider> providersList = new ArrayList<HyperlinkProvider>(providersCol.size());
         providersList.addAll(providersCol);
         return Collections.unmodifiableList(providersList);
+    }
+
+    /**
+     * Returns scanned version or null if has not been scanned yet
+     * @return
+     */
+    public String getVersion () {
+        return version;
     }
 }

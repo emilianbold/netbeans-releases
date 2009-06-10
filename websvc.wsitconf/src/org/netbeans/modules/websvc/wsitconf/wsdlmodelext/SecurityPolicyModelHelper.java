@@ -829,7 +829,7 @@ public class SecurityPolicyModelHelper {
             h.setName("Action");    //NOI18N
             h.setNamespace(Addressing10QName.ADDRESSING10_NS_URI);
         }
-        String rmNspace = RMQName.RMASSERTION.getNamespaceUri(configVersion);
+        String rmNspace = RMQName.RMASSERTION.getHeaderNamespaceUri(configVersion);
         if (MessageHeader.RM_ACKREQUESTED.equals(item)) {
             h.setName("AckRequested");  //NOI18N
             h.setNamespace(rmNspace);

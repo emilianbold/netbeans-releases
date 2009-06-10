@@ -73,7 +73,6 @@ import org.netbeans.modules.cnd.makeproject.api.RunDialogPanel;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomToolConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -158,7 +157,7 @@ public class MakeActionProvider implements ActionProvider {
     MakeProject project;
 
     // Project Descriptor
-    ConfigurationDescriptor projectDescriptor = null;
+    MakeConfigurationDescriptor projectDescriptor = null;
     /** Map from commands to ant targets */
     Map<String, String[]> commands;
     Map<String, String[]> commandsNoBuild;
@@ -211,7 +210,7 @@ public class MakeActionProvider implements ActionProvider {
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             projectDescriptor = pdp.getConfigurationDescriptor();
         }
-        return (MakeConfigurationDescriptor) projectDescriptor;
+        return projectDescriptor;
     }
 
     public String[] getSupportedActions() {
@@ -251,7 +250,10 @@ public class MakeActionProvider implements ActionProvider {
         ProjectInformation info = project.getLookup().lookup(ProjectInformation.class);
         final String projectName = info.getDisplayName();
         final MakeConfigurationDescriptor pd = getProjectDescriptor();
-        final MakeConfiguration conf = (MakeConfiguration) pd.getConfs().getActive();
+        final MakeConfiguration conf = pd.getActiveConfiguration();
+        if (conf == null) {
+            return;
+        }
 
         CancellableTask actionWorker = new CancellableTask() {
             @Override
@@ -953,8 +955,11 @@ public class MakeActionProvider implements ActionProvider {
                 command.equals(COMMAND_DEBUG_STEP_INTO) ||
                 command.equals(COMMAND_DEBUG_LOAD_ONLY) ||
                 command.equals(COMMAND_CUSTOM_ACTION)) {
-            ConfigurationDescriptor pd = getProjectDescriptor();
-            MakeConfiguration conf = (MakeConfiguration) pd.getConfs().getActive();
+            MakeConfigurationDescriptor pd = getProjectDescriptor();
+            MakeConfiguration conf = pd.getActiveConfiguration();
+            if (conf == null) {
+                return null;
+            }
             RunProfile profile = (RunProfile) conf.getAuxObject(RunProfile.PROFILE_ID);
             if (profile == null) { // See IZ 89349
                 return null;
@@ -985,10 +990,10 @@ public class MakeActionProvider implements ActionProvider {
         if (!isProjectDescriptorLoaded()) {
             return false;
         }
-        if (!(getProjectDescriptor().getConfs().getActive() instanceof MakeConfiguration)) {
+        MakeConfiguration conf = getProjectDescriptor().getActiveConfiguration();
+        if (conf == null) {
             return false;
         }
-        MakeConfiguration conf = (MakeConfiguration) getProjectDescriptor().getConfs().getActive();
         if (command.equals(COMMAND_CLEAN)) {
             return true;
         } else if (command.equals(COMMAND_BUILD)) {

@@ -51,8 +51,8 @@ import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappings;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.openide.filesystems.FileObject;
 
 /**

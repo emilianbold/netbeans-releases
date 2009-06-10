@@ -126,6 +126,8 @@ public class TreeListUI extends BasicListUI {
         if( null == renComponent )
             return false;
         Rectangle rect = list.getCellBounds(index, index);
+        if( null == rect )
+            return false;
         renComponent.setBounds(0,0,rect.width, rect.height);
         renComponent.doLayout();
         Point p3 = rect.getLocation();

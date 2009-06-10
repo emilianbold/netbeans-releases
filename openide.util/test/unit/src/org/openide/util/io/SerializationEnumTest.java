@@ -52,8 +52,11 @@ public class SerializationEnumTest extends NbTestCase {
      * #164239: Test that NbObjectOutputStream.isSerialVersionUIDDeclared returns true for Enum.
      */
     public void testSerialVersionUIDDeclared () throws Exception {
-        assertTrue("NbObjectOutputStream.isSerialVersionUIDDeclared must return true for Enum",
+        assertTrue("NbObjectOutputStream.isSerialVersionUIDDeclared must return true for Enum subclass",
         NbObjectOutputStream.isSerialVersionUIDDeclared(Grade.A.getClass()));
+
+        assertTrue("NbObjectOutputStream.isSerialVersionUIDDeclared must return true for java.lang.Enum",
+        NbObjectOutputStream.isSerialVersionUIDDeclared(Enum.class));
     }
     
 }

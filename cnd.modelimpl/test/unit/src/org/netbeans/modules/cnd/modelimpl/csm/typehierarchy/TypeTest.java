@@ -43,13 +43,13 @@ package org.netbeans.modules.cnd.modelimpl.csm.typehierarchy;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
  * @author Alexander Simon
  */
-public class TypeTest extends BaseTestSuite {
+public class TypeTest extends CndBaseTestSuite {
     
     public TypeTest() {
         super("C/C++ Type Hierarchy"); // NOI18N

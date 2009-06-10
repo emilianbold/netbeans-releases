@@ -68,12 +68,13 @@ import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.ruby.modules.project.rake.FileChangeSupport;
-import org.netbeans.modules.ruby.modules.project.rake.FileChangeSupportEvent;
-import org.netbeans.modules.ruby.modules.project.rake.FileChangeSupportListener;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -237,7 +238,7 @@ public class PropertyUtils {
     /**
      * Provider based on a named properties file.
      */
-    private static final class FilePropertyProvider implements PropertyProvider, FileChangeSupportListener {
+    private static final class FilePropertyProvider implements PropertyProvider, FileChangeListener {
         
         private static final RequestProcessor RP = new RequestProcessor("PropertyUtils.FilePropertyProvider.RP"); // NOI18N
         
@@ -248,7 +249,7 @@ public class PropertyUtils {
         
         public FilePropertyProvider(File properties) {
             this.properties = properties;
-            FileChangeSupport.DEFAULT.addListener(this, properties);
+            FileUtil.addFileChangeListener(this, properties);
         }
         
         public Map<String,String> getProperties() {
@@ -322,25 +323,33 @@ public class PropertyUtils {
             listeners.remove(l);
         }
 
-        public void fileCreated(FileChangeSupportEvent event) {
-            //System.err.println("FPP: " + event);
+        public void fileFolderCreated(FileEvent fe) {
             fireChange();
         }
 
-        public void fileDeleted(FileChangeSupportEvent event) {
-            //System.err.println("FPP: " + event);
+        public void fileDataCreated(FileEvent fe) {
             fireChange();
         }
 
-        public void fileModified(FileChangeSupportEvent event) {
-            //System.err.println("FPP: " + event);
+        public void fileChanged(FileEvent fe) {
+            fireChange();
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            fireChange();
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {
+            fireChange();
+        }
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
             fireChange();
         }
         
         public String toString() {
             return "FilePropertyProvider[" + properties + ":" + getProperties() + "]"; // NOI18N
         }
-        
     }
     
     /**

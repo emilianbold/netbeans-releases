@@ -91,19 +91,20 @@ public class DiffSidebarManager implements PreferenceChangeListener {
 
     public void refreshSidebars(final Set<File> files) {
         // pushing the change ... we may as well listen for changes in versioning manager
+        Set<FileObject> fileObjects = null;
+        if (files != null) {
+            fileObjects = new HashSet<FileObject>(files.size());
+            for (File file : files) {
+                fileObjects.add(FileUtil.toFileObject(FileUtil.normalizeFile(file)));
+            }
+            fileObjects.remove(null);
+        }
+        final Set<FileObject> fileObjectsToRefresh = fileObjects;
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                Set<FileObject> fileObjects = null;
-                if (files != null) {
-                    fileObjects = new HashSet<FileObject>(files.size());
-                    for (File file : files) {
-                        fileObjects.add(FileUtil.toFileObject(file));
-                    }
-                    fileObjects.remove(null);
-                }
-                synchronized(sideBars) {
+                synchronized (sideBars) {
                     for (DiffSidebar bar : sideBars.keySet()) {
-                        if (matches(bar, fileObjects)) {
+                        if (matches(bar, fileObjectsToRefresh)) {
                             bar.refresh();
                         }
                     }

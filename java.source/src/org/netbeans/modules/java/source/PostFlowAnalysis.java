@@ -79,6 +79,7 @@ public class PostFlowAnalysis extends TreeScanner {
 
     private List<Pair<TypeSymbol, Symbol>> outerThisStack;
     private TypeSymbol currentClass;
+    private boolean checkThis = true;
 
     private PostFlowAnalysis(Context ctx) {
         log = Log.instance(ctx);
@@ -173,28 +174,34 @@ public class PostFlowAnalysis extends TreeScanner {
 
     @Override
     public void visitApply(JCMethodInvocation tree) {
-        super.visitApply(tree);
-        Symbol meth = TreeInfo.symbol(tree.meth);
-        Name methName = TreeInfo.name(tree.meth);
-        if (meth != null && meth.name==names.init) {
-            Symbol c = meth.owner;
-            if (c.hasOuterInstance()) {
-                if (tree.meth.getTag() != JCTree.SELECT && ((c.owner.kind & (Kinds.MTH | Kinds.VAR)) != 0 || methName == names._this)) {
-                    checkThis(tree.meth.pos(), c.type.getEnclosingType().tsym);
+        boolean prevCheckThis = checkThis;
+        try {
+            Symbol meth = TreeInfo.symbol(tree.meth);
+            Name methName = TreeInfo.name(tree.meth);
+            if (meth != null && meth.name == names.init) {
+                Symbol c = meth.owner;
+                if (c.hasOuterInstance()) {
+                    checkThis = false;
+                    if (tree.meth.getTag() != JCTree.SELECT && ((c.owner.kind & (Kinds.MTH | Kinds.VAR)) != 0 || methName == names._this)) {
+                        checkThis(tree.meth.pos(), c.type.getEnclosingType().tsym);
+                    }
                 }
             }
+            super.visitApply(tree);
+        } finally {
+            checkThis = prevCheckThis;
         }
     }
 
     @Override
     public void visitSelect(JCFieldAccess tree) {
         super.visitSelect(tree);
-        if (tree.name == names._this || tree.name == names._super)
+        if ((tree.name == names._this || tree.name == names._super) && tree.selected.type != null)
             checkThis(tree.pos(), tree.selected.type.tsym);
     }
 
     private void checkThis(DiagnosticPosition pos, TypeSymbol c) {
-        if (currentClass != c) {
+        if (checkThis && currentClass != c) {
             List<Pair<TypeSymbol, Symbol>> ots = outerThisStack;
             if (ots.isEmpty()) {
                 log.error(pos, "no.encl.instance.of.type.in.scope", c); //NOI18N

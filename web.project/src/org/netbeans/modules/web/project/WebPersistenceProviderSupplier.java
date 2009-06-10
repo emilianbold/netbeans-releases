@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Capabilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -82,6 +83,7 @@ public class WebPersistenceProviderSupplier implements PersistenceProviderSuppli
         addPersistenceProvider(ProviderUtil.HIBERNATE_PROVIDER, "hibernatePersistenceProviderIsDefault", platform, result); // NOI18N
         addPersistenceProvider(ProviderUtil.TOPLINK_PROVIDER, "toplinkPersistenceProviderIsDefault", platform, result);// NOI18N
         addPersistenceProvider(ProviderUtil.KODO_PROVIDER, "kodoPersistenceProviderIsDefault", platform, result); // NOI18N
+        addPersistenceProvider(ProviderUtil.DATANUCLEUS_PROVIDER, "dataNucleusPersistenceProviderIsDefault", platform, result); // NOI18N
         addPersistenceProvider(ProviderUtil.OPENJPA_PROVIDER, "openJpaPersistenceProviderIsDefault", platform, result); // NOI18N
         addPersistenceProvider(ProviderUtil.ECLIPSELINK_PROVIDER, "eclipseLinkPersistenceProviderIsDefault", platform, result); // NOI18N
         
@@ -100,19 +102,7 @@ public class WebPersistenceProviderSupplier implements PersistenceProviderSuppli
     }
     
     public boolean supportsDefaultProvider() {
-        
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-        J2eePlatform platform  = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
-        
-        if (platform == null){
-            // server probably not registered, can't resolve whether default provider is supported (see #79856)
-            return false;
-        }
-        
-        Set<String> supportedVersions = platform.getSupportedSpecVersions(j2eeModuleProvider.getJ2eeModule().getModuleType());
-        
-        return supportedVersions.contains(J2eeModule.JAVA_EE_5)
-                && platform.isToolSupported("defaultPersistenceProviderJavaEE5");
+        return Capabilities.forProject(project).hasDefaultPersistenceProvider();
     }
     
 

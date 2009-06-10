@@ -399,7 +399,8 @@ public class ModelSupport implements PropertyChangeListener {
     }
 
     public static FileBuffer getFileBuffer(File file) {
-        FileObject fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(file));
+        File normalizeFile = CndFileUtils.normalizeFile(file);
+        FileObject fo = FileUtil.toFileObject(normalizeFile);
         if (fo != null) {
             try {
                 DataObject dao = DataObject.find(fo);
@@ -408,7 +409,7 @@ public class ModelSupport implements PropertyChangeListener {
                     if (editor != null) {
                         Document doc = editor.getDocument();
                         if (doc != null) {
-                            return new FileBufferDoc(file, doc);
+                            return new FileBufferDoc(normalizeFile.getAbsolutePath(), doc);
                         }
                     }
                 }
@@ -416,7 +417,7 @@ public class ModelSupport implements PropertyChangeListener {
                 // nothing
             }
         }
-        return new FileBufferFile(file);
+        return new FileBufferFile(normalizeFile.getAbsolutePath());
     }
 
     public void onMemoryLow(LowMemoryEvent event, boolean fatal) {
@@ -495,7 +496,7 @@ public class ModelSupport implements PropertyChangeListener {
                 if (doc.getProperty("cnd.refactoring.modification.event") != Boolean.TRUE) {
                     FileObject primaryFile = curObj.getPrimaryFile();
                     File file = FileUtil.toFile(primaryFile);
-                    final FileBufferDoc buffer = new FileBufferDoc(file, doc);
+                    final FileBufferDoc buffer = new FileBufferDoc(file.getAbsolutePath(), doc);
 
                     for (NativeFileItem nativeFile : set.getItems()) {
                         ProjectBase csmProject = (ProjectBase) model.getProject(nativeFile.getNativeProject());
@@ -505,7 +506,7 @@ public class ModelSupport implements PropertyChangeListener {
                         }
                     }
                 } else {
-                    System.err.println("skip unnecessary switch of buffers");
+//                    System.err.println("skip unnecessary switch of buffers");
                 }
             }
         }

@@ -39,7 +39,6 @@ package org.netbeans.installer.utils.system.launchers.impl;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
@@ -107,8 +106,12 @@ public class JarLauncher extends CommonLauncher {
     public String getExtension() {
         return FileUtils.JAR_EXTENSION;
     }
-    
-    protected String getI18NResourcePrefix() {
+    @Override
+    public String getI18NResourcePrefix() {
+        return null;
+    }
+    @Override
+    public String getI18NBundleBaseName() {
         return null;
     }
     

@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -71,7 +72,6 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
-import org.openide.util.Utilities;
 
 
 /**
@@ -390,8 +390,15 @@ public final class J2eePlatform {
      * class.
      *
      * @return list of supported J2EE specification versions.
+     * @deprecated use {@link #getSupportedProfiles()}
      */
     public Set/*<String>*/ getSupportedSpecVersions() {
+        boolean assertsEnabled = false;
+        assert assertsEnabled = true;
+        if (assertsEnabled) {
+            LOGGER.log(Level.INFO, "Call to deprecated method " + J2eePlatform.class.getName() + "getSupportedSpecVersions", new Exception());
+        }
+
         return impl.getSupportedSpecVersions();
     }
 
@@ -402,9 +409,44 @@ public final class J2eePlatform {
      * @param moduleType one of the constants defined in
      *   {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule}
      * @return list of supported J2EE specification versions.
+     * @deprecated use {@link #getSupportedProfiles(java.lang.Object)}
      */
     public Set <String> getSupportedSpecVersions(Object moduleType) {
+        boolean assertsEnabled = false;
+        assert assertsEnabled = true;
+        if (assertsEnabled) {
+            LOGGER.log(Level.INFO, "Call to deprecated method " + J2eePlatform.class.getName() + "getSupportedSpecVersions", new Exception());
+        }
         return impl.getSupportedSpecVersions(moduleType);
+    }
+
+    /**
+     * Returns the set of supported profiles (terminology of Java EE 6). There
+     * are also profiles for J2EE 1.4 and Java EE 5.
+     *
+     * @return set of {@link Profile}s supported by the server.
+     * @see Profile
+     * @since 1.58
+     */
+    @NonNull
+    public Set<Profile> getSupportedProfiles() {
+        return impl.getSupportedProfiles();
+    }
+
+    /**
+     * Returns the set of supported profiles (terminology of Java EE 6) for
+     * the given module type (one of {@link J2eeModule#EAR},
+     * {@link J2eeModule#EJB}, {@link J2eeModule#WAR}, {@link J2eeModule#RAR}
+     * and {@link J2eeModule#CAR}).
+     *
+     * @param moduleType type of the module
+     * @return set of {@link Profile}s supported by the server.
+     * @see Profile
+     * @since 1.59
+     */
+    @NonNull
+    public Set<Profile> getSupportedProfiles(@NonNull J2eeModule.Type moduleType) {
+        return impl.getSupportedProfiles(moduleType);
     }
 
     /**
@@ -413,9 +455,27 @@ public final class J2eePlatform {
      * class.
      *
      * @return list of supported J2EE module types.
+     * @deprecated use {@link #getSupportedTypes()}
      */
-    public Set/*<Object>*/ getSupportedModuleTypes() {
+    public Set getSupportedModuleTypes() {
+        boolean assertsEnabled = false;
+        assert assertsEnabled = true;
+        if (assertsEnabled) {
+            LOGGER.log(Level.INFO, "Call to deprecated method " + J2eePlatform.class.getName() + "getSupportedModuleTypes", new Exception());
+        }
         return impl.getSupportedModuleTypes();
+    }
+
+    /**
+     * Return a list of supported module types. Use module types defined in the
+     * {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type}
+     * class.
+     *
+     * @return set of supported module types
+     * @since 1.59
+     */
+    public Set<J2eeModule.Type> getSupportedTypes() {
+        return impl.getSupportedTypes();
     }
 
     /**

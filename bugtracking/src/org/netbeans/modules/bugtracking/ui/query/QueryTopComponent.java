@@ -114,15 +114,6 @@ final class QueryTopComponent extends TopComponent
     private Task prepareTask;
 
     QueryTopComponent() {
-        this(null, null);
-    }
-
-    QueryTopComponent(Query query) {
-        this(query, null);
-    }
-
-    QueryTopComponent(Query query, Repository toSelect) {
-
         BugtrackingManager.getInstance().addPropertyChangeListener(this);
 
         initComponents();
@@ -132,69 +123,11 @@ final class QueryTopComponent extends TopComponent
         int unitIncrement = (int)(s*1.5);
         scrollPane.getHorizontalScrollBar().setUnitIncrement(unitIncrement);
         scrollPane.getVerticalScrollBar().setUnitIncrement(unitIncrement);
-        
-        this.query = query;
-
-        setNameAndTooltip();
-
-        if(query != null) {
-            setSaved();
-            BugtrackingController c = query.getController();
-            panel.add(c.getComponent());
-            this.query.addPropertyChangeListener(this);
-        } else {
-            newButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    onNewClick();
-                }
-            });
-
-            repositoryComboBox.setRenderer(new DefaultListCellRenderer() {
-                @Override
-                public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                    Repository r = null;
-                    if(value != null) {
-                        r = (Repository) value;
-                        value = r.getDisplayName();
-                    }
-                    Component renderer = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                    if(renderer instanceof JLabel && r != null) {
-                        ((JLabel) renderer).setIcon((Icon) r.getIcon());
-                    }
-                    return renderer;
-                }
-            });
-
-            setupRepositoryModel();
-            if(toSelect != null) {
-                repositoryComboBox.setSelectedItem(toSelect);
-                onRepoSelected();
-            } else {
-                if(repositoryComboBox.getModel().getSize() > 0) {
-                    repositoryComboBox.setSelectedIndex(0);
-                    onRepoSelected();
-                }   
-            }
-            repositoryComboBox.addItemListener(new ItemListener() {
-                public void itemStateChanged(ItemEvent e) {
-                    Repository repo = (Repository) e.getItem();
-                    if(e.getStateChange() == ItemEvent.SELECTED) {
-                        onRepoSelected();
-                    } else if(e.getStateChange() == ItemEvent.DESELECTED) {
-                        repo.removePropertyChangeListener(QueryTopComponent.this);
-                    }
-                }
-            });
-
-            newButton.addFocusListener(this);
-            repositoryComboBox.addFocusListener(this);
-
-            queriesPanel.setVisible(false);
-        }
     }
 
     public static QueryTopComponent forKenai(Query query, Repository toSelect) {
-        QueryTopComponent tc = new QueryTopComponent(query, toSelect);
+        QueryTopComponent tc = new QueryTopComponent();
+        tc.init(query, toSelect);
         tc.repositoryComboBox.setEnabled(false);
         tc.newButton.setEnabled(false);
         return tc;
@@ -202,6 +135,64 @@ final class QueryTopComponent extends TopComponent
 
     private Query getQuery() {
         return query;
+    }
+
+    public void init(Query query, Repository toSelect) {
+        this.query = query;
+        setNameAndTooltip();
+        if (query != null) {
+            setSaved();
+            BugtrackingController c = query.getController();
+            panel.add(c.getComponent());
+            this.query.addPropertyChangeListener(this);
+        } else {
+            newButton.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+                    onNewClick();
+                }
+            });
+            repositoryComboBox.setRenderer(new DefaultListCellRenderer() {
+
+                @Override
+                public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                    Repository r = null;
+                    if (value != null) {
+                        r = (Repository) value;
+                        value = r.getDisplayName();
+                    }
+                    Component renderer = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                    if (renderer instanceof JLabel && r != null) {
+                        ((JLabel) renderer).setIcon((Icon) r.getIcon());
+                    }
+                    return renderer;
+                }
+            });
+            setupRepositoryModel();
+            if (toSelect != null) {
+                repositoryComboBox.setSelectedItem(toSelect);
+                onRepoSelected();
+            } else {
+                if (repositoryComboBox.getModel().getSize() > 0) {
+                    repositoryComboBox.setSelectedIndex(0);
+                    onRepoSelected();
+                }
+            }
+            repositoryComboBox.addItemListener(new ItemListener() {
+
+                public void itemStateChanged(ItemEvent e) {
+                    Repository repo = (Repository) e.getItem();
+                    if (e.getStateChange() == ItemEvent.SELECTED) {
+                        onRepoSelected();
+                    } else if (e.getStateChange() == ItemEvent.DESELECTED) {
+                        repo.removePropertyChangeListener(QueryTopComponent.this);
+                    }
+                }
+            });
+            newButton.addFocusListener(this);
+            repositoryComboBox.addFocusListener(this);
+            queriesPanel.setVisible(false);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -471,7 +462,11 @@ final class QueryTopComponent extends TopComponent
         } else if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED) ||
                   evt.getPropertyName().equals(Kenai.PROP_LOGIN))
         {
-            updateSavedQueries((Repository) repositoryComboBox.getSelectedItem());
+            rp.post(new Runnable() {
+                public void run() {
+                    updateSavedQueries((Repository) repositoryComboBox.getSelectedItem());
+                }
+            });
         } else if(evt.getPropertyName().equals(BugtrackingManager.EVENT_REPOSITORIES_CHANGED)) {
             if(!repositoryComboBox.isEnabled()) {
                 // well, looks like there shuold be only one repository available

@@ -43,9 +43,12 @@ package org.netbeans.modules.cnd.actions;
 
 import java.io.File;
 import java.io.Writer;
+import java.util.List;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
+import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.loaders.MakefileDataObject;
 import org.netbeans.modules.cnd.settings.MakeSettings;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -72,10 +75,10 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
     }
 
     protected void performAction(Node node, String target) {
-        performAction(node, target, null, null, null);
+        performAction(node, target, null, null, null, null);
     }
 
-    protected void performAction(Node node, String target, ExecutionListener listener, Writer outputListener, Project project) {
+    protected void performAction(Node node, String target, ExecutionListener listener, Writer outputListener, Project project, List<String> additionalEnvironment) {
         if (MakeSettings.getDefault().getSaveAll()) {
             LifecycleManager.getDefault().saveAll();
         }
@@ -85,7 +88,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         // Build directory
         File buildDir = getBuildDirectory(node);
         // Executable
-        String executable = getMakeCommand(node, project);
+        String executable = getCommand(node, project, Tool.MakeTool, "make"); // NOI18N
         // Arguments
         String arguments = "-f " + makefile.getName() + " " + target; // NOI18N
         // Tab Name
@@ -95,13 +98,24 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         } // NOI18N
 
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
+        String[] env = prepareEnv(execEnv);
+        if (additionalEnvironment != null && additionalEnvironment.size()>0){
+            String[] tmp = new String[env.length + additionalEnvironment.size()];
+            for(int i=0; i < env.length; i++){
+                tmp[i] = env[i];
+            }
+            for(int i=0; i < additionalEnvironment.size(); i++){
+                tmp[env.length + i] = additionalEnvironment.get(i);
+            }
+            env = tmp;
+        }
         // Execute the makefile
         NativeExecutor nativeExecutor = new NativeExecutor(
                 execEnv,
                 buildDir.getPath(),
                 executable,
                 arguments,
-                prepareEnv(execEnv),
+                env,
                 tabName,
                 "make", // NOI18N
                 false,

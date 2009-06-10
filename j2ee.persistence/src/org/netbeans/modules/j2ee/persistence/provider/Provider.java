@@ -47,7 +47,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Property;
+import org.netbeans.modules.j2ee.persistence.dd.common.Property;
 
 /**
  * This class represents a persistence provider.
@@ -118,7 +118,7 @@ public abstract class Provider {
             // provider doesn't support table generation
             return null;
         }
-        Property result = new Property();
+        Property result = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Property();
         result.setName(getTableGenerationPropertyName());
         if (TABLE_GENERATION_CREATE.equals(strategy)){
             result.setValue(getTableGenerationCreateValue());

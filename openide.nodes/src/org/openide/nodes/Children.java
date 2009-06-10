@@ -144,6 +144,7 @@ public abstract class Children extends Object {
     EntrySupport entrySupport() {
         synchronized (Children.class) {
             if (entrySupport == null) {
+                LOG.finer("Initializing entrySupport");
                 entrySupport = lazySupport ? new EntrySupport.Lazy(this) : new EntrySupport.Default(this);
                 postInitializeEntrySupport();
             }

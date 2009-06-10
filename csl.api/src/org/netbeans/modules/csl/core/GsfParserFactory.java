@@ -43,6 +43,7 @@ import java.util.Collection;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
+import org.openide.filesystems.FileObject;
 
 /**
  * Registers parsers provided by GSF-based languages with the Parsing API.
@@ -51,15 +52,27 @@ import org.netbeans.modules.parsing.spi.ParserFactory;
  */
 public final class GsfParserFactory extends ParserFactory {
 
-    public GsfParserFactory() {
-
+    public static ParserFactory create(FileObject f) {
+        String mimeType = f.getParent().getPath().substring("Editors/".length()); //NOI18N
+        return new GsfParserFactory(mimeType);
     }
 
     public @Override Parser createParser(Collection<Snapshot> snapshots) {
-        assert snapshots.size() > 0;
-        String mimeType = snapshots.iterator().next().getMimeType();
+        for(Snapshot s : snapshots) {
+            if (!s.getMimeType().equals(mimeType)) {
+                return null;
+            }
+        }
+
         Language l = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+        assert l != null : "No CSL language registered for " + mimeType; //NOI18N
         return l == null ? null : l.getParser(snapshots);
+    }
+
+    private final String mimeType;
+
+    private GsfParserFactory(String mimeType) {
+        this.mimeType = mimeType;
     }
 
 }

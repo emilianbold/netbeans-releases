@@ -112,6 +112,7 @@ public class Installer implements FinishHandler {
         
         initializeErrorHandler();
         dumpSystemInfo();
+        EngineUtils.checkEngine();
         initializePlatform();
         
         instance = this;
@@ -220,8 +221,12 @@ public class Installer implements FinishHandler {
         }
     }
     
-    private void initializeLogManager() {
-        LogManager.setLogFile(new File(getLocalDirectory(), LOG_FILE_NAME));
+    private void initializeLogManager() {        
+        final String logFileProp = System.getProperty(LogManager.LOG_FILE_PROPERTY);
+        final File logFile = logFileProp == null ? 
+                    new File(getLocalDirectory(), LOG_FILE_NAME) : 
+                    new File(logFileProp).getAbsoluteFile();
+        LogManager.setLogFile(logFile);
         LogManager.start();
     }
     

@@ -50,6 +50,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import java.io.File;
 import java.io.IOException;
@@ -395,6 +396,40 @@ public class IfTest extends GeneratorTest {
         assertEquals(golden, res);
     }
     
+    public void test159940() throws Exception {
+        String test =
+                "class Test {\n" +
+                "    void m(int p) {\n" +
+                "        i|f (p > 5);\n" +
+                "    }\n" +
+                "}";
+        String golden = test.replace("|", "");
+        testFile = new File(getWorkDir(), "Test.java");
+        final int indexA = test.indexOf("|");
+        assertTrue(indexA != -1);
+        TestUtilities.copyStringToFile(testFile, test.replace("|", ""));
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy copy) throws Exception {
+                if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                    return;
+                }
+                Tree node = copy.getTreeUtilities().pathFor(indexA).getLeaf();
+                assertEquals(Kind.IF, node.getKind());
+                TreeMaker make = copy.getTreeMaker();
+                StatementTree original = ((IfTree) node).getThenStatement();
+                StatementTree modified = make.EmptyStatement();
+                System.out.println("original: " + original);
+                System.out.println("modified: " + modified);
+                copy.rewrite(original, modified);
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }

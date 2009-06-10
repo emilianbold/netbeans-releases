@@ -128,7 +128,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                 return new ImportantFilesNode((NbModuleProject)project);
             }
             if (project instanceof SuiteProject) {
-                return new ImportantFilesNode(new SuiteImportantFilesChildren((SuiteProject)project));
+                return new ImportantFilesNode(project, new SuiteImportantFilesChildren((SuiteProject)project));
             }
             return null;
         }
@@ -147,11 +147,11 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         private static final String DISPLAY_NAME = NbBundle.getMessage(ModuleLogicalView.class, "LBL_important_files");
         
         public ImportantFilesNode(NbModuleProject project) {
-            super(new ImportantFilesChildren(project));
+            this(project, new ImportantFilesChildren(project));
         }
         
-        ImportantFilesNode(Children ch) {
-            super(ch);
+        ImportantFilesNode(Project project, Children ch) {
+            super(ch, org.openide.util.lookup.Lookups.singleton(project));
         }
         
         public @Override String getName() {

@@ -40,6 +40,10 @@
  */
 package org.netbeans.modules.html.editor.test;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
@@ -50,6 +54,11 @@ import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.html.editor.HtmlKit;
 import org.netbeans.modules.html.editor.gsf.HtmlLanguage;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 /**
  * @author Marek Fukala
@@ -73,6 +82,45 @@ public class TestBase extends CslTestBase {
         doc.putProperty(PROP_MIME_TYPE, HtmlKit.HTML_MIME_TYPE);
         doc.putProperty(Language.class, HTMLTokenId.language());
         return doc;
+    }
+
+    protected Document[] createDocuments(String... fileName) {
+        try {
+            List<Document> docs = new ArrayList<Document>();
+            FileSystem memFS = FileUtil.createMemoryFileSystem();
+            for (String fName : fileName) {
+
+                //we may also create folders
+                StringTokenizer items = new StringTokenizer(fName, "/");
+                FileObject fo = memFS.getRoot();
+                while(items.hasMoreTokens()) {
+                    String item = items.nextToken();
+                    if(items.hasMoreTokens()) {
+                        //folder
+                        fo = fo.createFolder(item);
+                    } else {
+                        //last, create file
+                        fo = fo.createData(item);
+                    }
+                    assertNotNull(fo);
+                }
+                
+                DataObject dobj = DataObject.find(fo);
+                assertNotNull(dobj);
+
+                EditorCookie cookie = dobj.getCookie(EditorCookie.class);
+                assertNotNull(cookie);
+
+                Document document = (Document) cookie.openDocument();
+                assertEquals(0, document.getLength());
+
+                docs.add(document);
+
+            }
+            return docs.toArray(new Document[]{});
+        } catch (Exception ex) {
+            throw new IllegalStateException("Error setting up tests", ex);
+        }
     }
 
     @Override

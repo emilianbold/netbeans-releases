@@ -99,6 +99,8 @@ import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import org.openide.util.Task;
@@ -625,7 +627,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
                     Line line = LineUtil.getLine(resultItem);
 
                     if (line != null) {
-                      line.show(Line.SHOW_GOTO);
+                      line.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
                     }
                 }
             }

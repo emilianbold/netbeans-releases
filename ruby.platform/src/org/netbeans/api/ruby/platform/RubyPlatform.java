@@ -374,12 +374,12 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         }
         String lib = info.getLibDir();
         if (lib == null) {
-            LOGGER.warning("rubylibdir not found for " + interpreter + ", was: " + lib);
+            LOGGER.log(Level.WARNING, "rubylibdir not found for {0}, was: {1}", new String[]{interpreter, lib});
             return null;
         }
         File libDir = new File(lib);
         if (!libDir.isDirectory()) {
-            LOGGER.warning("rubylibdir not found for " + interpreter + ", was: " + lib);
+            LOGGER.log(Level.WARNING, "rubylibdir not found for {0}, was: {1}", new String[]{interpreter, lib});
             return null;
         }
         // info.getVersionLibDir() return e.g. .../lib/ruby/1.8
@@ -627,10 +627,10 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         do {
             String binDir = getBinDir();
             if (binDir != null) {
-                LOGGER.finer("Looking for '" + toFind + "' executable; used intepreter: '" + getInterpreter() + "'"); // NOI18N
+                LOGGER.log(Level.FINER, "Looking for '{0}' executable; used intepreter: '{1}'", new String[]{toFind, getInterpreter()}); // NOI18N
                 exec = RubyPlatform.findExecutable(binDir, toFind);
             } else {
-                LOGGER.warning("Could not find Ruby interpreter executable when searching for '" + toFind + "'"); // NOI18N
+                LOGGER.log(Level.WARNING, "Could not find Ruby interpreter executable when searching for '{0}'", toFind); // NOI18N
             }
             if (exec == null && searchInRubyGems && hasRubyGemsInstalled()) {
                 for (File repo : getGemManager().getRepositories()) {
@@ -652,7 +652,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
             exec = findExecutable(toFind + ".bat", searchInRubyGems); // NOI18N
         }
         if (exec != null) {
-            LOGGER.finer("Found '" + toFind + "': '" + exec + "'");
+            LOGGER.log(Level.FINER, "Found '{0}': '{1}'", new String[]{toFind, exec});
         }
         return exec;
     }
@@ -683,7 +683,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     private static String findExecutable(final String dir, final String toFind) {
         String exec = dir + File.separator + toFind;
         if (!new File(exec).isFile()) {
-            LOGGER.finer("'" + exec + "' is not a file."); // NOI18N
+            LOGGER.log(Level.FINER, "'{0}' is not a file.", exec); // NOI18N
             exec = null;
         }
         return exec;

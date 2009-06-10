@@ -165,7 +165,7 @@ public class TestSession {
      * 
      * @return the line handler for printing; never <code>null</code>.
      */
-    OutputLineHandler getOutputLineHandler() {
+    public OutputLineHandler getOutputLineHandler() {
         return lineHandler != null ? lineHandler : DEFAULT_LINE_HANDLER;
     }
 

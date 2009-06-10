@@ -59,7 +59,8 @@ const char *NbLauncher::REG_SHELL_FOLDERS_KEY = "Software\\Microsoft\\Windows\\C
 const char *NbLauncher::REG_DESKTOP_NAME = "Desktop";
 
 const char *NbLauncher::CON_ATTACH_MSG = 
-"\n\nThe launcher has determined that the parent process has a console and will reuse it for its own console output.\n"
+"\n\nThe launcher has determined that the parent process has a console and will reuse it for its own console output. "
+"Closing the console will result in termination of the running program.\n"
 "Use '--console suppress' to suppress console output.\n"
 "Use '--console new' to create a separate console window.\n";
 

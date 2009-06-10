@@ -53,7 +53,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -107,7 +107,7 @@ final class AddCastFix implements Fix {
                 }
             }).commit();
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
         
         return null;

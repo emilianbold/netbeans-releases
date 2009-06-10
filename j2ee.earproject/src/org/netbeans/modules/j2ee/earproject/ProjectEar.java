@@ -74,9 +74,10 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleListener;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationImplementation2;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationImplementation;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
@@ -106,7 +107,7 @@ public final class ProjectEar extends J2eeApplicationProvider
         EjbChangeDescriptor,
         PropertyChangeListener,
         EarImplementation,
-        J2eeApplicationImplementation {
+        J2eeApplicationImplementation2 {
     
     public static final String FILE_DD        = "application.xml";//NOI18N
 
@@ -262,7 +263,7 @@ public final class ProjectEar extends J2eeApplicationProvider
     private Application getDDFromFile() throws IOException {
         FileObject dd = getDeploymentDescriptor();
         if (dd == null) {
-            dd = EarProjectGenerator.setupDD(project.getJ2eePlatformVersion(), getMetaInf(), project);
+            dd = EarProjectGenerator.setupDD(project.getJ2eeProfile(), getMetaInf(), project);
         }
         return DDProvider.getDefault().getDDRoot(dd);
     }
@@ -299,8 +300,8 @@ public final class ProjectEar extends J2eeApplicationProvider
         return this;
     }
 
-    public Object getModuleType () {
-        return J2eeModule.EAR;
+    public J2eeModule.Type getModuleType () {
+        return J2eeModule.Type.EAR;
     }
 
     public String getModuleVersion () {
@@ -348,8 +349,13 @@ public final class ProjectEar extends J2eeApplicationProvider
         return new String[] {};
     }
 
+    // FIXME mix of two apis
     public String getJ2eePlatformVersion () {
-        return project.getJ2eePlatformVersion(); // helper.getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_PLATFORM);
+        return project.getJ2eePlatformVersion();
+    }
+
+    public Profile getJ2eeProfile() {
+        return project.getJ2eeProfile();
     }
     
     @Override

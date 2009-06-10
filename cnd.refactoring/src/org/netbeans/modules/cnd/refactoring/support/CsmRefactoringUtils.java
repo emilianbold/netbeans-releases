@@ -79,7 +79,7 @@ import org.openide.util.Lookup;
  * @author Vladimir Voskresensky
  */
 public final class CsmRefactoringUtils {
-    public static final boolean REFACTORING_EXTRA = CndUtils.getBoolean("cnd.refactoring.extra", true); // NOI18N
+    public static final boolean REFACTORING_EXTRA = CndUtils.getBoolean("cnd.refactoring.extra", false); // NOI18N
     
     private CsmRefactoringUtils() {
     }
@@ -144,14 +144,23 @@ public final class CsmRefactoringUtils {
         if (p != null) {
             out = Collections.singleton(p);
         } else {
-            // for now return all...
-            Collection<CsmProject> all = CsmModelAccessor.getModel().projects();
-            out = new HashSet<CsmProject>(all);
-            Collection<CsmProject> prjs = getContextCsmProjects(origObject);
-            out.addAll(prjs);
-            for (CsmProject prj : out) {
-                if (prj != null && prj.isArtificial()) {
+            if (true) {
+                // for now return all...
+                Collection<CsmProject> all = CsmModelAccessor.getModel().projects();
+                out = new HashSet<CsmProject>(all);
+            } else {
+                out = new HashSet<CsmProject>();
+                Collection<CsmProject> prjs = getContextCsmProjects(origObject);
+                out.addAll(prjs);
+                boolean addLibs = false;
+                for (CsmProject prj : out) {
+                    if (prj != null && prj.isArtificial()) {
+                        addLibs = true;
+                    }
+                }
+                if (addLibs) {
                     // add all libraries as well
+                    Collection<CsmProject> all = CsmModelAccessor.getModel().projects();
                     Set<CsmProject> libs = new HashSet<CsmProject>();
                     for (CsmProject csmProject : all) {
                         libs.addAll(csmProject.getLibraries());

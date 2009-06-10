@@ -310,7 +310,9 @@ final class Analyzer {
     }
 
     private void processDeprecatedAnnotation(Element elm, Doc jDoc, List<ErrorDescription> errors) {
-        if (SourceVersion.RELEASE_5.compareTo(spec) > 0) {
+        if (SourceVersion.RELEASE_5.compareTo(spec) > 0
+                // #150550: under some unexplained conditions java.lang.Deprecated may not be available
+                || javac.getElements().getTypeElement("java.lang.Deprecated") == null) { //NOI18N
             // jdks older than 1.5 do not support annotations
             return;
         }
@@ -878,7 +880,7 @@ final class Analyzer {
      * computes name of throws clause to work around
      * <a href="http://www.netbeans.org/issues/show_bug.cgi?id=160414">issue 160414</a>.
      */
-    private String resolveThrowsName(Element el, String fqn, ExpressionTree throwTree) {
+    static String resolveThrowsName(Element el, String fqn, ExpressionTree throwTree) {
         boolean nestedClass = ElementKind.CLASS == el.getKind()
                 && NestingKind.TOP_LEVEL != ((TypeElement) el).getNestingKind();
         String insertName = nestedClass ? fqn : throwTree.toString();

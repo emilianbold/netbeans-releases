@@ -57,10 +57,11 @@ import org.openide.filesystems.FileUtil;
  */
 public class FileBufferFile extends AbstractFileBuffer {
     
-    private SoftReference<String> cachedString;
-    
-    public FileBufferFile(File file) {
-        super(file);
+    private volatile SoftReference<String> cachedString;
+    private volatile long lastModifiedWhenCachedString;
+
+    public FileBufferFile(CharSequence absPath) {
+        super(absPath);
     }
     
     public String getText() throws IOException {
@@ -99,13 +100,14 @@ public class FileBufferFile extends AbstractFileBuffer {
         byte[] b;
         if( cachedString != null  ) {
             Object o = cachedString.get();
-            if( o != null ) {
+            if( o != null && (lastModifiedWhenCachedString == lastModified())) {
                 return (String) o;
             }
         }
         // either bytes == null or bytes.get() == null
         b = doGetBytes();
         String str = new String(b, getEncoding());
+        lastModifiedWhenCachedString = lastModified();
         cachedString = new SoftReference<String>(str);
         return str;
     }

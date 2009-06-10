@@ -48,13 +48,22 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.List;
+import java.util.Map;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.languages.ASTItem;
+import org.netbeans.api.languages.ASTNode;
+import org.netbeans.api.languages.ASTPath;
+import org.netbeans.api.languages.Context;
+import org.netbeans.api.languages.SyntaxContext;
+import org.netbeans.api.languages.database.DatabaseContext;
 import org.netbeans.api.languages.database.DatabaseUsage;
 import org.netbeans.api.languages.database.DatabaseDefinition;
 import org.netbeans.api.languages.database.DatabaseItem;
@@ -64,7 +73,8 @@ import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.TokenType;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
 
 
@@ -76,27 +86,27 @@ public class ColorsManager {
     
     public static final String COLOR = "COLOR";
     
-//    static List<AttributeSet> getColors(Language l, ASTPath path, Document doc) {
-//        List<AttributeSet> result = new ArrayList<AttributeSet> ();
-//        Context context = SyntaxContext.create(doc, path);
-//        List<Feature> fs = l.getFeatureList ().getFeatures(COLOR, path);
-//        Iterator<Feature> it = fs.iterator();
-//        while (it.hasNext()) {
-//            Feature f = it.next();
-//            if (!f.getBoolean("condition", context, true)) continue;
-//            result.add(createColoring(f, null));
-//        }
-//        ASTNode node = (ASTNode) path.getRoot ();
-//        DatabaseContext root = DatabaseManager.getRoot (node);
-//        if (root == null) return result;
-//        ASTItem item = path.getLeaf ();
-//        DatabaseItem i = root.getDatabaseItem (item.getOffset ());
-//        if (i == null || i.getEndOffset () != item.getEndOffset ()) return result;
-//        AttributeSet as = getAttributes (i);
-//        if (as != null)
-//            result.add (as);
-//        return result;
-//    }
+    static List<AttributeSet> getColors(Language l, ASTPath path, Document doc) {
+        List<AttributeSet> result = new ArrayList<AttributeSet> ();
+        Context context = SyntaxContext.create(doc, path);
+        List<Feature> fs = l.getFeatureList ().getFeatures(COLOR, path);
+        Iterator<Feature> it = fs.iterator();
+        while (it.hasNext()) {
+            Feature f = it.next();
+            if (!f.getBoolean("condition", context, true)) continue;
+            result.add(createColoring(f, null));
+        }
+        ASTNode node = (ASTNode) path.getRoot ();
+        DatabaseContext root = DatabaseManager.getRoot (node);
+        if (root == null) return result;
+        ASTItem item = path.getLeaf ();
+        DatabaseItem i = root.getDatabaseItem (item.getOffset ());
+        if (i == null || i.getEndOffset () != item.getEndOffset ()) return result;
+        AttributeSet as = getAttributes (i);
+        if (as != null)
+            result.add (as);
+        return result;
+    }
     
     private static AttributeSet getAttributes (DatabaseItem item) {
         if (item instanceof DatabaseDefinition) {
@@ -215,14 +225,15 @@ public class ColorsManager {
         fcsf.setAllFontColors("NetBeans", colorsMap.values());
         
         if (bundleName != null) {
-            FileObject fo = FileUtil.getConfigFile("Editors/" + l.getMimeType() + "/FontsColors/NetBeans/org-netbeans-modules-editor-settings-CustomFontsColors.xml"); // NOI18N
+            FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+            FileObject fo = fs.findResource("Editors/" + l.getMimeType() + "/FontsColors/NetBeans/org-netbeans-modules-editor-settings-CustomFontsColors.xml"); // NOI18N
             try {
                 if (fo != null) {
                     fo.setAttribute("SystemFileSystem.localizingBundle", bundleName);
                 }
             } catch (IOException e) {
             }
-            fo = FileUtil.getConfigFile("Editors/" + l.getMimeType() + "/FontsColors/NetBeans/Defaults/org-netbeans-modules-editor-settings-CustomFontsColors.xml"); // NOI18N
+            fo = fs.findResource("Editors/" + l.getMimeType() + "/FontsColors/NetBeans/Defaults/org-netbeans-modules-editor-settings-CustomFontsColors.xml"); // NOI18N
             try {
                 if (fo != null) {
                     fo.setAttribute("SystemFileSystem.localizingBundle", bundleName);
@@ -475,7 +486,8 @@ public class ColorsManager {
     }
     
     private static String getBundleName(Language l) {
-        FileObject root = FileUtil.getConfigFile("Editors/" + l.getMimeType()); // NOI18N
+        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+        FileObject root = fs.findResource("Editors/" + l.getMimeType()); // NOI18N
         Object attrValue = root.getAttribute("SystemFileSystem.localizingBundle"); //NOI18N
         // [PENDING] if (bundleName == null) ... check for bundle name in nbs file
         return (String) attrValue;

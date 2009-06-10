@@ -156,7 +156,8 @@ public final class ConnectionManager {
                 if (session == null || session.isConnected()) {
                     break;
                 }
-
+                //notify SolarisPrivilegesSupport that connection  lost
+                SolarisPrivilegesSupportProvider.getSupportFor(env).invalidate();
                 if (restoreLostConnection) {
                     // Session is not null and at the same time is not connected...
                     // This means that it was connected before and RemoteUserInfoProvider
@@ -245,18 +246,22 @@ public final class ConnectionManager {
             }
             }
              */
+
+            env.prepareForConnection();
+
+            boolean isUnitTest = Boolean.getBoolean("nativeexecution.mode.unittest");
             final char[] passwd = PasswordManager.getInstance().get(env);
 
             if (passwd == null || passwd.length == 0) {
                 // I don't know the password: trying with user-interaction
-                result = doConnect(env, RemoteUserInfoProvider.getUserInfo(env, true));
+                result = doConnect(env, RemoteUserInfoProvider.getUserInfo(env, isUnitTest ? false : true));
             } else {
                 try {
                     result = connectTo(env, passwd, false);
                 } catch (ConnectException ex) {
                     if (ex.getMessage().equals("Auth fail")) { // NOI18N
                         // Try with user-interaction
-                        result = doConnect(env, RemoteUserInfoProvider.getUserInfo(env, true));
+                        result = doConnect(env, RemoteUserInfoProvider.getUserInfo(env, isUnitTest ? false : true));
                     } else {
                         throw ex;
                     }
@@ -278,7 +283,7 @@ public final class ConnectionManager {
 
                 public Session call() throws Exception {
                     final String user = env.getUser();
-                    final String host = env.getHost();
+                    final String host = env.getHostAddress();
                     final int sshPort = env.getSSHPort();
 
                     try {

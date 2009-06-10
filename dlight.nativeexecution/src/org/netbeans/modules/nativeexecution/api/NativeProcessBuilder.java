@@ -146,10 +146,6 @@ public final class NativeProcessBuilder implements Callable<Process> {
      */
     public NativeProcess call() throws IOException {
 
-        if (Thread.currentThread().isInterrupted()) {
-            return null;
-        }
-
         if (info.getExecutionEnvironment().isRemote()) {
             process = new RemoteNativeProcess(info);
         } else {
@@ -164,10 +160,6 @@ public final class NativeProcessBuilder implements Callable<Process> {
             } else {
                 process = new LocalNativeProcess(info);
             }
-        }
-
-        if (Thread.currentThread().isInterrupted()) {
-            return null;
         }
 
         return process.createAndStart();
@@ -281,6 +273,9 @@ public final class NativeProcessBuilder implements Callable<Process> {
      * @return this
      */
     public NativeProcessBuilder setX11Forwarding(boolean x11forwarding) {
+        if (Boolean.getBoolean("cnd.remote.noX11")) {
+            return this; //
+        }
         info.setX11Forwarding(x11forwarding);
         return this;
     }

@@ -88,7 +88,7 @@ final class VisualizerChildren extends Object {
                 + " snapshot.size()=" + snapshot.size();
 
         for (int i = 0; i < visNodes.size(); i++) {
-            VisualizerNode node = (VisualizerNode) visNodes.get(i);
+            VisualizerNode node = visNodes.get(i);
             if (node != null) {
                 node.indexOf = i;
             }
@@ -125,8 +125,8 @@ final class VisualizerChildren extends Object {
         return visNodes.size();
     }
 
-    public java.util.Enumeration children(final boolean create) {
-        return new java.util.Enumeration() {
+    public java.util.Enumeration<VisualizerNode> children(final boolean create) {
+        return new java.util.Enumeration<VisualizerNode>() {
 
             private int index;
 
@@ -134,8 +134,8 @@ final class VisualizerChildren extends Object {
                 return index < visNodes.size();
             }
 
-            public Object nextElement() {
-                return create ? getChildAt(index++) : visNodes.get(index++);
+            public VisualizerNode nextElement() {
+                return create ? (VisualizerNode) getChildAt(index++) : visNodes.get(index++);
             }
         };
     }
@@ -169,7 +169,7 @@ final class VisualizerChildren extends Object {
     
     private void addVisNodesInfo(StringBuilder sb) {
         for (int i = 0; i < visNodes.size(); i++) {
-            VisualizerNode node = (VisualizerNode) visNodes.get(i);
+            VisualizerNode node = visNodes.get(i);
             sb.append("  ").append(i); // NOI18N
             if (node != null) {
                 sb.append(" = ").append(node.toId()); // NOI18N
@@ -202,7 +202,7 @@ final class VisualizerChildren extends Object {
      */
     public void added(VisualizerEvent.Added ev) {
         if (this != parent.getChildren()) {
-            // children were replaced (e.g. VisualizerNode.naturalOrder()), quit processing event
+            // children were replaced, quit processing event
             return;
         }        
         snapshot = ev.getSnapshot();
@@ -237,7 +237,7 @@ final class VisualizerChildren extends Object {
      */
    public void removed(VisualizerEvent.Removed ev) {
         if (this != parent.getChildren()) {
-            // children were replaced (e.g. VisualizerNode.naturalOrder()), quit processing event
+            // children were replaced, quit processing event
             return;
         }
         snapshot = ev.getSnapshot();
@@ -270,94 +270,56 @@ final class VisualizerChildren extends Object {
         }
     }
 
-    /**
-     * Issue 37802, sort the actual list of children with the comparator,
-     * rather than expecting it to match the current children of the node,
-     * which may be in an inconsistent state.
-     */
-    private int[] reorderByComparator(Comparator<VisualizerNode> c) {
-        VisualizerNode[] old = visNodes.toArray(new VisualizerNode[visNodes.size()]);
-
-        for (int i = 0; i < old.length; i++) {
-            if (old[i] == null) {
-                Node node = snapshot.get(i);
-                old[i] = VisualizerNode.getVisualizer(this, node);
-                old[i].indexOf = i;
-            }
-        }
-
-        Arrays.sort(old, c);
-
-        int[] idxs = new int[old.length];
-        for (int i = 0; i < idxs.length; i++) {
-            idxs[i] = visNodes.indexOf(old[i]);
-        }
-
-        visNodes.clear();
-        visNodes.addAll(Arrays.asList(old));
-        return idxs;
-    }
-
     /** Notification that children has been reordered. Modifies the list of nodes
      * and fires info to all listeners.
      */
     public void reordered(VisualizerEvent.Reordered ev) {
         if (this != parent.getChildren()) {
-            // children were replaced (e.g. VisualizerNode.naturalOrder()), quit processing event
+            // children were replaced, quit processing event
             return;
         }
-        if (ev.getSnapshot() != null) {
-            snapshot = ev.getSnapshot();
-        }
+        snapshot = ev.getSnapshot();
 
-        if (ev.getComparator() != null) {
-            //#37802
-            ev.array = reorderByComparator(ev.getComparator());
-        } else {
-            int[] indxs = ev.getArray();
-            VisualizerNode[] old = visNodes.toArray(new VisualizerNode[visNodes.size()]);
-            VisualizerNode[] arr = new VisualizerNode[old.length];
-            int s = indxs.length;
-            try {
-                for (int i = 0; i < s; i++) {
-                    // arr[indxs[i]] = old[i];
-                    VisualizerNode old_i = old[i];
-                    int indxs_i = indxs[i];
+        int[] indxs = ev.getArray();
+        VisualizerNode[] old = visNodes.toArray(new VisualizerNode[visNodes.size()]);
+        VisualizerNode[] arr = new VisualizerNode[old.length];
+        int s = indxs.length;
+        try {
+            for (int i = 0; i < s; i++) {
+                // arr[indxs[i]] = old[i];
+                VisualizerNode old_i = old[i];
+                int indxs_i = indxs[i];
 
-                    if (arr[indxs_i] != null) {
-                        // this is bad <-- we are rewriting some old value --> there will remain some null somewhere
-                        System.err.println("Writing to this index for the second time: " + indxs_i); // NOI18N
-                        System.err.println("Length of indxs array: " + indxs.length); // NOI18N
-                        System.err.println("Length of actual array: " + old.length); // NOI18N
-                        System.err.println("Indices of reorder event:"); // NOI18N
+                if (arr[indxs_i] != null) {
+                    // this is bad <-- we are rewriting some old value --> there will remain some null somewhere
+                    System.err.println("Writing to this index for the second time: " + indxs_i); // NOI18N
+                    System.err.println("Length of indxs array: " + indxs.length); // NOI18N
+                    System.err.println("Length of actual array: " + old.length); // NOI18N
+                    System.err.println("Indices of reorder event:"); // NOI18N
 
-                        for (int j = 0; i < indxs.length; j++)
-                            System.err.println("\t" + indxs[j]); // NOI18N
-
-                        Thread.dumpStack();
-
-                        return;
+                    for (int j = 0; i < indxs.length; j++) {
+                        System.err.println("\t" + indxs[j]); // NOI18N
                     }
+                    Thread.dumpStack();
 
-                    arr[indxs_i] = old_i;
+                    return;
                 }
-            } catch (ArrayIndexOutOfBoundsException e) {
-                e.printStackTrace();
-                System.err.println("Length of actual array: " + old.length); // NOI18N
-                System.err.println("Indices of reorder event:"); // NOI18N
 
-                for (int i = 0; i < indxs.length; i++)
-                    System.err.println("\t" + indxs[i]); // NOI18N
-
-                return;
+                arr[indxs_i] = old_i;
             }
+        } catch (ArrayIndexOutOfBoundsException e) {
+            e.printStackTrace();
+            System.err.println("Length of actual array: " + old.length); // NOI18N
+            System.err.println("Indices of reorder event:"); // NOI18N
 
-            /*assert !Arrays.asList(arr).contains(null) : "Null element in reorderer list " + Arrays.asList(arr) +
-            "; list=" + visNodes + " indxs=" + Arrays.asList(org.openide.util.Utilities.toObjectArray(indxs));*/
-            visNodes.clear();
-            visNodes.addAll(Arrays.asList(arr));
-            //assert !visNodes.contains(null);
+            for (int i = 0; i < indxs.length; i++) {
+                System.err.println("\t" + indxs[i]); // NOI18N
+            }
+            return;
         }
+
+        visNodes.clear();
+        visNodes.addAll(Arrays.asList(arr));
         recomputeIndexes(null);
 
         VisualizerNode parent = this.parent;

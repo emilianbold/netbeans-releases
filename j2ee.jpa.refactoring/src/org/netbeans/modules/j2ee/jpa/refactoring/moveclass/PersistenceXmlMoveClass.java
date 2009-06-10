@@ -48,7 +48,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;

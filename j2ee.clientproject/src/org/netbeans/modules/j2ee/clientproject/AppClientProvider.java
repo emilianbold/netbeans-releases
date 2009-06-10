@@ -61,9 +61,9 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.AppClientMetadata;
 import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
@@ -76,7 +76,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarImplementation;
@@ -95,7 +95,7 @@ import org.openide.util.NbBundle;
  * @author jungi
  */
 public final class AppClientProvider extends J2eeModuleProvider
-        implements CarImplementation, J2eeModuleImplementation, ModuleChangeReporter, EjbChangeDescriptor, PropertyChangeListener {
+        implements CarImplementation, J2eeModuleImplementation2, ModuleChangeReporter, EjbChangeDescriptor, PropertyChangeListener {
     
     public static final String FILE_DD = "application-client.xml";//NOI18N
     
@@ -145,8 +145,8 @@ public final class AppClientProvider extends J2eeModuleProvider
     
     /** Package-private for unit test only. */
     static boolean needConfigurationFolder(final String version) {
-        return J2EEProjectProperties.J2EE_1_3.equals(version) ||
-                J2EEProjectProperties.J2EE_1_4.equals(version);
+        return EjbProjectConstants.J2EE_13_LEVEL.equals(version) ||
+                EjbProjectConstants.J2EE_14_LEVEL.equals(version);
     }
     
     public File getMetaInfAsFile() {
@@ -322,8 +322,8 @@ public final class AppClientProvider extends J2eeModuleProvider
         return this;
     }
     
-    public Object getModuleType() {
-        return J2eeModule.CLIENT;
+    public J2eeModule.Type getModuleType() {
+        return J2eeModule.Type.CAR;
     }
     
     public String getModuleVersion() {

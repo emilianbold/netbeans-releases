@@ -48,6 +48,7 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionsListDataProvider;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
+import org.netbeans.modules.dlight.perfan.impl.SunStudioDCConfigurationAccessor;
 import org.netbeans.modules.dlight.spi.impl.TableDataProvider;
 
 /**
@@ -56,6 +57,11 @@ import org.netbeans.modules.dlight.spi.impl.TableDataProvider;
  */
 final class SunStudioDataProvider extends SSStackDataProvider
         implements TableDataProvider, FunctionsListDataProvider {
+    private static final String cpuTableName;
+    
+    static{
+        cpuTableName = SunStudioDCConfigurationAccessor.getDefault().getCPUTableName();
+    }
 
     SunStudioDataProvider() {
     }
@@ -91,19 +97,18 @@ final class SunStudioDataProvider extends SSStackDataProvider
 
     public List<FunctionCall> getFunctionsList(DataTableMetadata metadata,
             FunctionDatatableDescription functionDecsr, List<Column> metricsColumn) {
-
+        //if we have CPU table here we should call functions command, not lines
         List<FunctionCall> result = new ArrayList<FunctionCall>();
-
         if (!metricsColumn.contains(SunStudioDCConfiguration.c_name)) {
             List<Column> oldMetrics = metricsColumn;
             metricsColumn = new ArrayList<Column>();
             metricsColumn.addAll(oldMetrics);
             metricsColumn.add(SunStudioDCConfiguration.c_name);
         }
-
-        List<FunctionCallTreeTableNode> nodes =
-                super.getTableView(metricsColumn, null, Integer.MAX_VALUE);
-
+        if (metadata.getName().equals(cpuTableName)){
+            return super.getHotSpotFunctions(metricsColumn, metricsColumn, Integer.MAX_VALUE);
+        }
+        List<FunctionCallTreeTableNode> nodes = super.getTableView(metricsColumn, null, Integer.MAX_VALUE);
         for (FunctionCallTreeTableNode node : nodes) {
             FunctionCall call = node.getDeligator();
             result.add(call);

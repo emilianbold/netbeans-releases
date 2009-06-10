@@ -102,7 +102,9 @@ public class PHPFormatter implements Formatter {
         }
         // end of hotfix
 
-        reindent(context, null, true);
+        reindent(context, null);
+//        PHPNewLineIndenter indenter = new PHPNewLineIndenter(context);
+//        indenter.process();
     }
 
     public void reformat(Context context, ParserResult info) {
@@ -478,7 +480,7 @@ public class PHPFormatter implements Formatter {
             }
         });
     }
-    private void reindent(final Context context, ParserResult info, final boolean indentOnly) {
+    private void reindent(final Context context, ParserResult info) {
         Document document = context.document();
         int startOffset = context.startOffset();
         int endOffset = context.endOffset();
@@ -523,11 +525,9 @@ public class PHPFormatter implements Formatter {
             // wholesale formatting a whole document, leave these lines alone.
             boolean indentEmptyLines = (startOffset != 0 || endOffset != doc.getLength());
 
-            boolean includeEnd = endOffset == doc.getLength() || indentOnly;
-
             // TODO - remove initialbalance etc.
             computeIndents(doc, initialIndent, initialOffset, endOffset, info,
-                    offsets, indents, indentEmptyLines, includeEnd, indentOnly);
+                    offsets, indents, indentEmptyLines);
 
 //            System.out.println("~~~ indents=" + indents.size() + ", offsets=" + offsets.size());
 
@@ -564,9 +564,7 @@ public class PHPFormatter implements Formatter {
                                 int actualPrevIndent = GsfUtilities.getLineIndent(doc, prevOffset);
                                 if (actualPrevIndent != prevIndent) {
                                     // For blank lines, indentation may be 0, so don't adjust in that case
-                                    if (indentOnly || !(Utilities.isRowEmpty(doc, prevOffset) || Utilities.isRowWhite(doc, prevOffset))) {
-                                        indent = actualPrevIndent + (indent-prevIndent);
-                                    }
+                                    indent = actualPrevIndent + (indent - prevIndent);
                                 }
                             }
 
@@ -589,11 +587,12 @@ public class PHPFormatter implements Formatter {
         }
     }
 
-    public void computeIndents(BaseDocument doc, int initialIndent, int startOffset, int endOffset, ParserResult info,
+    public void computeIndents(BaseDocument doc, int initialIndent,
+            int startOffset, int endOffset,
+            ParserResult info,
             List<Integer> offsets,
             List<Integer> indents,
-            boolean indentEmptyLines, boolean includeEnd, boolean indentOnly
-        ) {
+            boolean indentEmptyLines) {
         // PENDING:
         // The reformatting APIs in NetBeans should be lexer based. They are still
         // based on the old TokenID apis. Once we get a lexer version, convert this over.
@@ -641,31 +640,10 @@ public class PHPFormatter implements Formatter {
             int bracketBalance = 0;
             boolean continued = false;
 
-            while ((!includeEnd && offset < end) || (includeEnd && offset <= end)) {
+            while (offset <= end) {
                 int indent; // The indentation to be used for the current line
 
                 int hangingIndent = continued ? (hiSize) : 0;
-
-                /**
-                 * As most of this code was copy&pasted from JavaScript/Ruby formatter
-                 * I'm copy pasting also intialization of initialIndent as done in Ruby
-                 * formatter.
-                 * TODO: PHP does not seem to have isEmbeddedDoc. is that OK?
-                 */
-                if (/*isEmbeddedDoc &&*/ !indentOnly) {
-                    // Pick up the indentation level assigned by the HTML indenter; gets HTML structure
-                    Map<Integer, Integer> suggestedLineIndents = (Map<Integer, Integer>)doc.getProperty("AbstractIndenter.lineIndents");
-                    if (suggestedLineIndents != null) {
-                        Integer ind = suggestedLineIndents.get(Utilities.getLineOffset(doc, offset));
-                        if (ind != null) {
-                            initialIndent = ind.intValue();
-                        } else {
-                            initialIndent = 0; //getOffsetFromPrevLine(doc, offset);
-                        }
-                    } else {
-                        initialIndent = 0; //getOffsetFromPrevLine(doc, offset);
-                    }
-                }
 
                 if (lineUnformattable(doc, offset)) {
                     // Skip this line - leave formatting as it is prior to reformatting

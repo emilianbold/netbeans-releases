@@ -742,7 +742,7 @@ public abstract class CLIHandler extends Object {
                                 case -1:
                                     enterState(48, block);
                                     // EOF. Why does this happen?
-                                    break;
+                                    break COMMUNICATION;
                                 default:
                                     enterState(49, block);
                                     assert false : reply;

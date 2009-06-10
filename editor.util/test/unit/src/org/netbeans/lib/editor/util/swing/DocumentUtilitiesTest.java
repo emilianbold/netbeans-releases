@@ -75,6 +75,19 @@ public class DocumentUtilitiesTest extends NbTestCase {
             doc.readUnlock();
         }
     }
+
+    public void testGetText() throws Exception {
+        PlainDocument doc = new PlainDocument();
+        CharSequence text = DocumentUtilities.getText(doc);
+        assertEquals(1, text.length());
+        assertEquals('\n', text.charAt(0));
+
+        text = DocumentUtilities.getText(doc);
+        doc.insertString(0, "a\nb", null);
+        for (int i = 0; i < doc.getLength() + 1; i++) {
+            assertEquals(doc.getText(i, 1).charAt(0), text.charAt(i));
+        }
+    }
     
     public void testIsWriteLocked() throws Exception {
         PlainDocument doc = new PlainDocument();

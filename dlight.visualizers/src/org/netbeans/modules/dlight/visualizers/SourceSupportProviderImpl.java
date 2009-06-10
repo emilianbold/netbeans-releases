@@ -13,16 +13,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
 import java.net.URI;
-
 import javax.swing.JEditorPane;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
@@ -37,6 +34,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
+
+
 
 /**
  *
@@ -157,31 +156,60 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
                 return;
             }
 
-            DataObject dob = DataObject.find(fo);
+           final  DataObject dob = DataObject.find(fo);
 
             final EditorCookie.Observable ec = dob.getCookie(EditorCookie.Observable.class);
             if (ec != null) {
                 SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
+                        NbEditorUtilities.addJumpListEntry(dob);
                         JEditorPane[] panes = ec.getOpenedPanes();
-                        if (panes == null || panes.length <= 0) {
+                        boolean opened = true;
+                        if (panes != null && panes.length >= 0) {
+                            //editor already opened, so just select
+                            opened = true;
+                        } else {
+                            // editor not yet opened
+                            // XXX: vv159170 commented out the ollowing code, because on the time
+                            // of firing even no chance to get opened panes yet...
+//                            ec.addPropertyChangeListener(new PropertyChangeListener() {
+//                                public void propertyChange(PropertyChangeEvent evt) {
+//                                    if (EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())) {
+//                                        final JEditorPane[] panes = ec.getOpenedPanes();
+//                                        if (panes != null && panes.length > 0) {
+//                                            selectElementInPane(panes[0], element, true);
+//                                        }
+//                                        ec.removePropertyChangeListener(this);
+//                                    }
+//                                }
+//                            });
+                            opened = false;
                             ec.open();
+                            // XXX: get panes here instead of in listener
                             panes = ec.getOpenedPanes();
                         }
-                        final JEditorPane pane = panes[0];
-                        RequestProcessor.getDefault().post(new Runnable() {
-
-                            public void run() {
-                                jumpToLine(pane, lineInfo);
-                            }
-                        });
-                        // try to activate outer TopComponent
-                        Container temp = pane;
-                        while (!(temp instanceof TopComponent)) {
-                            temp =  SwingUtilities.getAncestorOfClass(TopComponent.class, temp);
+                        if (panes != null && panes.length > 0) {
+                            jumpToLine(panes[0], lineInfo, !opened);
                         }
-                        ((TopComponent) temp).requestActive();
+//                        JEditorPane[] panes = ec.getOpenedPanes();
+//                        if (panes == null || panes.length <= 0) {
+//                            ec.open();
+//                            panes = ec.getOpenedPanes();
+//                        }
+//                        final JEditorPane pane = panes[0];
+//                        RequestProcessor.getDefault().post(new Runnable() {
+//
+//                            public void run() {
+//                                jumpToLine(pane, lineInfo);
+//                            }
+//                        });
+//                        // try to activate outer TopComponent
+//                        Container temp = pane;
+//                        while (!(temp instanceof TopComponent)) {
+//                            temp =  SwingUtilities.getAncestorOfClass(TopComponent.class, temp);
+//                        }
+//                        ((TopComponent) temp).requestActive();
                     }
                 });
             }
@@ -189,6 +217,27 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
             e.printStackTrace(System.err);
             StatusDisplayer.getDefault().setStatusText(loc("SourceSupportProviderImpl.CannotOpenFile", fileName)); // NOI18N
         }
+    }
+
+    private static void jumpToLine(final JEditorPane pane, final SourceFileInfo sourceFileInfo, boolean delayProcessing) {
+ // immediate processing
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                public void run() {
+                    jumpToLine(pane, sourceFileInfo);
+                }
+            });
+            // try to activate outer TopComponent
+            Container temp = pane;
+            while (!(temp instanceof TopComponent)) {
+                temp = temp.getParent();
+            }
+            if (temp instanceof TopComponent) {
+                ((TopComponent) temp).open();
+                ((TopComponent) temp).requestActive();
+                ((TopComponent) temp).requestVisible();
+            }
+
     }
 
     private static void jumpToLine(JEditorPane pane, SourceFileInfo sourceFileInfo) {
@@ -203,9 +252,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
             start = Utilities.getRowStartFromLineOffset((BaseDocument) pane.getDocument(), sourceFileInfo.getLine() - 1);
         }
 
-        if (start > 0 && pane.getCaretPosition() == caretPos &&
-                pane.getDocument() != null && start < pane.getDocument().getLength() &&
-                (viewPos == null || viewPos.equals(((JViewport) parent).getViewPosition()))) {
+        if (pane.getDocument() != null && start >= 0 && start < pane.getDocument().getLength()) {
             pane.setCaretPosition((int) start);
         }
         StatusDisplayer.getDefault().setStatusText(""); // NOI18N

@@ -38,7 +38,9 @@ package org.netbeans.installer.utils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.net.URLDecoder;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
@@ -130,6 +132,57 @@ public final class EngineUtils {
 
         LogManager.logUnindent("... finished caching engine data");
     }
+
+
+    public static void checkEngine() {
+        Class mainClass = getEngineMainClass();
+        String thisClassResource = ResourceUtils.getResourceClassName(mainClass);
+        InputStream is = mainClass.getClassLoader().getResourceAsStream(thisClassResource);
+        ClassLoader cl = mainClass.getClassLoader();
+        boolean exclamationMarkInURL = false;
+        if (cl instanceof URLClassLoader) {
+            URLClassLoader ucl = (URLClassLoader) cl;
+            for (URL url : ucl.getURLs()) {
+                exclamationMarkInURL = exclamationMarkInURL || url.getPath().contains("!");
+            }
+        }
+        if (is == null) {
+            if (exclamationMarkInURL) {
+                String message;
+                if (System.getProperty("user.home").contains("!")) {
+                    //Issue #156011
+                    //Note: don`t use ResourceUtils for getting string here.
+                    message =
+                            "Looks like the name of current user profile directory contains an exclamation mark (!):\n" +
+                            SystemUtils.getUserHomeDirectory() + "\n\n" +
+                            "It is not recommended to use such profile names due to JDK bugs:\n" +
+                            "http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4730642" + "\n" +
+                            "http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4523159" + "\n" + "\n" +
+                            "That bugs affects the installer work as well.\n" +
+                            "The workaround is to run installer with different temporary and working installer directory.\n" +
+                            "For example, try run installer with the following arguments:\n" +
+                            "--tempdir " + new File(System.getenv("SystemDrive"), "Temp") + " " +
+                            "--userdir " + new File(System.getenv("SystemDrive"), "NBI") + "\n";
+
+                } else {
+                    // some generic message
+                    message =
+                            "Cannot load the main class " + mainClass.getName() + " from the jar file due to JDK bugs:\n" +
+                            "http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4730642" + "\n" +
+                            "http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4523159" + "\n" + "\n" +
+                            "Use other directory for the jar file.\n";
+                }
+
+                ErrorManager.notifyCritical(message);
+            }
+        } else {
+            try {
+                is.close();
+            } catch (IOException e) {
+            }
+        }
+    }
+
     private static File getEngineLocation() {
         final String propName = EngineResources.LOCAL_ENGINE_PATH_PROPERTY;
 
@@ -206,5 +259,5 @@ public final class EngineUtils {
     }
     
     public static final String DEFAULT_ENGINE_JAR_NAME = "nbi-engine.jar";//NOI18N    
-    
+
 }

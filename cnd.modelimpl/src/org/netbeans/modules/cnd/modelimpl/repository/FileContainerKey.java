@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
  * Key for FileContainer data
  * @author Vladimir Kvashin
  */
-public class FileContainerKey extends ProjectNameBasedKey {
+final public class FileContainerKey extends ProjectNameBasedKey {
 
     public FileContainerKey(String project) {
         super(project);
@@ -85,7 +85,7 @@ public class FileContainerKey extends ProjectNameBasedKey {
     }
 
     @Override
-    public Key.Behavior getBehavior() {
-        return Key.Behavior.LargeAndMutable;
+    public boolean hasCache() {
+        return true;
     }
 }

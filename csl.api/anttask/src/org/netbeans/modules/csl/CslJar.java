@@ -95,6 +95,7 @@ public class CslJar extends JarWithModuleAttributes {
     private static final String INTVALUE = "intvalue"; // NOI18N
     private static final String STRINGVALUE = "stringvalue"; // NOI18N
     private static final String BUNDLEVALUE = "bundlevalue"; // NOI18N
+    private static final String METHODVALUE = "methodvalue"; // NOI18N
     private static final String USECUSTOMEDITORKIT = "useCustomEditorKit"; // NOI18N
     private static final String TRUE = "true"; // NOI18N
     private static final String FILESYSTEM = "filesystem"; // NOI18N
@@ -329,6 +330,7 @@ public class CslJar extends JarWithModuleAttributes {
 
 
                     registerLoader(doc, mimeType, displayName);
+                    registerPathRecognizer(doc, mimeType);
                     registerEditorServices(doc, mimeType, cslLanguageClass, linePrefix, displayName, hasStructureScanner, hasDeclarationFinder);
                 }
             }
@@ -475,9 +477,9 @@ public class CslJar extends JarWithModuleAttributes {
         }
 
         Element file = createFile(doc, factoryFolder, "org-netbeans-modules-csl-core-GsfDataLoader.instance"); // NOI18N
-        setFileAttribute(doc, file, "position", "intvalue", "89998"); // NOI18N
+        setFileAttribute(doc, file, "position", INTVALUE, "89998"); // NOI18N
         if (displayName != null && displayName.length() > 0) {
-            setFileAttribute(doc, file, "displayName", "stringvalue", displayName); // NOI18N
+            setFileAttribute(doc, file, "displayName", STRINGVALUE, displayName); // NOI18N
         }
     }
 
@@ -513,9 +515,37 @@ public class CslJar extends JarWithModuleAttributes {
         return attributes;
     }
 
+    private String makeFilesystemName(String s) {
+        StringBuilder sb = new StringBuilder(s.length());
+        for(int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (Character.isLetterOrDigit(c)) {
+                sb.append(c);
+            } else {
+                sb.append("-"); //NOI18N
+            }
+        }
+        return sb.toString();
+    }
+
     private void registerStructureScanner(Document doc, String mimeType) {
         Element navigatorFolder = mkdirs(doc, "Navigator/Panels/" + mimeType); // NOI18N
         createFile(doc, navigatorFolder, "org-netbeans-modules-csl-navigation-ClassMemberPanel.instance"); // NOI18N
+    }
+
+    private void registerPathRecognizer(Document doc, String mimeType) {
+        Element servicesFolder = mkdirs(doc, "Services/Hidden/PathRecognizers"); // NOI18N
+        String instanceFile = "org-netbeans-modules-csl-core-PathRecognizerImpl-" + makeFilesystemName(mimeType) + ".instance"; //NOI18N
+
+        if (findPath(servicesFolder, instanceFile) != null) {
+            // Already registered!
+            return;
+        }
+
+        Element file = createFile(doc, servicesFolder, instanceFile);
+        setFileAttribute(doc, file, "mimeType", STRINGVALUE, mimeType); // NOI18N
+        setFileAttribute(doc, file, "instanceOf", STRINGVALUE, "org.netbeans.modules.parsing.spi.indexing.PathRecognizer"); // NOI18N
+        setFileAttribute(doc, file, "instanceCreate", METHODVALUE, "org.netbeans.modules.csl.core.PathRecognizerImpl.createInstance"); // NOI18N
     }
 
     private void registerEditorServices(Document doc, String mimeType, String gsfLanguageClass, String linePrefix, String displayName, boolean hasStructureScanner, boolean hasDeclarationFinder) {
@@ -537,7 +567,7 @@ public class CslJar extends JarWithModuleAttributes {
         Element popupFolder = mkdirs(doc, "Editors/" + mimeType + "/Popup"); // NOI18N
 
         Element renameFile = createFile(doc, popupFolder, "in-place-refactoring"); // NOI18N
-        setFileAttribute(doc, renameFile, "position", "intvalue", "680"); // NOI18N
+        setFileAttribute(doc, renameFile, "position", INTVALUE, "680"); // NOI18N
 
         boolean alreadyLocalized = false;
         boolean alreadyPositioned = false;
@@ -558,7 +588,7 @@ public class CslJar extends JarWithModuleAttributes {
             gotoFolder = mkdirs(mimeFolder, "Popup/goto"); // NOI18N
         }
         if (!alreadyPositioned) {
-            setFileAttribute(doc, gotoFolder, "position", "intvalue", "500"); // NOI18N
+            setFileAttribute(doc, gotoFolder, "position", INTVALUE, "500"); // NOI18N
         }
 
         if (!alreadyLocalized) {
@@ -568,26 +598,26 @@ public class CslJar extends JarWithModuleAttributes {
         Element item;
         if (hasDeclarationFinder) {
             item = createFile(doc, gotoFolder, "goto-declaration"); // NOI18N
-            setFileAttribute(doc, item, "position", "intvalue", "500"); // NOI18N
+            setFileAttribute(doc, item, "position", INTVALUE, "500"); // NOI18N
         }
 
         // Goto by linenumber
         item = createFile(doc, gotoFolder, "goto");  // NOI18N
-        setFileAttribute(doc, item, "position", "intvalue", "600"); // NOI18N
+        setFileAttribute(doc, item, "position", INTVALUE, "600"); // NOI18N
 
         // What about goto-source etc?
         // TODO: Goto Type (integrate with Java's GotoType)
 
         item = createFile(doc, popupFolder, "SeparatorBeforeCut.instance"); // NOI18N
-        setFileAttribute(doc, item, "position", "intvalue", "1200"); // NOI18N
+        setFileAttribute(doc, item, "position", INTVALUE, "1200"); // NOI18N
         setFileAttribute(doc, item, "instanceClass", STRINGVALUE, "javax.swing.JSeparator"); // NOI18N
 
         item = createFile(doc, popupFolder, "format"); // NOI18N
-        setFileAttribute(doc, item, "position", "intvalue", "750"); // NOI18N
+        setFileAttribute(doc, item, "position", INTVALUE, "750"); // NOI18N
 
         item = createFile(doc, popupFolder, "SeparatorAfterFormat.instance"); // NOI18N
         // Should be between org-openide-actions-PasteAction.instance and format
-        setFileAttribute(doc, item, "position", "intvalue", "780"); // NOI18N
+        setFileAttribute(doc, item, "position", INTVALUE, "780"); // NOI18N
         setFileAttribute(doc, item, "instanceClass", STRINGVALUE, "javax.swing.JSeparator"); // NOI18N
 
         // UpToDateStatusProviders
@@ -599,7 +629,7 @@ public class CslJar extends JarWithModuleAttributes {
         if (hasStructureScanner) {
             Element sideBarFolder = mkdirs(doc, "Editors/" + mimeType + "/SideBar"); // NOI18N
             Element sidebarFile = createFile(doc, sideBarFolder, "org-netbeans-modules-csl-editor-GsfCodeFoldingSideBarFactory.instance"); // NOI18N
-            setFileAttribute(doc, sidebarFile, "position", "intvalue", "1200"); // NOI18N
+            setFileAttribute(doc, sidebarFile, "position", INTVALUE, "1200"); // NOI18N
 
             Element foldingFolder = mkdirs(doc, "Editors/" + mimeType + "/FoldManager"); // NOI18N
             createFile(doc, foldingFolder, "org-netbeans-modules-csl-editor-fold-GsfFoldManagerFactory.instance"); // NOI18N
@@ -632,9 +662,18 @@ public class CslJar extends JarWithModuleAttributes {
         Element codeFilter = mkdirs(mimeFolder, "CodeTemplateFilterFactories"); // NOI18N
         item = createFile(doc, codeFilter, "org-netbeans-modules-csl-editor-codetemplates-GsfCodeTemplateFilter$Factory.instance"); // NOI18N
 
+        // Parser factory
+        item = createFile(doc, mimeFolder, "org-netbeans-modules-csl-core-GsfParserFactory.instance"); // NOI18N
+        setFileAttribute(doc, item, "instanceCreate", METHODVALUE, "org.netbeans.modules.csl.core.GsfParserFactory.create"); //NOI18N
+        setFileAttribute(doc, item, "instanceOf", STRINGVALUE, "org.netbeans.modules.parsing.spi.ParserFactory"); //NOI18N
+
         // Indexer factory
         item = createFile(doc, mimeFolder, "org-netbeans-modules-csl-core-EmbeddingIndexerFactoryImpl.instance"); // NOI18N
-        setFileAttribute(doc, item, "instanceCreate", "methodvalue", "org.netbeans.modules.csl.core.EmbeddingIndexerFactoryImpl.create"); //NOI18N
+        setFileAttribute(doc, item, "instanceCreate", METHODVALUE, "org.netbeans.modules.csl.core.EmbeddingIndexerFactoryImpl.create"); //NOI18N
+        setFileAttribute(doc, item, "instanceOf", STRINGVALUE, "org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"); //NOI18N
+
+        // TL Indexer factory
+        item = createFile(doc, mimeFolder, "org-netbeans-modules-csl-core-TLIndexerFactory.instance"); // NOI18N
         setFileAttribute(doc, item, "instanceOf", "stringvalue", "org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"); //NOI18N
     }
 }
