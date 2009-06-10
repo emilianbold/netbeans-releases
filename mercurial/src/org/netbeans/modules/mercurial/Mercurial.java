@@ -227,7 +227,6 @@ public class Mercurial {
                 if(forceCheck) {
                     checkVersionIntern();
                 }
-                return true;
             }
         }
         if (version != null && !goodVersion) {
