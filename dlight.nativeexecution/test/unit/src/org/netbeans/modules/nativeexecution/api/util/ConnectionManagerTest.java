@@ -45,6 +45,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.openide.util.Exceptions;
 
 /**
@@ -78,7 +79,7 @@ public class ConnectionManagerTest extends NativeExecutionBaseTestCase {
     public void testGetConnectToAction() throws Exception {
         System.out.println("getConnectToAction"); // NOI18N
 
-        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        ExecutionEnvironment execEnv = NativeExecutionTestSupport.getDefaultTestExecutionEnvironment(false);
         
         try {
             ConnectionManager.getInstance().connectTo(execEnv);
@@ -104,7 +105,7 @@ public class ConnectionManagerTest extends NativeExecutionBaseTestCase {
             }
         };
 
-        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        ExecutionEnvironment execEnv = NativeExecutionTestSupport.getDefaultTestExecutionEnvironment(false);
 
         for (int i = 0; i < threadsNum; i++) {
             final AsynchronousAction action = ConnectionManager.getInstance().getConnectToAction(execEnv, onConnect);

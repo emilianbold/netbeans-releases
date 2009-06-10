@@ -43,13 +43,13 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.modules.cnd.refactoring.actions.InstantRenamePerformerTestCase;
 import org.netbeans.modules.cnd.refactoring.plugins.WhereUsedInQuoteTestCase;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public class RefactoringTest extends BaseTestSuite {
+public class RefactoringTest extends CndBaseTestSuite {
     
     public RefactoringTest() {
         super("C/C++ Refactoring Test"); // NOI18N

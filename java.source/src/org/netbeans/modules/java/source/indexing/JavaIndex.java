@@ -52,6 +52,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
@@ -232,7 +233,8 @@ public final class JavaIndex {
 
     public static boolean isLibrary (final URL root) {
         assert root != null;
-        return ClassIndexManager.getDefault().getUsagesQuery(root) == null;
+        ClassIndexImpl uq = ClassIndexManager.getDefault().getUsagesQuery(root);
+        return uq == null || !uq.isSource();
     }
 
     private JavaIndex() {

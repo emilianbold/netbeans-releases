@@ -62,7 +62,6 @@ import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
 import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
@@ -81,6 +80,7 @@ import org.netbeans.modules.j2ee.dd.api.webservices.*;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.dd.spi.web.WebAppMetadataModelFactory;
 import org.netbeans.modules.j2ee.dd.spi.webservices.WebservicesMetadataModelFactory;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
@@ -90,7 +90,7 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
  * @author  Pavel Buzek
  */
 public final class ProjectWebModule extends J2eeModuleProvider 
-  implements WebModuleImplementation, J2eeModuleImplementation, ModuleChangeReporter, 
+  implements WebModuleImplementation, J2eeModuleImplementation2, ModuleChangeReporter,
   EjbChangeDescriptor, PropertyChangeListener {
       
     public static final String FOLDER_WEB_INF = "WEB-INF";//NOI18N
@@ -499,8 +499,8 @@ public final class ProjectWebModule extends J2eeModuleProvider
         return this;
     }
 
-    public Object getModuleType () {
-        return J2eeModule.WAR;
+    public J2eeModule.Type getModuleType () {
+        return J2eeModule.Type.WAR;
     }
 
     public String getModuleVersion () {

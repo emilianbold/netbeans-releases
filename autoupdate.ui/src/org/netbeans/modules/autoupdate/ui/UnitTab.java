@@ -1178,6 +1178,25 @@ public class UnitTab extends javax.swing.JPanel {
                 focusTable ();
             }
         }
+
+        @Override
+        public void tableDataChanged (Collection<Unit> units) {
+            if (units.size() == 0) {
+                setEnabled(false);
+                return;
+            }
+            for (Unit u : units) {
+                if (u instanceof Unit.Installed) {
+                    Unit.Installed inst = (Unit.Installed)u;
+                    if (!inst.isUninstallAllowed()) {
+                        setEnabled(false);
+                        return;
+                    }
+                }
+            }
+            setEnabled (true);
+        }
+
     }
     
     private class UpdateAction extends TabAction {

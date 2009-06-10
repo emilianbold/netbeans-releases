@@ -76,7 +76,7 @@ public class Hk2JavaEEPlatformFactory extends J2eePlatformFactory {
             NbBundle.getMessage(Hk2JavaEEPlatformFactory.class, "LBL_PRELUDE_LIBRARY"),
             "J2EE/DeploymentPlugins/gfv3/Lookup",
             new HashSet(Arrays.asList(new String[] {"1.6","1.5"})),
-            new HashSet(Arrays.asList(new ModuleType[] { ModuleType.WAR })),
+            new HashSet(Arrays.asList(new J2eeModule.Type[] { J2eeModule.Type.WAR })),
             new HashSet(Arrays.asList(new String[] {J2eeModule.J2EE_13,
             J2eeModule.J2EE_14, J2eeModule.JAVA_EE_5})),
             new HashSet(Arrays.asList(new Profile[] { Profile.J2EE_13, Profile.J2EE_14,
@@ -89,8 +89,8 @@ public class Hk2JavaEEPlatformFactory extends J2eePlatformFactory {
         String ln = NbBundle.getMessage(Hk2JavaEEPlatformFactory.class, "LBL_V3_LIBRARY");
         String lk = "J2EE/DeploymentPlugins/gfv3ee6/Lookup";
         Set sjp = new HashSet(Arrays.asList(new String[] {"1.6"}));
-        Set smt = new HashSet(Arrays.asList(new ModuleType[] { ModuleType.WAR,
-            ModuleType.CAR, ModuleType.EAR, ModuleType.EJB, ModuleType.RAR }));
+        Set smt = new HashSet(Arrays.asList(new J2eeModule.Type[] { J2eeModule.Type.WAR,
+            J2eeModule.Type.CAR, J2eeModule.Type.EAR, J2eeModule.Type.EJB, J2eeModule.Type.RAR }));
         Set ss = new HashSet(Arrays.asList(new String[] {J2eeModule.J2EE_13,
             J2eeModule.J2EE_14, J2eeModule.JAVA_EE_5}));
         return new Hk2JavaEEPlatformFactory(dn,jp,ln,lk,sjp,smt,ss,

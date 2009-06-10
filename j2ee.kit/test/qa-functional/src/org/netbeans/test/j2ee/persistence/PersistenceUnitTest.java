@@ -35,7 +35,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.test.j2ee.lib.J2eeProjectSupport;
@@ -120,7 +120,7 @@ public class PersistenceUnitTest extends J2eeTestCase {
             System.out.println(s);
             for (Provider p : ProviderUtil.getAllProviders()) {
                 System.out.println(i);
-                PersistenceUnit persistenceUnit = new PersistenceUnit();
+                PersistenceUnit persistenceUnit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
                 assertNotNull("Persistence unit not created ", persistenceUnit);
 
                 persistenceUnit.setName("pu" + Integer.toString(i++));
@@ -140,7 +140,7 @@ public class PersistenceUnitTest extends J2eeTestCase {
     public void testPUDataSource() throws Exception {
         int i = 0;
 
-        PersistenceUnit persistenceUnit1 = new PersistenceUnit();
+        PersistenceUnit persistenceUnit1 = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
         assertNotNull("Persistence unit not created ", persistenceUnit1);
 
         Provider p = ProviderUtil.DEFAULT_PROVIDER;
@@ -152,7 +152,7 @@ public class PersistenceUnitTest extends J2eeTestCase {
 
         dataObject.addPersistenceUnit(persistenceUnit1);
 
-        PersistenceUnit persistenceUnit2 = new PersistenceUnit();
+        PersistenceUnit persistenceUnit2 = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
         assertNotNull("Persistence unit not created ", persistenceUnit2);
 
         persistenceUnit2.setName("pu" + Integer.toString(i++));
