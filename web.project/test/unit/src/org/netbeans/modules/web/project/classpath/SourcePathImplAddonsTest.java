@@ -65,9 +65,9 @@ import org.openide.filesystems.FileUtil;
  * Test's adding generate source in addons directory to source classpath.
  */
 public class SourcePathImplAddonsTest extends NbTestCase{
-    private static final String SRC_ROOT_1 = "generated/addons/srcroot1";  // No I18N
-    private static final String SRC_ROOT_2 = "generated/addons/srcroot2";  // No I18N    
-    private static final String SRC_ROOT_3 = "generated/addons/srcroot3";  // No I18N    
+    private static final String SRC_ROOT_1 = "generated-sources/jaxb";  // No I18N
+    private static final String SRC_ROOT_2 = "generated-sources/jax-ws";  // No I18N
+    private static final String SRC_ROOT_3 = "generated-sources/jax-rpc";  // No I18N
     private static final String DEFAULT_PLATFORM_ROOT = "DefaultPlatformRoot"; // No I18N
     
     private FileObject scratchFO;
@@ -167,15 +167,6 @@ public class SourcePathImplAddonsTest extends NbTestCase{
      * Test's newly added source root appears in source classpath.
      **/
     public void testAddonsCreateSourceRoot () throws Exception {
-
-
-        if (true) {
-            // XXX TODO
-            // TEST ALWAYS FAILS and needs to be updated
-            return;
-        }
-
-
         ClassPathProviderImpl cpProvider = proj.getClassPathProvider();
         ClassPath[] cps = cpProvider.getProjectClassPaths(ClassPath.SOURCE);
         ClassPath cp = cps[0];
@@ -206,15 +197,6 @@ public class SourcePathImplAddonsTest extends NbTestCase{
      * Since Deletion is recognized only after new folder creation event.
      **/    
     public void testAddonsRemoveSourceRoot () throws Exception {
-
-
-        if (true) {
-            // XXX TODO
-            // TEST ALWAYS FAILS and needs to be updated
-            return;
-        }
-
-
         ClassPathProviderImpl cpProvider = proj.getClassPathProvider();
         ClassPath[] cps = cpProvider.getProjectClassPaths(ClassPath.SOURCE);
         ClassPath cp = cps[0];
@@ -252,15 +234,6 @@ public class SourcePathImplAddonsTest extends NbTestCase{
      * Test's newly added multiple source root appears in source classpath.
      **/
     public void testAddonsMultipleSourceRoot () throws Exception {
-
-
-        if (true) {
-            // XXX TODO
-            // TEST ALWAYS FAILS and needs to be updated
-            return;
-        }
-
-
         ClassPathProviderImpl cpProvider = proj.getClassPathProvider();
         ClassPath[] cps = cpProvider.getProjectClassPaths(ClassPath.SOURCE);
         ClassPath cp = cps[0];
