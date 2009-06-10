@@ -316,6 +316,7 @@ public final class FileUtil extends Object {
         private void someChange() {
             FileChangeListener listener;
             boolean wasOnTarget;
+            FileObject currentNew;
             synchronized (this) {
                 if (current == null) {
                     return;
@@ -326,14 +327,15 @@ public final class FileUtil extends Object {
                 }
                 wasOnTarget = isOnTarget;
                 locateCurrent();
+                currentNew = current;
             }
             if (isOnTarget && !wasOnTarget) {
                 // fire events about itself creation (it is difference from FCL
                 // on FileOject - it cannot be fired because we attach FCL on already existing FileOject
-                if (current.isFolder()) {
-                    listener.fileFolderCreated(new FileEvent(current));
+                if (currentNew.isFolder()) {
+                    listener.fileFolderCreated(new FileEvent(currentNew));
                 } else {
-                    listener.fileDataCreated(new FileEvent(current));
+                    listener.fileDataCreated(new FileEvent(currentNew));
                 }
             }
         }

@@ -718,7 +718,7 @@ public final class GemManager {
      *    gem output). If the exit code is normal, the completion task will be run at the end.
      * @param asyncCompletionTask If asynchronous is true and the gem task completes normally, this task will be run at the end.
      */
-    public boolean uninstall(List<GemInstallInfo> gems, Component parent, boolean asynchronous, final Runnable asyncCompletionTask) {
+    boolean uninstall(List<GemInstallInfo> gems, Component parent, boolean asynchronous, final Runnable asyncCompletionTask) {
         if (!checkGemHomePermissions()) {
             return false;
         }
