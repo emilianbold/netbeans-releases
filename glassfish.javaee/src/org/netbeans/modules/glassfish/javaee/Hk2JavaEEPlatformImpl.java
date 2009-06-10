@@ -127,7 +127,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         
         String gfRootStr = dm.getProperties().getGlassfishRoot();
         if (gfRootStr != null) {
-            wsLib = ServerUtilities.getJarName(gfRootStr, "webservices" + ServerUtilities.GFV3_VERSION_MATCHER);
+            wsLib = ServerUtilities.getJarName(gfRootStr, "webservices(|-osgi).jar");
         }
 
         // WEB SERVICES SUPPORT
@@ -160,6 +160,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
                 return true;
             }
             if (TOOL_WSCOMPILE.equals(toolName)) {     //NOI18N
+                if (ServerUtilities.getJarName(gfRootStr, "webservices.jar") != null)
                 return true;   // TODO - the support is there - need to find the right classpath then change to true
             }
             if (TOOL_APPCLIENTRUNTIME.equals(toolName)) { //NOI18N
@@ -178,13 +179,15 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     public File[] getToolClasspathEntries(String toolName) {
         String gfRootStr = dm.getProperties().getGlassfishRoot();
         if (TOOL_WSGEN.equals(toolName) || TOOL_WSIMPORT.equals(toolName)) {
-            String[] entries = new String[] {"webservices", //NOI18N
-                                             "javax.activation", //NOI18N
-                                             "jaxb"}; //NOI18N
+            String[] entries = new String[] {"webservices(|-osgi).jar", //NOI18N
+                                             "webservices-api(|-osgi).jar", //NOI18N
+                                             "jaxb(|-osgi).jar", //NOI18N
+                                             "jaxb-api(|-osgi).jar", //NOI18N
+                                             "javax.activation.jar"}; //NOI18N
             List<File> cPath = new ArrayList<File>();
             
             for (String entry : entries) {
-                File f = ServerUtilities.getJarName(gfRootStr, entry + ServerUtilities.GFV3_VERSION_MATCHER);
+                File f = ServerUtilities.getWsJarName(gfRootStr, entry);
                 if ((f != null) && (f.exists())) {
                     cPath.add(f);
                 }
@@ -198,7 +201,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
             List<File> cPath = new ArrayList<File>();
 
             for (String entry : entries) {
-                File f = ServerUtilities.getJarName(gfRootStr, entry + ServerUtilities.GFV3_VERSION_MATCHER);
+                File f = ServerUtilities.getWsJarName(gfRootStr, entry);
                 if ((f != null) && (f.exists())) {
                     cPath.add(f);
                 }
