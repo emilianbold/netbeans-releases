@@ -226,8 +226,9 @@ public class Mercurial {
                 LOG.log(Level.FINE, "Call to hg version not finished"); // NOI18N
                 if(forceCheck) {
                     checkVersionIntern();
+                } else {
+                    return true;
                 }
-                return true;
             }
         }
         if (version != null && !goodVersion) {
