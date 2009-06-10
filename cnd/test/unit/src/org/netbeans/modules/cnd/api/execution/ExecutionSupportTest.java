@@ -37,17 +37,18 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.discovery.project;
+package org.netbeans.modules.cnd.api.execution;
 
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.cnd.discovery.projectimport.ImportUtils;
+import org.netbeans.modules.cnd.builds.ImportUtils;
 
 /**
  *
  * @author Alexander Simon
  */
 public class ExecutionSupportTest extends NbTestCase {
+    private static final boolean TRACE = false;
 
     public ExecutionSupportTest(String testName) {
         super(testName);
@@ -68,13 +69,29 @@ public class ExecutionSupportTest extends NbTestCase {
         assert res.size() == 3;
         for(int i = 0; i < res.size(); i++){
             String p = res.get(i);
-            //System.err.println(p);
+            if (TRACE) {
+                System.err.println(p);
+            }
             if (i == 0) {
                 assert "CPPFLAGS=-g3".equals(p);
             } else if (i == 1) {
                 assert "CFLAGS=-g3 -gdwarf-2".equals(p);
             } else if (i == 2) {
                 assert "CXXFLAGS=-g3 -gdwarf-2".equals(p);
+            }
+        }
+        res = ImportUtils.quoteList(res);
+        for(int i = 0; i < res.size(); i++){
+            String p = res.get(i);
+            if (TRACE) {
+                System.err.println(p);
+            }
+            if (i == 0) {
+                assert "CPPFLAGS=-g3".equals(p);
+            } else if (i == 1) {
+                assert "CFLAGS=\"-g3 -gdwarf-2\"".equals(p);
+            } else if (i == 2) {
+                assert "CXXFLAGS=\"-g3 -gdwarf-2\"".equals(p);
             }
         }
     }

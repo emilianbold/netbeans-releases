@@ -66,6 +66,8 @@ public class ExecutionSupport extends Object
     private static final String EA_EXECUTOR = "NetBeansAttrExecutor"; // NOI18N
     /** extended attribute for attributes */
     private static final String EA_ARGUMENTS = "NetBeansAttrArguments"; // NOI18N
+    /** extended attribute for attributes */
+    private static final String EA_ENVIRONMENT_VARIABLES = "NetBeansAttrEnvironment"; // NOI18N
 
     // copy from JavaNode
     /** Name of property providing argument parameter list. */
@@ -187,6 +189,26 @@ public class ExecutionSupport extends Object
      */
     public static String[] getArguments(MultiDataObject.Entry entry) {
         Object o = entry.getFile().getAttribute(EA_ARGUMENTS);
+        if (o != null && (o instanceof String[])) {
+            return (String[]) o;
+        } else {
+            return new String[]{};
+        }
+    }
+
+    /* Sets execution arguments for the associated entry.
+     * @param args array of arguments
+     * @exception IOException if arguments cannot be set
+     */
+    public void setEnvironmentVariables(String[] args) throws IOException {
+        entry.getFile().setAttribute(EA_ENVIRONMENT_VARIABLES, args);
+    }
+
+    /* Getter for arguments associated with given file.
+     * @return the arguments or empty array if no arguments associated
+     */
+    public String[] getEnvironmentVariables() {
+        Object o = entry.getFile().getAttribute(EA_ENVIRONMENT_VARIABLES);
         if (o != null && (o instanceof String[])) {
             return (String[]) o;
         } else {
