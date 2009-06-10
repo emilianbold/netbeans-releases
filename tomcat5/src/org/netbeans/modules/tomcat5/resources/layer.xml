@@ -60,7 +60,7 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory.create50"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.tomcat5#LBL_TomcatFactory"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.tomcat5.Bundle#LBL_TomcatFactory"/>
                 </file>
                 <file name="TomcatPlatformFactory.instance">
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.tomcat5.ide.TomcatPlatformFactory"/>
@@ -93,7 +93,7 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory.create55"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.tomcat5#LBL_TomcatFactory55"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.tomcat5.Bundle#LBL_TomcatFactory55"/>
                 </file>
                 <file name="TomcatPlatformFactory.instance">
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.tomcat5.ide.TomcatPlatformFactory"/>
@@ -126,7 +126,7 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory.create60"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.tomcat5#LBL_TomcatFactory60"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.tomcat5.Bundle#LBL_TomcatFactory60"/>
                 </file>
                 <file name="TomcatPlatformFactory.instance">
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.tomcat5.ide.TomcatPlatformFactory"/>

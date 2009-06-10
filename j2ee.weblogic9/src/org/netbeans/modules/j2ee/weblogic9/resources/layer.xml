@@ -104,7 +104,7 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.weblogic9.optional.WLOptionalDeploymentManagerFactory"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.weblogic9.optional.WLOptionalDeploymentManagerFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.weblogic9#TXT_displayName"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.weblogic9.Bundle#TXT_displayName"/>
                 </file>
                 <file name="WLModuleConfigurationFactory.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.weblogic9.config.WLModuleConfigurationFactory"/>
