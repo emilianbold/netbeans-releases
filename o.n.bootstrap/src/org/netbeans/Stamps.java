@@ -157,7 +157,7 @@ public final class Stamps {
     public ByteBuffer asByteBuffer(String cache) {
         return asByteBuffer(cache, true, false);
     }
-    private File file(String cache, int[] len) {
+    final File file(String cache, int[] len) {
         String ud = getUserDir();
         if (ud == null) {
             return null;
@@ -174,7 +174,7 @@ public final class Stamps {
             return null;
         }
 
-        if (moduleJARs() >= last) {
+        if (moduleJARs() > last) {
             return null;
         }
 
@@ -563,6 +563,8 @@ public final class Stamps {
                 if (delete) {
                     cacheFile.delete();
                     cacheFile.deleteOnExit();
+                } else {
+                    cacheFile.setLastModified(moduleJARs());
                 }
             }
             return !delete;
