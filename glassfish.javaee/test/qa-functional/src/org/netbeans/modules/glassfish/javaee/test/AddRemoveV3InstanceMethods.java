@@ -148,6 +148,12 @@ public class AddRemoveV3InstanceMethods extends NbTestCase {
                 if (null != instances) 
                     if (instances.length > 1)
                         fail("too many instances");
+            File ff = new File(Util._V3_LOCATION);
+            System.out.println("Deleting: "+ff.getAbsolutePath());
+            Util.deleteJunk(ff.getParentFile());
+            ff = new File(ff.getParentFile().getAbsolutePath()+"1");
+            System.out.println("Deleting: "+ff.getAbsolutePath());
+            Util.deleteJunk(ff);
                 return;
             }
             
