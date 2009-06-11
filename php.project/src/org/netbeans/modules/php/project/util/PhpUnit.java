@@ -53,6 +53,7 @@ import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.modules.php.api.util.PhpProgram;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 

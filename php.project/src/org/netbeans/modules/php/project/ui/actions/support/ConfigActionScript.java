@@ -54,7 +54,7 @@ import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.util.PhpInterpreter;
-import org.netbeans.modules.php.project.util.PhpProgram;
+import org.netbeans.modules.php.api.util.PhpProgram;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
