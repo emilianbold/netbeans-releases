@@ -49,6 +49,7 @@ import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -253,14 +254,18 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
                 appendIfNeed("-DCMAKE_C_FLAGS=", flags, buf, cCompilerFlags); // NOI18N
                 appendIfNeed("-DCMAKE_CXX_FLAGS=", flags, buf, cppCompilerFlags); // NOI18N
             } else if (configure.endsWith(".pro")){ // NOI18N
-                if ("cc".equals(cCompiler)) { // NOI18N
+                if ("CC".equals(cppCompiler) && Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) { // NOI18N
+                    if (flags.indexOf("-spec ") < 0 ){ // NOI18N
+                        if (buf.length() > 0) {
+                            buf.append(' '); // NOI18N
+                        }
+                        buf.append("-spec solaris-cc"); // NOI18N
+                    }
                     appendIfNeed("QMAKE_CC=", flags, buf, "cc"); // NOI18N
+                } else {
+                    appendIfNeed("QMAKE_CFLAGS=", flags, buf, cCompilerFlags); // NOI18N
+                    appendIfNeed("QMAKE_CXXFLAGS=", flags, buf, cppCompilerFlags); // NOI18N
                 }
-                if ("CC".equals(cppCompiler)) { // NOI18N
-                    appendIfNeed("QMAKE_CXX=", flags, buf, "CC"); // NOI18N
-                }
-                appendIfNeed("QMAKE_CFLAGS=", flags, buf, cCompilerFlags); // NOI18N
-                appendIfNeed("QMAKE_CXXFLAGS=", flags, buf, cppCompilerFlags); // NOI18N
             } else {
                 if ("cc".equals(cCompiler)) { // NOI18N
                     appendIfNeed("CC=", flags, buf, "cc"); // NOI18N

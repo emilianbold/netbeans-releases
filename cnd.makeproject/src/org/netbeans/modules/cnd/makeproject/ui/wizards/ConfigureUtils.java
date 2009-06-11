@@ -50,6 +50,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -205,14 +206,11 @@ public final class ConfigureUtils {
                 buf.append(" -DCMAKE_CXX_FLAGS_DEBUG=\"-g3 -gdwarf-2\""); // NOI18N
             }
         } else if (configure.endsWith(".pro")) { // NOI18N
-            if ("cc".equals(cCompiler)) { // NOI18N
-                buf.append("QMAKE_CC=cc QMAKE_CFLAGS=-g"); // NOI18N
+            if ("CC".equals(cppCompiler) && Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) { // NOI18N
+                buf.append("-spec solaris-cc QMAKE_CFLAGS=-g"); // NOI18N
+                buf.append(" QMAKE_CXXFLAGS=-g"); // NOI18N
             } else {
                 buf.append("QMAKE_CFLAGS=\"-g3 -gdwarf-2\""); // NOI18N
-            }
-            if ("CC".equals(cppCompiler)) { // NOI18N
-                buf.append(" QMAKE_CXX=CC QMAKE_CXXFLAGS=-g"); // NOI18N
-            } else {
                 buf.append(" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\""); // NOI18N
             }
         }
