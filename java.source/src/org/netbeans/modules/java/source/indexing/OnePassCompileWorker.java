@@ -165,7 +165,7 @@ final class OnePassCompileWorker extends CompileWorker {
                         return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes);
                     }
                     boolean[] main = new boolean[1];
-                    if (context.isSupplementaryFilesIndexing() || javaContext.checkSums.checkAndSet(active.indexable.getURL(), types, jt.getElements())) {
+                    if (javaContext.checkSums.checkAndSet(active.indexable.getURL(), types, jt.getElements()) || context.isSupplementaryFilesIndexing() || context.isAllFilesIndexing()) {
                         javaContext.sa.analyse(Collections.singleton(unit.first), jt, fileManager, unit.second, addedTypes, main);
                     } else {
                         final Set<ElementHandle<TypeElement>> aTypes = new HashSet<ElementHandle<TypeElement>>();
