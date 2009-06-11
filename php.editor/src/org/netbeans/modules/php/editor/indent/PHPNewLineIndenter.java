@@ -98,12 +98,9 @@ public class PHPNewLineIndenter {
                         if (delimiter.tokenId == PHPTokenId.PHP_SEMICOLON) {
                             // handle "break;" in the switch statement
 
-                            if (ts.movePrevious()) {
-                                if (ts.token().id() == PHPTokenId.PHP_BREAK) {
-                                    // TODO: make sure it is within switch statement
-                                    newIndent = getIndentAtOffset(doc, ts.offset()) - indentSize;
-                                    break;
-                                }
+                            if (breakProceededByCase(ts)){
+                                newIndent = getIndentAtOffset(doc, ts.offset()) - indentSize;
+                                break;
                             }
                         }
 
@@ -129,12 +126,73 @@ public class PHPNewLineIndenter {
 
                 try {
                     int lineStart = Utilities.getRowStart(doc, offset);
+
+                    if (newIndent < 0){
+                        newIndent = 0;
+                    }
+
                     context.modifyIndent(lineStart, newIndent);
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
         });
+    }
+
+    private boolean breakProceededByCase(TokenSequence ts){
+        boolean retunValue = false;
+        int origOffset = ts.offset();
+
+        if (ts.movePrevious()) {
+            if (semicolonProceededByBreak(ts)) {
+                while (ts.movePrevious()) {
+                    TokenId tid = ts.token().id();
+
+                    if (tid == PHPTokenId.PHP_CASE) {
+                        retunValue = true;
+                        break;
+                    } else if (tid == PHPTokenId.PHP_CURLY_OPEN 
+                            || tid == PHPTokenId.PHP_DO
+                            || tid == PHPTokenId.PHP_WHILE
+                            || tid == PHPTokenId.PHP_FOR
+                            || tid == PHPTokenId.PHP_FOREACH) {
+                        
+                        break;
+                    }
+                }
+            }
+        } else {
+        }
+
+        ts.move(origOffset);
+            ts.moveNext();
+        
+        return retunValue;
+    }
+
+    private boolean semicolonProceededByBreak(TokenSequence ts){
+                boolean retunValue = false;
+                
+        if (ts.token().id() == PHPTokenId.PHP_BREAK){
+            retunValue = true;
+        } else if (ts.token().id() == PHPTokenId.PHP_NUMBER){
+            int origOffset = ts.offset();
+            
+            if (ts.movePrevious()){
+                if (ts.token().id() == PHPTokenId.WHITESPACE){
+                    if (ts.movePrevious()){
+                        if (ts.token().id() == PHPTokenId.PHP_BREAK){
+                            retunValue = true;
+                        }
+                    }
+                }
+            }
+
+            ts.move(origOffset);
+            ts.moveNext();
+        }
+        
+        return retunValue;
     }
 
     private int getIndentAtOffset(BaseDocument doc, int offset) {
