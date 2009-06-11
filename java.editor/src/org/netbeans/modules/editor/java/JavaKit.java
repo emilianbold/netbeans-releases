@@ -43,9 +43,7 @@ package org.netbeans.modules.editor.java;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -830,11 +828,8 @@ public class JavaKit extends NbEditorKit {
         }
 
         public static final class GlobalAction extends MainMenuAction {
-            private final JMenuItem menuPresenter;
-
             public GlobalAction() {
                 super();
-                this.menuPresenter = new JMenuItem(getMenuItemText());
                 setMenu();
             }
 
@@ -845,12 +840,8 @@ public class JavaKit extends NbEditorKit {
             protected String getActionName() {
                 return fixImportsAction;
             }
-
-            public JMenuItem getMenuPresenter() {
-                return menuPresenter;
-            }
-        }
-    } // End of JavaFixImports action
+        } // End of GlobalAction class
+    } // End of JavaFixImports class
 
     @EditorActionRegistration(
             name = gotoHelpAction,

@@ -42,8 +42,12 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.netbeans.modules.vmd.midp.components.general.ClassCode;
 import org.netbeans.modules.vmd.midpnb.screen.display.SVGButtonDisplayPresenter;
 import org.openide.util.ImageUtilities;
 
@@ -88,6 +92,20 @@ public class SVGButtonEventSourceCD extends SVGComponentEventSourceCD {
         List<Presenter> result = new ArrayList<Presenter>( presenters  );
         result.add( new SVGComponentSourcePinPresenter() );
         result.add( new SVGButtonDisplayPresenter() );
+        result.add( new ClassCode.GeneratedCodePresenter(){
+
+                @Override
+                public void modelUpdated() {
+                }
+
+                @Override
+                public boolean isCodeGenerated(){
+                    DesignComponent component = getComponent().readProperty(
+                     PROP_SVGCOMPONENT).getComponent();
+                    return Boolean.TRUE.equals( component.readProperty(
+                        ClassCD.PROP_CODE_GENERATED).getPrimitiveValue()) ;
+                }
+            });
         return result;
     }
 

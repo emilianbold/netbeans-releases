@@ -234,16 +234,21 @@ public final class AnnotationModelHelper {
      * (should be guaranteed by JavaSource.javacLock).
      */
     private <V> V runCallable(Callable<V> callable, CompilationController controller, boolean notify) throws IOException {
+        JavaSource oldJavaSource;
+        Thread oldUserActionTaskThread;
         synchronized (AnnotationModelHelper.this) {
             if (userActionTaskThread != null && userActionTaskThread != Thread.currentThread()) {
                 throw new IllegalStateException("JavaSource.runUserActionTask() should not be executed by multiple threads concurrently"); // NOI18N
             }
+            oldUserActionTaskThread = userActionTaskThread;
             userActionTaskThread = Thread.currentThread();
-            AnnotationModelHelper.this.javaSource = controller.getJavaSource();
+            oldJavaSource = javaSource;
+            javaSource = controller.getJavaSource();
         }
+        CompilationController oldController = AnnotationModelHelper.this.controller;
         AnnotationModelHelper.this.controller = controller;
-        controller.toPhase(Phase.ELEMENTS_RESOLVED);
         try {
+            controller.toPhase(Phase.ELEMENTS_RESOLVED);
             return callable.call();
         } catch (Exception e) {
             if (e instanceof RuntimeException) {
@@ -252,11 +257,11 @@ public final class AnnotationModelHelper {
                 throw new MetadataModelException(e);
             }
         } finally {
-            AnnotationModelHelper.this.controller = null;
+            AnnotationModelHelper.this.controller = oldController;
             annotationScanner = null;
             synchronized (AnnotationModelHelper.this) {
-                javaSource = null;
-                userActionTaskThread = null;
+                javaSource = oldJavaSource;
+                userActionTaskThread = oldUserActionTaskThread;
             }
             if (notify) {
                 // have to notify while still under the javac lock

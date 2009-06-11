@@ -754,7 +754,7 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
             "LBL_" + JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_DTD), //NOI18N
             JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_DTD) ;
     
-    private static java.util.Map<String, String> LAST_BROWSED_DIRS = new java.util.HashMap<String, String>();
+    private static java.util.Map<String, File> LAST_BROWSED_DIRS = new java.util.HashMap<String, File>();
     private JAXBWizBindingCfgPanel wizPanel = null;
     private Vector<String> origBindingFiles = new Vector<String>();
     private String prevSchemaPath = null;
@@ -779,11 +779,11 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
         return SCHEMA_TYPES;
     }
 
-    private static synchronized String getLastBrowsedDir(String type){
+    private static synchronized File getLastBrowsedDir(String type){
         return LAST_BROWSED_DIRS.get(type);
     }
 
-    private static synchronized void setLastBrowsedDir(String type, String dir){
+    private static synchronized void setLastBrowsedDir(String type, File dir){
         LAST_BROWSED_DIRS.put(type, dir);
     }
 
@@ -792,10 +792,10 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
             String type){
         File file = null;
         String ret = null;
-        String lastBrowsed = getLastBrowsedDir(type);
+        File lastBrowsed = getLastBrowsedDir(type);
         JFileChooser jfc = new JFileChooser();
         if (lastBrowsed != null){
-            jfc.setCurrentDirectory(new File(lastBrowsed));
+            jfc.setCurrentDirectory(lastBrowsed);
         }
 
         jfc.setMultiSelectionEnabled(false);
@@ -807,7 +807,7 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
         }
         File currDir = jfc.getCurrentDirectory();
         if (currDir != null){
-            setLastBrowsedDir(type, currDir.getAbsolutePath());
+            setLastBrowsedDir(type, currDir);
         }
         
         if (file != null){

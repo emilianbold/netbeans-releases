@@ -90,8 +90,11 @@ public abstract class CsmFileInfoQuery {
     public abstract List<String> getUserIncludePaths(CsmFile file);
     
     /**
+     *
      * @return list of code blocks which are excluded from compilation
      * due to current set of preprocessor directives
+     * NOTE: last offsetable object could have Integer.MAX_VALUE value:
+     *  - it means dead block from start offset till the end of file
      */
     public abstract List<CsmOffsetable> getUnusedCodeBlocks(CsmFile file);
 

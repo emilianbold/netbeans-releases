@@ -41,6 +41,7 @@ package org.netbeans.modules.maven.j2ee.ear;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import javax.swing.DefaultComboBoxModel;
@@ -87,7 +88,7 @@ public class EarRunCustomizerPanel extends javax.swing.JPanel {
     }
 
     private void loadComboModel() {
-        String[] ids = Deployment.getDefault().getServerInstanceIDs(new Object[]{J2eeModule.EJB});
+        String[] ids = Deployment.getDefault().getServerInstanceIDs(Collections.singleton(J2eeModule.Type.EJB));
         Collection<Wrapper> col = new ArrayList<Wrapper>();
 //        Wrapper selected = null;
         SessionContent sc = project.getLookup().lookup(SessionContent.class);

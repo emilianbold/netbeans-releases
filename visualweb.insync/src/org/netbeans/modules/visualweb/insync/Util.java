@@ -71,7 +71,6 @@ import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.modules.visualweb.xhtml.F_Verbatim;
 import java.beans.PropertyDescriptor;
 import java.io.File;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -95,7 +94,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
-import org.netbeans.modules.visualweb.extension.openide.util.Trace;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -1443,7 +1443,7 @@ public final class Util {
                 // -1: convert line numbers to be zero-based
                 Line line = ls.getCurrent(lineno-1);
                 // TODO - pass in a column too?
-                line.show(Line.SHOW_GOTO, column);
+                line.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
             }
         }
     }

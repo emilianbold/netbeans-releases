@@ -84,21 +84,6 @@ made subject to such option by the copyright holder.
                 <project>../../autoupdate.services</project>
                 <project>../../autoupdate.ui</project>
                 <project>../../beans</project>
-                <project>../../bpel.core</project>
-                <project>../../bpel.debugger</project>
-                <project>../../bpel.debugger.api</project>
-                <project>../../bpel.debugger.bdi</project>
-                <project>../../bpel.debugger.ui</project>
-                <project>../../bpel.editors</project>
-                <project>../../bpel.editors.api</project>
-                <project>../../bpel.help</project>
-                <project>../../bpel.kit</project>
-                <project>../../bpel.mapper</project>
-                <project>../../bpel.model</project>
-                <project>../../bpel.project</project>
-                <project>../../bpel.refactoring</project>
-                <project>../../bpel.samples</project>
-                <project>../../bpel.validation</project>
                 <project>../../bugtracking</project>
                 <project>../../bugtracking.bridge</project>
                 <project>../../bugzilla</project>
@@ -107,6 +92,7 @@ made subject to such option by the copyright holder.
                 <project>../../cnd.antlr</project>
                 <project>../../cnd.api.model</project>
                 <project>../../cnd.api.project</project>
+                <project>../../cnd.api.remote</project>
                 <project>../../cnd.apt</project>
                 <project>../../cnd.callgraph</project>
                 <project>../../cnd.classview</project>
@@ -135,14 +121,6 @@ made subject to such option by the copyright holder.
                 <project>../../cnd.repository</project>
                 <project>../../cnd.repository.api</project>
                 <project>../../cnd.utils</project>
-                <project>../../compapp.casaeditor</project>
-                <project>../../compapp.configextension</project>
-                <project>../../compapp.help</project>
-                <project>../../compapp.kit</project>
-                <project>../../compapp.manager.jbi</project>
-                <project>../../compapp.projects.base</project>
-                <project>../../compapp.projects.jbi</project>
-                <project>../../compapp.projects.wizard</project>
                 <project>../../core.execution</project>
                 <project>../../core.ide</project>
                 <project>../../core.io.ui</project>
@@ -155,6 +133,7 @@ made subject to such option by the copyright holder.
                 <project>../../core.windows</project>
                 <project>../../csl.api</project>
                 <project>../../css.editor</project>
+                <project>../../css.visual</project>
                 <project>../../db</project>
                 <project>../../db.core</project>
                 <project>../../db.dataview</project>
@@ -181,6 +160,7 @@ made subject to such option by the copyright holder.
                 <project>../../dlight.core.stack</project>
                 <project>../../dlight.core.ui</project>
                 <project>../../dlight.cpu</project>
+                <project>../../dlight.db.h2</project>
                 <project>../../dlight.derby.support</project>
                 <project>../../dlight.dtrace</project>
                 <project>../../dlight.indicators</project>
@@ -252,7 +232,8 @@ made subject to such option by the copyright holder.
                 <project>../../html.lexer</project>
                 <project>../../httpserver</project>
                 <project>../../hudson</project>
-                <project>../../hudson.j2seproject</project>
+                <project>../../hudson.ant</project>
+                <project>../../hudson.kenai</project>
                 <project>../../hudson.maven</project>
                 <project>../../hudson.mercurial</project>
                 <project>../../hudson.subversion</project>
@@ -301,12 +282,10 @@ made subject to such option by the copyright holder.
                 <project>../../j2ee.sun.ddui</project>
                 <project>../../j2ee.toplinklib</project>
                 <project>../../j2ee.weblogic9</project>
-                <project>../../j2ee.websphere6</project>
                 <project>../../j2eeapis</project>
                 <project>../../j2eeserver</project>
                 <project>../../j2me.cdc.kit</project>
                 <project>../../j2me.cdc.platform</project>
-                <project>../../j2me.cdc.platform.bdj</project>
                 <project>../../j2me.cdc.platform.nokias80</project>
                 <project>../../j2me.cdc.platform.nsicom</project>
                 <project>../../j2me.cdc.platform.ricoh</project>
@@ -314,7 +293,6 @@ made subject to such option by the copyright holder.
                 <project>../../j2me.cdc.platform.sjmc</project>
                 <project>../../j2me.cdc.platform.sun</project>
                 <project>../../j2me.cdc.project</project>
-                <project>../../j2me.cdc.project.bdj</project>
                 <project>../../j2me.cdc.project.execui</project>
                 <project>../../j2me.cdc.project.execuiimpl</project>
                 <project>../../j2me.cdc.project.nokiaS80</project>
@@ -360,6 +338,7 @@ made subject to such option by the copyright holder.
                 <project>../../kenai</project>
                 <project>../../kenai.collab</project>
                 <project>../../kenai.ui</project>
+                <project>../../languages</project>
                 <project>../../languages.diff</project>
                 <project>../../languages.manifest</project>
                 <project>../../languages.yaml</project>
@@ -368,6 +347,7 @@ made subject to such option by the copyright holder.
                 <project>../../lexer.nbbridge</project>
                 <project>../../lib.cvsclient</project>
                 <project>../../lib.profiler</project>
+                <project>../../lib.profiler.charts</project>
                 <project>../../lib.profiler.common</project>
                 <project>../../lib.profiler.ui</project>
                 <project>../../lib.terminalemulator</project>
@@ -377,6 +357,7 @@ made subject to such option by the copyright holder.
                 <project>../../libs.bugzilla</project>
                 <project>../../libs.bytelist</project>
                 <project>../../libs.cglib</project>
+                <project>../../libs.commons_codec</project>
                 <project>../../libs.commons_fileupload</project>
                 <project>../../libs.commons_logging</project>
                 <project>../../libs.commons_net</project>
@@ -390,11 +371,11 @@ made subject to such option by the copyright holder.
                 <project>../../libs.javacup</project>
                 <project>../../libs.jaxb</project>
                 <project>../../libs.jna</project>
+                <project>../../libs.jrubyparser</project>
                 <project>../../libs.jsch</project>
                 <project>../../libs.jsr223</project>
                 <project>../../libs.junit4</project>
                 <project>../../libs.jvyamlb</project>
-                <project>../../libs.jxpath</project>
                 <project>../../libs.lucene</project>
                 <project>../../libs.ppawtlayout</project>
                 <project>../../libs.smack</project>
@@ -402,6 +383,7 @@ made subject to such option by the copyright holder.
                 <project>../../libs.svnClientAdapter</project>
                 <project>../../libs.swingx</project>
                 <project>../../libs.xerces</project>
+                <project>../../libs.yydebug</project>
                 <project>../../localhistory</project>
                 <project>../../masterfs</project>
                 <project>../../maven</project>
@@ -409,7 +391,6 @@ made subject to such option by the copyright holder.
                 <project>../../maven.embedder</project>
                 <project>../../maven.grammar</project>
                 <project>../../maven.graph</project>
-                <project>../../maven.gsf</project>
                 <project>../../maven.hints</project>
                 <project>../../maven.indexer</project>
                 <project>../../maven.j2ee</project>
@@ -463,16 +444,11 @@ made subject to such option by the copyright holder.
                 <project>../../o.n.core</project>
                 <project>../../o.n.insane</project>
                 <project>../../o.n.mobility.lib.activesync</project>
-                <project>../../o.n.soa.libs.jbiadmincommon</project>
-                <project>../../o.n.soa.libs.jgo</project>
-                <project>../../o.n.soa.libs.wsdl4j</project>
-                <project>../../o.n.soa.libs.xmlbeans</project>
                 <project>../../o.n.swing.dirchooser</project>
                 <project>../../o.n.swing.outline</project>
                 <project>../../o.n.swing.plaf</project>
                 <project>../../o.n.swing.tabcontrol</project>
                 <project>../../o.n.upgrader</project>
-                <project>../../o.n.xml.libs.jxpath</project>
                 <project>../../o.openidex.util</project>
                 <project>../../o.rubyforge.debugcommons</project>
                 <project>../../openide.actions</project>
@@ -561,12 +537,6 @@ made subject to such option by the copyright holder.
                 <project>../../servletapi</project>
                 <project>../../servletjspapi</project>
                 <project>../../settings</project>
-                <project>../../soa.kit</project>
-                <project>../../soa.mapper</project>
-                <project>../../soa.mappercore</project>
-                <project>../../soa.reportgenerator</project>
-                <project>../../soa.ui</project>
-                <project>../../soa.validation</project>
                 <project>../../spi.actions</project>
                 <project>../../spi.debugger.ui</project>
                 <project>../../spi.editor.hints</project>
@@ -577,9 +547,6 @@ made subject to such option by the copyright holder.
                 <project>../../spi.viewmodel</project>
                 <project>../../spring.beans</project>
                 <project>../../spring.webmvc</project>
-                <project>../../sql.help</project>
-                <project>../../sql.project</project>
-                <project>../../sql.wizard</project>
                 <project>../../subversion</project>
                 <project>../../svg.perseus</project>
                 <project>../../swingapp</project>
@@ -587,6 +554,7 @@ made subject to such option by the copyright holder.
                 <project>../../tasklist.projectint</project>
                 <project>../../tasklist.todo</project>
                 <project>../../tasklist.ui</project>
+                <project>../../team.kit</project>
                 <project>../../templates</project>
                 <project>../../timers</project>
                 <project>../../tomcat5</project>
@@ -599,7 +567,6 @@ made subject to such option by the copyright holder.
                 <project>../../versioning</project>
                 <project>../../versioning.system.cvss</project>
                 <project>../../versioning.util</project>
-                <project>../../visdev.prefuse</project>
                 <project>../../vmd.analyzer</project>
                 <project>../../vmd.codegen</project>
                 <project>../../vmd.components.midp</project>
@@ -636,6 +603,7 @@ made subject to such option by the copyright holder.
                 <project>../../web.fake</project>
                 <project>../../web.flyingsaucer</project>
                 <project>../../web.freeform</project>
+                <project>../../web.helpset</project>
                 <project>../../web.jsf</project>
                 <project>../../web.jsf.kit</project>
                 <project>../../web.jsf.navigation</project>
@@ -662,6 +630,7 @@ made subject to such option by the copyright holder.
                 <project>../../websvc.kit</project>
                 <project>../../websvc.manager</project>
                 <project>../../websvc.metro.lib</project>
+                <project>../../websvc.metro.model</project>
                 <project>../../websvc.metro.samples</project>
                 <project>../../websvc.projectapi</project>
                 <project>../../websvc.rest</project>
@@ -694,54 +663,24 @@ made subject to such option by the copyright holder.
                 <project>../../websvc.wsstack.jaxws</project>
                 <project>../../websvc.wsstackapi</project>
                 <project>../../welcome</project>
-                <project>../../wsdlextensions.file</project>
-                <project>../../wsdlextensions.jms</project>
                 <project>../../xml</project>
                 <project>../../xml.axi</project>
                 <project>../../xml.catalog</project>
-                <project>../../xml.catalogsupport</project>
                 <project>../../xml.core</project>
                 <project>../../xml.jaxb</project>
-                <project>../../xml.kit</project>
                 <project>../../xml.lexer</project>
                 <project>../../xml.multiview</project>
-                <project>../../xml.nbprefuse</project>
-                <project>../../xml.refactoring</project>
                 <project>../../xml.retriever</project>
-                <project>../../xml.schema</project>
-                <project>../../xml.schema.abe</project>
                 <project>../../xml.schema.completion</project>
                 <project>../../xml.schema.model</project>
-                <project>../../xml.schema.refactoring</project>
-                <project>../../xml.schema.ui.basic</project>
-                <project>../../xml.search</project>
                 <project>../../xml.tax</project>
                 <project>../../xml.text</project>
                 <project>../../xml.tools</project>
                 <project>../../xml.tools.java</project>
-                <project>../../xml.validation</project>
-                <project>../../xml.wsdl.bindingsupport</project>
-                <project>../../xml.wsdl.bindingsupport.api</project>
-                <project>../../xml.wsdl.extensions</project>
-                <project>../../xml.wsdl.kit</project>
                 <project>../../xml.wsdl.model</project>
-                <project>../../xml.wsdl.refactoring</project>
-                <project>../../xml.wsdlextui</project>
-                <project>../../xml.wsdlui</project>
                 <project>../../xml.xam</project>
-                <project>../../xml.xam.ui</project>
                 <project>../../xml.xdm</project>
-                <project>../../xml.xpath</project>
-                <project>../../xml.xpath.ext</project>
                 <project>../../xsl</project>
-                <project>../../xslt.core</project>
-                <project>../../xslt.help</project>
-                <project>../../xslt.kit</project>
-                <project>../../xslt.mapper</project>
-                <project>../../xslt.model</project>
-                <project>../../xslt.project</project>
-                <project>../../xslt.tmap</project>
-                <project>../../xslt.validation</project>
             </subprojects>
         </general-data>
     </configuration>

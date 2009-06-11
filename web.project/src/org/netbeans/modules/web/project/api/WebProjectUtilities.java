@@ -54,7 +54,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.*;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -92,6 +91,7 @@ import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
@@ -188,7 +188,7 @@ public class WebProjectUtilities {
         String name = createData.getName();
         String serverInstanceID = createData.getServerInstanceID();
         String sourceStructure = createData.getSourceStructure();
-        String j2eeLevel = createData.getJavaEEVersion();
+        Profile j2eeProfile = createData.getJavaEEProfile();
         String contextPath = createData.getContextPath();
         String javaPlatformName = createData.getJavaPlatformName();
         String sourceLevel = createData.getSourceLevel();
@@ -196,7 +196,7 @@ public class WebProjectUtilities {
         assert name != null: "Project name can't be null"; //NOI18N
         assert serverInstanceID != null: "Server instance ID can't be null"; //NOI18N
         assert sourceStructure != null: "Source structure can't be null"; //NOI18N
-        assert j2eeLevel != null: "Java EE version can't be null"; //NOI18N
+        assert j2eeProfile != null: "Java EE version can't be null"; //NOI18N
         
         final boolean createBluePrintsStruct = SRC_STRUCT_BLUEPRINTS.equals(sourceStructure);
         final boolean createJakartaStructure = SRC_STRUCT_JAKARTA.equals(sourceStructure);
@@ -205,7 +205,7 @@ public class WebProjectUtilities {
                 serverInstanceID, projectDir, createData.getServerLibraryName() != null);
 
         final AntProjectHelper h = setupProject(projectDir, name, serverInstanceID,
-                j2eeLevel, createData.getLibrariesDefinition(), serverLibraryName);
+                j2eeProfile, createData.getLibrariesDefinition(), serverLibraryName);
         
         FileObject srcFO = projectDir.createFolder(DEFAULT_SRC_FOLDER);
         FileObject confFolderFO = null;
@@ -241,22 +241,27 @@ public class WebProjectUtilities {
         // create web.xml
         // PENDING : should be easier to define in layer and copy related FileObject (doesn't require systemClassLoader)
         String webXMLContent = null;
-        if (J2eeModule.JAVA_EE_5.equals(j2eeLevel))
+        if (Profile.JAVA_EE_6_FULL == j2eeProfile || Profile.JAVA_EE_6_WEB == j2eeProfile) {
+            webXMLContent = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + "web-3.0.xml")); //NOI18N
+        } else if (Profile.JAVA_EE_5 == j2eeProfile) {
             webXMLContent = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + "web-2.5.xml")); //NOI18N
-        else if (WebModule.J2EE_14_LEVEL.equals(j2eeLevel))
+        } else if (Profile.J2EE_14 == j2eeProfile) {
             webXMLContent = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + "web-2.4.xml")); //NOI18N
-        else if (WebModule.J2EE_13_LEVEL.equals(j2eeLevel))
+        } else if (Profile.J2EE_13 == j2eeProfile) {
             webXMLContent = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + "web-2.3.xml")); //NOI18N
-        assert webXMLContent != null : "Cannot find web.xml template for J2EE specification level:" + j2eeLevel;
-        final String webXmlText = webXMLContent;
-        FileObject webXML = FileUtil.createData(webInfFO, "web.xml");//NOI18N
-        FileLock lock = webXML.lock();
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(webXML.getOutputStream(lock)));
-        try {
-            bw.write(webXmlText);
-        } finally {
-            bw.close();
-            lock.releaseLock();
+        }
+        // FIXME JAVA_EE_6
+        if (webXMLContent != null) {
+            final String webXmlText = webXMLContent;
+            FileObject webXML = FileUtil.createData(webInfFO, "web.xml");//NOI18N
+            FileLock lock = webXML.lock();
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(webXML.getOutputStream(lock)));
+            try {
+                bw.write(webXmlText);
+            } finally {
+                bw.close();
+                lock.releaseLock();
+            }
         }
         
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -454,7 +459,7 @@ public class WebProjectUtilities {
         File[] tstFolders = createData.getTestFolders();
         FileObject docBase = createData.getDocBase();
         FileObject libFolder = createData.getLibFolder();
-        String j2eeLevel = createData.getJavaEEVersion();
+        Profile j2eeProfile = createData.getJavaEEProfile();
         String serverInstanceID = createData.getServerInstanceID();
         String buildfile = createData.getBuildfile();
         String javaPlatformName = createData.getJavaPlatformName();
@@ -467,13 +472,13 @@ public class WebProjectUtilities {
         assert sourceFolders != null: "Source package root can't be null";   //NOI18N
         assert docBase != null: "Web Pages folder can't be null";   //NOI18N
         assert serverInstanceID != null: "Server instance ID can't be null"; //NOI18N
-        assert j2eeLevel != null: "Java EE version can't be null"; //NOI18N
+        assert j2eeProfile != null: "Java EE version can't be null"; //NOI18N
         
         final String serverLibraryName = configureServerLibrary(createData.getLibrariesDefinition(),
                 serverInstanceID, projectDir, createData.getServerLibraryName() != null);
         
         final AntProjectHelper antProjectHelper = setupProject(projectDir, name,
-                serverInstanceID, j2eeLevel, createData.getLibrariesDefinition(), serverLibraryName);
+                serverInstanceID, j2eeProfile, createData.getLibrariesDefinition(), serverLibraryName);
         
         final WebProject p = (WebProject) ProjectManager.getDefault().findProject(antProjectHelper.getProjectDirectory());
         final ReferenceHelper referenceHelper = p.getReferenceHelper();
@@ -690,7 +695,7 @@ public class WebProjectUtilities {
     }
     
     private static AntProjectHelper setupProject(FileObject dirFO, String name, 
-            String serverInstanceID, String j2eeLevel, String librariesDefinition, String serverLibraryName) throws IOException {
+            String serverInstanceID, Profile j2eeProfile, String librariesDefinition, String serverLibraryName) throws IOException {
 
         Utils.logUI(NbBundle.getBundle(WebProjectUtilities.class), "UI_WEB_PROJECT_CREATE_SHARABILITY", // NOI18N
                 new Object[]{Boolean.valueOf(librariesDefinition != null), Boolean.valueOf(serverLibraryName != null)});
@@ -733,7 +738,7 @@ public class WebProjectUtilities {
         
         ep.setProperty(WebProjectProperties.JSPCOMPILATION_CLASSPATH, "${jspc.classpath}:${javac.classpath}");
         
-        ep.setProperty(WebProjectProperties.J2EE_PLATFORM, j2eeLevel);
+        ep.setProperty(WebProjectProperties.J2EE_PLATFORM, j2eeProfile.toPropertiesString());
         
         ep.setProperty(WebProjectProperties.WAR_NAME, PropertyUtils.getUsablePropertyName(name) + ".war"); // NOI18N
         //XXX the name of the dist.ear.jar file should be different, but now it cannot be since the name is used as a key in module provider mapping
@@ -825,9 +830,9 @@ public class WebProjectUtilities {
         
         // set j2ee.platform.classpath
         J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
-        if (!j2eePlatform.getSupportedSpecVersions(J2eeModule.WAR).contains(j2eeLevel)) {
+        if (!j2eePlatform.getSupportedProfiles(J2eeModule.Type.WAR).contains(j2eeProfile)) {
             Logger.getLogger("global").log(Level.WARNING,
-                    "J2EE level:" + j2eeLevel + " not supported by server " + Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID) + " for module type WAR"); // NOI18N
+                    "J2EE level:" + j2eeProfile.getDisplayName() + " not supported by server " + Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID) + " for module type WAR"); // NOI18N
         }
         
         if (!h.isSharableProject() || serverLibraryName == null) {

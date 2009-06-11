@@ -73,7 +73,7 @@ public class FilterNodeTest extends NbTestCase {
     
 //    public static FilterNodeTest suite() {
 //        return new FilterNodeTest("testRemoveNotifyIsCalledLazy");
-//    }   
+//    }
 
     /** Demonstrates a bug in FilterNode.changeOriginal.
      */
@@ -893,7 +893,43 @@ public class FilterNodeTest extends NbTestCase {
         assertEquals("A", fn.getChildren().getNodeAt(0).getName());
         assertEquals("B", fn.getChildren().getNodeAt(1).getName());
     }
-    
+
+    public void testChangeOriginalE2E() {
+        doTestChangeOriginal(false, false);
+    }
+
+    public void testChangeOriginalE2L() {
+        doTestChangeOriginal(false, true);
+    }
+
+    public void testChangeOriginalL2E() {
+        doTestChangeOriginal(true, false);
+    }
+
+    public void testChangeOriginalL2L() {
+        doTestChangeOriginal(true, true);
+    }
+
+    private void doTestChangeOriginal(boolean lazy1, boolean lazy2) {
+        AbstractNode a = new AbstractNode (new Keys(lazy1));
+        AbstractNode b = new AbstractNode (new Keys(lazy2, "A", "B"));
+
+        FN fn = new FN(a);
+        NodeListener l = new NodeAdapter() {
+
+            @Override
+            public void childrenAdded(NodeMemberEvent ev) {
+                assert (ev.getSnapshot().size() != 0);
+            }
+
+        };
+        fn.addNodeListener(l);
+        assertEquals(0, fn.getChildren().getNodesCount());
+        fn.changeOriginal(b, true);
+        List<Node> s = fn.getChildren().snapshot();
+        assertEquals("A", s.get(0).getName());
+    }
+
     public void testRemoveNotifyIsCalledLazy() {
         doTestRemoveNotifyIsCalled(true);
     }

@@ -740,7 +740,6 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         Element docelm = env.handle.resolve(controller);
         TreePath docpath = trees.getPath(docelm);
         final Scope scope = trees.getScope(docpath);
-        final boolean[] ctorSeen = {false};
         TypeElement enclClass = scope.getEnclosingClass();
         final TypeMirror enclType = enclClass != null ? enclClass.asType() : null;
         ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
@@ -779,7 +778,6 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
 //                                isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types) &&
 //                                tu.isAccessible(scope, e, t) && isStatic;
                     case CONSTRUCTOR:
-                        ctorSeen[0] = true;
                         return (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
 //                                isOfKindAndType(e.getEnclosingElement().asType(), e, kinds, baseType, scope, trees, types) &&
                                 (tu.isAccessible(scope, e, t) || (elem.getModifiers().contains(Modifier.ABSTRACT) && !e.getModifiers().contains(Modifier.PRIVATE)));
@@ -810,9 +808,6 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
 //                    results.add(JavaCompletionItem.createTypeItem((TypeElement)e, dt, anchorOffset, false, elements.isDeprecated(e), insideNew, false));
 //                    break;
             }
-        }
-        if (!ctorSeen[0] && kinds.contains(CONSTRUCTOR) && elem.getKind().isInterface()) {
-            items.add(JavaCompletionItem.createDefaultConstructorItem((TypeElement) elem, substitutionOffset, /*isOfSmartType(env, type, smartTypes)*/false));
         }
     }
 
@@ -864,7 +859,10 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
             public boolean accept(Element e, TypeMirror t) {
                 switch (e.getKind()) {
                     case CONSTRUCTOR:
-                        return false;
+                        return Utilities.startsWith(e.getEnclosingElement().getSimpleName().toString(), prefix) &&
+                                (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
+//                                (!isStatic || e.getModifiers().contains(STATIC)) &&
+                                tu.isAccessible(scope, e, t);
 //                    case LOCAL_VARIABLE:
 //                    case EXCEPTION_PARAMETER:
 //                    case PARAMETER:
@@ -907,6 +905,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                     TypeMirror tm = asMemberOf(e, enclClass != null ? enclClass.asType() : null, types);
                     items.add(JavaCompletionItem.createVariableItem((VariableElement)e, tm, substitutionOffset, scope.getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false/*isOfSmartType(env, tm, smartTypes)*/));
                     break;
+                case CONSTRUCTOR:
                 case METHOD:
                     ExecutableType et = (ExecutableType)asMemberOf(e, enclClass != null ? enclClass.asType() : null, types);
 //                    items.add(JavaCompletionItem.createExecutableItem((ExecutableElement)e, et, substitutionOffset, scope.getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false, false/*isOfSmartType(env, et.getReturnType(), smartTypes)*/));

@@ -49,6 +49,8 @@ public interface CompilerSetProvider {
 
     int getPlatform();
 
+    void init();
+
     boolean hasMoreCompilerSets();
 
     String getNextCompilerSetData();

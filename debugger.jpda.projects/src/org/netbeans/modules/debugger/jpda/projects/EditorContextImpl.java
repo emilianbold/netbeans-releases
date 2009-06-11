@@ -93,7 +93,6 @@ import javax.lang.model.util.Elements;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
-import javax.tools.Diagnostic;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
@@ -121,6 +120,8 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotation;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.text.NbDocument;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -178,10 +179,10 @@ public class EditorContextImpl extends EditorContext {
             return null;
         }
         if ("true".equalsIgnoreCase(fronting) || Utilities.isWindows()) {
-            l.show (Line.SHOW_REUSE);
-            l.show (Line.SHOW_TOFRONT); //FIX 47825
+            l.show (ShowOpenType.REUSE, ShowVisibilityType.FOCUS);
+            l.show (ShowOpenType.OPEN, ShowVisibilityType.FRONT); //FIX 47825
         } else {
-            l.show (Line.SHOW_REUSE);
+            l.show (ShowOpenType.REUSE, ShowVisibilityType.FOCUS);
         }
         return l;
     }
@@ -201,9 +202,9 @@ public class EditorContextImpl extends EditorContext {
             return false;
         }
         if ("true".equalsIgnoreCase(fronting) || Utilities.isWindows()) {
-            l.show (Line.SHOW_TOFRONT, column); //FIX 47825
+            l.show (ShowOpenType.OPEN, ShowVisibilityType.FRONT, column); //FIX 47825
         } else {
-            l.show (Line.SHOW_GOTO, column);
+            l.show (ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
         }
         addPositionToJumpList(url, l, column);
         return true;

@@ -58,7 +58,7 @@ public class GenerateJavadocFixTest extends JavadocTestSupport {
                 "package test;\n" +
                 "import java.io.IOException;\n" +
                 "class Zima {\n" +
-                "    @Deprecated <T> int leden(int param1, int param2, T param3) throws IOException, IllegalArgumentException {\n" +
+                "    @Deprecated <T> int leden(int param1, int param2, T param3) throws IOException, IllegalArgumentException, java.io.FileNotFoundException {\n" +
                 "        return 0;\n" +
                 "    }\n" +
                 "}\n",
@@ -73,11 +73,12 @@ public class GenerateJavadocFixTest extends JavadocTestSupport {
                 "     * @param param2\n" +
                 "     * @param param3\n" +
                 "     * @return\n" +
-                "     * @throws java.io.IOException\n" +
-                "     * @throws java.lang.IllegalArgumentException\n" +
+                "     * @throws IOException\n" +
+                "     * @throws IllegalArgumentException\n" +
+                "     * @throws java.io.FileNotFoundException\n" +
                 "     * @deprecated\n" +
                 "     */\n" +
-                "    @Deprecated <T> int leden(int param1, int param2, T param3) throws IOException, IllegalArgumentException {\n" +
+                "    @Deprecated <T> int leden(int param1, int param2, T param3) throws IOException, IllegalArgumentException, java.io.FileNotFoundException {\n" +
                 "        return 0;\n" +
                 "    }\n" +
                 "}\n");        
@@ -88,7 +89,7 @@ public class GenerateJavadocFixTest extends JavadocTestSupport {
                 "package test;\n" +
                 "import java.io.IOException;\n" +
                 "class Zima {\n" +
-                "    @Deprecated <T> Zima(int param1, int param2, T param3) throws IOException, IllegalArgumentException {\n" +
+                "    @Deprecated <T> Zima(int param1, int param2, T param3) throws IOException, IllegalArgumentException, java.io.FileNotFoundException {\n" +
                 "    }\n" +
                 "}\n",
                 
@@ -101,11 +102,12 @@ public class GenerateJavadocFixTest extends JavadocTestSupport {
                 "     * @param param1\n" +
                 "     * @param param2\n" +
                 "     * @param param3\n" +
-                "     * @throws java.io.IOException\n" +
-                "     * @throws java.lang.IllegalArgumentException\n" +
+                "     * @throws IOException\n" +
+                "     * @throws IllegalArgumentException\n" +
+                "     * @throws java.io.FileNotFoundException\n" +
                 "     * @deprecated\n" +
                 "     */\n" +
-                "    @Deprecated <T> Zima(int param1, int param2, T param3) throws IOException, IllegalArgumentException {\n" +
+                "    @Deprecated <T> Zima(int param1, int param2, T param3) throws IOException, IllegalArgumentException, java.io.FileNotFoundException {\n" +
                 "    }\n" +
                 "}\n");        
     }

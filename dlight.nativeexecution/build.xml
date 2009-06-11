@@ -18,7 +18,11 @@
         <chmod file="${cluster}/bin/nativeexecution/SunOS-x86/unbuffer.so" perm="ugo+rx"/>
         <chmod file="${cluster}/bin/nativeexecution/SunOS-x86_64/unbuffer.so" perm="ugo+rx"/>
         <chmod file="${cluster}/bin/nativeexecution/dorun.sh" perm="ugo+rx"/>
+        <chmod file="${cluster}/bin/nativeexecution/hostinfo.sh" perm="ugo+rx"/>
         <chmod file="${cluster}/bin/nativeexecution/Windows-x86/unbuffer.dll" perm="ugo+rx"/>
+        <fixcrlf srcdir="${cluster}/bin/nativeexecution" eol="lf">
+            <include name="**/*.sh"/>
+        </fixcrlf>
     </target>
 
 </project>

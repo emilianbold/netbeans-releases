@@ -9,7 +9,9 @@
             <SuperClassName>
             </SuperClassName>
             <Interfaces>
-                <Identifier start='40' end='51' name='Application'/>
+                <NamespaceName start='40' end='51' isCurrent='false' isGlobal='false'>
+                    <Identifier start='40' end='51' name='Application'/>
+                </NamespaceName>
             </Interfaces>
             <Block start='52' end='286' isCurly='true'>
                 <ClassConstantDeclaration start='56' end='84'>

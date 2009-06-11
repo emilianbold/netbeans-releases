@@ -87,6 +87,10 @@ public class TaskIndexer extends CustomIndexer {
         try {
             IndexingSupport is = IndexingSupport.getInstance(context);
             for( Indexable idx : files ) {
+                if (context.isCancelled()) {
+                    LOG.log(Level.FINE, "Indexer cancelled"); //NOI18N
+                    return;
+                }
                 if( null == scanners ) {
                     scanners = new ArrayList<FileTaskScanner>( 20 );
                     for( FileTaskScanner s : tm.getFileScanners() ) {
@@ -99,7 +103,7 @@ public class TaskIndexer extends CustomIndexer {
                 }
                 FileObject root = context.getRoot();
                 if( null == root ) {
-                    LOG.log(Level.FINE, "Context root not avaible");
+                    LOG.log(Level.FINE, "Context root not available");
                     return;
                 }
                 FileObject fo = root.getFileObject(idx.getRelativePath());
@@ -123,6 +127,8 @@ public class TaskIndexer extends CustomIndexer {
                         for( Task t : tasks ) {
                             doc.addPair(KEY_TASK, encode(t), false, true);
                         }
+                    } else {
+                       is.removeDocuments(idx);
                     }
                 }
             }

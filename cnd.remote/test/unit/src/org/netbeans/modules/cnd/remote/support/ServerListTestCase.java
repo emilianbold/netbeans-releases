@@ -56,13 +56,13 @@ public class ServerListTestCase extends RemoteTestBase {
 //        System.setProperty("cnd.remote.logger.level", "0");
 //        System.setProperty("nativeexecution.support.logger.level", "0");
     }
-    public ServerListTestCase(String testName) {
-        super(testName);
+    public ServerListTestCase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);
     }
 
     public void testRun() throws Exception {        
         if (canTestRemote()) {
-            ExecutionEnvironment execEnv = getRemoteExecutionEnvironment();
+            ExecutionEnvironment execEnv = getTestExecutionEnvironment();
             ServerRecord rec = ServerList.addServer(execEnv, execEnv.getDisplayName(), RemoteSyncFactory.getDefault(), false, true);
             assertNotNull("Null server record", rec);
             assertEquals(rec.getExecutionEnvironment(), execEnv);

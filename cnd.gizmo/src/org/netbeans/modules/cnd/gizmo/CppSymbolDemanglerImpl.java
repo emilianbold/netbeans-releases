@@ -61,6 +61,7 @@ import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory.CPPCompiler;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
 
@@ -82,13 +83,13 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
     /*package*/ CppSymbolDemanglerImpl() {
         Project project = org.netbeans.api.project.ui.OpenProjects.getDefault().getMainProject();
         NativeProject nPrj = (project == null) ? null : project.getLookup().lookup(NativeProject.class);
-        if (nPrj == null) {
+        MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
+        if (nPrj == null || conf == null) {
             cppCompiler = CPPCompiler.GNU;
             demanglerTool = GNU_FAMILIY;
             env = ExecutionEnvironmentFactory.getLocal();
             return;
         }
-        MakeConfiguration conf = (MakeConfiguration) ConfigurationSupport.getProjectDescriptor(project).getConfs().getActive();
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         String demangle_utility = SS_FAMILIY;
         if (compilerSet.getCompilerFlavor().isGnuCompiler()) {
@@ -132,7 +133,8 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
         }
 
         if (demangledName == null) {
-            List<String> list = Collections.singletonList(mangledName);
+            List<String> list = new ArrayList<String>(1);
+            list.add(mangledName);
             demangleImpl(list);
             demangledName = list.get(0);
             synchronized (demangledCache) {
@@ -277,5 +279,25 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
         public void close() {
             //throw new UnsupportedOperationException("Not supported yet.");
         }
+    }
+
+    /**
+     * Discard caches. For unit tests.
+     */
+    /*package*/ void clearCache() {
+        synchronized (demangledCache) {
+            demangledCache.clear();
+        }
+    }
+
+    /**
+     * Checks if native demangler tool is available.
+     * We can't work without this tool!
+     *
+     * @return <code>true</code> if tool is available and this demangler
+     *      is functional, <code>false</code> otherwise
+     */
+    /*package*/ boolean isToolAvailable() {
+        return HostInfoUtils.searchFile(env, Collections.<String>emptyList(), demanglerTool, true) != null;
     }
 }

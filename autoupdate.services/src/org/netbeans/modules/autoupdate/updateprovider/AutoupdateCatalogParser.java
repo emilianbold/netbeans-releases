@@ -175,13 +175,21 @@ public class AutoupdateCatalogParser extends DefaultHandler {
             } else {
                 base = url.toURI();
             }
+            InputSource is = null;
             try {
                 SAXParserFactory factory = SAXParserFactory.newInstance();
                 factory.setValidating(true);
                 SAXParser saxParser = factory.newSAXParser();
-                saxParser.parse(getInputSource(url, provider, base), new AutoupdateCatalogParser(items, provider, base));
+                is = getInputSource(url, provider, base);
+                saxParser.parse(is, new AutoupdateCatalogParser(items, provider, base));
             } catch (Exception ex) {
                 ERR.log(Level.INFO, "Failed to parse " + base, ex);
+                if (is != null && is.getByteStream() != null) {
+                    try {
+                        is.getByteStream().close();
+                    } catch (IOException e) {
+                    }
+                }
             }
         } catch (URISyntaxException ex) {
             ERR.log(Level.INFO, null, ex);

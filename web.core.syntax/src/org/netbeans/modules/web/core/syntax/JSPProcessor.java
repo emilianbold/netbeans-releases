@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.core.syntax;
 
 import java.util.Collection;
@@ -50,9 +49,11 @@ import javax.servlet.jsp.tagext.TagAttributeInfo;
 import javax.servlet.jsp.tagext.TagData;
 import javax.servlet.jsp.tagext.TagInfo;
 import javax.servlet.jsp.tagext.VariableInfo;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.core.syntax.spi.JspColoringData;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.Node.IncludeDirective;
@@ -68,13 +69,14 @@ import org.openide.util.Exceptions;
  * @author Tomasz.Slota@Sun.COM
  */
 public abstract class JSPProcessor {
+
     protected Document doc;
     protected FileObject fobj;
     protected static final Logger logger = Logger.getLogger(JSPProcessor.class.getName());
     protected boolean processCalled = false;
     protected boolean processingSuccessful = true;
 
-    protected String createBeanVarDeclarations() {
+    protected String createBeanVarDeclarations(List<String> localBeans) {
         //TODO: the parser data contains no information about offsets and
         //therefore it is not possible to create proper java embeddings
         //inside bean declarations. We need a similar solution to what was
@@ -88,14 +90,18 @@ public abstract class JSPProcessor {
 
             if (beanData != null) {
                 for (PageInfo.BeanData bean : beanData) {
-                    beanDeclarationsBuff.append(bean.getClassName() + " " + bean.getId() + ";\n"); //NOI18N
+                    if (!localBeans.contains(bean.getId())) {
+                        beanDeclarationsBuff.append(bean.getClassName() + " " + bean.getId() + ";\n"); //NOI18N
+                    }
                 }
             }
 
-            if (pageInfo.isTagFile()){
-                for (TagAttributeInfo info : pageInfo.getTagInfo().getAttributes()){
-                    if (info.getTypeName() != null){ // will be null e.g. for fragment attrs
-                        beanDeclarationsBuff.append(info.getTypeName() + " " + info.getName() + ";\n"); //NOI18N
+            if (pageInfo.isTagFile()) {
+                for (TagAttributeInfo info : pageInfo.getTagInfo().getAttributes()) {
+                    if (info.getTypeName() != null) { // will be null e.g. for fragment attrs
+                        if (!localBeans.contains(info.getName())) {
+                            beanDeclarationsBuff.append(info.getTypeName() + " " + info.getName() + ";\n"); //NOI18N
+                        }
                     }
                 }
             }
@@ -104,9 +110,9 @@ public abstract class JSPProcessor {
         JspSyntaxSupport syntaxSupport = JspSyntaxSupport.get(doc);
         JspColoringData coloringData = JspUtils.getJSPColoringData(fobj);
 
-        if (coloringData != null && coloringData.getPrefixMapper() != null){
+        if (coloringData != null && coloringData.getPrefixMapper() != null) {
             Collection<String> prefixes = coloringData.getPrefixMapper().keySet();
-            TagData fooArg = new TagData((Object[][])null);
+            TagData fooArg = new TagData((Object[][]) null);
 
             for (String prefix : prefixes) {
                 List<TagInfo> tags = syntaxSupport.getAllTags(prefix, false); //do not require fresh data - #146762
@@ -118,11 +124,10 @@ public abstract class JSPProcessor {
                     }
                     VariableInfo vars[] = tag.getVariableInfo(fooArg);
 
-                    if (vars != null){
+                    if (vars != null) {
                         for (VariableInfo var : vars) {
                             // Create Variable Definitions
-                            if (var.getVarName() != null && var.getClassName() != null
-                                    && var.getDeclare()){
+                            if (var.getVarName() != null && var.getClassName() != null && var.getDeclare()) {
                                 String varDeclaration = var.getClassName() + " " + var.getVarName() + ";\n";
                                 beanDeclarationsBuff.append(varDeclaration);
                             }
@@ -136,12 +141,6 @@ public abstract class JSPProcessor {
     }
 
     protected PageInfo getPageInfo() {
-        //Workaround of issue #120195 - Deadlock in jspparser while reformatting JSP
-        //Needs to be removed after properly fixing the issue
-        if(DocumentUtilities.isWriteLocked(doc)) {
-            return null;
-        }
-
         JspParserAPI.ParseResult parseResult = JspUtils.getCachedParseResult(fobj, true, false);
 
         if (parseResult != null) {
@@ -175,19 +174,19 @@ public abstract class JSPProcessor {
         }
     }
 
-    protected void processIncludes()  {
+    protected void processIncludes() {
         PageInfo pageInfo = getPageInfo();
 
         if (pageInfo == null) {
             //if we do not get pageinfo it is unlikely we will get something reasonable from
             //jspSyntax.getParseResult()...
-            return ;
+            return;
         }
 
         final Collection<String> processedFiles = new TreeSet<String>(Collections.singleton(fobj.getPath()));
 
-        if (pageInfo.getIncludePrelude() != null){
-            for (String preludePath : (List<String>)pageInfo.getIncludePrelude()){
+        if (pageInfo.getIncludePrelude() != null) {
+            for (String preludePath : (List<String>) pageInfo.getIncludePrelude()) {
                 processIncludedFile(preludePath, processedFiles);
             }
         }
@@ -205,7 +204,7 @@ public abstract class JSPProcessor {
         try {
             JspParserAPI.ParseResult parseResult = jspSyntax.getParseResult();
 
-            if (parseResult != null && parseResult.getNodes() != null){
+            if (parseResult != null && parseResult.getNodes() != null) {
                 parseResult.getNodes().visit(visitor);
             }
         } catch (JspException ex) {
@@ -216,8 +215,7 @@ public abstract class JSPProcessor {
     private void processIncludedFile(String filePath, Collection<String> processedFiles) {
         FileObject includedFile = JspUtils.getFileObject(doc, filePath);
 
-        if (includedFile != null && includedFile.canRead()
-                // prevent endless loop in case of a circular reference
+        if (includedFile != null && includedFile.canRead() // prevent endless loop in case of a circular reference
                 && !processedFiles.contains(includedFile.getPath())) {
 
             processedFiles.add(includedFile.getPath());
@@ -230,7 +228,7 @@ public abstract class JSPProcessor {
                     EditorCookie editor = includedFileDO.getCookie(EditorCookie.class);
 
                     if (editor != null) {
-                        IncludedJSPFileProcessor includedJSPFileProcessor = new IncludedJSPFileProcessor((BaseDocument)editor.openDocument());
+                        IncludedJSPFileProcessor includedJSPFileProcessor = new IncludedJSPFileProcessor((BaseDocument) editor.openDocument());
                         includedJSPFileProcessor.process();
                         processIncludedFile(includedJSPFileProcessor);
                     }
@@ -241,9 +239,52 @@ public abstract class JSPProcessor {
         }
     }
 
-    protected abstract void processIncludedFile(IncludedJSPFileProcessor includedJSPFileProcessor);
+    public void process() throws BadLocationException {
+        processCalled = true;
 
-        /**
+        //workaround>>> issue #120195 - Deadlock in jspparser while reformatting JSP
+        if (DocumentUtilities.isWriteLocked(doc)) {
+            processingSuccessful = false;
+            return;
+        }
+        //<<<workaround
+
+        //get fileobject
+        fobj = NbEditorUtilities.getFileObject(doc);
+        if(fobj == null) {
+            //do not handle non fileobject documents like coloring properties preview document
+            processingSuccessful = false;
+            return;
+        }
+
+        //do not process broken source
+        JspParserAPI.ParseResult parseResult = JspUtils.getCachedParseResult(fobj, false, false);
+        if (parseResult == null || !parseResult.isParsingSuccess()) {
+            processingSuccessful = false;
+            return;
+        }
+
+        final BadLocationException[] ble = new BadLocationException[1];
+        doc.render(new Runnable() {
+
+            public void run() {
+                try {
+                    renderProcess();
+                } catch (BadLocationException ex) {
+                    ble[0] = ex; //save
+                }
+            }
+        });
+        if (ble[0] != null) {
+            throw ble[0]; //just rethrow to this level
+        }
+    }
+
+    protected abstract void processIncludedFile(IncludedJSPFileProcessor includedJSPFileProcessor);
+    
+    protected abstract void renderProcess() throws BadLocationException;
+
+    /**
      * Add extra imports according to information obtained from the JSP parser
      *
      * @param localImports imports already included in the Simplified Servlet
@@ -253,13 +294,13 @@ public abstract class JSPProcessor {
         StringBuilder importsBuff = new StringBuilder();
         String[] imports = getImportsFromJspParser();
 
-        if (imports == null || imports.length == 0){
+        if (imports == null || imports.length == 0) {
             processingSuccessful = false;
         } else {
             // TODO: better support for situation when imports is null
             // (JSP doesn't belong to a project)
             for (String pckg : imports) {
-                if (!localImports.contains(pckg)){
+                if (!localImports.contains(pckg)) {
                     importsBuff.append("import " + pckg + ";\n"); //NOI18N
                 }
             }

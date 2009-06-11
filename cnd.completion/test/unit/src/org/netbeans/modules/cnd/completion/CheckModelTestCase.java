@@ -43,13 +43,13 @@ package org.netbeans.modules.cnd.completion;
 
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
-import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 
 /**
  *
  * @author Vladimir Voskresensky
  */        
-public class CheckModelTestCase extends BaseTestCase {
+public class CheckModelTestCase extends CndBaseTestCase {
     
     /**
      * Creates a new instance of CheckModelTestCase

@@ -44,9 +44,10 @@ made subject to such option by the copyright holder.
 
   <import file="../nbbuild/templates/projectized.xml"/>
 
-  <property name="s2b_root_2_3" location="src/org/netbeans/modules/j2ee/dd/impl/web/model_2_3"/>
-  <property name="s2b_root_2_4" location="src/org/netbeans/modules/j2ee/dd/impl/web/model_2_4"/>
-  <property name="s2b_root_2_5" location="src/org/netbeans/modules/j2ee/dd/impl/web/model_2_5"/>
+  <property name="s2b_root_web_2_3" location="src/org/netbeans/modules/j2ee/dd/impl/web/model_2_3"/>
+  <property name="s2b_root_web_2_4" location="src/org/netbeans/modules/j2ee/dd/impl/web/model_2_4"/>
+  <property name="s2b_root_web_2_5" location="src/org/netbeans/modules/j2ee/dd/impl/web/model_2_5"/>
+  <property name="s2b_root_web_3_0" location="src/org/netbeans/modules/j2ee/dd/impl/web/model_3_0"/>
   <property name="s2b_root_1_1" location="src/org/netbeans/modules/j2ee/dd/impl/ejb/model_1_1"/>
   <property name="s2b_root_2_0" location="src/org/netbeans/modules/j2ee/dd/impl/ejb/model_2_0"/>
   <property name="s2b_root_2_1" location="src/org/netbeans/modules/j2ee/dd/impl/ejb/model_2_1"/>
@@ -99,15 +100,86 @@ made subject to such option by the copyright holder.
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
 	  rootDir="src"/>
-    <replace file="${s2b_root_2_5}/ServletMapping.java" summary="true">
+	<schema2beans schema="${s2b_res_root}/web-app_3_0.xsd"
+	  mddFile="${s2b_res_root}/web-app_3_0.mdd"
+	  package="org.netbeans.modules.j2ee.dd.impl.web.model_3_0"
+	  schemaType="xmlschema"
+	  useInterfaces="true"
+	  validate="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+	  rootDir="src"/>
+	<schema2beans schema="${s2b_res_root}/web-fragment_3_0.xsd"
+	  mddFile="${s2b_res_root}/web-fragment_3_0.mdd"
+	  package="org.netbeans.modules.j2ee.dd.impl.web.model_3_0"
+	  schemaType="xmlschema"
+	  useInterfaces="true"
+	  validate="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+	  rootDir="src"/>
+
+    <replace file="${s2b_root_web_2_5}/ServletMapping.java" summary="true">
         <replacetoken>public java.lang.String[] getUrlPattern() {</replacetoken>
         <replacevalue>public java.lang.String[] getUrlPatterns() {</replacevalue>
     </replace>
-    <replace file="${s2b_root_2_5}/ServletMapping.java" summary="true">
+    <replace file="${s2b_root_web_2_5}/ServletMapping.java" summary="true">
         <replacetoken>public void setUrlPattern(java.lang.String[] value) {</replacetoken>
         <replacevalue>public void setUrlPatterns(java.lang.String[] value) {</replacevalue>
     </replace>
-    <replace file="${s2b_root_2_5}/WebApp.java" summary="true">
+    <replace file="${s2b_root_web_2_5}/WebApp.java" summary="true">
+        <replacetoken>org.netbeans.modules.j2ee.dd.api.web.ServletMapping25</replacetoken>
+        <replacevalue>org.netbeans.modules.j2ee.dd.api.web.ServletMapping</replacevalue>
+    </replace>
+
+    <replace file="${s2b_root_web_2_5}/FilterMapping.java" summary="true">
+        <replacetoken>public java.lang.String[] getUrlPattern() {</replacetoken>
+        <replacevalue>public java.lang.String[] getUrlPatterns() {</replacevalue>
+    </replace>
+    <replace file="${s2b_root_web_2_5}/FilterMapping.java" summary="true">
+        <replacetoken>public void setUrlPattern(java.lang.String[] value) {</replacetoken>
+        <replacevalue>public void setUrlPatterns(java.lang.String[] value) {</replacevalue>
+    </replace>
+    <replace file="${s2b_root_web_2_5}/FilterMapping.java" summary="true">
+        <replacetoken>public java.lang.String[] getServletName() {</replacetoken>
+        <replacevalue>public java.lang.String[] getServletNames() {</replacevalue>
+    </replace>
+    <replace file="${s2b_root_web_2_5}/FilterMapping.java" summary="true">
+        <replacetoken>public void setServletName(java.lang.String[] value) {</replacetoken>
+        <replacevalue>public void setServletNames(java.lang.String[] value) {</replacevalue>
+    </replace>
+
+    <replace file="${s2b_root_web_3_0}/ServletMapping.java" summary="true">
+        <replacetoken>public java.lang.String[] getUrlPattern() {</replacetoken>
+        <replacevalue>public java.lang.String[] getUrlPatterns() {</replacevalue>
+    </replace>
+    <replace file="${s2b_root_web_3_0}/ServletMapping.java" summary="true">
+        <replacetoken>public void setUrlPattern(java.lang.String[] value) {</replacetoken>
+        <replacevalue>public void setUrlPatterns(java.lang.String[] value) {</replacevalue>
+    </replace>
+    <replace file="${s2b_root_web_3_0}/WebApp.java" summary="true">
+        <replacetoken>org.netbeans.modules.j2ee.dd.api.web.ServletMapping25</replacetoken>
+        <replacevalue>org.netbeans.modules.j2ee.dd.api.web.ServletMapping</replacevalue>
+    </replace>
+
+    <replace file="${s2b_root_web_3_0}/FilterMapping.java" summary="true">
+        <replacetoken>public java.lang.String[] getUrlPattern() {</replacetoken>
+        <replacevalue>public java.lang.String[] getUrlPatterns() {</replacevalue>
+    </replace>
+    <replace file="${s2b_root_web_3_0}/FilterMapping.java" summary="true">
+        <replacetoken>public void setUrlPattern(java.lang.String[] value) {</replacetoken>
+        <replacevalue>public void setUrlPatterns(java.lang.String[] value) {</replacevalue>
+    </replace>
+    <replace file="${s2b_root_web_3_0}/FilterMapping.java" summary="true">
+        <replacetoken>public java.lang.String[] getServletName() {</replacetoken>
+        <replacevalue>public java.lang.String[] getServletNames() {</replacevalue>
+    </replace>
+    <replace file="${s2b_root_web_3_0}/FilterMapping.java" summary="true">
+        <replacetoken>public void setServletName(java.lang.String[] value) {</replacetoken>
+        <replacevalue>public void setServletNames(java.lang.String[] value) {</replacevalue>
+    </replace>
+
+    <replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true">
         <replacetoken>org.netbeans.modules.j2ee.dd.api.web.ServletMapping25</replacetoken>
         <replacevalue>org.netbeans.modules.j2ee.dd.api.web.ServletMapping</replacevalue>
     </replace>
@@ -203,9 +275,10 @@ made subject to such option by the copyright holder.
   <target name="clean" depends="projectized-common.clean,clean-ddgen-src"/>
 
   <target name="clean-ddgen-src">
-        <mkdir dir="${s2b_root_2_3}"/>
-        <mkdir dir="${s2b_root_2_4}"/>
-        <mkdir dir="${s2b_root_2_5}"/>
+        <mkdir dir="${s2b_root_web_2_3}"/>
+        <mkdir dir="${s2b_root_web_2_4}"/>
+        <mkdir dir="${s2b_root_web_2_5}"/>
+        <mkdir dir="${s2b_root_web_3_0}"/>
         <mkdir dir="${s2b_root_1_1}"/>
         <mkdir dir="${s2b_root_2_0}"/>
         <mkdir dir="${s2b_root_2_1}"/>
@@ -217,23 +290,29 @@ made subject to such option by the copyright holder.
         <mkdir dir="${s2b_root_client_1_4}"/>
         <mkdir dir="${s2b_root_client_5_0}"/>
         <delete>
-            <fileset dir="${s2b_root_2_3}">
+            <fileset dir="${s2b_root_web_2_3}">
                 <include name="*.java"/>
             </fileset>
         </delete>
-        <delete dir="${s2b_root_2_3}"/>
+        <delete dir="${s2b_root_web_2_3}"/>
         <delete>
-            <fileset dir="${s2b_root_2_4}">
+            <fileset dir="${s2b_root_web_2_4}">
                 <include name="*.java"/>
             </fileset>
         </delete>
-        <delete dir="${s2b_root_2_4}"/>
+        <delete dir="${s2b_root_web_2_4}"/>
         <delete>
-            <fileset dir="${s2b_root_2_5}">
+            <fileset dir="${s2b_root_web_2_5}">
                 <include name="*.java"/>
             </fileset>
         </delete>
-        <delete dir="${s2b_root_2_5}"/>
+        <delete dir="${s2b_root_web_2_5}"/>
+        <delete>
+            <fileset dir="${s2b_root_web_3_0}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_web_3_0}"/>
         <delete>
             <fileset dir="${s2b_root_1_1}">
                 <include name="*.java"/>

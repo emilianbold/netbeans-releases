@@ -42,17 +42,33 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <folder name="Actions">
+        <folder name="Project">
+            <file name="org-netbeans-modules-projectimport-eclipse-core-ImportProjectAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" newvalue="org.netbeans.modules.projectimport.eclipse.core.ImportProjectAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.projectimport.eclipse.core.Bundle#CTL_MenuItem"/>
+                <attr name="noIconInMenu" boolvalue="true"/>
+            </file>
+            <file name="org-netbeans-modules-projectimport-eclipse-core-ResynchronizeEclipseAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" newvalue="org.netbeans.modules.projectimport.eclipse.core.ResynchronizeEclipseAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.projectimport.eclipse.core.Bundle#CTL_SynchronizeMenuItem"/>
+                <attr name="noIconInMenu" boolvalue="true"/>
+            </file>
+        </folder>
+    </folder>
     <folder name="Menu">
         <folder name="File">
             <folder name="Import">
                 <attr name="position" intvalue="1426"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.projectimport.eclipse.core.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
-                <file name="org-netbeans-modules-projectimport-eclipse-core-ImportProjectAction.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.projectimport.eclipse.core.ImportProjectAction"/>
+                <file name="org-netbeans-modules-projectimport-eclipse-core-ImportProjectAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-projectimport-eclipse-core-ImportProjectAction.instance"/>
                     <attr name="position" intvalue="100"/>
                 </file>
-                <file name="org-netbeans-modules-projectimport-eclipse-core-ResynchronizeEclipseAction.instance">
+                <file name="org-netbeans-modules-projectimport-eclipse-core-ResynchronizeEclipseAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-projectimport-eclipse-core-ResynchronizeEclipseAction.instance"/>
                     <attr name="position" intvalue="200"/>
                 </file>
             </folder>

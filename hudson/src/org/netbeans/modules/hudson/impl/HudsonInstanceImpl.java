@@ -179,9 +179,18 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         }
         properties = newProps;
 
-        //will this make the propes to get persisted reliably?
-        properties.put(INSTANCE_URL, url);
+        storeDefinition();
         fireContentChanges();
+    }
+
+    void storeDefinition() {
+        if (!isPersisted()) {
+            return;
+        }
+        Preferences node = prefs();
+        for (Map.Entry<String,String> entry : properties.entrySet()) {
+            node.put(entry.getKey(), entry.getValue());
+        }
     }
 
     public Preferences prefs() {

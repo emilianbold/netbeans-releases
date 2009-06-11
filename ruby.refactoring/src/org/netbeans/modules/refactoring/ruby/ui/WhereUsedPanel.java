@@ -129,8 +129,11 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                         labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_MethodUsages", methodName, displayClassName);
 
                         methodDeclaringClass = className;
+                        // parser result is null for rhtml (fake result)
+                        IndexedMethod method = parserResult != null
+                                ? RetoucheUtils.getOverridingMethod(element, parserResult)
+                                : RetoucheUtils.getOverridingMethod(element, ri.getSnapshot().getSource().getFileObject());
 
-                        IndexedMethod method = RetoucheUtils.getOverridingMethod(element, parserResult);
                         if (method != null) {
                             m_isBaseClassText =
                                     new MessageFormat(NbBundle.getMessage(WhereUsedPanel.class, "LBL_UsagesOfBaseClass")).format(

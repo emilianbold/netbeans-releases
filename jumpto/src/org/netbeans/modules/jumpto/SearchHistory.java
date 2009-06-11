@@ -139,6 +139,10 @@ public final class SearchHistory {
             LOGGER.fine("String to store is empty => ignoring.");
             return;
         }
+        if (text.contains(DELIMITER)){
+            LOGGER.fine("String to store contain delimeter => ignoring.");
+            return;
+        }
         if (data.remove(text)) {
             LOGGER.fine(String.format("Text %s already in history, removing and readding.", text));
         }

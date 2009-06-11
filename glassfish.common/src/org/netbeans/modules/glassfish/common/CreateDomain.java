@@ -108,11 +108,12 @@ public class CreateDomain extends Thread {
         int retVal = 0;
         if (null != irf && irf.exists()) {
             PDCancel pdcan;
-            String installRoot = irf.getAbsolutePath();
-            String asadminCmd = installRoot + File.separator +  "bin" + File.separator +  "asadmin"; // NOI18N                                              //NOI18N
-            if ("\\".equals(File.separator)) {                                  //NOI18N
-                asadminCmd = asadminCmd + ".bat";                               //NOI18N
+            String startScript = System.getProperty("java.home") + File.separatorChar + "bin" + File.separatorChar + "java"; // NOI18N
+            if ("\\".equals(File.separator)) { // NOI18N
+                startScript += ".exe"; // NOI18N
             }
+            File jar = new File(irf, "modules" + File.separator + "admin-cli.jar"); // NOI18N
+            String jarLocation = jar.getAbsolutePath();
             String domain = map.get(GlassfishModule.DOMAIN_NAME_ATTR);
             String domainDir = map.get(GlassfishModule.DOMAINS_FOLDER_ATTR);
             File passWordFile = createTempPasswordFile(pword, "changeit"); //NOI18N
@@ -123,7 +124,10 @@ public class CreateDomain extends Thread {
             String arrnd[];
             
             if ("".equals(pword)) { // NOI18N
-                arrnd = new String[] {asadminCmd,
+                arrnd = new String[] {startScript,
+                    "-client",  // NOI18N
+                    "-jar",  // NOI18N
+                    jarLocation,
                     "create-domain", //NOI18N
                     "--domaindir", //NOI18N
                     domainDir,
@@ -134,7 +138,10 @@ public class CreateDomain extends Thread {
                     domain
                 };            
             } else {
-                arrnd = new String[] {asadminCmd,
+                arrnd = new String[] {startScript,
+                    "-client",  // NOI18N
+                    "-jar",  // NOI18N
+                    jarLocation,
                     "create-domain", //NOI18N
                     "--domaindir", //NOI18N
                     domainDir,
@@ -151,7 +158,7 @@ public class CreateDomain extends Thread {
             ProgressHandle ph = null;
             try {
                 ExecSupport ee = new ExecSupport();
-                process = Runtime.getRuntime().exec(arrnd);
+                process = Runtime.getRuntime().exec(arrnd, null, irf);
                 pdcan = new PDCancel(process, domainDir + File.separator + domain);
                 ph = ProgressHandleFactory.createHandle(
                         NbBundle.getMessage(this.getClass(), "LBL_Creating_personal_domain"), // NOI18N
@@ -194,7 +201,6 @@ public class CreateDomain extends Thread {
             if (0 == retVal) {
                 // The create was successful... create the instance and register it.
                 GlassfishInstance gi = GlassfishInstance.create(ip,gip);
-                gip.addServerInstance(gi);
                 NbPreferences.forModule(this.getClass()).putBoolean(ServerUtilities.PROP_FIRST_RUN, true);
             }
         }

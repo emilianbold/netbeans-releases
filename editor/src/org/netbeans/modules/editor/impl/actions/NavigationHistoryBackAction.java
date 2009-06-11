@@ -71,11 +71,12 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 
@@ -128,14 +129,16 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
     }
 
     public void actionPerformed(ActionEvent evt) {
-        JTextComponent target = component != null ? component : getTextComponent(evt);
         NavigationHistory history = NavigationHistory.getNavigations();
         if (null == history.getCurrentWaypoint()) {
             // Haven't navigated back yet
-            try {
-                history.markWaypoint(target, target.getCaret().getDot(), true, false);
-            } catch (BadLocationException ble) {
-                LOG.log(Level.WARNING, "Can't mark current position", ble); //NOI18N
+            JTextComponent target = component != null ? component : getTextComponent(evt);
+            if (target != null) {
+                try {
+                    history.markWaypoint(target, target.getCaret().getDot(), true, false);
+                } catch (BadLocationException ble) {
+                    LOG.log(Level.WARNING, "Can't mark current position", ble); //NOI18N
+                }
             }
         }
         
@@ -257,7 +260,7 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
 
                             Line line = lineCookie.getLineSet().getCurrent(lineIndex);
                             if (line != null) {
-                                line.show(Line.SHOW_REUSE, column);
+                                line.show(ShowOpenType.REUSE, ShowVisibilityType.FOCUS, column);
                                 worked[0] = true;
                             }
                         }

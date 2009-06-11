@@ -42,16 +42,12 @@
 package org.netbeans.modules.j2ee.ddloaders.ejb;
 
 import java.io.IOException;
-//import java.util.Vector;
-
-import org.openide.actions.*;
+import org.netbeans.modules.j2ee.ddloaders.multiview.EjbJarMultiViewDataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.UniFileLoader;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
-
 import org.openide.util.NbBundle;
-import org.netbeans.modules.j2ee.ddloaders.multiview.*;
 
 /** Recognizes deployment descriptors of ejb modules.
  *
@@ -73,14 +69,17 @@ public class EjbJarDataLoader extends UniFileLoader {
         super(name);
     }
 
+    @Override
     protected String defaultDisplayName () {
         return NbBundle.getMessage (EjbJarDataLoader.class, "LBL_loaderName");
     }
     
+    @Override
     protected String actionsContext() {
         return "Loaders/text/x-dd/Actions/"; // NOI18N
     }
     
+    @Override
     protected void initialize () {
          super.initialize ();
          String[] supportedTypes = getSupportedMimeTypes(); 

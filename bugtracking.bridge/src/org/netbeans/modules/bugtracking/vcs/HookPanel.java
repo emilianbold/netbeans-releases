@@ -48,25 +48,33 @@ package org.netbeans.modules.bugtracking.vcs;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JList;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
+import static java.util.logging.Level.FINER;
 
 /**
  *
  * @author Tomas Stupka
  */
 public class HookPanel extends VerticallyNonResizingPanel implements ItemListener, PropertyChangeListener {
+
+    private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.HookPanel");  // NOI18N
+
     private QuickSearchComboBar qs;
     private Repository selectedRepository;
 
@@ -98,14 +106,26 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
     }
     private UpdateFiledsState updateFiledsState = null;
     
-    public HookPanel(Repository[] repos, Repository toSelect) {
+    public HookPanel(Repository[] repos) {
         initComponents();
 
         qs = new QuickSearchComboBar(this);
         issuePanel.add(qs, BorderLayout.NORTH);
         issueLabel.setLabelFor(qs.getCommand());
+
+        Repository[] comboData;
+        if (repos == null) {
+            comboData = new Repository[1];
+            comboData[0] = null;
+        } else {
+            comboData = new Repository[repos.length + 1];
+            comboData[0] = null;
+            if (repos.length != 0) {
+                System.arraycopy(repos, 0, comboData, 1, repos.length);
+            }
+        }
         
-        repositoryComboBox.setModel(new DefaultComboBoxModel(repos != null ? repos : new Repository[0]));
+        repositoryComboBox.setModel(new DefaultComboBoxModel(comboData));
         repositoryComboBox.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -118,18 +138,68 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         });
 
         repositoryComboBox.addItemListener(this);
-        if(toSelect != null) {
-            repositoryComboBox.setSelectedItem(toSelect);
-            qs.setRepository(toSelect);
-        } else {
-            if(repositoryComboBox.getItemCount() > 0) {
-                Repository repo = (Repository) repositoryComboBox.getItemAt(0);
-                repositoryComboBox.setSelectedItem(repo);
-                qs.setRepository(repo);
-            }
-        }
         enableFields();        
-        
+    }
+
+    /**
+     * Selects the given repository in the combo-box if no repository has been
+     * selected yet by the user.
+     * If the user had already selected some repository before this method
+     * was called, this method does nothing. If this method is called at
+     * the moment the popup of the combo-box is opened, the operation of
+     * pre-selecting the repository is deferred until the popup is closed. If
+     * the popup had been displayed at the moment this method was called
+     * and the user selects some repository during the period since the
+     * call of this method until the deferred selection takes place, the
+     * deferred selection operation is cancelled.
+     * 
+     * @param  repoToPreselect  repository to preselect
+     */
+    void preselectRepository(final Repository repoToPreselect) {
+        assert EventQueue.isDispatchThread();
+
+        if (repoToPreselect == null) {
+            LOG.finer("preselectRepository(null)");                     //NOI18N
+            return;
+        }
+
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("preselectRepository(" + repoToPreselect.getDisplayName() + ')'); //NOI18N
+        }
+
+        if (repositoryComboBox.getSelectedItem() != null) {
+            LOG.finest(" - cancelled - already selected by the user");  //NOI18N
+            return;
+        }
+
+        if (repositoryComboBox.isPopupVisible()) {
+            LOG.finest(" - the popup is visible - deferred");           //NOI18N
+            repositoryComboBox.addPopupMenuListener(new PopupMenuListener() {
+                public void popupMenuWillBecomeVisible(PopupMenuEvent e) { }
+                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                    LOG.finer("popupMenuWillBecomeInvisible()");        //NOI18N
+                    repositoryComboBox.removePopupMenuListener(this);
+                }
+                public void popupMenuCanceled(PopupMenuEvent e) {
+                    LOG.finer("popupMenuCanceled()");                   //NOI18N
+                    repositoryComboBox.removePopupMenuListener(this);
+                    LOG.finest(" - processing deferred selection");     //NOI18N
+                    preselectRepositoryUnconditionally(repoToPreselect);
+                }
+            });
+        } else {
+            preselectRepositoryUnconditionally(repoToPreselect);
+        }
+    }
+
+    private void preselectRepositoryUnconditionally(Repository repoToPreselect) {
+        assert repositoryComboBox.getSelectedItem() == null;
+
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("preselectRepositoryUnconditionally(" + repoToPreselect.getDisplayName() + ')'); //NOI18N
+        }
+
+        repositoryComboBox.setSelectedItem(repoToPreselect);
     }
 
     Issue getIssue() {

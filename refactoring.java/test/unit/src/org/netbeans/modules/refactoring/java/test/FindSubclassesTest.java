@@ -56,7 +56,6 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbPerformanceTest;
-import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
@@ -102,7 +101,6 @@ public class FindSubclassesTest extends RefPerfTestCase {
         timer = Logger.getLogger("TIMER.RefactoringPrepare");
         timer.setLevel(Level.FINE);
         timer.addHandler(getHandler());
-        ClasspathInfo cp = ClasspathInfo.create(boot, compile, source);
 
         Log.enableInstances(Logger.getLogger("TIMER"), "JavacParser", Level.FINEST);
         FileObject testFile = getProjectDir().getFileObject("/src/simplej2seapp/Main.java");
@@ -121,7 +119,8 @@ public class FindSubclassesTest extends RefPerfTestCase {
                 ClasspathInfo cpi = RetoucheUtils.getClasspathInfoFor(TreePathHandle.create(object, controller));
                 wuq[0].getContext().add(cpi);
             }
-        }, false);
+        }, false).get();
+        
         wuq[0].putValue(WhereUsedQueryConstants.FIND_SUBCLASSES, true);
         RefactoringSession rs = RefactoringSession.create("Session");
         wuq[0].prepare(rs);
@@ -130,8 +129,8 @@ public class FindSubclassesTest extends RefPerfTestCase {
         StringBuilder sb = new StringBuilder();
         sb.append("Symbol: '").append(symbolName[0]).append("'");
         sb.append('\n').append("Number of usages: ").append(elems.size()).append('\n');
-        long prepare = getHandler().get("refactoring.prepare");
         try {
+            long prepare = getHandler().get("refactoring.prepare");
             NbPerformanceTest.PerformanceData d = new NbPerformanceTest.PerformanceData();
             d.name = "refactoring.prepare"+" (" + symbolName[0] + ", usages:" + elems.size() + ")";
             d.value = prepare;
@@ -152,6 +151,6 @@ public class FindSubclassesTest extends RefPerfTestCase {
     }
 
     public static Test suite() throws InterruptedException {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().addTest(FindSubclassesTest.class, "testFindSub").gui(true));
+        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().addTest(FindSubclassesTest.class, "testFindSub").gui(false));
     }
 }

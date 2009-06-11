@@ -129,6 +129,12 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
         String newPrjIssuesUrl = (String) wizard.getProperty(PROP_ISSUES_URL);
         boolean autoCommit = Boolean.valueOf((String) wizard.getProperty(PROP_AUTO_COMMIT));
         Boolean createChat = (Boolean) wizard.getProperty(PROP_CREATE_CHAT);
+
+        if (KenaiService.Names.SUBVERSION.equals(newPrjScmType)) {
+            if (!Subversion.isClientAvailable(autoCommit)) {
+                throw new IOException(Subversion.CLIENT_UNAVAILABLE_ERROR_MESSAGE);
+            }
+        }
         // Create project
         try {
             handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
@@ -225,7 +231,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                             try {
                                 if (isShareExistingFolder) {
                                     String initialRevision = NbBundle.getMessage(NewKenaiProjectWizardIterator.class, "NewKenaiProject.initialRevision", newPrjTitle);
-                                    String dirName = activeNode.getLookup().lookup(Project.class).getProjectDirectory().getName();
+                                    String dirName = new File(newPrjScmLocal).getName();
                                     final String remoteDir = scmLoc.concat("/" + dirName); // NOI18N
                                     Subversion.mkdir(remoteDir, passwdAuth.getUserName(), new String(passwdAuth.getPassword()), initialRevision);
                                     Subversion.checkoutRepositoryFolder(remoteDir, new String[]{"."}, localFile, // NOI18N

@@ -218,10 +218,7 @@ public class CosChecker implements PrerequisitesChecker {
 //            System.out.println("found=" + inclds.length);
             for (String inc : inclds) {
                 File f = new File(dirFile, inc);
-                if (f.lastModified() >= 0) { //XXX TODO stamp) { for some reason, the
-                    // java infrastructure seems to delete the non class files on output dir, we need to copy over
-                    // everytime.
-//                    System.out.println("to copy-" + f);
+                if (f.lastModified() >= stamp) { 
                     toCopy.add(FileUtil.normalizeFile(f));
                 }
             }
@@ -368,7 +365,7 @@ public class CosChecker implements PrerequisitesChecker {
             @SuppressWarnings("unchecked")
             List<Dependency> deps = config.getMavenProject().getTestDependencies();
             for (Dependency d : deps) {
-                if (testng.equals(d.getManagementKey())) {
+                if (d.getManagementKey().startsWith(testng)) {
                     //skip tests that are invoked by testng, no support for it yet.
                     //#149464
                     return true;

@@ -59,7 +59,7 @@ import org.netbeans.modules.welcome.content.WebLink;
 class Blogs extends RSSFeedReaderPanel {
 
     public Blogs() {
-        super( "Blogs", false ); // NOI18N
+        super( InstallConfig.getDefault().isJavaFXInstalled() ? "BlogsJavaFX" : "Blogs", false ); // NOI18N
 
         add( buildBottomContent(), BorderLayout.SOUTH );
     }
