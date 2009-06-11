@@ -78,17 +78,6 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         }
     }
 
-    @Override
-    public String getName() {
-        String name = super.getName();
-        ExecutionEnvironment env = getTestExecutionEnvironment();
-        if (env == null) {
-            return name;
-        } else {
-            return String.format("%s [%s]", name, env);
-        }
-    }
-
     public static class FakeCompilerSet extends CompilerSet {
 
         private List<Tool> tools = Collections.<Tool>singletonList(new FakeTool());

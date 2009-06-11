@@ -67,16 +67,12 @@ public class TransportTestCase extends RemoteTestBase {
     }
 
     public void testRun() throws Exception {
-        if (canTestRemote()) {
-            final String randomString = "i am just a random string, it does not matter that I mean";
-            RemoteCommandSupport rcs = new RemoteCommandSupport(getTestExecutionEnvironment(), "echo " + randomString);
-            rcs.run();
+        final String randomString = "i am just a random string, it does not matter that I mean";
+        RemoteCommandSupport rcs = new RemoteCommandSupport(getTestExecutionEnvironment(), "echo " + randomString);
+        rcs.run();
 //            rcs.disconnect();
-            assert rcs.getExitStatus() == 0 : "echo command on remote server '" + getTestExecutionEnvironment() + "' returned " + rcs.getExitStatus();
-            assert randomString.equals( rcs.getOutput().trim()) : "echo command on remote server '" + getTestExecutionEnvironment() + "' produced unexpected output: " + rcs.getOutput();
-        } else {
-            System.err.println("Remote tests are not configured."); // to test remote runs
-        }
+        assert rcs.getExitStatus() == 0 : "echo command on remote server '" + getTestExecutionEnvironment() + "' returned " + rcs.getExitStatus();
+        assert randomString.equals( rcs.getOutput().trim()) : "echo command on remote server '" + getTestExecutionEnvironment() + "' produced unexpected output: " + rcs.getOutput();
     }
 
 //    public void testNewJsch() throws Exception {
@@ -93,56 +89,44 @@ public class TransportTestCase extends RemoteTestBase {
 //    }
 
     public void testFileExistst() throws Exception {
-        if (canTestRemote()) {
-            assert HostInfoProvider.fileExists(getTestExecutionEnvironment(), "/etc/passwd");
-            assert !HostInfoProvider.fileExists(getTestExecutionEnvironment(), "/etc/passwd/noway");
-        } else {
-            System.err.println("Remote tests are not configured.");
-        }
+        assert HostInfoProvider.fileExists(getTestExecutionEnvironment(), "/etc/passwd");
+        assert !HostInfoProvider.fileExists(getTestExecutionEnvironment(), "/etc/passwd/noway");
     }
 
     public void testGetEnv() throws Exception {
-        if (canTestRemote()) {
-            Map<String, String> env = HostInfoProvider.getEnv(getTestExecutionEnvironment());
-            System.err.println("Environment: " + env);
-            assert env != null && env.size() > 0;
-            assert env.containsKey("PATH") || env.containsKey("Path") || env.containsKey("path");
-        } else {
-            System.err.println("Remote tests are not configured.");
-        }
+        Map<String, String> env = HostInfoProvider.getEnv(getTestExecutionEnvironment());
+        System.err.println("Environment: " + env);
+        assert env != null && env.size() > 0;
+        assert env.containsKey("PATH") || env.containsKey("Path") || env.containsKey("path");
     }
 
     public void testCopyTo() throws Exception {
-        if (canTestRemote()) {
-            File localFile = File.createTempFile("cnd", ".cnd"); //NOI18N
-            FileWriter fstream = new FileWriter(localFile);
-            StringBuffer sb = new StringBuffer("File from "); //NOI18N
-            try {
-                InetAddress addr = InetAddress.getLocalHost();
-                sb.append( addr.getHostName() );
-            } catch (UnknownHostException e) {
-            }
-            sb.append("\ntime: " + System.currentTimeMillis()+ "\n"); //NOI18N
-            BufferedWriter out = new BufferedWriter(fstream);
-            out.write(sb.toString());
-            out.close();
-            ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-            RemoteCopySupport rcs = new RemoteCopySupport(execEnv);
-            String remoteFile = "/tmp/" + localFile.getName(); //NOI18N
-            rcs.copyTo(localFile.getAbsolutePath(), remoteFile); //NOI18N
-            assert HostInfoProvider.fileExists(execEnv, remoteFile) : "Error copying file " + remoteFile + " to " + execEnv + " : file does not exist";
-            String catCommand = "cat " + remoteFile;
-            RemoteCommandSupport rcs2 = new RemoteCommandSupport(execEnv, catCommand);
-//            assert rcs2.run() == 0; // add more output
-            int rc = rcs2.run();
-            if (rc != 0) {
-                assert false : "RemoteCommandSupport: " + catCommand + " returned " + rc + " on " + execEnv;
-            }
-            assert rcs2.getOutput().equals(sb.toString());
-            assert RemoteCommandSupport.run(execEnv, "rm " + remoteFile) == 0;
-        } else {
-            System.err.println("Remote tests are not configured.");
+        File localFile = File.createTempFile("cnd", ".cnd"); //NOI18N
+        FileWriter fstream = new FileWriter(localFile);
+        StringBuffer sb = new StringBuffer("File from "); //NOI18N
+        try {
+            InetAddress addr = InetAddress.getLocalHost();
+            sb.append( addr.getHostName() );
+        } catch (UnknownHostException e) {
         }
+        sb.append("\ntime: " + System.currentTimeMillis()+ "\n"); //NOI18N
+        BufferedWriter out = new BufferedWriter(fstream);
+        out.write(sb.toString());
+        out.close();
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        RemoteCopySupport rcs = new RemoteCopySupport(execEnv);
+        String remoteFile = "/tmp/" + localFile.getName(); //NOI18N
+        rcs.copyTo(localFile.getAbsolutePath(), remoteFile); //NOI18N
+        assert HostInfoProvider.fileExists(execEnv, remoteFile) : "Error copying file " + remoteFile + " to " + execEnv + " : file does not exist";
+        String catCommand = "cat " + remoteFile;
+        RemoteCommandSupport rcs2 = new RemoteCommandSupport(execEnv, catCommand);
+//            assert rcs2.run() == 0; // add more output
+        int rc = rcs2.run();
+        if (rc != 0) {
+            assert false : "RemoteCommandSupport: " + catCommand + " returned " + rc + " on " + execEnv;
+        }
+        assert rcs2.getOutput().equals(sb.toString());
+        assert RemoteCommandSupport.run(execEnv, "rm " + remoteFile) == 0;
     }
     
 //    public void qtestCopyFile() throws Exception {

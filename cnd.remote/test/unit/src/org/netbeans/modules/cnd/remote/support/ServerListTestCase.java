@@ -63,14 +63,10 @@ public class ServerListTestCase extends RemoteTestBase {
     }
 
     public void testRun() throws Exception {        
-        if (canTestRemote()) {
-            ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-            ServerRecord rec = ServerList.addServer(execEnv, execEnv.getDisplayName(), RemoteSyncFactory.getDefault(), false, true);
-            assertNotNull("Null server record", rec);
-            assertEquals(rec.getExecutionEnvironment(), execEnv);
-        } else {
-            System.err.println("Remote tests are not configured."); // to test remote runs
-        }
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        ServerRecord rec = ServerList.addServer(execEnv, execEnv.getDisplayName(), RemoteSyncFactory.getDefault(), false, true);
+        assertNotNull("Null server record", rec);
+        assertEquals(rec.getExecutionEnvironment(), execEnv);
     }
 
     public static Test suite() {
