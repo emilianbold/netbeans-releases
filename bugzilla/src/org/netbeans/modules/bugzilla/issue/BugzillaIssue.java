@@ -258,10 +258,6 @@ public class BugzillaIssue extends Issue {
             new ColumnDescriptor<String>(LABEL_NAME_SUMMARY, String.class,
                                               loc.getString("CTL_Issue_Summary_Title"),         // NOI18N
                                               loc.getString("CTL_Issue_Summary_Desc")),         // NOI18N
-            new ColumnDescriptor<String>(LABEL_NAME_ASSIGNED_TO, String.class,
-                                              loc.getString("CTL_Issue_Assigned_Title"),        // NOI18N
-                                              loc.getString("CTL_Issue_Assigned_Desc"),         // NOI18N
-                                              BugtrackingUtil.getColumnWidthInPixels(20, t)),
             new ColumnDescriptor<String>(LABEL_NAME_SEVERITY, String.class,
                                               loc.getString("CTL_Issue_Severity_Title"),        // NOI18N
                                               loc.getString("CTL_Issue_Severity_Desc"),         // NOI18N
@@ -285,7 +281,11 @@ public class BugzillaIssue extends Issue {
                                               loc.getString("CTL_Issue_Resolution_Desc"),       // NOI18N
                                               getLongestWordWidth(
                                                 loc.getString("CTL_Issue_Resolution_Title"),    // NOI18N
-                                                bc.getResolutions(), t))
+                                                bc.getResolutions(), t)),
+            new ColumnDescriptor<String>(LABEL_NAME_ASSIGNED_TO, String.class,
+                                              loc.getString("CTL_Issue_Assigned_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Assigned_Desc"),         // NOI18N
+                                              BugtrackingUtil.getColumnWidthInPixels(20, t))
         };
     }
 
