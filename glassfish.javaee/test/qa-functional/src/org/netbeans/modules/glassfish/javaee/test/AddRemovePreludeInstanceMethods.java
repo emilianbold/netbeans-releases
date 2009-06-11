@@ -46,6 +46,7 @@ import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
 //import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.derby.spi.support.DerbySupport;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.common.wizards.AddServerLocationVisualPanel;
 import org.netbeans.modules.glassfish.common.wizards.Retriever;
@@ -68,7 +69,8 @@ public class AddRemovePreludeInstanceMethods extends NbTestCase {
     public AddRemovePreludeInstanceMethods(String testName) {
         super(testName);
     }
-            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
+
+    GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
     
     public void addPreludeInstance() {
         try {
@@ -150,12 +152,25 @@ public class AddRemovePreludeInstanceMethods extends NbTestCase {
                 if (null != instances) 
                     if (instances.length > 1)
                         fail("too many instances");
+            File ff = new File(Util._PRELUDE_LOCATION);
+            System.out.println("Deleting: "+ff.getAbsolutePath());
+            Util.deleteJunk(ff.getParentFile());
+            ff = new File(ff.getParentFile().getAbsolutePath()+"1");
+            System.out.println("Deleting: "+ff.getAbsolutePath());
+            Util.deleteJunk(ff);
                 return;
             }
             
             fail("v3 Prelude instance still exists !");
         } catch(Exception e) {
             fail(e.getMessage());
+        }
+    }
+
+    public void checkJavaDB() {
+        String location = DerbySupport.getLocation();
+        if (null == location || location.trim().length() < 1) {
+            fail("JavaDB is not registered!");
         }
     }
     
