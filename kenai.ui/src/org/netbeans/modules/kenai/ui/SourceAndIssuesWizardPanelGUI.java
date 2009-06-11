@@ -902,6 +902,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         Boolean createChat = (Boolean) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_CREATE_CHAT);
         if (createChat!=null) {
             createChatRoom.setSelected(createChat);
+        } else {
+            createChatRoom.setSelected(true);
         }
     }
 
