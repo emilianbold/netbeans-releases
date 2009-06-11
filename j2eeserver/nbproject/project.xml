@@ -337,16 +337,14 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.netbeans.core</code-name-base>
                         <recursive/>
                     </test-dependency>
-                    <!-- <test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.web.project</code-name-base>
                         <recursive/>
-                        <test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.j2ee.ejbjarproject</code-name-base>
                         <recursive/>
-                        <test/>
-                    </test-dependency> -->
+                    </test-dependency>
                 </test-type>
                 <test-type>
                     <name>qa-functional</name>

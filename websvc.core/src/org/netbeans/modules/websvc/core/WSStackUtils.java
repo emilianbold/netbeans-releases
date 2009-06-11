@@ -164,7 +164,7 @@ public class WSStackUtils {
     boolean isWebModule() {
         J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
         if (j2eeModuleProvider != null) {
-            return J2eeModule.WAR.equals(j2eeModuleProvider.getJ2eeModule().getModuleType());
+            return J2eeModule.Type.WAR.equals(j2eeModuleProvider.getJ2eeModule().getType());
         }
         return false;
     }

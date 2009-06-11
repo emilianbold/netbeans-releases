@@ -182,7 +182,7 @@ public class Utils {
         
         boolean isCallerEJBModule = false;
         J2eeModuleProvider callerJ2eeModuleProvider = enterpriseProject.getLookup().lookup(J2eeModuleProvider.class);
-        if (callerJ2eeModuleProvider != null && callerJ2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.EJB)) {
+        if (callerJ2eeModuleProvider != null && callerJ2eeModuleProvider.getJ2eeModule().getType().equals(J2eeModule.Type.EJB)) {
             // TODO: HACK - this should be set by calling AntArtifactQuery.findArtifactsByType(p, EjbProjectConstants.ARTIFACT_TYPE_EJBJAR)
             // but now freeform doesn't implement this correctly
             isCallerEJBModule = true;
@@ -195,7 +195,7 @@ public class Utils {
         for (int i = 0; i < allProjects.length; i++) {
             boolean isEJBModule = false;
             J2eeModuleProvider j2eeModuleProvider = allProjects[i].getLookup().lookup(J2eeModuleProvider.class);
-            if (j2eeModuleProvider != null && j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.EJB)) {
+            if (j2eeModuleProvider != null && j2eeModuleProvider.getJ2eeModule().getType().equals(J2eeModule.Type.EJB)) {
                 isEJBModule = true;
             }
             if ((isEJBModule && !isCallerFreeform) ||

@@ -194,8 +194,8 @@ public class MavenWsitProvider extends WsitProvider {
         if (provider != null) {
             J2eeModule j2eeModule = provider.getJ2eeModule();
             if (j2eeModule != null) {
-                Object type = j2eeModule.getModuleType();
-                if (J2eeModule.WAR.equals(type) && !client) {
+                J2eeModule.Type type = j2eeModule.getType();
+                if (J2eeModule.Type.WAR.equals(type) && !client) {
                     return project.getProjectDirectory().getFileObject("src/main/webapp/WEB-INF");
                 }
             }

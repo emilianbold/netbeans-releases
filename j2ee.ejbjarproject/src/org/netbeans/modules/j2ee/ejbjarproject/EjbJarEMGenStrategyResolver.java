@@ -81,10 +81,10 @@ public class EjbJarEMGenStrategyResolver implements EntityManagerGenerationStrat
     
     public Class<? extends EntityManagerGenerationStrategy> resolveStrategy(FileObject target) {
         
-        Object j2eeModuleType = getJ2eeModuleType(target);
+        J2eeModule.Type j2eeModuleType = getJ2eeModuleType(target);
         PersistenceUnit persistenceUnit = getPersistenceUnit(target);
         
-        if (j2eeModuleType == null || !J2eeModule.EJB.equals(j2eeModuleType)) {
+        if (j2eeModuleType == null || !J2eeModule.Type.EJB.equals(j2eeModuleType)) {
             // handle only ejb module
             return null;
         }
@@ -132,7 +132,7 @@ public class EjbJarEMGenStrategyResolver implements EntityManagerGenerationStrat
      * @return the J2eeModule associated with the project of our target file or
      *  null if there was no associated J2eeModule.
      */
-    protected Object getJ2eeModuleType(FileObject target){
+    protected J2eeModule.Type getJ2eeModuleType(FileObject target){
         J2eeModule result = null;
         Project project = FileOwnerQuery.getOwner(target);
         J2eeModuleProvider j2eeModuleProvider = null;
@@ -142,7 +142,7 @@ public class EjbJarEMGenStrategyResolver implements EntityManagerGenerationStrat
         if (j2eeModuleProvider != null) {
             result = j2eeModuleProvider.getJ2eeModule();
         }
-        return result != null ? result.getModuleType() : null;
+        return result != null ? result.getType() : null;
         
     }
     
