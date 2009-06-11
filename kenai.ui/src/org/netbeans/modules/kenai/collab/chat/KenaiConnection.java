@@ -190,7 +190,7 @@ public class KenaiConnection implements PropertyChangeListener {
         }
         if (muc==null) {
             for (MultiUserChat m:getChats()) {
-                if (!muc.isJoined())
+                if (!m.isJoined())
                     tryJoinChat(m);
             }
         } else if (!muc.isJoined())

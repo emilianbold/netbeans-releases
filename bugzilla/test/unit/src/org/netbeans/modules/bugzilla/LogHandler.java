@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,46 +31,69 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.remote.support;
 
-import junit.framework.Test;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
-import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+package org.netbeans.modules.bugzilla;
+
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 
 /**
- * There hardly is a way to unit test remote operations.
- * This is just an entry point for manual validation.
  *
- * @author Sergey Grinev
+ * @author tomas
  */
-public class ServerListTestCase extends RemoteTestBase {
-
-    static {
-//        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
-//        System.setProperty("cnd.remote.logger.level", "0");
-//        System.setProperty("nativeexecution.support.logger.level", "0");
-    }
-    public ServerListTestCase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);
-    }
-
-    public void testRun() throws Exception {        
-        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-        ServerRecord rec = ServerList.addServer(execEnv, execEnv.getDisplayName(), RemoteSyncFactory.getDefault(), false, true);
-        assertNotNull("Null server record", rec);
-        assertEquals(rec.getExecutionEnvironment(), execEnv);
+public class LogHandler extends Handler {
+    private static final long TIMEOUT = 30 * 1000;
+    private final String msg;
+    private boolean done = false;
+    private final Compare compare;
+    public enum Compare {
+        STARTS_WITH,
+        ENDS_WITH
     }
 
-    public static Test suite() {
-        return new RemoteDevelopmentTest(ServerListTestCase.class);
+    public LogHandler(String msg, Compare compare) {
+        this.msg = msg;
+        this.compare = compare;
+        Bugzilla.LOG.addHandler(this);
     }
 
+    @Override
+    public void publish(LogRecord record) {
+        if(!done) {
+            switch (compare) {
+                case STARTS_WITH :
+                    done = record.getMessage().startsWith(msg);
+                    break;
+                case ENDS_WITH :
+                    done = record.getMessage().endsWith(msg);
+                    break;
+                default:
+                    throw new IllegalStateException("wrong value " + compare);
+            }
+        }
+    }
+
+    public boolean isDone() {
+        return done;
+    }
+    
+    @Override
+    public void flush() { }
+    @Override
+    public void close() throws SecurityException { }
+
+    public void waitUntilDone() throws InterruptedException {
+        long t = System.currentTimeMillis();
+        while(!done) {
+            Thread.sleep(200);
+            if(System.currentTimeMillis() - t > TIMEOUT) {
+                throw new IllegalStateException("Timeout >" + TIMEOUT);
+            }
+        }
+    }
 }
