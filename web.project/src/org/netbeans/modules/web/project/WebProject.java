@@ -65,6 +65,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
@@ -478,15 +479,13 @@ public final class WebProject implements Project, AntProjectListener {
         WebSources webSources = new WebSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots());
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), WebProjectProperties.SOURCE_ENCODING);
         
-        Lookup base = Lookups.fixed(new Object[] {            
+        List base = new ArrayList(Arrays.asList(new Object[] {
             new Info(),
             aux,
             helper.createCacheDirectoryProvider(),
             helper.createAuxiliaryProperties(),
             spp,
             new ProjectWebModuleProvider (),
-            EjbJarSupport.createEjbJarProvider(this, apiEjbJar),
-            EjbJarSupport.createEjbJarsInProject(apiEjbJar),
             new ProjectWebServicesSupportProvider(),
             webModule, //implements J2eeModuleProvider
             enterpriseResourceSupport,
@@ -530,9 +529,16 @@ public final class WebProject implements Project, AntProjectListener {
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
             LookupMergerSupport.createJFBLookupMerger(),
             QuerySupport.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
-        });
-        lookup = base;
-        return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-project/Lookup"); //NOI18N
+        }));
+
+        Profile profile = Profile.fromPropertiesString(eval.getProperty(WebProjectProperties.J2EE_PLATFORM));
+        if (profile == Profile.JAVA_EE_6_FULL){
+            base.add(EjbJarSupport.createEjbJarProvider(this, apiEjbJar));
+            base.add(EjbJarSupport.createEjbJarsInProject(apiEjbJar));
+        }
+
+        lookup = Lookups.fixed(base.toArray());
+        return LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-web-project/Lookup"); //NOI18N
     }
     
     public ClassPathProviderImpl getClassPathProvider () {
