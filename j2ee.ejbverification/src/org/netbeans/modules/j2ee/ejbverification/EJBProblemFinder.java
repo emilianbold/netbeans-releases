@@ -115,7 +115,7 @@ public abstract class EJBProblemFinder {
                     NullPointerException npe = new NullPointerException("null J2eeModule from " + provider);
                     LOG.log(Level.WARNING, npe.getMessage(), npe);
                 } else {
-                    if (J2eeModule.EJB.equals(module.getModuleType())) {
+                    if (J2eeModule.Type.EJB.equals(module.getType())) {
                         isEjb = true;
                     }
                 }

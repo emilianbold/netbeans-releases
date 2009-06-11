@@ -167,24 +167,6 @@ made subject to such option by the copyright holder.
             <compilerarg line="${javac.compilerargs}"/>
             <processorpath refid="processor.cp"/>
         </nb-javac>
-        <!-- Sanity check: -->
-        <pathconvert pathsep=":" property="class.files.in.src">
-            <path>
-                <fileset dir="${src.dir}">
-                    <include name="**/*.class"/>
-                </fileset>
-            </path>
-        </pathconvert>
-        <fail>
-            <condition>
-                <not>
-                    <equals arg1="${class.files.in.src}" arg2=""/>
-                </not>
-            </condition>
-            You have stray *.class files in ${src.dir} which you must remove.
-            Probably you failed to clean your sources before updating them.
-        </fail>
-        <!-- OK, continue: -->
         <copy todir="${build.classes.dir}">
             <fileset dir="${src.dir}" excludes="${jar-excludes}"/>
         </copy>

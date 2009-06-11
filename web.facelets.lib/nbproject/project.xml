@@ -35,6 +35,8 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.web.facelets</friend>
+                <friend>org.netbeans.modules.web.jsf</friend>
+                <friend>org.netbeans.modules.web.jsf.kit</friend>
                 <package>com.sun.facelets</package>
                 <package>com.sun.facelets.compiler</package>
                 <package>com.sun.facelets.tag</package>

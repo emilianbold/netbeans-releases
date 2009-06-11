@@ -41,12 +41,16 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.io.File;
 import org.netbeans.modules.cnd.actions.AbstractExecutorRunAction;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -149,15 +153,87 @@ public final class ConfigureUtils {
         return null;
     }
 
-    public static String getConfigureArguments(String configure){
-        if (configure.endsWith("configure")) { // NOI18N
-            return "CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\""; // NOI18N
-        } else if (configure.endsWith("CMakeLists.txt")) { // NOI18N
-            return "-G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=\"-g3 -gdwarf-2\" -DCMAKE_C_FLAGS_DEBUG=\"-g3 -gdwarf-2\""; // NOI18N
-        } else if (configure.endsWith(".pro")) { // NOI18N
-            return "QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\""; // NOI18N
+    public static String getDefaultC(){
+        CompilerSet def = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        String cCompiler = "gcc"; // NOI18N
+        if (def != null) {
+            CompilerFlavor flavor = def.getCompilerFlavor();
+            if (flavor.isSunStudioCompiler()) {
+                cCompiler = "cc"; // NOI18N
+            }
         }
-        return ""; // NOI18N
+        return cCompiler;
     }
 
+    public static String getDefaultCpp(){
+        CompilerSet def = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        String cppCompiler = "g++"; // NOI18N
+        if (def != null) {
+            CompilerFlavor flavor = def.getCompilerFlavor();
+            if (flavor.isSunStudioCompiler()) {
+                cppCompiler = "CC"; // NOI18N
+            }
+        }
+        return cppCompiler;
+    }
+
+    private static final String PREDEFINED_FLAGS_GNU = "\"-g3 -gdwarf-2\""; // NOI18N
+    private static final String PREDEFINED_FLAGS_SUN = "-g"; // NOI18N
+    public static String getConfigureArguments(String configure, String flags) {
+        String cCompiler = ConfigureUtils.getDefaultC();
+        String cppCompiler = ConfigureUtils.getDefaultCpp();
+        StringBuilder buf = new StringBuilder(flags);
+        String cCompilerFlags;
+        if ("cc".equals(cCompiler)) { // NOI18N
+            cCompilerFlags = PREDEFINED_FLAGS_SUN;
+        } else {
+            cCompilerFlags = PREDEFINED_FLAGS_GNU;
+        }
+        String cppCompilerFlags;
+        if ("CC".equals(cppCompiler)) { // NOI18N
+            cppCompilerFlags = PREDEFINED_FLAGS_SUN;
+        } else {
+            cppCompilerFlags = PREDEFINED_FLAGS_GNU;
+        }
+        if (configure.endsWith("CMakeLists.txt")){ // NOI18N
+            appendIfNeed("-G ", flags, buf, "\"Unix Makefiles\""); // NOI18N
+            appendIfNeed("-DCMAKE_BUILD_TYPE=", flags, buf, "Debug"); // NOI18N
+            if ("cc".equals(cCompiler)) { // NOI18N
+                appendIfNeed("-DCMAKE_C_COMPILER=", flags, buf, "cc"); // NOI18N
+            }
+            if ("CC".equals(cppCompiler)) { // NOI18N
+                appendIfNeed("-DCMAKE_CXX_COMPILER=", flags, buf, "CC"); // NOI18N
+            }
+            appendIfNeed("-DCMAKE_C_FLAGS_DEBUG=", flags, buf, cCompilerFlags); // NOI18N
+            appendIfNeed("-DCMAKE_CXX_FLAGS_DEBUG=", flags, buf, cppCompilerFlags); // NOI18N
+        } else if (configure.endsWith(".pro")){ // NOI18N
+            if ("CC".equals(cppCompiler) && Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) { // NOI18N
+                appendIfNeed("-spec ", flags, buf, "solaris-cc"); // NOI18N
+                appendIfNeed("QMAKE_CC=", flags, buf, "cc"); // NOI18N
+                appendIfNeed("QMAKE_CXX=", flags, buf, "CC"); // NOI18N
+            } else {
+                appendIfNeed("QMAKE_CFLAGS=", flags, buf, cCompilerFlags); // NOI18N
+                appendIfNeed("QMAKE_CXXFLAGS=", flags, buf, cppCompilerFlags); // NOI18N
+            }
+        } else {
+            if ("cc".equals(cCompiler)) { // NOI18N
+                appendIfNeed("CC=", flags, buf, "cc"); // NOI18N
+            }
+            if ("CC".equals(cppCompiler)) { // NOI18N
+                appendIfNeed("CXX=", flags, buf, "CC"); // NOI18N
+            }
+            appendIfNeed("CFLAGS=", flags, buf, cCompilerFlags); // NOI18N
+            appendIfNeed("CXXFLAGS=", flags, buf, cppCompilerFlags); // NOI18N
+        }
+        return buf.toString();
+    }
+
+    private static void appendIfNeed(String key, String flags, StringBuilder buf, String flag){
+        if (flags.indexOf(key) < 0 ){
+            if (buf.length() > 0) {
+                buf.append(' '); // NOI18N
+            }
+            buf.append(key + flag);
+        }
+    }
 }

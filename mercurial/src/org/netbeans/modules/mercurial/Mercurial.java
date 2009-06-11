@@ -63,7 +63,6 @@ import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.mercurial.ui.diff.Setup;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.NbBundle;
-import java.util.prefs.Preferences;
 import org.netbeans.modules.mercurial.hooks.spi.HgHook;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
@@ -125,10 +124,14 @@ public class Mercurial {
     private MercurialInterceptor mercurialInterceptor;
     private FileStatusCache     fileStatusCache;
     private HashMap<HgURL, RequestProcessor>   processorsToUrl;
+    /**
+     * true if hg is present and it's version is supported
+     */
     private boolean goodVersion;
     private String version;
-    private String runVersion;
-    private boolean checkedVersion;
+    /**
+     * true if hg version command has been invoked
+     */
     private boolean gotVersion;
 
     private Result<? extends HgHook> hooksResult;
@@ -172,8 +175,6 @@ public class Mercurial {
     }
 
     public void checkVersion() {
-        checkedVersion = false;
-        runVersion = null;
         gotVersion = false;
         RequestProcessor rp = getRequestProcessor();
         Runnable doCheck = new Runnable() {
@@ -191,21 +192,14 @@ public class Mercurial {
         version = HgCommand.getHgVersion();
         LOG.log(Level.FINE, "version: {0}", version); // NOI18N
         if (version != null) {
-            goodVersion = isGoodVersion(version);
-            if (!goodVersion) {
-                Preferences prefs = HgModuleConfig.getDefault().getPreferences();
-                runVersion = prefs.get(HgModuleConfig.PROP_RUN_VERSION, null);
-                if (runVersion != null && runVersion.equals(version)) {
-                    goodVersion = true;
-                }
-            }
+            goodVersion = isSupportedVersion(version);
         } else {
             goodVersion = false;
         }
         gotVersion = true;
     }
 
-    private boolean isGoodVersion(String version) {
+    private boolean isSupportedVersion(String version) {
         if(version.startsWith(MERCURIAL_SUPPORTED_VERSION_093) ||
            version.startsWith(MERCURIAL_SUPPORTED_VERSION_094) ||
            version.startsWith(MERCURIAL_SUPPORTED_VERSION_095) ||
@@ -220,39 +214,49 @@ public class Mercurial {
         return true;
     }
 
-    public boolean checkVersionNotify(boolean forceCheck) {
+    public boolean isAvailable () {
+        return isAvailable(false, false);
+    }
+
+    public boolean isAvailable (boolean notifyUI) {
+        return isAvailable(false, notifyUI);
+    }
+
+    /**
+     * Tests if hg is or is not available
+     * @param forceCheck if version command has not been invoked yet and forceCheck is true, it will be, otherwise the command will be skipped
+     * @param notifyUI if true and hg is not available, a dialog will be shown and a message will be printed into a logger
+     * @return
+     */
+    public boolean isAvailable (boolean forceCheck, boolean notifyUI) {
         synchronized(this) {
             if (!gotVersion) {
+                // version has not been scanned yet, run the version command
                 LOG.log(Level.FINE, "Call to hg version not finished"); // NOI18N
                 if(forceCheck) {
                     checkVersionIntern();
                 }
-                return true;
             }
         }
         if (version != null && !goodVersion) {
-            if (runVersion == null || !runVersion.equals(version)) {
-                Preferences prefs = HgModuleConfig.getDefault().getPreferences();
-
-                OutputLogger logger = getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
-                prefs.put(HgModuleConfig.PROP_RUN_VERSION, version);
-                logger.outputInRed(NbBundle.getMessage(Mercurial.class, "MSG_USING_UNRECOGNIZED_VERSION_MSG", version)); // NOI18N);
-                logger.closeLog();
-            }
-            goodVersion = true;
-            return true;
-        } else if (version != null) {
-            return true;
-        } else if (version == null) {
-            Preferences prefs = HgModuleConfig.getDefault().getPreferences();
-            prefs.remove(HgModuleConfig.PROP_RUN_VERSION);
+            // hg is present but it's version is unsupported
+            // a warning message is printed into log, always only once per netbeans session
             OutputLogger logger = getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
-            logger.outputInRed(NbBundle.getMessage(Mercurial.class, "MSG_VERSION_NONE_OUTPUT_MSG")); // NOI18N);
-            HgUtils.warningDialog(Mercurial.class, "MSG_VERSION_NONE_TITLE", "MSG_VERSION_NONE_MSG");// NOI18N
+            logger.outputInRed(NbBundle.getMessage(Mercurial.class, "MSG_USING_UNRECOGNIZED_VERSION_MSG", version)); // NOI18N);
             logger.closeLog();
-            return false;
+            LOG.log(Level.WARNING, "Using an unsupported hg version: {0}", version); //NOI18N
+            goodVersion = true; // do not show the warning next time
+        } else if (version == null) {
+            // hg is not present at all, show a warning dialog
+            if (notifyUI) {
+                OutputLogger logger = getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
+                logger.outputInRed(NbBundle.getMessage(Mercurial.class, "MSG_VERSION_NONE_OUTPUT_MSG")); // NOI18N);
+                HgUtils.warningDialog(Mercurial.class, "MSG_VERSION_NONE_TITLE", "MSG_VERSION_NONE_MSG"); //NOI18N
+                logger.closeLog();
+                LOG.warning("Hg is not available");     //NOI18N
+            }
         }
-        return false;
+        return goodVersion; // true if hg is present
     }
 
     public MercurialAnnotator getMercurialAnnotator() {
@@ -432,17 +436,6 @@ public class Mercurial {
         } else {
             return foMime;
         }
-    }
-
-    public boolean isGoodVersion() {
-        return goodVersion;
-    }
-    public boolean isGoodVersionAndNotify() {
-        if (checkedVersion == false) {
-            checkVersionNotify(false);
-            checkedVersion = true;
-        }
-        return goodVersion;
     }
 
     public void versionedFilesChanged() {
