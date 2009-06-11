@@ -64,7 +64,8 @@ import org.openide.util.lookup.Lookups;
  */
 public class PhpOptionsPanelController extends OptionsPanelController implements ChangeListener {
 
-    private static final String TAB_FOLDER = "org.netbeans.modules.php/options/"; // NOI18N
+    // do not change, php frameworks use it!
+    private static final String TAB_FOLDER = "PHP/Options/"; // NOI18N
     private final PhpOptionsPanel phpOptionsPanel = new PhpOptionsPanel();
     private final Collection<? extends AdvancedOption> options;
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
