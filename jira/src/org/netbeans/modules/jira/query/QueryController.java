@@ -115,13 +115,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private QueryPanel panel;
 
     private RequestProcessor rp = new RequestProcessor("Jira query", 1, true);  // NOI18N
-    private Task task;
 
     private final JiraRepository repository;
     protected JiraQuery query;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // NOI18N
-    private QueryTask searchTask;
     private QueryTask refreshTask;
     private final boolean modifiable;
     private final JiraFilter jiraFilter;
@@ -433,8 +431,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
     @Override
     public void closed() {
         onCancelChanges();
-        if(task != null) {
-            task.cancel();
+        if(refreshTask != null) {
+            refreshTask.cancel();
         }
         if(query.isSaved()) {
             repository.stopRefreshing(query);
@@ -522,11 +520,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == panel.searchButton) {
-            onSearch();
+            onRefresh();
         } else if (e.getSource() == panel.gotoIssueButton) {
             onGotoIssue();
         } else if (e.getSource() == panel.searchButton) {
-            onSearch();
+            onRefresh();
         } else if (e.getSource() == panel.saveChangesButton) {
             onSave();
         } else if (e.getSource() == panel.cancelChangesButton) {
@@ -558,7 +556,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                    e.getSource() == panel.reporterTextField ||
                    e.getSource() == panel.assigneeTextField )
         {
-            onSearch();
+            onRefresh();
         }
     }
 
@@ -580,7 +578,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
            e.getSource() == panel.resolutionList ||
            e.getSource() == panel.priorityList)
         {
-            onSearch();
+            onRefresh();
         }
     }
 
@@ -640,11 +638,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         query.setSaved(true); // XXX
         setAsSaved();
         if(!query.wasRun()) {
-            if (firstTime) {
-                onSearch();
-            } else {
-                onRefresh();
-            }
+            onRefresh();
         }
     }
 
@@ -767,21 +761,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
         });
     }
 
-    private void onSearch() {
-        if(searchTask == null) {
-            searchTask = new QueryTask() {
-                public void executeQuery() {
-                    try {
-                        refreshIntern(false);
-                    } finally {
-                        
-                    }
-                }
-            };
-        }
-        post(searchTask);
-    }
-
     public void autoRefresh() {
         onRefresh(true);
     }
@@ -790,34 +769,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
         onRefresh(false);
     }
 
-    private void onRefresh(final boolean auto) {
+    private void onRefresh(final boolean autoRefresh) {
         if(refreshTask == null) {            
-            refreshTask = new QueryTask() {
-                public void executeQuery() {
-                    panel.setQueryRunning(true);
-                    try {
-                        refreshIntern(auto);
-                    } finally {
-                        panel.setQueryRunning(false);
-                        task = null;
-                    }
-                }
-            };
+            refreshTask = new QueryTask();
         }
-        post(refreshTask);
-    }
-
-    private void refreshIntern(boolean autoRefresh) {
-        query.refresh(getJiraFilter(), autoRefresh);
-    }
-
-    private void post(Runnable r) {
-        if(task != null) {
-            task.cancel();
-        }
-        task = rp.create(r);
-        task.schedule(0);
-    }
+        refreshTask.post(autoRefresh);
+    }    
 
     private void onModify() {
         panel.setModifyVisible(true);
@@ -874,8 +831,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void remove() {
-        if (task != null) {
-            task.cancel();
+        if (refreshTask != null) {
+            refreshTask.cancel();
         }
         query.remove();
     }
@@ -886,9 +843,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
-    private abstract class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
+    private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
         private ProgressHandle handle;
         private int counter;
+        private Task task;
+        private boolean autoRefresh;
 
         public QueryTask() {
             query.addNotifyListener(this);
@@ -925,7 +884,15 @@ public class QueryController extends BugtrackingController implements DocumentLi
             });
         }
 
-        public abstract void executeQuery();
+        public void executeQuery() {
+            panel.setQueryRunning(true);
+            try {
+                query.refresh(getJiraFilter(), autoRefresh);
+            } finally {
+                panel.setQueryRunning(false);
+                task = null;
+            }
+        }
 
         public void run() {
             startQuery();
@@ -936,11 +903,20 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         }
 
-        public boolean cancel() {
+        synchronized void post(boolean autoRefresh) {
             if(task != null) {
                 task.cancel();
             }
-            finnishQuery();
+            task = rp.create(this);
+            this.autoRefresh = autoRefresh;
+            task.schedule(0);
+        }
+
+        public boolean cancel() {
+            if(task != null) {
+                task.cancel();
+                finnishQuery();
+            }
             return true;
         }
 
