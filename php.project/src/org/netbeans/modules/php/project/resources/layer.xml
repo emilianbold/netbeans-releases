@@ -287,13 +287,15 @@ made subject to such option by the copyright holder.
             <attr name="displayName" bundlevalue="org.netbeans.modules.php.project.resources.Bundle#Php.Options.Export.Category.displayName"/>
             <attr name="position" intvalue="700"/>
             <file name="General">
-                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/php/project/general/.*|config/Preferences/org/netbeans/modules/php/project/general.properties|config/Editors/text/x-php5/.*"/>
-                <attr name="exclude" stringvalue="config/Preferences/org/netbeans/modules/php/project/private/.*|config/Preferences/org/netbeans/modules/php/project/private.properties"/>
+                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/php/project/general(\.properties|/.*)|config/Editors/text/x-php5/.*"/>
+                <attr name="exclude" stringvalue="config/Preferences/org/netbeans/modules/php/project/private(\.properties|/.*)"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.php.project.resources.Bundle#Php.Options.Export.General.displayName"/>
+                <attr name="position" intvalue="100"/>
             </file>
             <file name="Remote">
-                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/php/project/RemoteConnections/.*|config/Preferences/org/netbeans/modules/php/project/RemoteConnections.properties"/>
+                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/php/project/RemoteConnections(\.properties|/.*)"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.php.project.resources.Bundle#Php.Options.Export.Remote.displayName"/>
+                <attr name="position" intvalue="200"/>
             </file>
         </folder>
     </folder>
