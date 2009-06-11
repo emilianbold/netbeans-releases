@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,62 +31,69 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla.issue;
+package org.netbeans.modules.bugzilla;
 
-import org.netbeans.modules.bugtracking.spi.Issue;
-import java.util.logging.Level;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugzilla.TestConstants;
-import org.netbeans.modules.bugzilla.TestUtil;
-import org.netbeans.modules.bugzilla.LogHandler;
-import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 
 /**
  *
  * @author tomas
  */
-public class OpenIssueTest extends NbTestCase implements TestConstants {
+public class LogHandler extends Handler {
+    private static final long TIMEOUT = 30 * 1000;
+    private final String msg;
+    private boolean done = false;
+    private final Compare compare;
+    public enum Compare {
+        STARTS_WITH,
+        ENDS_WITH
+    }
 
-    private static String REPO_NAME = "Beautiful";
-
-    public OpenIssueTest(String arg0) {
-        super(arg0);
+    public LogHandler(String msg, Compare compare) {
+        this.msg = msg;
+        this.compare = compare;
+        Bugzilla.LOG.addHandler(this);
     }
 
     @Override
-    protected Level logLevel() {
-        return Level.ALL;
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        BugzillaCorePlugin bcp = new BugzillaCorePlugin();
-        try {
-            bcp.start(null);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+    public void publish(LogRecord record) {
+        if(!done) {
+            switch (compare) {
+                case STARTS_WITH :
+                    done = record.getMessage().startsWith(msg);
+                    break;
+                case ENDS_WITH :
+                    done = record.getMessage().endsWith(msg);
+                    break;
+                default:
+                    throw new IllegalStateException("wrong value " + compare);
+            }
         }
     }
 
-    public void testOpenNewIssue() throws Throwable {
-        BugzillaRepository repository = getRepository();
-        Issue issue = repository.createIssue();
-
-        LogHandler handler = new LogHandler("open finish", LogHandler.Compare.ENDS_WITH);
-        issue.open();
-        handler.waitUntilDone();
-        assertTrue(handler.isDone());
+    public boolean isDone() {
+        return done;
     }
+    
+    @Override
+    public void flush() { }
+    @Override
+    public void close() throws SecurityException { }
 
-    private BugzillaRepository getRepository() {
-        return TestUtil.getRepository(REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD);
+    public void waitUntilDone() throws InterruptedException {
+        long t = System.currentTimeMillis();
+        while(!done) {
+            Thread.sleep(200);
+            if(System.currentTimeMillis() - t > TIMEOUT) {
+                throw new IllegalStateException("Timeout >" + TIMEOUT);
+            }
+        }
     }
 }
