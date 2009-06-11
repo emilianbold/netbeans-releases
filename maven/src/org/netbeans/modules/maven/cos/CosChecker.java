@@ -189,7 +189,7 @@ public class CosChecker implements PrerequisitesChecker {
         return true;
     }
 
-    static final String[] DEFAULT_INCLUDES = {"**/**"};
+    static final String[] DEFAULT_INCLUDES = {"**"};
 
     private boolean checkResource(Resource r, FileObject outputDir, long stamp) {
         String dir = r.getDirectory();

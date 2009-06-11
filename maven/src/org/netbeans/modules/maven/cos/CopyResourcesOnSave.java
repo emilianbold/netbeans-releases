@@ -51,6 +51,7 @@ import org.apache.maven.model.Resource;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunUtils;
@@ -68,11 +69,36 @@ import org.openide.util.Exceptions;
  */
 public class CopyResourcesOnSave extends FileChangeAdapter {
 
+    private static CopyResourcesOnSave instance = new CopyResourcesOnSave();
+
+    private boolean isAdded = false;
     /** Creates a new instance of CopyOnSaveSupport */
-    public CopyResourcesOnSave() {
-        //remove somehow? or use weak listener?
-        //TODO maybe enable/disable when at least one maven project is opened.
-        FileUtil.addFileChangeListener(this);
+    private CopyResourcesOnSave() {
+    }
+
+    public static CopyResourcesOnSave getInstance() {
+        return instance;
+    }
+
+    public void checkOpenProjects() {
+        boolean hasAnyMavens = false;
+        for (Project prj : OpenProjects.getDefault().getOpenProjects()) {
+            if (prj.getLookup().lookup(NbMavenProject.class) != null) {
+                hasAnyMavens = true;
+                break;
+            }
+        }
+        if (hasAnyMavens) {
+            if (!isAdded) {
+                FileUtil.addFileChangeListener(this);
+                isAdded = true;
+            }
+        } else {
+            if (isAdded) {
+                FileUtil.removeFileChangeListener(this);
+                isAdded = false;
+            }
+        }
     }
 
     private void copySrcToDest( FileObject srcFile, FileObject destFile) throws IOException {
@@ -269,10 +295,15 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
                 if (incls.size() == 0) {
                     incls = Arrays.asList(CosChecker.DEFAULT_INCLUDES);
                 }
+                boolean included = false;
                 for (String incl : incls) {
-                    if (!DirectoryScanner.match(incl, path)) {
-                        continue resourceLoop;
+                    if (DirectoryScanner.match(incl, path)) {
+                        included = true;
+                        break;
                     }
+                }
+                if (!included) {
+                    break;
                 }
                 @SuppressWarnings("unchecked")
                 List<String> excls = new ArrayList<String>(res.getExcludes());
