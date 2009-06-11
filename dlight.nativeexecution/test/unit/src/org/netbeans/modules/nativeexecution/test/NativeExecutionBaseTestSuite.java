@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.nativeexecution.test;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
@@ -103,6 +104,40 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
         for (ExecutionEnvironment env : environments) {
             for (String methodName : testMethodNames) {
                 addTest(createTest(ctor, methodName, env));
+            }
+        }
+    }
+
+    /**
+     * Adds a test that will be run with each specified execution environment
+     * @param testClass test class to add.
+     *
+     * The <? extends NativeExecutionBaseTestCase> is probably too strong - <? extends TestCase> would be sufficient
+     * (the only check is the search for 2-parammeter constructor that takes String and ExecutinEnvironmant);
+     * the intention was rather to explain what it's used for than to restrict.
+     *
+     * @param mspecs Strings that represent configurations
+     */
+    public void addTest(Class<? extends NativeExecutionBaseTestCase> testClass, String... mspecs) throws IOException {
+        Constructor<?> ctor = findConstructor(testClass);
+        if (ctor == null) {
+            return;
+        }
+        String[] testMethodNames = findTestMethods(testClass);
+        if (testMethodNames.length == 0) {
+            addTest(warning("Class " + testClass.getName() + " has no runnable test metods"));
+        }
+
+        for (String mspec : mspecs) {
+            ExecutionEnvironment execEnv = NativeExecutionTestSupport.getTestExecutionEnvironment(mspec);
+            if (execEnv != null) {
+                for (String methodName : testMethodNames) {
+                    addTest(createTest(ctor, methodName, execEnv));
+                }
+            } else {
+                for (String methodName : testMethodNames) {
+                    addTest(warning(methodName + " [" + mspec + "]", "Got null execution environment for " + mspec));
+                }
             }
         }
     }
@@ -185,4 +220,14 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
                 " does not have a constructor with 2 parameters: String and ExecutionEnvironment"));
         return null;
     }
+
+	protected static Test warning(String testName, final String message) {
+		return new TestCase(testName) {
+			@Override
+			protected void runTest() {
+				fail(message);
+			}
+		};
+	}
+
 }

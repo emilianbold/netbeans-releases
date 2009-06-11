@@ -38,8 +38,10 @@
  */
 package org.netbeans.modules.cnd.remote.support;
 
+import junit.framework.Test;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
@@ -61,13 +63,14 @@ public class ServerListTestCase extends RemoteTestBase {
     }
 
     public void testRun() throws Exception {        
-        if (canTestRemote()) {
-            ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-            ServerRecord rec = ServerList.addServer(execEnv, execEnv.getDisplayName(), RemoteSyncFactory.getDefault(), false, true);
-            assertNotNull("Null server record", rec);
-            assertEquals(rec.getExecutionEnvironment(), execEnv);
-        } else {
-            System.err.println("Remote tests are not configured."); // to test remote runs
-        }
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        ServerRecord rec = ServerList.addServer(execEnv, execEnv.getDisplayName(), RemoteSyncFactory.getDefault(), false, true);
+        assertNotNull("Null server record", rec);
+        assertEquals(rec.getExecutionEnvironment(), execEnv);
     }
+
+    public static Test suite() {
+        return new RemoteDevelopmentTest(ServerListTestCase.class);
+    }
+
 }
