@@ -108,7 +108,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         //disable encapsulate session bean for j2se project
         J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
         if (j2eeModuleProvider != null) {
-            isWebModule = J2eeModule.WAR.equals(j2eeModuleProvider.getJ2eeModule().getModuleType());
+            isWebModule = J2eeModule.Type.WAR.equals(j2eeModuleProvider.getJ2eeModule().getType());
         }
                 if ( (j2eeModuleProvider == null) ||
                 //disable encapsulate session beans for Tomcat
@@ -393,7 +393,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         
         boolean isCallerEJBModule = false;
         J2eeModuleProvider callerJ2eeModuleProvider = (J2eeModuleProvider) enterpriseProject.getLookup().lookup(J2eeModuleProvider.class);
-        if (callerJ2eeModuleProvider != null && callerJ2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.EJB)) {
+        if (callerJ2eeModuleProvider != null && callerJ2eeModuleProvider.getJ2eeModule().getType().equals(J2eeModule.Type.EJB)) {
             // TODO: HACK - this should be set by calling AntArtifactQuery.findArtifactsByType(p, EjbProjectConstants.ARTIFACT_TYPE_EJBJAR)
             // but now freeform doesn't implement this correctly
             isCallerEJBModule = true;
@@ -406,7 +406,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         for (int i = 0; i < allProjects.length; i++) {
             boolean isEJBModule = false;
             J2eeModuleProvider j2eeModuleProvider = allProjects[i].getLookup().lookup(J2eeModuleProvider.class);
-            if (j2eeModuleProvider != null && j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.EJB)) {
+            if (j2eeModuleProvider != null && j2eeModuleProvider.getJ2eeModule().getType().equals(J2eeModule.Type.EJB)) {
                 isEJBModule = true;
             }
             if ((isEJBModule && !isCallerFreeform) ||

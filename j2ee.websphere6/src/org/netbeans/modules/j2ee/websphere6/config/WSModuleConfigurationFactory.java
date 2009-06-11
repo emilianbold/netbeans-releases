@@ -52,16 +52,16 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurati
  * @author Arathi
  */
 public class WSModuleConfigurationFactory implements ModuleConfigurationFactory {
-    
+
     public ModuleConfiguration create(J2eeModule j2eeModule) throws ConfigurationException {
-        if (J2eeModule.WAR == j2eeModule.getModuleType()) {
+        if (J2eeModule.Type.WAR.equals(j2eeModule.getType())) {
             return new WSWarModuleConfiguration(j2eeModule);
-        } else if (J2eeModule.EJB == j2eeModule.getModuleType()) {
+        } else if (J2eeModule.Type.EJB.equals(j2eeModule.getType())) {
             return new WSEjbModuleConfiguration(j2eeModule);
-        } else if (J2eeModule.EAR == j2eeModule.getModuleType()) {
+        } else if (J2eeModule.Type.EAR.equals(j2eeModule.getType())) {
             return new WSEarModuleConfiguration(j2eeModule);
         }
-        
+
         return new WSModuleConfiguration(j2eeModule);
     }
 }

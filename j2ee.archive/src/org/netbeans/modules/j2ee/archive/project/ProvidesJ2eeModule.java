@@ -48,12 +48,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
-import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -62,7 +61,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NotImplementedException;
 
 public class ProvidesJ2eeModule extends J2eeModuleProvider {
     
@@ -283,7 +281,7 @@ public class ProvidesJ2eeModule extends J2eeModuleProvider {
         innerModule = j2eeModule;
     }
     
-    private class InnerModule implements J2eeModuleImplementation {
+    private class InnerModule implements J2eeModuleImplementation2 {
         
         private J2eeModule inner;
         
@@ -295,8 +293,8 @@ public class ProvidesJ2eeModule extends J2eeModuleProvider {
             return inner.getModuleVersion();
         }
         
-        public Object getModuleType() {
-            return inner.getModuleType();
+        public J2eeModule.Type getModuleType() {
+            return inner.getType();
         }
         
         public String getUrl() {
