@@ -67,8 +67,13 @@ public class AvailableJ2EEServerCheck extends NbTestCase {
     public void testGetAllJ2eeServersReal() {
         int cnt = 0;
         List<ServerWizardProvider> providers = new ArrayList<ServerWizardProvider>(Lookups.forPath(ServerRegistry.SERVERS_PATH).lookupAll(ServerWizardProvider.class));
+        for (ServerWizardProvider w : providers.toArray(new ServerWizardProvider[0])) {
+            if (w.getInstantiatingIterator() == null) {
+                providers.remove(w);
+            }
+        }
         Collections.sort(providers, comparator); // ?
-        for (ServerWizardProvider wizard : providers) {
+        for (ServerWizardProvider wizard : providers.toArray(new ServerWizardProvider[0])) {
            System.setProperty("wizard." + ++cnt, wizard.getDisplayName());
            System.err.println("ergo: " + wizard.getDisplayName());
         }
@@ -77,10 +82,14 @@ public class AvailableJ2EEServerCheck extends NbTestCase {
     public void testGetAllJ2eeServersErgo() {
         int cnt = 0;
         List<ServerWizardProvider> providers = new ArrayList<ServerWizardProvider>(Lookups.forPath(ServerRegistry.SERVERS_PATH).lookupAll(ServerWizardProvider.class));
+        for (ServerWizardProvider w : providers) {
+            if (w.getInstantiatingIterator() == null) {
+                providers.remove(w);
+            }
+        }
         Collections.sort(providers, comparator);
         for (ServerWizardProvider wizard : providers) {
            String name = System.getProperty("wizard." + ++cnt);
-           if (wizard.getInstantiatingIterator() == null) continue; // we are not interested!
            System.err.println("full: " + wizard.getDisplayName());
            assertEquals(name, wizard.getDisplayName());
         }

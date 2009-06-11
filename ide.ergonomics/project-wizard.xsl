@@ -180,15 +180,15 @@
 
     <!-- j2ee server type -->
     <xsl:template match="file" mode="j2ee-server-types">
-        <xsl:element name="file">
-            <xsl:attribute name="name">WizardProvider-<xsl:value-of select="../@name"/>.instance</xsl:attribute>
-            <attr name="instanceCreate" methodvalue="org.netbeans.modules.ide.ergonomics.ServerWizardProviderProxy.create"/>
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.ide.ergonomics.ServerWizardProviderProxy"/>
-            <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerWizardProvider"/>
-            <xsl:if test="attr[@name='displayName']">
-                <xsl:apply-templates select="attr[@name='displayName']" mode="j2ee-server-types"/>
-            </xsl:if>
-        </xsl:element>
+        <xsl:if test="attr[@name='displayName']">
+            <xsl:element name="file">
+                <xsl:attribute name="name">WizardProvider-<xsl:value-of select="../@name"/>.instance</xsl:attribute>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.ide.ergonomics.ServerWizardProviderProxy.create"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.ide.ergonomics.ServerWizardProviderProxy"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerWizardProvider"/>
+                    <xsl:apply-templates select="attr[@name='displayName']" mode="j2ee-server-types"/>
+            </xsl:element>
+        </xsl:if>
     </xsl:template>
 
     <xsl:template match="attr" mode="j2ee-server-types">
