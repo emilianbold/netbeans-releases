@@ -41,8 +41,6 @@ package org.netbeans.modules.bugzilla.query;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import org.netbeans.modules.bugzilla.*;
@@ -50,13 +48,10 @@ import java.net.MalformedURLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.BugtrackingConfig;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -79,8 +74,6 @@ public class QueryTest extends NbTestCase implements TestConstants {
         "&emailtype2=substring&email2=&bugidtype=include&bug_id=&votes=&chfieldfrom=" +
         "&chfieldto=Now&chfieldvalue=&cmdtype=doit&order=Reuse+same+sort+as+last+time" + "" +
         "&field0-0-0=noop&type0-0-0=noop&value0-0-0=";
-
-    private int TIMEOUT = 60000;
 
     public QueryTest(String arg0) {
         super(arg0);
@@ -109,16 +102,13 @@ public class QueryTest extends NbTestCase implements TestConstants {
         String summary = "somary" + ts;
         String id1 = TestUtil.createIssue(getRepository(), summary);
 
-        LogHandler h = new LogHandler("Finnished populate");
+        LogHandler h = new LogHandler("Finnished populate", LogHandler.Compare.STARTS_WITH);
         Bugzilla.LOG.addHandler(h);
 
         String p =  MessageFormat.format(PARAMETERS_FORMAT, summary);
         BugzillaQuery q = new BugzillaQuery(QUERY_NAME, getRepository(), p, ts, false);
         ts = System.currentTimeMillis();
-        while(!h.done) {
-            Thread.sleep(500);
-            if(ts + TIMEOUT < System.currentTimeMillis()) throw new IllegalStateException("timeout");
-        }
+        h.waitUntilDone();
 
         TestQueryNotifyListener nl = new TestQueryNotifyListener(q);
 
@@ -232,7 +222,10 @@ public class QueryTest extends NbTestCase implements TestConstants {
         long ts = System.currentTimeMillis();
 
         ts = System.currentTimeMillis();
-        q.refresh("whatever", false);
+        q.refresh("query_format=advanced&" +
+                  "short_desc_type=allwordssubstr&" +
+                  "short_desc=whatever112233445566778899&" +
+                  "product=TestProduct", false);
         assertTrue(q.getLastRefresh() >= ts);
 
         ts = System.currentTimeMillis();
@@ -247,19 +240,16 @@ public class QueryTest extends NbTestCase implements TestConstants {
         BugzillaRepository repository = getRepository();
         String id1 = TestUtil.createIssue( repository, summary);
 
-        LogHandler h = new LogHandler("Finnished populate");
+        LogHandler h = new LogHandler("Finnished populate", LogHandler.Compare.STARTS_WITH);
         Bugzilla.LOG.addHandler(h);
-        
+
         // create query
         BugzillaQuery q = new BugzillaQuery(repository);
 
         // get controler and wait until populated with default values
         QueryController c = q.getController();
         ts = System.currentTimeMillis();
-        while(!h.done) {
-            Thread.sleep(500);
-            if(ts + TIMEOUT < System.currentTimeMillis()) throw new IllegalStateException("timeout");
-        }
+        h.waitUntilDone();
 
         // populate with parameters - summary
         populate(c, summary);
@@ -268,14 +258,11 @@ public class QueryTest extends NbTestCase implements TestConstants {
 
         // search
         nl.reset();
-        h = new LogHandler("refresh finish");
+        h = new LogHandler("refresh finish", LogHandler.Compare.STARTS_WITH);
         Bugzilla.LOG.addHandler(h);
         search(c); // search button and wait until done
         ts = System.currentTimeMillis();
-        while(!h.done) {
-            Thread.sleep(500);
-            if(ts + TIMEOUT < System.currentTimeMillis()) throw new IllegalStateException("timeout");
-        }
+        h.waitUntilDone();
 
         assertTrue(nl.started);
         assertTrue(nl.finished);
@@ -289,7 +276,9 @@ public class QueryTest extends NbTestCase implements TestConstants {
         nl.reset();
         Bugzilla.LOG.addHandler(h);
         String name = QUERY_NAME + ts;
+        h = new LogHandler(" saved", LogHandler.Compare.ENDS_WITH);
         save(c, name); // save button
+        h.waitUntilDone();
         assertTrue(q.isSaved());
         // create a new repo instance and check if our query is between them
         repository = getRepository();
@@ -307,7 +296,7 @@ public class QueryTest extends NbTestCase implements TestConstants {
         String summary = "somary" + ts;
         String id1 = TestUtil.createIssue(getRepository(), summary);
 
-        LogHandler h = new LogHandler("Finnished populate ");
+        LogHandler h = new LogHandler("Finnished populate ", LogHandler.Compare.STARTS_WITH);
         Bugzilla.LOG.addHandler(h);
 
         // create query
@@ -315,7 +304,7 @@ public class QueryTest extends NbTestCase implements TestConstants {
 
         // get controler and wait until populated with default values
         QueryController c = q.getController();
-        while(!h.done) Thread.sleep(100);
+        h.waitUntilDone();
 
         // populate with parameters - summary
         populate(c, summary);
@@ -325,10 +314,11 @@ public class QueryTest extends NbTestCase implements TestConstants {
         QueryListener ql = new QueryListener();
         q.addPropertyChangeListener(ql);
 
-        h = new LogHandler("refresh finish");
+        h = new LogHandler("refresh finish", LogHandler.Compare.STARTS_WITH); // we wan't to check
+                                                                              // if the refresh is made after save
         Bugzilla.LOG.addHandler(h);
         save(c, QUERY_NAME + ts); // save button
-        while(!h.done) Thread.sleep(100);
+        h.waitUntilDone();
         assertEquals(1, ql.saved);
 
         assertTrue(nl.started);
@@ -344,13 +334,13 @@ public class QueryTest extends NbTestCase implements TestConstants {
         long ts = System.currentTimeMillis();
 
         // create query
-        BugzillaQuery q = new BugzillaQuery(getRepository());
-        LogHandler h = new LogHandler("Finnished populate ");
+        LogHandler h = new LogHandler("Finnished populate", LogHandler.Compare.STARTS_WITH);
         Bugzilla.LOG.addHandler(h);
+        BugzillaQuery q = new BugzillaQuery(getRepository());
 
         // get controler and wait until populated with default values
         QueryController c = q.getController();
-        while(!h.done) Thread.sleep(100);
+        h.waitUntilDone();
 
         Query[] qs = getRepository().getQueries();
         int queriesCount = qs.length;
@@ -358,10 +348,10 @@ public class QueryTest extends NbTestCase implements TestConstants {
         QueryListener ql = new QueryListener();
         q.addPropertyChangeListener(ql);
         // save
-        h = new LogHandler("refresh finish");
+        h = new LogHandler(" saved", LogHandler.Compare.ENDS_WITH);
         Bugzilla.LOG.addHandler(h);
         save(c, QUERY_NAME + ts);
-        while(!h.done) Thread.sleep(100);
+        h.waitUntilDone();
         assertEquals(1, ql.saved);
 
         qs = getRepository().getQueries();
@@ -379,9 +369,9 @@ public class QueryTest extends NbTestCase implements TestConstants {
     }
 
     private void save(QueryController c, String name) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        Method m = c.getClass().getDeclaredMethod("save", String.class, boolean.class);
+        Method m = c.getClass().getDeclaredMethod("save", String.class);
         m.setAccessible(true);
-        m.invoke(c, name, true);
+        m.invoke(c, name);
     }
 
     private void remove(QueryController c) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -391,7 +381,7 @@ public class QueryTest extends NbTestCase implements TestConstants {
     }
 
     private void search(QueryController c) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        Method m = c.getClass().getDeclaredMethod("onSearch");
+        Method m = c.getClass().getDeclaredMethod("onRefresh");
         m.setAccessible(true);
         m.invoke(c);
     }
@@ -405,30 +395,6 @@ public class QueryTest extends NbTestCase implements TestConstants {
     private void cleanupStoredIssues() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, ClassNotFoundException, NoSuchMethodException, NoSuchMethodException, InstantiationException, InvocationTargetException {
         getRepository().getIssueCache().storeArchivedQueryIssues(QUERY_NAME, new String[0]);
         getRepository().getIssueCache().storeQueryIssues(QUERY_NAME, new String[0]);
-    }
-
-    private class LogHandler extends Handler {
-        final String msg;
-        boolean done = false;
-        public LogHandler(String msg) {
-            this.msg = msg;
-        }
-
-        @Override
-        public void publish(LogRecord record) {
-            if(!done) {
-                done = record.getMessage().startsWith(msg);
-            }
-        }
-
-        @Override
-        public void flush() {
-        }
-
-        @Override
-        public void close() throws SecurityException {
-        }
-
     }
 
     private class QueryListener implements PropertyChangeListener {

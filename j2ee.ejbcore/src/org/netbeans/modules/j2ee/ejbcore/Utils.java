@@ -240,7 +240,7 @@ public class Utils {
         for (int i = 0; i < allProjects.length; i++) {
             boolean isEJBModule = false;
             J2eeModuleProvider j2eeModuleProvider = allProjects[i].getLookup().lookup(J2eeModuleProvider.class);
-            if (j2eeModuleProvider != null && j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.EJB)) {
+            if (j2eeModuleProvider != null && j2eeModuleProvider.getJ2eeModule().getType().equals(J2eeModule.Type.EJB)) {
                 isEJBModule = true;
             }
 
@@ -258,7 +258,7 @@ public class Utils {
     // TODO: dongmei More check needed
     public static boolean isEE6WebProject(Project enterpriseProject) {
         /*J2eeModule module = enterpriseProject.getLookup().lookup(J2eeModuleProvider.class).getJ2eeModule();
-        if (module.getModuleType().equals(J2eeModule.WAR)) { // TODO: dongmei: check EE platform version too
+        if (module.getType().equals(J2eeModule.Type.WAR)) { // TODO: dongmei: check EE platform version too
             return true;
         } else {
             return false;
@@ -266,35 +266,9 @@ public class Utils {
         return false; 
     }
     
-//TODO: this method should be removed and org.netbeans.modules.j2ee.common.Util.isJavaEE5orHigher(Project project)
-//should be called instead of it
-    public static boolean isJavaEE5orHigher(Project project) {
-        if (project == null) {
-            return false;
-        }
-        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
-        if (j2eeModuleProvider != null) {
-            J2eeModule j2eeModule = j2eeModuleProvider.getJ2eeModule();
-            if (j2eeModule != null) {
-                Object type = j2eeModule.getModuleType();
-                double version = Double.parseDouble(j2eeModule.getModuleVersion());
-                if (J2eeModule.EJB.equals(type) && (version > 2.1)) {
-                    return true;
-                }
-                if (J2eeModule.WAR.equals(type) && (version > 2.4)) {
-                    return true;
-                }
-                if (J2eeModule.CLIENT.equals(type) && (version > 1.4)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    
     public static boolean isAppClient(Project project) {
         J2eeModuleProvider module = project.getLookup().lookup(J2eeModuleProvider.class);
-        return  (module != null) ? module.getJ2eeModule().getModuleType().equals(J2eeModule.CLIENT) : false;
+        return  (module != null) ? module.getJ2eeModule().getType().equals(J2eeModule.Type.CAR) : false;
     }
     
     /**

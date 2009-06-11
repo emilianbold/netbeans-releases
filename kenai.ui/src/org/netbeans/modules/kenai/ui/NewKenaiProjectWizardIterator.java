@@ -268,14 +268,18 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
 
         if (createChat) {
             handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class, "CTL_CreatingChatProgress"), 6);
-            final KenaiFeature f = Kenai.getDefault().getProject(newPrjName).createProjectFeature(
-                    newPrjName,
-                    NbBundle.getMessage(NewKenaiProjectWizardIterator.class, "CTL_ChatRoomName", newPrjName),
-                    NbBundle.getMessage(NewKenaiProjectWizardIterator.class, "CTL_ChatRoomDescription", newPrjName),
-                    KenaiService.Names.XMPP_CHAT,
-                    null,
-                    null,
-                    null);
+            KenaiProject project = Kenai.getDefault().getProject(newPrjName);
+            if (project.getFeatures(KenaiService.Type.CHAT).length==0) {
+                //chat already exist
+                final KenaiFeature f = project.createProjectFeature(
+                        newPrjName,
+                        NbBundle.getMessage(NewKenaiProjectWizardIterator.class, "CTL_ChatRoomName", newPrjName),
+                        NbBundle.getMessage(NewKenaiProjectWizardIterator.class, "CTL_ChatRoomDescription", newPrjName),
+                        KenaiService.Names.XMPP_CHAT,
+                        null,
+                        null,
+                        null);
+            }
         }
 
         // Open the project in Dashboard

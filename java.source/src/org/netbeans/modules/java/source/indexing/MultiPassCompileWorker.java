@@ -199,7 +199,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                         continue;
                     }
                     boolean[] main = new boolean[1];
-                    if (context.isSupplementaryFilesIndexing() || javaContext.checkSums.checkAndSet(active.indexable.getURL(), types, jt.getElements())) {
+                    if (javaContext.checkSums.checkAndSet(active.indexable.getURL(), types, jt.getElements()) || context.isSupplementaryFilesIndexing() || context.isAllFilesIndexing()) {
                         javaContext.sa.analyse(trees, jt, fileManager, active, previous.addedTypes, main);
                     } else {
                         final Set<ElementHandle<TypeElement>> aTypes = new HashSet<ElementHandle<TypeElement>>();

@@ -65,7 +65,8 @@ public class ExecutionSupportTest extends NbTestCase {
     }
 
     public void testExecutionSupport() throws Exception {
-        List<String> res = ImportUtils.parseEnvironment("configure -DM=\"CPU = 6\" CPPFLAGS=-g3 CFLAGS=\'-g3 -gdwarf-2\' -DH --help -DM=\"'6\" CXXFLAGS=\"-g3 -gdwarf-2\"");
+        String source = "configure -DM=\"CPU = 6\" CPPFLAGS=-g3 CFLAGS=\'-g3 -gdwarf-2\' -DH --help -DM=\"'6\" CXXFLAGS=\"-g3 -gdwarf-2\"";
+        List<String> res = ImportUtils.parseEnvironment(source);
         assert res.size() == 3;
         for(int i = 0; i < res.size(); i++){
             String p = res.get(i);
@@ -94,5 +95,22 @@ public class ExecutionSupportTest extends NbTestCase {
                 assert "CXXFLAGS=\"-g3 -gdwarf-2\"".equals(p);
             }
         }
+        // org.openide.util.Utilities do not work
+//        int i = 0;
+//        for(String p: Utilities.parseParameters(source)){
+//            if (!p.startsWith("-") && p.indexOf("=") > 0) {
+//                if (TRACE) {
+//                    System.err.println(p);
+//                }
+//                if (i == 0) {
+//                    assert "CPPFLAGS=-g3".equals(p);
+//                } else if (i == 1) {
+//                    assert "CFLAGS=-g3 -gdwarf-2".equals(p);
+//                } else if (i == 2) {
+//                    assert "CXXFLAGS=-g3 -gdwarf-2".equals(p);
+//                }
+//                i++;
+//            }
+//        }
     }
 }

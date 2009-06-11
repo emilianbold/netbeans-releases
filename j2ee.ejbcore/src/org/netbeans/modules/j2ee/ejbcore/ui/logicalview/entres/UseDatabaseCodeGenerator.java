@@ -241,7 +241,7 @@ public class UseDatabaseCodeGenerator implements CodeGenerator {
         holder.setModuleDataSources(j2eeModuleProvider.getModuleDatasources());
         holder.setServerDataSources(j2eeModuleProvider.getServerDatasources());
         
-        if (j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.EJB)) {
+        if (j2eeModuleProvider.getJ2eeModule().getType().equals(J2eeModule.Type.EJB)) {
             
             MetadataModel<EjbJarMetadata> metadataModel = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject).getMetadataModel();
             metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
@@ -268,7 +268,7 @@ public class UseDatabaseCodeGenerator implements CodeGenerator {
             
         }
         else
-        if (j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.WAR)) {
+        if (j2eeModuleProvider.getJ2eeModule().getType().equals(J2eeModule.Type.WAR)) {
             
             MetadataModel<WebAppMetadata> metadataModel = WebModule.getWebModule(fileObject).getMetadataModel();
             metadataModel.runReadAction(new MetadataModelAction<WebAppMetadata, Void>() {
