@@ -333,6 +333,11 @@ public class CslJar extends JarWithModuleAttributes {
                     registerPathRecognizer(doc, mimeType);
                     registerEditorServices(doc, mimeType, cslLanguageClass, linePrefix, displayName, hasStructureScanner, hasDeclarationFinder);
                 }
+
+                // TL Indexer factory
+                Element mimeFolder = mkdirs(doc, "Editors/" + mimeType); // NOI18N
+                Element item = createFile(doc, mimeFolder, "org-netbeans-modules-csl-core-TLIndexerFactory.instance"); // NOI18N
+                setFileAttribute(doc, item, "instanceOf", "stringvalue", "org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"); //NOI18N
             }
         }
     }
