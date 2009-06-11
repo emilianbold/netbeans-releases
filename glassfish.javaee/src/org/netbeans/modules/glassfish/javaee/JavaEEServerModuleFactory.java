@@ -58,6 +58,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationExceptio
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModuleFactory;
+import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
@@ -132,12 +133,23 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                 }
             }
 
-            final String installRoot = commonModule.getInstanceProperties().get(
+            final String glassfishRoot = commonModule.getInstanceProperties().get(
                     GlassfishModule.GLASSFISH_FOLDER_ATTR);
+            final String installRoot = commonModule.getInstanceProperties().get(
+                    GlassfishModule.INSTALL_FOLDER_ATTR);
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    ensureEclipseLinkSupport(installRoot);
-                    ensureCometSupport(installRoot);
+                    ensureEclipseLinkSupport(glassfishRoot);
+                    ensureCometSupport(glassfishRoot);
+                    // lookup the javadb register service here and use it.
+                    RegisteredDerbyServer db = Lookup.getDefault().lookup(RegisteredDerbyServer.class);
+                    if (null != db) {
+                        File ir = new File(installRoot);
+                        File f = new File(ir,"javadb");
+                        if (f.exists() && f.isDirectory() && f.canRead()) {
+                            db.initialize(f.getAbsolutePath());
+                        }
+                    }
                 }
             });
         } else {

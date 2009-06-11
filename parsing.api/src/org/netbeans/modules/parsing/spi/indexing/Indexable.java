@@ -168,9 +168,9 @@ public final class Indexable {
         @Override
         public Context createContext(FileObject indexFolder, URL rootURL, 
                 String indexerName, int indexerVersion, IndexFactoryImpl factory,
-                boolean followUpJob, boolean checkForEditorModifications,
+                boolean followUpJob, boolean checkForEditorModifications, boolean allFilesJob,
                 CancelRequest cancelRequest) throws IOException {
-            return new Context(indexFolder, rootURL, indexerName, indexerVersion, factory, followUpJob, checkForEditorModifications, cancelRequest);
+            return new Context(indexFolder, rootURL, indexerName, indexerVersion, factory, followUpJob, checkForEditorModifications, allFilesJob, cancelRequest);
         }
 
         @Override

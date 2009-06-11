@@ -127,6 +127,18 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         return testExecutionEnvironment;
     }
 
+    @Override
+    public String getName() {
+        String name = super.getName();
+        ExecutionEnvironment env = getTestExecutionEnvironment();
+        if (env == null) {
+            return name;
+        } else {
+            return String.format("%s [%s]", name, env);
+        }
+    }
+
+
     public static void writeFile(File file, CharSequence content) throws IOException {
         Writer writer = new FileWriter(file);
         writer.write(content.toString());

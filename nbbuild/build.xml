@@ -112,24 +112,6 @@ made subject to such option by the copyright holder.
         <include name="javahelp/external/jh*.jar"/>
       </fileset>
     </path>
-    <!-- Sanity check: -->
-    <pathconvert pathsep=":" property="class.files.in.antsrc">
-        <path>
-            <fileset dir="antsrc">
-                <include name="**/*.class"/>
-            </fileset>
-        </path>
-    </pathconvert>
-    <fail>
-        <condition>
-            <not>
-                <equals arg1="${class.files.in.antsrc}" arg2=""/>
-            </not>
-        </condition>
-        You have stray *.class files in ${basedir}/antsrc which you must remove.
-        Probably you failed to clean your sources before updating. Try: ant clean
-    </fail>
-    <!-- OK, continue: -->
     <available property="have.javahelp" file="../apisupport.harness/external" type="dir"/>
     <javac srcdir="antsrc" destdir="build/antclasses" deprecation="true" debug="${build.compiler.debug}" source="1.5" target="1.5">
       <classpath refid="bootstrap-cp"/>

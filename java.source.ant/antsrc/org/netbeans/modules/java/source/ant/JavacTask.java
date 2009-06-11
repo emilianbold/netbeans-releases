@@ -110,7 +110,7 @@ public class JavacTask extends Javac {
 
                     try {
                         p.log("Forcing rescan of: " + f.getAbsolutePath(), Project.MSG_VERBOSE);
-                        IndexingManager.getDefault().refreshIndex(f.toURI().toURL(), null);
+                        IndexingManager.getDefault().refreshIndex(f.toURI().toURL(), null, false);
                     } catch (MalformedURLException ex) {
                         p.log(ex.getMessage(), ex, Project.MSG_VERBOSE);
                     }

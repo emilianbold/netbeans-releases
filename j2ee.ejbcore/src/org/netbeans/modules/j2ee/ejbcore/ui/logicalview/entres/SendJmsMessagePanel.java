@@ -232,7 +232,7 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
     }
     
     private void setupProjectDestinationsOption() {
-        if (J2eeModule.EJB.equals(provider.getJ2eeModule().getModuleType())) {
+        if (J2eeModule.Type.EJB.equals(provider.getJ2eeModule().getType())) {
             projectDestinationsRadio.setEnabled(true);
             setupAddButton();
             projectDestinationsRadio.setSelected(true);
@@ -244,7 +244,7 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
     }
     
     private void setupMessageDrivenOption() {
-        mdbRadio.setEnabled(J2eeModule.EJB.equals(provider.getJ2eeModule().getModuleType()) || Utils.isPartOfJ2eeApp(provider));
+        mdbRadio.setEnabled(J2eeModule.Type.EJB.equals(provider.getJ2eeModule().getType()) || Utils.isPartOfJ2eeApp(provider));
     }
     
     private void setupAddButton() {

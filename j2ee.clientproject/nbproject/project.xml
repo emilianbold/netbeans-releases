@@ -397,10 +397,8 @@ made subject to such option by the copyright holder.
                         <test/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.j2ee.sun.appsrv</code-name-base>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.j2ee.sun.appsrv81</code-name-base>
+                        <code-name-base>org.netbeans.modules.j2eeserver</code-name-base>
+                        <test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.j2ee.sun.ddui</code-name-base>
