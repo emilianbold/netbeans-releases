@@ -40,6 +40,7 @@
 package org.netbeans.modules.glassfish.common.wizards;
 
 import java.io.File;
+import java.io.IOException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -73,7 +74,9 @@ public class RetrieverTest implements Retriever.Updater {
     }
 
     private void deleteJunk(File d) {
-        if (!d.exists()) return;
+        if (!d.exists()) {
+            return;
+        }
         if (d.isFile()) {
             d.delete();
         } else { // directory
@@ -85,69 +88,81 @@ public class RetrieverTest implements Retriever.Updater {
     }
 
     @Test
-    public void testRun() {
-        File f = new File("zzzssszzzq");
-        File ff = new File("zzzssszzzq");
-        Retriever r;
-        message = "";
-        status = "";
-        r = new Retriever(f,"http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.txt",
-                "http://java.net/download/",
-                "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip", this,
-                "glassfishv3");
-        r.run();
-        assert message.startsWith("Download & Install completed in") : message;
-        assert status.equals("")  : status ;
-        deleteJunk(f);
-        deleteJunk(ff);
-        message = "";
-        status = "";
-        // bad location source url -- falls back to the default url
-        r = new Retriever(f,"http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.tx",
-                "http://java.net/download/",
-                "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip", this,
-                "glassfishv3");
-        r.run();
-        assert message.startsWith("Download & Install completed in") : message;
-        assert status.equals("")  : status ;
-        deleteJunk(f);
-        deleteJunk(ff);
-        message = "";
-        status = "";
-        // bad url prefix
-        r = new Retriever(f,"http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.txt",
-                "http://java.tent/download/",
-                "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip", this,
-                "glassfishv3");
-        r.run();
-        assert message.startsWith("Invalid URL: http://java.tent/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip") : message;
-        assert status.equals("I/O Exception: java.tent")  : status ;
-        deleteJunk(f);
-        deleteJunk(ff);
-        message = "";
-        status = "";
-        // bad url prefix
-        r = new Retriever(f,"http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.txt",
-                "http://java.tent/download/",
-                "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip", this,
-                "glassfishv3");
-        r.run();
-        assert message.startsWith("Invalid URL: http://java.tent/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip") : message;
-        assert status.equals("I/O Exception: java.tent")  : status ;
-        deleteJunk(f);
-        deleteJunk(ff);
-        message = "";
-        status = "";
-        // bad url prefix
-        r = new Retriever(f,"http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.tx",
-                "http://java.tent/download/",
-                "http://java.net/download/glassfish/v3-FFFprelude/release/glassfish-v3-prelude-ml.zip", this,
-                "glassfishv3");
-        r.run();
-        assert message.startsWith("Invalid URL: http://download.java.net/glassfish/v3-FFFprelude/release/glassfish-v3-prelude-ml.zip") : message;
-        assert status.equals("I/O Exception: http://download.java.net/glassfish/v3-FFFprelude/release/glassfish-v3-prelude-ml.zip")  : status ;
-        deleteJunk(f);
-        deleteJunk(ff);
+    public void testRun() throws IOException {
+        TestServer server = TestServer.runSimpleServer(4444, 5);
+        try {
+            String tmp = System.getProperty("java.io.tmpdir");
+            File file;
+            if (tmp != null) {
+                file = new File(tmp, "retrieverTest");
+            } else {
+                file = new File("retrieverTest");
+            }
+            file.deleteOnExit();
+
+            Retriever r;
+
+            try {
+                message = "";
+                status = "";
+                r = new Retriever(file, "http://localhost:" + server.getPort() + "/glassfishv3/preludezipfilename.txt",
+                        "http://localhost:" + server.getPort() + "/",
+                        "http://localhost:" + server.getPort() + "/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip", this,
+                        "glassfishv3");
+                r.run();
+                assert message.startsWith("Download & Install completed in") : message;
+                assert status.equals("") : status;
+            } finally {
+                deleteJunk(file);
+            }
+
+            try {
+                message = "";
+                status = "";
+                // bad location source url -- falls back to the default url
+                r = new Retriever(file, "http://localhost:" + server.getPort() + "/glassfishv3/preludezipfilename.tx",
+                        "http://localhost:" + server.getPort() + "/",
+                        "http://localhost:" + server.getPort() + "/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip", this,
+                        "glassfishv3");
+                r.run();
+                assert message.startsWith("Download & Install completed in") : message;
+                assert status.equals("") : status;
+            } finally {
+                deleteJunk(file);
+            }
+
+            try {
+                message = "";
+                status = "";
+                // bad url prefix
+                r = new Retriever(file, "http://localhost:" + server.getPort() + "/glassfishv3/preludezipfilename.txt",
+                        "http://java.tent/download/",
+                        "http://localhost:" + server.getPort() + "/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip", this,
+                        "glassfishv3");
+                r.run();
+                assert message.startsWith("Invalid URL: http://java.tent/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip") : message;
+                assert status.equals("I/O Exception: java.tent") : status;
+            } finally {
+                deleteJunk(file);
+            }
+
+            try {
+                message = "";
+                status = "";
+                // bad url prefix
+                r = new Retriever(file,"http://localhost:" + server.getPort() + "/glassfishv3/preludezipfilename.tx",
+                        "http://java.tent/download/",
+                        "http://java.net/download/glassfish/v3-FFFprelude/release/glassfish-v3-prelude-ml.zip", this,
+                        "glassfishv3");
+                r.run();
+                assert message.startsWith("Invalid URL: http://download.java.net/glassfish/v3-FFFprelude/release/glassfish-v3-prelude-ml.zip") : message;
+                assert status.equals("I/O Exception: http://download.java.net/glassfish/v3-FFFprelude/release/glassfish-v3-prelude-ml.zip")  : status ;
+            } finally {
+                deleteJunk(file);
+            }
+        } finally {
+            server.cancel();
+        }
     }
 
     /**
