@@ -245,22 +245,6 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         insertBreak("switch ($a) {\n    case 'a':\n        echo 'a';\n        break 1;^\n}", "switch ($a) {\n    case 'a':\n        echo 'a';\n        break 1;\n    ^\n}");
     }
 
-    public void testInsertBreakInSwitch4() throws Exception {
-        insertBreak("switch ($a) {\n    case 'a':\n        echo 'a';\n    break;^\n}", "switch ($a) {\n    case 'a':\n        echo 'a';\n    break;\n    ^\n}");
-    }
-
-    public void testInsertBreakInSwitch5() throws Exception {
-        insertBreak("switch ($a) {\n    case 'a':\n        for (;;) {\n            echo 'a';\n        }\n        break;^\n}", "switch ($a) {\n    case 'a':\n        for (;;) {\n            echo 'a';\n        }\n        break;\n    ^\n}");
-    }
-
-    public void testInsertBreakInSwitch6() throws Exception {
-        insertBreak("switch ($a) {\n    case 'a':\n        for (;;):\n            echo 'a';\n        endfor;\n        break;^\n}", "switch ($a) {\n    case 'a':\n        for (;;):\n            echo 'a';\n        endfor;\n        break;\n    ^\n}");
-    }
-
-    public void testInsertBreakInSwitch7() throws Exception {
-        insertBreak("switch ($a) {\n    case 'a':\n        switch ($b) {\n            case 'b':\n                echo 'b';\n                break;\n        }\n       \n    break;^\n}", "switch ($a) {\n    case 'a':\n        switch ($b) {\n            case 'b':\n                echo 'b';\n                break;\n        }\n       \n    break;\n    ^\n}");
-    }
-
     public void testInsertBreakInSwitch8() throws Exception {
         insertBreak("switch ($a) {\n    case 'a':\n        switch ($b) {\n            case 'b':\n                echo 'b';\n                break;^\n        }\n       \nbreak;^\n}", "switch ($a) {\n    case 'a':\n        switch ($b) {\n            case 'b':\n                echo 'b';\n                break;\n            ^\n        }\n       \nbreak;\n}");
     }
@@ -699,23 +683,6 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         }
     }
     
-    public void testContComment2() throws Exception {
-        // No auto-// on new lines
-        if (PHPBracketCompleter.CONTINUE_COMMENTS) {
-            insertBreak("   //  ^", "   //  \n   //  ^");
-        } else {
-            insertBreak("   //  ^", "   //  \n   ^");
-        }
-    }
-    
-    public void testContComment3() throws Exception {
-        // No auto-// on new lines
-        if (PHPBracketCompleter.CONTINUE_COMMENTS) {
-            insertBreak("   //\t^", "   //\t\n   //\t^");
-        } else {
-            insertBreak("   //\t^", "   //\t\n   ^");
-        }
-    }
 // XXX: currently failing, but should be fixed
 //    public void testContComment4() throws Exception {
 //        insertBreak("// foo\n^", "// foo\n\n^");
