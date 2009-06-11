@@ -79,6 +79,14 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
         testIndentInFile("testfiles/indent/after_switch_break.php");
     }
 
+    public void testAfterSwitchBreak1() throws Exception{
+        testIndentInFile("testfiles/indent/after_switch_break_1.php");
+    }
+
+    public void testBreakInWhile() throws Exception{
+        testIndentInFile("testfiles/indent/break_in_while.php");
+    }
+
     public void testMultilineFunctionCall() throws Exception{
         testIndentInFile("testfiles/indent/multiline_function_call.php");
     }
