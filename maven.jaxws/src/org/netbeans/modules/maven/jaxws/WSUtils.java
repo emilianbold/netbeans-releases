@@ -323,8 +323,8 @@ public class WSUtils {
     public static boolean isEJB(Project project) {
         J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
         if (j2eeModuleProvider != null) {
-            Object moduleType = j2eeModuleProvider.getJ2eeModule().getModuleType();
-            if (J2eeModule.EJB.equals(moduleType)) {
+            J2eeModule.Type moduleType = j2eeModuleProvider.getJ2eeModule().getType();
+            if (J2eeModule.Type.EJB.equals(moduleType)) {
                 return true;
             }
         }
@@ -334,8 +334,8 @@ public class WSUtils {
     public static boolean isWeb(Project project) {
         J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
         if (j2eeModuleProvider != null) {
-            Object moduleType = j2eeModuleProvider.getJ2eeModule().getModuleType();
-            if (J2eeModule.WAR.equals(moduleType)) {
+            J2eeModule.Type moduleType = j2eeModuleProvider.getJ2eeModule().getType();
+            if (J2eeModule.Type.WAR.equals(moduleType)) {
                 return true;
             }
         }

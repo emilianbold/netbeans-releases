@@ -63,6 +63,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
@@ -137,8 +138,8 @@ public class CallEjbGenerator {
         Project enterpriseProject = FileOwnerQuery.getOwner(referencingFO);
         EnterpriseReferenceContainer erc = enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
 
-        boolean enterpriseProjectIsJavaEE5 = Utils.isJavaEE5orHigher(enterpriseProject);
-        boolean nodeProjectIsJavaEE5 = Utils.isJavaEE5orHigher(nodeProject);
+        boolean enterpriseProjectIsJavaEE5 = Util.isJavaEE5orHigher(enterpriseProject);
+        boolean nodeProjectIsJavaEE5 = Util.isJavaEE5orHigher(nodeProject);
 
         //#157918
         ContainerClassPathModifier ccpm = enterpriseProject.getLookup().lookup(ContainerClassPathModifier.class);
@@ -181,9 +182,9 @@ public class CallEjbGenerator {
             J2eeModuleProvider j2eeModuleProvider = enterpriseProject.getLookup().lookup(J2eeModuleProvider.class);
             String referencedEjbName = getEjbName(referencedFO, referencedClassName);
             try {
-                if (referencedClassName != null && j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.WAR)) {
+                if (referencedClassName != null && j2eeModuleProvider.getJ2eeModule().getType().equals(J2eeModule.Type.WAR)) {
                     j2eeModuleProvider.getConfigSupport().bindEjbReference(ejbReferenceName, referencedEjbName);
-                } else if (j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.EJB)) {
+                } else if (j2eeModuleProvider.getJ2eeModule().getType().equals(J2eeModule.Type.EJB)) {
                     String ejbName = getEjbName(referencingFO, referencingClassName);
                     String ejbType = getEjbType(referencingFO, referencingClassName);
                     if (ejbName != null && ejbType != null) {

@@ -3013,7 +3013,7 @@ public class HgCommand {
      * @return List of the command's output or an exception if one occured
      */
     private static List<String> exec(List<? extends Object> command) throws HgException{
-        if(!Mercurial.getInstance().isGoodVersion()){
+        if(!Mercurial.getInstance().isAvailable()){
             return new ArrayList<String>();
         }
         return execEnv(command, null);
@@ -3370,7 +3370,7 @@ public class HgCommand {
      */
     private static boolean execCheckClone(List<String> command) {
         final boolean[] isRepository = new boolean[] {false};
-        if(!Mercurial.getInstance().isGoodVersion()){
+        if(!Mercurial.getInstance().isAvailable(true, false)){
             Mercurial.LOG.info("Unsupported hg version");
             return isRepository[0];
         }
