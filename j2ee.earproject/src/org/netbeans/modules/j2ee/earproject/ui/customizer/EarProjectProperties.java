@@ -622,9 +622,9 @@ public final class EarProjectProperties {
                     return null;
                 }
                 mod = (Module) dd.createBean(Application.MODULE);
-                if (jm.getModuleType() == J2eeModule.EJB) {
+                if (J2eeModule.Type.EJB.equals(jm.getType())) {
                     mod.setEjb(path); // NOI18N
-                } else if (jm.getModuleType() == J2eeModule.WAR) {
+                } else if (J2eeModule.Type.WAR.equals(jm.getType())) {
                     Web w = mod.newWeb(); // createBean("Web");
                     w.setWebUri(path);
                     FileObject tmp = aa.getScriptFile();
@@ -648,9 +648,9 @@ public final class EarProjectProperties {
                     }
                     w.setContextRoot(contextPath);
                     mod.setWeb(w);
-                } else if (jm.getModuleType() == J2eeModule.CONN) {
+                } else if (J2eeModule.Type.RAR.equals(jm.getType())) {
                     mod.setConnector(path);
-                } else if (jm.getModuleType() == J2eeModule.CLIENT) {
+                } else if (J2eeModule.Type.CAR.equals(jm.getType())) {
                     mod.setJava(path);
                 }
             }
@@ -842,11 +842,11 @@ public final class EarProjectProperties {
      * Acquires modules (in the form of projects) from "JAVA EE Modules" not from the deployment descriptor (application.xml).
      * <p>
      * The reason is that for JAVA EE 5 the deployment descriptor is not compulsory.
-     * @param moduleType the type of module, see {@link J2eeModule J2eeModule constants}. 
+     * @param moduleType the type of module, see {@link J2eeModule.Type J2eeModule constants}.
      *                   If it is <code>null</code> then all modules are returned.
      * @return list of EAR project subprojects.
      */
-    static List<Project> getApplicationSubprojects(List<ClassPathSupport.Item> items, Object moduleType) {
+    static List<Project> getApplicationSubprojects(List<ClassPathSupport.Item> items, J2eeModule.Type moduleType) {
         List<Project> projects = new ArrayList<Project>(items.size());
         for (ClassPathSupport.Item item : items) {
             if (item.getType() != ClassPathSupport.Item.TYPE_ARTIFACT || item.getArtifact() == null) {
@@ -859,7 +859,7 @@ public final class EarProjectProperties {
             }
             if (moduleType == null) {
                 projects.add(vcpiProject);
-            } else if (moduleType.equals(jmp.getJ2eeModule().getModuleType())) {
+            } else if (moduleType.equals(jmp.getJ2eeModule().getType())) {
                 projects.add(vcpiProject);
             }
         }

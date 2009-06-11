@@ -282,7 +282,7 @@ public class EarProjectPropertiesTest extends NbTestCase {
         createData.setName(warName);
         createData.setServerInstanceID(this.serverID);
         createData.setSourceStructure(WebProjectUtilities.SRC_STRUCT_BLUEPRINTS);
-        createData.setJavaEEProfile(EarProjectGenerator.getAcceptableProfile(Profile.JAVA_EE_5, serverID, J2eeModule.WAR));
+        createData.setJavaEEProfile(EarProjectGenerator.getAcceptableProfile(Profile.JAVA_EE_5, serverID, J2eeModule.Type.WAR));
         createData.setContextPath("/" + warName);
         AntProjectHelper webHelper = WebProjectUtilities.createProject(createData);
 
