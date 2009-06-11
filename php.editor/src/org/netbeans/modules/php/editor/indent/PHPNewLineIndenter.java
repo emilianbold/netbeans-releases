@@ -73,7 +73,14 @@ public class PHPNewLineIndenter {
             new ScopeDelimiter(PHPTokenId.PHP_SEMICOLON, 0),
             new ScopeDelimiter(PHPTokenId.PHP_OPENTAG, 0),
             new ScopeDelimiter(PHPTokenId.PHP_CURLY_OPEN, indentSize),
-            new ScopeDelimiter(PHPTokenId.PHP_CASE, indentSize)
+            new ScopeDelimiter(PHPTokenId.PHP_CASE, indentSize),
+            new ScopeDelimiter(PHPTokenId.PHP_IF, indentSize),
+            new ScopeDelimiter(PHPTokenId.PHP_ELSE, indentSize),
+            new ScopeDelimiter(PHPTokenId.PHP_ELSEIF, indentSize),
+            new ScopeDelimiter(PHPTokenId.PHP_WHILE, indentSize),
+            new ScopeDelimiter(PHPTokenId.PHP_DO, indentSize),
+            new ScopeDelimiter(PHPTokenId.PHP_FOR, indentSize),
+            new ScopeDelimiter(PHPTokenId.PHP_FOREACH, indentSize)
         );
     }
 
