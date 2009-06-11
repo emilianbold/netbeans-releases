@@ -79,7 +79,7 @@ public class QMakeExecSupport extends ExecutionSupport {
     public void addProperties(Sheet.Set set) {
         createProperties();
         this.sheetSet = set;
-        set.put(createEnvironmentProperty(PROP_FILE_PARAMS, getString("PROP_CMAKE_PARAMS"), getString("HINT_CMAKE_PARAMS"))); // NOI18N);
+        set.put(createParamsProperty(PROP_FILE_PARAMS, getString("PROP_QMAKE_PARAMS"), getString("HINT_QMAKE_PARAMS"))); // NOI18N);
         set.put(qmakeRunDirectory);
         set.put(qmakeCommandProperty);
         set.put(qmakeEnvironmentProperty);
