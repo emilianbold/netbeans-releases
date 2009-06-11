@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
 import org.netbeans.modules.bugtracking.ui.issuetable.IssueTable;
+import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.nodes.PropertySupport.ReadOnly;
 import org.openide.util.NbBundle;
@@ -133,6 +134,22 @@ public abstract class Query implements Comparable<Query> {
      * @return {@link Repository}
      */
     public abstract Repository getRepository();
+
+    /**
+     * XXX should this realy be in the spi?
+     * @param query
+     */
+    public void open() {
+        QueryAction.openQuery(this, getRepository());
+    }
+
+    /**
+     * XXX should this realy be in the spi?
+     * @param query
+     */
+    public static void openNew(Repository repository) {
+        QueryAction.openQuery(null, repository);
+    }
 
     /*********
      * DATA
