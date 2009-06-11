@@ -24,6 +24,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.php.project</friend>
+                <friend>org.netbeans.modules.php.symfony</friend>
                 <package>org.netbeans.modules.php.api.phpmodule</package>
                 <package>org.netbeans.modules.php.spi.phpmodule</package>
             </friend-packages>
