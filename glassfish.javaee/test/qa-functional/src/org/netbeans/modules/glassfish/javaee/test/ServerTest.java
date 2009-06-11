@@ -64,6 +64,7 @@ public class ServerTest extends NbTestCase {
     public static Test suite() {
         Configuration conf = NbModuleSuite.createConfiguration(ServerTest.class).
         addTest(AddRemovePreludeInstanceMethods.class, "addPreludeInstance").
+        addTest(AddRemovePreludeInstanceMethods.class, "checkJavaDB").
         addTest(AddRemovePreludeInstanceMethods.class, "removePreludeInstance");
         if (null != GlassfishInstanceProvider.getEe6()) {
             return NbModuleSuite.create(conf.addTest(AddRemoveV3InstanceMethods.class, "addV3Instance").
