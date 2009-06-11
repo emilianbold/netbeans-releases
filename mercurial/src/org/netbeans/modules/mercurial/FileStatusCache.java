@@ -885,7 +885,7 @@ public class FileStatusCache {
             return folderFiles;
         }
         
-        if(!Mercurial.getInstance().isGoodVersion()) 
+        if(!Mercurial.getInstance().isAvailable())
             return folderFiles;
         
         if(interestingFiles == null){

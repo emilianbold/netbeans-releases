@@ -147,11 +147,11 @@ public final class SendJMSGenerator {
         
         if (messageDestination != null) {
             try {
-                if (j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.WAR)) {
+                if (j2eeModuleProvider.getJ2eeModule().getType().equals(J2eeModule.Type.WAR)) {
                     //in the current implementation, reference name is the same as the destination name...
                     j2eeModuleProvider.getConfigSupport().bindMessageDestinationReference(
                             messageDestination.getName(), factoryName, messageDestination.getName(), messageDestination.getType());
-                } else if (j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.EJB)) {
+                } else if (j2eeModuleProvider.getJ2eeModule().getType().equals(J2eeModule.Type.EJB)) {
                         //in the current implementation, reference name is the same as the destination name...
                         bindMessageDestinationReferenceForEjb(j2eeModuleProvider, fileObject, className,
                                 messageDestination.getName(), factoryName, messageDestination.getName(), messageDestination.getType());

@@ -123,6 +123,8 @@ public class FaceletsSetupPanelVisual extends javax.swing.JPanel implements Help
 
         jpSetup.setAlignmentX(0.2F);
         jpSetup.setAlignmentY(0.2F);
+        jpSetup.setDoubleBuffered(false);
+        jpSetup.setEnabled(false);
 
         jcbDebug.setSelected(frameworkSetup.isDebugFacelets());
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/web/frameworks/facelets/ui/Bundle"); // NOI18N
@@ -184,8 +186,8 @@ public class FaceletsSetupPanelVisual extends javax.swing.JPanel implements Help
                     .add(jlFacesServletMapping))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jpSetupLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jtfFacesServletMapping, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE)
-                    .add(jtfFacesSuffix, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE))
+                    .add(jtfFacesServletMapping, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 325, Short.MAX_VALUE)
+                    .add(jtfFacesSuffix, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 325, Short.MAX_VALUE))
                 .addContainerGap())
             .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 509, Short.MAX_VALUE)
             .add(jpSetupLayout.createSequentialGroup()
@@ -218,13 +220,14 @@ public class FaceletsSetupPanelVisual extends javax.swing.JPanel implements Help
                 .add(jpSetupLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jlFacesServletMapping)
                     .add(jtfFacesServletMapping, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(17, 17, Short.MAX_VALUE))
+                .add(28, 28, Short.MAX_VALUE))
         );
 
         tabbedPane.addTab(bundle.getString("LBL_TAB_CONFIGURATION"), jpSetup); // NOI18N
 
         jpLibrary.setAlignmentX(0.2F);
         jpLibrary.setAlignmentY(0.2F);
+        jpLibrary.setEnabled(false);
         jpLibrary.setPreferredSize(new java.awt.Dimension(0, 0));
 
         jtFolder.setToolTipText(bundle.getString("HINT_Facelets_Directory")); // NOI18N
@@ -303,11 +306,11 @@ public class FaceletsSetupPanelVisual extends javax.swing.JPanel implements Help
                         .add(rbRegisteredLibrary)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(jpLibraryLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(cbLibraries, 0, 334, Short.MAX_VALUE)
+                            .add(cbLibraries, 0, 322, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, jpLibraryLayout.createSequentialGroup()
                                 .add(jpLibraryLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(jtVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 240, Short.MAX_VALUE)
-                                    .add(jtFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 240, Short.MAX_VALUE))
+                                    .add(jtVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 227, Short.MAX_VALUE)
+                                    .add(jtFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 227, Short.MAX_VALUE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(jbBrowse))))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, rbNewLibrary, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 485, Short.MAX_VALUE)
@@ -339,7 +342,7 @@ public class FaceletsSetupPanelVisual extends javax.swing.JPanel implements Help
                     .add(jtVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(4, 4, 4)
                 .add(rbNoneLibrary)
-                .add(15, 15, Short.MAX_VALUE))
+                .add(23, 23, Short.MAX_VALUE))
         );
 
         tabbedPane.addTab(bundle.getString("LBL_TAB_LIBRARIES"), jpLibrary); // NOI18N
