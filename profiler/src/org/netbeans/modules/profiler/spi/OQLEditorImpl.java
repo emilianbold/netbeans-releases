@@ -1,3 +1,4 @@
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -39,34 +40,27 @@
 
 package org.netbeans.modules.profiler.spi;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import javax.swing.JEditorPane;
+import javax.swing.text.Document;
+import org.netbeans.modules.profiler.heapwalk.oql.OQLEngine;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
 abstract public class OQLEditorImpl {
-    final protected PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     public final static String VALIDITY_PROPERTY = "document#valid";
+    public static interface ValidationCallback {
+        void callback(boolean lexingResult);
+    }
+
+    final static protected ValidationCallback getValidationCallback(Document document) {
+        return (ValidationCallback)document.getProperty(ValidationCallback.class);
+    }
+
+    final static protected OQLEngine getEngine(Document document) {
+        return (OQLEngine)document.getProperty(OQLEngine.class);
+    }
+
     public abstract JEditorPane getEditorPane();
-
-    public synchronized void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-        pcs.removePropertyChangeListener(propertyName, listener);
-    }
-
-    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
-        pcs.removePropertyChangeListener(listener);
-    }
-
-    public synchronized void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-        pcs.addPropertyChangeListener(propertyName, listener);
-    }
-
-    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
-        pcs.addPropertyChangeListener(listener);
-    }
-
-    
 }
