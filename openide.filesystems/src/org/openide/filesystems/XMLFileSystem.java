@@ -637,7 +637,12 @@ public final class XMLFileSystem extends AbstractFileSystem {
                 names.add(name);
                 children.add(child);
             } else {
+                // already exists
                 retVal = children.get(idx);
+                Set<URL> mergedContext = new HashSet<URL>();
+                mergedContext.addAll(Arrays.asList(retVal.getUrlContext()));
+                mergedContext.addAll(Arrays.asList(child.getUrlContext()));
+                retVal.setUrlContext(mergedContext);
             }
 
             return retVal;
@@ -668,6 +673,13 @@ public final class XMLFileSystem extends AbstractFileSystem {
             urlContext.toArray(retVal);
 
             return retVal;
+        }
+
+        void setUrlContext(Collection<? extends URL> context) {
+            if (context != null) {
+                urlContext.clear();
+                urlContext.addAll(context);
+            }
         }
 
         String getURI() {
