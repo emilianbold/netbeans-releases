@@ -77,6 +77,11 @@ public class LogHandler extends Handler {
             }
         }
     }
+
+    public boolean isDone() {
+        return done;
+    }
+    
     @Override
     public void flush() { }
     @Override
