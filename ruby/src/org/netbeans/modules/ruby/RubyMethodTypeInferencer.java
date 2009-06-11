@@ -72,7 +72,14 @@ final class RubyMethodTypeInferencer {
     private final boolean fast;
 
     static {
-        METHOD_TYPES.put("<=>", RubyType.INTEGER);
+        // some implementations of the comparison method below may return nil,
+        // such as in Module or Class
+        METHOD_TYPES.put("<=>", new RubyType(RubyType.FIXNUM, RubyType.NIL_CLASS));
+        METHOD_TYPES.put("<", new RubyType(RubyType.BOOLEAN, RubyType.NIL_CLASS));
+        METHOD_TYPES.put(">", new RubyType(RubyType.BOOLEAN, RubyType.NIL_CLASS));
+        METHOD_TYPES.put("<=", new RubyType(RubyType.BOOLEAN, RubyType.NIL_CLASS));
+        METHOD_TYPES.put("=>", new RubyType(RubyType.BOOLEAN, RubyType.NIL_CLASS));
+
         METHOD_TYPES.put("to_s", RubyType.STRING);
         METHOD_TYPES.put("to_str", RubyType.STRING);
         METHOD_TYPES.put("to_string", RubyType.STRING);
