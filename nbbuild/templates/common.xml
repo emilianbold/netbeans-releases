@@ -88,6 +88,9 @@ made subject to such option by the copyright holder.
         <property name="jar-excludes" value="**/*.java,**/*.form,**/package.html,**/doc-files/"/>
         <property name="module.jar.verifylinkageignores" value=""/>
         <property name="cp.extra" value=""/>
+        <tstamp>
+            <format property="module.build.started.time" pattern="yyyy-MM-dd'T'HH:mm:ss.SSSZ"/>
+        </tstamp>
     </target>
 
     <target name="-release.dir">

@@ -245,22 +245,6 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         insertBreak("switch ($a) {\n    case 'a':\n        echo 'a';\n        break 1;^\n}", "switch ($a) {\n    case 'a':\n        echo 'a';\n        break 1;\n    ^\n}");
     }
 
-    public void testInsertBreakInSwitch4() throws Exception {
-        insertBreak("switch ($a) {\n    case 'a':\n        echo 'a';\n    break;^\n}", "switch ($a) {\n    case 'a':\n        echo 'a';\n    break;\n    ^\n}");
-    }
-
-    public void testInsertBreakInSwitch5() throws Exception {
-        insertBreak("switch ($a) {\n    case 'a':\n        for (;;) {\n            echo 'a';\n        }\n        break;^\n}", "switch ($a) {\n    case 'a':\n        for (;;) {\n            echo 'a';\n        }\n        break;\n    ^\n}");
-    }
-
-    public void testInsertBreakInSwitch6() throws Exception {
-        insertBreak("switch ($a) {\n    case 'a':\n        for (;;):\n            echo 'a';\n        endfor;\n        break;^\n}", "switch ($a) {\n    case 'a':\n        for (;;):\n            echo 'a';\n        endfor;\n        break;\n    ^\n}");
-    }
-
-    public void testInsertBreakInSwitch7() throws Exception {
-        insertBreak("switch ($a) {\n    case 'a':\n        switch ($b) {\n            case 'b':\n                echo 'b';\n                break;\n        }\n       \n    break;^\n}", "switch ($a) {\n    case 'a':\n        switch ($b) {\n            case 'b':\n                echo 'b';\n                break;\n        }\n       \n    break;\n    ^\n}");
-    }
-
     public void testInsertBreakInSwitch8() throws Exception {
         insertBreak("switch ($a) {\n    case 'a':\n        switch ($b) {\n            case 'b':\n                echo 'b';\n                break;^\n        }\n       \nbreak;^\n}", "switch ($a) {\n    case 'a':\n        switch ($b) {\n            case 'b':\n                echo 'b';\n                break;\n            ^\n        }\n       \nbreak;\n}");
     }
@@ -699,23 +683,6 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         }
     }
     
-    public void testContComment2() throws Exception {
-        // No auto-// on new lines
-        if (PHPBracketCompleter.CONTINUE_COMMENTS) {
-            insertBreak("   //  ^", "   //  \n   //  ^");
-        } else {
-            insertBreak("   //  ^", "   //  \n   ^");
-        }
-    }
-    
-    public void testContComment3() throws Exception {
-        // No auto-// on new lines
-        if (PHPBracketCompleter.CONTINUE_COMMENTS) {
-            insertBreak("   //\t^", "   //\t\n   //\t^");
-        } else {
-            insertBreak("   //\t^", "   //\t\n   ^");
-        }
-    }
 // XXX: currently failing, but should be fixed
 //    public void testContComment4() throws Exception {
 //        insertBreak("// foo\n^", "// foo\n\n^");
@@ -1010,55 +977,6 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         // exception is fixed the test won't actually pass; that's an expected
         // fail I will deal with later
         insertChar("x = %q((^))", 'a', "x = %q((a^))");
-    }
-    
-    
-    public void test110332() throws Exception {
-        String before = "args = {\n" +
-            "      :name => args[:name],\n" +
-            "      :status => :missing,\n" +
-            "      :s2_test_comments => comments, \n" +
-            "      :metric => '', \n" +
-            "      :duration => '', \n" +
-            "      :setback? => true,\n" +
-            "      :progress? => false, :compare_metric => 0, ^:compare_duration => 0}\n" +
-            "    OpenStruct.new\n" +
-                            "";
-        String after = "args = {\n" +
-            "      :name => args[:name],\n" +
-            "      :status => :missing,\n" +
-            "      :s2_test_comments => comments, \n" +
-            "      :metric => '', \n" +
-            "      :duration => '', \n" +
-            "      :setback? => true,\n" +
-            "      :progress? => false, :compare_metric => 0, \n      ^:compare_duration => 0}\n" +
-            "    OpenStruct.new\n" +
-                            "";
-        insertBreak(before, after);
-    }
-    
-    public void test110332b() throws Exception {
-        String before = "args = {\n" +
-            "      :name => args[:name],\n" +
-            "      :status => :missing,\n" +
-            "      :s2_test_comments => comments, \n" +
-            "      :metric => '', \n" +
-            "      :duration => '', \n" +
-            "      :setback? => true,\n" +
-            "      :progress? => false, :compare_metric => 0,^ :compare_duration => 0}\n" +
-            "    OpenStruct.new\n" +
-                            "";
-        String after = "args = {\n" +
-            "      :name => args[:name],\n" +
-            "      :status => :missing,\n" +
-            "      :s2_test_comments => comments, \n" +
-            "      :metric => '', \n" +
-            "      :duration => '', \n" +
-            "      :setback? => true,\n" +
-            "      :progress? => false, :compare_metric => 0,\n      ^:compare_duration => 0}\n" +
-            "    OpenStruct.new\n" +
-                            "";
-        insertBreak(before, after);
     }
     
 //    public void testLogicalRange1() throws Exception {
