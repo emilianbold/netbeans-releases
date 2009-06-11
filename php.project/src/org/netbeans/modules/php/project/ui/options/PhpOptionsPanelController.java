@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.project.ui.options;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Collection;
@@ -62,11 +63,11 @@ import org.openide.util.lookup.Lookups;
 /**
  * @author Tomas Mysik
  */
-public class PhpOptionsPanelController extends OptionsPanelController implements ChangeListener {
+public class PhpOptionsPanelController extends OptionsPanelController implements ChangeListener, PropertyChangeListener {
 
     // do not change, php frameworks use it!
     private static final String TAB_FOLDER = "PHP/Options/"; // NOI18N
-    private final PhpOptionsPanel phpOptionsPanel = new PhpOptionsPanel();
+    private PhpOptionsPanel phpOptionsPanel = null;
     private final Collection<? extends AdvancedOption> options;
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     // @GuardedBy(this)
@@ -76,7 +77,6 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
 
     public PhpOptionsPanelController() {
         options = Lookups.forPath(TAB_FOLDER).lookupAll(AdvancedOption.class);
-        phpOptionsPanel.addChangeListener(this);
     }
 
     private synchronized Map<OptionsPanelController, AdvancedOption> getControllers2Options() {
@@ -202,10 +202,13 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
     public JComponent getComponent(Lookup masterLookup) {
          if (pane == null) {
             pane = new JTabbedPane();
+            phpOptionsPanel = new PhpOptionsPanel();
+            phpOptionsPanel.addChangeListener(this);
             pane.add(NbBundle.getMessage(PhpOptionsPanelController.class, "LBL_GeneralOPtions"), phpOptionsPanel);
 
             for (Entry<OptionsPanelController, AdvancedOption> e : getControllers2Options().entrySet()) {
                 OptionsPanelController controller = e.getKey();
+                controller.addPropertyChangeListener(this);
                 AdvancedOption option = e.getValue();
                 pane.add(option.getDisplayName(), controller.getComponent(controller.getLookup()));
             }
@@ -284,5 +287,9 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
             propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
         }
         propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        propertyChangeSupport.firePropertyChange(evt);
     }
 }
