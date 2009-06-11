@@ -39,48 +39,66 @@
 
 package org.netbeans.modules.php.api.util;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.php.api.ui.SearchPanel;
 import org.openide.util.Parameters;
 
 /**
  * Miscellaneous file utilities.
  * @author Tomas Mysik
  */
-public final class FileUtils {
-
-    private FileUtils() {
+public final class UiUtils {
+    private UiUtils() {
     }
 
     /**
-     * Find all the files (absolute path) with the given "filename" os user's PATH.
-     * <p>
-     * This method is suitable for *nix as well as windows.
-     * @param filename the name of a file to find.
-     * @return list of absolute paths of found files.
+     * Utility class for searching which is done in a separate thread so the UI is not blocked.
      */
-    public static List<String> findFileOnUsersPath(String filename) {
-        Parameters.notNull("filename", filename);
+    public static final class SearchWindow {
+        private SearchWindow() {
+        }
 
-        String path = System.getenv("PATH"); // NOI18N
-        if (path == null) {
-            return Collections.<String>emptyList();
-        }
-        // on linux there are usually duplicities in PATH
-        Set<String> dirs = new LinkedHashSet<String>(Arrays.asList(path.split(File.pathSeparator)));
-        List<String> found = new ArrayList<String>(dirs.size());
-        for (String d : dirs) {
-            File file = new File(d, filename);
-            if (file.isFile()) {
-                found.add(FileUtil.normalizeFile(file).getAbsolutePath());
+        /**
+         * Open a serch window, start searching (in a separate thread) and display the results.
+         * @param support {@link SearchWindowSupport search window support}
+         * @return selected item (can be <code>null</code>) if user clicks OK button, <code>null</code> otherwise
+         */
+        public static String search(SearchWindowSupport support) {
+            Parameters.notNull("support", support);
+
+            SearchPanel panel = SearchPanel.create(support);
+            if (panel.open()) {
+                return panel.getSelectedItem();
             }
+            return null;
         }
-        return found;
+
+        public interface SearchWindowSupport {
+            /**
+             * Detector which runs in a separate thread and its results are displayed to a user.
+             * @return list of search result
+             */
+            List<String> detect();
+            /**
+             * Get the title of the window.
+             * @return the title of the window
+             */
+            String getWindowTitle();
+            /**
+             * Get the title of the list of items.
+             * @return the title of the list of items
+             */
+            String getListTitle();
+            /**
+             * Get the "important" part (e.g. "PHPUnit script") of message that is displayed during running of a {@link #detect() detect} method.
+             * @return the "important" part (e.g. "PHPUnit script") of message that is displayed during running of a {@link #detect() detect} method
+             */
+            String getPleaseWaitPart();
+            /**
+             * Get message that is displayed when no items are found.
+             * @return message that is displayed when no items are found
+             */
+            String getNoItemsFound();
+        }
     }
 }

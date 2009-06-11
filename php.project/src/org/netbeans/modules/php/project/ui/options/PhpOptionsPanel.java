@@ -60,6 +60,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.classpath.GlobalIncludePathSupport;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.IncludePathUiSupport;
@@ -660,21 +661,29 @@ public class PhpOptionsPanel extends JPanel {
     }//GEN-LAST:event_phpInterpreterBrowseButtonActionPerformed
 
     private void phpInterpreterSearchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_phpInterpreterSearchButtonActionPerformed
-        SearchPanel.Strings strings = new SearchPanel.Strings(
-                NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpInterpretersTitle"),
-                NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpInterpreters"),
-                NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpInterpretersPleaseWaitPart"),
-                NbBundle.getMessage(PhpOptionsPanel.class, "LBL_NoPhpInterpretersFound"));
-        SearchPanel searchPanel = SearchPanel.create(strings, new SearchPanel.Detector() {
+        String phpInterpreter = UiUtils.SearchWindow.search(new UiUtils.SearchWindow.SearchWindowSupport() {
             public List<String> detect() {
                 return PhpEnvironment.get().getAllPhpInterpreters();
             }
-        });
-        if (searchPanel.open()) {
-            String phpInterpreter = searchPanel.getSelectedItem();
-            if (phpInterpreter != null) {
-                phpInterpreterTextField.setText(phpInterpreter);
+
+            public String getWindowTitle() {
+                return NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpInterpretersTitle");
             }
+
+            public String getListTitle() {
+                return NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpInterpreters");
+            }
+
+            public String getPleaseWaitPart() {
+                return NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpInterpretersPleaseWaitPart");
+            }
+
+            public String getNoItemsFound() {
+                return NbBundle.getMessage(PhpOptionsPanel.class, "LBL_NoPhpInterpretersFound");
+            }
+        });
+        if (phpInterpreter != null) {
+            phpInterpreterTextField.setText(phpInterpreter);
         }
     }//GEN-LAST:event_phpInterpreterSearchButtonActionPerformed
 
@@ -683,21 +692,30 @@ public class PhpOptionsPanel extends JPanel {
     }//GEN-LAST:event_phpUnitBrowseButtonActionPerformed
 
     private void phpUnitSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_phpUnitSearchButtonActionPerformed
-        SearchPanel.Strings strings = new SearchPanel.Strings(
-                NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpUnitsTitle"),
-                NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpUnits"),
-                NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpUnitsPleaseWaitPart"),
-                NbBundle.getMessage(PhpOptionsPanel.class, "LBL_NoPhpUnitsFound"));
-        SearchPanel searchPanel = SearchPanel.create(strings, new SearchPanel.Detector() {
+        String phpUnit = UiUtils.SearchWindow.search(new UiUtils.SearchWindow.SearchWindowSupport() {
+
             public List<String> detect() {
                 return PhpEnvironment.get().getAllPhpUnits();
             }
-        });
-        if (searchPanel.open()) {
-            String phpUnit = searchPanel.getSelectedItem();
-            if (phpUnit != null) {
-                phpUnitTextField.setText(phpUnit);
+
+            public String getWindowTitle() {
+                return NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpUnitsTitle");
             }
+
+            public String getListTitle() {
+                return NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpUnits");
+            }
+
+            public String getPleaseWaitPart() {
+                return NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpUnitsPleaseWaitPart");
+            }
+
+            public String getNoItemsFound() {
+                return NbBundle.getMessage(PhpOptionsPanel.class, "LBL_NoPhpUnitsFound");
+            }
+        });
+        if (phpUnit != null) {
+            phpUnitTextField.setText(phpUnit);
         }
     }//GEN-LAST:event_phpUnitSearchButtonActionPerformed
 
