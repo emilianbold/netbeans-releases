@@ -96,7 +96,7 @@ public class ChatTopComponent extends TopComponent {
     private static ChatTopComponent instance;
 
     /** path to the icon used by the component and its open action */
-    static final String ICON_PATH = "org/netbeans/modules/kenai/collab/resources/online.png"; // NOI18N
+    static final String ICON_PATH = "org/netbeans/modules/kenai/collab/resources/chat.png"; // NOI18N
     static final String PLUS = "org/netbeans/modules/kenai/collab/resources/plus.png"; // NOI18N
 
     private static final String PREFERRED_ID = "ChatTopComponent"; // NOI18N

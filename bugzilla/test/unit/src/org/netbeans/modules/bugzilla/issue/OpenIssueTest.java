@@ -39,13 +39,13 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
-import java.util.logging.Handler;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugzilla.*;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugzilla.TestConstants;
+import org.netbeans.modules.bugzilla.TestUtil;
+import org.netbeans.modules.bugzilla.LogHandler;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 
 /**
@@ -83,57 +83,10 @@ public class OpenIssueTest extends NbTestCase implements TestConstants {
         LogHandler handler = new LogHandler("open finish", LogHandler.Compare.ENDS_WITH);
         issue.open();
         handler.waitUntilDone();
-        assertTrue(handler.done);
+        assertTrue(handler.isDone());
     }
 
     private BugzillaRepository getRepository() {
         return TestUtil.getRepository(REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD);
-    }
-
-    private static class LogHandler extends Handler {
-        private static final long TIMEOUT = 10 * 1000;
-        private final String msg;
-        private boolean done = false;
-        private final Compare compare;
-        private enum Compare {
-            STARTS_WITH,
-            ENDS_WITH
-        }
-        public LogHandler(String msg, Compare compare) {
-            this.msg = msg;
-            this.compare = compare;
-            Bugzilla.LOG.addHandler(this);
-        }
-
-        @Override
-        public void publish(LogRecord record) {
-            if(!done) {
-                switch (compare) {
-                    case STARTS_WITH :
-                        done = record.getMessage().startsWith(msg);
-                        break;
-                    case ENDS_WITH :
-                        done = record.getMessage().endsWith(msg);
-                        break;
-                    default:
-                        throw new IllegalStateException("wrong value " + compare);
-                }
-            }
-        }
-        @Override
-        public void flush() { }
-        @Override
-        public void close() throws SecurityException { }
-
-        void waitUntilDone() throws InterruptedException {
-            long t = System.currentTimeMillis();
-            while(!done) {
-                Thread.sleep(200);
-                if(System.currentTimeMillis() - t > TIMEOUT) {
-//                    throw new IllegalStateException("timeout");
-                    return;
-                }
-            }
-        }
     }
 }

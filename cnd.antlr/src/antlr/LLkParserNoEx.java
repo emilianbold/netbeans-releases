@@ -38,6 +38,10 @@ public class LLkParserNoEx extends LLkParser {
         super(lexer, k_);
     }
     
+    public LLkParserNoEx(TokenStream lexer, int k_, int initialBufferCapacity) {
+        super(lexer, k_, initialBufferCapacity);
+    }
+
     @Override
     public void match(int t) {
         if (LA(1) == t) {

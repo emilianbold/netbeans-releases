@@ -23,8 +23,14 @@ public class LLkParser extends Parser {
 	}
 
 	public LLkParser(TokenStream lexer, int k_) {
+            k = k_;
+            TokenBuffer tokenBuf = new TokenBuffer(lexer);
+            setTokenBuffer(tokenBuf);
+        }
+
+        public LLkParser(TokenStream lexer, int k_, int initialBufferCapacity) {
 		k = k_;
-		TokenBuffer tokenBuf = new TokenBuffer(lexer);
+		TokenBuffer tokenBuf = new TokenBuffer(lexer, initialBufferCapacity);
 		setTokenBuffer(tokenBuf);
 	}
 

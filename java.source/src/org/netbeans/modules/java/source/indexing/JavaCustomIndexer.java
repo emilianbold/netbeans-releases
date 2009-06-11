@@ -172,7 +172,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                             _af.removeAll(removedFiles);
                             compileResult.addedTypes.retainAll(removedTypes); //Changed types
 
-                            if (!context.isSupplementaryFilesIndexing()) {
+                            if (!context.isSupplementaryFilesIndexing() && !context.isAllFilesIndexing()) {
                                 compileResult.modifiedTypes.addAll(_rt);
                                 Map<URL, Set<URL>> root2Rebuild = findDependent(context.getRootURI(), javaContext.cpInfo.getClassIndex(), compileResult.modifiedTypes);
                                 Set<URL> urls = root2Rebuild.get(context.getRootURI());
