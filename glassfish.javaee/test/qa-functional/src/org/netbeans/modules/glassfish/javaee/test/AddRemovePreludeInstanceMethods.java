@@ -83,11 +83,11 @@ public class AddRemovePreludeInstanceMethods extends NbTestCase {
                         gip.getDirectDownloadUrl(), new Retriever.Updater() {
 
                     public void updateMessageText(String msg) {
-                        System.out.println(msg);
+                        //System.out.println(msg);
                     }
 
                     public void updateStatusText(String status) {
-                        System.out.println(status);
+                        //System.out.println(status);
                     }
 
                     public void clearCancelState() {
@@ -152,6 +152,12 @@ public class AddRemovePreludeInstanceMethods extends NbTestCase {
                 if (null != instances) 
                     if (instances.length > 1)
                         fail("too many instances");
+            File ff = new File(Util._PRELUDE_LOCATION);
+            System.out.println("Deleting: "+ff.getAbsolutePath());
+            Util.deleteJunk(ff.getParentFile());
+            ff = new File(ff.getParentFile().getAbsolutePath()+"1");
+            System.out.println("Deleting: "+ff.getAbsolutePath());
+            Util.deleteJunk(ff);
                 return;
             }
             
