@@ -57,10 +57,12 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.modules.j2ee.clientproject.TestPlatformProvider;
 import org.netbeans.modules.j2ee.clientproject.test.TestUtil;
+import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  * @author Andrei Badea
@@ -83,18 +85,17 @@ public class ClassPathProviderImplTest extends NbTestCase {
     public void setUp() throws Exception {
         // setup some platforms -- needed for testing findClassPath(FileObject, ClassPath.BOOT)
         FileObject scratch = TestUtil.makeScratchDir(this);
+
         FileObject defaultPlatformBootRoot = scratch.createFolder(DEFAULT_PLATFORM_ROOT);
         ClassPath defBCP = ClassPathSupport.createClassPath(new URL[] { defaultPlatformBootRoot.getURL() });
-        
-        TestUtil.setLookup(new Object[] {
-            new TestPlatformProvider(defBCP, defBCP)
-        });
-        
+
+        MockLookup.setLayersAndInstances(new TestPlatformProvider(defBCP, defBCP));
+
         assertTrue("No Java platforms found.", JavaPlatformManager.getDefault().getInstalledPlatforms().length >= 2);
         
         // setup the project
         File f = new File(getDataDir().getAbsolutePath(), "projects/ApplicationClient1");
-        project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
+        project = (Project) ProjectSupport.openProject(f);
         Sources src = project.getLookup().lookup(Sources.class);
         SourceGroup[] groups = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         

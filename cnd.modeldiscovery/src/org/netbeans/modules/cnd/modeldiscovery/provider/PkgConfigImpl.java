@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,6 +57,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.RemoteFile;
+import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
@@ -70,7 +72,7 @@ import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 public class PkgConfigImpl implements PkgConfig {
 
     private HashMap<String, PackageConfigurationImpl> configurations = new HashMap<String, PackageConfigurationImpl>();
-    private Map<String, Pair> seachBase;
+    private Map<String, List<Pair>> seachBase;
     private String drivePrefix;
     private PlatformInfo pi;
 
@@ -115,30 +117,52 @@ public class PkgConfigImpl implements PkgConfig {
 
     private void initPackagesFromSet(CompilerSet set) {
         if (pi.isWindows()){
-            String baseDirectory = null;
-            if (set == null) {
-                set = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.toFlavor("Cygwin", Platform.PLATFORM_WINDOWS)); // NOI18N
-            }
-            if (set != null){
-                baseDirectory = set.getDirectory();
-                //"C:\cygwin\bin"
-                if (baseDirectory != null && baseDirectory.endsWith("bin")){ // NOI18N
-                    drivePrefix = baseDirectory.substring(0, baseDirectory.length()-4);
-                    baseDirectory = baseDirectory.substring(0, baseDirectory.length()-3)+"lib/pkgconfig/"; // NOI18N
+            // at first find pkg-config.exe in paths
+            String baseDirectory = getPkgConfihPath();
+            if (baseDirectory == null) {
+                if (set == null) {
+                    set = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.toFlavor("Cygwin", Platform.PLATFORM_WINDOWS)); // NOI18N
+                }
+                if (set != null){
+                    baseDirectory = set.getDirectory();
+                    //"C:\cygwin\bin"
+                    if (baseDirectory != null && baseDirectory.endsWith("bin")){ // NOI18N
+                        drivePrefix = baseDirectory.substring(0, baseDirectory.length()-4);
+                        baseDirectory = baseDirectory.substring(0, baseDirectory.length()-3)+"lib/pkgconfig/"; // NOI18N
+                    }
+                }
+                if (baseDirectory == null) {
+                    drivePrefix = "c:/cygwin"; // NOI18N
+                    baseDirectory = "c:/cygwin/lib/pkgconfig/"; // NOI18N
                 }
             }
-            if (baseDirectory == null) {
-                drivePrefix = "c:/cygwin"; // NOI18N
-                baseDirectory = "c:/cygwin/lib/pkgconfig/"; // NOI18N
-            }
-            initPackages(envPaths(baseDirectory)); // NOI18N
+            initPackages(envPaths(baseDirectory), true); // NOI18N
         } else {
             //initPackages("/net/elif/export1/sside/as204739/pkgconfig/"); // NOI18N
-            initPackages(envPaths("/usr/lib/pkgconfig/")); // NOI18N
+            initPackages(envPaths("/usr/lib/pkgconfig/"), false); // NOI18N
         }
     }
 
-    private void initPackages(List<String> folders) {
+    private String getPkgConfihPath(){
+        for(String path : Path.getPath()){
+            File file = new File(path+File.separator+"pkg-config.exe"); // NOI18N
+            if (file.exists()) {
+                path = path.replace('\\', '/'); // NOI18N
+                if (path.endsWith("/")){ // NOI18N
+                    path = path.substring(0, path.length()-1);
+                }
+                int i = path.lastIndexOf('/'); // NOI18N
+                if (i > 0){
+                    path = path.substring(0, i + 1 )+"lib/pkgconfig/"; // NOI18N
+                    return path;
+                }
+                return null;
+            }
+        }
+        return null;
+    }
+
+    private void initPackages(List<String> folders, boolean isWindows) {
         Set<File> done = new HashSet<File>();
         for(String folder:folders) {
             File file = RemoteFile.create(pi.getExecutionEnvironment(), folder);
@@ -152,7 +176,7 @@ public class PkgConfigImpl implements PkgConfig {
                     if (name.endsWith(".pc") && fpc.canRead() && fpc.isFile()) { // NOI18N
                         String pkgName = name.substring(0, name.length()-3);
                         PackageConfigurationImpl pc = new PackageConfigurationImpl(pkgName);
-                        readConfig(fpc, pc);
+                        readConfig(fpc, pc,  isWindows);
                         configurations.put(pkgName, pc);
                     }
                 }
@@ -165,10 +189,20 @@ public class PkgConfigImpl implements PkgConfig {
     }
 
     public ResolvedPath getResolvedPath(String include) {
-        Map<String, Pair> map = getLibraryItems();
-        Pair pair = map.get(include);
-        if (pair != null){
-            return new ResolvedPathImpl(pair.path, pair.configurations);
+        Map<String, List<Pair>> map = getLibraryItems();
+        List<Pair> pairs = map.get(include);
+        if (pairs != null && pairs.size() > 0){
+            if (true || pairs.size() == 1) {
+                // get first found package
+                return new ResolvedPathImpl(pairs.get(0).path, pairs.get(0).configurations);
+            } else {
+                String path = pairs.get(0).path;
+                Set<PackageConfiguration> set = new LinkedHashSet<PackageConfiguration>();
+                for(Pair p : pairs){
+                    set.addAll(p.configurations);
+                }
+                return new ResolvedPathImpl(path, set);
+            }
         }
         return null;
     }
@@ -179,20 +213,24 @@ public class PkgConfigImpl implements PkgConfig {
         for(String pkg: sort){
             traceConfig(pkg, false);
         }
-        Map<String, Pair> res = getLibraryItems();
+        Map<String, List<Pair>> res = getLibraryItems();
         System.out.println("Known includes size: "+res.size()); // NOI18N
         sort = new ArrayList<String>(res.keySet());
         Collections.sort(sort);
         for(String key: sort){
-            Pair value = res.get(key);
-            StringBuilder buf = new StringBuilder();
-            for(PackageConfiguration pc : value.configurations){
-                if (buf.length()>0){
-                    buf.append(", "); // NOI18N
+            List<Pair> pairs = res.get(key);
+            if (pairs != null) {
+                for(Pair value : pairs) {
+                    StringBuilder buf = new StringBuilder();
+                    for(PackageConfiguration pc : value.configurations){
+                        if (buf.length()>0){
+                            buf.append(", "); // NOI18N
+                        }
+                        buf.append(pc.getName());
+                    }
+                    System.out.println(key+"\t"+value.path+"\t["+buf.toString()+"]"); // NOI18N
                 }
-                buf.append(pc.getName());
             }
-            System.out.println(key+"\t"+value.path+"\t["+buf.toString()+"]"); // NOI18N
         }
 
     }
@@ -258,8 +296,8 @@ public class PkgConfigImpl implements PkgConfig {
         }
     }
 
-    private Map<String, Pair> getLibraryItems(){
-        Map<String, Pair> res = null;
+    private Map<String, List<Pair>> getLibraryItems(){
+        Map<String, List<Pair>> res = null;
         if (seachBase != null) {
             res = seachBase;
         }
@@ -269,7 +307,7 @@ public class PkgConfigImpl implements PkgConfig {
         }
         return res;
     }
-    private Map<String, Pair> _getLibraryItems(){
+    private Map<String, List<Pair>> _getLibraryItems(){
         Map<String, Set<PackageConfiguration>> map = new HashMap<String, Set<PackageConfiguration>>();
         for(String pkg : configurations.keySet()){
             PackageConfigurationImpl pc = configurations.get(pkg);
@@ -293,7 +331,7 @@ public class PkgConfigImpl implements PkgConfig {
                 }
             }
         }
-        Map<String, Pair> res = new HashMap<String, Pair>();
+        Map<String, List<Pair>> res = new HashMap<String, List<Pair>>();
         for (Map.Entry<String, Set<PackageConfiguration>> entry : map.entrySet()) {
             Pair pair = new Pair(entry.getKey(), entry.getValue());
             File dir = RemoteFile.create(pi.getExecutionEnvironment(), entry.getKey());
@@ -302,7 +340,7 @@ public class PkgConfigImpl implements PkgConfig {
         return res;
     }
 
-    private void addLibraryItem(Map<String, Pair> res, Pair pkg, String prefix, File dir, int loop){
+    private void addLibraryItem(Map<String, List<Pair>> res, Pair pkg, String prefix, File dir, int loop){
         if (loop>2) {
             return;
         }
@@ -322,10 +360,17 @@ public class PkgConfigImpl implements PkgConfig {
                         } else {
                             key = prefix+"/"+f.getName(); // NOI18N
                         }
-                        //if (res.containsKey(key) && !pkg.equals(res.get(key))) {
-                        //    System.out.println("Name conflict '"+key+"' in packages '"+pkg+"' and '"+res.get(key)+"'"); // NOI18N
-                        //}
-                        res.put(key, pkg);
+                        List<Pair> list = res.get(key);
+                        if (list == null){
+                            list = new ArrayList<Pair>(1);
+                            res.put(key, list);
+                        }
+                        if (!list.contains(pkg)){
+                            list.add(pkg);
+                            //if (list.size() > 1) {
+                            //    System.out.println("Name conflict '"+key+"' in packages '"+pkg+"' and '"+list.get(0)+"'"); // NOI18N
+                            //}
+                        }
                     }
                 }
             }
@@ -350,7 +395,7 @@ public class PkgConfigImpl implements PkgConfig {
 //Libs: -L${libdir} -lgtk-${target}-2.0
 //Cflags: -I${includedir}/gtk-2.0
 
-    private void readConfig(File file, PackageConfigurationImpl pc) {
+    private void readConfig(File file, PackageConfigurationImpl pc, boolean isWindows) {
         try {
             Map<String, String> vars = new HashMap<String, String>();
             vars.put("pcfiledir", file.getParent()); // NOI18N
@@ -412,6 +457,9 @@ public class PkgConfigImpl implements PkgConfig {
                     int i = line.indexOf("="); // NOI18N
                     String name = line.substring(0, i).trim();
                     String value = line.substring(i+1).trim();
+                    if (isWindows) {
+                        value = fixPrefixPath(name, value, file);
+                    }
                     vars.put(name, expandMacros(value, vars));
                 }
             }
@@ -421,6 +469,61 @@ public class PkgConfigImpl implements PkgConfig {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+    private String fixPrefixPath(String name, String value, File file){
+        //prefix=c:/devel/target/e1cabcfbab6c7ee30ed3ffc781169bba
+        if (name.equals("prefix")){ // NOI18N
+            StringTokenizer st = new StringTokenizer(value, "\\/"); // NOI18N
+            while(st.hasMoreTokens()){
+                String s = st.nextToken();
+                if (s.length() == 32) {
+                    boolean isHashCode = true;
+                    for(int i = 0; i < 32; i++){
+                        char c = s.charAt(i);
+                        switch(c){
+                            case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': // NOI18N
+                            case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': // NOI18N
+                            case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': // NOI18N
+                                continue;
+                            default:
+                                isHashCode = false;
+                                break;
+                        }
+                    }
+                    if (isHashCode) {
+                        file = file.getParentFile();
+                        if (file != null) {
+                            file = file.getParentFile();
+                        }
+                        if (file != null) {
+                            file = file.getParentFile();
+                        }
+                        if (file != null) {
+                            return file.getAbsolutePath();
+                        }
+                    }
+                }
+            }
+            if (value.startsWith("/")) { // NOI18N
+                int i = value.indexOf('/', 1); // NOI18N
+                file = file.getParentFile();
+                if (file != null) {
+                    file = file.getParentFile();
+                }
+                if (file != null) {
+                    file = file.getParentFile();
+                }
+                if (file != null) {
+                    if (i > 0) {
+                        return file.getAbsolutePath()+value.substring(i);
+                    } else {
+                        return file.getAbsolutePath();
+                    }
+                }
+            }
+        }
+        return value;
     }
 
     private String expandMacros(String value, Map<String, String> vars){

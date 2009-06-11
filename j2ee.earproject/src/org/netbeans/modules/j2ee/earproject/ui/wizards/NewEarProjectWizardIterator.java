@@ -55,6 +55,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectCreateData;
 import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel;
@@ -62,11 +63,13 @@ import org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerRun;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
+import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectCreateData;
 import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
@@ -128,7 +131,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
         String name = (String) wiz.getProperty(ProjectLocationWizardPanel.NAME);
         String serverInstanceID = (String) wiz.getProperty(ProjectServerWizardPanel.SERVER_INSTANCE_ID);
-        String j2eeLevel = (String) wiz.getProperty(ProjectServerWizardPanel.J2EE_LEVEL);
+        Profile j2eeLevel = (Profile) wiz.getProperty(ProjectServerWizardPanel.J2EE_LEVEL);
         Boolean createWAR = (Boolean) wiz.getProperty(ProjectServerWizardPanel.CREATE_WAR);
         String warName = null;
         if (createWAR.booleanValue()) {
@@ -161,12 +164,12 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
     
     /** <strong>Package private for unit test only</strong>. */
-    static Set<FileObject> testableInstantiate(File dirF, String name, String j2eeLevel,
+    static Set<FileObject> testableInstantiate(File dirF, String name, Profile j2eeProfile,
             String serverInstanceID, String warName, String ejbJarName, String carName,
             String mainClass, String platformName, String sourceLevel, ProgressHandle handle,
             String librariesDefinition, String serverLibraryName) throws IOException {
         Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
-        AntProjectHelper h = EarProjectGenerator.createProject(dirF, name, j2eeLevel, 
+        AntProjectHelper h = EarProjectGenerator.createProject(dirF, name, j2eeProfile,
                 serverInstanceID, sourceLevel, librariesDefinition, serverLibraryName);
         if (handle != null)
             handle.progress(2);
@@ -200,18 +203,19 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
         Project webProject = null;
         if (null != warName) {
             File webAppDir = FileUtil.normalizeFile(new File(dirF, warName));
-            
+
             WebProjectCreateData createData = new WebProjectCreateData();
             createData.setProjectDir(webAppDir);
             createData.setName(warName);
             createData.setServerInstanceID(serverInstanceID);
             createData.setSourceStructure(WebProjectUtilities.SRC_STRUCT_BLUEPRINTS);
-            createData.setJavaEEVersion(EarProjectGenerator.checkJ2eeVersion(j2eeLevel, serverInstanceID, J2eeModule.WAR));
+            createData.setJavaEEProfile(EarProjectGenerator.getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.Type.WAR));
             createData.setContextPath('/' + warName); //NOI18N
             createData.setJavaPlatformName(platformName);
             createData.setSourceLevel(sourceLevel);
             createData.setLibrariesDefinition(librariesDefinition);
             createData.setServerLibraryName(serverLibraryName);
+
             if (handle != null)
                 handle.progress(NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NewEarProjectWizardIterator_WizardProgress_WAR"), 3);
             AntProjectHelper webHelper = WebProjectUtilities.createProject(createData);
@@ -229,12 +233,19 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
         Project appClient = null;
         if (null != carName) {
             File carDir = FileUtil.normalizeFile(new File(dirF,carName));
+
+            AppClientProjectCreateData createData = new AppClientProjectCreateData();
+            createData.setProjectDir(carDir);
+            createData.setName(carName);
+            createData.setMainClass(mainClass);
+            createData.setJavaEEProfile(EarProjectGenerator.getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.Type.CAR));
+            createData.setServerInstanceID(serverInstanceID);
+            createData.setLibrariesDefinition(librariesDefinition);
+            createData.setServerLibraryName(serverLibraryName);
+
             if (handle != null)
                 handle.progress(NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NewEarProjectWizardIterator_WizardProgress_AppClient"), 5);
-            AntProjectHelper clientHelper = AppClientProjectGenerator.createProject(
-                    carDir, carName, mainClass,
-                    EarProjectGenerator.checkJ2eeVersion(j2eeLevel, serverInstanceID,
-                    J2eeModule.CLIENT), serverInstanceID, librariesDefinition, serverLibraryName);
+            AntProjectHelper clientHelper = AppClientProjectGenerator.createProject(createData);
             if (handle != null)
                 handle.progress(6);
 
@@ -249,11 +260,18 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
         if (null != ejbJarName) {
             File ejbJarDir = FileUtil.normalizeFile(new File(dirF,ejbJarName));
+
+            EjbJarProjectCreateData createData = new EjbJarProjectCreateData();
+            createData.setProjectDir(ejbJarDir);
+            createData.setName(ejbJarName);
+            createData.setJavaEEProfile(EarProjectGenerator.getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.Type.EJB));
+            createData.setServerInstanceID(serverInstanceID);
+            createData.setLibrariesDefinition(librariesDefinition);
+            createData.setServerLibraryName(serverLibraryName);
+
             if (handle != null)
                 handle.progress(NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NewEarProjectWizardIterator_WizardProgress_EJB"), 7);
-            AntProjectHelper ejbHelper = EjbJarProjectGenerator.createProject(ejbJarDir,ejbJarName,
-                    EarProjectGenerator.checkJ2eeVersion(j2eeLevel, serverInstanceID, J2eeModule.EJB), 
-                    serverInstanceID, librariesDefinition, serverLibraryName);
+            AntProjectHelper ejbHelper = EjbJarProjectGenerator.createProject(createData);
             if (handle != null)
                 handle.progress(8);
 

@@ -57,9 +57,8 @@ public class HudsonViewImpl implements HudsonView, OpenableInBrowser {
     private HudsonInstance instance;
     private HudsonPropertiesSupport properties = new HudsonPropertiesSupport();
     
-    public HudsonViewImpl(HudsonInstance instance, String name, String description, String url) {
+    public HudsonViewImpl(HudsonInstance instance, String name, String url) {
         properties.putProperty(VIEW_NAME, name);
-        properties.putProperty(VIEW_DESCRIPTION, description);
         properties.putProperty(VIEW_URL, url);
         
         this.instance = instance;
@@ -67,10 +66,6 @@ public class HudsonViewImpl implements HudsonView, OpenableInBrowser {
     
     public String getName() {
         return properties.getProperty(VIEW_NAME, String.class);
-    }
-    
-    public String getDescription() {
-        return properties.getProperty(VIEW_DESCRIPTION, String.class);
     }
     
     public String getUrl() {

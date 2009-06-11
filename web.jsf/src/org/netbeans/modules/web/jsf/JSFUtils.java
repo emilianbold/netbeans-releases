@@ -69,11 +69,13 @@ public class JSFUtils {
     // the names of bundled jsf libraries
     public static String DEFAULT_JSF_1_1_NAME = "jsf1102";  //NOI18N
     public static String DEFAULT_JSF_1_2_NAME = "jsf12";    //NOI18N
+    public static String DEFAULT_JSF_2_0_NAME = "jsf20";    //NOI18N
     // the name of jstl libraryr
     public static String DEFAULT_JSTL_1_1_NAME = "jstl11";  //NOI18N
     
     public static final String FACES_EXCEPTION = "javax.faces.FacesException"; //NOI18N
     public static final String JSF_1_2__API_SPECIFIC_CLASS = "javax.faces.application.StateManagerWrapper"; //NOI18N
+    public static final String JSF_2_0__API_SPECIFIC_CLASS = "javax.faces.view.Location"; //NOI18N
     public static final String MYFACES_SPAECIFIC_CLASS = "org.apache.myfaces.webapp.StartupServletContextListener"; //NOI18N
     
     /** This method finds out, whether the input file is a folder that contains

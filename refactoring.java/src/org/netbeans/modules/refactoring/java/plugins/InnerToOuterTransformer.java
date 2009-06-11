@@ -51,7 +51,6 @@ import javax.lang.model.element.*;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.GeneratorUtilities;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
@@ -141,6 +140,35 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                     rewrite(arg0, make.addNewClassArgument(arg0, make.Identifier(thisString)));
                 }
             }
+        } else if (refactoring.getReferenceName() != null && currentElement != null
+                // nested class will be moved to new file
+                && outer != null && ((TypeElement) outer).getNestingKind() == NestingKind.TOP_LEVEL) {
+            // 163852: inner class has to be treated especially; inner == nested + not static
+            // translate all new NotMovingInner() -> referenceName.new NotMovingInner() in moved nested class
+            Element enclElm = currentElement.getEnclosingElement();
+            ExpressionTree primary = arg0.getEnclosingExpression();
+            Element primaryElm = null;
+            if (primary != null) {
+                // be aware of Outer.this.new NotMovingInner() -> referenceName.new NotMovingInner()
+                // and also new NotMovingInner().new NotMovingInnerInner() >referenceName.new NotMovingInner().new NotMovingInnerInner()
+                primaryElm = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), primary));
+                primaryElm = primary != null ? workingCopy.getTypes().asElement(primaryElm.asType()) : null;
+            }
+            if (enclElm != null && enclElm.getKind() == ElementKind.CLASS
+                    && enclElm != inner && isInInnerClass
+                    && !enclElm.getModifiers().contains(Modifier.STATIC)
+                    && ((TypeElement) enclElm).getNestingKind() == NestingKind.MEMBER
+                    && (primaryElm == null && primary == null || primaryElm == outer)) {
+                @SuppressWarnings("unchecked")
+                NewClassTree nju = make.NewClass(
+                        make.Identifier(refactoring.getReferenceName()),
+                        (List<? extends ExpressionTree>) arg0.getTypeArguments(),
+                        // new Outer.Inner() -> referenceName.new Inner()
+                        make.Identifier(enclElm.getSimpleName()),
+                        arg0.getArguments(),
+                        arg0.getClassBody());
+                rewrite(arg0, nju);
+            }
         }
         return super.visitNewClass(arg0, arg1);
     }
@@ -216,7 +244,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                         MethodTree m = (MethodTree) member;
                         if (m.getReturnType()==null) {
                             MethodInvocationTree superCall = (MethodInvocationTree) ((ExpressionStatementTree) m.getBody().getStatements().get(0)).getExpression();
-                            List<ExpressionTree> newArgs = new ArrayList(superCall.getArguments());
+                            List<ExpressionTree> newArgs = new ArrayList<ExpressionTree>(superCall.getArguments());
                             
                             MethodTree newConstructor = null;
                             ExpressionTree exprTree = (ExpressionTree)make.Identifier(variable.getName().toString());

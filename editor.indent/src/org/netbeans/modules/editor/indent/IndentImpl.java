@@ -181,7 +181,7 @@ public final class IndentImpl {
         }
         boolean runUnlocked = false;
         if (indentHandler == null) {
-            LOG.log(Level.SEVERE, "Not locked. Use Indent.lock().", new Exception()); // NOI18N
+            LOG.log(Level.SEVERE, null, new Exception("Not locked. Use Indent.lock().")); // NOI18N
             runUnlocked = true;
             // Attempt to call the tasks unlocked since now it's too late to lock (doc's lock already taken).
             indentHandler = new TaskHandler(true, doc);

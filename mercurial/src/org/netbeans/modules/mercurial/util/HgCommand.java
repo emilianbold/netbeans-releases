@@ -204,6 +204,8 @@ public class HgCommand {
     private static final String HG_RENAME_AFTER_CMD = "-A"; // NOI18N
     private static final String HG_NEWEST_FIRST = "--newest-first"; // NOI18N
 
+    private static final String HG_RESOLVE_CMD = "resolve";             //NOI18N
+    private static final String HG_RESOLVE_MARK_RESOLVED = "--mark";   //NOI18N
 
     // TODO: replace this hack
     // Causes /usr/bin/hgmerge script to return when a merge
@@ -1483,7 +1485,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static void doCat(File repository, File file, File outFile, OutputLogger logger) throws HgException {
-        doCat(repository, file, outFile, "tip", false, logger); //NOI18N
+        doCat(repository, file, outFile, null, false, logger); //NOI18N
     }
 
     /**
@@ -3280,6 +3282,38 @@ public class HgCommand {
             Mercurial.LOG.log(Level.FINE, "createConflictFile(): File: {0} {1}", // NOI18N
                 new Object[] {path + HG_STR_CONFLICT_EXT, success? "Created": "Not Created"} ); // NOI18N
         } catch (IOException e) {
+        }
+    }
+
+    /**
+     * Marks the given file as resolved if the resolve command is available
+     * @param repository
+     * @param file
+     * @param logger
+     * @throws HgException
+     */
+    public static void markAsResolved (File repository, File file, OutputLogger logger) throws HgException {
+        if (file == null) return;
+        if (!HgUtils.hasResolveCommand(Mercurial.getInstance().getVersion())) {
+            return;
+        }
+
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_RESOLVE_CMD);
+        command.add(HG_RESOLVE_MARK_RESOLVED);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        command.add(FileUtil.normalizeFile(file).getAbsolutePath());
+        List<String> list = exec(command);
+
+        if (!list.isEmpty()) {
+            if (isErrorNoRepository(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger);
+             } else if (isErrorAbort(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger);
+             }
         }
     }
 

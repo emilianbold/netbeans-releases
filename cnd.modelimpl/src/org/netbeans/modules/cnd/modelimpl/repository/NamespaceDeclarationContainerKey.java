@@ -43,12 +43,13 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.repository.spi.Key;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public class NamespaceDeclarationContainerKey extends NamespaceKey {
+final public class NamespaceDeclarationContainerKey extends NamespaceKey {
 
     public NamespaceDeclarationContainerKey(CsmNamespace ns) {
         super(ns);
@@ -77,5 +78,15 @@ public class NamespaceDeclarationContainerKey extends NamespaceKey {
 
     /*package*/ NamespaceDeclarationContainerKey(DataInput aStream) throws IOException {
         super(aStream);
+    }
+
+    @Override
+    public Key.Behavior getBehavior() {
+        return Behavior.LargeAndMutable;
+    }
+
+    @Override
+    public boolean hasCache() {
+        return true;
     }
 }

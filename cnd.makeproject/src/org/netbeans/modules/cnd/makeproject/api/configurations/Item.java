@@ -263,7 +263,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             try {
                 file = new File(getAbsPath()).getCanonicalFile();
             } catch (IOException ioe) {
-                file = new File(getAbsPath());
+                file = CndFileUtils.normalizeFile(new File(getAbsPath()));
             }
         }
         return file;
@@ -300,7 +300,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             return;
         }
 
-        MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor) src.getFolder().getConfigurationDescriptor();
+        MakeConfigurationDescriptor makeConfigurationDescriptor = src.getFolder().getConfigurationDescriptor();
         if (makeConfigurationDescriptor == null) {
             return;
         }
@@ -409,7 +409,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (getFolder() == null) {
             return null;
         }
-        return (MakeConfigurationDescriptor) getFolder().getConfigurationDescriptor();
+        return getFolder().getConfigurationDescriptor();
     }
 
     private MakeConfiguration getMakeConfiguration() {
@@ -417,11 +417,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (makeConfigurationDescriptor == null) {
             return null;
         }
-        Configurations confs = makeConfigurationDescriptor.getConfs();
-        if (confs == null) {
-            return null;
-        }
-        return (MakeConfiguration) confs.getActive();
+        return makeConfigurationDescriptor.getActiveConfiguration();
     }
 
     public NativeProject getNativeProject() {

@@ -74,6 +74,7 @@ import org.openide.util.WeakListeners;
 import org.openide.ErrorManager;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -101,8 +102,8 @@ final class PlatformNode extends AbstractNode implements ChangeListener {
     
     private final PlatformProvider pp;
     
-    private PlatformNode(PlatformProvider pp) {
-        super(new PlatformContentChildren(), Lookups.singleton(new JavadocProvider(pp)));
+    private PlatformNode(Project project, PlatformProvider pp) {
+        super(new PlatformContentChildren(), Lookups.fixed(new JavadocProvider(pp), project));
         this.pp = pp;
         this.pp.addChangeListener(this);
         setIconBaseWithExtension(PLATFORM_ICON);
@@ -170,9 +171,9 @@ final class PlatformNode extends AbstractNode implements ChangeListener {
      * and listening on the active platform change
      * @param platformPropName the name of ant property holding the platform name
      */
-    static PlatformNode create(PropertyEvaluator eval, String platformPropName) {
+    static PlatformNode create(Project project, PropertyEvaluator eval, String platformPropName) {
         PlatformProvider pp = new PlatformProvider(eval, platformPropName);
-        return new PlatformNode(pp);
+        return new PlatformNode(project, pp);
     }
     
     private static class PlatformContentChildren extends Children.Keys<SourceGroup> {

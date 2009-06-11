@@ -101,7 +101,7 @@ public class TreeList extends JList {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                if( e.getClickCount() != 2 )
+                if( e.getClickCount() != 2 || e.isPopupTrigger() )
                     return;
                 int index = locationToIndex(e.getPoint());
                 if( index < 0 || index >= getModel().getSize() )
@@ -110,7 +110,7 @@ public class TreeList extends JList {
                 if( value instanceof TreeListNode ) {
                     TreeListNode node = (TreeListNode) value;
 
-                    if( null != node ) {
+                    if( null != node && !node.isExpandable() ) {
                         ActionListener al = node.getDefaultAction();
                         if( null != al )
                             al.actionPerformed(new ActionEvent(e.getSource(), e.getID(), e.paramString()));

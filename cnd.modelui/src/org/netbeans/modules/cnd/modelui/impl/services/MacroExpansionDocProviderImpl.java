@@ -279,6 +279,15 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         return null;
     }
 
+    private TransformationTable getTransformationTable(Document doc) {
+        Object o = doc.getProperty(MACRO_EXPANSION_OFFSET_TRANSFORMER);
+        if (o != null && o instanceof TransformationTable) {
+            TransformationTable tt = (TransformationTable) o;
+            return tt;
+        }
+        return null;
+    }
+
     public String[] getMacroExpansion(Document doc, int offset) {
         // returns empty expansion
         return new String[]{"", ""}; // NOI18N
@@ -414,8 +423,12 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         }
         ProjectBase base = (ProjectBase) project;
 
-        StopOnOffsetParseFileWalker walker = new StopOnOffsetParseFileWalker(base, aptLight, fileImpl, offset, handler, fileImpl.getAPTCacheEntry(handler));
+        // create concurrent entry if absent
+        APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(handler, Boolean.FALSE);
+        StopOnOffsetParseFileWalker walker = new StopOnOffsetParseFileWalker(base, aptLight, fileImpl, offset, handler,cacheEntry);
         walker.visit();
+        // we do not remember cache entry because it is stopped before end of file
+        // fileImpl.setAPTCacheEntry(handler, cacheEntry, false);
         TokenStream ts = APTTokenStreamBuilder.buildTokenStream(code);
         if (ts != null) {
             ts = new APTMacroExpandedStream(ts, handler.getMacroMap());
@@ -827,6 +840,21 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         return s.length();
     }
 
+    /* package local */ String dumpTables(Document doc) {
+        StringBuilder sb = new StringBuilder();
+        TransformationTable tt = getMacroTable(doc);
+        if(tt != null) {
+            sb.append("MacroTable: "); // NOI18N
+            sb.append(tt.toString());
+        }
+        tt = getTransformationTable(doc);
+        if(tt != null) {
+            sb.append("TransformationTable: "); // NOI18N
+            sb.append(tt.toString());
+        }
+        return sb.toString();
+    }
+    
     private static class MyTokenSequence {
 
         private final TokenStream ts;

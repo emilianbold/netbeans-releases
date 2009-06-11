@@ -74,16 +74,10 @@ public abstract class APTTokenBasedNode extends APTBaseNode
         this.token = token;
     }
     
-    @Override
-    public void dispose() {
-        this.token = APTUtils.EOF_TOKEN;
-    }
-    
     public APTToken getToken() {
         return token;
     }   
-        
-        
+                
     public int getOffset() {
         if (token != null && token != APTUtils.EOF_TOKEN) {
             return token.getOffset();

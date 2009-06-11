@@ -216,7 +216,7 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
         }
         return elementNames;
     }
-    
+
     public ChangeInfo prepareChangeInfo(List<Node> pathToRoot) {
         // we already handle change on root before enter here
         if (pathToRoot.size() < 1) {
@@ -225,64 +225,47 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
         if (pathToRoot.get(pathToRoot.size()-1) instanceof Document) {
             pathToRoot.remove(pathToRoot.size()-1);
         }
-        
+
         if (pathToRoot.size() < 2) {
             throw new IllegalArgumentException("pathToRoot here should be at least 2");
         }
+        //
         Node current = null;
         Element parent = null;
         boolean changedIsDomainElement = true;
         Set<QName> qnames = getQNames();
-        Set<String> enames = getElementNames();
         if (qnames != null && qnames.size() > 0) {
-            for (int i=0; i<pathToRoot.size(); i++) {
+            for (int i=pathToRoot.size()-1; i>=0; i--) {
+                //
                 Node n = pathToRoot.get(i);
+                parent = (Element)current;
+                current = n;
+                //
                 if (! (n instanceof Element)) {
                     changedIsDomainElement = false;
-                    continue;
-                }
-                
-                QName q = new QName(getAccess().lookupNamespaceURI(n, pathToRoot), n.getLocalName());
-                if (qnames.contains(q)) {
-                    current = n;
-                    if (i+1 < pathToRoot.size()) {
-                        parent = (Element) pathToRoot.get(i+1);
-                    }
                     break;
-                } else if (changedIsDomainElement == true) {
+                }
+
+                QName currentQName = new QName(getAccess().lookupNamespaceURI(
+                        current, pathToRoot), current.getLocalName());
+                if (!(qnames.contains(currentQName))) {
                     changedIsDomainElement =  false;
+                    break;
                 }
             }
         } else {
-            Node n = pathToRoot.get(0);
-            if (n instanceof Element) {
-                current = n;
-                parent = (Element) pathToRoot.get(1);
-            } else {
-                current = pathToRoot.get(1);
-                if (pathToRoot.size() > 2) {
-                    parent = (Element) pathToRoot.get(2);
-                }
-                changedIsDomainElement =  false;
-            }
+            current = pathToRoot.get(0);
+            parent = (Element) pathToRoot.get(1);
+            changedIsDomainElement = current instanceof Element;
         }
-        
-        if (! changedIsDomainElement) {
-            int i = pathToRoot.indexOf(current);
-            if (i < 1) {
-                throw new IllegalArgumentException("pathToRoot does not contain element");
-            }
-            parent = (Element) current;
-            current = pathToRoot.get(i-1);
-        }
-        
+
         List<Element> rootToParent = new ArrayList<Element>();
         if (parent != null) {
             for (int i = pathToRoot.indexOf(parent); i<pathToRoot.size(); i++) {
                 rootToParent.add(0, (Element)pathToRoot.get(i));
             }
         }
-        
+
         List<Node> otherNodes = new ArrayList<Node>();
         if (parent != null) {
             int iCurrent = pathToRoot.indexOf(current);
@@ -290,7 +273,7 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
                 otherNodes.add(0, pathToRoot.get(i));
             }
         }
-        
+
         return new ChangeInfo(parent, current, changedIsDomainElement, rootToParent, otherNodes);
     }
     

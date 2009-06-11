@@ -51,8 +51,10 @@ import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeInfo;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
+import org.netbeans.modules.cnd.apt.support.APTMacroMap.State;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
+import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 
@@ -75,15 +77,6 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
         assert (!inclStack.empty());
         this.stopDirective = this.inclStack.pop();
         assert (stopDirective != null);
-    }
-    
-    /** Creates a new instance of APTRestorePreprocStateWalker */
-    public APTRestorePreprocStateWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
-        super(base, apt, file, preprocHandler, cacheEntry);
-        this.searchInterestedFile = false;
-        this.interestedFile = null;
-        this.inclStack = null;
-        this.stopDirective = null;
     }
     
     protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt, APTMacroMap.State postIncludeState) throws IOException {
@@ -118,8 +111,12 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
                     APTFile aptLight = inclFileOwner.getAPTLight(csmFile);
                     if (aptLight != null) {
                         APTPreprocHandler preprocHandler = getPreprocHandler();
-                        APTWalker walker = new APTRestorePreprocStateWalker(getStartProject(), aptLight, csmFile, preprocHandler, inclStack, interestedFile, csmFile.getAPTCacheEntry(preprocHandler));
+                        // only ask for cached entry
+                        APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(preprocHandler, null);
+                        APTWalker walker = new APTRestorePreprocStateWalker(getStartProject(), aptLight, csmFile, preprocHandler, inclStack, interestedFile, cacheEntry);
                         walker.visit();
+                        // we do not remember cache entry as serial because stopped before #include directive
+                        // csmFile.setAPTCacheEntry(preprocHandler, cacheEntry, false);
                     } else {
                         // expected #included file was deleted
                         csmFile = null;
@@ -130,8 +127,12 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
                 APTFile aptLight = inclFileOwner.getAPTLight(csmFile);
                 if (aptLight != null) {
                     APTPreprocHandler preprocHandler = getPreprocHandler();
-                    APTWalker walker = new APTRestorePreprocStateWalker(getStartProject(), aptLight, csmFile, preprocHandler, csmFile.getAPTCacheEntry(preprocHandler));
+                    // only ask for cached entry and visit with it #include directive
+                    APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(preprocHandler, null);
+                    APTWalker walker = new APTSelfWalker(aptLight, preprocHandler, cacheEntry);
                     walker.visit();
+                    // does not remember walk info to safe memory
+                    // csmFile.setAPTCacheEntry(preprocHandler, cacheEntry, false);
                 } else {
                     // expected #included file was deleted
                     csmFile = null;
@@ -166,6 +167,14 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
             // See IZ119620, IZ120478
         }
     }
-    
-    
+
+    @Override
+    protected boolean include(ResolvedPath resolvedPath, APTInclude apt, State postIncludeState) {
+        boolean ret = super.include(resolvedPath, apt, postIncludeState);
+        // does not allow to store post include state if we stopped before #include directive
+        if (hasIncludeActionSideEffects() && isStopped()) {
+            ret = false;
+        }
+        return ret;
+    }        
 }

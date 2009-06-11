@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.util.*;
@@ -440,8 +441,7 @@ public final class CsmInheritanceUtilities {
     }
 
     private static boolean isNestedClass(CsmClass inner, CsmClass outer) {
-        return inner != null && outer != null
-                && inner.getQualifiedName().toString().startsWith(outer.getQualifiedName().toString());
+        return inner != null && outer != null &&
+               CharSequenceUtilities.startsWith(inner.getQualifiedName(),outer.getQualifiedName());
     }
-
 }

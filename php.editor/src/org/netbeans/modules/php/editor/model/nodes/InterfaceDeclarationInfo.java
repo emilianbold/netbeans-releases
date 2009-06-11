@@ -42,6 +42,7 @@ package org.netbeans.modules.php.editor.model.nodes;
 import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 
@@ -75,7 +76,7 @@ public class InterfaceDeclarationInfo extends ASTNodeInfo<InterfaceDeclaration> 
         return new OffsetRange(name.getStartOffset(), name.getEndOffset());
     }
 
-    public List<? extends Identifier> getInterfaces() {
+    public List<? extends Expression> getInterfaces() {
         return getOriginalNode().getInterfaes();
     }
 

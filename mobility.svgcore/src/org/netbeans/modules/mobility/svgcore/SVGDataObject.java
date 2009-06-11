@@ -131,7 +131,7 @@ public final class SVGDataObject extends XmlMultiViewDataObject {
 
         @Override
         public void open() {
-            if (getModel().getModel() != null){
+            if (getModel().getModel() != null || getDocument().getLength() == 0){
                 super.open();
             } else {
                 showErrorDialog(m_errorMessage);
@@ -140,7 +140,7 @@ public final class SVGDataObject extends XmlMultiViewDataObject {
 
         @Override
         public void edit() {
-            if (getModel().getModel() != null){
+            if (getModel().getModel() != null || getDocument().getLength() == 0){
                 super.edit();
             } else {
                 showErrorDialog(m_errorMessage);

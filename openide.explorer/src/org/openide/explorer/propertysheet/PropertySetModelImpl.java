@@ -114,7 +114,7 @@ class PropertySetModelImpl implements PropertySetModel, Runnable {
             return null;
         }
 
-        return (FeatureDescriptor) fds.get(index);
+        return fds.get(index);
     }
 
     public int indexOf(FeatureDescriptor fd) {

@@ -44,7 +44,6 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 
@@ -80,20 +79,8 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
     public static synchronized DeploymentFactory createPrelude() {
         if (preludeInstance == null) {
             // TODO - find way to get uri fragment from GlassfishInstanceProvider
-            //ServerUtilities t = ServerUtilities.getEe6Utilities();
-            String[] allowed;
-            // FIXME -- these strings should come from some constant place
-            String v3Root = System.getProperty("org.glassfish.v3ee6.installRoot");
-            if ("true".equals(System.getProperty("org.glassfish.v3.enableExperimentalFeatures")) ||
-                (null != v3Root && v3Root.trim().length() > 0) ||
-                null != FileUtil.getConfigFile("GlassFish v3/Enable Experimental Features")) {
-                // pick up v3 Prelude and v3 instances and treat themn like Prelude
-                allowed = new String[] { "deployer:gfv3:" };
-            } else {
-                allowed = new String[] { "deployer:gfv3:", "deployer:gfv3ee6:" };
-            }
-            preludeInstance = new Hk2DeploymentFactory(allowed, "0.1",
-                    NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_PreludeDisplayName"));
+            preludeInstance = new Hk2DeploymentFactory(new String[] { "deployer:gfv3:" }, "0.1",  // NOI18N
+                    NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_PreludeDisplayName")); // NOI18N
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(preludeInstance);
         }
         return preludeInstance;
@@ -105,16 +92,10 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
      */
     public static synchronized DeploymentFactory createEe6() {
         // FIXME -- these strings should come from some constant place
-        String v3Root = System.getProperty("org.glassfish.v3ee6.installRoot");
-        if ("true".equals(System.getProperty("org.glassfish.v3.enableExperimentalFeatures")) ||
-            (null != v3Root && v3Root.trim().length() > 0) ||
-                null != FileUtil.getConfigFile("GlassFish v3/Enable Experimental Features")) {
-            if (ee6Instance == null) {
-                ee6Instance = new Hk2DeploymentFactory(new String[]
-                    { "deployer:gfv3ee6:" }, "0.2",
-                        NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_DisplayName"));
-                DeploymentFactoryManager.getInstance().registerDeploymentFactory(ee6Instance);
-            }
+        if (ee6Instance == null) {
+            ee6Instance = new Hk2DeploymentFactory(new String[]{"deployer:gfv3ee6:"}, "0.2", // NOI18N
+                    NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_DisplayName"));  // NOI18N
+            DeploymentFactoryManager.getInstance().registerDeploymentFactory(ee6Instance);
         }
         return ee6Instance;
     }
@@ -153,6 +134,10 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
             throw new DeploymentManagerCreationException("Invalid URI:" + uri); // NOI18N
         }
         finishInit();
+        // prevent registry mismatches
+        if (!su.isRegisteredUri(uri)) {
+            throw new DeploymentManagerCreationException("Registry mismatch for "+uri);
+        }
         return new Hk2DeploymentManager(uri, uname, passwd, su);
     }
 
@@ -167,6 +152,10 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
             throw new DeploymentManagerCreationException("Invalid URI:" + uri); // NOI18N
         }
         finishInit();
+        // prevent registry mismatches
+        if (!su.isRegisteredUri(uri)) {
+            throw new DeploymentManagerCreationException("Registry mismatch for "+uri);
+        }
         return new Hk2DeploymentManager(uri, null, null, su);
     }
 

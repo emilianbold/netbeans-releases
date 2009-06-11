@@ -43,13 +43,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
-import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public class ModelBasedTestCase extends BaseTestCase {
+public class ModelBasedTestCase extends CndBaseTestCase {
 
     private final Collection<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
 

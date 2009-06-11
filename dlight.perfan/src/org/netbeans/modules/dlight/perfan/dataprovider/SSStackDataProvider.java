@@ -202,7 +202,7 @@ class SSStackDataProvider implements StackDataProvider {
             final List<Column> columns, final List<Column> orderBy, final int limit) {
 
         try {
-            return hotSpotFunctionsFetcher.compute(new HotSpotFunctionsFetcherParams("lines", columns, orderBy, limit, filter));//NOI18N
+            return hotSpotFunctionsFetcher.compute(new HotSpotFunctionsFetcherParams("functions", columns, orderBy, limit, filter));//NOI18N
         } catch (InterruptedException ex) {
             log.fine("HotSpotFunctionsFetcher interrupted."); // NOI18N
         }
@@ -264,7 +264,7 @@ class SSStackDataProvider implements StackDataProvider {
                 Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
 
         for (SourceFileInfoProvider provider : sourceInfoProviders) {
-            final SourceFileInfo sourceInfo = provider.fileName(functionCall.getFunction().getName(), functionCall.getOffset(), this.storage.getInfo());
+            final SourceFileInfo sourceInfo = provider.fileName(functionCall.getFunction().getName(), (int)functionCall.getOffset(), -1, this.storage.getInfo());
             if (sourceInfo != null && sourceInfo.isSourceKnown()) {
                 return sourceInfo;
             }
@@ -457,5 +457,5 @@ class SSStackDataProvider implements StackDataProvider {
 
             return result;
         }
-    }
-}
+            }
+        }

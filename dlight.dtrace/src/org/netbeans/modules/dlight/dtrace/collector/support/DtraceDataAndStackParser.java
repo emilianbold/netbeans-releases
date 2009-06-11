@@ -108,9 +108,17 @@ final class DtraceDataAndStackParser extends DtraceParser {
     private List<String> colNames;
     private int colCount;
     private final boolean isProfiler;
+    private final StackDataStorage sds;
 
     public DtraceDataAndStackParser(DataTableMetadata metadata) {
+        this(metadata, (StackDataStorage) DataStorageManager.getInstance().
+                getDataStorage(DataStorageTypeFactory.getInstance().
+                getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID)));
+    }
+
+    /*package*/ DtraceDataAndStackParser(DataTableMetadata metadata, StackDataStorage sds) {
         super(metadata);
+        this.sds = sds;
         state = State.WAITING_DATA;
         colNames = new ArrayList<String>(metadata.getColumnsCount());
         for (Column c : metadata.getColumns()) {
@@ -182,12 +190,8 @@ final class DtraceDataAndStackParser extends DtraceParser {
                     }
                     return null;
                 } else {
-                    StackDataStorage sds = (StackDataStorage) DataStorageManager.getInstance().
-                            getDataStorage(DataStorageTypeFactory.getInstance().
-                            getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
-                    DLightLogger.assertTrue(sds != null); //TODO:error-processing
                     Collections.reverse(currStack);
-                    int stackId = sds.putStack(currStack, currSampleDuration);
+                    int stackId = sds == null? -1 : sds.putStack(currStack, currSampleDuration);
                     currStack.clear();
                     //colNames.get(colNames.size()-1);
                     state = State.WAITING_DATA;

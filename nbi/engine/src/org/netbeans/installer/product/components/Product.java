@@ -249,6 +249,9 @@ public final class Product extends RegistryNode implements StatusInterface {
                         ERROR_CANNOT_WRAP_FOR_MACOS_KEY), e);
             }
         }
+
+        // check for cancel status
+        if (progress.isCanceled()) return;
         
         if(dataUris.size()>0) {
         LogManager.log("... extracting files from the data archives");
@@ -312,6 +315,8 @@ public final class Product extends RegistryNode implements StatusInterface {
                         dataFile),
                         e);
             }
+            // check for cancel status
+            if (progress.isCanceled()) break;
         }
         } else {
             LogManager.log("... no data archives assigned to this product");
@@ -680,23 +685,24 @@ public final class Product extends RegistryNode implements StatusInterface {
     
     public void downloadData(final Progress progress) throws DownloadException {
         final CompositeProgress overallProgress = new CompositeProgress();
-        if(dataUris.size()>0) {
-        final int percentageChunk = Progress.COMPLETE / dataUris.size();
-        final int percentageLeak  = Progress.COMPLETE % dataUris.size();
-        
-        overallProgress.setPercentage(percentageLeak);
-        overallProgress.synchronizeTo(progress);
-        overallProgress.synchronizeDetails(true);
-        
-        for (ExtendedUri uri: dataUris) {
-            final Progress currentProgress = new Progress();
-            overallProgress.addChild(currentProgress, percentageChunk);
-            
-            final File cache = FileProxy.getInstance().getFile(
-                    uri.getRemote(),
-                    currentProgress);
-            uri.setLocal(cache.toURI());
-        }
+        if (dataUris.size() > 0) {
+            final int percentageChunk = Progress.COMPLETE / dataUris.size();
+            final int percentageLeak = Progress.COMPLETE % dataUris.size();
+
+            overallProgress.setPercentage(percentageLeak);
+            overallProgress.synchronizeTo(progress);
+            overallProgress.synchronizeDetails(true);
+
+            for (ExtendedUri uri : dataUris) {
+                final Progress currentProgress = new Progress();
+                overallProgress.addChild(currentProgress, percentageChunk);
+
+                final File cache = FileProxy.getInstance().getFile(
+                        uri.getRemote(),
+                        currentProgress);
+                uri.setLocal(cache.toURI());
+                if (progress.isCanceled()) return;
+            }
         } else {
             overallProgress.setPercentage(Progress.COMPLETE);
             overallProgress.synchronizeTo(progress);

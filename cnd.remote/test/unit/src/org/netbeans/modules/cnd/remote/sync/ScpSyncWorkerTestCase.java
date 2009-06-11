@@ -44,11 +44,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.openide.util.Lookup;
 
 /**
  * Test for ScpSyncWorker
@@ -56,25 +60,66 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
  */
 public class ScpSyncWorkerTestCase extends RemoteTestBase {
 
-    static {
-        System.setProperty("cnd.remote.logger.level", "0");
-        System.setProperty("nativeexecution.support.logger.level", "0");
+//    public ScpSyncWorkerTestCase(String testName) {
+//        super(testName);
+//        Logger.getLogger("cnd.remote.logger").setLevel(Level.FINEST);
+//        Logger.getLogger("nativeexecution.support.logger.level").setLevel(Level.FINEST);
+//    }
+
+    public ScpSyncWorkerTestCase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);
+        Logger.getLogger("cnd.remote.logger").setLevel(Level.FINEST);
+        Logger.getLogger("nativeexecution.support.logger.level").setLevel(Level.FINEST);
     }
 
-    public ScpSyncWorkerTestCase(String testName) {
-        super(testName);
-    }
-
-    public void testSyncWorker() throws Exception {
-        if (!canTestRemote()) {
-            return;
+    public void testSyncWorker_simple() throws Exception {
+        if (canTestRemote()) {
+            ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+            assertNotNull(execEnv);
+            File src = createTestDir();
+            doTest(src, execEnv, getDestDir(execEnv));
         }
-        ExecutionEnvironment execEnv = getRemoteExecutionEnvironment();
-        assertNotNull(execEnv);
+    }
 
-        File src = createTestDir();
-        String dst = "/tmp/" + execEnv.getUser() + "/sync-worker-test";
-        doTest(src, execEnv, dst);
+    public void testSyncWorker_nb_platform_lib() throws Exception {
+        if (canTestRemote()) {
+            ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+            assertNotNull(execEnv);
+            File netBeansDir = getIdeUtilJar(). // should be ${NBDIST}/platform10/lib/org-openide-util.jar
+                    getParentFile();  // platform10/lib
+            doTest(netBeansDir, execEnv, getDestDir(execEnv));
+        }
+    }
+
+    public void testSyncWorker_nb_platform() throws Exception {
+        if (canTestRemote()) {
+            ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+            assertNotNull(execEnv);
+            File netBeansDir = getIdeUtilJar(). // should be ${NBDIST}/platform10/lib/org-openide-util.jar
+                    getParentFile().  // platform10/lib
+                    getParentFile();  // platform10
+            doTest(netBeansDir, execEnv, getDestDir(execEnv));
+        }
+    }
+
+//    public void testSyncWorker_nb_all() throws Exception {
+//        if (canTestRemote()) {
+//            ExecutionEnvironment execEnv = getRemoteExecutionEnvironment();
+//            assertNotNull(execEnv);
+//            File netBeansDir = getIdeUtilJar(). // should be ${NBDIST}/platform10/lib/org-openide-util.jar
+//                    getParentFile().  // lib
+//                    getParentFile().  // platform10
+//                    getParentFile();  // ${NBDIST}
+//            doTest(netBeansDir, execEnv, getDestDir(execEnv));
+//        }
+//    }
+
+    private File getIdeUtilJar() throws Exception {
+        return new File(Lookup.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+    }
+
+    private String getDestDir(ExecutionEnvironment execEnv) {
+        return  "/tmp/" + execEnv.getUser() + "/sync-worker-test";
     }
 
 //    public void testSyncWorker_2() throws Exception {
@@ -97,7 +142,7 @@ public class ScpSyncWorkerTestCase extends RemoteTestBase {
         System.err.printf("testUploadFile: %s to %s:%s\n", src.getAbsolutePath(), execEnv.getDisplayName(), dst);
         ScpSyncWorker worker = new ScpSyncWorker(src, execEnv, out, err);
         worker.synchronizeImpl(dst);
-        CommonTasksSupport.rmDir(execEnv, dst, true, err);
+        CommonTasksSupport.rmDir(execEnv, dst, true, err).get();
     }
 
     private File createTestDir() throws IOException {

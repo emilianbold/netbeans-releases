@@ -139,6 +139,7 @@ public class JspPGPanel extends SectionInnerPanel implements java.awt.event.Item
         return null;
     }
     
+    @Override
     public void documentChanged(javax.swing.text.JTextComponent comp, String value) {
         if (comp==urlPatternsTF) {
             String val = (String)value;
@@ -190,6 +191,7 @@ public class JspPGPanel extends SectionInnerPanel implements java.awt.event.Item
         String[] codas = DDUtils.getStringArray(text);
         group.setIncludeCoda(codas);
     }
+    @Override
     public void rollbackValue(javax.swing.text.JTextComponent source) {
         if (source==urlPatternsTF) {
             urlPatternsTF.setText(DDUtils.urlPatternList(group.getUrlPattern()));
@@ -445,8 +447,6 @@ public class JspPGPanel extends SectionInnerPanel implements java.awt.event.Item
     }// </editor-fold>//GEN-END:initComponents
     
     private void browseButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButton3ActionPerformed
-        // TODO add your handling code here:
-        // TODO add your handling code here:
         try {
             SourceGroup[] groups = DDUtils.getDocBaseGroups(dObj);
             org.openide.filesystems.FileObject fo = BrowseFolders.showDialog(groups);
@@ -468,7 +468,6 @@ public class JspPGPanel extends SectionInnerPanel implements java.awt.event.Item
     }//GEN-LAST:event_browseButton3ActionPerformed
     
     private void browseButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButton2ActionPerformed
-        // TODO add your handling code here:
         try {
             SourceGroup[] groups = DDUtils.getDocBaseGroups(dObj);
             org.openide.filesystems.FileObject fo = BrowseFolders.showDialog(groups);
@@ -490,7 +489,6 @@ public class JspPGPanel extends SectionInnerPanel implements java.awt.event.Item
     }//GEN-LAST:event_browseButton2ActionPerformed
     
     private void browseButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButton1ActionPerformed
-        // TODO add your handling code here:
         try {
             SourceGroup[] groups = DDUtils.getDocBaseGroups(dObj);
             org.openide.filesystems.FileObject fo = BrowseFolders.showDialog(groups);
@@ -539,7 +537,6 @@ public class JspPGPanel extends SectionInnerPanel implements java.awt.event.Item
     // End of variables declaration//GEN-END:variables
     
     public void itemStateChanged(java.awt.event.ItemEvent evt) {
-        // TODO add your handling code here:
         System.out.println("State changed: " + evt);
         System.out.println("State changed: " + evt.getSource());
         dObj.modelUpdatedFromUI();
@@ -559,12 +556,14 @@ public class JspPGPanel extends SectionInnerPanel implements java.awt.event.Item
     }
     /** This will be called before model is changed from this panel
      */
+    @Override
     protected void startUIChange() {
         dObj.setChangedFromUI(true);
     }
     
     /** This will be called after model is changed from this panel
      */
+    @Override
     protected void endUIChange() {
         dObj.modelUpdatedFromUI();
         dObj.setChangedFromUI(false);

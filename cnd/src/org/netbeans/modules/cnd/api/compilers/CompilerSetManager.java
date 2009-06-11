@@ -518,7 +518,7 @@ public class CompilerSetManager {
                 continue;
             }
             if (!IpeUtils.isPathAbsolute(path)) {
-                path = CndFileUtils.normalizeFile(new File(path)).getAbsolutePath();
+                path = CndFileUtils.normalizeAbsolutePath(new File(path).getAbsolutePath());
             }
             File dir = new File(path);
             if (dir.isDirectory()) {
@@ -547,12 +547,16 @@ public class CompilerSetManager {
      */
     private ArrayList<String> appendDefaultLocations(int platform, ArrayList<String> dirlist) {
         for (ToolchainDescriptor d : ToolchainManager.getImpl().getToolchains(platform)) {
-            Map<String, String> map = d.getDefaultLocations();
+            Map<String, List<String>> map = d.getDefaultLocations();
             if (map != null) {
                 String pname = getPlatformName(platform);
-                String dir = map.get(pname);
-                if (dir != null && !dirlist.contains(dir)) {
-                    dirlist.add(dir);
+                List<String> list = map.get(pname);
+                if (list != null ) {
+                    for (String dir : list){
+                        if (!dirlist.contains(dir)){
+                            dirlist.add(dir);
+                        }
+                    }
                 }
             }
         }
@@ -695,8 +699,6 @@ public class CompilerSetManager {
         if (remoteInitialization != null) {
             return;
         }
-        final CompilerSetProvider provider = CompilerSetProviderFactory.createNew(executionEnvironment);
-        assert provider != null;
         ServerRecord record = ServerList.get(executionEnvironment);
         assert record != null;
 
@@ -720,6 +722,9 @@ public class CompilerSetManager {
                     //            CompilerSetReporter.canReport(),System.identityHashCode(CompilerSetManager.this));
                     //}
                     try {
+                        final CompilerSetProvider provider = CompilerSetProviderFactory.createNew(executionEnvironment);
+                        assert provider != null;
+                        provider.init();
                         platform = provider.getPlatform();
                         CompilerSetReporter.report("CSM_ValPlatf", true, PlatformTypes.toString(platform)); //NOI18N
                         CompilerSetReporter.report("CSM_LFTC"); //NOI18N
@@ -781,7 +786,10 @@ public class CompilerSetManager {
             task.addTaskListener(new TaskListener() {
                 public void taskFinished(org.openide.util.Task task) {
                     log.fine("Code Model Ready for " + CompilerSetManager.this.toString());
-                    CompilerSetManagerEvents.get(executionEnvironment).runTasks();
+                    // FIXUP: this server has been probably deleted; TODO: provide return statis from loader
+                    if (!ServerList.get(executionEnvironment).isDeleted()) {
+                        CompilerSetManagerEvents.get(executionEnvironment).runTasks();
+                    }
                 }
             });
             task.schedule(0);
@@ -823,6 +831,12 @@ public class CompilerSetManager {
             }
             if (d.getDebugger() != null && !d.getDebugger().skipSearch()){
                 initCompiler(Tool.DebuggerTool, path, cs, d.getDebugger().getNames());
+            }
+            if (d.getQMake() != null && !d.getQMake().skipSearch()){
+                initCompiler(Tool.QMakeTool, path, cs, d.getQMake().getNames());
+            }
+            if (d.getCMake() != null && !d.getCMake().skipSearch()){
+                initCompiler(Tool.CMakeTool, path, cs, d.getCMake().getNames());
             }
             return true;
         }
@@ -1081,7 +1095,12 @@ public class CompilerSetManager {
         if (cs.findTool(Tool.DebuggerTool) == null) {
             autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getDebugger(), Tool.DebuggerTool);
         }
-
+        if (cs.findTool(Tool.QMakeTool) == null) {
+            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getQMake(), Tool.QMakeTool);
+        }
+        if (cs.findTool(Tool.CMakeTool) == null) {
+            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getCMake(), Tool.CMakeTool);
+        }
     }
 
     /**

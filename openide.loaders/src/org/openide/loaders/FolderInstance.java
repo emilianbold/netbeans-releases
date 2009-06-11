@@ -46,13 +46,13 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.netbeans.modules.openide.loaders.AWTTask;
 import org.openide.filesystems.*;
 import org.openide.cookies.InstanceCookie;
-import org.openide.util.Exceptions;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openide.util.RequestProcessor;
@@ -415,6 +415,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
         InstanceCookie cookie;
         //Order of checking reversed first check cookie and then folder
         // test if we accept the instance
+        // XXX for subtle reasons, current test fails if this is changed to getLookup:
         cookie = dob.getCookie(InstanceCookie.class);
         try {
             cookie = cookie == null ? null : acceptCookie (cookie);
@@ -422,10 +423,12 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
         } catch (IOException ex) {
             // an error during a call to acceptCookie
             err.log(Level.WARNING, null, ex);
+            revertProblematicFile(dob);
             cookie = null;
         } catch (ClassNotFoundException ex) {
             // an error during a call to acceptCookie
-            err.log(Level.WARNING, null, ex);
+            err.log(Level.INFO, null, ex);
+            revertProblematicFile(dob);
             cookie = null;
         }
         
@@ -458,6 +461,16 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
         }
 
         return cookie;
+    }
+    private void revertProblematicFile(DataObject dob) {
+        Object rw = dob.getPrimaryFile().getAttribute("removeWritables"); // NOI18N
+        if (rw instanceof Callable) {
+            try {
+                ((Callable<?>) rw).call();
+            } catch (Exception x) {
+                err.log(Level.INFO, null, x);
+            }
+        }
     }
     
     /** Allows subclasses to decide whether they want to work with

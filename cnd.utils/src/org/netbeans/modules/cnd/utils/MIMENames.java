@@ -73,6 +73,8 @@ public final class MIMENames {
 
     /** Makefiles */
     public static final String MAKEFILE_MIME_TYPE = "text/x-make"; //NOI18N
+    public static final String CMAKE_MIME_TYPE = "text/x-cmake"; //NOI18N
+    public static final String QTPROJECT_MIME_TYPE = "text/x-qtproject"; //NOI18N
 
     /** Shell */
     public static final String SHELL_MIME_TYPE = "text/sh"; //NOI18N
@@ -131,7 +133,7 @@ public final class MIMENames {
     static {
         CND_TEXT_MIME_TYPES = new HashSet<String>(Arrays.asList(new String[]{
                     HEADER_MIME_TYPE, C_HEADER_MIME_TYPE, CPLUSPLUS_MIME_TYPE, C_MIME_TYPE, FORTRAN_MIME_TYPE,
-                    MAKEFILE_MIME_TYPE, SHELL_MIME_TYPE, BAT_MIME_TYPE,
+                    MAKEFILE_MIME_TYPE, CMAKE_MIME_TYPE, QTPROJECT_MIME_TYPE, SHELL_MIME_TYPE, BAT_MIME_TYPE,
                     VISU_MIME_TYPE,
                     LEX_MIME_TYPE, YACC_MIME_TYPE, ASM_MIME_TYPE,
                     QT_UI_MIME_TYPE, QT_RESOURCE_MIME_TYPE, QT_TRANSLATION_MIME_TYPE

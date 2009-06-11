@@ -84,8 +84,13 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         HostInfo hinfo = null;
         try {
             hinfo = HostInfoUtils.getHostInfo(info.getExecutionEnvironment());
-        } catch (IOException ex) {
         } catch (CancellationException ex) {
+            // no logging for cancellation
+        } catch (InterruptedIOException ex) {
+            // no logging for interrupting
+        } catch (IOException ex) {
+//            log.log(Level.INFO, "Exception while getting host info:", ex); //NOI18N
+            ex.printStackTrace();
         }
         hostInfo = hinfo;
 
@@ -303,7 +308,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
                 }
 
                 if (!isInterrupted()) {
-                    log.fine(this.toString() + " State change: " + // NOI18N
+                    log.finest(this.toString() + " State change: " + // NOI18N
                             this.state + " -> " + state); // NOI18N
                 }
 

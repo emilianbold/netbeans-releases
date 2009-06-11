@@ -42,7 +42,6 @@ package org.netbeans.modules.javascript.editing;
 
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 import javax.swing.event.ChangeListener;
@@ -70,7 +69,6 @@ import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.filesystems.FileObject;
 
@@ -123,21 +121,6 @@ public class JsParser extends Parser {
         // no-op, we don't support state changes
     }
 
-
-    // ------------------------------------------------------------------------
-    // o.n.m.p.spi.ParserFactory implementation
-    // ------------------------------------------------------------------------
-
-    private static final class Factory extends ParserFactory {
-
-        @Override
-        public Parser createParser(Collection<Snapshot> snapshots) {
-            return new JsParser();
-        }
-
-    } // End of Factory class
-
-    
     /** For unit tests such that they can make sure we didn't have a parser abort */
     static RuntimeException runtimeException;
 

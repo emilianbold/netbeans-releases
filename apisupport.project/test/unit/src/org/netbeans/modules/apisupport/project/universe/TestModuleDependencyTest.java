@@ -80,14 +80,14 @@ public class TestModuleDependencyTest extends TestBase {
     
     
     public void testEquals() throws Exception{
-        assertFalse("001!=101" , tdJP_001.equals((TestModuleDependency)tdJP_101));
-        assertTrue("these are equal", tdJP_101.equals((TestModuleDependency)tdJP_101otherInstance));
+        assertFalse("001!=101" , tdJP_001.equals(tdJP_101));
+        assertTrue("these are equal", tdJP_101.equals(tdJP_101otherInstance));
         assertFalse(tdAnt_111.equals(null));
         assertFalse(tdAnt_111.equals(""));
     }
     
     public void testCompareTo() {
-        assertEquals("equals", 0, tdJP_101.compareTo((TestModuleDependency) tdJP_101otherInstance));
+        assertEquals("equals", 0, tdJP_101.compareTo(tdJP_101otherInstance));
         assertTrue("o.n.m.java.project < o.n.m.project.ant", tdJP_001.compareTo(tdAnt_111) < 0);
         assertTrue("o.n.m.project.ant > o.n.m.java.project", tdAnt_111.compareTo(tdJP_101) > 0);
     }

@@ -21,7 +21,6 @@ package org.netbeans.modules.xslt.tmap.util;
 import java.io.File;
 import java.util.List;
 import java.util.StringTokenizer;
-import javax.swing.text.StyledDocument;
 import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.soa.ui.axinodes.AxiomUtils;
 import org.netbeans.modules.xml.axi.AXIComponent;
@@ -30,7 +29,6 @@ import org.netbeans.modules.xml.axi.AXIModelFactory;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
@@ -54,7 +52,8 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.text.Line;
-import org.openide.text.NbDocument;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -296,7 +295,7 @@ public class TMapUtil {
 
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    l.show(Line.SHOW_GOTO, column);
+                    l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
                     openActiveSourceEditor();
                 }
             });

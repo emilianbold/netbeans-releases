@@ -1,5 +1,9 @@
-#!/usr/sbin/dtrace -Cs
+#!/usr/sbin/dtrace -ZCs
 #pragma D option quiet
+#pragma D option bufsize=16m
+#pragma D option switchrate=100hz
+#pragma D option dynvarsize=16m
+#pragma D option cleanrate=100hz
 
 /* the current total amount of memory allocated and not freed */
 int total;

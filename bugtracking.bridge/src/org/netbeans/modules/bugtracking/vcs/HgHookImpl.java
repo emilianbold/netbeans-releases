@@ -233,21 +233,15 @@ public class HgHookImpl extends HgHook {
 
     @Override
     public JPanel createComponent(HgHookContext context) {
-        Repository[] repos = BugtrackingUtil.getKnownRepositories();
+        File referenceFile;
         if(context.getFiles().length == 0) {
+            referenceFile = null;
             LOG.warning("creating hg hook component for zero files");           // NOI18N
-            Repository repoToSelect
-                    = BugtrackingOwnerSupport.getInstance()
-                      .getRepository(BugtrackingOwnerSupport.ContextType.ALL_PROJECTS);
-            panel = new HookPanel(repos, repoToSelect);
         } else {
-            File file = context.getFiles()[0];
-            Repository repoToSelect = BugtrackingOwnerSupport.getInstance().getRepository(file, false);
-            if(repoToSelect == null) {
-                LOG.log(Level.FINE, " could not find issue tracker for " + file);  // NOI18N
-            }
-            panel = new HookPanel(repos, repoToSelect);
+            referenceFile = context.getFiles()[0];
         }
+        panel = new HookPanel(getKnownRepositories());
+        DefaultRepositorySelector.setup(panel, referenceFile);
         panel.changeRevisionFormatButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onShowRevisionFormat();
@@ -261,20 +255,32 @@ public class HgHookImpl extends HgHook {
         return panel;
     }
 
+    private static Repository[] getKnownRepositories() {
+        Repository[] repos;
+        long startTimeMillis = System.currentTimeMillis();
+        repos = BugtrackingUtil.getKnownRepositories();
+        long endTimeMillis = System.currentTimeMillis();
+        if (LOG.isLoggable(Level.FINEST)) {
+            LOG.finest("BugtrackingUtil.getKnownRepositories() took "   //NOI18N
+                       + (endTimeMillis - startTimeMillis) + " ms.");   //NOI18N
+        }
+        return repos;
+    }
+
     @Override
     public String getDisplayName() {
         return name;
     }
 
     private void onShowRevisionFormat() {
-        FormatPanel p = new FormatPanel(VCSHooksConfig.getInstance().getHgCommentFormat());
+        FormatPanel p = new FormatPanel(VCSHooksConfig.getInstance().getHgCommentFormat(), VCSHooksConfig.getDefaultHgFormat());
         if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) {  // NOI18N
             VCSHooksConfig.getInstance().setHgCommentFormat(p.getFormat());
         }
     }
 
     private void onShowIssueFormat() {
-        FormatPanel p = new FormatPanel(VCSHooksConfig.getInstance().getHgIssueFormat());
+        FormatPanel p = new FormatPanel(VCSHooksConfig.getInstance().getHgIssueFormat(), VCSHooksConfig.getDefaultIssueFormat());
         if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) {  // NOI18N
             VCSHooksConfig.getInstance().setHgIssueFormat(p.getFormat());
         }

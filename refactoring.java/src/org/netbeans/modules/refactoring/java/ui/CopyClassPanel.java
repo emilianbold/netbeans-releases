@@ -42,6 +42,7 @@
 package org.netbeans.modules.refactoring.java.ui;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.ComboBoxModel;
@@ -115,10 +116,16 @@ public class CopyClassPanel extends JPanel implements ActionListener, DocumentLi
             if (fob!=null)
                 newName += "1"; // NOI18N
         } while (fob!=null);
-        newNameTextField.setText(newName);
-        newNameTextField.setSelectionStart(0);
-        newNameTextField.setSelectionEnd(newNameTextField.getText().length());
         initialized = true;
+        
+        EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+                newNameTextField.setText(newName);
+                newNameTextField.setSelectionStart(0);
+                newNameTextField.setSelectionEnd(newNameTextField.getText().length());
+            }
+        });
     }
     
     public void initValues(String preselectedFolder ) {

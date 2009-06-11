@@ -43,15 +43,16 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.netbeans.modules.nativeexecution.NativeExecutionTest;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author ak119685
  */
-public class ConnectionManagerTest extends NativeExecutionTest {
+public class ConnectionManagerTest extends NativeExecutionBaseTestCase {
 
     public ConnectionManagerTest(String name) {
         super(name);
@@ -78,7 +79,7 @@ public class ConnectionManagerTest extends NativeExecutionTest {
     public void testGetConnectToAction() throws Exception {
         System.out.println("getConnectToAction"); // NOI18N
 
-        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        ExecutionEnvironment execEnv = NativeExecutionTestSupport.getDefaultTestExecutionEnvironment(false);
         
         try {
             ConnectionManager.getInstance().connectTo(execEnv);
@@ -104,7 +105,7 @@ public class ConnectionManagerTest extends NativeExecutionTest {
             }
         };
 
-        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        ExecutionEnvironment execEnv = NativeExecutionTestSupport.getDefaultTestExecutionEnvironment(false);
 
         for (int i = 0; i < threadsNum; i++) {
             final AsynchronousAction action = ConnectionManager.getInstance().getConnectToAction(execEnv, onConnect);

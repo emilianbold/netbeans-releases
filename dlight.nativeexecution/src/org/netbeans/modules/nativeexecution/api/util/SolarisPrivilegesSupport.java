@@ -100,4 +100,10 @@ public interface SolarisPrivilegesSupport {
      */
     public AsynchronousAction getRequestPrivilegesAction(
             List<String> requestedPrivileges, Runnable onPrivilegesGranted);
+
+
+    /**
+     *  This method is invoked when connection to the ExecutionEnviroment is lost
+     */
+    public void invalidate();
 }

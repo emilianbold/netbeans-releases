@@ -76,7 +76,7 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
     public List<FunctionCall> getFunctionsList(DataTableMetadata metadata, FunctionDatatableDescription functionDescription, List<Column> metricsColumn) {
         if (functionDescription.getOffsetColumn() == null) {
             List<FunctionCall> result = new ArrayList<FunctionCall>();
-            List<FunctionCallTreeTableNode> nodes = FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(storage.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, Integer.MAX_VALUE));
+            List<FunctionCallTreeTableNode> nodes = FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(storage.getHotSpotFunctions(FunctionMetric.CpuTimeExclusiveMetric, Integer.MAX_VALUE));
             for (FunctionCallTreeTableNode node : nodes) {
                 FunctionCall call = node.getDeligator();
                 result.add(call);
@@ -93,7 +93,7 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
                 Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
 
         for (SourceFileInfoProvider provider : sourceInfoProviders) {
-            final SourceFileInfo sourceInfo = provider.fileName(functionCall.getFunction().getName(), functionCall.getOffset(), serviceInfoStorage.getInfo());
+            final SourceFileInfo sourceInfo = provider.fileName(functionCall.getFunction().getName(), -1, functionCall.getOffset(), serviceInfoStorage.getInfo());
             if (sourceInfo != null && sourceInfo.isSourceKnown()) {
                 return sourceInfo;
             }

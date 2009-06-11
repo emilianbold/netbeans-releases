@@ -46,7 +46,6 @@ import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.ddloaders.web.DDDataObject;
 import org.netbeans.modules.xml.multiview.ui.DefaultTablePanel;
 import org.netbeans.modules.xml.multiview.ui.EditDialog;
-import org.netbeans.modules.xml.multiview.ui.SimpleDialogPanel;
 import org.openide.util.NbBundle;
 
 /** EnvEntriesTablePanel - panel containing table for env-entries

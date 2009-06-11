@@ -53,6 +53,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 import org.xml.sax.SAXException;
 
 /**
@@ -70,6 +71,9 @@ public class AppClientProjectTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         TestUtil.makeScratchDir(this);
+
+        MockLookup.setLayersAndInstances(new TestPlatformProvider());
+
         serverID = TestUtil.registerSunAppServer(this);
     }
     

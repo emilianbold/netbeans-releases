@@ -208,7 +208,7 @@ public final class GrailsProject implements Project {
                 projectState, //allow outside code to mark the project as needing saving
                 new Info(), //Project information implementation
                 new GrailsActionProvider(this),
-                GrailsSources.create(projectDir),
+                GrailsSources.create(this),
                 new GrailsServerState(this),
                 new GrailsProjectCustomizerProvider(this),
                 new GrailsProjectOperations(this),
@@ -230,14 +230,14 @@ public final class GrailsProject implements Project {
 
     public synchronized SourceRoots getSourceRoots() {
         if (this.sourceRoots == null) { //Local caching, no project metadata access
-            this.sourceRoots = new SourceRoots(projectDir); //NOI18N
+            this.sourceRoots = new SourceRoots(this, projectDir); //NOI18N
         }
         return this.sourceRoots;
     }
 
     public synchronized SourceRoots getTestSourceRoots() {
         if (this.testRoots == null) { //Local caching, no project metadata access
-            this.testRoots = new SourceRoots(projectDir); //NOI18N
+            this.testRoots = new SourceRoots(this, projectDir); //NOI18N
         }
         return this.testRoots;
     }

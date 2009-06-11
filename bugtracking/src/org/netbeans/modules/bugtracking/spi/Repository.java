@@ -57,9 +57,9 @@ public abstract class Repository {
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     /**
-     * a query was saved or removed
+     * a query from this repository was saved or removed
      */
-    public static String EVENT_QUERY_LIST_CHANGED = "bugtracking.repository.queries.changed"; // NOI18N
+    public final static String EVENT_QUERY_LIST_CHANGED = "bugtracking.repository.queries.changed"; // NOI18N
 
     /**
      * Returns the icon for this repository
@@ -83,7 +83,7 @@ public abstract class Repository {
      * Returns a Node representing this repository
      * @return
      */
-    public Node getNode() {
+    public final Node getNode() {
         if(node == null) {
             node = new RepositoryNode(this);
         }
@@ -104,7 +104,7 @@ public abstract class Repository {
     public abstract Issue getIssue(String id);
 
     /**
-     * Removes this repository from its conector
+     * Removes this repository from its connector
      *
      */
     public abstract void remove();
@@ -151,9 +151,6 @@ public abstract class Repository {
      */
     protected abstract IssueCache getIssueCache();
 
-    IssueCache getCache() {
-        return getIssueCache();
-    }
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
@@ -163,8 +160,16 @@ public abstract class Repository {
         support.addPropertyChangeListener(listener);
     }
 
+    /**
+     * Notify listeners on this repository that a query was either removed or saved
+     * XXX make use of new/old value
+     */
     protected void fireQueryListChanged() {
         support.firePropertyChange(EVENT_QUERY_LIST_CHANGED, null, null);
+    }
+
+    IssueCache getCache() {
+        return getIssueCache();
     }
 
 }

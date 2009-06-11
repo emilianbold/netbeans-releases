@@ -79,11 +79,11 @@ WCHAR * getTestJVMFileName(WCHAR * testJVMFile) {
     
     if(filePtr!=NULL) {
         WCHAR * dotClass = NULL;
-        while(wcsstr(filePtr, L"\\")!=NULL) {
-            filePtr = wcsstr(filePtr, L"\\");
+        while(searchW(filePtr, L"\\")!=NULL) {
+            filePtr = searchW(filePtr, L"\\");
             filePtr++;
         }
-        dotClass = wcsstr(filePtr, L".class");
+        dotClass = searchW(filePtr, L".class");
         
         if(dotClass!=NULL) {
             testJavaClass = appendStringNW(NULL, 0, filePtr, getLengthW(filePtr) - getLengthW(dotClass));
@@ -122,14 +122,14 @@ DWORD isJavaCompatible(JavaProperties *currentJava, JavaCompatible ** compatible
                 
                 if (check) {
                     if(compatibleJava[i]->vendor!=NULL) {
-                        check = (strstr(currentJava->vendor, compatibleJava[i]->vendor) != NULL) ? check : 0;
+                        check = (searchA(currentJava->vendor, compatibleJava[i]->vendor) != NULL) ? check : 0;
                     }
                     if (compatibleJava[i]->osName!=NULL) {
-                        check = (strstr(currentJava->osName, compatibleJava[i]->osName)!=NULL) ? check : 0;
+                        check = (searchA(currentJava->osName, compatibleJava[i]->osName)!=NULL) ? check : 0;
                     }
                     
                     if (compatibleJava[i]->osArch!=NULL) {
-                        check = (strstr(currentJava->osArch, compatibleJava[i]->osArch)!=NULL) ? check : 0;
+                        check = (searchA(currentJava->osArch, compatibleJava[i]->osArch)!=NULL) ? check : 0;
                     }
                     if(check) {
                         return 1;
@@ -213,32 +213,32 @@ DWORD getJavaPropertiesFromOutput(LauncherProperties * props, char *str, JavaPro
         JavaVersion * vers;
         
         start = str;
-        end = strstr(start, "\n");
+        end = searchA(start, "\n");
         
         javaVersion = appendStringN(NULL, 0, start, getLengthA(start) - getLengthA(end)-1);
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "    java.version =  ", 0);
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, javaVersion, 1);
         start = end + 1;
-        end = strstr(start, "\n");
+        end = searchA(start, "\n");
         
         
         javaVmVersion = appendStringN(NULL, 0, start, getLengthA(start) - getLengthA(end)-1);
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "    java.vm.version = ", 0);
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, javaVmVersion, 1);
         start = end + 1;
-        end = strstr(start, "\n");
+        end = searchA(start, "\n");
         
         javaVendor = appendStringN(NULL, 0, start, getLengthA(start) - getLengthA(end)-1);
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "    java.vendor = ", 0);
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, javaVendor, 1);
         start = end + 1;
-        end = strstr(start, "\n");
+        end = searchA(start, "\n");
         
         osName = appendStringN(NULL, 0, start, getLengthA(start) - getLengthA(end)-1);
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "    os.name = ", 0);
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, osName, 1);
         start = end + 1;
-        end = strstr(start, "\n");
+        end = searchA(start, "\n");
         
         osArch = appendStringN(NULL, 0, start, getLengthA(start) - getLengthA(end)-1);
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "    os.arch = ", 0);
@@ -248,7 +248,7 @@ DWORD getJavaPropertiesFromOutput(LauncherProperties * props, char *str, JavaPro
         
         
         if(javaVmVersion!=NULL) {
-            string = strstr(javaVmVersion, javaVersion);
+            string = searchA(javaVmVersion, javaVersion);
             if(string==NULL) {
                 string = javaVersion;
             }
@@ -551,7 +551,7 @@ void unpackJars(LauncherProperties * props, WCHAR * jvmDir, WCHAR * startDir, WC
                         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... directory : ", 0);
                         writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, child, 1);
                         unpackJars(props, jvmDir, child, unpack200exe);
-                    } else  if(wcsstr(FindFileData.cFileName, JAR_PACK_GZ_SUFFIX)!=NULL) {
+                    } else  if(searchW(FindFileData.cFileName, JAR_PACK_GZ_SUFFIX)!=NULL) {
                         WCHAR * jarName = appendStringW(appendStringW(
                                 appendStringW(NULL, startDir), FILE_SEP),
                                 appendStringNW(NULL, 0, FindFileData.cFileName,

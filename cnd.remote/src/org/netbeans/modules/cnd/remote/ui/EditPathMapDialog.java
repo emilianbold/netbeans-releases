@@ -209,8 +209,8 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                 if (rows.length > 0) {
                     DefaultTableModel model = (DefaultTableModel) tblPathMappings.getModel();
                     Arrays.sort(rows);
-                    for (int row = rows.length - 1; row >= 0; row-- ) {
-                        model.removeRow(row);
+                    for (int i = rows.length - 1; i >= 0; i-- ) {
+                        model.removeRow(rows[i]);
                     }
                 }
             }

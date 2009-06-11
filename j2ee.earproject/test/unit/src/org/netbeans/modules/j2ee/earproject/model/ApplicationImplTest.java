@@ -53,6 +53,7 @@ import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.ApplicationMetadata;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.earproject.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.j2ee.earproject.test.TestUtil;
@@ -98,8 +99,8 @@ public class ApplicationImplTest extends NbTestCase {
         // create project
         File earDirF = new File(getWorkDir(), "testEA");
         String name = "Test EnterpriseApplication";
-        String j2eeLevel = J2eeModule.JAVA_EE_5;
-        NewEarProjectWizardIteratorTest.generateEARProject(earDirF, name, j2eeLevel,
+        Profile j2eeProfile = Profile.JAVA_EE_5;
+        NewEarProjectWizardIteratorTest.generateEARProject(earDirF, name, j2eeProfile,
                 serverID, WEB_NAME, EJB_NAME, CAR_NAME, null, null, null);
         FileObject prjDirFO = FileUtil.toFileObject(earDirF);
         

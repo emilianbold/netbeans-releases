@@ -402,5 +402,16 @@ public class Util {
         return after.equals(before);
     }
     
+    public static void deleteJunk(File d) {
+        if (!d.exists()) return;
+        if (d.isFile()) {
+            d.delete();
+        } else { // directory
+            for (File cf : d.listFiles()) {
+                deleteJunk(cf);
+            }
+            d.delete();
+        }
+    }
 }
 

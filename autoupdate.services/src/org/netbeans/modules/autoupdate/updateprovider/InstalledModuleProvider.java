@@ -70,17 +70,16 @@ public class InstalledModuleProvider implements InstalledUpdateProvider {
         return getDefault ().getModuleInfos (false);
     }
     
-    private Map<String, ModuleInfo> getModuleInfos (boolean force) {
+    private synchronized  Map<String, ModuleInfo> getModuleInfos (boolean force) {
         if (moduleInfos == null || force) {
             moduleInfos = new HashMap<String, ModuleInfo> ();
             Collection<? extends ModuleInfo> infos = Collections.unmodifiableCollection (result.allInstances ());
             for (ModuleInfo info: infos) {
                 moduleInfos.put (info.getCodeNameBase (), info);
-            }
-            
+            }            
         }
         assert moduleInfos != null;
-        return moduleInfos;
+        return new HashMap<String, ModuleInfo> (moduleInfos);
     }
 
     public static InstalledModuleProvider getDefault () {
@@ -94,10 +93,14 @@ public class InstalledModuleProvider implements InstalledUpdateProvider {
         result = Lookup.getDefault().lookup(new Lookup.Template<ModuleInfo> (ModuleInfo.class));
         lkpListener = new LookupListener() {
             public void resultChanged(LookupEvent ev) {
-                moduleInfos = null;
+                clearModuleInfos();
             }
         };
         result.addLookupListener(lkpListener);
+    }
+
+    private synchronized void clearModuleInfos() {
+        moduleInfos = null;
     }
 
     public String getName () {
@@ -137,15 +140,7 @@ public class InstalledModuleProvider implements InstalledUpdateProvider {
     }
 
     public boolean refresh (boolean force) throws IOException {
-        if (moduleInfos == null) {
-            moduleInfos = new HashMap<String, ModuleInfo> ();
-            Collection<? extends ModuleInfo> infos = result.allInstances ();
-            for (ModuleInfo info: infos) {
-                moduleInfos.put (info.getCodeNameBase (), info);
-            }
-            
-        }
-        assert moduleInfos != null;
+        getModuleInfos(false);
         return true;
     }
 
