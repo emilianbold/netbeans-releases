@@ -108,7 +108,7 @@ public class NativeExecutionTestSupport {
                 if (defaultTestExecutionEnvironment != null) {
                     if (connect) {
                         ConnectionManager.getInstance().connectTo(defaultTestExecutionEnvironment, passwd, false);
-                    } else {
+                    } else if(passwd != null && passwd.length > 0) {
                         PasswordManager.getInstance().put(defaultTestExecutionEnvironment, passwd, false);
                     }
                 }
