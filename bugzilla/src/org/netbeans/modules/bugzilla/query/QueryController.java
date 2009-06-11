@@ -509,6 +509,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private void onSave() {
        Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             public void run() {
+                Bugzilla.LOG.fine("on save start");
                 String name = query.getDisplayName();                
                 if(!query.isSaved()) {                
                     name = getSaveName();
@@ -518,15 +519,28 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     panel.queryNameTextField.setText("");                       // NOI18N
                 }
                 assert name != null;
-                query.setName(name);
-                repository.saveQuery(query);
-                query.setSaved(true); // XXX
-                setAsSaved();
-                if(!query.wasRun()) {
-                    onRefresh();
-                }
+                save(name);
+                Bugzilla.LOG.fine("on save finnish");
             }
+
        });
+    }
+
+    /**
+     * Saves the query under the given name
+     * @param name
+     */
+    private void save(String name) {
+        Bugzilla.LOG.log(Level.FINE, "saving query '{0}'", new Object[]{name});
+        query.setName(name);
+        repository.saveQuery(query);
+        query.setSaved(true); // XXX
+        setAsSaved();
+        if (!query.wasRun()) {
+            Bugzilla.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
+            onRefresh();
+        }
+        Bugzilla.LOG.log(Level.FINE, "query '{0}' saved", new Object[]{name});
     }
 
     private String getSaveName() {
