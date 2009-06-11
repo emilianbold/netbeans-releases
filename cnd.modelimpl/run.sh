@@ -113,7 +113,7 @@ do
                 ;;
         --yprofile|-yprofile)
                 echo "profile using YourKit Profiler, save snapshots in ${HOME}/yjp_data/IDE"
-                PROFILE="-J-agentlib:yjpagent=dir=${HOME}/yjp_data/IDE,noj2ee,disablestacktelemetry,disablej2ee"
+                PROFILE="-J-agentlib:yjpagent=dir=${HOME}/yjp_data/IDE,noj2ee,disablestacktelemetry,disablej2ee,disableexceptiontelemetry"
                 ;;
         --userdir)
 		shift
