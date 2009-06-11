@@ -43,6 +43,9 @@ package org.netbeans.modules.cnd.execution41.org.openide.loaders;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.openide.loaders.MultiDataObject;
 
 import org.netbeans.modules.cnd.execution41.org.openide.cookies.ExecCookie;
@@ -223,36 +226,52 @@ public class ExecutionSupport extends Object
      * @param set sheet set to add properties to
      */
     public void addProperties(Sheet.Set set) {
-        set.put(createParamsProperty());
+        set.put(createParamsProperty(PROP_FILE_PARAMS, getString("PROP_fileParams"), getString("HINT_fileParams"))); // NOI18N
         set.put(createExecutorProperty());
     }
 
-    /** Creates the fileparams property for entry.
-     * @return the property
-     */
-    private PropertySupport<String> createParamsProperty() {
-        PropertySupport<String> result = new PropertySupport.ReadWrite<String>(
-                PROP_FILE_PARAMS,
-                String.class,
-                getString("PROP_fileParams"),
-                getString("HINT_fileParams")) {
+    protected PropertySupport<String> createParamsProperty(String propertyName, String displayName, String description) {
+                PropertySupport<String> result = new PropertySupport.ReadWrite<String>(
+                propertyName, String.class, displayName, description) {
+
+//            public String getValue() {
+//                String[] args = getArguments();
+//                /*
+//                StringBuffer b = new StringBuffer(50);
+//                for (int i = 0; i < args.length; i++) {
+//                b.append(args[i]).append(' ');
+//                }
+//                return b.toString();
+//                 */
+//                return Utilities.escapeParameters(args);
+//            }
+//
+//            public void setValue(String val) throws InvocationTargetException {
+//                if (val != null) {
+//                    try {
+//                        setArguments(Utilities.parseParameters(val));
+//                    } catch (IOException e) {
+//                        throw new InvocationTargetException(e);
+//                    }
+//                } else {
+//                    throw new IllegalArgumentException();
+//                }
+//            }
 
             public String getValue() {
                 String[] args = getArguments();
-                /*
-                StringBuffer b = new StringBuffer(50);
+                StringBuilder b = new StringBuilder();
                 for (int i = 0; i < args.length; i++) {
-                b.append(args[i]).append(' ');
+                    b.append(args[i]).append(' ');
                 }
                 return b.toString();
-                 */
-                return Utilities.escapeParameters(args);
             }
 
             public void setValue(String val) throws InvocationTargetException {
                 if (val != null) {
                     try {
-                        setArguments(Utilities.parseParameters(val));
+                        // Keep user arguments as is in args[0]
+                        setArguments(new String[]{val});
                     } catch (IOException e) {
                         throw new InvocationTargetException(e);
                     }
@@ -286,6 +305,7 @@ public class ExecutionSupport extends Object
         result.setValue("oneline", Boolean.TRUE); // NOI18N
         return result;
     }
+
 
     /** Creates the executor property for entry.
      * @return the property
@@ -330,6 +350,51 @@ public class ExecutionSupport extends Object
                 return (isReadOnly == null) ? false : (!isReadOnly.booleanValue());
             }
         };
+    }
+
+    protected PropertySupport<String> createEnvironmentProperty(String propertyName, String displayName, String description) {
+                PropertySupport<String> result = new PropertySupport.ReadWrite<String>(
+                propertyName, String.class, displayName, description) {
+            public String getValue() {
+                String[] args = getEnvironmentVariables();
+                List<String> list = new ArrayList<String>();
+                for (int i = 0; i < args.length; i++) {
+                    list.add(args[i]);
+                }
+                list = ImportUtils.quoteList(list);
+                StringBuilder b = new StringBuilder();
+                for (String s : list) {
+                    b.append(s).append(' '); // NOI18N
+                }
+                return b.toString();
+            }
+            public void setValue(String val) throws InvocationTargetException {
+                if (val != null) {
+                    try {
+                        List<String> vars = ImportUtils.parseEnvironment(val);
+                        setEnvironmentVariables(vars.toArray(new String[vars.size()]));
+                    } catch (IOException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                } else {
+                    throw new IllegalArgumentException();
+                }
+            }
+            @Override public boolean supportsDefaultValue() {
+                return true;
+            }
+            @Override public void restoreDefaultValue() throws InvocationTargetException {
+                try {
+                    setEnvironmentVariables(null);
+                } catch (IOException e) {
+                    throw new InvocationTargetException(e);
+                }
+            }
+            @Override public boolean canWrite() {
+                return getEntry().getFile().getParent().canWrite();
+            }
+        };
+        return result;
     }
 
     /** @return a localized String */
