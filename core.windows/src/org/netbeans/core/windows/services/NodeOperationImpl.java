@@ -56,6 +56,7 @@ import java.util.Set;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.DefaultEditorKit;
 import org.netbeans.core.NbSheet;
@@ -63,6 +64,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
+import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
 import org.openide.nodes.NodeAdapter;
@@ -116,6 +118,9 @@ public final class NodeOperationImpl extends NodeOperation {
             map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(manager));
             map.put("delete", ExplorerUtils.actionDelete(manager, true));
             associateLookup(ExplorerUtils.createLookup (manager, map));
+            setLayout(new BorderLayout());
+            add(new JScrollPane(new BeanTreeView()), BorderLayout.CENTER);
+            setName(n.getDisplayName());
         }
         public ExplorerManager getExplorerManager() {
             return manager;
