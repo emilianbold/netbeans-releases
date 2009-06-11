@@ -42,8 +42,6 @@
 package org.netbeans.modules.j2ee.clientproject.test;
 
 import java.beans.PropertyVetoException;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -54,13 +52,9 @@ import java.net.URL;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 import junit.framework.Assert;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
 import org.openide.filesystems.FileLock;
@@ -77,20 +71,13 @@ import org.openide.util.Lookup;
  * @author Lukas Jungmann
  */
 public final class TestUtil {
-    
-    static {
-        //TestUtil.class.getClassLoader().setDefaultAssertionStatus(true);
-        //System.setProperty("org.openide.util.Lookup", TestUtil.class.getName());
-        //Assert.assertEquals(TestUtil.class, Lookup.getDefault().getClass());
-    }
-    
-    private static TestUtil DEFAULT;
-    private static final int BUFFER = 2048;
+
+    // coming from test layer.xml in j2eeserver
+    public static final String SERVER_URL = "fooservice";
     
     /** Do not call directly */
-    public TestUtil() {
-        Assert.assertNull(DEFAULT);
-        DEFAULT = this;
+    private TestUtil() {
+        super();
     }
     
     private static boolean warned = false;
@@ -213,65 +200,6 @@ public final class TestUtil {
      */
     public static void notifyDeleted(Project p) {
         ((TestProject)p).state.notifyDeleted();
-    }
-    
-    /**
-     * Register Sun Application Server in the "IDE" to be used by unit test.
-     * This method creates dummy userdir as well as dummy NetBeans home
-     * in test's working directory. Both properties - <code>netbeans.home</code>
-     * and <code>netbeans.user</code> - will be set by this method if they are
-     * not already defined.
-     *
-     * @param test a test which requires SunAppServer
-     * @return id of registered server
-     */
-    public static String registerSunAppServer(NbTestCase test) throws Exception {
-        File workDir = test.getWorkDir();
-        File asRoot = extractAppSrv(workDir, new File(test.getDataDir(), "SunAppServer.zip")); // NOI18N
-        FileObject dir = FileUtil.getConfigFile("J2EE/InstalledServers"); // NOI18N
-        String name = FileUtil.findFreeFileName(dir, "instance", null); // NOI18N
-        FileObject instanceFO = dir.createData(name);
-        String serverID = "[" + asRoot.getAbsolutePath() + "]deployer:Sun:AppServer::localhost:4848"; // NOI18N
-        instanceFO.setAttribute(InstanceProperties.URL_ATTR, serverID);
-        instanceFO.setAttribute(InstanceProperties.USERNAME_ATTR, "admin"); // NOI18N
-        instanceFO.setAttribute(InstanceProperties.PASSWORD_ATTR, "adminadmin"); // NOI18N
-        instanceFO.setAttribute(InstanceProperties.DISPLAY_NAME_ATTR, "testdname"); // NOI18N
-        instanceFO.setAttribute(InstanceProperties.HTTP_PORT_NUMBER, "4848"); // NOI18N
-        instanceFO.setAttribute("DOMAIN", "testdomain1"); // NOI18N
-        instanceFO.setAttribute("LOCATION", new File(asRoot, "domains").getAbsolutePath()); // NOI18N
-        ServerRegistry sr = ServerRegistry.getInstance();
-        sr.addInstance(instanceFO);
-        return serverID;
-    }
-    
-    private static File extractAppSrv(File destDir, File archiveFile) throws IOException {
-        ZipInputStream zis = null;
-        BufferedOutputStream dest = null;
-        try {
-            FileInputStream fis = new FileInputStream(archiveFile);
-            zis = new ZipInputStream(new BufferedInputStream(fis));
-            ZipEntry entry;
-            while((entry = zis.getNextEntry()) != null) {
-                byte data[] = new byte[BUFFER];
-                File entryFile = new File(destDir, entry.getName());
-                if (entry.isDirectory()) {
-                    FileUtil.createFolder(entryFile);
-                } else {
-                    FileUtil.createFolder(entryFile.getParentFile());
-                    FileOutputStream fos = new FileOutputStream(entryFile);
-                    dest = new BufferedOutputStream(fos, BUFFER);
-                    int count;
-                    while ((count = zis.read(data, 0, BUFFER)) != -1) {
-                        dest.write(data, 0, count);
-                    }
-                    dest.flush();
-                }
-            }
-        } finally {
-            if (zis != null) { zis.close(); }
-            if (dest != null) { dest.close(); }
-        }
-        return new File(destDir, archiveFile.getName().substring(0, archiveFile.getName().length() - 4));
     }
     
     /**

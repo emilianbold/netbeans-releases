@@ -140,7 +140,8 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
 
     // innerclasses ............................................................
 
-    private static Set<FileObject> karelP = new HashSet<FileObject> ();
+    private static Set<FileObject>
+                                karelPr = new HashSet<FileObject> ();
 
     private static class TLIndexer extends EmbeddingIndexer {
 
@@ -177,23 +178,26 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
                         saveHints (hints, gsfHintsManager, indexingSupport, indexable, gsfParserResult, language);
                     }
                 }
-                final FileObject fileObject = parserResult.getSnapshot ().getSource ().getFileObject ();
-                if (!karelP.contains (fileObject))
-                    try {
-                        karelP.add (fileObject);
-                        TaskProcessor.runWhenScanFinished (
-                            new ExceptionAction<Void> () {
-                                public Void run () throws Exception {
-                                    GsfTaskProvider.refresh (fileObject);
-                                    karelP.remove (fileObject);
-                                    return null;
-                                }
-                            },
-                            Collections.<Source> emptyList ()
-                        );
-                    } catch (ParseException ex) {
-                        Exceptions.printStackTrace (ex);
-                    }
+                FileObject fileObject = parserResult.getSnapshot ().getSource ().getFileObject ();
+                if (!karelPr.contains (fileObject)) {
+                    karelPr.add (fileObject);
+                    if (karelPr.size () == 1)
+                        try {
+                            TaskProcessor.runWhenScanFinished (
+                                new ExceptionAction<Void> () {
+                                    public Void run () throws Exception {
+                                        for (FileObject fileObject : karelPr)
+                                            GsfTaskProvider.refresh (fileObject);
+                                        karelPr = new HashSet<FileObject> ();
+                                        return null;
+                                    }
+                                },
+                                Collections.<Source> emptyList ()
+                            );
+                        } catch (ParseException ex) {
+                            Exceptions.printStackTrace (ex);
+                        }
+                }
             } catch (IOException ex) {
                 LOG.log (Level.WARNING, null, ex);
             }

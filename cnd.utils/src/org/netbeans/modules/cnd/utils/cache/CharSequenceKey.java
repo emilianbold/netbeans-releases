@@ -423,8 +423,12 @@ public final class CharSequenceKey implements TinyCharSequence, Comparable<CharS
 
         @Override
         public String toString() {
-            StringBuilder buf = new StringBuilder(this);
-            return buf.toString();
+            int n = length();
+            char[] r = new char[n];
+            for (int i = 0; i < n; i++) {
+                r[i] = charAt(i);
+            }
+            return new String(r);
         }
 
         @Override
@@ -535,8 +539,12 @@ public final class CharSequenceKey implements TinyCharSequence, Comparable<CharS
 
         @Override
         public String toString() {
-            StringBuilder buf = new StringBuilder(this);
-            return buf.toString();
+            int n = length();
+            char[] r = new char[n];
+            for (int i = 0; i < n; i++) {
+                r[i] = charAt(i);
+            }
+            return new String(r);
         }
 
         @Override

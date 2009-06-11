@@ -171,7 +171,7 @@ public final class CndFileUtils {
                     if (parentDirFlags == Flags.NOT_FOUND || parentDirFlags == Flags.FILE) {
                         // no need to check non existing file
                         exists = Flags.NOT_FOUND;
-                        files.put(path, exists);
+//                        files.put(path, exists);
                     } else if (indexParentFolder) {
                         assert (parentDirFlags == Flags.DIRECTORY) : "must be DIRECTORY but was " + parentDirFlags; // NOI18N
                         // let's index not indexed directory
@@ -181,7 +181,7 @@ public final class CndFileUtils {
                 } else {
                     // no need to check non existing file
                     exists = Flags.NOT_FOUND;
-                    files.put(path, exists);
+//                    files.put(path, exists);
                 }
             }
             if (exists == null) {

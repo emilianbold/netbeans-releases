@@ -43,7 +43,10 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Enumeration;
 import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
@@ -156,7 +159,19 @@ public class CustomJavac extends Javac {
         classes.setDir(d);
         classes.setIncludes("**/*.class");
         classes.setExcludes("**/*$*.class");
+        String startTimeProp = getProject().getProperty("module.build.started.time");
+        Date startTime;
+        try {
+            startTime = startTimeProp != null ? new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").parse(startTimeProp) : null;
+        } catch (ParseException x) {
+            throw new BuildException(x);
+        }
         for (String clazz : classes.getDirectoryScanner(getProject()).getIncludedFiles()) {
+            if (startTime != null && new File(d, clazz).lastModified() > startTime.getTime()) {
+                // Ignore recently created classes. Hack to get contrib/j2ee.blueprints and the like
+                // to build; these generate classes and resources before main compilation step.
+                continue;
+            }
             String java = clazz.substring(0, clazz.length() - ".class".length()) + ".java";
             boolean found = false;
             for (File source : sources) {
@@ -178,6 +193,7 @@ public class CustomJavac extends Javac {
                 delete.addFileset(deletables);
                 delete.init();
                 delete.execute();
+                break;
             }
         }
     }
