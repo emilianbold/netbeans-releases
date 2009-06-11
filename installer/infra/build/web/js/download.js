@@ -414,6 +414,9 @@ function getZipUrl() {
 }
 function select_language() {
     var language = get_language_id();
+    if(!isMainLanguage(language) && !isCommunityBuild()) {  
+       language = "en";                                     
+    }
     var select = document.getElementById("language_select");
     var languageOptions = select.options;
     for(var i=0;i<languageOptions.length;i++) {
