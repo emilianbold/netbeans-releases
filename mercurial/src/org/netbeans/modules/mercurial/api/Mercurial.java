@@ -288,6 +288,6 @@ public class Mercurial {
     }
 
     public static boolean isClientAvailable() {
-        return org.netbeans.modules.mercurial.Mercurial.getInstance().checkVersionNotify(true);
+        return org.netbeans.modules.mercurial.Mercurial.getInstance().isAvailable(true, true);
     }
 }

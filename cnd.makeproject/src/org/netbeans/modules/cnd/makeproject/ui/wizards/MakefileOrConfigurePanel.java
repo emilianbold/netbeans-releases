@@ -136,7 +136,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
                     runConfigureCheckBox.setSelected(true);
                 }
                 configureNameTextField.setText(configureScript);
-                configureArgumentsTextField.setText(ConfigureUtils.getConfigureArguments(configureScript)); // NOI18N
+                configureArgumentsTextField.setText(ConfigureUtils.getConfigureArguments(configureScript,"")); // NOI18N
             }
         }
     }

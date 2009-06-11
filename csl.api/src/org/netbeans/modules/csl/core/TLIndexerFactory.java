@@ -106,7 +106,7 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
         try {
             IndexingSupport indexingSupport = IndexingSupport.getInstance (context);
             for (Indexable indexable : deleted)
-                indexingSupport.addDocument (indexingSupport.createDocument (indexable));
+                indexingSupport.removeDocuments (indexable);
         } catch (IOException ex) {
             LOG.log (Level.WARNING, null, ex);
         }
@@ -121,7 +121,7 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
         try {
             IndexingSupport indexingSupport = IndexingSupport.getInstance (context);
             for (Indexable indexable : dirty)
-                indexingSupport.addDocument (indexingSupport.createDocument (indexable));
+                indexingSupport.markDirtyDocuments (indexable);
         } catch (IOException ex) {
             LOG.log (Level.WARNING, null, ex);
         }
