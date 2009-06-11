@@ -100,9 +100,9 @@ import org.openide.util.Exceptions;
  */
 public class CosChecker implements PrerequisitesChecker {
 
-    private static final String NB_COS = ".netbeans_automatic_build"; //NOI18N
-    private static final String MAVEN_MAIN_COS = ".netbeans_CoS_timestamp_main"; //NOI18N
-    private static final String MAVEN_TEST_COS = ".netbeans_CoS_timestamp_test"; //NOI18N
+    static final String NB_COS = ".netbeans_automatic_build"; //NOI18N
+    static final String MAVEN_MAIN_COS = ".netbeans_CoS_timestamp_main"; //NOI18N
+    static final String MAVEN_TEST_COS = ".netbeans_CoS_timestamp_test"; //NOI18N
     private static final String RUN_MAIN = ActionProvider.COMMAND_RUN_SINGLE + ".main"; //NOI18N
     private static final String DEBUG_MAIN = ActionProvider.COMMAND_DEBUG_SINGLE + ".main"; //NOI18N
 
@@ -189,7 +189,7 @@ public class CosChecker implements PrerequisitesChecker {
         return true;
     }
 
-    private static final String[] DEFAULT_INCLUDES = {"**/**"};
+    static final String[] DEFAULT_INCLUDES = {"**/**"};
 
     private boolean checkResource(Resource r, FileObject outputDir, long stamp) {
         String dir = r.getDirectory();
@@ -202,14 +202,14 @@ public class CosChecker implements PrerequisitesChecker {
             //includes/excludes
             @SuppressWarnings("unchecked")
             String[] incls = (String[]) r.getIncludes().toArray(new String[0]);
-            if (incls != null && incls.length > 0) {
+            if (incls.length > 0) {
                 ds.setIncludes(incls);
             } else {
                 ds.setIncludes(DEFAULT_INCLUDES);
             }
             @SuppressWarnings("unchecked")
             String[] excls = (String[]) r.getExcludes().toArray(new String[0]);
-            if (excls != null && excls.length > 0) {
+            if (excls.length > 0) {
                 ds.setExcludes(excls);
             }
             ds.addDefaultExcludes();
