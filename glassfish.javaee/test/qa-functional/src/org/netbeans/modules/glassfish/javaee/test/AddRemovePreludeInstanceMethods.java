@@ -46,6 +46,7 @@ import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
 //import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.derby.spi.support.DerbySupport;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.common.wizards.AddServerLocationVisualPanel;
 import org.netbeans.modules.glassfish.common.wizards.Retriever;
@@ -68,7 +69,8 @@ public class AddRemovePreludeInstanceMethods extends NbTestCase {
     public AddRemovePreludeInstanceMethods(String testName) {
         super(testName);
     }
-            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
+
+    GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
     
     public void addPreludeInstance() {
         try {
@@ -81,11 +83,11 @@ public class AddRemovePreludeInstanceMethods extends NbTestCase {
                         gip.getDirectDownloadUrl(), new Retriever.Updater() {
 
                     public void updateMessageText(String msg) {
-                        //System.out.println(msg);
+                        System.out.println(msg);
                     }
 
                     public void updateStatusText(String status) {
-                        //System.out.println(status);
+                        System.out.println(status);
                     }
 
                     public void clearCancelState() {
@@ -156,6 +158,13 @@ public class AddRemovePreludeInstanceMethods extends NbTestCase {
             fail("v3 Prelude instance still exists !");
         } catch(Exception e) {
             fail(e.getMessage());
+        }
+    }
+
+    public void checkJavaDB() {
+        String location = DerbySupport.getLocation();
+        if (null == location || location.trim().length() < 1) {
+            fail("JavaDB is not registered!");
         }
     }
     
