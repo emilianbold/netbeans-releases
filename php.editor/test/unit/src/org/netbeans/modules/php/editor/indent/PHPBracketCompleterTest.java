@@ -1012,55 +1012,6 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         insertChar("x = %q((^))", 'a', "x = %q((a^))");
     }
     
-    
-    public void test110332() throws Exception {
-        String before = "args = {\n" +
-            "      :name => args[:name],\n" +
-            "      :status => :missing,\n" +
-            "      :s2_test_comments => comments, \n" +
-            "      :metric => '', \n" +
-            "      :duration => '', \n" +
-            "      :setback? => true,\n" +
-            "      :progress? => false, :compare_metric => 0, ^:compare_duration => 0}\n" +
-            "    OpenStruct.new\n" +
-                            "";
-        String after = "args = {\n" +
-            "      :name => args[:name],\n" +
-            "      :status => :missing,\n" +
-            "      :s2_test_comments => comments, \n" +
-            "      :metric => '', \n" +
-            "      :duration => '', \n" +
-            "      :setback? => true,\n" +
-            "      :progress? => false, :compare_metric => 0, \n      ^:compare_duration => 0}\n" +
-            "    OpenStruct.new\n" +
-                            "";
-        insertBreak(before, after);
-    }
-    
-    public void test110332b() throws Exception {
-        String before = "args = {\n" +
-            "      :name => args[:name],\n" +
-            "      :status => :missing,\n" +
-            "      :s2_test_comments => comments, \n" +
-            "      :metric => '', \n" +
-            "      :duration => '', \n" +
-            "      :setback? => true,\n" +
-            "      :progress? => false, :compare_metric => 0,^ :compare_duration => 0}\n" +
-            "    OpenStruct.new\n" +
-                            "";
-        String after = "args = {\n" +
-            "      :name => args[:name],\n" +
-            "      :status => :missing,\n" +
-            "      :s2_test_comments => comments, \n" +
-            "      :metric => '', \n" +
-            "      :duration => '', \n" +
-            "      :setback? => true,\n" +
-            "      :progress? => false, :compare_metric => 0,\n      ^:compare_duration => 0}\n" +
-            "    OpenStruct.new\n" +
-                            "";
-        insertBreak(before, after);
-    }
-    
 //    public void testLogicalRange1() throws Exception {
 //        String code = "if (true)\n  fo^o\nend";
 //        String next = "if (true)\n  %<%fo^o%>%\nend";
