@@ -152,7 +152,7 @@ public class NewProjectWizardOperatorTest extends JellyTestCase {
         npwo.selectCategory("Java");
         npwo.selectProject("Java Application");
         npwo.next();
-        NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
+        NewJavaProjectNameLocationStepOperator npnlso = new NewJavaProjectNameLocationStepOperator();
         npnlso.txtProjectName().setText(projectName);
         npnlso.txtProjectLocation().setText(getDataDir().getAbsolutePath()); // NOI18N
         npnlso.finish();

@@ -50,9 +50,11 @@ import javax.swing.KeyStroke;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.DebugProjectAction;
+import org.netbeans.jellytools.modules.debugger.actions.DebugJavaFileAction;
 import org.netbeans.jellytools.modules.debugger.actions.NewBreakpointAction;
 import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
@@ -136,6 +138,7 @@ public class Utilities {
     public static String projectPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.Bundle", "LBL_Customizer_Title");
     //    public static String runningProjectTreeItem = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "LBL_Config_Run");
     public static String testProjectName = "debugTestProject";
+    public static String testFileNodePath = "examples.advanced|MemoryView.java";
 
     public static KeyStroke toggleBreakpointShortcut = KeyStroke.getKeyStroke(KeyEvent.VK_F8, KeyEvent.CTRL_MASK);
     public static KeyStroke newBreakpointShortcut = KeyStroke.getKeyStroke(KeyEvent.VK_F8, KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK);
@@ -261,10 +264,17 @@ public class Utilities {
     }
 
     public static void startDebugger() {
+
+        /*
         // "Set as Main Project"
         String setAsMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetAsMainProjectAction_Name");
         new Action(null, setAsMainProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(testProjectName));
         new DebugProjectAction().performShortcut();
+         */
+        //TODO: Find out why the above doesn't work
+        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+        new DebugJavaFileAction().perform(beanNode);
+
         getDebugToolbar().waitComponentVisible(true);
     }
 
