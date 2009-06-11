@@ -41,12 +41,16 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.io.File;
 import org.netbeans.modules.cnd.actions.AbstractExecutorRunAction;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -149,15 +153,68 @@ public final class ConfigureUtils {
         return null;
     }
 
-    public static String getConfigureArguments(String configure){
-        if (configure.endsWith("configure")) { // NOI18N
-            return "CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\""; // NOI18N
-        } else if (configure.endsWith("CMakeLists.txt")) { // NOI18N
-            return "-G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=\"-g3 -gdwarf-2\" -DCMAKE_C_FLAGS_DEBUG=\"-g3 -gdwarf-2\""; // NOI18N
-        } else if (configure.endsWith(".pro")) { // NOI18N
-            return "QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\""; // NOI18N
+    public static String getDefaultC(){
+        CompilerSet def = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        String cCompiler = "gcc"; // NOI18N
+        if (def != null) {
+            CompilerFlavor flavor = def.getCompilerFlavor();
+            if (flavor.isSunStudioCompiler()) {
+                cCompiler = "cc"; // NOI18N
+            }
         }
-        return ""; // NOI18N
+        return cCompiler;
+    }
+
+    public static String getDefaultCpp(){
+        CompilerSet def = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        String cppCompiler = "g++"; // NOI18N
+        if (def != null) {
+            CompilerFlavor flavor = def.getCompilerFlavor();
+            if (flavor.isSunStudioCompiler()) {
+                cppCompiler = "CC"; // NOI18N
+            }
+        }
+        return cppCompiler;
+    }
+
+    public static String getConfigureArguments(String configure){
+        CompilerSet def = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        String cCompiler = getDefaultC();
+        String cppCompiler = getDefaultCpp();
+        StringBuilder buf = new StringBuilder();
+        if (configure.endsWith("configure")) { // NOI18N
+            if ("cc".equals(cCompiler)) { // NOI18N
+                buf.append("CC=cc CFLAGS=-g"); // NOI18N
+            } else {
+                buf.append("CFLAGS=\"-g3 -gdwarf-2\""); // NOI18N
+            }
+            if ("CC".equals(cppCompiler)) { // NOI18N
+                buf.append(" CXX=CC CXXFLAGS=-g"); // NOI18N
+            } else {
+                buf.append(" CXXFLAGS=\"-g3 -gdwarf-2\""); // NOI18N
+            }
+        } else if (configure.endsWith("CMakeLists.txt")) { // NOI18N
+            buf.append("-G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug"); // NOI18N
+            if ("cc".equals(cCompiler)) { // NOI18N
+                buf.append(" -DCMAKE_C_COMPILER=cc -DCMAKE_C_FLAGS_DEBUG=-g"); // NOI18N
+            } else {
+                buf.append(" -DCMAKE_C_FLAGS_DEBUG=\"-g3 -gdwarf-2\""); // NOI18N
+            }
+            if ("CC".equals(cppCompiler)) { // NOI18N
+                buf.append(" -DCMAKE_CXX_COMPILER=CC -DCMAKE_CXX_FLAGS_DEBUG=-g"); // NOI18N
+            } else {
+                buf.append(" -DCMAKE_CXX_FLAGS_DEBUG=\"-g3 -gdwarf-2\""); // NOI18N
+            }
+        } else if (configure.endsWith(".pro")) { // NOI18N
+            if ("CC".equals(cppCompiler) && Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) { // NOI18N
+                buf.append("-spec solaris-cc QMAKE_CFLAGS=-g"); // NOI18N
+                buf.append(" QMAKE_CXXFLAGS=-g"); // NOI18N
+            } else {
+                buf.append("QMAKE_CFLAGS=\"-g3 -gdwarf-2\""); // NOI18N
+                buf.append(" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\""); // NOI18N
+            }
+        }
+        return buf.toString();
     }
 
 }

@@ -49,6 +49,7 @@ import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -165,7 +166,8 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
 
     public class WizardStorage {
         private String path = ""; // NOI18N
-        private static final String PREDEFINED_FLAGS = "\"-g3 -gdwarf-2\""; // NOI18N
+        private static final String PREDEFINED_FLAGS_GNU = "\"-g3 -gdwarf-2\""; // NOI18N
+        private static final String PREDEFINED_FLAGS_SUN = "-g"; // NOI18N
         private String flags = ""; // NOI18N
         private boolean setMain = true;
         private boolean buildProject = true;
@@ -220,34 +222,69 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
          */
         public String getRealFlags() {
             String configure = getConfigure();
+            String cCompiler = ConfigureUtils.getDefaultC();
+            String cppCompiler = ConfigureUtils.getDefaultCpp();
             StringBuilder buf = new StringBuilder(flags);
+            String cCompilerFlags;
+            if ("cc".equals(cCompiler)) { // NOI18N
+                cCompilerFlags = PREDEFINED_FLAGS_SUN;
+            } else {
+                cCompilerFlags = PREDEFINED_FLAGS_GNU;
+            }
+            String cppCompilerFlags;
+            if ("CC".equals(cppCompiler)) { // NOI18N
+                cppCompilerFlags = PREDEFINED_FLAGS_SUN;
+            } else {
+                cppCompilerFlags = PREDEFINED_FLAGS_GNU;
+            }
             if (configure.endsWith("CMakeLists.txt")){ // NOI18N
-                //"-G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS=\"-g3 -gdwarf-2\" -DCMAKE_CXX_FLAGS=\"-g3 -gdwarf-2\"";
                 if (flags.indexOf("-G ") < 0 ){ // NOI18N
                     if (buf.length() > 0) {
                         buf.append(' '); // NOI18N
                     }
                     buf.append("-G \"Unix Makefiles\""); // NOI18N
                 }
-                appendIfNeed("-DCMAKE_C_FLAGS=", flags, buf); // NOI18N
-                appendIfNeed("-DCMAKE_CXX_FLAGS=", flags, buf); // NOI18N
+                appendIfNeed("-DCMAKE_BUILD_TYPE=", flags, buf, "Debug"); // NOI18N
+                if ("cc".equals(cCompiler)) { // NOI18N
+                    appendIfNeed("-DCMAKE_C_COMPILER=", flags, buf, "cc"); // NOI18N
+                }
+                if ("CC".equals(cppCompiler)) { // NOI18N
+                    appendIfNeed("-DCMAKE_CXX_COMPILER=", flags, buf, "CC"); // NOI18N
+                }
+                appendIfNeed("-DCMAKE_C_FLAGS=", flags, buf, cCompilerFlags); // NOI18N
+                appendIfNeed("-DCMAKE_CXX_FLAGS=", flags, buf, cppCompilerFlags); // NOI18N
             } else if (configure.endsWith(".pro")){ // NOI18N
-                //"QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
-                appendIfNeed("QMAKE_CFLAGS=", flags, buf); // NOI18N
-                appendIfNeed("QMAKE_CXXFLAGS=", flags, buf); // NOI18N
+                if ("CC".equals(cppCompiler) && Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) { // NOI18N
+                    if (flags.indexOf("-spec ") < 0 ){ // NOI18N
+                        if (buf.length() > 0) {
+                            buf.append(' '); // NOI18N
+                        }
+                        buf.append("-spec solaris-cc"); // NOI18N
+                    }
+                    appendIfNeed("QMAKE_CC=", flags, buf, "cc"); // NOI18N
+                } else {
+                    appendIfNeed("QMAKE_CFLAGS=", flags, buf, cCompilerFlags); // NOI18N
+                    appendIfNeed("QMAKE_CXXFLAGS=", flags, buf, cppCompilerFlags); // NOI18N
+                }
             } else {
-                appendIfNeed("CFLAGS=", flags, buf); // NOI18N
-                appendIfNeed("CXXFLAGS=", flags, buf); // NOI18N
+                if ("cc".equals(cCompiler)) { // NOI18N
+                    appendIfNeed("CC=", flags, buf, "cc"); // NOI18N
+                }
+                if ("CC".equals(cppCompiler)) { // NOI18N
+                    appendIfNeed("CXX=", flags, buf, "CC"); // NOI18N
+                }
+                appendIfNeed("CFLAGS=", flags, buf, cCompilerFlags); // NOI18N
+                appendIfNeed("CXXFLAGS=", flags, buf, cppCompilerFlags); // NOI18N
             }
             return buf.toString();
         }
 
-        private void appendIfNeed(String key, String flags, StringBuilder buf){
-            if (flags.indexOf(key) < 0 ){ // NOI18N
+        private void appendIfNeed(String key, String flags, StringBuilder buf, String flag){
+            if (flags.indexOf(key) < 0 ){
                 if (buf.length() > 0) {
                     buf.append(' '); // NOI18N
                 }
-                buf.append(key+PREDEFINED_FLAGS); // NOI18N
+                buf.append(key + flag);
             }
         }
 
