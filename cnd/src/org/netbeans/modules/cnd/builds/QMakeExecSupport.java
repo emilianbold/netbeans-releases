@@ -40,9 +40,6 @@
 package org.netbeans.modules.cnd.builds;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
@@ -74,7 +71,7 @@ public class QMakeExecSupport extends ExecutionSupport {
         if (qmakeCommandProperty == null) {
             qmakeCommandProperty = createQMakeCommandProperty();
             qmakeRunDirectory = createRunDirectoryProperty();
-            qmakeEnvironmentProperty = createEnvironmentProperty();
+            qmakeEnvironmentProperty = createEnvironmentProperty(PROP_ENVIRONMENT, getString("PROP_QMAKE_ENVIRONMENT"), getString("HINT_QMAKE_ENVIRONMENT")); // NOI18N
         }
     }
 
@@ -82,55 +79,10 @@ public class QMakeExecSupport extends ExecutionSupport {
     public void addProperties(Sheet.Set set) {
         createProperties();
         this.sheetSet = set;
-        set.put(createParamsProperty());
+        set.put(createEnvironmentProperty(PROP_FILE_PARAMS, getString("PROP_CMAKE_PARAMS"), getString("HINT_CMAKE_PARAMS"))); // NOI18N);
         set.put(qmakeRunDirectory);
         set.put(qmakeCommandProperty);
         set.put(qmakeEnvironmentProperty);
-    }
-
-    private PropertySupport<String> createParamsProperty() {
-        PropertySupport<String> result = new PropertySupport.ReadWrite<String>(
-                PROP_FILE_PARAMS, String.class,
-                getString("PROP_CMAKE_PARAMS"), getString("HINT_CMAKE_PARAMS")) { // NOI18N
-            public String getValue() {
-                String[] args = getArguments();
-                StringBuilder b = new StringBuilder();
-                for (int i = 0; i < args.length; i++) {
-                    b.append(args[i]).append(' '); // NOI18N
-                }
-                return b.toString();
-            }
-            public void setValue(String val) throws InvocationTargetException {
-                if (val != null) {
-                    try {
-                        // Keep user arguments as is in args[0]
-                        setArguments(new String[]{val});
-                    } catch (IOException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                } else {
-                    throw new IllegalArgumentException();
-                }
-            }
-            @Override public boolean supportsDefaultValue() {
-                return true;
-            }
-            @Override public void restoreDefaultValue() throws InvocationTargetException {
-                try {
-                    setArguments(null);
-                } catch (IOException e) {
-                    throw new InvocationTargetException(e);
-                }
-            }
-            @Override public boolean canWrite() {
-                Boolean isReadOnly = (Boolean) getEntry().getFile().getAttribute(READONLY_ATTRIBUTES);
-                return (isReadOnly == null) ? false : (!isReadOnly.booleanValue());
-            }
-        };
-        //String editor hint to use a JTextField, not a JTextArea for the
-        //custom editor.  Arguments can't be multiline anyway.
-        result.setValue("oneline", Boolean.TRUE);// NOI18N
-        return result;
     }
 
     private PropertySupport<String> createQMakeCommandProperty() {
@@ -220,52 +172,6 @@ public class QMakeExecSupport extends ExecutionSupport {
                 ex.printStackTrace();
             }
         }
-    }
-
-    private PropertySupport<String> createEnvironmentProperty() {
-        PropertySupport<String> result = new PropertySupport.ReadWrite<String>(
-                PROP_ENVIRONMENT, String.class,
-                getString("PROP_QMAKE_ENVIRONMENT"), getString("HINT_QMAKE_ENVIRONMENT")) { // NOI18N
-            public String getValue() {
-                String[] args = getEnvironmentVariables();
-                List<String> list = new ArrayList<String>();
-                for (int i = 0; i < args.length; i++) {
-                    list.add(args[i]);
-                }
-                list = ImportUtils.quoteList(list);
-                StringBuilder b = new StringBuilder();
-                for (String s : list) {
-                    b.append(s).append(' '); // NOI18N
-                }
-                return b.toString();
-            }
-            public void setValue(String val) throws InvocationTargetException {
-                if (val != null) {
-                    try {
-                        List<String> vars = ImportUtils.parseEnvironment(val);
-                        setEnvironmentVariables(vars.toArray(new String[vars.size()]));
-                    } catch (IOException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                } else {
-                    throw new IllegalArgumentException();
-                }
-            }
-            @Override public boolean supportsDefaultValue() {
-                return true;
-            }
-            @Override public void restoreDefaultValue() throws InvocationTargetException {
-                try {
-                    setEnvironmentVariables(null);
-                } catch (IOException e) {
-                    throw new InvocationTargetException(e);
-                }
-            }
-            @Override public boolean canWrite() {
-                return getEntry().getFile().getParent().canWrite();
-            }
-        };
-        return result;
     }
 
     private static String getString(String key){

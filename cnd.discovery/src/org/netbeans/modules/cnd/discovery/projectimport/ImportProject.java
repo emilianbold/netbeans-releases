@@ -78,8 +78,6 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.builds.CMakeExecSupport;
-import org.netbeans.modules.cnd.builds.QMakeExecSupport;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.wizard.ConsolidationStrategyPanel;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
@@ -421,12 +419,16 @@ public class ImportProject implements PropertyChangeListener {
                     try {
                         // Keep user arguments as is in args[0]
                         ses.setArguments(new String[]{configureArguments});
+                        // duplicate configure variables in environment
+                        List<String> vars = ImportUtils.parseEnvironment(configureArguments);
+                        ses.setEnvironmentVariables(vars.toArray(new String[vars.size()]));
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
                 } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){
                     ExecutionSupport ses = node.getCookie(ExecutionSupport.class);
                     try {
+                        // extract configure variables in environment
                         List<String> vars = ImportUtils.parseEnvironment(configureArguments);
                         for (String s : ImportUtils.quoteList(vars)) {
                             int i = configureArguments.indexOf(s);
@@ -477,7 +479,7 @@ public class ImportProject implements PropertyChangeListener {
                 logger.log(Level.INFO, "#" + configureFile + " " + configureArguments); // NOI18N
             }
             if (MIMENames.SHELL_MIME_TYPE.equals(mime)){
-                ShellRunAction.performAction(node, listener, null, makeProject, ImportUtils.parseEnvironment(configureArguments));
+                ShellRunAction.performAction(node, listener, null, makeProject);
             } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){
                 CMakeAction.performAction(node, listener, null, makeProject);
             } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){

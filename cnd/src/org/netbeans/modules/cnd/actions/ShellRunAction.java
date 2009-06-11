@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.actions;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
@@ -64,6 +63,7 @@ import org.openide.nodes.Node;
  * Base class for Make Actions ...
  */
 public class ShellRunAction extends AbstractExecutorRunAction {
+    private static final boolean TRACE = false;
 
     public String getName() {
         return getString("BTN_Run");
@@ -85,10 +85,10 @@ public class ShellRunAction extends AbstractExecutorRunAction {
 
 
     public static void performAction(Node node) {
-        performAction(node, null, null, null, null);
+        performAction(node, null, null, null);
     }
 
-    public static void performAction(Node node, ExecutionListener listener, Writer outputListener, Project project, List<String> additionalEnvironment) {
+    public static void performAction(Node node, ExecutionListener listener, Writer outputListener, Project project) {
         ShellExecSupport bes = node.getCookie(ShellExecSupport.class);
         if (bes == null) {
             return;
@@ -142,18 +142,30 @@ public class ShellRunAction extends AbstractExecutorRunAction {
             argsFlat.append(" "); // NOI18N
             argsFlat.append(args[i]);
         }
+
+        String[] additionalEnvironment = getAdditionalEnvirounment(node);
         String[] env = prepareEnv(execEnv);
-        if (additionalEnvironment != null && additionalEnvironment.size()>0){
-            String[] tmp = new String[env.length + additionalEnvironment.size()];
+        if (additionalEnvironment != null && additionalEnvironment.length>0){
+            String[] tmp = new String[env.length + additionalEnvironment.length];
             for(int i=0; i < env.length; i++){
                 tmp[i] = env[i];
             }
-            for(int i=0; i < additionalEnvironment.size(); i++){
-                tmp[env.length + i] = additionalEnvironment.get(i);
+            for(int i=0; i < additionalEnvironment.length; i++){
+                tmp[env.length + i] = additionalEnvironment[i];
             }
             env = tmp;
         }
        
+        if (TRACE) {
+            System.err.println("Run "+shellCommand);
+            System.err.println("\tin folder   "+buildDir.getPath());
+            System.err.println("\targuments   "+argsFlat);
+            System.err.println("\tenvironment ");
+            for(String v : env) {
+                System.err.println("\t\t"+v);
+            }
+        }
+
         // Execute the shellfile
         
         NativeExecutor nativeExecutor = new NativeExecutor(
