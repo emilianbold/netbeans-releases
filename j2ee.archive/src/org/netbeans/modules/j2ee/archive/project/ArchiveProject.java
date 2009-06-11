@@ -52,7 +52,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
@@ -69,7 +68,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
@@ -92,7 +91,6 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.NotImplementedException;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
@@ -235,7 +233,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
             new ProvidesLogicalView(ArchiveProject.this),
             helper,
             new ProvidesJ2eeModule(helper, ArchiveProject.this),
-            new J2eeModuleForAddModuleAction(J2eeModule.EAR),
+            new J2eeModuleForAddModuleAction(J2eeModule.Type.EAR),
             new MyAntProvider(),
             new ProvidesCustomizer(ArchiveProject.this,helper),
             new RecommendedTemplatesImpl(),
@@ -414,7 +412,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
                             jmp.getConfigSupport().ensureConfigurationReady();
                             tmp.setInner(jmp);
                         } else {
-                            Object mt = isEar?J2eeModule.EAR:J2eeModule.CONN;
+                            J2eeModule.Type mt = isEar ? J2eeModule.Type.EAR : J2eeModule.Type.RAR;
                             tmp.setJ2eeModule(
                                     J2eeModuleFactory.createJ2eeModule(new J2eeModuleForAddModuleAction(mt)));
                             tmp.setServerInstanceID((String) app.get(ArchiveProjectProperties.J2EE_SERVER_INSTANCE));
@@ -522,7 +520,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
                     }
                     tmp.setInner(jmp);
                 } else {
-                    Object mt = J2eeModule.CONN;
+                    J2eeModule.Type mt = J2eeModule.Type.RAR;
                     tmp.setJ2eeModule(
                             J2eeModuleFactory.createJ2eeModule(new J2eeModuleForAddModuleAction(mt)));
                     tmp.setServerInstanceID((String) getArchiveProjectProperties().get(ArchiveProjectProperties.J2EE_SERVER_INSTANCE));
@@ -613,11 +611,11 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
         });
     }
     
-    private class J2eeModuleForAddModuleAction implements J2eeModuleImplementation {
+    private class J2eeModuleForAddModuleAction implements J2eeModuleImplementation2 {
         
-        private Object mt = null;
+        private final J2eeModule.Type mt;
         
-        J2eeModuleForAddModuleAction(Object mt) {
+        J2eeModuleForAddModuleAction(J2eeModule.Type mt) {
             //super(null);
             this.mt = mt;
         }
@@ -626,7 +624,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
             return J2eeModule.JAVA_EE_5; // throw new UnsupportedOperationException();
         }
         
-        public Object getModuleType() {
+        public J2eeModule.Type getModuleType() {
             return mt;
         }
         
