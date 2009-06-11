@@ -48,10 +48,12 @@ import java.util.Enumeration;
 import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Delete;
 import org.apache.tools.ant.taskdefs.Javac;
 import org.apache.tools.ant.taskdefs.compilers.CompilerAdapter;
 import org.apache.tools.ant.taskdefs.compilers.DefaultCompilerAdapter;
 import org.apache.tools.ant.types.Commandline;
+import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Path;
 
 /**
@@ -70,6 +72,21 @@ public class CustomJavac extends Javac {
     private Path processorPath;
     public void addProcessorPath(Path cp) {
         processorPath = cp;
+    }
+
+    private boolean usingExplicitIncludes;
+    @Override
+    public void setIncludes(String includes) {
+        super.setIncludes(includes);
+        usingExplicitIncludes = true;
+    }
+
+    @Override
+    public void execute() throws BuildException {
+        if (!usingExplicitIncludes) {
+            cleanUpStaleClasses();
+        }
+        super.execute();
     }
 
     @Override
@@ -113,6 +130,54 @@ public class CustomJavac extends Javac {
                     // other modes not supported, see below
                     throw new BuildException("Compile failed; see the compiler error output for details.", getLocation());
                 }
+            }
+        }
+    }
+
+    /**
+     * See issue #166888. If there are any existing class files with no matching
+     * source file, assume this is an incremental build and the source file has
+     * since been deleted. In that case, delete the whole classes dir. (Could
+     * merely delete the stale class file, but if an annotation processor also
+     * created associated resources, these may be stale too. Kill them all and
+     * let JSR 269 sort it out.)
+     */
+    private void cleanUpStaleClasses() {
+        File d = getDestdir();
+        if (!d.isDirectory()) {
+            return;
+        }
+        String[] _sources = getSrcdir().list();
+        File[] sources = new File[_sources.length];
+        for (int i = 0; i < _sources.length; i++) {
+            sources[i] = new File(_sources[i]);
+        }
+        FileSet classes = new FileSet();
+        classes.setDir(d);
+        classes.setIncludes("**/*.class");
+        classes.setExcludes("**/*$*.class");
+        for (String clazz : classes.getDirectoryScanner(getProject()).getIncludedFiles()) {
+            String java = clazz.substring(0, clazz.length() - ".class".length()) + ".java";
+            boolean found = false;
+            for (File source : sources) {
+                if (new File(source, java).isFile()) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                // XXX might be a false negative in case this was a nonpublic outer class
+                // (could check for "ClassName.java" in bytecode to see)
+                log(new File(d, clazz) + " appears to be stale, rebuilding all module sources", Project.MSG_WARN);
+                Delete delete = new Delete();
+                delete.setProject(getProject());
+                delete.setOwningTarget(getOwningTarget());
+                delete.setLocation(getLocation());
+                FileSet deletables = new FileSet();
+                deletables.setDir(d);
+                delete.addFileset(deletables);
+                delete.init();
+                delete.execute();
             }
         }
     }
