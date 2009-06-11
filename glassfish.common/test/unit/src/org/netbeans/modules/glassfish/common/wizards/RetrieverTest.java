@@ -72,9 +72,22 @@ public class RetrieverTest implements Retriever.Updater {
     public void tearDown() {
     }
 
+    private void deleteJunk(File d) {
+        if (!d.exists()) return;
+        if (d.isFile()) {
+            d.delete();
+        } else { // directory
+            for (File cf : d.listFiles()) {
+                deleteJunk(cf);
+            }
+            d.delete();
+        }
+    }
+
     @Test
     public void testRun() {
         File f = new File("zzzssszzzq");
+        File ff = new File("zzzssszzzq");
         Retriever r;
         message = "";
         status = "";
@@ -85,6 +98,8 @@ public class RetrieverTest implements Retriever.Updater {
         r.run();
         assert message.startsWith("Download & Install completed in") : message;
         assert status.equals("")  : status ;
+        deleteJunk(f);
+        deleteJunk(ff);
         message = "";
         status = "";
         // bad location source url -- falls back to the default url
@@ -95,6 +110,8 @@ public class RetrieverTest implements Retriever.Updater {
         r.run();
         assert message.startsWith("Download & Install completed in") : message;
         assert status.equals("")  : status ;
+        deleteJunk(f);
+        deleteJunk(ff);
         message = "";
         status = "";
         // bad url prefix
@@ -105,6 +122,8 @@ public class RetrieverTest implements Retriever.Updater {
         r.run();
         assert message.startsWith("Invalid URL: http://java.tent/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip") : message;
         assert status.equals("I/O Exception: java.tent")  : status ;
+        deleteJunk(f);
+        deleteJunk(ff);
         message = "";
         status = "";
         // bad url prefix
@@ -115,6 +134,8 @@ public class RetrieverTest implements Retriever.Updater {
         r.run();
         assert message.startsWith("Invalid URL: http://java.tent/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip") : message;
         assert status.equals("I/O Exception: java.tent")  : status ;
+        deleteJunk(f);
+        deleteJunk(ff);
         message = "";
         status = "";
         // bad url prefix
@@ -125,6 +146,8 @@ public class RetrieverTest implements Retriever.Updater {
         r.run();
         assert message.startsWith("Invalid URL: http://download.java.net/glassfish/v3-FFFprelude/release/glassfish-v3-prelude-ml.zip") : message;
         assert status.equals("I/O Exception: http://download.java.net/glassfish/v3-FFFprelude/release/glassfish-v3-prelude-ml.zip")  : status ;
+        deleteJunk(f);
+        deleteJunk(ff);
     }
 
     /**
