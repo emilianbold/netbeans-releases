@@ -80,7 +80,7 @@ public final class NodeOperationImpl extends org.openide.nodes.NodeOperation {
         EP p = new EP();
         p.getExplorerManager().setRootContext(n);
         p.setLayout(new BorderLayout());
-        p.add(new JScrollPane(new BeanTreeView()), BorderLayout.CENTER);
+        p.add(new BeanTreeView(), BorderLayout.CENTER);
         d.getContentPane().add(p, BorderLayout.CENTER);
         d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         d.pack();
@@ -96,7 +96,7 @@ public final class NodeOperationImpl extends org.openide.nodes.NodeOperation {
         EP p = new EP();
         p.getExplorerManager().setRootContext(root);
         p.setLayout(new BorderLayout());
-        p.add(new JScrollPane(new BeanTreeView()), BorderLayout.CENTER);
+        p.add(new BeanTreeView(), BorderLayout.CENTER);
         d.getContentPane().add(p, BorderLayout.CENTER);
         if (top != null) {
             d.getContentPane().add(top, BorderLayout.NORTH);
