@@ -280,6 +280,24 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
         if (resources == null) {
             return null;
         }
+        MavenProject mav = nbproj.getMavenProject();
+        FileObject target = null;
+        //now figure the destination output folder
+        if (mav.getBuild() != null) {
+            File fil = new File(test ? mav.getBuild().getTestOutputDirectory() : mav.getBuild().getOutputDirectory());
+            fil = FileUtil.normalizeFile(fil);
+            File stamp = new File(fil, CosChecker.NB_COS);
+            if (stamp.exists()) {
+                target = FileUtil.toFileObject(fil);
+            } else {
+                // no compile on save stamp, means no copying, classes don't get copied/compiled either.
+                return null;
+            }
+        } else {
+            //no output dir means no copying.
+            return null;
+        }
+
         resourceLoop:
         for (Resource res : resources) {
             URI uri = FileUtilities.getDirURI(prj.getProjectDirectory(), res.getDirectory());
@@ -309,17 +327,6 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
                     if (DirectoryScanner.match(excl, path)) {
                         continue resourceLoop;
                     }
-                }
-                MavenProject mav = nbproj.getMavenProject();
-                FileObject target = null;
-                //now figure the destination output folder
-                if (mav.getBuild() != null) {
-                    File fil = new File(test ? mav.getBuild().getTestOutputDirectory() : mav.getBuild().getOutputDirectory());
-                    fil = FileUtil.normalizeFile(fil);
-                    target = FileUtil.toFileObject(fil);
-                } else {
-                    //what now?
-                    return null;
                 }
 
                 return new Tuple(res, fo, target);
