@@ -48,6 +48,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
@@ -56,8 +57,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.text.DateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Random;
 import javax.swing.JCheckBoxMenuItem;
@@ -72,6 +75,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.jivesoftware.smack.PacketListener;
@@ -109,7 +114,9 @@ public class ChatPanel extends javax.swing.JPanel {
         {";)", "wink"}, // NOI18N
         {";-)", "wink"} // NOI18N
     };
-
+    private CompoundUndoManager undo;
+    private MessageHistoryManager history = new MessageHistoryManager();
+    
     public ChatPanel(MultiUserChat chat) {
         this.muc=chat;
         initComponents();
@@ -151,6 +158,7 @@ public class ChatPanel extends javax.swing.JPanel {
         NotificationsEnabledAction bubbleEnabled = new NotificationsEnabledAction();
         inbox.addMouseListener(bubbleEnabled);
         outbox.addMouseListener(bubbleEnabled);
+        undo = new CompoundUndoManager(outbox);
 
         inboxScrollPane.addMouseWheelListener(new MouseWheelListener() {
 
@@ -356,6 +364,9 @@ public class ChatPanel extends javax.swing.JPanel {
         outbox.setBorder(null);
         outbox.setMaximumSize(new java.awt.Dimension(0, 16));
         outbox.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                outboxKeyPressed(evt);
+            }
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 ChatPanel.this.keyTyped(evt);
             }
@@ -399,7 +410,13 @@ public class ChatPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    List undoCharsList = Arrays.asList(' ', '.', ',', '!', '\t', '?', ':', ';');
+
     private void keyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_keyTyped
+        if (undoCharsList.contains(evt.getKeyChar())) { // undo state when one of special chars...
+            undo.startNewCompoundEdit();
+            return;
+        }
         if (evt.getKeyChar() == '\n' || evt.getKeyChar() == '\r') {
             if (evt.isAltDown() || evt.isShiftDown() || evt.isControlDown()) {
                 try {
@@ -439,9 +456,50 @@ public class ChatPanel extends javax.swing.JPanel {
                 Exceptions.printStackTrace(ex);
             }
             outbox.setText("");
+            undo.discardAllEdits();
+            history.resetHistory();
         }
     }//GEN-LAST:event_keyTyped
 
+    private void outboxKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_outboxKeyPressed
+        if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_Z) {
+            try {
+                undo.undo();
+                history.resetHistory();
+            } catch (CannotUndoException e) {
+                // end of the undo history
+            }
+            return;
+        }
+        if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_Y) {
+            try {
+                undo.redo();
+                history.resetHistory();
+            } catch (CannotRedoException e) {
+                // end of the redo history
+            }
+            return;
+        }
+        if (evt.isControlDown() || evt.isAltDown() || evt.isShiftDown()) {
+            if (evt.getKeyCode() == KeyEvent.VK_UP) {
+                if (history.isOnStart()) {
+                    history.setEditedMessage(outbox.getText());
+                }
+                String mess = history.getPreviousMessage();
+                if (mess != null) {
+                    outbox.setText(mess);
+                }
+                return;
+            }
+            if (evt.getKeyCode() == KeyEvent.VK_DOWN) {
+                String message = history.getNextMessage();
+                if (message != null) {
+                    outbox.setText(message);
+                }
+                return;
+            }
+        }
+    }//GEN-LAST:event_outboxKeyPressed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextPane inbox;
@@ -464,6 +522,7 @@ public class ChatPanel extends javax.swing.JPanel {
             HTMLDocument doc = (HTMLDocument) inbox.getStyledDocument();
             final Date timestamp = getTimestamp(message);
             String fromRes = StringUtils.parseResource(message.getFrom());
+            history.addMessage(message.getBody()); //Store the message to the history
             Random random = new Random(fromRes.hashCode());
             float randNum = random.nextFloat();
             Color headerColor = Color.getHSBColor(randNum, 0.1F, 0.95F);

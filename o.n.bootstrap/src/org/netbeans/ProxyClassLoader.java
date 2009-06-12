@@ -584,14 +584,13 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
      * #38368: Warn that the default package should not be used.
      */
     private static void printDefaultPackageWarning(String name) {
-        if (!"commons-logging.properties".equals(name) &&
-            !"jndi.properties".equals(name) &&
-            !"log4j.properties".equals(name) &&
-            !"simplelog.properties".equals(name) &&
-            !"emma_default.properties".equals(name) &&
-            !"emma.properties".equals(name)) { // NOI18N
-            LOGGER.log(Level.INFO, null, new IllegalStateException("You are trying to access file: " + name + " from the default package. Please see http://www.netbeans.org/download/dev/javadoc/org-openide-modules/org/openide/modules/doc-files/classpath.html#default_package"));
+        if (name.endsWith(".properties")) { // NOI18N
+            // log4j.properties and so on. Very common antipattern to dump these
+            // in CP root. Too late to be fixed in source library.
+            return;
         }
+        LOGGER.log(Level.INFO, null, new IllegalStateException("You are trying to access file: " + name + " from the default package. Please see " +
+                "http://www.netbeans.org/download/dev/javadoc/org-openide-modules/org/openide/modules/doc-files/classpath.html#default_package"));
     }
     
     /** Coalesce parent classloaders into an optimized set.
