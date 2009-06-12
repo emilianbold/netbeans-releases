@@ -37,38 +37,19 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.verification;
+package org.netbeans.modules.php.editor.model;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.Rule.AstRule;
-import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.php.editor.model.FileScope;
-
+import java.util.Collection;
 /**
- *
  * @author Radek Matous
  */
-abstract class ModelRule implements AstRule {
-    abstract void check (FileScope modelScope, RuleContext context, List<Hint> hints);
-
-    @Override
-    public Set<? extends Object> getKinds() {
-        return Collections.singleton(PHPHintsProvider.MODEL_HINTS);
-    }
-
-    public boolean getDefaultEnabled() {
-        return true;
-    }
-
-    public boolean appliesTo(RuleContext context) {
-        return true;
-    }
-
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.WARNING;
-    }
+public interface NamespaceScope extends VariableScope {
+    Collection<? extends TypeScope> getDeclaredTypes();
+    Collection<? extends ClassScope> getDeclaredClasses();
+    Collection<? extends InterfaceScope> getDeclaredInterfaces();
+    Collection<? extends ConstantElement> getDeclaredConstants();
+    Collection<? extends FunctionScope> getDeclaredFunctions();
+    Collection<? extends VariableName> getDeclaredVariables();
+    boolean isDefaultNamespace();
+    FileScope getFileScope();
 }

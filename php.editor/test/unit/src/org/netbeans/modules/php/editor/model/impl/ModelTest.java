@@ -56,7 +56,7 @@ public class ModelTest extends ModelTestBase {
         Model model = getModel(prepareTestFile("testfiles/model/basicFileScope.php"));
         FileScope topScope = model.getFileScope();
         assertFalse(topScope.getElements().isEmpty());
-        FunctionScope fncScope = ModelUtils.getFirst(ModelUtils.filter(topScope.getDeclaredFunctions(),"myfnc"));
+        FunctionScope fncScope = ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredFunctions(topScope),"myfnc"));
         assertNotNull(fncScope);
         model = getModel(prepareTestFile("testfiles/model/basicFileScope.php"));
         Occurence underCaret = underCaret(
@@ -66,7 +66,7 @@ public class ModelTest extends ModelTestBase {
         assertEquals(fncScope.getName(), underCaret.getDeclaration().getName());
         
         FileScope topScope2 = ModelUtils.getFileScope(underCaret.getDeclaration());
-        assertNotNull(ModelUtils.getFirst(ModelUtils.filter(topScope.getDeclaredFunctions(),underCaret.getDeclaration().getName())));
+        assertNotNull(ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredFunctions(topScope),underCaret.getDeclaration().getName())));
 
         Collection<Occurence> allOccurences = underCaret.getAllOccurences();
         assertEquals(3, allOccurences.size());
@@ -75,11 +75,11 @@ public class ModelTest extends ModelTestBase {
     public void testVarsForBasicFileScope() throws Exception {
         Model model = getModel(prepareTestFile("testfiles/model/basicFileScope.php"));
         FileScope topScope = model.getFileScope();
-        FunctionScope fncScope = ModelUtils.getFirst(ModelUtils.filter(topScope.getDeclaredFunctions(),"myfnc"));
+        FunctionScope fncScope = ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredFunctions(topScope),"myfnc"));
         assertNotNull(fncScope);
         VariableName varA = ModelUtils.getFirst(ModelUtils.filter(fncScope.getDeclaredVariables(),"$a"));
         assertNotNull(varA);
-        varA = ModelUtils.getFirst(ModelUtils.filter(topScope.getDeclaredVariables(),"$a"));
+        varA = ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredVariables(topScope),"$a"));
         assertNotNull(varA);
         VariableName varC = ModelUtils.getFirst(ModelUtils.filter(fncScope.getDeclaredVariables(),"$c"));
         assertNotNull(varC);
@@ -102,15 +102,15 @@ public class ModelTest extends ModelTestBase {
     public void testGlobalVars2() throws Exception {
         Model model = getModel(prepareTestFile("testfiles/model/globalvars2.php"));
         FileScope topScope = model.getFileScope();
-        varContainerTestForGlobal2(topScope);
+        varContainerTestForGlobal2(ModelUtils.getFirst(topScope.getDeclaredNamespaces()));
     }
 
     public void testGlobalVars3() throws Exception {
         Model model = getModel(prepareTestFile("testfiles/model/globalvars3.php"));
         FileScope topScope = model.getFileScope();
-        FunctionScope fncScope = ModelUtils.getFirst(ModelUtils.filter(topScope.getDeclaredFunctions(),"fnc"));
+        FunctionScope fncScope = ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredFunctions(topScope),"fnc"));
         assertNotNull(fncScope);
-        VariableName varA = ModelUtils.getFirst(ModelUtils.filter(topScope.getDeclaredVariables(),"$varA"));
+        VariableName varA = ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredVariables(topScope),"$varA"));
         assertNotNull(varA);
         VariableScope variableScope = model.getVariableScope(fncScope.getBlockRange().getStart());
         assertNotNull(variableScope);
@@ -130,7 +130,7 @@ public class ModelTest extends ModelTestBase {
     public void testFunctionVars2() throws Exception {
         Model model = getModel(prepareTestFile("testfiles/model/globalvars2.php"));
         FileScope topScope = model.getFileScope();
-        FunctionScope fncScope = ModelUtils.getFirst(ModelUtils.filter(topScope.getDeclaredFunctions(),"myfnc"));
+        FunctionScope fncScope = ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredFunctions(topScope),"myfnc"));
         assertNotNull(fncScope);
         varContainerTestForGlobal2(fncScope);
     }
@@ -140,15 +140,18 @@ public class ModelTest extends ModelTestBase {
         FileScope topScope = model.getFileScope();
 
 
-        Collection<? extends TypeScope> types = topScope.getDeclaredTypes();
-        Collection<? extends ClassScope> classes = topScope.getDeclaredClasses();
-        Collection<? extends InterfaceScope> interfaces = topScope.getDeclaredInterfaces();
+        Collection<? extends TypeScope> types = ModelUtils.getDeclaredTypes(topScope);
+        Collection<? extends ClassScope> classes = ModelUtils.getDeclaredClasses(topScope);
+        Collection<? extends InterfaceScope> interfaces = ModelUtils.getDeclaredInterfaces(topScope);
         assertEquals(types.size(), classes.size() + interfaces.size());
-        Collection<? extends FunctionScope> functions = topScope.getDeclaredFunctions();
-        Collection<? extends VariableName> allVariables = topScope.getDeclaredVariables();
+        Collection<? extends FunctionScope> functions = ModelUtils.getDeclaredFunctions(topScope);
+        Collection<? extends VariableName> allVariables = ModelUtils.getDeclaredVariables(topScope);
 
         Collection<? extends ModelElement> elements = topScope.getElements();
-        assertEquals(13, elements.size());
+        assertEquals(1, elements.size());
+        ModelElement e = ModelUtils.getFirst(elements);
+        assertTrue(e instanceof NamespaceScope);
+        elements = ModelUtils.getFirst(topScope.getDeclaredNamespaces()).getElements();
         assertEquals(elements.size(), types.size() + functions.size() + allVariables.size());
 
         for (ModelElement elm : elements) {
@@ -157,20 +160,23 @@ public class ModelTest extends ModelTestBase {
                 case CLASS:
                     assertTrue(elm.getName().startsWith("cls"));
                     assertTrue(elm instanceof Scope);
-                    assertTrue(elm.getInScope() instanceof FileScope);
-                    assertTrue(elm.getInScope() == topScope);
+                    assertTrue(elm.getInScope() instanceof NamespaceScope);
+                    assertTrue(elm.getInScope().getInScope() instanceof FileScope);
+                    assertTrue(elm.getInScope().getInScope() == topScope);
                     break;
                 case IFACE:
                     assertTrue(elm.getName().startsWith("iface"));
                     assertTrue(elm instanceof Scope);
-                    assertTrue(elm.getInScope() instanceof FileScope);
-                    assertTrue(elm.getInScope() == topScope);
+                    assertTrue(elm.getInScope() instanceof NamespaceScope);
+                    assertTrue(elm.getInScope().getInScope() instanceof FileScope);
+                    assertTrue(elm.getInScope().getInScope() == topScope);
                     break;
                 case FUNCTION:
                     assertTrue(elm.getName().contains("fnc"));
                     assertTrue(elm instanceof Scope);
-                    assertTrue(elm.getInScope() instanceof FileScope);
-                    assertTrue(elm.getInScope() == topScope);
+                    assertTrue(elm.getInScope() instanceof NamespaceScope);
+                    assertTrue(elm.getInScope().getInScope() instanceof FileScope);
+                    assertTrue(elm.getInScope().getInScope() == topScope);
                     break;
                 case VARIABLE:
                     //TODO: add som ebasic tests here
@@ -185,13 +191,14 @@ public class ModelTest extends ModelTestBase {
     public void testFunctionScopes() throws Exception {
         Model model = getModel(prepareTestFile("testfiles/model/scope.php"));
         FileScope topScope = model.getFileScope();
-        assertEquals(1, ModelUtils.filter(topScope.getDeclaredFunctions(),"fnca").size());
-        assertEquals(2,  ModelUtils.filter(topScope.getDeclaredFunctions(),"fnca", "fncb").size());
+        assertEquals(1, ModelUtils.filter(ModelUtils.getDeclaredFunctions(topScope),"fnca").size());
+        assertEquals(2,  ModelUtils.filter(ModelUtils.getDeclaredFunctions(topScope),"fnca", "fncb").size());
 
-        FunctionScope fnca = ModelUtils.getFirst( ModelUtils.filter(topScope.getDeclaredFunctions(),"fnca"));
+        FunctionScope fnca = ModelUtils.getFirst( ModelUtils.filter(ModelUtils.getDeclaredFunctions(topScope),"fnca"));
         assertNotNull(fnca);
-        assertTrue(fnca.getInScope() instanceof FileScope);
-        assertSame(topScope, fnca.getInScope());
+        assertTrue(fnca.getInScope() instanceof NamespaceScope);
+        assertTrue(fnca.getInScope().getInScope() instanceof FileScope);
+        assertSame(topScope, fnca.getInScope().getInScope());
 
 
         assertEquals("fnca", fnca.getName());
@@ -204,31 +211,31 @@ public class ModelTest extends ModelTestBase {
             assertTrue(params.contains("$param"));
         }
         TypeScope returnType = ModelUtils.getFirst(fnca.getReturnTypes());
-        assertSame(returnType, ModelUtils.getFirst( ModelUtils.filter(topScope.getDeclaredClasses(),"cls1")));
+        assertSame(returnType, ModelUtils.getFirst( ModelUtils.filter(ModelUtils.getDeclaredClasses(topScope),"cls1")));
     }
 
     public void testBasicFileScope() throws Exception {
         Model model = getModel(prepareTestFile("testfiles/model/basicFileScope.php"));
         FileScope program = model.getFileScope();
         assertNotNull(program);
-        assertEquals(12, program.getElements().size());
+        assertEquals(1, program.getElements().size());
         //classes
-        assertEquals(program.getDeclaredClasses().size(),
-                ModelUtils.filter(program.getDeclaredClasses(), program.getFileObject()).size());
-        assertEquals(2,  ModelUtils.filter(program.getDeclaredClasses(),"MyClass", "MySuperClass").size());
-        assertEquals(2, ModelUtils.filter(program.getDeclaredClasses(),"myclass", "mysuperclass").size());
-        assertEquals(1, ModelUtils.filter(program.getDeclaredClasses(),"MyClass").size());
-        assertEquals(1, ModelUtils.filter(program.getDeclaredClasses(),"MySuperClass").size());
-        assertEquals(3, ModelUtils.filter(program.getDeclaredClasses(), QuerySupport.Kind.PREFIX, "My").size());
-        assertEquals(3, ModelUtils.filter(program.getDeclaredClasses(),QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, "my").size());
-        assertEquals(1, ModelUtils.filter(program.getDeclaredClasses(),QuerySupport.Kind.CAMEL_CASE, "MC").size());
-        assertEquals(1, ModelUtils.filter(program.getDeclaredClasses(),QuerySupport.Kind.CAMEL_CASE, "MSC").size());
-        assertEquals(2, ModelUtils.filter(program.getDeclaredClasses(),QuerySupport.Kind.REGEXP, "M[^z].*C.*ss").size());
-        assertEquals(2, ModelUtils.filter(program.getDeclaredClasses(),QuerySupport.Kind.CASE_INSENSITIVE_REGEXP, "m[y].*c.*ss").size());
+        assertEquals(ModelUtils.getDeclaredClasses(program).size(),
+                ModelUtils.filter(ModelUtils.getDeclaredClasses(program), program.getFileObject()).size());
+        assertEquals(2,  ModelUtils.filter(ModelUtils.getDeclaredClasses(program),"MyClass", "MySuperClass").size());
+        assertEquals(2, ModelUtils.filter(ModelUtils.getDeclaredClasses(program),"myclass", "mysuperclass").size());
+        assertEquals(1, ModelUtils.filter(ModelUtils.getDeclaredClasses(program),"MyClass").size());
+        assertEquals(1, ModelUtils.filter(ModelUtils.getDeclaredClasses(program),"MySuperClass").size());
+        assertEquals(3, ModelUtils.filter(ModelUtils.getDeclaredClasses(program), QuerySupport.Kind.PREFIX, "My").size());
+        assertEquals(3, ModelUtils.filter(ModelUtils.getDeclaredClasses(program),QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, "my").size());
+        assertEquals(1, ModelUtils.filter(ModelUtils.getDeclaredClasses(program),QuerySupport.Kind.CAMEL_CASE, "MC").size());
+        assertEquals(1, ModelUtils.filter(ModelUtils.getDeclaredClasses(program),QuerySupport.Kind.CAMEL_CASE, "MSC").size());
+        assertEquals(2, ModelUtils.filter(ModelUtils.getDeclaredClasses(program),QuerySupport.Kind.REGEXP, "M[^z].*C.*ss").size());
+        assertEquals(2, ModelUtils.filter(ModelUtils.getDeclaredClasses(program),QuerySupport.Kind.CASE_INSENSITIVE_REGEXP, "m[y].*c.*ss").size());
 
-        ClassScope myClass = ModelUtils.getFirst(ModelUtils.filter(program.getDeclaredClasses(),"MyClass"));
+        ClassScope myClass = ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredClasses(program),"MyClass"));
         assertNotNull(myClass);
-        ClassScope mySuperClass = ModelUtils.getFirst(ModelUtils.filter(program.getDeclaredClasses(),"MySuperClass"));
+        ClassScope mySuperClass = ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredClasses(program),"MySuperClass"));
         assertNotNull(mySuperClass);
         assertSame(ModelUtils.getFirst(myClass.getSuperClasses()), mySuperClass);
 
@@ -248,7 +255,7 @@ public class ModelTest extends ModelTestBase {
         assertNotNull(type);
         assertEquals("MySuperClass", type.getName());
         assertEquals(method.getName(), "meth");
-        assertSame(myClass, ModelUtils.getFirst(ModelUtils.filter(program.getDeclaredClasses(),QuerySupport.Kind.REGEXP, "MyC.*")));
+        assertSame(myClass, ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredClasses(program),QuerySupport.Kind.REGEXP, "MyC.*")));
 
         assertSame(method.getInScope(), myClass);
         //fields
@@ -256,21 +263,21 @@ public class ModelTest extends ModelTestBase {
         assertNotNull(fieldElement);
 
         //ifaces
-        assertNotNull(ModelUtils.getFirst(ModelUtils.filter(program.getDeclaredInterfaces(),"MyIFace")));
+        assertNotNull(ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredInterfaces(program),"MyIFace")));
 
-        assertEquals(1, ModelUtils.filter(program.getDeclaredInterfaces(),"MyIFace").size());
-        assertEquals(1, ModelUtils.filter(program.getDeclaredInterfaces(),"MySuperIFace").size());
-        assertEquals(2, ModelUtils.filter(program.getDeclaredInterfaces(),QuerySupport.Kind.PREFIX, "My").size());
-        assertEquals(2, ModelUtils.filter(program.getDeclaredInterfaces(),QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, "my").size());
-        assertEquals(1, ModelUtils.filter(program.getDeclaredInterfaces(),QuerySupport.Kind.CAMEL_CASE, "MIF").size());
-        assertEquals(2, ModelUtils.filter(program.getDeclaredInterfaces(),QuerySupport.Kind.REGEXP, "M.*I.*").size());
-        assertEquals(2, ModelUtils.filter(program.getDeclaredInterfaces(),QuerySupport.Kind.CASE_INSENSITIVE_REGEXP, "m.*f.*").size());
+        assertEquals(1, ModelUtils.filter(ModelUtils.getDeclaredInterfaces(program),"MyIFace").size());
+        assertEquals(1, ModelUtils.filter(ModelUtils.getDeclaredInterfaces(program),"MySuperIFace").size());
+        assertEquals(2, ModelUtils.filter(ModelUtils.getDeclaredInterfaces(program),QuerySupport.Kind.PREFIX, "My").size());
+        assertEquals(2, ModelUtils.filter(ModelUtils.getDeclaredInterfaces(program),QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, "my").size());
+        assertEquals(1, ModelUtils.filter(ModelUtils.getDeclaredInterfaces(program),QuerySupport.Kind.CAMEL_CASE, "MIF").size());
+        assertEquals(2, ModelUtils.filter(ModelUtils.getDeclaredInterfaces(program),QuerySupport.Kind.REGEXP, "M.*I.*").size());
+        assertEquals(2, ModelUtils.filter(ModelUtils.getDeclaredInterfaces(program),QuerySupport.Kind.CASE_INSENSITIVE_REGEXP, "m.*f.*").size());
 
         //functions
-        assertNotNull(ModelUtils.getFirst(ModelUtils.filter(program.getDeclaredFunctions(),"myfnc")));
-        assertNotNull(ModelUtils.getFirst(ModelUtils.filter(program.getDeclaredFunctions(),"myfnc2")));
-        assertNotNull(ModelUtils.getFirst(ModelUtils.filter(program.getDeclaredFunctions(),"myfnc3")));
-        assertNotNull(ModelUtils.getFirst(ModelUtils.filter(program.getDeclaredFunctions(),"myfnc4")));
+        assertNotNull(ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredFunctions(program),"myfnc")));
+        assertNotNull(ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredFunctions(program),"myfnc2")));
+        assertNotNull(ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredFunctions(program),"myfnc3")));
+        assertNotNull(ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredFunctions(program),"myfnc4")));
     }
 
     private void varContainerTestForGlobal2(VariableScope topScope) {
