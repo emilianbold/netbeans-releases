@@ -162,6 +162,10 @@ public class Utils {
         String jspRelativePath;
         if (docBase != null) {
             jspRelativePath = FileUtil.getRelativePath(docBase, fo);
+            if (jspRelativePath == null) {
+                // fo is not under docBase
+                return null;
+            }
         } else {
             // ?
             jspRelativePath = fo.getPath();
