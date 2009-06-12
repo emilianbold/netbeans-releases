@@ -39,12 +39,9 @@
 package org.netbeans.modules.maven.cos;
 
 import hidden.org.codehaus.plexus.util.DirectoryScanner;
-import hidden.org.codehaus.plexus.util.IOUtil;
 import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -140,58 +137,36 @@ public class CosChecker implements PrerequisitesChecker {
         return true;
     }
 
-    private boolean checkAndCopyResources(boolean includeTests, long stamp, RunConfig config) {
-        List<Resource> toprocess = new ArrayList<Resource>();
-        List<Resource> toprocessTests = new ArrayList<Resource>();
+    private boolean hasChangedFilteredResources(boolean includeTests, long stamp, RunConfig config) {
         @SuppressWarnings("unchecked")
         List<Resource> res = config.getMavenProject().getResources();
         for (Resource r : res) {
             if (r.isFiltering()) {
-                if (checkResource(r, null, stamp)) {
-                    return false;
+                if (hasChangedResources(r, stamp)) {
+                    return true;
                 }
                 // if filtering resource not changed, proceed with CoS
                 continue;
             }
-            toprocess.add(r);
         }
         if (includeTests) {
             res = config.getMavenProject().getTestResources();
             for (Resource r : res) {
                 if (r.isFiltering()) {
-                    if (!checkResource(r, null, stamp)) {
-                        return false;
+                    if (hasChangedResources(r, stamp)) {
+                        return true;
                     }
                     // if filtering resource not changed, proceed with CoS
                     continue;
                 }
-                toprocessTests.add(r);
             }
         }
-        String output = config.getMavenProject().getBuild().getOutputDirectory();
-        FileObject outputFO = FileUtilities.convertStringToFileObject(output);
-        if (outputFO == null) {
-            return false;
-        }
-        for (Resource r : toprocess) {
-            checkResource(r, outputFO, stamp);
-        }
-        if (includeTests) {
-            output = config.getMavenProject().getBuild().getTestOutputDirectory();
-            outputFO = FileUtilities.convertStringToFileObject(output);
-            if (outputFO == null) {
-                return false;
-            }
-            for (Resource r : toprocessTests) {
-                checkResource(r, outputFO, stamp);
-            }
-        }
-        return true;
+        return false;
     }
 
     static final String[] DEFAULT_INCLUDES = {"**"};
 
-    private boolean checkResource(Resource r, FileObject outputDir, long stamp) {
+    private boolean hasChangedResources(Resource r, long stamp) {
         String dir = r.getDirectory();
         File dirFile = FileUtil.normalizeFile(new File(dir));
   //      System.out.println("checkresource dirfile =" + dirFile);
@@ -223,57 +198,12 @@ public class CosChecker implements PrerequisitesChecker {
                 }
             }
             if (toCopy.size() > 0) {
-                if (outputDir != null) {
-                    //copy to output dir
-                    for (File file : toCopy) {
-                        String relPath = FileUtilities.getRelativePath(dirFile, file);
-                        if (relPath == null) {
-                            return false;
-                        }
-                        String targetPath = r.getTargetPath();
-                        if (targetPath != null && targetPath.trim().length() > 0) {
-                            if (!targetPath.endsWith("/")) {
-                                targetPath = targetPath + "/";
-                            }
-                            relPath = targetPath + relPath;
-                        }
-  //                      System.out.println("relpath=" + relPath);
-                        FileObject fo = outputDir.getFileObject(relPath);
-                        if (fo == null) {
-                            File outFile = FileUtil.normalizeFile(new File(FileUtil.toFile(outputDir), relPath));
-                            try {
-                                fo = FileUtil.createData(outFile);
-                            } catch (IOException ex) {
-                                //#162180, #164748
-                                //well, just skip the resource with some logging..
-                                Logger.getLogger(CosChecker.class.getName()).log(Level.INFO, "Cannot create file " + file + ", skipping copying of resource for Compile on Save.", ex); //NOI18N
-                            }
-                        }
-                        if (fo == null) {
-                            continue;
-                        }
-                        FileObject sourceFO = FileUtil.toFileObject(file);
-                        InputStream in = null;
-                        OutputStream out = null;
-                        try {
-                            in = sourceFO.getInputStream();
-                            out = fo.getOutputStream();
-                            FileUtil.copy(in, out);
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } finally {
-                            IOUtil.close(in);
-                            IOUtil.close(out);
-                        }
-                    }
-                } else {
                     //the case of filtering source roots, here we want to return false
                     //to skip CoS altogether.
-                    return false;
-                }
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
 
@@ -295,7 +225,7 @@ public class CosChecker implements PrerequisitesChecker {
                 }
                 //check the COS timestamp against resources etc.
                 //if changed, perform part of the maven build. (or skip COS)
-                if (!checkAndCopyResources(false, stamp, config)) {
+                if (hasChangedFilteredResources(false, stamp, config)) {
                     //we have some filtered resources modified or encountered other problem,
                     //skip CoS
                     return true;
@@ -387,7 +317,7 @@ public class CosChecker implements PrerequisitesChecker {
 
             //check the COS timestamp against resources etc.
             //if changed, perform part of the maven build. (or skip COS)
-            if (!checkAndCopyResources(true, stamp, config)) {
+            if (hasChangedFilteredResources(true, stamp, config)) {
                 //we have some filtered resources modified, skip CoS
                 return true;
             }
