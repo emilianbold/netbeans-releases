@@ -46,20 +46,18 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.earproject.test.TestUtil;
 import org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIteratorTest;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  * @author Martin Krauskopf
  */
 public class ProjectEarTest extends NbTestCase {
-
-    private String serverID;
 
     public ProjectEarTest(String testName) {
         super(testName);
@@ -69,7 +67,8 @@ public class ProjectEarTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         TestUtil.makeScratchDir(this);
-        serverID = TestUtil.registerSunAppServer(this);
+
+        MockLookup.setLayersAndInstances();
     }
 
     public void testModuleAddition() throws Exception {
@@ -79,14 +78,14 @@ public class ProjectEarTest extends NbTestCase {
         Profile j2eeProfile = Profile.JAVA_EE_5;
         String ejbName = "testEA-ejb";
         NewEarProjectWizardIteratorTest.generateEARProject(earDirF, name, j2eeProfile,
-                serverID, null, ejbName, null, null, null, null);
+                TestUtil.SERVER_URL, null, ejbName, null, null, null, null);
         FileObject earDirFO = FileUtil.toFileObject(earDirF);
         FileObject ejbProjectFO = earDirFO.getFileObject("testEA-ejb");
         assertNotNull(ejbProjectFO);
 
         File earDirAnotherF = new File(getWorkDir(), "testEA-another");
         NewEarProjectWizardIteratorTest.generateEARProject(earDirAnotherF, name, j2eeProfile,
-                serverID, null, null, null, null, null, null);
+                TestUtil.SERVER_URL, null, null, null, null, null, null);
         FileObject earDirAnotherFO = FileUtil.toFileObject(earDirAnotherF);
         EjbJarProject createdEjbJarProject = (EjbJarProject) ProjectManager.getDefault().findProject(ejbProjectFO);
         assertNotNull("ejb project found", createdEjbJarProject);

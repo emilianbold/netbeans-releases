@@ -94,7 +94,6 @@ public class ImportBlueprintEarWizardIteratorTest extends NbTestCase {
     private String platformName;
     private String sourceLevel;
     
-    private String serverInstanceID;
     private File prjDirF;
     
     public ImportBlueprintEarWizardIteratorTest(String testName) {
@@ -119,9 +118,8 @@ public class ImportBlueprintEarWizardIteratorTest extends NbTestCase {
         
         setDefaultValues();
         clearWorkDir();
-        TestUtil.initLookup(this);
-        serverInstanceID = TestUtil.registerSunAppServer(
-                this, new Object[] { new SilentDialogDisplayer(), new SimplePlatformProvider() });
+        TestUtil.initLookup(this, new SilentDialogDisplayer(), new SimplePlatformProvider());
+        
         assertTrue("wrong dialog displayer", DialogDisplayer.getDefault() instanceof SilentDialogDisplayer);
         // default project dir
         prjDirF = new File(getWorkDir(), "testEA");
@@ -132,7 +130,7 @@ public class ImportBlueprintEarWizardIteratorTest extends NbTestCase {
         generateJ2EEApplication(false);
         File importedDir = new File(getWorkDir(), "testEA-imported");
         ImportBlueprintEarWizardIterator.testableInstantiate(platformName, sourceLevel,
-                j2eeProfile, importedDir, prjDirF, serverInstanceID, name,
+                j2eeProfile, importedDir, prjDirF, TestUtil.SERVER_URL, name,
                 Collections.<FileObject, ModuleType>emptyMap(), null, null, null);
         
         FileObject fo = FileUtil.toFileObject(importedDir);
@@ -154,7 +152,7 @@ public class ImportBlueprintEarWizardIteratorTest extends NbTestCase {
         userModules.put(prjDirFO.getFileObject(carName), ModuleType.CLIENT);
         File importedDir = new File(getWorkDir(), "testEA-imported");
         ImportBlueprintEarWizardIterator.testableInstantiate(platformName, sourceLevel,
-                j2eeProfile, importedDir, prjDirF, serverInstanceID, name, userModules, null, null, null);
+                j2eeProfile, importedDir, prjDirF, TestUtil.SERVER_URL, name, userModules, null, null, null);
         
         FileObject importedDirFO = FileUtil.toFileObject(importedDir);
         FileObject ddFO = prjDirFO.getFileObject("src/conf/application.xml");
@@ -172,7 +170,7 @@ public class ImportBlueprintEarWizardIteratorTest extends NbTestCase {
         
         File importedDir = new File(getWorkDir(), "testEA-imported");
         ImportBlueprintEarWizardIterator.testableInstantiate(platformName, sourceLevel,
-                j2eeProfile, importedDir, prjDirF, serverInstanceID, name,
+                j2eeProfile, importedDir, prjDirF, TestUtil.SERVER_URL, name,
                 Collections.<FileObject, ModuleType>emptyMap(), null, null, null);
         
         assertNotNull("have a backup copy of application.xml", prjDirFO.getFileObject("src/conf/original_application.xml"));
@@ -197,7 +195,7 @@ public class ImportBlueprintEarWizardIteratorTest extends NbTestCase {
         
         File importedDir = new File(getWorkDir(), "testEA-imported");
         ImportBlueprintEarWizardIterator.testableInstantiate(platformName, sourceLevel,
-                j2eeProfile, importedDir, prjDirF, serverInstanceID, name,
+                j2eeProfile, importedDir, prjDirF, TestUtil.SERVER_URL, name,
                 Collections.<FileObject, ModuleType>emptyMap(), null, null, null);
         
         String importedContextRoot = null;
@@ -221,7 +219,7 @@ public class ImportBlueprintEarWizardIteratorTest extends NbTestCase {
     private FileObject generateJ2EEApplication() throws Exception {
         // creates a project we will use for the import
         NewEarProjectWizardIteratorTest.generateEARProject(
-                prjDirF, name, j2eeProfile, serverInstanceID,
+                prjDirF, name, j2eeProfile, TestUtil.SERVER_URL,
                 warName, jarName, carName, mainClass, platformName, sourceLevel);
         
         // Workaround. Set the context root which should be set automatically.
