@@ -39,36 +39,40 @@
 
 package org.netbeans.modules.ide.ergonomics;
 
-import java.util.List;
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.spi.debugger.ui.AttachType;
+import org.netbeans.modules.ide.ergonomics.newproject.FeatureOnDemanWizardIterator;
+import org.netbeans.spi.server.ServerWizardProvider;
+import org.openide.WizardDescriptor.InstantiatingIterator;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Pavel Flaska
  */
-public class DebuggerAttachTypesCheck extends NbTestCase {
+public class ServerWizardProviderProxy implements ServerWizardProvider {
+    
+    private FileObject fob;
+    private String displayName;
 
-    public DebuggerAttachTypesCheck(String name) {
-        super(name);
+    public static ServerWizardProvider create(FileObject fob) {
+        return new ServerWizardProviderProxy(fob);
+    }
+
+    private ServerWizardProviderProxy(FileObject fob) {
+        this.fob = fob;
     }
     
-    public void testGetAllDebuggers() {
-       List<? extends AttachType> debug = DebuggerManager.getDebuggerManager().lookup(null, AttachType.class);
-       int cnt = 0;
-       for (AttachType o : debug) {
-           System.setProperty("debugger." + ++cnt, o.getTypeDisplayName());
-       }
+    public String getDisplayName() {
+        if (displayName == null) {
+            displayName = (String) fob.getAttribute("displayName"); // NOI18N
+            if (displayName == null) { // attribute not available
+                displayName = fob.getName();
+            }
+        }
+        return displayName;
     }
 
-    public void testGetAllDebuggersReal() {
-       List<? extends AttachType> debug = DebuggerManager.getDebuggerManager().lookup(null, AttachType.class);
-       int cnt = 0;
-       for (AttachType o : debug) {
-           String name = System.getProperty("debugger." + ++cnt);
-           assertEquals(name, o.getTypeDisplayName());
-       }
+    public InstantiatingIterator getInstantiatingIterator() {
+        return new FeatureOnDemanWizardIterator(fob);
     }
 
 }
