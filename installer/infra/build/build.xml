@@ -418,9 +418,9 @@
             prefix="glassfish-mod"/>
         -->
 	<set property="glassfish-mod-sun.milestone.number"      value="28"/>
-	<set property="glassfish-mod-sun.milestone.number.real" value="28d"/>
+	<set property="glassfish-mod-sun.milestone.number.real" value="28e"/>
 	<set property="glassfish-mod-sun.build.type"            value="prelude"/>
-	<set property="glassfish-mod-sun.build.number"          value="20090515"/>
+	<set property="glassfish-mod-sun.build.number"          value="20090610"/>
 
 	<set property="glassfish-mod.milestone.number"      value="28"/>
 	<set property="glassfish-mod.milestone.number.real" value="28c"/>
