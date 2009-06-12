@@ -939,6 +939,52 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
     }
 
+    private static void printMap(Map<URL, List<URL>> deps, Level level) {
+        Set<URL> sortedRoots = new TreeSet<URL>(C);
+        sortedRoots.addAll(deps.keySet());
+        for(URL url : sortedRoots) {
+            LOGGER.log(level, "  {0}:\n", url); //NOI18N
+//            for(URL depUrl : deps.get(url)) {
+//                LOGGER.log(level, "  -> {0}\n", depUrl); //NOI18N
+//            }
+        }
+    }
+
+    private static StringBuilder printMap(Map<URL, List<URL>> deps, StringBuilder sb) {
+        Set<URL> sortedRoots = new TreeSet<URL>(C);
+        sortedRoots.addAll(deps.keySet());
+        for(URL url : sortedRoots) {
+            sb.append("  ").append(url).append(":\n"); //NOI18N
+//            for(URL depUrl : deps.get(url)) {
+//                sb.append("  -> ").append(depUrl).append("\n"); //NOI18N
+//            }
+        }
+        return sb;
+    }
+
+    private static void printCollection(Collection<? extends URL> collection, Level level) {
+        Set<URL> sortedRoots = new TreeSet<URL>(C);
+        sortedRoots.addAll(collection);
+        for(URL url : sortedRoots) {
+            LOGGER.log(level, "  {0}\n", url); //NOI18N
+        }
+    }
+
+    private static StringBuilder printCollection(Collection<? extends URL> collection, StringBuilder sb) {
+        Set<URL> sortedRoots = new TreeSet<URL>(C);
+        sortedRoots.addAll(collection);
+        for(URL url : sortedRoots) {
+            sb.append("  ").append(url).append("\n"); //NOI18N
+        }
+        return sb;
+    }
+
+    private static final Comparator<URL> C = new Comparator<URL>() {
+        public int compare(URL o1, URL o2) {
+            return o1.toString().compareTo(o2.toString());
+        }
+    };
+
 // we have to handle *all* mime types because of eg. tasklist indexer or goto-file indexer
 //    private static boolean isMonitoredMimeType(FileObject f, Set<String> mimeTypes) {
 //        String mimeType = FileUtil.getMIMEType(f, mimeTypes.toArray(new String[mimeTypes.size()]));
@@ -1703,8 +1749,13 @@ out:            for (String mimeType : order) {
             if (depCtx == null) {
                 depCtx = new DependenciesContext(scannedRoots2Dependencies, scannedBinaries, useInitialState);
                 final List<URL> newRoots = new LinkedList<URL>();
-                newRoots.addAll(PathRegistry.getDefault().getSources());
-                newRoots.addAll(PathRegistry.getDefault().getLibraries());
+                Collection<? extends URL> c = PathRegistry.getDefault().getSources();
+                LOGGER.log(Level.FINE, "PathRegistry.sources="); printCollection(c, Level.FINE); //NOI18N
+                newRoots.addAll(c);
+
+                c = PathRegistry.getDefault().getLibraries();
+                LOGGER.log(Level.FINE, "PathRegistry.libraries="); printCollection(c, Level.FINE); //NOI18N
+                newRoots.addAll(c);
 
                 depCtx.newBinariesToScan.addAll(PathRegistry.getDefault().getBinaryLibraries());
                 for (Iterator<URL> it = depCtx.newBinariesToScan.iterator(); it.hasNext(); ) {
@@ -1712,7 +1763,13 @@ out:            for (String mimeType : order) {
                         it.remove();
                     }
                 }
-                newRoots.addAll(PathRegistry.getDefault().getUnknownRoots());
+
+                if (useInitialState) {
+                    c = PathRegistry.getDefault().getUnknownRoots();
+                    LOGGER.log(Level.FINE, "PathRegistry.unknown="); printCollection(c, Level.FINE); //NOI18N
+                    newRoots.addAll(c);
+                } // else computing the deps from scratch and so will find the 'unknown' roots
+                // by following the dependencies (#166715)
 
                 for (URL url : newRoots) {
                     findDependencies(url, depCtx, null, null);
@@ -1732,14 +1789,17 @@ out:            for (String mimeType : order) {
                     final Map<URL,List<URL>> addedOrChanged = new HashMap<URL,List<URL>>();
                     diff(depCtx.initialRoots2Deps, depCtx.newRoots2Deps, addedOrChanged, removed);
 
-                    if (LOGGER.isLoggable(Level.FINE) && (addedOrChanged.size() > 0 || removed.size() > 0)) {
-                        LOGGER.fine("Changes in dependencies detected:"); //NOI18N
-                        LOGGER.fine("initialRoots2Deps="); //NOI18N
-                        printMap(depCtx.initialRoots2Deps, Level.FINE);
-                        LOGGER.fine("newRoots2Deps="); //NOI18N
-                        printMap(depCtx.newRoots2Deps, Level.FINE);
-                        LOGGER.fine("addedOrChanged="); //NOI18N
-                        printMap(addedOrChanged, Level.FINE);
+                    final Level logLevel = Level.FINE;
+                    if (LOGGER.isLoggable(logLevel) && (addedOrChanged.size() > 0 || removed.size() > 0)) {
+                        LOGGER.log(logLevel, "Changes in dependencies detected:"); //NOI18N
+                        LOGGER.log(logLevel, "initialRoots2Deps({0})=", depCtx.initialRoots2Deps.size()); //NOI18N
+                        printMap(depCtx.initialRoots2Deps, logLevel);
+                        LOGGER.log(logLevel, "newRoots2Deps({0})=", depCtx.newRoots2Deps.size()); //NOI18N
+                        printMap(depCtx.newRoots2Deps, logLevel);
+                        LOGGER.log(logLevel, "addedOrChanged({0})=", addedOrChanged.size()); //NOI18N
+                        printMap(addedOrChanged, logLevel);
+                        LOGGER.log(logLevel, "removed({0})=", removed.size()); //NOI18N
+                        printMap(removed, logLevel);
                     }
 
                     depCtx.oldRoots.clear();
@@ -1775,12 +1835,14 @@ out:            for (String mimeType : order) {
             scannedBinaries.addAll(depCtx.scannedBinaries);
             scannedBinaries.removeAll(depCtx.oldBinaries);
 
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine(this + " " + (isCancelled() ? "cancelled" : "finished") + ": {"); //NOI18N
-                LOGGER.fine("  scannedRoots2Dependencies="); //NOI18N
-                printMap(scannedRoots2Dependencies, Level.FINE);
-                LOGGER.fine("  scannedBinaries=" + scannedBinaries); //NOI18N
-                LOGGER.fine("} ===="); //NOI18N
+            final Level logLevel = Level.FINE;
+            if (LOGGER.isLoggable(logLevel)) {
+                LOGGER.log(logLevel, this + " " + (isCancelled() ? "cancelled" : "finished") + ": {"); //NOI18N
+                LOGGER.log(logLevel, "  scannedRoots2Dependencies(" + scannedRoots2Dependencies.size() + ")="); //NOI18N
+                printMap(scannedRoots2Dependencies, logLevel);
+                LOGGER.log(logLevel, "  scannedBinaries(" + scannedBinaries.size() + ")="); //NOI18N
+                printCollection(scannedBinaries, logLevel);
+                LOGGER.log(logLevel, "} ===="); //NOI18N
             }
 
             return finished;
@@ -2104,23 +2166,6 @@ out:            for (String mimeType : order) {
                 }
             }
         }
-
-        private static void printMap(Map<URL, List<URL>> deps, Level level) {
-            Set<URL> sortedRoots = new TreeSet<URL>(C);
-            sortedRoots.addAll(deps.keySet());
-            for(URL url : sortedRoots) {
-                LOGGER.log(level, "  {0}:\n", url); //NOI18N
-                for(URL depUrl : deps.get(url)) {
-                    LOGGER.log(level, "  -> {0}\n", depUrl); //NOI18N
-                }
-            }
-        }
-
-        private static final Comparator<URL> C = new Comparator<URL>() {
-            public int compare(URL o1, URL o2) {
-                return o1.toString().compareTo(o2.toString());
-            }
-        };
     } // End of RootsWork class
 
     private final class InitialRootsWork extends RootsWork {
@@ -2503,14 +2548,22 @@ out:            for (String mimeType : order) {
             sb.append(super.toString());
             sb.append(": {\n"); //NOI18N
             sb.append("  useInitialState=" + useInitialState).append("\n"); //NOI18N
-            sb.append("  initialRoots2Deps=" + initialRoots2Deps).append("\n"); //NOI18N
-            sb.append("  initialBinaries=" + initialBinaries).append("\n"); //NOI18N
-            sb.append("  oldRoots=" + oldRoots).append("\n"); //NOI18N
-            sb.append("  oldBinaries=" + oldBinaries).append("\n"); //NOI18N
-            sb.append("  newRootsToScan=" + newRootsToScan).append("\n"); //NOI18N
-            sb.append("  newBinariesToScan=" + newBinariesToScan).append("\n"); //NOI18N
-            sb.append("  scannedRoots=" + scannedRoots).append("\n"); //NOI18N
-            sb.append("  scannedBinaries=" + scannedBinaries).append("\n"); //NOI18N
+            sb.append("  initialRoots2Deps(").append(initialRoots2Deps.size()).append(")=\n"); //NOI18N
+            printMap(initialRoots2Deps, sb);
+            sb.append("  initialBinaries(").append(initialBinaries.size()).append(")=\n"); //NOI18N
+            printCollection(initialBinaries, sb);
+            sb.append("  oldRoots(").append(oldRoots.size()).append(")=\n"); //NOI18N
+            printCollection(oldRoots, sb);
+            sb.append("  oldBinaries(").append(oldBinaries.size()).append(")=\n"); //NOI18N
+            printCollection(oldBinaries, sb);
+            sb.append("  newRootsToScan(").append(newRootsToScan.size()).append(")=\n"); //NOI18N
+            printCollection(newRootsToScan, sb);
+            sb.append("  newBinariesToScan(").append(newBinariesToScan.size()).append(")=\n"); //NOI18N
+            printCollection(newBinariesToScan, sb);
+            sb.append("  scannedRoots(").append(scannedRoots.size()).append(")=\n"); //NOI18N
+            printCollection(scannedRoots, sb);
+            sb.append("  scannedBinaries(").append(scannedBinaries.size()).append(")=\n"); //NOI18N
+            printCollection(scannedBinaries, sb);
             sb.append("} ----\n"); //NOI18N
             return sb.toString();
         }
