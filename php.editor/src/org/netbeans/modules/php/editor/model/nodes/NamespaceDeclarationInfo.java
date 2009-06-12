@@ -39,6 +39,7 @@
 package org.netbeans.modules.php.editor.model.nodes;
 
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
@@ -91,5 +92,10 @@ public class NamespaceDeclarationInfo extends ASTNodeInfo<NamespaceDeclaration> 
             node = name;
         }
         return new OffsetRange(node.getStartOffset(), node.getEndOffset());
+    }
+
+    @Override
+    public PhpKind getPhpKind() {
+        return PhpKind.NAMESPACE_DECLARATION;
     }
 }
