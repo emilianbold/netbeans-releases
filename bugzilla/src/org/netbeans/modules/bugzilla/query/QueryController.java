@@ -157,6 +157,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.seenButton.addActionListener(this);
         panel.removeButton.addActionListener(this);
         panel.refreshConfigurationButton.addActionListener(this);
+        panel.findIssuesButton.addActionListener(this);
         panel.changedFromTextField.addFocusListener(this);
 
         panel.idTextField.addActionListener(this);
@@ -461,6 +462,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
             onAutoRefresh();
         } else if (e.getSource() == panel.refreshConfigurationButton) {
             onRefreshConfiguration();
+        } else if (e.getSource() == panel.findIssuesButton) {
+            onFindIssues();
         } else if (e.getSource() == panel.idTextField) {
             if(!panel.idTextField.getText().trim().equals("")) {                // NOI18N
                 onGotoIssue();
@@ -737,6 +740,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 }
             });
         }
+    }
+
+    private void onFindIssues() {
+        Query.openNew(repository);
     }
 
     private void onAutoRefresh() {
