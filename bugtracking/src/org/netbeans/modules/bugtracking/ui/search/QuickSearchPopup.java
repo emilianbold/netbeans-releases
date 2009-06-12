@@ -54,6 +54,7 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
 import javax.swing.JList;
+import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.ListDataEvent;
@@ -127,9 +128,10 @@ public class QuickSearchPopup extends javax.swing.JPanel
     }
 
     void invoke() {
-        Object item = jList1.getModel().getElementAt(jList1.getSelectedIndex());
-        
-        // XXX
+        int selection = jList1.getSelectedIndex();
+        ListModel model = jList1.getModel();
+        Object item = model.getElementAt(selection);
+        if(item == null) return;
         if(item instanceof PopupItem.IssueItem) {
             Issue issue = ((PopupItem.IssueItem) item).getIssue();
             if (issue != null) {
@@ -167,11 +169,13 @@ public class QuickSearchPopup extends javax.swing.JPanel
     }
 
     public void clearModel () {
+        System.out.println("clear model");
         rModel.setContent(null);
     }
 
     public void cancel () {
         cancelTask();
+        System.out.println("cancel");
         rModel.setContent(null);
     }
 
@@ -387,7 +391,7 @@ private void jList1MouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_
 private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jList1MouseClicked
     if (!SwingUtilities.isLeftMouseButton(evt)) {
         return;
-    }
+    }   
     invoke();
 }//GEN-LAST:event_jList1MouseClicked
 

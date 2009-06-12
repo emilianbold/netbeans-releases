@@ -43,14 +43,17 @@ made subject to such option by the copyright holder.
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <toolchain name="SunStudioExpress" display="Sun Studio Express Compiler Collection" family="SunStudio" qmakespec="${os}-cc"/>
-    <platforms stringvalue="sun_intel"/>
+    <platforms stringvalue="sun_intel,sun_sparc,linux"/>
     <makefile_writer class="org.netbeans.modules.cnd.makeproject.api.configurations.DefaultMakefileWriter"/>
     <default_locations>
-	<platform os="sun_intel" directory="/opt/SunStudioExpress/bin"/>
+        <platform os="linux" directory="/opt/sun/SunStudioExpress/bin"/>
+        <platform os="linux" directory="/opt/SunStudioExpress/bin"/>
+        <platform os="sun_intel" directory="/opt/SunStudioExpress/bin"/>
+        <platform os="sun_sparc" directory="/opt/SunStudioExpress/bin"/>
     </default_locations>
     <c>
         <compiler name="cc"/>
-        <recognizer pattern="/opt/SunStudioExpress"/>
+        <recognizer pattern=".*(SunStudioExpress|/prod/bin)" or_exist_folder="../prod"/>
         <version flags="-V" pattern=".*Sun Ceres C 5.10"/>
         <system_include_paths flags="-xdryrun -E" parser="Sun"/>
         <system_macros flags="-xdryrun -E" parser="Sun"/>
@@ -99,7 +102,7 @@ made subject to such option by the copyright holder.
     </c>
     <cpp>
         <compiler name="CC"/>
-        <recognizer pattern="/opt/SunStudioExpress"/>
+        <recognizer pattern=".*(SunStudioExpress|/prod/bin)" or_exist_folder="../prod"/>
         <version flags="-V" pattern=".*Sun Ceres C++ 5.10"/>
         <system_include_paths flags="-xdryrun -E" parser="Sun"/>
         <system_macros flags="c" parser="Sun"/>
@@ -155,7 +158,7 @@ made subject to such option by the copyright holder.
     </cpp>
     <fortran>
         <compiler name="ffortran,f95,f90,f77"/>
-        <recognizer pattern="/opt/SunStudioExpress"/>
+        <recognizer pattern=".*(SunStudioExpress|/prod/bin)" or_exist_folder="../prod"/>
         <version flags="-V" pattern=".*Sun Ceres Fortran 95 8.3"/>
         <development_mode>
             <fast_build flags=""/>

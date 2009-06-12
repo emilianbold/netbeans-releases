@@ -61,7 +61,6 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Artificial libraries manager.
@@ -83,6 +82,10 @@ public final class LibraryManager {
     private final Map<String, LibraryEntry> librariesEntries = new ConcurrentHashMap<String, LibraryEntry>();
     private final Object lock = new Object();
 
+    public void shutdown(){
+        librariesEntries.clear();
+    }
+    
     /**
      * Returns collection of artificial libraries used in project
      */

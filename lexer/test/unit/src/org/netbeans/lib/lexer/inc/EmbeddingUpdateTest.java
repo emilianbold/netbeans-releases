@@ -86,7 +86,7 @@ public class EmbeddingUpdateTest extends NbTestCase {
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.BLOCK_COMMENT, "/*abc def*/", 1);
         TokenSequence<?> ets = ts.embedded();
         assertNotNull(ets);
-        assertFalse(ts.moveNext());
+        assertTrue(ts.moveNext());
         assertTrue(ets.moveNext());
         LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WORD, "abc", 3);
         assertTrue(ets.moveNext());

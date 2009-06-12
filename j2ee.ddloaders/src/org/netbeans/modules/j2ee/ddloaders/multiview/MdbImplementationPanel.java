@@ -48,10 +48,6 @@ import org.netbeans.modules.xml.multiview.ui.LinkButton;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.openide.filesystems.FileObject;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
 /**
  * @author pfiala
  */
@@ -79,14 +75,17 @@ public class MdbImplementationPanel extends MdbImplementationForm {
         LinkButton.initLinkButton(getBeanClassLinkButton(), this, null, LINK_BEAN);
     }
 
+    @Override
     public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
         scheduleRefreshView();
     }
 
+    @Override
     public void refreshView() {
          beanClassDocument.init();
     }
 
+    @Override
     public void linkButtonPressed(Object ddBean, String ddProperty) {
         if(LINK_BEAN.equals(ddProperty)) {
             final FileObject ejbJarFile = dataObject.getPrimaryFile();

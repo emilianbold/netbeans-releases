@@ -40,6 +40,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.ResourceUtils;
@@ -253,6 +254,13 @@ public abstract class ProductConfigurationLogic {
     
     protected final String getString(String key) {
         return ResourceUtils.getString(getClass(), key);
+    }
+
+    protected final Map <Locale, String> getStrings(String key) {
+        return ResourceUtils.getStrings(getClass(), key);
+    }
+    protected final Map <Locale, String> getStrings(String key, Object... arguments) {
+        return ResourceUtils.getStrings(getClass(), key, arguments);
     }
     
     protected final String getString(String key, Object... arguments) {

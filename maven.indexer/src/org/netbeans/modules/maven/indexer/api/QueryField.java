@@ -49,6 +49,11 @@ public final class QueryField {
     public static final String FIELD_GROUPID = "groupId";
     public static final String FIELD_ARTIFACTID = "artifactId";
     public static final String FIELD_VERSION = "version";
+    /**
+     * field for searching the class content of the artifact,
+     * please note this search is prone to throw TooManyClausesException from
+     * lucene if too generic term is used.
+     */
     public static final String FIELD_CLASSES = "classes";
     public static final String FIELD_NAME = "name";
     public static final String FIELD_DESCRIPTION = "description";

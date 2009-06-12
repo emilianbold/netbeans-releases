@@ -67,19 +67,19 @@ public abstract class Query implements Comparable<Query> {
     public Filter FILTER_ALL_BUT_OBSOLETE = new AllButObsoleteDateFilter(this);
 
     /**
-     * querie issues list was changed
+     * queries issue list was changed
      */
-    public static String EVENT_QUERY_ISSUES_CHANGED = "bugtracking.query.issues_changed";   // NOI18N
+    public final static String EVENT_QUERY_ISSUES_CHANGED = "bugtracking.query.issues_changed";   // NOI18N
 
     /**
      * query was saved
      */
-    public static String EVENT_QUERY_SAVED   = "bugtracking.query.saved";       // NOI18N
+    public final static String EVENT_QUERY_SAVED   = "bugtracking.query.saved";       // NOI18N
 
     /**
-     * qeury was removed
+     * query was removed
      */
-    public static String EVENT_QUERY_REMOVED = "bugtracking.query.removed";     // NOI18N
+    public final static String EVENT_QUERY_REMOVED = "bugtracking.query.removed";     // NOI18N
 
 
     private List<QueryNotifyListener> notifyListeners;
@@ -107,6 +107,7 @@ public abstract class Query implements Comparable<Query> {
 
     /**
      * Returns the {@link BugtrackignController} for this query
+     * XXX we don't need this. use get component instead and get rid of the BugtrackingController
      * @return
      */
     public abstract BugtrackingController getController();
@@ -206,7 +207,8 @@ public abstract class Query implements Comparable<Query> {
      *********/
 
     /**
-     * Returns a visual component containig a table with this queries issues 
+     * Returns a visual component containig a table with this queries issues
+     * // XXX remove from spi, this probaly also applies to other methods as setseen, get columndescriptors etc...
      * @return
      */
     public JComponent getTableComponent() {

@@ -42,6 +42,7 @@
                 <friend>org.netbeans.modules.visualweb.jsfsupport.designtime_1_1</friend>
                 <friend>org.netbeans.modules.visualweb.jsfsupport.designtime_1_2</friend>
                 <friend>org.netbeans.modules.visualweb.propertyeditors</friend>
+                <friend>org.netbeans.modules.web.facelets010114</friend>
                 <friend>org.netbeans.modules.web.jsf.kit</friend>
                 <package>com.sun.el</package>
                 <package>com.sun.el.lang</package>

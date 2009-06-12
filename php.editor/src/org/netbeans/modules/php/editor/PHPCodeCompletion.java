@@ -82,8 +82,10 @@ import org.netbeans.modules.php.editor.index.IndexedVariable;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelFactory;
+import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.ParameterInfoSupport;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.nav.NavUtils;
@@ -99,7 +101,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
@@ -399,287 +400,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     }
 
-    private String findLHSExpressionType(TokenSequence<PHPTokenId> tokenSequence,
-            PHPCompletionItem.CompletionRequest request){
-
-        // find the beginning of the left hand side expression
-
-        while (tokenSequence.token().id() == PHPTokenId.WHITESPACE) {
-            if (!tokenSequence.movePrevious()){
-                return null;
-            }
-        }
-
-        int rightExpressionBoundary = tokenSequence.offset();
-
-        while (findLHSExpressionType_skipArgs(tokenSequence, true)
-                && !CompletionContextFinder.CTX_DELIMITERS.contains(tokenSequence.token().id())
-                && tokenSequence.token().id() != PHPTokenId.PHP_TOKEN){
-            if (!tokenSequence.movePrevious()) {
-                break;
-            }
-        }
-        //move forward to the first text
-        do {
-            if (!tokenSequence.moveNext()){
-                return null;
-            }
-            findLHSExpressionType_skipArgs(tokenSequence, false);
-        } while (tokenSequence.token().id() == PHPTokenId.WHITESPACE);
-
-        int leftExpressionBoundary = tokenSequence.offset(); // dbg only
-
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("evaluating expression '" + request.info.getSnapshot().getText().subSequence(leftExpressionBoundary, leftExpressionBoundary) + "'");
-        }
-
-        String preceedingType = null;
-        boolean staticContex = false;
-        PHPTokenId tokenID = tokenSequence.token().id();
-        String varName = "";//NOI18N
-        switch (tokenID) {
-            case PHP_SELF:
-            case PHP_PARENT:
-                staticContex = true;
-                 {
-                    ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
-
-                     if (classDecl != null) {
-                         if (tokenSequence.token().id() == PHPTokenId.PHP_PARENT) {
-                             Identifier superIdentifier = classDecl.getSuperClass();
-
-                             if (superIdentifier != null) {
-                                 preceedingType = superIdentifier.getName();
-                             }
-                         } else {
-                            preceedingType = classDecl.getName().getName();
-                        }
-                    }
-                }
-
-                break;
-            case PHP_STRING: //class name in static invokation or function name
-                String functionName = findLHSideExpressionType_extractFunctionNameFromCall(tokenSequence);
-
-                if (functionName != null) {
-                    for (IndexedFunction func : request.index.getFunctions(request.result,
-                            functionName, QuerySupport.Kind.EXACT)) {
-
-                        preceedingType = func.getReturnType();
-                    }
-                } else {
-                    // class name or a special var in a static method call
-                    preceedingType = tokenSequence.token().text().toString();
-                }
-
-                break;
-            case PHP_NEW:
-                tokenSequence.moveNext();
-                tokenSequence.moveNext(); // skip the whitespace
-                preceedingType = tokenSequence.token().text().toString();
-                break;
-
-            case PHP_VARIABLE:
-                varName = tokenSequence.token().text().toString();
-
-                if ("$this".equalsIgnoreCase(varName)) { //NOI18N
-                    ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
-                    if (classDecl != null) {
-                        preceedingType = classDecl.getName().getName();
-                    }
-
-                } else {
-                    Collection<IndexedConstant> vars = getVariables(request.result, request.index,
-                            varName, request.anchor, request.currentlyEditedFileURL);
-
-                    if (vars != null) {
-                        for (IndexedConstant var : vars) {
-                            if (var.getName().equals(varName)) { // could be just a prefix
-                                preceedingType = var.getTypeName();
-                                break;
-                            }
-                        }
-                    }
-                }
-                break;
-        }
-
-        do {
-            if (!tokenSequence.moveNext()){
-                return null;
-            }
-        } while (tokenSequence.token().id() == PHPTokenId.WHITESPACE);
-
-        if ((preceedingType == null || preceedingType.length() == 0) && tokenID == PHPTokenId.PHP_VARIABLE && varName != null && varName.length() > 0) {
-            VarTypeResolver typeResolver = VarTypeResolver.getInstance(request, varName);
-            preceedingType = typeResolver.resolveType();
-            if (preceedingType != null) {
-                return preceedingType;
-            }
-        }
-        if (preceedingType == null || tokenSequence.offset() == rightExpressionBoundary){
-            return preceedingType;
-        }
-
-        if (rightExpressionBoundary < tokenSequence.offset()){
-            if (LOGGER.isLoggable(Level.FINE)){
-                String errorMsg = String.format("Error finding expression boundary: " +
-                        "caretOffset=%d, leftExpressionBoundary=%d," +
-                        " rightExpressionBoundary=%d, tokenSequence:\n%s",
-                        request.anchor, leftExpressionBoundary, rightExpressionBoundary, tokenSequence.toString()); //NOI18N
-
-                LOGGER.fine(errorMsg);
-            }
-
-            return null;
-        }
-
-        return findLHSExpressionType_recursive(tokenSequence, request,
-                preceedingType, staticContex, rightExpressionBoundary);
-    }
-
-    private boolean findLHSExpressionType_skipArgs(TokenSequence<PHPTokenId> tokenSequence, boolean backwards) {
-
-        String startingSymbol = "(";
-        String closingSymbol = ")";
-
-        if (backwards){
-            startingSymbol = ")"; //NOI18N
-            closingSymbol = "("; //NOI18N
-        }
-
-        if (tokenSequence.token().id() == PHPTokenId.PHP_TOKEN 
-                && startingSymbol.equals(tokenSequence.token().text().toString())) {
-
-            int balance = 1;
-            boolean endingParenthesis;
-
-            do {
-                if (backwards && !tokenSequence.movePrevious() 
-                        || !backwards && !tokenSequence.moveNext()) {
-                    
-                    return true;
-                }
-
-                if (tokenSequence.token().id() == PHPTokenId.PHP_TOKEN 
-                        && startingSymbol.equals(tokenSequence.token().text().toString())) {
-                    balance++;
-                }
-
-                endingParenthesis = tokenSequence.token().id() == PHPTokenId.PHP_TOKEN 
-                        && closingSymbol.equals(tokenSequence.token().text().toString()); //NOI18N
-
-                if (endingParenthesis) {
-                    balance--;
-                }
-
-            } while (!(endingParenthesis && balance == 0));
-
-            if (backwards){
-                tokenSequence.movePrevious();
-            } else {
-                tokenSequence.moveNext();
-            }
-        }
-
-        return true;
-    }
-
-    private String findLHSExpressionType_recursive(TokenSequence<PHPTokenId> tokenSequence,
-            PHPCompletionItem.CompletionRequest request,
-            String preceedingType, boolean staticContext, int rightExpressionBoundary){
-        String type = null;
-
-        do {
-            if (!tokenSequence.moveNext()){
-                return null;
-            }
-        } while (tokenSequence.token().id() == PHPTokenId.WHITESPACE);
-
-        String methodName = findLHSideExpressionType_extractFunctionNameFromCall(tokenSequence);
-
-        if (methodName != null){
-            for (IndexedFunction func : request.index.getAllMethods(request.result, preceedingType,
-                    methodName, QuerySupport.Kind.EXACT, Integer.MAX_VALUE)) {
-
-                type = func.getReturnType();
-            }
-        } else {
-            String fieldName = tokenSequence.token().text().toString();
-            if (fieldName.startsWith("$")) {//NOI18N
-                fieldName = fieldName.substring(1);
-            }
-
-            for (IndexedConstant field : request.index.getAllFields(request.result, preceedingType,
-                    fieldName, QuerySupport.Kind.EXACT, Integer.MAX_VALUE)) {
-
-                type = field.getTypeName();
-            }
-            if (type == null && preceedingType != null && fieldName != null) {
-                VarTypeResolver typeResolver = VarTypeResolver.getInstance(request, preceedingType+"::"+fieldName);//NOI18N
-                type = typeResolver.resolveType();
-            }
-        }
-
-        do {
-            if (!tokenSequence.moveNext()){
-                return null;
-            }
-        } while (tokenSequence.token().id() == PHPTokenId.WHITESPACE);
-
-        if (type == null || tokenSequence.offset() == rightExpressionBoundary)
-        {
-            return type;
-        }
-
-        if (rightExpressionBoundary < tokenSequence.offset()){
-            if (LOGGER.isLoggable(Level.FINE)){
-                String errorMsg = String.format("Error finding expression boundary: caretOffset=%d, " +
-                        "rightExpressionBoundary=%d, tokenSequence:\n%s",
-                        request.anchor, rightExpressionBoundary, tokenSequence.toString()); //NOI18N
-
-                LOGGER.fine(errorMsg);
-            }
-
-            return null;
-        }
-
-        return findLHSExpressionType_recursive(tokenSequence, request,
-                type, staticContext, rightExpressionBoundary);
-    }
-
-    private String findLHSideExpressionType_extractFunctionNameFromCall(TokenSequence<PHPTokenId> tokenSequence) {
-        String functionName = tokenSequence.token().text().toString();
-        int orgPos = tokenSequence.offset();
-
-        do {
-            tokenSequence.moveNext();
-        }  while (tokenSequence.token().id() == PHPTokenId.WHITESPACE);
-
-        if (tokenSequence.token().id() == PHPTokenId.PHP_TOKEN) {
-            CharSequence tokenTxt = tokenSequence.token().text();
-
-            // function call
-            if (tokenTxt.length() == 1 && tokenTxt.charAt(0) == '(') {
-                // confirmed, it is a function call
-                // position the token sequence after the call
-                findLHSExpressionType_skipArgs(tokenSequence, false);
-                tokenSequence.movePrevious();
-            } else {
-                functionName = null;
-            }
-        } else {
-            functionName = null;
-        }
-
-        if (functionName == null) {
-            tokenSequence.move(orgPos);
-            tokenSequence.moveNext();
-        }
-
-        return functionName;
-    }
-
     private void autoCompleteMethodName(ParserResult info, int caretOffset, List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request) {
         ClassDeclaration enclosingClass = findEnclosingClass(info, lexerToASTOffset(info, caretOffset));
@@ -734,9 +454,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
         }
         if (enclosingClass != null && offerMagicAndInherited) {
-            Identifier superClass = enclosingClass.getSuperClass();
+            Expression superClass = enclosingClass.getSuperClass();
             if (superClass != null) {
-                String superClsName = superClass.getName();
+                String superClsName = CodeUtils.extractSuperClassName(enclosingClass);
                 Collection<IndexedFunction> superMethods = request.index.getAllMethods(
                         request.result, superClsName, request.prefix,
                         QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
@@ -752,9 +472,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     }
                 }
             }
-            List<Identifier> interfaces = enclosingClass.getInterfaes();
-            for (Identifier identifier : interfaces) {
-                String ifaceName = identifier.getName();
+            List<Expression> interfaces = enclosingClass.getInterfaes();
+            for (Expression identifier : interfaces) {
+                String ifaceName = CodeUtils.extractTypeName(identifier);
                 Collection<IndexedFunction> superMethods = request.index.getAllMethods(
                         request.result, ifaceName, request.prefix,
                         QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
@@ -829,9 +549,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
                 ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
                 if (classDecl != null) {
-                    Identifier superIdentifier = classDecl.getSuperClass();
+                    Expression superIdentifier = classDecl.getSuperClass();
                     if (superIdentifier != null) {
-                        typeName = superIdentifier.getName();
+                        typeName = CodeUtils.extractSuperClassName(classDecl);
                         staticContext = instanceContext = true;
                         attrMask |= Modifier.PROTECTED;
                     }
@@ -853,30 +573,26 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     if (varName.startsWith("$")) {//NOI18N
                         return;
                     }
-                    typeName = varName;
-                } else {
-                    assert typeName == null;
-                    Collection<IndexedConstant> vars = getVariables(request.result, request.index,
-                            varName, request.anchor, request.currentlyEditedFileURL);
-
-                    if (vars != null) {
-                        for (IndexedConstant var : vars) {
-                            if (var.getName().equals(varName)) { // can be just a prefix
-                                typeName = var.getTypeName();
-                                break;
-                            }
-                        }
-                    }
                 }
-            }
-
-            // end of a cluster of concentrated duplicated/redundant code
-
-            tokenSequence.move(request.anchor);
-
-            if (tokenSequence.movePrevious()){
-                // typeName is unconditionally overriden on purpose!
-                typeName = findLHSExpressionType(tokenSequence, request);
+                assert typeName == null;
+                Model model = ModelFactory.getModel(request.result);
+                Collection<? extends TypeScope> types =
+                        ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
+                if (!types.isEmpty()) {
+                    Set<String> typeSet = new HashSet<String>();
+                    StringBuilder sb = null;
+                    for (TypeScope type : types) {
+                        boolean added = typeSet.add(type.getName());
+                        if (!added) continue;
+                        if (sb == null) {
+                            sb = new StringBuilder();
+                        } else {
+                            sb.append("|");//NOI18N
+                        }
+                        sb.append(type.getName());
+                    }
+                    typeName = sb.toString();
+                }
             }
 
             if (typeName != null){
@@ -1277,7 +993,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 if (parameterName instanceof Variable) {
                     String varName = CodeUtils.extractVariableName((Variable) parameterName);
                     if (varName != null) {
-                        String type = param.getParameterType() != null ? param.getParameterType().getName() : null;
+                        String type = CodeUtils.extractParameterTypeName(param);
 
                         if (type == null){
                             type = typeByParamName.get(varName);

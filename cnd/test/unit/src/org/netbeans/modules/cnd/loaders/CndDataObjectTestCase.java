@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.loaders;
 import java.io.File;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -54,7 +54,7 @@ import org.openide.loaders.DataObject;
  *
  * @author Vladimir Voskresensky
  */
-public class CndDataObjectTestCase extends BaseTestCase {
+public class CndDataObjectTestCase extends CndBaseTestCase {
     
     public CndDataObjectTestCase(String testName) {
         super(testName);

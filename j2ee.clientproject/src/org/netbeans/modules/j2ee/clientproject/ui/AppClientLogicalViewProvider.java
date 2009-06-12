@@ -70,6 +70,7 @@ import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectPro
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -474,15 +475,15 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider2 {
             }
 
             public void actionPerformed(ActionEvent e) {
-                String j2eeSpec = project.evaluator().getProperty(AppClientProjectProperties.J2EE_PLATFORM);
-                if (j2eeSpec == null) {
-                    j2eeSpec = J2EEProjectProperties.JAVA_EE_5; // NOI18N
+                Profile j2eeProfile = Profile.fromPropertiesString(project.evaluator().getProperty(AppClientProjectProperties.J2EE_PLATFORM));
+                if (j2eeProfile == null) {
+                    j2eeProfile = Profile.JAVA_EE_5;
                     Logger.getLogger(AppClientLogicalViewProvider.class.getName()).warning(
                             "project ["+project.getProjectDirectory()+"] is missing "+AppClientProjectProperties.J2EE_PLATFORM+". " + // NOI18N
-                            "default value will be used instead: "+j2eeSpec); // NOI18N
-                    updateJ2EESpec(project, project.getAntProjectHelper(), j2eeSpec);
+                            "default value will be used instead: "+j2eeProfile); // NOI18N
+                    updateJ2EESpec(project, project.getAntProjectHelper(), j2eeProfile);
                 }
-                String instance = BrokenServerSupport.selectServer(j2eeSpec, J2eeModule.CLIENT);
+                String instance = BrokenServerSupport.selectServer(j2eeProfile, J2eeModule.Type.CAR);
                 if (instance != null) {
                     AppClientProjectProperties.setServerInstance(
                             project, helper.getAntProjectHelper(), instance);
@@ -490,12 +491,12 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider2 {
                 checkMissingServer();
             }
 
-            private void updateJ2EESpec(final Project project, final AntProjectHelper helper, final String j2eeSpec) {
+            private void updateJ2EESpec(final Project project, final AntProjectHelper helper, final Profile j2eeProfile) {
                 ProjectManager.mutex().postWriteRequest(new Runnable() {
                     public void run() {
                         try {
                             EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                            projectProps.put(AppClientProjectProperties.J2EE_PLATFORM, j2eeSpec);
+                            projectProps.put(AppClientProjectProperties.J2EE_PLATFORM, j2eeProfile.toPropertiesString());
                             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
                             ProjectManager.getDefault().saveProject(project);
                         } catch (IOException e) {

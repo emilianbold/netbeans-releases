@@ -112,6 +112,8 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
@@ -2813,7 +2815,7 @@ public class JsfForm {
                 // -1: convert line numbers to be zero-based
                 Line line = ls.getCurrent(lineno-1);
                 // TODO - pass in a column too?
-                line.show(Line.SHOW_GOTO, column);
+                line.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
             }
         }
     }

@@ -118,7 +118,9 @@
                         <InfixExpression start='214' end='225' operator='CONCAT'>
                             <StaticConstantAccess start='214' end='218'>
                                 <ClassName>
-                                    <Identifier start='214' end='215' name='e'/>
+                                    <NamespaceName start='214' end='215' isCurrent='false' isGlobal='false'>
+                                        <Identifier start='214' end='215' name='e'/>
+                                    </NamespaceName>
                                 </ClassName>
                                 <Constant>
                                     <Identifier start='217' end='218' name='E'/>

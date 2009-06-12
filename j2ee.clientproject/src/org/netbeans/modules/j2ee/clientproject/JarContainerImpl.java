@@ -55,6 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceSupport;
@@ -288,7 +289,7 @@ public class JarContainerImpl implements EnterpriseReferenceContainer {
     }
     
     private static boolean isDescriptorMandatory(String j2eeVersion) {
-        if ("1.3".equals(j2eeVersion) || "1.4".equals(j2eeVersion)) {
+        if (EjbProjectConstants.J2EE_13_LEVEL.equals(j2eeVersion) || EjbProjectConstants.J2EE_14_LEVEL.equals(j2eeVersion)) {
             return true;
         }
         return false;

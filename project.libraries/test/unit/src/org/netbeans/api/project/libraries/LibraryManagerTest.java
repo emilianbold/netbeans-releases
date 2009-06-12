@@ -49,6 +49,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.libraries.ui.LibrariesModel;
 import org.netbeans.spi.project.libraries.LibraryFactory;
@@ -262,6 +263,8 @@ public class LibraryManagerTest extends NbTestCase {
         }
 
         public LibraryImplementation createLibrary() {
+            assert !ProjectManager.mutex().isReadAccess();
+            assert !ProjectManager.mutex().isWriteAccess();
             return LibrariesSupport.createLibraryImplementation(LIBRARY_TYPE, VOLUME_TYPES);
         }
 
@@ -280,4 +283,7 @@ public class LibraryManagerTest extends NbTestCase {
         }
     }
 
+    public static void resetCache() {
+        LibraryManager.getDefault().resetCache();
+    }
 }

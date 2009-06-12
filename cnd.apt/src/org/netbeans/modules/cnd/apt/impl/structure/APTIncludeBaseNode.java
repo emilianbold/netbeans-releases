@@ -47,6 +47,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.apt.support.APTExpandedStream;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.structure.APT;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
@@ -101,7 +102,7 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
         assert (false) : "include doesn't support children"; // NOI18N
     }
 
-    public boolean accept(APTToken token) {
+    public boolean accept(APTFile curFile,APTToken token) {
         int ttype = token.getType();
         if (APTUtils.isEndDirectiveToken(ttype)) {
             endOffset = token.getOffset();

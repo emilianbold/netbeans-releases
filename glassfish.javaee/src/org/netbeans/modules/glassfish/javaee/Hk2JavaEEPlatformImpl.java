@@ -45,10 +45,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.util.ImageUtilities;
@@ -123,7 +127,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         
         String gfRootStr = dm.getProperties().getGlassfishRoot();
         if (gfRootStr != null) {
-            wsLib = ServerUtilities.getJarName(gfRootStr, "webservices" + ServerUtilities.GFV3_VERSION_MATCHER);
+            wsLib = ServerUtilities.getJarName(gfRootStr, "webservices(|-osgi).jar");
         }
 
         // WEB SERVICES SUPPORT
@@ -156,6 +160,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
                 return true;
             }
             if (TOOL_WSCOMPILE.equals(toolName)) {     //NOI18N
+                if (ServerUtilities.getJarName(gfRootStr, "webservices.jar") != null)
                 return true;   // TODO - the support is there - need to find the right classpath then change to true
             }
             if (TOOL_APPCLIENTRUNTIME.equals(toolName)) { //NOI18N
@@ -174,13 +179,15 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     public File[] getToolClasspathEntries(String toolName) {
         String gfRootStr = dm.getProperties().getGlassfishRoot();
         if (TOOL_WSGEN.equals(toolName) || TOOL_WSIMPORT.equals(toolName)) {
-            String[] entries = new String[] {"webservices", //NOI18N
-                                             "javax.activation", //NOI18N
-                                             "jaxb"}; //NOI18N
+            String[] entries = new String[] {"webservices(|-osgi).jar", //NOI18N
+                                             "webservices-api(|-osgi).jar", //NOI18N
+                                             "jaxb(|-osgi).jar", //NOI18N
+                                             "jaxb-api(|-osgi).jar", //NOI18N
+                                             "javax.activation.jar"}; //NOI18N
             List<File> cPath = new ArrayList<File>();
             
             for (String entry : entries) {
-                File f = ServerUtilities.getJarName(gfRootStr, entry + ServerUtilities.GFV3_VERSION_MATCHER);
+                File f = ServerUtilities.getWsJarName(gfRootStr, entry);
                 if ((f != null) && (f.exists())) {
                     cPath.add(f);
                 }
@@ -194,7 +201,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
             List<File> cPath = new ArrayList<File>();
 
             for (String entry : entries) {
-                File f = ServerUtilities.getJarName(gfRootStr, entry + ServerUtilities.GFV3_VERSION_MATCHER);
+                File f = ServerUtilities.getWsJarName(gfRootStr, entry);
                 if ((f != null) && (f.exists())) {
                     cPath.add(f);
                 }
@@ -229,9 +236,19 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * @return 
      */
     public Set getSupportedSpecVersions() {
+        Logger.getLogger("glassfish-javaee").log(Level.INFO,"programmer calling deprecated API", new Exception("deprectaed API usage")); // NOI18N
         return pf.getSupportedSpecVersions();
     }
+
+    @Override
+    public Set<Profile> getSupportedProfiles() {
+        return pf.getSupportedProfiles();
+    }
     
+    @Override
+    public Set<Profile> getSupportedProfiles(J2eeModule.Type type) {
+        return pf.getSupportedProfiles();
+    }
     /**
      * 
      * @return 
@@ -309,6 +326,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         LibraryImplementation lib = new J2eeLibraryTypeProvider().createLibrary();
         lib.setName(pf.getLibraryName()); 
         lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, dm.getProperties().getClasses());
+        lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, dm.getProperties().getJavadocs());
         libraries = new LibraryImplementation[] {lib};
     }
     

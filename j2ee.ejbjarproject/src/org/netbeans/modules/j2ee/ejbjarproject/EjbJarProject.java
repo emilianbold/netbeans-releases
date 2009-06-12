@@ -73,6 +73,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbJarSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
@@ -408,7 +409,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new ProjectWebServicesSupportProvider(), // implementation of WebServicesClientSupportProvider commented out
                 spp,
                 EjbEnterpriseReferenceContainerSupport.createEnterpriseReferenceContainer(this, helper),
-                new ProjectEjbJarProvider(this),
+                EjbJarSupport.createEjbJarProvider(this, apiEjbJar),
+                EjbJarSupport.createEjbJarsInProject(apiEjbJar),
                 ejbModule, //implements J2eeModuleProvider
                 new EjbJarActionProvider( this, helper, refHelper, updateHelper, eval ),
                 new EjbJarLogicalViewProvider(this, updateHelper, evaluator(), spp, refHelper),

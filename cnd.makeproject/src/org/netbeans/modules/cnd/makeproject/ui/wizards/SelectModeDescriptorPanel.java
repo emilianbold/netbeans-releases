@@ -41,19 +41,12 @@
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.awt.Component;
-import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -170,64 +163,8 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         return wizardStorage;
     }
 
-    public static String findConfigureScript(String folder){
-        String pattern[] = new String[]{"configure"}; // NOI18N
-        File file = new File(folder);
-        if (!(file.isDirectory() && file.canRead() && file.canWrite())) {
-            return null;
-        }
-        for (String name : pattern) {
-            file = new File(folder+"/"+name); // NOI18N
-            if (isRunnable(file)){
-                return file.getAbsolutePath();
-            }
-        }
-        return null;
-    }
-
-    public static boolean isRunnable(File file) {
-        if (file.exists() && file.isFile() && file.canRead()) {
-            FileObject configureFileObject = FileUtil.toFileObject(file);
-            if (configureFileObject == null || !configureFileObject.isValid()) {
-                return false;
-            }
-            DataObject dObj;
-            try {
-                dObj = DataObject.find(configureFileObject);
-            } catch (DataObjectNotFoundException ex) {
-                return false;
-            }
-            if (dObj == null) {
-                return false;
-            }
-            Node node = dObj.getNodeDelegate();
-            if (node == null) {
-                return false;
-            }
-            ShellExecSupport ses = node.getCookie(ShellExecSupport.class);
-            return ses != null;
-        }
-        return false;
-    }
-
-    public static String findMakefile(String folder){
-        String pattern[] = new String[]{"GNUmakefile","makefile","Makefile",}; // NOI18N
-        File file = new File(folder);
-        if (!(file.isDirectory() && file.canRead() && file.canWrite())) {
-            return null;
-        }
-        for (String name : pattern) {
-            file = new File(folder+"/"+name); // NOI18N
-            if (file.exists() && file.isFile() && file.canRead()) {
-                return file.getAbsolutePath();
-            }
-        }
-        return null;
-    }
-
     public class WizardStorage {
         private String path = ""; // NOI18N
-        private static final String PREDEFINED_FLAGS = "\"-g3 -gdwarf-2\""; // NOI18N
         private String flags = ""; // NOI18N
         private boolean setMain = true;
         private boolean buildProject = true;
@@ -260,26 +197,14 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
             if (path.length() == 0) {
                 return null;
             }
-            return findConfigureScript(path);
-        }
-
-        public boolean isNbProjectFolder(){
-            if (path.length() == 0) {
-                return false;
-            }
-            File file = new File(path);
-            if (!(file.isDirectory() && file.canRead() && file.canWrite())) {
-                return false;
-            }
-            file = new File(path+"/nbproject/project.xml"); // NOI18N
-            return file.exists();
+            return ConfigureUtils.findConfigureScript(path);
         }
 
         public String getMake(){
             if (path.length() == 0) {
                 return null;
             }
-            return findMakefile(path);
+            return ConfigureUtils.findMakefile(path);
         }
 
         /**
@@ -293,23 +218,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
          * @return the flags
          */
         public String getRealFlags() {
-            StringBuilder buf = new StringBuilder();
-            if (flags.indexOf("CFLAGS=") < 0) { // NOI18N
-                buf.append("CFLAGS="+PREDEFINED_FLAGS); // NOI18N
-            }
-            if (flags.indexOf("CXXFLAGS=") < 0 ){ // NOI18N
-                if (buf.length() > 0) {
-                    buf.append(' '); // NOI18N
-                }
-                buf.append("CXXFLAGS="+PREDEFINED_FLAGS); // NOI18N
-            }
-            if (flags.length() > 0) {
-                if (buf.length() > 0) {
-                    buf.append(' '); // NOI18N
-                }
-                buf.append(flags);
-            }
-            return buf.toString();
+            return ConfigureUtils.getConfigureArguments(getConfigure(), flags);
         }
 
         /**

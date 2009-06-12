@@ -45,6 +45,7 @@ import java.io.File;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.earproject.test.TestUtil;
 import org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIteratorTest;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -77,11 +78,11 @@ public class ModuleNodeTest extends NbTestCase {
     public void testRemoveFromJarContent() throws Exception {
         File prjDirF = new File(getWorkDir(), "testEA");
         String name = "Test EnterpriseApplication";
-        String j2eeLevel = "1.4";
+        Profile j2eeProfile = Profile.J2EE_14;
         String jarName = "testEA-ejb";
         
         // creates a project we will use for the import
-        NewEarProjectWizardIteratorTest.generateEARProject(prjDirF, name, j2eeLevel,
+        NewEarProjectWizardIteratorTest.generateEARProject(prjDirF, name, j2eeProfile,
                 serverInstanceID, null, null, jarName, null, null, null);
         
         Project earProject = ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjDirF));
@@ -102,11 +103,11 @@ public class ModuleNodeTest extends NbTestCase {
     public void testRemoveFromJarContentWithDeletedProject() throws Exception {
         File prjDirF = new File(getWorkDir(), "testEA");
         String name = "Test EnterpriseApplication";
-        String j2eeLevel = "1.4";
+        Profile j2eeProfile = Profile.J2EE_14;
         String jarName = "testEA-ejb";
         
         // creates a project we will use for the import
-        NewEarProjectWizardIteratorTest.generateEARProject(prjDirF, name, j2eeLevel,
+        NewEarProjectWizardIteratorTest.generateEARProject(prjDirF, name, j2eeProfile,
                 serverInstanceID, null, null, jarName, null, null, null);
         
         FileObject prjDirFO = FileUtil.toFileObject(prjDirF);

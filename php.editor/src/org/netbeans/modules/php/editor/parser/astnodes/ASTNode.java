@@ -44,8 +44,8 @@ package org.netbeans.modules.php.editor.parser.astnodes;
  */
 public abstract class ASTNode {
 
-    final private int startOffset;
-    final private int endOffset;
+    private int startOffset;
+    private int endOffset;
     //private ASTNode parent = null;
     
     public ASTNode(int start, int end) {
@@ -59,6 +59,17 @@ public abstract class ASTNode {
 
     public final int getEndOffset() {
         return endOffset;
+    }
+
+    public final void setSourceRange(int startOffset, int endOffset) {
+        if (startOffset >= 0 && endOffset < 0) {
+            throw new IllegalArgumentException();
+        }
+        if (startOffset < 0 && endOffset != 0) {
+            throw new IllegalArgumentException();
+        }
+        this.startOffset = startOffset;
+        this.endOffset = endOffset;
     }
 
     /*protected void setParent(ASTNode node) {

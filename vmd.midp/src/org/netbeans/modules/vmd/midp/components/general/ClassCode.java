@@ -57,6 +57,20 @@ public class ClassCode {
     
     private static final String ARRAY_SUFFIX = "Array"; // NOI18N
     private static final String GETTER_PREFIX = "get"; // NOI18N
+
+    public static class GeneratedCodePresenter extends ModelUpdatePresenter {
+
+        @Override
+        public void modelUpdated() {
+             getComponent().writeProperty( ClassCD.PROP_CODE_GENERATED, 
+                     MidpTypes.createBooleanValue (Boolean.TRUE));
+        }
+
+        public boolean isCodeGenerated(){
+            return Boolean.TRUE.equals( getComponent().readProperty(
+                    ClassCD.PROP_CODE_GENERATED).getPrimitiveValue()) ;
+        }
+    }
     
     static final class ClassCodeReferencePresenter extends CodeReferencePresenter {
         

@@ -313,7 +313,8 @@ public abstract class TreeView extends JScrollPane {
         // Init of the editor
         tree.setCellEditor(new TreeViewCellEditor(tree));
         tree.setEditable(true);
-        tree.setRowHeight(16);
+        int rowHeight = rend.getTreeCellRendererComponent(tree, null, false, false, false, 0, true).getPreferredSize().height;
+        tree.setRowHeight(rowHeight);
         tree.setLargeModel(true);
 
         // set selection mode to DISCONTIGUOUS_TREE_SELECTION as default
@@ -749,7 +750,7 @@ public abstract class TreeView extends JScrollPane {
             }
 
             for (int j = toBeExpaned.size() - 1; j >= 0; j--) {
-                expandNode((Node) toBeExpaned.get(j));
+                expandNode(toBeExpaned.get(j));
             }
             paths[i] = getTreePath(nodes[i]);
         }
@@ -1126,7 +1127,9 @@ public abstract class TreeView extends JScrollPane {
             TreePath path = new TreePath(vn.getPathToRoot());
 	    for(TreePath tp : selPaths) {
                 if (path.isDescendant(tp)) {
-                    if (remSel == null) remSel = new ArrayList();
+                    if (remSel == null) {
+                        remSel = new ArrayList<TreePath>();
+                    }
                     remSel.add(tp);
                 }
 	    }

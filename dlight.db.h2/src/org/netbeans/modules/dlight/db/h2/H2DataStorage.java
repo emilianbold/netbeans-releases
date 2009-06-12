@@ -61,6 +61,8 @@ import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -82,7 +84,7 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
     static {
         try {
             Class driver = Class.forName("org.h2.Driver"); // NOI18N
-            logger.info("Driver for H2DB (" + driver.getName() + ") Loaded "); // NOI18N
+            logger.fine("Driver for H2DB (" + driver.getName() + ") Loaded "); // NOI18N
         } catch (ClassNotFoundException ex) {
             logger.log(Level.SEVERE, null, ex);
         }
@@ -102,7 +104,7 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
             tempDir = System.getProperty("java.io.tmpdir"); // NOI18N
         }
 
-        url = "jdbc:h2:" + tempDir + "/dlight"; // NOI18N
+        url = "jdbc:h2:" + tempDir + "/h2_db_dlight"; // NOI18N
 
         tmpDir = tempDir;
 
@@ -110,23 +112,29 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
         File tmpDirFile = new File(tmpDir); // NOI18N
 
         if (tmpDirFile.exists()) {
-            File[] files = tmpDirFile.listFiles(new FilenameFilter() {
+            final File[] files = tmpDirFile.listFiles(new FilenameFilter() {
 
                 public boolean accept(File dir, String name) {
-                    return name.startsWith("dlight"); // NOI18N
+                    return dir.isDirectory() && name.startsWith("h2_db_dlight"); // NOI18N
                 }
             });
+            int generalNameLength = "h2_db_dlight".length();//NOI18N
             int newValue = 0;
-            boolean result = true;
             for (int i = 0; i < files.length; i++) {
-                boolean localResult = files[i].delete();
-                result = result && localResult;
-                newValue++;
+                String suffix = files[i].getName().substring(generalNameLength);
+                try{
+                    newValue = Math.max(newValue, Integer.valueOf(suffix));
+                }catch (NumberFormatException e){}
             }
-            if (!result) {
-                //should increse dbIndex??
-                dbIndex.set(newValue);
-            }
+           dbIndex.getAndSet(newValue);
+            DLightExecutorService.submit(new Runnable() {
+
+                public void run() {
+                    for (File file : files){
+                        Util.deleteLocalDirectory(file);
+                    }
+                }
+            }, "H2DataStorage removing old data bases");//NOI18N
         }
     }
 
@@ -137,7 +145,7 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
     }
 
     H2DataStorage() throws SQLException {
-        this(url + dbIndex.incrementAndGet());
+        this(url + dbIndex.incrementAndGet() + "/dlight");//NOI18N
     }
 
     private H2DataStorage(String url) throws SQLException {
@@ -156,19 +164,9 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
     @Override
     public boolean shutdown() {
         boolean result = stackStorage.shutdown() && super.shutdown();
-        final String filesToDelete = dbURL.substring(dbURL.lastIndexOf("/") + 1);//NOI18N
-        File tmpDirFile = new File(tmpDir); // NOI18N
-        if (tmpDirFile.exists()) {
-            File[] files = tmpDirFile.listFiles(new FilenameFilter() {
-
-                public boolean accept(File dir, String name) {
-                    return name.startsWith(filesToDelete); // NOI18N
-                }
-            });
-            for (int i = 0; i < files.length; i++) {
-                result &= files[i].delete();
-            }
-        }
+        //find current DB folder we are placing H2 database files
+        final String folderToDelete = dbURL.substring(dbURL.lastIndexOf(":") + 1, dbURL.lastIndexOf("/") + 1);//NOI18N
+        result = result && Util.deleteLocalDirectory(new File(folderToDelete));
         return result;
     }
 

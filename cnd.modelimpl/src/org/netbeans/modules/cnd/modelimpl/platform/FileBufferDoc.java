@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.modelimpl.platform;
 
 import com.sun.org.apache.bcel.internal.classfile.SourceFile;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.EventListener;
@@ -56,6 +55,7 @@ import javax.swing.event.EventListenerList;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
+import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AbstractFileBuffer;
 
 /**
@@ -74,8 +74,8 @@ public class FileBufferDoc extends AbstractFileBuffer {
     private ChangedSegment lastChangedSegment;
     private long changedSegmentTaken;
     
-    public FileBufferDoc(File file, Document doc) {
-        super(file);
+    public FileBufferDoc(CharSequence absPath, Document doc) {
+        super(absPath);
         this.doc = doc;
         changedSegment = new ChangedSegment(doc);
         resetLastModified();
@@ -96,6 +96,7 @@ public class FileBufferDoc extends AbstractFileBuffer {
         }
         // TODO: think over when do invalidate? before informing listeners or after
         APTDriver.getInstance().invalidateAPT(this);
+        APTFileCacheManager.invalidate(this);
     }
 
     @Override

@@ -75,7 +75,8 @@ public class DifferentWorkingDirsTest extends AbstractCommandTest {
 
         assertNotifiedFiles(new File[] {folder1, folder11, folder12, folder2, folder21, folder211, folder2111});
     }
-    
+
+    // fails with 1.6
     public void testDifferentWorkingDirs2() throws Exception {
 
         // 1. wc
@@ -113,7 +114,8 @@ public class DifferentWorkingDirsTest extends AbstractCommandTest {
 
         assertNotifiedFiles(new File[] {folder1, folder11, folder12, file1_12, file2_12, tmpFile});
     }
-    
+
+    // fails with 1.6
     public void testDifferentWorkingDirs3() throws Exception {        
         File folder = createFolder("folder");        
         File folder1 = createFolder(folder, "folder1");        

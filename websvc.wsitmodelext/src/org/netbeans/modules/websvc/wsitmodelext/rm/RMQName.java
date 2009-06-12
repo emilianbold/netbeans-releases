@@ -64,17 +64,18 @@ public enum RMQName {
     SEQUENCETRANSPORTSECURITY(createRMQName("SequenceTransportSecurity")),    //NOI18N
     SEQUENCESTR(createRMQName("SequenceSTR"));                                //NOI18N
 
-    static final String RM_HEADERS_NS_URI = "http://schemas.xmlsoap.org/ws/2005/02/rm";    //NOI18
 
     static final String RM_NS_PREFIX = "wsrm";                                            //NOI18N
 
     static final String RM_NS_URI = "http://schemas.xmlsoap.org/ws/2005/02/rm/policy";    //NOI18N
     static final String RM_NS_URI_EXT = "http://schemas.xmlsoap.org/ws/2005/02/rm/wsrm-policy.xsd";    //NOI18N
     static final String RM_NS_URI_LOCAL = "nbres:/org/netbeans/modules/websvc/wsitmodelext/catalog/resources/wsrm-policy-200502.xsd";    //NOI18N
+    static final String RM_NS_HEADERS_URI = "http://schemas.xmlsoap.org/ws/2005/02/rm";    //NOI18
 
     static final String RM_12_NS_URI = "http://docs.oasis-open.org/ws-rx/wsrmp/200702";    //NOI18N
     static final String RM_12_NS_URI_EXT = "http://docs.oasis-open.org/ws-rx/wsrmp/200702/wsrmp-1.2-schema-200702.xsd";    //NOI18N
     static final String RM_12_NS_URI_LOCAL = "nbres:/org/netbeans/modules/websvc/wsitmodelext/catalog/resources/wsrmp-1.2-schema-200702.xsd";    //NOI18N
+    static final String RM_12_NS_HEADERS_URI = "http://docs.oasis-open.org/ws-rx/wsrm/200702";    //NOI18
 
     static QName createRMQName(String localName){
         return new QName(RM_NS_URI, localName, RM_NS_PREFIX);
@@ -92,6 +93,14 @@ public enum RMQName {
         switch (cfgVersion) {
             case CONFIG_1_0 : return RM_NS_URI;
             case CONFIG_1_3 : return RM_12_NS_URI;
+        }
+        return null;
+    }
+
+    public static String getHeaderNamespaceUri(ConfigVersion cfgVersion) {
+        switch (cfgVersion) {
+            case CONFIG_1_0 : return RM_NS_HEADERS_URI;
+            case CONFIG_1_3 : return RM_12_NS_HEADERS_URI;
         }
         return null;
     }

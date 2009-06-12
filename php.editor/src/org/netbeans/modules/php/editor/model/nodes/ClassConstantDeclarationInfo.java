@@ -43,7 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassConstantDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 
 /**
@@ -54,7 +54,7 @@ public class ClassConstantDeclarationInfo extends ASTNodeInfo<Identifier> {
         super(node);
     }
 
-    public static List<? extends ClassConstantDeclarationInfo> create(ClassConstantDeclaration constantDeclaration) {
+    public static List<? extends ClassConstantDeclarationInfo> create(ConstantDeclaration constantDeclaration) {
         List<ClassConstantDeclarationInfo> retval = new ArrayList<ClassConstantDeclarationInfo>();
         List<Identifier> names = constantDeclaration.getNames();
         for (Identifier identifier : names) {

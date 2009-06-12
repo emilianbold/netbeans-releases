@@ -45,6 +45,8 @@ import java.util.Set;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
@@ -56,7 +58,7 @@ import org.netbeans.modules.versioning.spi.VersioningSystem;
  * @author Maros Sandor
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.spi.VersioningSystem.class)
-public class MercurialVCS extends VersioningSystem implements PropertyChangeListener {
+public class MercurialVCS extends VersioningSystem implements PropertyChangeListener, PreferenceChangeListener {
 
     public MercurialVCS() {
         putProperty(PROP_DISPLAY_NAME, org.openide.util.NbBundle.getMessage(MercurialVCS.class, "CTL_Mercurial_DisplayName")); // NOI18N
@@ -64,6 +66,8 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
 
         Mercurial.getInstance().addPropertyChangeListener(this);
         Mercurial.getInstance().getFileStatusCache().addPropertyChangeListener(this);
+        HgModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
+        Mercurial.getInstance().getMercurialAnnotator().addPropertyChangeListener(this);
     }
 
     @Override
@@ -127,6 +131,14 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
             fireAnnotationsChanged((Set<File>) event.getNewValue());
         } else if (event.getPropertyName().equals(Mercurial.PROP_VERSIONED_FILES_CHANGED)) {
             fireVersionedFilesChanged();
+        } else if (event.getPropertyName().equals(MercurialAnnotator.PROP_ICON_BADGE_CHANGED)) {
+            fireStatusChanged((Set<File>) event.getNewValue());
+        }
+    }
+
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        if (evt.getKey().startsWith(HgModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
+            fireStatusChanged((Set<File>) null);
         }
     }
 }

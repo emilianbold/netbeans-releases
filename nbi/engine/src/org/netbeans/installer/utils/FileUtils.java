@@ -1168,7 +1168,9 @@ public final class FileUtils {
                     deleteFile(tmpTarget);
                 }
             }
-        } else if(System.getProperty("os.name").equals("AIX") && System.getProperty("java.version").startsWith("1.6")) {
+        } else if((System.getProperty("os.name").equals("AIX") && 
+                   System.getProperty("java.version").startsWith("1.6")) ||
+                   Boolean.getBoolean(USE_INTERNAL_UNPACK200_PROPERTY)) {
             //workaround the bug when unpack200 command from Java6 on AIX corrupts the jar
             //by using inverting zip magic numbers
             unpack200Internal(source, target);
@@ -1989,4 +1991,6 @@ public final class FileUtils {
             "FU.error.pack200.failed";//NOI18N
     public static final String ERROR_UNPACK200_FAILED_KEY =
             "FU.error.unpack200.failed";//NOI18N
+    public static final String USE_INTERNAL_UNPACK200_PROPERTY =
+            "nbi.use.internal.unpack200";//NOI18N
 }

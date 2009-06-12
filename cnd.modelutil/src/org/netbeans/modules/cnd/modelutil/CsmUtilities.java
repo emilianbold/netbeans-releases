@@ -326,6 +326,10 @@ public class CsmUtilities {
                         LanguagePath path = LanguagePath.get(MimeLookup.getLookup(mimeType).lookup(Language.class));
                         FileObject fileObject = (FileObject) inputAttributes.getValue(path, "dialogBinding.fileObject"); //NOI18N
                         csmFile = CsmUtilities.getCsmFile(fileObject, waitParsing);
+                        if (csmFile == null) {
+                            Document d = (Document) inputAttributes.getValue(path, "dialogBinding.document"); //NOI18N
+                            csmFile = d == null ? null : CsmUtilities.getCsmFile(d, waitParsing);
+                        }
                     }
                 }
             }

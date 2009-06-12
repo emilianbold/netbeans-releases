@@ -49,88 +49,35 @@ import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.filesystems.XMLFileSystem;
+import org.openide.util.test.MockLookup;
 
 /**
  *
  * @author Pavel Buzek
  */
 public class ServerRegistryTestBase extends NbTestCase {
-    static {
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-    }
 
     protected ServerRegistryTestBase (String name) {
         super (name);
     }
 
-    public static final class Lkp extends ProxyLookup {
-        public Lkp() {
-            super(new Lookup[] {
-                Lookups.fixed(new Object[] {"repo"}, new Conv()),
-                Lookups.metaInfServices(Lkp.class.getClassLoader()),
-                Lookups.singleton(Lkp.class.getClassLoader()),
-            });
-        }
-        private static final class Conv implements InstanceContent.Convertor {
-            public Conv() {}
-            public Object convert(Object obj) {
-                assert obj == "repo";
-                try {
-                    return new Repo();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return null;
-                }
-            }
-            public String displayName(Object obj) {
-                return obj.toString();
-            }
-            public String id(Object obj) {
-                return obj.toString();
-            }
-            public Class type(Object obj) {
-                assert obj == "repo";
-                return Repository.class;
-            }
-        }
-    }
-    private File scratchF;
-
-    private void mkdir(String path) {
-//        System.out.println ("mkdir:"+path);
-        new File(scratchF, path.replace('/', File.separatorChar)).mkdirs();
-    }
+    @Override
     protected boolean runInEQ() {
         return true;
     }
+
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
-        clearWorkDir();
-        scratchF = getWorkDir();
-        mkdir("system/J2EE/InstalledServers");
-        mkdir("system/J2EE/DeploymentPlugins");
-        System.setProperty("SYSTEMDIR", new File(scratchF, "system").getAbsolutePath());
+        MockLookup.setLayersAndInstances();
+
         FileObject sfs = FileUtil.getConfigRoot();
         assertNotNull("no default FS", sfs);
         FileObject j2eeFolder = sfs.getFileObject("J2EE");
         assertNotNull("have J2EE", j2eeFolder);
-//        Enumeration enumDest = sfs.getChildren (true);
-//        while (enumDest.hasMoreElements()) {
-//            FileObject f = (FileObject) enumDest.nextElement();
-//            System.out.println ("    dest file:" + f.getPath ());
-//        }
     }
 
     protected static File getProjectAsFile(NbTestCase test, String projectFolderName) throws IOException {
@@ -144,6 +91,7 @@ public class ServerRegistryTestBase extends NbTestCase {
             }
         }
         NbTestCase.assertTrue("project directory has to exists: " + f, f.exists());
+        FileUtil.refreshFor(test.getDataDir());
         return f;
     }
 
@@ -185,25 +133,6 @@ public class ServerRegistryTestBase extends NbTestCase {
         }
         is.close();
         os.close();
-    }
-
-     private static final class Repo extends Repository {
-
-        public Repo() throws Exception {
-            super(mksystem());
-        }
-
-        private static FileSystem mksystem() throws Exception {
-            LocalFileSystem lfs = new LocalFileSystem();
-            lfs.setRootDirectory(new File(System.getProperty("SYSTEMDIR")));
-            java.net.URL layerFile = Repo.class.getClassLoader().getResource ("org/netbeans/tests/j2eeserver/plugin/layer.xml");
-            assert layerFile != null;
-            XMLFileSystem layer = new XMLFileSystem (layerFile);
-            FileSystem layers [] = new FileSystem [] {lfs, layer};
-            MultiFileSystem mfs = new MultiFileSystem (layers);
-            return mfs;
-        }
-
     }
 
 }

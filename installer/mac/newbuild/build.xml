@@ -66,7 +66,7 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="${basedir}/glassfish-v3" target="clean"/>
         <ant dir="${basedir}/glassfish-v3-sun" target="clean"/>
         <ant dir="${basedir}/tomcat" target="clean"/>
-        <ant dir="${basedir}/openesb" target="clean"/>
+        <!--<ant dir="${basedir}/openesb" target="clean"/>-->
         <ant dir="${basedir}/netBeans/baseide" target="clean"/>
         <!--<delete dir="${basedir}/netBeans/soa/build"/>-->
         <delete dir="${basedir}/netBeans/ruby/build"/>
@@ -214,7 +214,7 @@ Microsystems, Inc. All Rights Reserved.
         </exec>                                         
     </target>          
     
-    <target name="build-all-dmg" depends="clean,init,build-pkg,build-sjsas-pkg,build-glassfish-v3-sun-pkg,build-tomcat-pkg,build-openesb-pkg">
+    <target name="build-all-dmg" depends="clean,init,build-pkg,build-sjsas-pkg,build-glassfish-v3-sun-pkg,build-tomcat-pkg">
                   
         <property name="bundles" value="        (./build/*pkg),
                                              -javase(./build/baseide.pkg ./build/javase.pkg),
@@ -451,7 +451,7 @@ Microsystems, Inc. All Rights Reserved.
                 <filter token="SIZE_GLASSFISH" value="${sizeof.sjsas}"/>
                 <filter token="SIZE_GLASSFISHV3" value="${sizeof.glassfish.v3.sun}"/>
                 <filter token="SIZE_TOMCAT" value="${sizeof.tomcat}"/>                
-                <filter token="SIZE_OPENESB" value="${sizeof.openesb}"/>   
+                <!--<filter token="SIZE_OPENESB" value="${sizeof.openesb}"/>-->
                 <filter token="SIZE_BASEIDE" value="${sizeof.baseide}"/>                
                 <filter token="SIZE_PHP" value="${sizeof.php}"/>    
                 <filter token="SIZE_MYSQL" value="${sizeof.mysql}"/> 

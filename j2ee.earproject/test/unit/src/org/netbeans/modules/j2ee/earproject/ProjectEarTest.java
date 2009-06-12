@@ -47,6 +47,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.earproject.test.TestUtil;
 import org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIteratorTest;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
@@ -75,16 +76,16 @@ public class ProjectEarTest extends NbTestCase {
         // testing project
         File earDirF = new File(getWorkDir(), "testEA");
         String name = "Test EnterpriseApplication";
-        String j2eeLevel = J2eeModule.JAVA_EE_5;
+        Profile j2eeProfile = Profile.JAVA_EE_5;
         String ejbName = "testEA-ejb";
-        NewEarProjectWizardIteratorTest.generateEARProject(earDirF, name, j2eeLevel,
+        NewEarProjectWizardIteratorTest.generateEARProject(earDirF, name, j2eeProfile,
                 serverID, null, ejbName, null, null, null, null);
         FileObject earDirFO = FileUtil.toFileObject(earDirF);
         FileObject ejbProjectFO = earDirFO.getFileObject("testEA-ejb");
         assertNotNull(ejbProjectFO);
 
         File earDirAnotherF = new File(getWorkDir(), "testEA-another");
-        NewEarProjectWizardIteratorTest.generateEARProject(earDirAnotherF, name, j2eeLevel,
+        NewEarProjectWizardIteratorTest.generateEARProject(earDirAnotherF, name, j2eeProfile,
                 serverID, null, null, null, null, null, null);
         FileObject earDirAnotherFO = FileUtil.toFileObject(earDirAnotherF);
         EjbJarProject createdEjbJarProject = (EjbJarProject) ProjectManager.getDefault().findProject(ejbProjectFO);

@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.derby.support;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -47,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -74,11 +76,11 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
     private static final Logger logger = DLightLogger.getLogger(DerbyDataStorage.class);
     private static final String SQL_QUERY_DELIMETER = "";
     private static final String tmpDir;
-    private static int dbIndex = 1;
+    private static final AtomicInteger dbIndex = new AtomicInteger();
     private static boolean driverLoaded = false;
     private final List<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
     private SQLStackStorage stackStorage;
-
+    private String dbURL;
 
     static {
         String tempDir = null;
@@ -97,16 +99,32 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
         }
 
         tmpDir = tempDir;
-
-        Util.deleteLocalDirectory(new File(tmpDir + "/derby_dlight")); // NOI18N
-
+        String systemDir = tmpDir + "/derby_dlight"; // NOI18N
         try {
-            String systemDir = tmpDir + "/derby_dlight"; // NOI18N
+            
             System.setProperty("derby.system.home", systemDir); // NOI18N
             Class driver = Class.forName("org.apache.derby.jdbc.EmbeddedDriver"); // NOI18N
             logger.info("Driver for Derby(JavaDB) (" + driver.getName() + ") Loaded "); // NOI18N
         } catch (Exception ex) {
             logger.log(Level.SEVERE, null, ex);
+        }
+        File tmpDirFile = new File(systemDir); // NOI18N
+
+        if (tmpDirFile.exists()) {
+            final File[] files = tmpDirFile.listFiles(new FilenameFilter() {
+                public boolean accept(File dir, String name) {
+                    return dir.isDirectory() && name.startsWith("DerbyDlight"); // NOI18N
+                }
+            });
+            int generalNameLength = "DerbyDlight".length();//NOI18N
+            int newValue = 0;
+            for (int i = 0; i < files.length; i++) {
+                String suffix = files[i].getName().substring(generalNameLength);
+                try{
+                    newValue = Math.max(newValue, Integer.valueOf(suffix));
+                }catch (NumberFormatException e){}
+            }
+           dbIndex.getAndSet(newValue);            
         }
     }
 
@@ -114,7 +132,7 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
      * Empty constructor, used by Lookup
      */
     public DerbyDataStorage() throws SQLException {
-        this("jdbc:derby:DerbyDlight" + (dbIndex++) + ";create=true;user=dbuser;password=dbuserpswd"); // NOI18N
+        this("jdbc:derby:DerbyDlight" + dbIndex.incrementAndGet() + ";create=true;user=dbuser;password=dbuserpswd"); // NOI18N
     }
 
     private void initStorageTypes() {
@@ -125,6 +143,7 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
 
     private DerbyDataStorage(String url) throws SQLException {
         super(url);
+        dbURL = url;
         try {
             initStorageTypes();
             stackStorage = new SQLStackStorage(this);
@@ -140,7 +159,9 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
     public boolean shutdown() {
         //remove folder
         boolean result = stackStorage.shutdown() && super.shutdown();
-        Util.deleteLocalDirectory(new File(tmpDir + "/derby_dlight" + (dbIndex - 1))); // NOI18N
+        String dbName = dbURL.substring(dbURL.lastIndexOf(":") + 1, dbURL.indexOf(";"));//NOI18N
+        //and now get number
+        result = result && Util.deleteLocalDirectory(new File(tmpDir + "/derby_dlight/" + dbName)); // NOI18N
         return result;
     }
 

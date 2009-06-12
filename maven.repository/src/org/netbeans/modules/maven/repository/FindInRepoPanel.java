@@ -41,17 +41,23 @@ package org.netbeans.modules.maven.repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.maven.indexer.api.QueryField;
+import org.openide.DialogDescriptor;
 
 /**
  *
  * @author  mkleint
  */
-public class FindInRepoPanel extends javax.swing.JPanel {
+public class FindInRepoPanel extends javax.swing.JPanel implements DocumentListener {
+
+    private DialogDescriptor dd;
 
     /** Creates new form FindInRepoPanel */
     public FindInRepoPanel() {
         initComponents();
+        txtFind.getDocument().addDocumentListener(this);
     }
     
     List<QueryField> getQuery() {
@@ -80,6 +86,11 @@ public class FindInRepoPanel extends javax.swing.JPanel {
             }
         }
         return fq;
+    }
+
+    void attachDesc(DialogDescriptor dd) {
+        this.dd = dd;
+        checkValid();
     }
 
     /** This method is called from within the constructor to
@@ -174,6 +185,24 @@ public class FindInRepoPanel extends javax.swing.JPanel {
     private javax.swing.JPanel pnlIncludes;
     private javax.swing.JTextField txtFind;
     // End of variables declaration//GEN-END:variables
+
+    public void insertUpdate(DocumentEvent arg0) {
+        checkValid();
+    }
+
+    public void removeUpdate(DocumentEvent arg0) {
+        checkValid();
+    }
+
+    public void changedUpdate(DocumentEvent arg0) {
+        checkValid();
+    }
+
+    private void checkValid() {
+        if (dd != null) {
+            dd.setValid(txtFind.getText().trim().length() != 0);
+        }
+    }
 
 }
 

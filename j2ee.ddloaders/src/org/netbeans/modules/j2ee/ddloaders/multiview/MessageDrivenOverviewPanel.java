@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
+import javax.swing.JComboBox;
+import javax.swing.JTextField;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfig;
 import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfigProperty;
@@ -52,8 +54,6 @@ import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.ItemOptionHelper;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
-
-import javax.swing.*;
 
 /**
  * @author pfiala
@@ -235,6 +235,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
         }
     }
 
+    @Override
     public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
         scheduleRefreshView();
     }

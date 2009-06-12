@@ -135,6 +135,8 @@ public class InvalidLexerOperationTest extends TestCase {
         assertFalse(Boolean.TRUE.equals(attrs.getValue(lp, "lexerRelease")));
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, StateTokenId.BMULTI, "b", 1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, StateTokenId.ERROR, "\n", 2);
         assertFalse(ts.moveNext());
         assertTrue(Boolean.TRUE.equals(attrs.getValue(lp, "lexerRelease")));
         attrs.setValue(lp, "lexerRelease", Boolean.FALSE, false);

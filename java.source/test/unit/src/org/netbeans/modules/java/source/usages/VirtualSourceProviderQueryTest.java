@@ -39,17 +39,23 @@
 
 package org.netbeans.modules.java.source.usages;
 
+import java.net.URL;
 import org.netbeans.modules.java.preprocessorbridge.spi.VirtualSourceProvider;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
-import javax.tools.JavaFileObject;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.parsing.impl.indexing.DeletedIndexable;
+import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
+import org.netbeans.modules.parsing.impl.indexing.IndexableImpl;
+import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -70,25 +76,25 @@ public class VirtualSourceProviderQueryTest extends NbTestCase {
     public void testVirtualSourceProvider () throws Exception {
         final File root = new File (getWorkDir(),"src");    //NOI18N
         root.mkdir();
-        final File[] data = prepareData(root);
-        final Iterable<VirtualSourceProviderQuery.Binding> res = VirtualSourceProviderQuery.translate(Arrays.asList(data), root);
+        final Indexable[] data = prepareData(root.toURI().toURL());
+        final Iterable<? extends CompileTuple> res = VirtualSourceProviderQuery.translate(Arrays.asList(data), root);
         assertEquals(new String[] {"a","b","c","d"}, res);      //NOI18N
     }
     
-    private static File[] prepareData (final File root) {
-        final File[] result = new File[4];
-        result[0] = new File (root, "a.groovy");  //NOI18N
-        result[1] = new File (root, "b.groovy");  //NOI18N
-        result[2] = new File (root, "c.scala");   //NOI18N
-        result[3] = new File (root, "d.scala");   //NOI18N
+    private static Indexable[] prepareData (final URL root) {
+        final Indexable[] result = new Indexable[4];
+        result[0] = SPIAccessor.getInstance().create(new DeletedIndexable(root, "a.groovy"));  //NOI18N
+        result[1] = SPIAccessor.getInstance().create(new DeletedIndexable(root, "b.groovy"));  //NOI18N
+        result[2] = SPIAccessor.getInstance().create(new DeletedIndexable(root, "c.scala"));   //NOI18N
+        result[3] = SPIAccessor.getInstance().create(new DeletedIndexable(root, "d.scala"));   //NOI18N
         return result;        
     }
     
-    private static void assertEquals (final String[] expected, Iterable<VirtualSourceProviderQuery.Binding> data) {
+    private static void assertEquals (final String[] expected, Iterable<? extends CompileTuple> data) {
         final Set<String> es = new HashSet<String>();
         es.addAll(Arrays.asList(expected));
-        for (VirtualSourceProviderQuery.Binding p : data) {
-            assertTrue (es.remove(p.virtual.inferBinaryName()));
+        for (CompileTuple p : data) {
+            assertTrue (es.remove(p.jfo.inferBinaryName()));
         }
         assertTrue(es.isEmpty());
     }

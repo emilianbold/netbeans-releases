@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.gizmo.GizmoServiceInfo;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
@@ -100,18 +99,22 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
     public void execute(InputOutput io) {
         MakeConfiguration conf = pae.getConfiguration();
         ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
-        String runDirectory = pae.getProfile().getRunDirectory();
-
-        if (execEnv.isRemote()) {
-            PathMap mapper = HostInfoProvider.getMapper(execEnv);
-            runDirectory = mapper.getRemotePath(runDirectory, true);
-        }
 
         Map<String, String> envVars = createMap(pae.getProfile().getEnvironment().getenvAsPairs());
         NativeExecutableTargetConfiguration targetConf = new NativeExecutableTargetConfiguration(
                 pae.getExecutable(),
                 pae.getProfile().getArgsArray(),
                 envVars);
+
+        String executable = pae.getExecutable();
+        String runDirectory = pae.getProfile().getRunDirectory();
+        if (execEnv.isRemote()) {
+            PathMap mapper = HostInfoProvider.getMapper(execEnv);
+            executable = mapper.getLocalPath(executable);
+            runDirectory = mapper.getRemotePath(runDirectory, true);
+        }
+
+        targetConf.setExecutionEnvironment(execEnv);
 
         if (execEnv.isRemote() && !envVars.containsKey("DISPLAY")) { // NOI18N
             targetConf.setX11Forwarding(true);
@@ -120,7 +123,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         targetConf.putInfo(ServiceInfoDataStorage.EXECUTION_ENV_KEY, ExecutionEnvironmentFactory.toUniqueID(execEnv));
         targetConf.putInfo(GizmoServiceInfo.PLATFORM, pae.getConfiguration().getDevelopmentHost().getBuildPlatformDisplayName());
         targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_FOLDER, FileUtil.toFile(pae.getProject().getProjectDirectory()).getAbsolutePath());//NOI18N
-        targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, pae.getExecutable());
+        targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executable);
 
         targetConf.putInfo("sunstudio.datafilter.collectedobjects", System.getProperty("sunstudio.datafilter.collectedobjects", "")); // NOI18N
         targetConf.putInfo("sunstudio.hotspotfunctionsfilter", System.getProperty("sunstudio.hotspotfunctionsfilter", "")); //, "with-source-code-only")); // NOI18N
@@ -134,10 +137,6 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         String dem_util_path = binDir + "/" + demangle_utility; //NOI18N BTW: isn't it better to use File.Separator?
         targetConf.putInfo(GizmoServiceInfo.GIZMO_DEMANGLE_UTILITY, dem_util_path);
 
-        if (execEnv.isRemote()) {
-            targetConf.setHost(execEnv.getHost());
-            targetConf.setUser(execEnv.getUser());
-        }
         targetConf.setWorkingDirectory(runDirectory);
         int consoleType = pae.getProfile().getConsoleType().getValue();
         if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {

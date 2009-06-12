@@ -61,12 +61,12 @@ import org.openide.util.NbBundle;
 public class RemoteServerSetup {
     
     private static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
-    private static final String REMOTE_SCRIPT_DIR = ".netbeans/6.5/cnd2/scripts/"; // NOI18N
+    private static final String REMOTE_SCRIPT_DIR = ".netbeans/6.7/cnd2/scripts/"; // NOI18N
     private static final String LOCAL_SCRIPT_DIR = "src/scripts/"; // NOI18N
     private static final String GET_SCRIPT_INFO = "grep VERSION= " + REMOTE_SCRIPT_DIR + "* /dev/null 2> /dev/null"; // NOI18N
     private static final String DOS2UNIX_CMD = "dos2unix " + REMOTE_SCRIPT_DIR; // NOI18N
     private static final String GET_LIB_INFO = "ls -1 2>&1 "; // NOI18N
-    public static final String REMOTE_LIB_DIR = ".netbeans/6.5/cnd2/lib/"; // NOI18N
+    public static final String REMOTE_LIB_DIR = ".netbeans/6.7/cnd2/lib/"; // NOI18N
     
     private final Map<String, Double> scriptSetupMap;
     private final Map<String, String> binarySetupMap;
@@ -127,7 +127,7 @@ public class RemoteServerSetup {
     
     protected  void setup() {
         List<String> list = updateMap.remove(executionEnvironment);
-        boolean bupdate = false;
+        boolean needChmod = false;
         
         for (String path : list) {
             if (path.equals(REMOTE_SCRIPT_DIR)) {
@@ -135,12 +135,13 @@ public class RemoteServerSetup {
                 int exit_status = RemoteCommandSupport.run(executionEnvironment,
                         "mkdir -p " + REMOTE_SCRIPT_DIR); // NOI18N
                 if (exit_status == 0) {
+                    needChmod = true;
                     for (String key : scriptSetupMap.keySet()) {
                         log.fine("RSS.setup: Copying " + path + " to " + executionEnvironment); //NO18N
                         File file = InstalledFileLocator.getDefault().locate(LOCAL_SCRIPT_DIR + key, null, false);
                         if (file == null
                                 || !file.exists()
-                                || !RemoteCopySupport.copyTo(executionEnvironment, file.getAbsolutePath(), REMOTE_SCRIPT_DIR)
+                                || !RemoteCopySupport.copyTo(executionEnvironment, file.getAbsolutePath(), REMOTE_SCRIPT_DIR + file.getName())
                                 || RemoteCommandSupport.run(executionEnvironment, DOS2UNIX_CMD + key + ' ' + REMOTE_SCRIPT_DIR + key) != 0) { //NO18N
                             reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", //NO18N
                                     executionEnvironment.toString(), key);
@@ -155,14 +156,14 @@ public class RemoteServerSetup {
                 int exit_status = RemoteCommandSupport.run(executionEnvironment,
                         "mkdir -p " + REMOTE_LIB_DIR); // NOI18N
                 if (exit_status == 0) {
-                    bupdate = true;
+                    needChmod = true;
                     for (String key : binarySetupMap.keySet()) {
                         String loc = binarySetupMap.get(key);
                         log.fine("RSS.setup: Copying" + loc + " to " + executionEnvironment); //NO18N
                         File file = InstalledFileLocator.getDefault().locate(loc, null, false);
                         if (file == null
                                 || !file.exists()
-                                || !RemoteCopySupport.copyTo(executionEnvironment, file.getAbsolutePath(), REMOTE_LIB_DIR)) {
+                                || !RemoteCopySupport.copyTo(executionEnvironment, file.getAbsolutePath(), REMOTE_LIB_DIR + file.getName())) {
                             reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", //NOI18N
                                     executionEnvironment.toString(), key);
                         }
@@ -174,27 +175,27 @@ public class RemoteServerSetup {
             } else {
                 log.fine("RSS.setup: Updating \"" + path + "\" on " + executionEnvironment); //NO18N
                 if (binarySetupMap.containsKey(path)) {
-                    bupdate = true;
+                    needChmod = true;
                     String loc = binarySetupMap.get(path);
                     File file = InstalledFileLocator.getDefault().locate(loc, null, false);
                     if (file == null
                             || !file.exists()
-                            || !RemoteCopySupport.copyTo(executionEnvironment, file.getAbsolutePath(), REMOTE_LIB_DIR)) {
+                            || !RemoteCopySupport.copyTo(executionEnvironment, file.getAbsolutePath(), REMOTE_LIB_DIR + file.getName())) {
                         reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", executionEnvironment, path); //NOI18N
                     }
                 } else {
                     File file = InstalledFileLocator.getDefault().locate(LOCAL_SCRIPT_DIR + path, null, false);
                     if (file == null
                             || !file.exists()
-                            || !RemoteCopySupport.copyTo(executionEnvironment, file.getAbsolutePath(), REMOTE_SCRIPT_DIR)
+                            || !RemoteCopySupport.copyTo(executionEnvironment, file.getAbsolutePath(), REMOTE_SCRIPT_DIR + file.getName())
                             || RemoteCommandSupport.run(executionEnvironment, DOS2UNIX_CMD + path + ' ' + REMOTE_SCRIPT_DIR + path) != 0) { //NOI18N
                         reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", executionEnvironment.toString(), path); //NOI18N
                     }
                 }
             }
         }
-        if (bupdate) {
-            RemoteCommandSupport.run(executionEnvironment, "chmod 755 " + REMOTE_LIB_DIR + "/*.so"); //NOI18N
+        if (needChmod) {
+            RemoteCommandSupport.run(executionEnvironment, "chmod 755 " + REMOTE_SCRIPT_DIR + "*.bash " + REMOTE_LIB_DIR + "*.so"); //NOI18N
         }
     }
     

@@ -90,13 +90,15 @@ public class Hk2PluginProperties {
 
     private InstanceProperties ip;
     private static final int DEBUGPORT = 8787;
+    private ServerUtilities su;
 
     /**
      *
      * @param dm
      */
-    public Hk2PluginProperties(Hk2DeploymentManager dm) {
+    public Hk2PluginProperties(Hk2DeploymentManager dm,ServerUtilities su) {
         ip = InstanceProperties.getInstanceProperties(dm.getUri());
+        this.su = su;
     }
 
     public String getDomainDir() {
@@ -236,14 +238,16 @@ public class Hk2PluginProperties {
         String path = ip.getProperty(PROP_JAVADOCS);
         if (path == null) {
             ArrayList<URL> list = new ArrayList<URL>();
-            try {
-                File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee5-doc-api.zip", null, false); // NOI18N
+            for (String possible: su.getAssociatedJavaDoc()) {
+                try {
+                    File j2eeDoc = InstalledFileLocator.getDefault().locate(possible, null, false); // NOI18N
 
-                if (j2eeDoc != null) {
-                    list.add(fileToUrl(j2eeDoc));
+                    if (j2eeDoc != null) {
+                        list.add(fileToUrl(j2eeDoc));
+                    }
+                } catch (MalformedURLException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
-            } catch (MalformedURLException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
             return list;
         }

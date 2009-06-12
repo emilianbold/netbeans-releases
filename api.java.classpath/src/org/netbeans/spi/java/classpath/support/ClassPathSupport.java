@@ -46,7 +46,6 @@ import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.modules.java.classpath.*;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
 import java.net.URL;
@@ -54,6 +53,7 @@ import java.util.List;
 import java.util.ArrayList;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  * Convenience factory for creating classpaths of common sorts.
@@ -137,7 +137,7 @@ public class ClassPathSupport {
                 URL u = root.getURL();            
                 l.add(createResource(u));
             } catch (FileStateInvalidException e) {
-                ErrorManager.getDefault().notify (e);
+                Exceptions.printStackTrace (e);
             }
         }
         return createClassPath (l);

@@ -54,7 +54,7 @@ public class ConditionalExpression extends Expression {
     public ConditionalExpression(int start, int end, Expression condition, Expression ifTrue, Expression ifFalse) {
         super(start, end);
 
-        if (condition == null || ifTrue == null || ifFalse == null) {
+        if (condition == null || ifFalse == null) {
             throw new IllegalArgumentException();
         }
         this.condition = condition;

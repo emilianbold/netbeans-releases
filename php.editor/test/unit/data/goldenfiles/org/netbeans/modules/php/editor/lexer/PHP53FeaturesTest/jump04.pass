@@ -68,7 +68,7 @@ token #66 WHITESPACE
 token #67 PHP_CONSTANT_ENCAPSED_STRING "X"
 token #68 PHP_SEMICOLON ;
 token #69 WHITESPACE \n\t\t
-token #70 PHP_STRING goto
+token #70 PHP_GOTO goto
 token #71 WHITESPACE  
 token #72 PHP_STRING L1
 token #73 PHP_SEMICOLON ;

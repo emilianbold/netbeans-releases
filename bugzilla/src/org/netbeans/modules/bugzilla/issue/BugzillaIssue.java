@@ -78,6 +78,7 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -196,15 +197,26 @@ public class BugzillaIssue extends Issue {
     }
 
     void opened() {
+        if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} open start", new Object[] {getID()});
+        if(!data.isNew()) {
+            // 1.) to get seen attributes makes no sense for new issues
+            // 2.) set seenAtributes on issue open, before its actuall
+            //     state is written via setSeen().
+            seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
+        }
         String refresh = System.getProperty("org.netbeans.modules.bugzilla.noIssueRefresh"); // NOI18N
         if(refresh != null && refresh.equals("true")) {                                      // NOI18N
             return;
         }
         repository.scheduleForRefresh(getID());
+        if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} open finish", new Object[] {getID()});
     }
 
     void closed() {
+        if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} close start", new Object[] {getID()});
         repository.stopRefreshing(getID());
+        seenAtributes = null;
+        if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} close finish", new Object[] {getID()});
     }
 
     @Override
@@ -310,10 +322,7 @@ public class BugzillaIssue extends Issue {
             attributes = new HashMap<String, String>();
             String value;
             for (IssueField field : IssueField.values()) {
-                switch(field) {
-                    default:
-                        value = getFieldValue(field);
-                }
+                value = getFieldValue(field);
                 if(value != null && !value.trim().equals("")) {                 // NOI18N
                     attributes.put(field.key, value);
                 }
@@ -324,11 +333,6 @@ public class BugzillaIssue extends Issue {
 
     @Override
     public void setSeen(boolean seen) throws IOException {
-        if(seen) {
-            seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
-        } else {
-            seenAtributes = null;
-        }
         super.setSeen(seen);
     }
 
@@ -809,7 +813,13 @@ public class BugzillaIssue extends Issue {
             // a new issue was created -> refresh all queries
             repository.refreshAllQueries();
         }
-        seenAtributes = null;
+                
+        try {
+            seenAtributes = null;
+            setSeen(true);
+        } catch (IOException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        }
         return true;
     }
 
@@ -834,7 +844,6 @@ public class BugzillaIssue extends Issue {
         }
         return true;
     }
-
 
     private Map<String, String> getSeenAttributes() {
         if(seenAtributes == null) {

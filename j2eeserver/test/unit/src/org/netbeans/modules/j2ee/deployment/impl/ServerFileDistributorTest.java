@@ -45,14 +45,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTargetImpl;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
+import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.netbeans.tests.j2eeserver.plugin.jsr88.DepManager;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -115,7 +114,7 @@ public class ServerFileDistributorTest extends ServerRegistryTestBase {
             boolean serverDescriptorChanged) throws IOException, ServerException {
 
         File f = getProjectAsFile(this, projectName);
-        Project project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
+        Project project = (Project) ProjectSupport.openProject(f);
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         provider.setServerInstanceID(URL);
 
