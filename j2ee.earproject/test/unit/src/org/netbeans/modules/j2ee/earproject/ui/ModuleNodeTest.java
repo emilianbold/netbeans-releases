@@ -52,6 +52,7 @@ import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.util.test.MockLookup;
 
 /**
  * Test functionality of {@link ModuleNode} and maybe more of EAR's
@@ -63,8 +64,6 @@ public class ModuleNodeTest extends NbTestCase {
     
     private static final int CHILDREN_UPDATE_TIME_OUT = 20000;
     
-    private String serverInstanceID;
-    
     public ModuleNodeTest(String testName) {
         super(testName);
     }
@@ -72,7 +71,8 @@ public class ModuleNodeTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         clearWorkDir();
-        serverInstanceID = TestUtil.registerSunAppServer(this);
+
+        MockLookup.setLayersAndInstances();
     }
     
     public void testRemoveFromJarContent() throws Exception {
@@ -83,7 +83,7 @@ public class ModuleNodeTest extends NbTestCase {
         
         // creates a project we will use for the import
         NewEarProjectWizardIteratorTest.generateEARProject(prjDirF, name, j2eeProfile,
-                serverInstanceID, null, null, jarName, null, null, null);
+                TestUtil.SERVER_URL, null, null, jarName, null, null, null);
         
         Project earProject = ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjDirF));
         
@@ -108,7 +108,7 @@ public class ModuleNodeTest extends NbTestCase {
         
         // creates a project we will use for the import
         NewEarProjectWizardIteratorTest.generateEARProject(prjDirF, name, j2eeProfile,
-                serverInstanceID, null, null, jarName, null, null, null);
+                TestUtil.SERVER_URL, null, null, jarName, null, null, null);
         
         FileObject prjDirFO = FileUtil.toFileObject(prjDirF);
         Project earProject = ProjectManager.getDefault().findProject(prjDirFO);

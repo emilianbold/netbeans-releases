@@ -346,18 +346,23 @@ made subject to such option by the copyright holder.
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.glassfish.eecommon</code-name-base>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.netbeans.modules.j2ee.earproject</code-name-base>
                         <recursive/>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.j2ee.sun.appsrv</code-name-base>
+                        <code-name-base>org.openide.util</code-name-base>
+                        <compile-dependency/>
+                        <test/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.j2ee.sun.appsrv81</code-name-base>
+                        <code-name-base>org.netbeans.modules.projectui</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.j2eeserver</code-name-base>
+                        <test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.j2ee.sun.dd</code-name-base>
@@ -369,9 +374,6 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.projectui</code-name-base>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
@@ -380,11 +382,6 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.web.core.syntax</code-name-base>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.openide.util</code-name-base>
-                        <compile-dependency/>
-                        <test/>
                     </test-dependency>
                 </test-type>
             </test-dependencies>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,54 +34,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.tests.j2eeserver.plugin;
+package org.netbeans.modules.j2ee.earproject.test;
 
-import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory;
-import org.openide.util.Lookup;
+import java.io.File;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Petr Hejl
  */
-public class TestModuleConfigurationFactory implements ModuleConfigurationFactory {
+public class EarTestCase extends NbTestCase {
 
-    private static final TestModuleConfigurationFactory INSTANCE = new TestModuleConfigurationFactory();
+    private String oldNbUser;
 
-    private TestModuleConfigurationFactory() {
-        super();
+    public EarTestCase(String name) {
+        super(name);
     }
 
-    public static TestModuleConfigurationFactory getInstance() {
-        return INSTANCE;
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+
+        oldNbUser = System.getProperty("netbeans.user"); // NOI18N
+        FileObject root = FileUtil.toFileObject(getWorkDir());
+        FileUtil.createFolder(root, "ud/system"); // NOI18N
+        System.setProperty("netbeans.user", new File(getWorkDir(), "ud").getAbsolutePath()); // NOI18N
     }
 
-    public ModuleConfiguration create(final J2eeModule j2eeModule) throws ConfigurationException {
-        return new ModuleConfiguration() {
+    @Override
+    protected void tearDown() throws Exception {
+        if (oldNbUser != null) {
+            System.setProperty("netbeans.user", oldNbUser); // NOI18N
+        }
 
-            {
-                // EAR tests require this
-                j2eeModule.getModuleVersion();
-                j2eeModule.getType();
-            }
-
-            public Lookup getLookup() {
-                return Lookup.EMPTY;
-            }
-
-            public J2eeModule getJ2eeModule() {
-                return j2eeModule;
-            }
-
-            public void dispose() {
-                // noop
-            }
-        };
+        super.tearDown();
     }
 
 }
