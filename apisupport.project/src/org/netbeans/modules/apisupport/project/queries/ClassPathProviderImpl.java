@@ -112,7 +112,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         dir = project.getTestClassesDirectory("unit");
         dir = dir == null ? null : FileUtil.normalizeFile(dir);
         FileObject testClassesDir = (dir == null || ! dir.exists()) ? null : FileUtil.toFileObject(dir);
-        File moduleJar = project.getModuleJarLocation();
+        File moduleJar;
         if (srcDir != null && (FileUtil.isParentOf(srcDir, file) || file == srcDir)) {
             // Regular sources.
             if (type.equals(ClassPath.COMPILE)) {
@@ -194,8 +194,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 return testExecute;
             }
         } else if (FileUtil.getArchiveFile(file) != null &&
-                FileUtil.toFile(FileUtil.getArchiveFile(file)).equals(moduleJar) &&
-                file.equals(FileUtil.getArchiveRoot(FileUtil.getArchiveFile(file)))) {
+                file.equals(FileUtil.getArchiveRoot(FileUtil.getArchiveFile(file))) &&
+                FileUtil.toFile(FileUtil.getArchiveFile(file)).equals(moduleJar = project.getModuleJarLocation())) {
             if (ClassPath.EXECUTE.equals(type)) {
                 List<PathResourceImplementation> roots = new ArrayList<PathResourceImplementation>();
                 roots.add(ClassPathSupport.createResource(FileUtil.urlForArchiveOrDir(moduleJar)));
