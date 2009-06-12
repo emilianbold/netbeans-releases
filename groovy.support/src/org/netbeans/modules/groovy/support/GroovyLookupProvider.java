@@ -58,9 +58,7 @@ public class GroovyLookupProvider implements LookupProvider {
             return Lookup.EMPTY;
         }
 
-        return Lookups.fixed(new J2seProjectOpenedHook(project), 
-                             LookupMergerSupport.createActionProviderLookupMerger());
-
+        return Lookups.fixed(new J2seProjectOpenedHook(project));
     }
 
     private static class J2seProjectOpenedHook extends ProjectOpenedHook {
