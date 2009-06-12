@@ -42,6 +42,7 @@
 package org.netbeans.modules.glassfish.javaee.test;
 
 import java.io.File;
+import java.io.IOException;
 import org.netbeans.junit.NbTestCase;
 //import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
@@ -68,11 +69,10 @@ public class AddRemoveV3InstanceMethods extends NbTestCase {
     }
             GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6();
     
-    public void addV3Instance() {
-        try {
+    public void addV3Instance() throws IOException {
             File f = new File(Util._V3_LOCATION);
 
-            if (f.list().length < 1) {
+            if (!f.exists() || f.list().length < 1) {
                 // time to retrieve
                 Retriever r = new Retriever(f.getParentFile(),gip.getIndirectDownloadUrl(),
                         AddServerLocationVisualPanel.V3_DOWNLOAD_PREFIX,
@@ -91,17 +91,8 @@ public class AddRemoveV3InstanceMethods extends NbTestCase {
                 }, "glassfishv3");
                 r.run();
             }
-            //GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
             ServerWizardIterator inst = new ServerWizardIterator(gip);
             WizardDescriptor wizard = new WizardDescriptor(new Panel[] {});
-//            wizard.putProperty(Util.PLATFORM_LOCATION, new File(Util._PLATFORM_LOCATION));
-//            wizard.putProperty(Util.INSTALL_LOCATION, Util._INSTALL_LOCATION);
-//            wizard.putProperty(Util.PROP_DISPLAY_NAME, Util._DISPLAY_NAME);
-//            wizard.putProperty(Util.HOST, Util._HOST);
-//            wizard.putProperty(Util.PORT, Util._PORT);
-//            wizard.putProperty(Util.DOMAIN, Util._DOMAIN);
-//            wizard.putProperty(Util.USER_NAME, Util._USER_NAME);
-//            wizard.putProperty(Util.PASSWORD, Util._PASSWORD);
 
             inst.setInstallRoot(Util._V3_LOCATION);
             int dex = Util._V3_LOCATION.lastIndexOf(File.separator);
@@ -121,45 +112,43 @@ public class AddRemoveV3InstanceMethods extends NbTestCase {
             ServerRegistry.getInstance().checkInstanceExists(gip.formatUri(Util._V3_LOCATION, "localhost", 4848)); //"[/export/home/vkraemer/GlassFiah_v3_Prelude/glassfish]deployer:gfv3:localhost:4848");
             
             Util.sleep(SLEEP);
-        } catch(Exception e) {
-            fail(e.getMessage());
-        }
     }
     
     public void removeV3Instance() {
         try {
             Util.sleep(SLEEP);
-            
+
             ServerInstance inst = ServerRegistry.getInstance().getServerInstance(gip.formatUri(Util._V3_LOCATION, "localhost", 4848));
             boolean wasRunning = inst.isRunning();
-            
+
             inst.remove();
-            
+
             if (wasRunning) {
                 Util.sleep(SLEEP);
             }
 
             try {
                 ServerRegistry.getInstance().checkInstanceExists(gip.formatUri(Util._V3_LOCATION, "localhost", 4848));
-            } catch(Exception e) {
-                if (wasRunning && inst.isRunning())
+            } catch (Exception e) {
+                if (wasRunning && inst.isRunning()) {
                     fail("remove did not stop the instance");
+                }
                 String instances[] = ServerRegistry.getInstance().getInstanceURLs();
-                if (null != instances) 
-                    if (instances.length > 1)
+                if (null != instances) {
+                    if (instances.length > 1) {
                         fail("too many instances");
-            File ff = new File(Util._V3_LOCATION);
-            System.out.println("Deleting: "+ff.getAbsolutePath());
-            Util.deleteJunk(ff.getParentFile());
-            ff = new File(ff.getParentFile().getAbsolutePath()+"1");
-            System.out.println("Deleting: "+ff.getAbsolutePath());
-            Util.deleteJunk(ff);
+                    }
+                }
                 return;
             }
-            
+
             fail("Sjsas instance still exists !");
-        } catch(Exception e) {
-            fail(e.getMessage());
+        } finally {
+                File ff = new File(Util._V3_LOCATION);
+                if (ff.getAbsolutePath().contains("DELETEME")) {
+                    System.out.println("Deleting: " + ff.getAbsolutePath());
+                    Util.deleteJunk(ff.getParentFile());
+                }
         }
     }
     
