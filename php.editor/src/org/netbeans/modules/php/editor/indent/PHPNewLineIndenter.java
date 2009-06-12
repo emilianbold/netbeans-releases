@@ -72,6 +72,7 @@ public class PHPNewLineIndenter {
         scopeDelimiters = Arrays.asList(
             new ScopeDelimiter(PHPTokenId.PHP_SEMICOLON, 0),
             new ScopeDelimiter(PHPTokenId.PHP_OPENTAG, 0),
+            new ScopeDelimiter(PHPTokenId.PHP_CURLY_CLOSE, 0),
             new ScopeDelimiter(PHPTokenId.PHP_CURLY_OPEN, indentSize),
             new ScopeDelimiter(PHPTokenId.PHP_CASE, indentSize),
             new ScopeDelimiter(PHPTokenId.PHP_IF, indentSize),
