@@ -69,6 +69,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.Action;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.core.startup.layers.LayerCacheManager;
@@ -88,7 +89,6 @@ import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.Utilities;
 
 /** Checks consistency of System File System contents.
  */
@@ -376,6 +376,54 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         }
         
         assertNoErrors("Some instances cannot be created", errors);
+    }
+
+    public void testActionInstancesOnlyInActionsFolder() {
+        List<String> errors = new ArrayList<String>();
+
+        Enumeration<? extends FileObject> files = FileUtil.getConfigRoot().getChildren(true);
+        FILE: while (files.hasMoreElements()) {
+            FileObject fo = files.nextElement();
+
+            if (skipFile(fo.getPath())) {
+                continue;
+            }
+
+            try {
+                DataObject obj = DataObject.find (fo);
+                InstanceCookie ic = obj.getCookie(InstanceCookie.class);
+                if (ic == null) {
+                    continue;
+                }
+                Object o = ic.instanceCreate ();
+                if (!(o instanceof Action)) {
+                    continue;
+                }
+                if (fo.getPath().startsWith("Actions/")) {
+                    continue;
+                }
+                if (fo.getPath().startsWith("Editor/Actions/")) {
+                    continue;
+                }
+                if (fo.hasExt("shadow")) {
+                    o = fo.getAttribute("originalFile");
+                    if (o instanceof String) {
+                        if (((String)o).startsWith("Actions/")) {
+                            continue;
+                        }
+                    }
+                }
+                errors.add("File " + fo.getPath() + " represents an action which is not in Actions/ subfolder");
+            } catch (Exception ex) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                PrintStream ps = new PrintStream(baos);
+                ex.printStackTrace(ps);
+                ps.flush();
+                errors.add ("File " + fo.getPath() + " threw: " + baos);
+            }
+        }
+
+        assertNoErrors(errors.size() + " actions is not registered properly", errors);
     }
     
     public void testIfOneFileIsDefinedTwiceByDifferentModulesTheyNeedToHaveMutualDependency() throws Exception {
