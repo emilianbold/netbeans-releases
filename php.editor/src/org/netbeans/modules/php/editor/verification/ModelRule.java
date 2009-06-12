@@ -53,7 +53,6 @@ import org.netbeans.modules.php.editor.model.FileScope;
  * @author Radek Matous
  */
 abstract class ModelRule implements AstRule {
-    private FileScope modelScope;
     abstract void check (FileScope modelScope, RuleContext context, List<Hint> hints);
 
     @Override

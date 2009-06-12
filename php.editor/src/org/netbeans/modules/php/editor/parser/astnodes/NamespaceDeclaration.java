@@ -81,10 +81,10 @@ public class NamespaceDeclaration extends Statement {
 
         int statementEnd = statement.getEndOffset();
         int bodyStart = body.getStartOffset();
-        body.setSourceRange(bodyStart, statementEnd - bodyStart);
+        body.setSourceRange(bodyStart, statementEnd);
 
         int namespaceStart = getStartOffset();
-        setSourceRange(namespaceStart, statementEnd - namespaceStart);
+        setSourceRange(namespaceStart, statementEnd);
     }
 
     /**

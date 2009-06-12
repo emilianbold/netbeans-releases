@@ -693,8 +693,8 @@ class OccurenceBuilder {
                 VariableScope varScope = (VariableScope) entry.getValue();
                 List<? extends ModelElement> elems = ModelUtils.filter(varScope.getDeclaredVariables(), name);
                 if (elems.isEmpty()) {
-                    elems = ModelUtils.filter(fileScope.getDeclaredVariables(), name);
-                }
+                    elems = ModelUtils.filter(ModelUtils.getDeclaredVariables(fileScope), name);
+                    }
 
                 if (!elems.isEmpty()) {
                     fileScope.addOccurence(new OccurenceImpl(elems, nodeInfo.getRange(), fileScope));
@@ -739,8 +739,8 @@ class OccurenceBuilder {
                 VariableScope varScope = (VariableScope) entry.getValue();
                 List<? extends ModelElement> elems = ModelUtils.filter(varScope.getDeclaredVariables(), name);
                 if (elems.isEmpty()) {
-                    elems = ModelUtils.filter(fileScope.getDeclaredVariables(), name);
-                }
+                    elems = ModelUtils.filter(ModelUtils.getDeclaredVariables(fileScope), name);
+                    }
 
                 if (!elems.isEmpty()) {
                     fileScope.addOccurence(new OccurenceImpl(elems, nodeInfo.getRange(), fileScope));
