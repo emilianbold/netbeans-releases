@@ -350,7 +350,7 @@ public class ChatTopComponent extends TopComponent {
         assert index>=0: "Component not found in CloseButtonTabbedPane " + chatPanel;
         open.remove(chatPanel.getName());
         chats.remove(chatPanel);
-        if (chats.getSelectedIndex()==chats.getTabCount()-1) {
+        if (chats.getSelectedIndex()==chats.getTabCount()-1 && chats.getTabCount()>1) {
             chats.setSelectedIndex(chats.getSelectedIndex()-1);
         }
         kec.leave(chatPanel.getName());
@@ -451,6 +451,7 @@ public class ChatTopComponent extends TopComponent {
 
         chats = TabbedPaneFactory.createCloseButtonTabbedPane();
         newPanel = new javax.swing.JPanel();
+        noChats = new javax.swing.JLabel();
         loginScreen = new javax.swing.JPanel();
         loginLink = new javax.swing.JLabel();
         errorScreen = new javax.swing.JPanel();
@@ -470,17 +471,11 @@ public class ChatTopComponent extends TopComponent {
                 newPanelMouseClicked(evt);
             }
         });
+        newPanel.setLayout(new java.awt.BorderLayout());
 
-        org.jdesktop.layout.GroupLayout newPanelLayout = new org.jdesktop.layout.GroupLayout(newPanel);
-        newPanel.setLayout(newPanelLayout);
-        newPanelLayout.setHorizontalGroup(
-            newPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 38, Short.MAX_VALUE)
-        );
-        newPanelLayout.setVerticalGroup(
-            newPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 0, Short.MAX_VALUE)
-        );
+        noChats.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        org.openide.awt.Mnemonics.setLocalizedText(noChats, org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.noChats.text", new Object[] {})); // NOI18N
+        newPanel.add(noChats, java.awt.BorderLayout.CENTER);
 
         chats.addTab(org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.newPanel.TabConstraints.tabTitle"), newPanel); // NOI18N
 
@@ -625,6 +620,7 @@ public class ChatTopComponent extends TopComponent {
     private javax.swing.JLabel loginLink;
     private javax.swing.JPanel loginScreen;
     private javax.swing.JPanel newPanel;
+    private javax.swing.JLabel noChats;
     private javax.swing.JLabel retryLink;
     // End of variables declaration//GEN-END:variables
     /**
