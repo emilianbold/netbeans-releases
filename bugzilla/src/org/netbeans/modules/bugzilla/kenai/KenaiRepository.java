@@ -153,9 +153,9 @@ public class KenaiRepository extends BugzillaRepository {
     }
 
     @Override
-    protected BugzillaConfiguration createConfiguration() {
+    protected BugzillaConfiguration createConfiguration(boolean forceRefresh) {
         KenaiConfiguration kc = new KenaiConfiguration(this, product);
-        kc.initialize(this, false);
+        kc.initialize(this, forceRefresh);
         return kc;
     }
 

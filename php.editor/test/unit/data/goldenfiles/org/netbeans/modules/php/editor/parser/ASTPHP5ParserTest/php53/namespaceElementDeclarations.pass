@@ -38,11 +38,11 @@
         <Comments>
         </Comments>
         <Statements>
-            <NamespaceDeclaration start='6' end='29' isBracketed='false'>
+            <NamespaceDeclaration start='6' end='35' isBracketed='false'>
                 <NamespaceName start='16' end='17' isCurrent='false' isGlobal='false'>
                     <Identifier start='16' end='17' name='A'/>
                 </NamespaceName>
-                <Block start='6' end='29' isCurly='true'>
+                <Block start='6' end='35' isCurly='true'>
                     <ClassConstantDeclaration start='19' end='31'>
                         <Names>
                             <Identifier start='25' end='26' name='C'/>
