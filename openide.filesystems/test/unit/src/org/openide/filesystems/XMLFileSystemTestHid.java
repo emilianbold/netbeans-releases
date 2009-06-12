@@ -711,6 +711,84 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         assertNotNull("Image loaded", icon);
         assertEquals("Same image", icon, read);
     }
+    public void testLayersAttribute() throws Exception {
+        clearWorkDir();
+
+        File f1 = new File(getWorkDir(), "layer1.xml");
+        {
+            FileWriter w = new FileWriter(f1);
+            w.write(
+                "<filesystem>" +
+                "  <folder name='just1'>" +
+                "    <file name='empty.xml'/>" +
+                "  </folder>" +
+                "  <folder name='both'>" +
+                "    <file name='empty.xml'>" +
+                "      <attr name='a' stringvalue='a'/>" +
+                "    </file>" +
+                "  </folder>" +
+                "</filesystem>"
+            );
+            w.close();
+        }
+        File f2 = new File(getWorkDir(), "layer2.xml");
+        {
+            FileWriter w = new FileWriter(f2);
+            w.write(
+                "<filesystem>" +
+                "  <folder name='just2'>" +
+                "    <file name='empty.xml'/>" +
+                "  </folder>" +
+                "  <folder name='both'>" +
+                "    <file name='empty.xml'>" +
+                "      <attr name='b' stringvalue='b'/>" +
+                "    </file>" +
+                "  </folder>" +
+                "</filesystem>"
+            );
+            w.close();
+        }
+
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f1.toURL(), f2.toURL());
+
+
+        FileObject just1 = xfs.findResource("just1/empty.xml");
+        FileObject just2 = xfs.findResource("just2/empty.xml");
+        FileObject both = xfs.findResource("both/empty.xml");
+
+        String layersR = layers(xfs.getRoot());
+        String layers1 = layers(just1);
+        String layers2 = layers(just2);
+        String layersB = layers(both);
+
+        if (!layersR.contains(f1.toURI().toString())) {
+            fail("Missing " + f1 + "\ninside: " + layersR);
+        }
+        if (!layersR.contains(f2.toURI().toString())) {
+            fail("Missing " + f2 + "\ninside: " + layersR);
+        }
+
+        assertEquals(f1.toURL().toExternalForm(), layers1);
+        assertEquals(f2.toURL().toExternalForm(), layers2);
+        if (!layersB.contains(f1.toURI().toString())) {
+            fail("Missing " + f1 + "\ninside: " + layersB);
+        }
+        if (!layersB.contains(f2.toURI().toString())) {
+            fail("Missing " + f2 + "\ninside: " + layersB);
+        }
+    }
+
+    private static String layers(FileObject fo) {
+        Object obj = fo.getAttribute("layers");
+        assertNotNull("layers attr found for " + fo, obj);
+        assertTrue("attribute is URL[] for " + fo, obj instanceof URL[]);
+        StringBuilder sb = new StringBuilder();
+        for (URL u : ((URL[])obj)) {
+            sb.append(u.toExternalForm());
+        }
+        return sb.toString();
+    }
+
     private static Object attr(FileSystem f, String path, String a) throws IOException {
         FileObject fo = f.findResource(path);
         if (fo == null) return null;

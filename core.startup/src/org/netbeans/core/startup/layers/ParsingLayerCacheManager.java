@@ -299,6 +299,7 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
                 MemFileOrFolder f2 = (MemFileOrFolder)it.next();
                 if (f2.name.equals(name)) {
                     f = f2;
+                    f.registerURL(base);
                     break;
                 }
             }
@@ -438,11 +439,45 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
     protected static abstract class MemFileOrFolder {
         public String name;
         public List<MemAttr> attrs = null; // {null | List<MemAttr>}
-        public final URL base;
+        private Object base;
         
         public MemFileOrFolder (URL base) {
             this.base = base;
         }
+
+        @SuppressWarnings("unchecked")
+        final URL getBase() {
+            Object o = base;
+            if (o instanceof URL) {
+                return (URL)o;
+            } else {
+                return (URL)((Iterable)o).iterator().next();
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        final List<URL> getURLs() {
+            Object o = base;
+            if (o instanceof URL) {
+                return Collections.singletonList((URL)o);
+            } else {
+                return o != null ? (List<URL>)o : Collections.<URL>emptyList();
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        final void registerURL(URL url) {
+            List<URL> urls;
+            if (base instanceof URL) {
+                URL u = (URL)base;
+                base = urls = new ArrayList<URL>();
+                urls.add(u);
+            } else {
+                urls = (List<URL>)base;
+            }
+            urls.add(url);
+        }
+
     }
     
     /** Struct for <folder>.
