@@ -235,7 +235,7 @@ public final class APTMacroMapSnapshot {
         }
 
         public boolean containsValue(Object value) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         public APTMacro get(Object aKey) {
@@ -289,7 +289,7 @@ public final class APTMacroMapSnapshot {
         }
 
         public void putAll(Map<? extends CharSequence, ? extends APTMacro> t) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         public void clear() {
@@ -305,11 +305,11 @@ public final class APTMacroMapSnapshot {
         }
 
         public Set<CharSequence> keySet() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         public Collection<APTMacro> values() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         public Set<Entry<CharSequence, APTMacro>> entrySet() {
@@ -353,36 +353,36 @@ public final class APTMacroMapSnapshot {
                                 return null;
                             }
                             public void remove() {
-                                throw new UnsupportedOperationException("Not supported yet.");
+                                throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                             }
                         };
                     }
                     public Object[] toArray() {
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                     }
                     public <T> T[] toArray(T[] a) {
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                     }
                     public boolean add(Entry<CharSequence, APTMacro> o) {
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                     }
                     public boolean remove(Object o) {
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                     }
                     public boolean containsAll(Collection<?> c) {
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                     }
                     public boolean addAll(Collection<? extends Entry<CharSequence, APTMacro>> c) {
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                     }
                     public boolean retainAll(Collection<?> c) {
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                     }
                     public boolean removeAll(Collection<?> c) {
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                     }
                     public void clear() {
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                     }
                 };
             }
