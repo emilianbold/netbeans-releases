@@ -44,18 +44,10 @@ import org.openide.explorer.*;
 import org.openide.explorer.ExplorerManager.Provider;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
-import org.openide.util.*;
-
 import java.awt.*;
-import java.awt.event.*;
-
 import java.beans.*;
-
-import java.util.*;
-
 import javax.swing.*;
 import javax.swing.BorderFactory;
-import javax.swing.event.*;
 import javax.swing.tree.*;
 
 
@@ -101,10 +93,6 @@ public class BeanTreeView extends TreeView {
     public BeanTreeView() {
         // we should have no border, window system will provide borders
         setBorder(BorderFactory.createEmptyBorder());
-    }
-
-    void initializeTree() {
-        super.initializeTree();
     }
 
     /** Create a new model.
@@ -181,6 +169,7 @@ public class BeanTreeView extends TreeView {
     /** Delegate the setEnable method to Jtree
      *  @param enabled whether to enable the tree
      */
+    @Override
     public void setEnabled(boolean enabled) {
         this.tree.setEnabled(enabled);
     }
@@ -188,6 +177,7 @@ public class BeanTreeView extends TreeView {
     /** Is the tree enabled
      *  @return boolean
      */
+    @Override
     public boolean isEnabled() {
         if (this.tree == null) {
             // E.g. in JDK 1.5 w/ GTK L&F, may be called from TreeView's

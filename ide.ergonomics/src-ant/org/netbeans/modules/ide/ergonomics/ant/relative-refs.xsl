@@ -51,16 +51,13 @@
                     />
                 </xsl:element>
             </xsl:if>
-            <xsl:if test="//*/folder[@name='Servers']/folder[@name='Actions']">
+            <xsl:if test="//*/folder[@name='Servers']">
                 <xsl:element name="folder">
                     <xsl:attribute name="name">Servers</xsl:attribute>
-                    <xsl:element name="folder">
-                        <xsl:attribute name="name">Actions</xsl:attribute>
                         <xsl:apply-templates
-                            select="//*/folder[@name='Servers']/folder[@name='Actions']/*"
+                            select="//*/folder[@name='Servers']/*"
                             mode="project-wizard"
                         />
-                    </xsl:element>
                 </xsl:element>
             </xsl:if>
             <xsl:if test="//*/folder[@name='Menu']/folder[@name='Profile']">

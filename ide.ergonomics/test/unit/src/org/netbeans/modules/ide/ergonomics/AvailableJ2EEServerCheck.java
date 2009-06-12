@@ -36,39 +36,62 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.ide.ergonomics;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.spi.debugger.ui.AttachType;
+import org.netbeans.modules.server.ServerRegistry;
+import org.netbeans.spi.server.ServerWizardProvider;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Pavel Flaska
  */
-public class DebuggerAttachTypesCheck extends NbTestCase {
+public class AvailableJ2EEServerCheck extends NbTestCase {
 
-    public DebuggerAttachTypesCheck(String name) {
+    public AvailableJ2EEServerCheck(final String name) {
         super(name);
     }
     
-    public void testGetAllDebuggers() {
-       List<? extends AttachType> debug = DebuggerManager.getDebuggerManager().lookup(null, AttachType.class);
-       int cnt = 0;
-       for (AttachType o : debug) {
-           System.setProperty("debugger." + ++cnt, o.getTypeDisplayName());
-       }
+    Comparator<ServerWizardProvider> comparator = new Comparator<ServerWizardProvider>() {
+
+        public int compare(ServerWizardProvider arg0, ServerWizardProvider arg1) {
+            return arg0.getDisplayName().compareTo(arg1.getDisplayName());
+        }
+    };
+
+    public void testGetAllJ2eeServersReal() {
+        int cnt = 0;
+        List<ServerWizardProvider> providers = new ArrayList<ServerWizardProvider>(Lookups.forPath(ServerRegistry.SERVERS_PATH).lookupAll(ServerWizardProvider.class));
+        for (ServerWizardProvider w : providers.toArray(new ServerWizardProvider[0])) {
+            if (w.getInstantiatingIterator() == null) {
+                providers.remove(w);
+            }
+        }
+        Collections.sort(providers, comparator); // ?
+        for (ServerWizardProvider wizard : providers.toArray(new ServerWizardProvider[0])) {
+           System.setProperty("wizard." + ++cnt, wizard.getDisplayName());
+           getLog().println("full: " + wizard.getDisplayName());
+        }
     }
 
-    public void testGetAllDebuggersReal() {
-       List<? extends AttachType> debug = DebuggerManager.getDebuggerManager().lookup(null, AttachType.class);
-       int cnt = 0;
-       for (AttachType o : debug) {
-           String name = System.getProperty("debugger." + ++cnt);
-           assertEquals(name, o.getTypeDisplayName());
-       }
+    public void testGetAllJ2eeServersErgo() {
+        int cnt = 0;
+        List<ServerWizardProvider> providers = new ArrayList<ServerWizardProvider>(Lookups.forPath(ServerRegistry.SERVERS_PATH).lookupAll(ServerWizardProvider.class));
+        for (ServerWizardProvider w : providers.toArray(new ServerWizardProvider[0])) {
+            if (w.getInstantiatingIterator() == null) {
+                providers.remove(w);
+            }
+        }
+        Collections.sort(providers, comparator);
+        for (ServerWizardProvider wizard : providers) {
+           String name = System.getProperty("wizard." + ++cnt);
+           getLog().println("ergo: " + wizard.getDisplayName());
+           assertEquals(name, wizard.getDisplayName());
+        }
     }
-
 }

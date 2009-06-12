@@ -37,38 +37,42 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ide.ergonomics;
+package org.netbeans.modules.j2ee.earproject.test;
 
-import java.util.List;
-import org.netbeans.api.debugger.DebuggerManager;
+import java.io.File;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.spi.debugger.ui.AttachType;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Pavel Flaska
+ * @author Petr Hejl
  */
-public class DebuggerAttachTypesCheck extends NbTestCase {
+public class EarTestCase extends NbTestCase {
 
-    public DebuggerAttachTypesCheck(String name) {
+    private String oldNbUser;
+
+    public EarTestCase(String name) {
         super(name);
     }
-    
-    public void testGetAllDebuggers() {
-       List<? extends AttachType> debug = DebuggerManager.getDebuggerManager().lookup(null, AttachType.class);
-       int cnt = 0;
-       for (AttachType o : debug) {
-           System.setProperty("debugger." + ++cnt, o.getTypeDisplayName());
-       }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+
+        oldNbUser = System.getProperty("netbeans.user"); // NOI18N
+        FileObject root = FileUtil.toFileObject(getWorkDir());
+        FileUtil.createFolder(root, "ud/system"); // NOI18N
+        System.setProperty("netbeans.user", new File(getWorkDir(), "ud").getAbsolutePath()); // NOI18N
     }
 
-    public void testGetAllDebuggersReal() {
-       List<? extends AttachType> debug = DebuggerManager.getDebuggerManager().lookup(null, AttachType.class);
-       int cnt = 0;
-       for (AttachType o : debug) {
-           String name = System.getProperty("debugger." + ++cnt);
-           assertEquals(name, o.getTypeDisplayName());
-       }
+    @Override
+    protected void tearDown() throws Exception {
+        if (oldNbUser != null) {
+            System.setProperty("netbeans.user", oldNbUser); // NOI18N
+        }
+
+        super.tearDown();
     }
 
 }

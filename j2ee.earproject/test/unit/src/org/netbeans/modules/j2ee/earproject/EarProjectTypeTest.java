@@ -89,7 +89,7 @@ public final class EarProjectTypeTest extends NbTestCase {
         try {
             prjType.createProject(null);
             fail("null is an invalid argument");
-        } catch (IllegalArgumentException ex) {
+        } catch (NullPointerException ex) {
             // OK we should get here
         }
     }
