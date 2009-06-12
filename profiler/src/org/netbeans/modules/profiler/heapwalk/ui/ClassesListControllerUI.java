@@ -304,7 +304,6 @@ public class ClassesListControllerUI extends JTitledPanel {
         super(VIEW_TITLE, ICON_CLASSES, true);
 
         this.classesListController = classesListController;
-        hasProjectContext = classesListController.getClassesController().getHeapFragmentWalker().getHeapDumpProject() != null;
 
         initColumnsData();
         initData();
@@ -553,27 +552,8 @@ public class ClassesListControllerUI extends JTitledPanel {
                 }
             });
 
-        JMenuItem showSourceItem = new JMenuItem(GO_TO_SOURCE_STRING);
-        showSourceItem.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    int row = classesListTable.getSelectedRow();
-
-                    if (row != -1) {
-                        String className = (String) displayCache[row][0];
-
-                        while (className.endsWith("[]")) {
-                            className = className.substring(0, className.length() - 2); // NOI18N
-                        }
-
-                        NetBeansProfiler.getDefaultNB().openJavaSource(null, className, null, null);
-                    }
-                }
-            });
-
         popup.add(showInstancesItem);
         popup.add(showInstancesOfItem);
-        popup.addSeparator();
-        popup.add(showSourceItem);
 
         return popup;
     }

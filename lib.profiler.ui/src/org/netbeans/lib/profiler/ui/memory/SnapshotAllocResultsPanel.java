@@ -69,7 +69,6 @@ public class SnapshotAllocResultsPanel extends AllocResultsPanel implements Acti
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
     private AllocMemoryResultsSnapshot snapshot;
-    private JMenuItem popupShowSource;
     private JMenuItem popupShowStacks;
     private JPopupMenu memoryResPopupMenu;
 
@@ -93,8 +92,6 @@ public class SnapshotAllocResultsPanel extends AllocResultsPanel implements Acti
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == popupShowStacks) {
             actionsHandler.showStacksForClass(selectedClassId, getSortingColumn(), getSortingOrder());
-        } else if (e.getSource() == popupShowSource) {
-            showSourceForClass(selectedClassId);
         }
     }
 
@@ -109,14 +106,6 @@ public class SnapshotAllocResultsPanel extends AllocResultsPanel implements Acti
     protected JPopupMenu getPopupMenu() {
         if (memoryResPopupMenu == null) {
             memoryResPopupMenu = new JPopupMenu();
-
-            Font boldfont = memoryResPopupMenu.getFont().deriveFont(Font.BOLD);
-
-            popupShowSource = new JMenuItem();
-            popupShowSource.setFont(boldfont);
-            popupShowSource.setText(GO_SOURCE_POPUP_ITEM_NAME);
-            memoryResPopupMenu.add(popupShowSource);
-            popupShowSource.addActionListener(this);
 
             if (snapshot.containsStacks()) {
                 memoryResPopupMenu.addSeparator();
