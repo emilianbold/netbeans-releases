@@ -133,6 +133,11 @@ final class FileScopeImpl extends ScopeImpl implements FileScope  {
         });
     }
 
+    @Override
+    public String getFullyQualifiedName() {
+        return getName();
+    }
+
     @NonNull
     public CachingSupport getCachingSupport() {
         return cachedModelSupport;

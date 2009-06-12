@@ -51,7 +51,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
  */
 public class NamespaceDeclarationInfo extends ASTNodeInfo<NamespaceDeclaration> {
     public static final String NAMESPACE_SEPARATOR = "\\";//NOI18N
-    public static final String DEFAULT_NAMESPACE_NAME = "default";//NOI18N
+    public static final String DEFAULT_NAMESPACE_NAME = "";//NOI18N
 
     NamespaceDeclarationInfo(NamespaceDeclaration node) {
         super(node);
@@ -61,6 +61,10 @@ public class NamespaceDeclarationInfo extends ASTNodeInfo<NamespaceDeclaration> 
         return new NamespaceDeclarationInfo(node);
     }
 
+    public boolean isDefaultNamespace() {
+        return DEFAULT_NAMESPACE_NAME.equals(getName());
+    }
+    
     @Override
     public Kind getKind() {
         return Kind.NAMESPACE_DECLARATION;

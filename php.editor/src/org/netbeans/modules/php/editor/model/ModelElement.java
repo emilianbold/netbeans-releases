@@ -50,6 +50,7 @@ import org.openide.util.Union2;
 public interface ModelElement {
     String getName();
     String getCamelCaseName();
+    String getFullyQualifiedName();
     PhpKind getPhpKind();
     public Union2<String, FileObject> getFile();
     FileObject getFileObject();

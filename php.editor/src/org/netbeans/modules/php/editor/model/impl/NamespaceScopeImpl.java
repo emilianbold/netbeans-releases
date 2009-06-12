@@ -43,6 +43,7 @@ import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
@@ -79,7 +80,7 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     }
 
     NamespaceScopeImpl(FileScopeImpl inScope) {
-        super(inScope, "default",inScope.getFile(), inScope.getNameRange(), PhpKind.NAMESPACE_DECLARATION);
+        super(inScope, NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME,inScope.getFile(), inScope.getNameRange(), PhpKind.NAMESPACE_DECLARATION);
         isDefault = true;
     }
 
@@ -152,6 +153,11 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
                         (queryName.length == 0 || nameKindMatch(element.getName(), nameKind, queryName));
             }
         });
+    }
+
+    @Override
+    public String getFullyQualifiedName() {
+        return getName();
     }
 
     public boolean isDefaultNamespace() {

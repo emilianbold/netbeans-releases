@@ -53,6 +53,7 @@ import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.PHPElement;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
+import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
 
@@ -140,6 +141,20 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     public final String getCamelCaseName() {
         return toCamelCase(getName());
     }
+
+    public String getFullyQualifiedName() {
+        NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
+        assert namespaceScope != null;
+        final String namespaceName = namespaceScope.getName();
+        StringBuilder sb = new StringBuilder();
+        sb.append(namespaceName);
+        if (!namespaceName.endsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR)) {
+            sb.append(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR);
+        }
+        sb.append(getName());
+        return sb.toString();
+    }
+
 
     static String toCamelCase(String plainName) {
         char[] retval = new char[plainName.length()];
