@@ -150,7 +150,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     }
 
     protected void putMacro(CharSequence name, APTMacro macro) {
-        active.getMacros().put(name, macro);
+        active.putMacro(name, macro);
     }
     /** method to implement in children */
     protected abstract APTMacro createMacro(CharSequence file, APTDefine define, Kind macroType);
