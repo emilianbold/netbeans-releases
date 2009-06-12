@@ -59,7 +59,6 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.DataFolder;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
@@ -201,11 +200,13 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
             this.group = group;
         }
         
+        @Override
         protected void addNotify() {
             super.addNotify();
             setKeys( getKeys() );
         }
         
+        @Override
         protected void removeNotify() {
             setKeys( Collections.EMPTY_SET );
             super.removeNotify();
@@ -348,9 +349,11 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
             
         }
         
+        @Override
         public org.openide.util.actions.SystemAction[] getActions() {
             return new org.openide.util.actions.SystemAction[]{};
         }
+        @Override
         public org.openide.util.actions.SystemAction getDefaultAction() {
            return null;
         }

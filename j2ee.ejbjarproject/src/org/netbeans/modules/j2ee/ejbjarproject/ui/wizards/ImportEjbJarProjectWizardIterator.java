@@ -65,11 +65,13 @@ import org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPa
 import org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
 import org.netbeans.modules.j2ee.ejbjarproject.Utils;
+import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectCreateData;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
 
@@ -127,15 +129,25 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Progr
         File configFilesFolder = (File) wiz.getProperty(WizardProperties.CONFIG_FILES_FOLDER);
         File libName = (File) wiz.getProperty(WizardProperties.LIB_FOLDER);
         String serverInstanceID = (String) wiz.getProperty(ProjectServerWizardPanel.SERVER_INSTANCE_ID);
-        String j2eeLevel = (String) wiz.getProperty(ProjectServerWizardPanel.J2EE_LEVEL);
+        Profile j2eeProfile = (Profile) wiz.getProperty(ProjectServerWizardPanel.J2EE_LEVEL);
         
         String librariesDefinition =
                 SharabilityUtility.getLibraryLocation((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SHARED_LIBRARIES));
         String serverLibraryName = (String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SERVER_LIBRARY);
-        
-        AntProjectHelper h = EjbJarProjectGenerator.importProject(dirF, name,
-                sourceFolders, testFolders, configFilesFolder, libName,
-                j2eeLevel, serverInstanceID, librariesDefinition, serverLibraryName);
+
+        EjbJarProjectCreateData createData = new EjbJarProjectCreateData();
+        createData.setProjectDir(dirF);
+        createData.setName(name);
+        createData.setSourceFolders(sourceFolders);
+        createData.setTestFolders(testFolders);
+        createData.setConfigFilesBase(configFilesFolder);
+        createData.setLibFolder(libName);
+        createData.setServerInstanceID(serverInstanceID);
+        createData.setJavaEEProfile(j2eeProfile);
+        createData.setLibrariesDefinition(librariesDefinition);
+        createData.setServerLibraryName(serverLibraryName);
+
+        AntProjectHelper h = EjbJarProjectGenerator.importProject(createData);
         
         handle.progress(2);
         FileObject dir = FileUtil.toFileObject (dirF);

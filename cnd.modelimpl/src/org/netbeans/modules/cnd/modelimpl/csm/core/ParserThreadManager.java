@@ -122,7 +122,7 @@ public final class ParserThreadManager {
         int threadCount = Integer.getInteger("cnd.modelimpl.parser.threads", // NOI18N
                 Runtime.getRuntime().availableProcessors()).intValue(); // NOI18N
 
-        threadCount = Math.min(threadCount, 4);
+        threadCount = Math.min(threadCount, 8);
         threadCount = Math.max(threadCount, 1);
 
 

@@ -73,11 +73,12 @@ import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.RootedEntry;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleListener;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationImplementation;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationImplementation2;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
@@ -97,10 +98,9 @@ import org.xml.sax.SAXException;
  * implementation of ear related netbeans functionality
  * @author Milos Kleint 
  */
-class EarImpl implements EarImplementation, 
-                         J2eeModuleImplementation, 
-                         J2eeApplicationImplementation, 
-                         ModuleChangeReporter, 
+class EarImpl implements EarImplementation,
+                         J2eeApplicationImplementation2,
+                         ModuleChangeReporter,
                          AdditionalDebuggedProjects {
 
     private Project project;
@@ -245,8 +245,8 @@ class EarImpl implements EarImplementation,
         return true;
     }
 
-    public Object getModuleType() {
-        return J2eeModule.EAR;
+    public J2eeModule.Type getModuleType() {
+        return J2eeModule.Type.EAR;
     }
 
     /**
@@ -405,7 +405,7 @@ class EarImpl implements EarImplementation,
                                     J2eeModule module = J2eeModuleFactory.createJ2eeModule(new ProxyJ2eeModule(mod, m, fileNameMapping));
                                     //#162173 respect order in pom configuration.. shall we?
                                     if (m.pomIndex > -1 && toRet.size() > m.pomIndex) {
-                                        toRet.add(m.pomIndex, mod);
+                                        toRet.add(m.pomIndex, module);
                                     } else {
                                         toRet.add(module);
                                     }
@@ -419,7 +419,7 @@ class EarImpl implements EarImplementation,
                             J2eeModule module = J2eeModuleFactory.createJ2eeModule(new ProxyJ2eeModule(mod, m, fileNameMapping));
                             //#162173 respect order in pom configuration.. shall we?
                             if (m.pomIndex > -1 && toRet.size() > m.pomIndex) {
-                                toRet.add(m.pomIndex, mod);
+                                toRet.add(m.pomIndex, module);
                             } else {
                                 toRet.add(module);
                             }
@@ -783,7 +783,7 @@ class EarImpl implements EarImplementation,
     }
 
 
-    private static class ProxyJ2eeModule implements J2eeModuleImplementation {
+    private static class ProxyJ2eeModule implements J2eeModuleImplementation2 {
         private J2eeModule module;
         private EarImpl.MavenModule mavenModule;
         private String fileNameMapping;
@@ -798,8 +798,8 @@ class EarImpl implements EarImplementation,
             return module.getModuleVersion();
         }
 
-        public Object getModuleType() {
-            return module.getModuleType();
+        public J2eeModule.Type getModuleType() {
+            return module.getType();
         }
 
         public String getUrl() {

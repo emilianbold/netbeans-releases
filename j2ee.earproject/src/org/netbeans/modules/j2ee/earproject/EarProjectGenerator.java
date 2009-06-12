@@ -58,6 +58,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
+import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectCreateData;
 import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
@@ -69,8 +70,10 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
+import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectCreateData;
 import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
@@ -109,19 +112,19 @@ public final class EarProjectGenerator {
     
     private final File prjDir;
     private final String name;
-    private final String j2eeLevel;
+    private final Profile j2eeProfile;
     private final String serverInstanceID;
     private final String sourceLevel;
     private final FileObject prjDirFO;
     private String librariesDefinition;
     private String serverLibraryName;
     
-    private EarProjectGenerator(File prjDir, FileObject prjDirFO, String name, String j2eeLevel,
+    private EarProjectGenerator(File prjDir, FileObject prjDirFO, String name, Profile j2eeProfile,
             String serverInstanceID, String sourceLevel, String librariesDefinition, String serverLibraryName) {
         this.prjDir = prjDir;
         this.prjDirFO = prjDirFO;
         this.name = name;
-        this.j2eeLevel = j2eeLevel;
+        this.j2eeProfile = j2eeProfile;
         this.serverInstanceID = serverInstanceID;
         // #89131: these levels are not actually distinct from 1.5.
         if (sourceLevel != null && (sourceLevel.equals("1.6") || sourceLevel.equals("1.7")))
@@ -139,10 +142,10 @@ public final class EarProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static AntProjectHelper createProject(File prjDir, String name, String j2eeLevel,
+    public static AntProjectHelper createProject(File prjDir, String name, Profile j2eeProfile,
             String serverInstanceId, String sourceLevel, String librariesDefinition, String serverLibraryName) throws IOException {
         FileObject projectDir = FileUtil.createFolder(prjDir);
-        final EarProjectGenerator earGen = new EarProjectGenerator(prjDir, projectDir, name, j2eeLevel,
+        final EarProjectGenerator earGen = new EarProjectGenerator(prjDir, projectDir, name, j2eeProfile,
                 serverInstanceId, sourceLevel, librariesDefinition, serverLibraryName);
         final AntProjectHelper[] h = new AntProjectHelper[1];
         
@@ -157,13 +160,13 @@ public final class EarProjectGenerator {
     }
     
     public static AntProjectHelper importProject(File pDir, final File sDir, String name,
-            String j2eeLevel, String serverInstanceID, final String platformName,
+            Profile j2eeProfile, String serverInstanceID, final String platformName,
             String sourceLevel, final Map<FileObject, ModuleType> userModules,
             String librariesDefinition, String serverLibraryName)
             throws IOException {
         FileObject projectDir = FileUtil.createFolder(pDir);
         final EarProjectGenerator earGen = new EarProjectGenerator(pDir, projectDir, name,
-                j2eeLevel, serverInstanceID, sourceLevel, librariesDefinition, serverLibraryName);
+                j2eeProfile, serverInstanceID, sourceLevel, librariesDefinition, serverLibraryName);
         final AntProjectHelper[] h = new AntProjectHelper[1];
         
         // create project in one FS atomic action:
@@ -204,7 +207,7 @@ public final class EarProjectGenerator {
         }
         EarProject earProject = p.getLookup().lookup(EarProject.class);
         assert earProject != null;
-        setupDD(j2eeLevel, docBase, earProject);
+        setupDD(j2eeProfile, docBase, earProject);
         
         return h;
     }
@@ -292,7 +295,7 @@ public final class EarProjectGenerator {
             }
         }
         
-        setupDD(j2eeLevel, docBase, earProject);
+        setupDD(j2eeProfile, docBase, earProject);
         
         if (userModules == null || userModules.isEmpty()) {
             userModules = ModuleType.detectModules(srcPrjDirFO);
@@ -414,11 +417,17 @@ public final class EarProjectGenerator {
     private AntProjectHelper addAppClientModule(final FileObject javaRoot, final FileObject subprojectRoot, final File subProjDir, final String platformName) throws IOException {
         FileObject docBaseFO = FileUtil.createFolder(subprojectRoot, DEFAULT_DOC_BASE_FOLDER);
         File docBase = FileUtil.toFile(docBaseFO);
-        AntProjectHelper subProjHelper = AppClientProjectGenerator.importProject(
-                subProjDir, subprojectRoot.getName(),
-                new File[] { FileUtil.toFile(javaRoot) },
-                new File[0], docBase,
-                null, checkJ2eeVersion(j2eeLevel, serverInstanceID, J2eeModule.CLIENT), serverInstanceID);
+
+        AppClientProjectCreateData createData = new AppClientProjectCreateData();
+        createData.setProjectDir(subProjDir);
+        createData.setName(subprojectRoot.getName());
+        createData.setSourceFolders(new File[] { FileUtil.toFile(javaRoot) });
+        createData.setTestFolders(new File[0]);
+        createData.setConfFolder(docBase);
+        createData.setJavaEEProfile(getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.Type.CAR));
+        createData.setServerInstanceID(serverInstanceID);
+
+        AntProjectHelper subProjHelper = AppClientProjectGenerator.importProject(createData);
         if (platformName != null || sourceLevel != null) {
             AppClientProjectGenerator.setPlatform(subProjHelper, platformName, sourceLevel);
         }
@@ -428,11 +437,17 @@ public final class EarProjectGenerator {
     private AntProjectHelper addEJBModule(final FileObject javaRoot, final FileObject subprojectRoot, final File subProjDir, final String platformName) throws IOException {
         FileObject docBaseFO = FileUtil.createFolder(subprojectRoot, DEFAULT_DOC_BASE_FOLDER);
         File docBase = FileUtil.toFile(docBaseFO);
-        AntProjectHelper subProjHelper = EjbJarProjectGenerator.importProject(
-                subProjDir, subprojectRoot.getName(),
-                new File[] {FileUtil.toFile(javaRoot)},
-                new File[0], docBase,
-                null, checkJ2eeVersion(j2eeLevel, serverInstanceID, J2eeModule.EJB), serverInstanceID);
+
+        EjbJarProjectCreateData createData = new EjbJarProjectCreateData();
+        createData.setProjectDir(subProjDir);
+        createData.setName(subprojectRoot.getName());
+        createData.setSourceFolders(new File[] {FileUtil.toFile(javaRoot)});
+        createData.setTestFolders(new File[0]);
+        createData.setConfigFilesBase(docBase);
+        createData.setJavaEEProfile(getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.Type.EJB));
+        createData.setServerInstanceID(serverInstanceID);
+
+        AntProjectHelper subProjHelper = EjbJarProjectGenerator.importProject(createData);
         if (platformName != null || sourceLevel != null) {
             EjbJarProjectGenerator.setPlatform(subProjHelper, platformName, sourceLevel);
         }
@@ -448,7 +463,7 @@ public final class EarProjectGenerator {
         createData.setTestFolders(new File[0]);
         createData.setDocBase(FileUtil.createFolder(subprojectRoot, "web")); //NOI18N
         createData.setLibFolder(null);
-        createData.setJavaEEVersion(checkJ2eeVersion(j2eeLevel, serverInstanceID, J2eeModule.WAR));
+        createData.setJavaEEProfile(getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.Type.WAR));
         createData.setServerInstanceID(serverInstanceID);
         createData.setBuildfile("build.xml"); //NOI18N
         createData.setJavaPlatformName(platformName);
@@ -458,17 +473,22 @@ public final class EarProjectGenerator {
         return WebProjectUtilities.importProject(createData);
     }
     
-    static FileObject setupDD(final String j2eeLevel, final FileObject docBase,
+    static FileObject setupDD(final Profile j2eeProfile, final FileObject docBase,
             final EarProject earProject) throws IOException {
-        return setupDD(j2eeLevel, docBase, earProject, false);
+        return setupDD(j2eeProfile, docBase, earProject, false);
     }
 
+    @Deprecated
+    public static FileObject setupDD(final String j2eeLevel, final FileObject docBase,
+                final Project earProject, boolean force) throws IOException {
+        return setupDD(Profile.fromPropertiesString(j2eeLevel), docBase, earProject, force);
+    }
     /**
      * Generate deployment descriptor (<i>application.xml</i>) if needed or forced (applies for JAVA EE 5).
      * <p>
      * For J2EE 1.4 or older the deployment descriptor is always generated if missing.
      * For JAVA EE 5 it is only generated if missing and forced as well.
-     * @param j2eeLevel J2EE level, see {@link J2eeModule J2eeModule constants}.
+     * @param j2eeprofile J2EE profile.
      * @param docBase Configuration directory.
      * @param earProject EAR project instance.
      * @param force if <code>true</code> <i>application.xml</i> is generated even if it's not needed
@@ -476,7 +496,7 @@ public final class EarProjectGenerator {
      * @return {@link FileObject} of the deployment descriptor or <code>null</code>.
      * @throws java.io.IOException if any error occurs.
      */
-    public static FileObject setupDD(final String j2eeLevel, final FileObject docBase,
+    public static FileObject setupDD(final Profile j2eeProfile, final FileObject docBase,
             final Project earProject, boolean force) throws IOException {
         FileObject dd = docBase.getFileObject(ProjectEar.FILE_DD);
         if (dd != null) {
@@ -486,7 +506,7 @@ public final class EarProjectGenerator {
         if (EarProjectUtil.isDDCompulsory(earProject)) {
             template = FileUtil.getConfigFile(
                     "org-netbeans-modules-j2ee-earproject/ear-1.4.xml"); // NOI18N
-        } else if (J2eeModule.JAVA_EE_5.equals(j2eeLevel)) {
+        } else if (Profile.JAVA_EE_5.equals(j2eeProfile)) {
             if (force) {
                 template = FileUtil.getConfigFile(
                         "org-netbeans-modules-j2ee-earproject/ear-5.xml"); // NOI18N
@@ -504,7 +524,7 @@ public final class EarProjectGenerator {
                         "If it\'s *really* needed, set force param to true." + newLine);
             }
         } else {
-            assert false : "Unknown j2eeLevel: " + j2eeLevel;
+            assert false : "Unknown j2eeProfile: " + j2eeProfile;
         }
         if (template != null) {
             dd = FileUtil.copyFile(template, docBase, "application"); // NOI18N
@@ -528,13 +548,13 @@ public final class EarProjectGenerator {
      * For now the only check is to use J2EE 1.4 if JavaEE5 is not supported.
      * Otherwise use the requestedVersion.
      */
-    public static String checkJ2eeVersion(String requestedVersion, String serverInstanceID, Object moduleType) {
+    public static Profile getAcceptableProfile(Profile requestedProfile, String serverInstanceID, J2eeModule.Type moduleType) {
         J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
-        Set <String> versions = platform.getSupportedSpecVersions(moduleType);
-        if (!versions.contains(requestedVersion) && (versions.contains(J2eeModule.J2EE_14))) {
-            return J2eeModule.J2EE_14;
+        Set<Profile> profiles = platform.getSupportedProfiles(moduleType);
+        if (!profiles.contains(requestedProfile) && (profiles.contains(Profile.J2EE_14))) {
+            return Profile.J2EE_14;
         }
-        return requestedVersion;
+        return requestedProfile;
     }
     
     private static String relativePath(FileObject parent, FileObject child) {
@@ -575,7 +595,7 @@ public final class EarProjectGenerator {
         ep.setProperty(EarProjectProperties.DIST_DIR, "dist"); // NOI18N
         ep.setProperty(EarProjectProperties.DIST_JAR, "${" + EarProjectProperties.DIST_DIR + "}/${" + EarProjectProperties.JAR_NAME + "}"); // NOI18N
         
-        ep.setProperty(EarProjectProperties.J2EE_PLATFORM, j2eeLevel);
+        ep.setProperty(EarProjectProperties.J2EE_PLATFORM, j2eeProfile.toPropertiesString());
         
         ep.setProperty(EarProjectProperties.JAR_NAME, name + ".ear"); // NOI18N
         ep.setProperty(EarProjectProperties.JAR_COMPRESS, "false"); // NOI18N

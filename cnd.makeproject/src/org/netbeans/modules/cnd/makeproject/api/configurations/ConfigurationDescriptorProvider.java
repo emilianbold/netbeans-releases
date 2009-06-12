@@ -49,9 +49,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLReader;
@@ -66,8 +66,8 @@ public class ConfigurationDescriptorProvider {
     public static final String USG_PROJECT_CONFIG_CND = "USG_PROJECT_CONFIG_CND"; // NOI18N
     public static final String USG_PROJECT_OPEN_CND = "USG_PROJECT_OPEN_CND"; // NOI18N
     private FileObject projectDirectory;
-    private ConfigurationDescriptor projectDescriptor = null;
-    boolean hasTried = false;
+    private volatile MakeConfigurationDescriptor projectDescriptor = null;
+    private volatile boolean hasTried = false;
     private String relativeOffset = null;
 
     private List<FileObject> trackedFiles;
@@ -82,76 +82,94 @@ public class ConfigurationDescriptorProvider {
     }
     
     private final Object readLock = new Object();
-    public ConfigurationDescriptor getConfigurationDescriptor() {
+    public MakeConfigurationDescriptor getConfigurationDescriptor() {
         return getConfigurationDescriptor(true);
     }
-    public ConfigurationDescriptor getConfigurationDescriptor(boolean waitReading) {
-        if (projectDescriptor == null || needReload) {
+    private boolean shouldBeLoaded(){
+        return ((projectDescriptor == null || needReload) && !hasTried);
+
+    }
+    public MakeConfigurationDescriptor getConfigurationDescriptor(boolean waitReading) {
+        if (shouldBeLoaded()) {
             // attempt to read configuration descriptor
-            if (!hasTried) {
-                // do this only once
-                synchronized (readLock) {
-                    // check again that someone already havn't read
-                    if (!hasTried) {
-                        // It's important to set needReload=false before calling
-                        // projectDescriptor.assign(), otherwise there will be
-                        // infinite recursion.
-                        needReload = false;
-
-                        if (trackedFiles == null) {
-                            FileChangeListener fcl = new ConfigurationXMLChangeListener();
-                             List<FileObject> files = new ArrayList<FileObject>(2);
-                            boolean first = true;
-                            for (String path : new String[] {
-                                    "nbproject/configurations.xml", //NOI18N
-                                    "nbproject/private/configurations.xml"}) { //NOI18N
-                                FileObject fo = projectDirectory.getFileObject(path);
-                                if (fo != null) {
-                                    fo.addFileChangeListener(fcl);
-                                    // We have to store tracked files somewhere.
-                                    // Otherwise they will be GCed, and we won't get notifications.
-                                    files.add(fo);
-                                } else {
-                                    if (first) {
-                                        // prevent reading configurations before project cration
-                                        new Exception("Attempt to read project before creation. Not found file "+projectDirectory.getPath()+"/"+path).printStackTrace(); // NOI18N
-                                        return null;
-                                    }
-                                }
-                                first = false;
-                            }
-                            trackedFiles = files;
+            // do this only once
+            synchronized (readLock) {
+                // check again that someone already havn't read
+                if (shouldBeLoaded()) {
+                    if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
+                        System.err.println("Start of reading project descriptor for project "+projectDirectory.getName()+" in ConfigurationDescriptorProvider@"+System.identityHashCode(this)); // NOI18N
+                        if (projectDescriptor != null) {
+                            new Exception("Previous project MakeConfigurationDescriptor@"+System.identityHashCode(projectDescriptor)).printStackTrace(); // NOI18N
                         }
-
-                        ConfigurationXMLReader reader = new ConfigurationXMLReader(projectDirectory);
-
-                        if (waitReading && SwingUtilities.isEventDispatchThread()) {
-                            new Exception("Not allowed to use EDT for reading XML descriptor of project!" + projectDirectory).printStackTrace(System.err); // NOI18N
-                            // PLEASE DO NOT ADD HACKS like Task.waitFinished()
-                            // CHANGE YOUR LOGIC INSTEAD
-                        
-                            // FIXUP for IZ#146696: cannot open projects: Not allowed to use EDT...
-                            // return null;
-                        }
-                        try {
-                            ConfigurationDescriptor newDescriptor = reader.read(relativeOffset);
-                            if (projectDescriptor == null || newDescriptor == null) {
-                                projectDescriptor = newDescriptor;
-                            } else {
-                                projectDescriptor.assign(newDescriptor);
-                            }
-                        } catch (java.io.IOException x) {
-                            x.printStackTrace();
-                            // most likely open failed
-                        }
-                        
-                        hasTried = true;
                     }
+                    // It's important to set needReload=false before calling
+                    // projectDescriptor.assign(), otherwise there will be
+                    // infinite recursion.
+                    needReload = false;
+
+                    if (trackedFiles == null) {
+                        FileChangeListener fcl = new ConfigurationXMLChangeListener();
+                         List<FileObject> files = new ArrayList<FileObject>(2);
+                        boolean first = true;
+                        for (String path : new String[] {
+                                "nbproject/configurations.xml", //NOI18N
+                                "nbproject/private/configurations.xml"}) { //NOI18N
+                            FileObject fo = projectDirectory.getFileObject(path);
+                            if (fo != null) {
+                                fo.addFileChangeListener(fcl);
+                                // We have to store tracked files somewhere.
+                                // Otherwise they will be GCed, and we won't get notifications.
+                                files.add(fo);
+                            } else {
+                                if (first) {
+                                    // prevent reading configurations before project cration
+                                    new Exception("Attempt to read project before creation. Not found file "+projectDirectory.getPath()+"/"+path).printStackTrace(); // NOI18N
+                                    return null;
+                                }
+                            }
+                            first = false;
+                        }
+                        trackedFiles = files;
+                    }
+
+                    ConfigurationXMLReader reader = new ConfigurationXMLReader(projectDirectory);
+
+    //                        if (waitReading && SwingUtilities.isEventDispatchThread()) {
+    //                            new Exception("Not allowed to use EDT for reading XML descriptor of project!" + projectDirectory).printStackTrace(System.err); // NOI18N
+    //                            // PLEASE DO NOT ADD HACKS like Task.waitFinished()
+    //                            // CHANGE YOUR LOGIC INSTEAD
+    //
+    //                            // FIXUP for IZ#146696: cannot open projects: Not allowed to use EDT...
+    //                            // return null;
+    //                        }
+                    try {
+                        MakeConfigurationDescriptor newDescriptor = reader.read(relativeOffset);
+                        if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
+                            System.err.println("End of reading project descriptor for project "+projectDirectory.getName()+" in ConfigurationDescriptorProvider@"+System.identityHashCode(this)); // NOI18N
+                        }
+                        if (projectDescriptor == null || newDescriptor == null) {
+                            projectDescriptor = newDescriptor;
+                            if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
+                                System.err.println("Created project descriptor MakeConfigurationDescriptor@"+System.identityHashCode(projectDescriptor)+" for project "+projectDirectory.getName()+" in ConfigurationDescriptorProvider@"+System.identityHashCode(this)); // NOI18N
+                            }
+                        } else {
+                            (newDescriptor).waitInitTask();
+                            projectDescriptor.assign(newDescriptor);
+                            if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
+                                System.err.println("Reassigned project descriptor MakeConfigurationDescriptor@"+System.identityHashCode(projectDescriptor)+" for project "+projectDirectory.getName()+" in ConfigurationDescriptorProvider@"+System.identityHashCode(this)); // NOI18N
+                            }
+                        }
+                    } catch (java.io.IOException x) {
+                        x.printStackTrace();
+                        // most likely open failed
+                    }
+
+                    hasTried = true;
                 }
             }
         }
-        if (waitReading && (projectDescriptor instanceof MakeConfigurationDescriptor)) {
-            ((MakeConfigurationDescriptor)projectDescriptor).waitInitTask();
+        if (waitReading && projectDescriptor != null) {
+            (projectDescriptor).waitInitTask();
         }
         return projectDescriptor;
     }
@@ -173,7 +191,7 @@ public class ConfigurationDescriptorProvider {
         return auxObjectProviders.toArray(new ConfigurationAuxObjectProvider[auxObjectProviders.size()]);
     }
 
-    public static void recordMetrics(String msg, ConfigurationDescriptor descr) {
+    public static void recordMetrics(String msg, MakeConfigurationDescriptor descr) {
         if (!(descr instanceof MakeConfigurationDescriptor)) {
             return;
         }
@@ -183,12 +201,12 @@ public class ConfigurationDescriptorProvider {
                 if (descr.getConfs() == null || descr.getConfs().getActive() == null){
                     return;
                 }
-                Item[] projectItems = ((MakeConfigurationDescriptor) descr).getProjectItems();
+                Item[] projectItems = (descr).getProjectItems();
                 if (projectItems == null || projectItems.length == 0) {
                     // do not track empty applications
                     return;
                 }
-                MakeConfiguration makeConfiguration = (MakeConfiguration) descr.getConfs().getActive();
+                MakeConfiguration makeConfiguration = descr.getActiveConfiguration();
                 String type;
                 switch (makeConfiguration.getConfigurationType().getValue()) {
                     case MakeConfiguration.TYPE_MAKEFILE:
@@ -253,7 +271,7 @@ public class ConfigurationDescriptorProvider {
                 } else {
                     platform = "UNKNOWN_PLATFORM"; // NOI18N
                 }
-                makeConfiguration.reCountLanguages((MakeConfigurationDescriptor) descr);
+                makeConfiguration.reCountLanguages(descr);
                 int size = 0;
                 int allItems = projectItems.length;
                 boolean cLang = false;
@@ -326,14 +344,18 @@ public class ConfigurationDescriptorProvider {
     private class ConfigurationXMLChangeListener implements FileChangeListener {
 
         private void resetConfiguration() {
-            if (projectDescriptor != null && projectDescriptor.getModified()) {
-                // Don't reload if descriptor is modified in memory.
-                // This also prevents reloading when descriptor is being saved.
-                return;
-            }
-            synchronized (readLock) {
-                needReload = true;
-                hasTried = false;
+            if (projectDescriptor == null || !projectDescriptor.getModified()) {
+                synchronized (readLock) {
+                    if (projectDescriptor == null || !projectDescriptor.getModified()) {
+                        // Don't reload if descriptor is modified in memory.
+                        // This also prevents reloading when descriptor is being saved.
+                        if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
+                            new Exception("Mark to reload project descriptor MakeConfigurationDescriptor@"+System.identityHashCode(projectDescriptor)+" for project "+projectDirectory.getName()+" in ConfigurationDescriptorProvider@"+System.identityHashCode(this)).printStackTrace(); // NOI18N
+                        }
+                        needReload = true;
+                        hasTried = false;
+                    }
+                }
             }
         }
 

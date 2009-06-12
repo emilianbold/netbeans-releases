@@ -204,6 +204,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
 
     @Override
     public void dispose() {
+        super.dispose();
         // nobody disposes the fake forward class => we should take care of this
         CsmClass cls = getCsmClass();
         if (ForwardClass.isForwardClass(cls)) {
@@ -212,7 +213,6 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         CsmNamespace scope = getContainingFile().getProject().getGlobalNamespace();
         ((NamespaceImpl) scope).removeDeclaration(this);
         ((ProjectBase) getContainingFile().getProject()).unregisterDeclaration(this);
-        super.dispose();
     }
 
     

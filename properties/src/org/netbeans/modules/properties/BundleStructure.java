@@ -670,7 +670,8 @@ public class BundleStructure {
         boolean canWrite = false;
         for (int i=0; i < getEntryCount(); i++) {
             PropertiesFileEntry entry = getNthEntry(i);
-            canWrite |= entry.getFile().canWrite();
+            if (entry != null)
+                canWrite |= entry.getFile().canWrite();
         }
         return !canWrite;
     }

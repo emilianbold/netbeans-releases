@@ -36,14 +36,16 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.html.editor.gsf;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -51,6 +53,11 @@ import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.Rule.ErrorRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.spi.lexer.MutableTextInput;
+import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -64,7 +71,7 @@ public class HtmlHintsProvider implements HintsProvider {
      * Compute hints applicable to the given compilation info and add to the given result list.
      */
     @Override
-    public void computeHints(HintsManager manager, RuleContext context,List<Hint> hints) {
+    public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
     }
 
     /**
@@ -90,17 +97,31 @@ public class HtmlHintsProvider implements HintsProvider {
      */
     @Override
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
-        for(Error e : context.parserResult.getDiagnostics()) {
+        Snapshot snapshot = context.parserResult.getSnapshot();
+        FileObject fo = snapshot.getSource().getFileObject();
+        if (isErrorCheckingEnabled(fo)) {
+            for (Error e : context.parserResult.getDiagnostics()) {
+                assert e.getDescription() != null;
+                HintFix fix = new DisableErrorChecksFix(snapshot);
+                Hint h = new Hint(getRule(e.getSeverity()),
+                        e.getDescription(),
+                        e.getFile(),
+                        new OffsetRange(e.getStartPosition(), e.getEndPosition()),
+                        Collections.singletonList(fix),
+                        20);
 
-            assert e.getDescription() != null;
+                hints.add(h);
+            }
+        } else {
+            //add a special hint for reenabling disabled error checks
+            HintFix fix = new EnableErrorChecksFix(snapshot);
+            Hint h = new Hint(new HtmlRule(HintSeverity.WARNING, false),
+                    NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_ENABLE_ERROR_CHECKS_FILE_DESCR"), //NOI18N
+                    fo,
+                    new OffsetRange(0, 0),
+                    Collections.singletonList(fix),
+                    50);
 
-            Hint h = new Hint(getRule(e.getSeverity()),
-                    e.getDescription(),
-                    e.getFile(),
-                    new OffsetRange(e.getStartPosition(), e.getEndPosition()),
-                    Collections.EMPTY_LIST,
-                    20);
-            
             hints.add(h);
         }
     }
@@ -127,7 +148,6 @@ public class HtmlHintsProvider implements HintsProvider {
      *
      * @return A list of rules that are builtin, or null or an empty list when there are no builtins
      */
-
     @Override
     public List<Rule> getBuiltinRules() {
         return null;
@@ -143,12 +163,11 @@ public class HtmlHintsProvider implements HintsProvider {
     public RuleContext createRuleContext() {
         return new RuleContext();
     }
-
-    private static final HtmlRule ERROR_RULE = new HtmlRule(HintSeverity.ERROR);
-    private static final HtmlRule WARNING_RULE = new HtmlRule(HintSeverity.WARNING);
+    private static final HtmlRule ERROR_RULE = new HtmlRule(HintSeverity.ERROR, true);
+    private static final HtmlRule WARNING_RULE = new HtmlRule(HintSeverity.WARNING, true);
 
     private static HtmlRule getRule(Severity s) {
-        switch(s) {
+        switch (s) {
             case WARNING:
                 return WARNING_RULE;
             case ERROR:
@@ -161,9 +180,11 @@ public class HtmlHintsProvider implements HintsProvider {
     private static final class HtmlRule implements ErrorRule {
 
         private HintSeverity severity;
+        private boolean showInTasklist;
 
-        private HtmlRule(HintSeverity severity) {
+        private HtmlRule(HintSeverity severity, boolean showInTaskList) {
             this.severity = severity;
+            this.showInTasklist = showInTaskList;
         }
 
         public Set<?> getCodes() {
@@ -179,13 +200,103 @@ public class HtmlHintsProvider implements HintsProvider {
         }
 
         public boolean showInTasklist() {
-            return true;
+            return showInTasklist;
         }
 
         public HintSeverity getDefaultSeverity() {
             return severity;
         }
+    }
+    static final String DISABLE_ERROR_CHECKS_KEY = "disable_error_checking"; //NOI18N
 
+    public static boolean isErrorCheckingEnabled(FileObject fo) {
+        return fo.getAttribute(DISABLE_ERROR_CHECKS_KEY) == null;
     }
 
+    private static final class DisableErrorChecksFix implements HintFix {
+
+        private static String VALUE = "true"; //NOI18N
+        private Snapshot snapshot;
+
+        public DisableErrorChecksFix(Snapshot snapshot) {
+            this.snapshot = snapshot;
+        }
+
+        public String getDescription() {
+            return NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_DISABLE_ERROR_CHECKS_FILE"); //NOI18N
+        }
+
+        public void implement() throws Exception {
+            FileObject fo = snapshot.getSource().getFileObject();
+            if (fo != null) {
+                fo.setAttribute(DISABLE_ERROR_CHECKS_KEY, VALUE);
+            }
+
+            //force reparse => hints update
+            Document doc = snapshot.getSource().getDocument(false);
+            if (doc != null) {
+                forceReparse(doc);
+            }
+        }
+
+        public boolean isSafe() {
+            return true;
+        }
+
+        public boolean isInteractive() {
+            return false;
+        }
+    }
+
+    private static final class EnableErrorChecksFix implements HintFix {
+
+        private Snapshot snapshot;
+
+        public EnableErrorChecksFix(Snapshot snapshot) {
+            this.snapshot = snapshot;
+        }
+
+        public String getDescription() {
+            return NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_ENABLE_ERROR_CHECKS_FILE"); //NOI18N
+        }
+
+        public void implement() throws Exception {
+            FileObject fo = snapshot.getSource().getFileObject();
+            if (fo != null) {
+                fo.setAttribute(DISABLE_ERROR_CHECKS_KEY, null);
+            }
+
+            //force reparse => hints update
+            Document doc = snapshot.getSource().getDocument(false);
+            if (doc != null) {
+                forceReparse(doc);
+            }
+        }
+
+        public boolean isSafe() {
+            return true;
+        }
+
+        public boolean isInteractive() {
+            return false;
+        }
+    }
+
+    private static void forceReparse(final Document doc) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                NbEditorDocument nbdoc = (NbEditorDocument) doc;
+                nbdoc.runAtomic(new Runnable() {
+                    public void run() {
+                        MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);
+                        if (mti != null) {
+                            mti.tokenHierarchyControl().rebuild();
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    
 }

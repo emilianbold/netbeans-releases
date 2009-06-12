@@ -49,7 +49,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -102,6 +101,7 @@ public class TestPlatform extends J2eePlatformImpl {
         moduleTypes.add(J2eeModule.WAR);
         moduleTypes.add(J2eeModule.EJB);
         moduleTypes.add(J2eeModule.EAR);
+        moduleTypes.add(J2eeModule.CLIENT);
         return moduleTypes;
     }
 

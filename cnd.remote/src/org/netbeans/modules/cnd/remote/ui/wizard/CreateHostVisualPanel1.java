@@ -46,7 +46,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.NbBundle;
 
 /*package*/ final class CreateHostVisualPanel1 extends JPanel {
@@ -57,7 +56,7 @@ import org.openide.util.NbBundle;
     public CreateHostVisualPanel1(CreateHostData data, final ChangeListener listener) {
         this.data = data;
         initComponents();
-        textPort.setText(Integer.toString(ExecutionEnvironmentFactory.DEFAULT_PORT));
+        textPort.setText(Integer.toString(22));
         textHostname.getDocument().addDocumentListener(new DocumentListener() {
 
             public void insertUpdate(DocumentEvent e) {

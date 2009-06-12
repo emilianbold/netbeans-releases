@@ -70,7 +70,7 @@ public final class DataProvidersManager {
     private DataProvidersManager() {
         allVisualizerDataProviders = Lookup.getDefault().lookupAll(VisualizerDataProviderFactory.class);
         activeVisualizerDataProviders = new ArrayList<VisualizerDataProvider>();
-        log.info(allVisualizerDataProviders.size() + " data provider(s) found!"); // NOI18N
+        log.fine(allVisualizerDataProviders.size() + " data provider(s) found!"); // NOI18N
     }
 
     public static DataProvidersManager getInstance() {

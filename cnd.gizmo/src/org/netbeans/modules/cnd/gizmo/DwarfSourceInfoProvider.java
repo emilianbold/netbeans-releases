@@ -65,13 +65,13 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         cache = new WeakHashMap<String, Map<String, SourceFileInfo>>();
     }
 
-    public SourceFileInfo fileName(String functionName, long offset, Map<String, String> serviceInfo) {
+    public SourceFileInfo fileName(String functionName, int lineNumber, long offset, Map<String, String> serviceInfo) {
         if (serviceInfo == null){
             return null;
         }
         String executable = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE);
         if (executable != null) {
-            Map<String, SourceFileInfo> sourceInfoMap = getSourceInfo(executable, serviceInfo);
+            Map<String, SourceFileInfo> sourceInfoMap = getSourceInfo(executable, lineNumber, serviceInfo);
             SourceFileInfo sourceInfo = sourceInfoMap.get(functionName);
             if (sourceInfo != null) {
                 return sourceInfo;
@@ -97,7 +97,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         return null;
     }
 
-    private synchronized Map<String, SourceFileInfo> getSourceInfo(String executable, Map<String, String> serviceInfo) {
+    private synchronized Map<String, SourceFileInfo> getSourceInfo(String executable, int lineNumber, Map<String, String> serviceInfo) {
         Map<String, SourceFileInfo> sourceInfoMap = cache.get(executable);
         if (sourceInfoMap == null) {
             sourceInfoMap = new HashMap<String, SourceFileInfo>();
@@ -109,7 +109,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
                             if (entry.getKind().equals(TAG.DW_TAG_subprogram)) {
                                 SourceFileInfo sourceInfo = new SourceFileInfo(
                                         toAbsolutePath(serviceInfo, entry.getDeclarationFilePath()),
-                                        entry.getLine(), 0);
+                                        lineNumber > 0 ? lineNumber : entry.getLine(), 0);
                                 sourceInfoMap.put(entry.getQualifiedName(), sourceInfo);
                             }
                         }
@@ -118,7 +118,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
                     dwarf.dispose();
                 }
             } catch (IOException ex) {
-                DLightLogger.instance.log(Level.WARNING, null, ex);
+                DLightLogger.instance.log(Level.INFO, null, ex);
             }
             cache.put(executable, sourceInfoMap.isEmpty()?
                 Collections.<String, SourceFileInfo>emptyMap() : sourceInfoMap);

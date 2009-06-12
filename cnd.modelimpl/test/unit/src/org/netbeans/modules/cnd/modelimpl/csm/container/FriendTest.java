@@ -43,13 +43,13 @@ package org.netbeans.modules.cnd.modelimpl.csm.container;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
  * @author Alexander Simon
  */
-public class FriendTest extends BaseTestSuite {
+public class FriendTest extends CndBaseTestSuite {
     
     public FriendTest() {
         super("C++ Friend"); // NOI18N

@@ -1,83 +1,117 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2008 Sun Microsystems, Inc. All rights reserved.
+Copyright &copy; 2009 Sun Microsystems, Inc. All rights reserved.
 Use is subject to license terms.
  -->
 <html>
-<head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" 
-type="text/css">
-<title>Configuring C and C++ Project Settings</title>
-</head>
-<body>
-<h2>Configuring C and C++ Project Settings</h2>
-<p><small><a href="#seealso">See Also</a>&nbsp; </small>
-<p>
-You can use the Options window to configure default settings for your 
-C and C++ projects.</p>
-<p><b>To configure C and C++ project settings:</b></p>
-<ol>
-<li>Choose Tools &gt; Options.</li>
-<li>
-Click C/C++ in the top pane of the window.
-</li>
-<li>Click the Project Options tab.</li>
-<li>
-Modify the properties as desired.</li>
-</ol>
-<p>
-You can set the following properties:</p>
-<ul>
-<li><b>Default Platform.</b> The default platform to use when 
-creating new projects. You do not usually have to change this property.</li>
-<li><b>Make Options.</b> Global options for the <tt>make</tt> command.</li>
-<li><b>File Path Mode.</b> The mode for storing file paths in a project. 
-Always Relative mode stores paths as relative to project root. 
-Always Absolute mode stores paths as absolute paths. Auto mode 
-stores paths as relative to project root if inside project, 
-othervise as absolute path.</li>
-<li><b>Save All Modified Files Before Running Make.</b> If selected, 
-saves all unsaved files in the IDE before running make. It is 
-recommended to leave this property selected because modifications 
-to files in the IDE are not recognized by make unless they are 
-first saved to disk.</li>
-<li><b>Reuse Output Tabs from Finished Processes.</b> If selected, 
-writes make output to a single Output window tab, deleting the 
-output from the previous process. If not selected, opens a new tab 
-for each make process.</li>
-<li><b>Enable dependency checking in generated makefiles.</b> Add 
-<tt>make state</tt> statements to the makefile.</li>
-</ul>
-<table>
-<tr>
-<th colspan="2" align="left"><a name="seealso">See also</a></th>
-</tr>
-<tr>
-<td width="23"></td>
-<td><a href="ConfiguringBuildTools.html">Configuring C and C++ Build 
-Tools</a><br>
-<a href="ConfiguringBuildTools.html">Configuring C and 
-C++ Build Tools</a><br>
-<a href="ConfiguringParsingSettings.html">Configuring C and 
-C++ Parser Settings</a><br>
-<a href="ConfiguringCodeStyle.html">Configuring C and C++ 
-Formatting Style</a><br>
-<a href="ConfiguringSemanticHighlighting.html">Configuring C 
-and C++ Semantic Highlighting</a><br>
-<a href="ConfiguringFileExtensions.html">Configuring C and C++ 
-File Extensions</a><br>
-<a href="SettingCandC++ProjectProperties.html">Setting Project
-Properties</a>
-</td>
-</tr>
-</table><hr>
-<small>
-<a href="../credits.html">Legal Notices</a></small>
-<table border="0" cellpadding="20">
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-</table>
-</body>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <link href="/org/netbeans/modules/usersguide/ide.css" rel="StyleSheet" type="text/css">
+    <meta content="Helen" name="generator">
+    <title>Configuring C and C++ Project Settings</title>
+  </head>
+  <body>
+    <h2>
+       Configuring C and C++ Project Settings
+    </h2>
+    <p>
+       <small><a href="#seealso">See Also</a>&nbsp;</small>
+    </p>
+    <p>
+       You can use the Options window to configure default settings for your C and C++ projects.
+    </p>
+    <p>
+       <b>To configure C and C++ project settings:</b>
+    </p>
+    <ol>
+      <li>
+        Choose Tools &gt; Options.
+      </li>
+      <li>
+        Click C/C++ in the top pane of the window.
+      </li>
+      <li>
+        Click the Project Options tab.
+      </li>
+      <li>
+        Modify the properties as desired.
+      </li>
+    </ol>
+    <p>
+       You can set the following properties:
+    </p>
+    <ul>
+      <li>
+        <b>Make Options.</b> Global options for the <tt>make</tt> command.
+      </li>
+      <li>
+        <b>File Path Mode.</b> The mode for storing file paths in a project. Always Relative mode
+        stores paths as relative to project root. Always Absolute mode stores paths as absolute
+        paths. Auto mode stores paths as relative to project root if inside project, othervise as
+        absolute path.
+      </li>
+      <li>
+        <b>Save All Modified Files Before Running Make.</b> If selected, saves all unsaved files in
+        the IDE before running make. It is recommended to leave this property selected because
+        modifications to files in the IDE are not recognized by make unless they are first saved to
+        disk.
+      </li>
+      <li>
+        <b>Reuse Output Tabs from Finished Processes.</b> If selected, writes make output to a
+        single Output window tab, deleting the output from the previous process. If not selected,
+        opens a new tab for each make process.
+      </li>
+      <li>
+        <b>Enable dependency checking in generated makefiles.</b> Add <tt>make state</tt>
+        statements to the makefile.
+      </li>
+      <li>
+        <b>Show binary files in Projects view.</b> If selected, the Projects view shows all files
+        in a directory tree, including binary objects. This option is most relevant to projects
+        created with existing sources, which might place sources and binaries in the same location.
+        Deselect this option to more easily see your C/C++ source files and header files.
+      </li>
+    </ul>
+    <table>
+      <tr>
+        <th align="left" colspan="2">
+          <a name="seealso">See also</a> 
+        </th>
+      </tr>
+      <tr>
+        <td width="23">
+          &nbsp;
+        </td>
+        <td>
+           <a href="ConfiguringBuildTools.html">Configuring C and C++ Build Tools</a><br>
+           <a href="ConfiguringParsingSettings.html">Configuring C and C++ Parser Settings</a><br>
+           <a href="ConfiguringCodeStyle.html">Configuring C and C++ Formatting Style</a><br>
+           <a href="ConfiguringSemanticHighlighting.html">Configuring C and C++ Semantic
+          Highlighting</a><br>
+           <a href="ConfiguringFileExtensions.html">Configuring C and C++ File Extensions</a><br>
+           <a href="SettingCandC++ProjectProperties.html">Setting Project Properties</a> 
+        </td>
+      </tr>
+    </table>
+    <p>
+       <small><a href="../credits.html">Legal Notices</a></small>
+    </p>
+    <table border="0" cellpadding="20">
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+    </table>
+  </body>
 </html>

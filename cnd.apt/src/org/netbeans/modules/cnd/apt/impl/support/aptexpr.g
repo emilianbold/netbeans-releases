@@ -80,7 +80,8 @@ options {
     private APTMacroCallback callback = null;
     
     public APTExprParser(TokenStream lexer, APTMacroCallback callback) {
-        this(lexer,1);
+        super(lexer, 1, 16);
+        tokenNames = _tokenNames;
         this.callback = callback;
     }
 

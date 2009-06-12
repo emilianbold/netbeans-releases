@@ -174,9 +174,9 @@ public class ApplicationImpl implements Application {
                 return null;
             }
             
-            if (jm.getModuleType() == J2eeModule.EJB) {
+            if (J2eeModule.Type.EJB.equals(jm.getType())) {
                 ejb = path;
-            } else if (jm.getModuleType() == J2eeModule.WAR) {
+            } else if (J2eeModule.Type.WAR.equals(jm.getType())) {
                 FileObject tmp = aa.getScriptFile();
                 if (tmp != null) {
                     tmp = tmp.getParent().getFileObject("web/WEB-INF/web.xml"); // NOI18N
@@ -197,9 +197,9 @@ public class ApplicationImpl implements Application {
                     contextPath = path.substring(0, endex);
                 }
                 web = new WebImpl(path, contextPath);
-            } else if (jm.getModuleType() == J2eeModule.CONN) {
+            } else if (J2eeModule.Type.RAR.equals(jm.getType())) {
                 connector = path;
-            } else if (jm.getModuleType() == J2eeModule.CLIENT) {
+            } else if (J2eeModule.Type.CAR.equals(jm.getType())) {
                 car = path;
             }
             mod = new ModuleImpl(connector, ejb, car, web);

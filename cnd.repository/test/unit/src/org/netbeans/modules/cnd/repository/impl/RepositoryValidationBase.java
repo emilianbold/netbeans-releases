@@ -37,8 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
@@ -49,6 +47,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Tracer;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
+import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.openide.util.Exceptions;
 
 /**
@@ -162,11 +161,10 @@ public class RepositoryValidationBase extends TraceModelTestBase {
     // wget http://pkgconfig.freedesktop.org/releases/pkgconfig-0.18.tar.gz
     // gzip -d pkgconfig-0.18.tar.gz
     // tar xf pkgconfig-0.18.tar
-    private List<String> download(){
+    private List<String> download() throws IOException{
         List<String> list = new ArrayList<String>();
-        String dataPath = getDataDir().getAbsolutePath();
-        int i = dataPath.indexOf("repository");
-        dataPath = dataPath.substring(0,i+11)+"build/test/unit/work";
+        File fileDataPath = CndCoreTestUtils.getDownloadBase();
+        String dataPath = fileDataPath.getAbsolutePath();
         final AtomicBoolean finish = new AtomicBoolean(false);
         ExecutionListener listener = new ExecutionListener() {
             public void executionStarted() {
@@ -176,19 +174,27 @@ public class RepositoryValidationBase extends TraceModelTestBase {
             }
         };
         NativeExecutor ne = null;
-        if (!new File(dataPath + "/pkgconfig-0.18").exists()){
+        File file = new File(dataPath + "/pkg-config-0.23");
+        if (!file.exists()){
+            file.mkdirs();
+        }
+        if (file.list().length == 0){
             ne = new NativeExecutor(dataPath,"wget",
-                    "http://pkgconfig.freedesktop.org/releases/pkgconfig-0.18.tar.gz",new String[0],"wget","run",false,false);
+                    "http://pkgconfig.freedesktop.org/releases/pkg-config-0.23.tar.gz",new String[0],"wget","run",false,false);
             waitExecution(ne, listener, finish);
             ne = new NativeExecutor(dataPath,"gzip",
-                    "-d pkgconfig-0.18.tar.gz",new String[0],"gzip","run",false,false);
+                    "-d pkg-config-0.23.tar.gz",new String[0],"gzip","run",false,false);
             waitExecution(ne, listener, finish);
             ne = new NativeExecutor(dataPath,"tar",
-                    "xf pkgconfig-0.18.tar",new String[0],"tar","run",false,false);
+                    "xf pkg-config-0.23.tar",new String[0],"tar","run",false,false);
             waitExecution(ne, listener, finish);
         }
 
-        if (!new File(dataPath + "/litesql-0.3.3").exists()){
+        file = new File(dataPath + "/litesql-0.3.3");
+        if (!file.exists()){
+            file.mkdirs();
+        }
+        if (file.list().length == 0){
             ne = new NativeExecutor(dataPath,"wget",
                     "http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/li/litesql/litesql-0.3.3.tar.gz",new String[0],"wget","run",false,false);
             waitExecution(ne, listener, finish);
@@ -199,11 +205,15 @@ public class RepositoryValidationBase extends TraceModelTestBase {
                     "xf litesql-0.3.3.tar",new String[0],"tar","run",false,false);
             waitExecution(ne, listener, finish);
         }
-        list.add(dataPath + "/pkgconfig-0.18"); //NOI18N
+        list.add(dataPath + "/pkg-config-0.23"); //NOI18N
         list.add(dataPath + "/litesql-0.3.3"); //NOI18N
+        for(String f : list){
+            file = new File(f);
+            assertTrue("Not found folder "+f, file.exists());
+        }
         list = expandAndSort(list);
         list.add("-DHAVE_CONFIG_H");
-        list.add("-I"+dataPath + "/pkgconfig-0.18");
+        list.add("-I"+dataPath + "/pkg-config-0.23");
         list.add("-I"+dataPath + "/litesql-0.3.3");
         return list;
     }
@@ -218,7 +228,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         }
         while(!finish.get()){
             try {
-                Thread.sleep(500);
+                Thread.sleep(100);
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             }

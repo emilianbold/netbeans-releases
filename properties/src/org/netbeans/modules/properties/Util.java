@@ -497,6 +497,8 @@ public final class Util extends Object {
                     // API would create a separate DataObject for the locale file.
                     // After creation force the DataObject to refresh its entries.
                     DataObject.find(folder.createData(newName, extension));
+                    //update entries in BundleStructure
+                    propertiesDataObject.getBundleStructure().updateEntries();
                 }
             }
         } catch(IOException ioe) {

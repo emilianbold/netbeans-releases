@@ -64,6 +64,7 @@ import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.Par
 import org.openide.util.Exceptions;
 
 /**
+ * <b>!!! Do not use {@link Element} parameter of visitXXX methods. Use {@link #allMethods} instead!!!</b>
  *
  * @author Jan Becicka
  */
@@ -72,15 +73,31 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
     private Set<ElementHandle<ExecutableElement>> allMethods;
     /** refactored element is a synthetic default constructor */
     private boolean synthConstructor;
+    /**
+     * refactored element is a constructor; {@code null} if it is has not been initialized yet
+     * @see #init()
+     */
+    private Boolean constructorRefactoring;
 
     public ChangeParamsTransformer(ChangeParametersRefactoring refactoring, Set<ElementHandle<ExecutableElement>> am) {
         this.refactoring = refactoring;
         this.allMethods = am;
     }
 
+    private void init() {
+        if (constructorRefactoring == null) {
+            ElementHandle<ExecutableElement> handle = allMethods.iterator().next();
+            constructorRefactoring = handle.getKind() == ElementKind.CONSTRUCTOR;
+            Element el;
+            synthConstructor = constructorRefactoring
+                    && (el = handle.resolve(workingCopy)) != null
+                    && workingCopy.getElementUtilities().isSynthetic(el);
+        }
+    }
+
     @Override
     public Tree visitCompilationUnit(CompilationUnitTree node, Element p) {
-        synthConstructor = this.workingCopy.getElementUtilities().isSynthetic(p);
+        init();
         return super.visitCompilationUnit(node, p);
     }
     
@@ -131,7 +148,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
 
     @Override
     public Tree visitMethodInvocation(MethodInvocationTree tree, Element p) {
-        if (p.getKind() == ElementKind.CONSTRUCTOR || !workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+        if (constructorRefactoring || !workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
             Element el = workingCopy.getTrees().getElement(getCurrentPath());
             if (el!=null) {
                 if (isMethodMatch(el)) {
@@ -142,7 +159,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                             tree.getMethodSelect(),
                             arguments);
                     
-                    if (p.getKind() == ElementKind.CONSTRUCTOR && workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+                    if (constructorRefactoring && workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
                         rewriteSyntheticConstructor(nju);
                     } else {
                         // rewrite existing super(); statement

@@ -80,16 +80,10 @@ public interface APT {
     /** method called consequently token by token to let APT node to init itself 
      * when initializing is finished APT node returns false (not accepted token)
      */
-    public boolean accept(APTToken token);
+    public boolean accept(APTFile curFile, APTToken token);
     
     /** Get the associated token */
     public APTToken getToken();
-    
-    /** dispose **/
-    public void dispose();
-    
-//    /** Add a (rightmost) child to this node */
-//    public void addChild(APT child);
     
     /** Get the first child of this node; null if no children */
     public APT getFirstChild();

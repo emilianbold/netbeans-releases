@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
-import java.util.StringTokenizer;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.web.SecurityConstraint;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
@@ -74,6 +73,7 @@ public class WebResourceCollectionTableModel extends DDBeanTableModel {
     }
     
 
+    @Override
     public void setValueAt(Object value, int row, int column) {
         WebResourceCollection col = getWebResourceCollection(row);
         

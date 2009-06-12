@@ -63,6 +63,7 @@ import org.openide.nodes.Node;
  * Base class for Make Actions ...
  */
 public class ShellRunAction extends AbstractExecutorRunAction {
+    private static final boolean TRACE = false;
 
     public String getName() {
         return getString("BTN_Run");
@@ -141,15 +142,38 @@ public class ShellRunAction extends AbstractExecutorRunAction {
             argsFlat.append(" "); // NOI18N
             argsFlat.append(args[i]);
         }
-       
-        // Execute the shellfile
 
+        String[] additionalEnvironment = getAdditionalEnvirounment(node);
+        String[] env = prepareEnv(execEnv);
+        if (additionalEnvironment != null && additionalEnvironment.length>0){
+            String[] tmp = new String[env.length + additionalEnvironment.length];
+            for(int i=0; i < env.length; i++){
+                tmp[i] = env[i];
+            }
+            for(int i=0; i < additionalEnvironment.length; i++){
+                tmp[env.length + i] = additionalEnvironment[i];
+            }
+            env = tmp;
+        }
+       
+        if (TRACE) {
+            System.err.println("Run "+shellCommand);
+            System.err.println("\tin folder   "+buildDir.getPath());
+            System.err.println("\targuments   "+argsFlat);
+            System.err.println("\tenvironment ");
+            for(String v : env) {
+                System.err.println("\t\t"+v);
+            }
+        }
+
+        // Execute the shellfile
+        
         NativeExecutor nativeExecutor = new NativeExecutor(
             execEnv,
             buildDir.getPath(),
             shellCommand,
             argsFlat.toString(),
-            prepareEnv(execEnv),
+            env,
             tabName,
             "Run", // NOI18N
             false,

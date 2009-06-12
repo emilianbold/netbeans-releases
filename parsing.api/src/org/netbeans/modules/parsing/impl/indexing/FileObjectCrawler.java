@@ -41,63 +41,105 @@ package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Tomas Zezula
  */
 public final class FileObjectCrawler extends Crawler {
+
+    private static final Logger LOG = Logger.getLogger(FileObjectCrawler.class.getName());
     
     private final FileObject root;
     private final FileObject[] files;
 
-    public FileObjectCrawler(FileObject root, boolean checkTimeStamps, Set<String> mimeTypesToCheck) throws IOException {
-        super (root.getURL(), checkTimeStamps, mimeTypesToCheck);
+    public FileObjectCrawler(FileObject root, boolean checkTimeStamps, Set<String> mimeTypesToCheck, CancelRequest cancelRequest) throws IOException {
+        super (root.getURL(), checkTimeStamps, mimeTypesToCheck, cancelRequest);
         this.root = root;
         this.files = null;
     }
 
-    public FileObjectCrawler(FileObject root, FileObject[] files, Set<String> mimeTypesToCheck) throws IOException {
-        super (root.getURL(), false, mimeTypesToCheck);
+    public FileObjectCrawler(FileObject root, FileObject[] files, boolean checkTimeStamps, Set<String> mimeTypesToCheck, CancelRequest cancelRequest) throws IOException {
+        super (root.getURL(), checkTimeStamps, mimeTypesToCheck, cancelRequest);
         this.root = root;
         this.files = files;
     }
 
     @Override
-    protected Map<String, Collection<Indexable>> collectResources(final Set<? extends String> supportedMimeTypes) {
-        Map<String, Collection<Indexable>> result = new HashMap<String, Collection<Indexable>>();
+    protected boolean collectResources(final Set<? extends String> supportedMimeTypes, Map<String, Collection<Indexable>> result) {
+        final boolean finished;
+        final long tm1 = System.currentTimeMillis();
+        final Stats stats = LOG.isLoggable(Level.FINE) ? new Stats() : null;
+
         if (files != null) {
-            collect(files, root, result, supportedMimeTypes);
+            finished = collect(files, root, result, supportedMimeTypes, stats);
         } else {
-            collect(root.getChildren(), root, result, supportedMimeTypes);
+            finished = collect(root.getChildren(), root, result, supportedMimeTypes, stats);
         }
-        return result;
+
+        final long tm2 = System.currentTimeMillis();
+        if (LOG.isLoggable(Level.FINE)) {
+            String rootUrl;
+            try {
+                rootUrl = root.getURL().toString();
+            } catch (FileStateInvalidException ex) {
+                // ignore
+                rootUrl = root.toString();
+            }
+
+            LOG.log(Level.FINE, "Up-to-date check of {0} files under {1} took {2} ms", new Object[]{ stats.filesCount, rootUrl, tm2 - tm1 }); //NOI18N
+
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.log(Level.FINER, "File extensions histogram for {0}:", rootUrl);
+                Stats.logHistogram(Level.FINER, stats.extensions);
+                LOG.finer("----");
+
+                LOG.log(Level.FINER, "Mime types histogram for {0}:", rootUrl);
+                Stats.logHistogram(Level.FINER, stats.mimeTypes);
+                LOG.finer("----");
+            }
+        }
+
+        return finished;
     }
 
-    private void collect (FileObject[] fos, FileObject root,
+    private boolean collect (FileObject[] fos, FileObject root,
             final Map<String, Collection<Indexable>> cache,
-            final Set<? extends String> supportedMimeTypes) {
+            final Set<? extends String> supportedMimeTypes,
+            final Stats stats) {
         for (FileObject fo : fos) {
             //keep the same logic like in RepositoryUpdater
+            if (isCancelled()) {
+                return false;
+            }
             if (!fo.isValid() || !VisibilityQuery.getDefault().isVisible(fo)) {
                 continue;
             }
             if (fo.isFolder()) {
-                collect(fo.getChildren(), root, cache, supportedMimeTypes);
+                if (!collect(fo.getChildren(), root, cache, supportedMimeTypes, stats)) {
+                    return false;
+                }
             } else {
-                final String mime = fo.getMIMEType();
-//                boolean ignore = "content/unknown".equals(mime); //NOI18N
-//
-//                if (!ignore && supportedMimeTypes != null) {
-//                    ignore = !supportedMimeTypes.contains(mime);
-//                }
+                String mime = fo.getMIMEType(); // XXX: this is VERY slow!!
+                if (stats != null) {
+                    stats.filesCount++;
+                    stats.inc(stats.extensions, fo.getExt());
+                    stats.inc(stats.mimeTypes, mime);
+                }
 
                 if (supportedMimeTypes == null || supportedMimeTypes.contains(mime)) {
                     Collection<Indexable> indexable = cache.get(mime);
@@ -107,10 +149,49 @@ public final class FileObjectCrawler extends Crawler {
                     }
 
                     if (!isUpToDate(fo)) {
-                        indexable.add(SPIAccessor.getInstance().create(new FileObjectIndexable(root, fo)));
+                        String relativePath = FileUtil.getRelativePath(root, fo);
+                        indexable.add(SPIAccessor.getInstance().create(new FileObjectIndexable(root, relativePath, mime)));
                     }
                 }
             }
         }
+
+        return true;
     }
+
+    private static final class Stats {
+        public int filesCount;
+        public Map<String, Integer> extensions = new HashMap<String, Integer>();
+        public Map<String, Integer> mimeTypes = new HashMap<String, Integer>();
+        public void inc(Map<String, Integer> m, String k) {
+            Integer i = m.get(k);
+            if (i == null) {
+                m.put(k, 1);
+            } else {
+                m.put(k, i.intValue() + 1);
+            }
+        }
+        public static void logHistogram(Level level, Map<String, Integer> data) {
+            Map<Integer, Set<String>> sortedMap = new TreeMap<Integer, Set<String>>(REVERSE);
+            for(String item : data.keySet()) {
+                Integer freq = data.get(item);
+                Set<String> items = sortedMap.get(freq);
+                if (items == null) {
+                    items = new TreeSet<String>();
+                    sortedMap.put(freq, items);
+                }
+                items.add(item);
+            }
+            for(Integer freq : sortedMap.keySet()) {
+                for(String item : sortedMap.get(freq)) {
+                    LOG.log(level, "{0}: {1}", new Object [] { item, freq }); //NOI18N
+                }
+            }
+        }
+        private static final Comparator<Integer> REVERSE = new Comparator<Integer>() {
+            public int compare(Integer o1, Integer o2) {
+                return -1 * o1.compareTo(o2);
+            }
+        };
+    } // End of Stats class
 }

@@ -38,15 +38,20 @@
  */
 package org.netbeans.editor.ext.html.parser;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.text.BadLocationException;
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.LanguagePath;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.html.HtmlSyntaxSupport;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.Registry;
 import org.netbeans.editor.ext.html.parser.AstNode.NodeType;
 import org.netbeans.editor.ext.html.test.TestBase;
+import org.netbeans.modules.html.editor.NbReaderProvider;
 
 /**
  *
@@ -54,18 +59,29 @@ import org.netbeans.editor.ext.html.test.TestBase;
  */
 public class AstNodeUtilsTest extends TestBase {
 
-    private static final LanguagePath languagePath = LanguagePath.get(HTMLTokenId.language());
+    public static enum Match {
+
+        EXACT, CONTAINS, DOES_NOT_CONTAIN, EMPTY, NOT_EMPTY;
+    }
 
     public AstNodeUtilsTest(String testName) {
         super(testName);
     }
 
-//    public static Test suite(){
-//	TestSuite suite = new TestSuite();
-//        suite.addTest(new SyntaxTreeTest("testFindDescendant"));
-//        return suite;
-//    }
-    
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        NbReaderProvider.setupReaders();
+    }
+
+
+
+    public static Test suite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new AstNodeUtilsTest("testGetPossibleOpenTagElements"));
+        return suite;
+    }
+
     public void testFindDescendant() throws Exception {
         String code = "<p><a>text</a></p>";
         //             0123456789012345678
@@ -75,7 +91,7 @@ public class AstNodeUtilsTest extends TestBase {
 
         assertDescendant(root, 0, "p", NodeType.OPEN_TAG, 0, 18);
         assertDescendant(root, 4, "a", NodeType.OPEN_TAG, 3, 14);
-        assertDescendant(root, 8, "a", NodeType.OPEN_TAG, 3, 14);
+        assertDescendant(root, 8, null, NodeType.TEXT, 6, 10);
         AstNode node = assertDescendant(root, 12, "a", NodeType.OPEN_TAG, 3, 14);
         AstNode adjusted = AstNodeUtils.getTagNode(node, 12);
 
@@ -85,6 +101,74 @@ public class AstNodeUtilsTest extends TestBase {
         assertEquals(AstNode.NodeType.ENDTAG, adjusted.type());
 
         assertDescendant(root, 17, "p", NodeType.OPEN_TAG, 0, 18);
+
+    }
+
+    public void testQuery() throws Exception {
+        String code = "<html><body><table><tr></tr><tr><td></tr></body></html>";
+        //             0123456789012345678
+
+        AstNode root = parse(code, null);
+        assertNotNull(root);
+
+        AstNode node = AstNodeUtils.query(root, "html");
+        assertNotNull(node);
+        assertEquals("html", node.name());
+
+        node = AstNodeUtils.query(root, "html/body");
+        assertNotNull(node);
+        assertEquals("body", node.name());
+
+        node = AstNodeUtils.query(root, "html/body/table");
+        assertNotNull(node);
+        assertEquals("table", node.name());
+
+        node = AstNodeUtils.query(root, "html/body/table/tr");
+        assertNotNull(node);
+        assertEquals("tr", node.name());
+
+        node = AstNodeUtils.query(root, "html/body/table/tr|1");
+        assertNotNull(node);
+        assertEquals("tr", node.name());
+
+        node = AstNodeUtils.query(root, "html/body/table/tr|1/td");
+        assertNotNull(node);
+        assertEquals("td", node.name());
+    }
+
+    public void testGetPossibleOpenTagElements() throws BadLocationException {
+        String code = "<html><head><title></title></head><body>...<p>...</body></html>";
+        //             0123456789012345678901234567890123456789012345678901234
+        //             0         1         2         3         4         5
+
+        AstNode root = parse(code, null);
+        assertNotNull(root);
+
+        AstNodeUtils.dumpTree(root);
+
+        //root node allows all dtd elements
+        assertPossibleElements(root, 0, arr("a", "abbr", "html"), Match.CONTAINS);
+
+        //inside html tag - nothing is offered inside the tag itself
+        assertPossibleElements(root, 1, arr(), Match.EMPTY);
+
+        //just after html tag
+        assertPossibleElements(root, 6, arr("head"), Match.EXACT);
+
+        //at the beginning of head tag
+        assertPossibleElements(root, 12, arr("title", "meta"), Match.CONTAINS);
+        //after title in head tag
+        assertPossibleElements(root, 27, arr("meta"), Match.CONTAINS);
+        assertPossibleElements(root, 27, arr("title"), Match.DOES_NOT_CONTAIN);
+
+        //just before body
+        assertPossibleElements(root, 34, arr("body"), Match.CONTAINS);
+        //inside body
+        assertPossibleElements(root, 41, arr("p", "div"), Match.CONTAINS);
+
+        //p can contain another p - will close the previous one with opt. end
+        assertPossibleElements(root, 47, arr("p"), Match.CONTAINS);
+
 
     }
 
@@ -102,22 +186,49 @@ public class AstNodeUtilsTest extends TestBase {
     }
 
     private AstNode parse(String code, String publicId) throws BadLocationException {
-        BaseDocument doc = createDocument();
-        doc.insertString(0, code, null);
-        HtmlSyntaxSupport sup = HtmlSyntaxSupport.get(doc);
-        assertNotNull(sup);
-
+        SyntaxParserResult result = SyntaxParser.parse(code);
         DTD dtd;
         if (publicId == null) {
-            dtd = sup.getDTD();
+            dtd = result.getDTD();
         } else {
             dtd = Registry.getDTD(publicId, null);
             assertEquals(publicId, dtd.getIdentifier());
         }
 
         assertNotNull(dtd);
-        SyntaxParser parser = SyntaxParser.get(doc, languagePath);
-        parser.forceParse();
-        return SyntaxTree.makeTree(parser.elements(), dtd);
+        return SyntaxTree.makeTree(result.getElements(), dtd);
+    }
+
+    private void assertPossibleElements(AstNode rootNode, int offset, String[] expected, Match type) {
+        Collection<DTD.Element> possible = AstNodeUtils.getPossibleOpenTagElements(rootNode, offset);
+        assertNotNull(possible); 
+        assertDTDElements(expected, possible, type);
+    }
+
+    private void assertDTDElements(String[] expected, Collection<DTD.Element> elements, Match type) {
+        List<String> real = new ArrayList<String>();
+        for (DTD.Element ccp : elements) {
+            real.add(ccp.getName().toLowerCase());
+        }
+        List<String> exp = new ArrayList<String>(Arrays.asList(expected));
+
+        if (type == Match.EXACT) {
+            assertEquals(exp, real);
+        } else if (type == Match.CONTAINS) {
+            exp.removeAll(real);
+            assertEquals(exp, Collections.EMPTY_LIST);
+        } else if (type == Match.EMPTY) {
+            assertEquals(0, real.size());
+        } else if (type == Match.NOT_EMPTY) {
+            assertTrue(real.size() > 0);
+        } else if (type == Match.DOES_NOT_CONTAIN) {
+            int originalRealSize = real.size();
+            real.removeAll(exp);
+            assertEquals(originalRealSize, real.size());
+        }
+    }
+
+    private String[] arr(String... args) {
+        return args;
     }
 }

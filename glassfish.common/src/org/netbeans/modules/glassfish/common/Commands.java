@@ -227,6 +227,135 @@ public class Commands {
         }
         
     };
+
+    /**
+     * Command to list applications current deployed on the server.
+     * Uses list-components
+     */
+    public static final class ListComponentsCommand extends ServerCommand {
+
+        private final String container;
+        private Manifest list;
+        private Map<String, List<String>> appMap;
+
+        public ListComponentsCommand() {
+            this(null);
+        }
+
+        public ListComponentsCommand(final String container) {
+            super("list-components"); // NOI18N
+            this.container = container;
+        }
+
+        public String [] getContainers() {
+            String [] result = null;
+            if(appMap != null && appMap.size() > 0) {
+                Set<String> containers = appMap.keySet();
+                result = containers.toArray(new String[containers.size()]);
+            }
+            return result != null ? result : new String[0];
+        }
+
+        public Map<String, List<String>> getApplicationMap() {
+            // !PW Can still modify sublist... is there a better structure?
+            if(appMap != null) {
+                return Collections.unmodifiableMap(appMap);
+            } else {
+                return Collections.emptyMap();
+            }
+        }
+
+        @Override
+        public void readManifest(Manifest manifest) throws IOException {
+            list = manifest;
+        }
+
+        @Override
+        public boolean processResponse() {
+            if(list == null) {
+                return false;
+            }
+
+            String appsList = list.getMainAttributes().getValue("children"); // NOI18N
+            if(appsList == null || appsList.length() == 0) {
+                // no applications deployed...
+                return true;
+            }
+
+            String [] apps = appsList.split(";"); // NOI18N
+            for(String appKey: apps) {
+                if("null".equals(appKey)) { // NOI18N
+                    Logger.getLogger("glassfish").log(Level.WARNING, "list-components contains an invalid result.  " + "Check server log for possible exceptions."); // NOI18N
+                    continue;
+                }
+                
+                String [] keys = appKey.split("[<>]");
+                String name = keys[0];
+                if(name == null || name.length() == 0) {
+                    Logger.getLogger("glassfish").log(Level.FINE, "Skipping application with no name..."); // NOI18N  FIXME better log message.
+                    continue;
+                }
+                String engine = getPreferredEngine(keys[1]); // NOI18N
+
+                // Add app to proper list in result map
+                if(appMap == null) {
+                    appMap = new HashMap<String, List<String>>();
+                }
+                List<String> appList = appMap.get(engine);
+                if(appList == null) {
+                    appList = new ArrayList<String>();
+                    appMap.put(engine, appList);
+                }
+                appList.add(name);
+            }
+
+            return true;
+        }
+
+
+        // XXX temporary patch to handle engine descriptions like <web, ejb>
+        // until we have better display semantics for such things.
+        // XXX bias order of list for JavaONE demos.
+        private static final List<String> engineBias =
+                Arrays.asList(new String [] { "ear", "jruby", "web", "ejb", "appclient", "connector" }); // NOI18N
+
+        private String getPreferredEngine(String engineList) {
+            String [] engines = engineList.split(",");  // NOI18N
+            String engine = null;
+            int bias = -1;
+            for(int i = 0; i < engines.length; i++) {
+                if(!skipContainer(engines[i])) {
+                    engines[i] = engines[i].trim();
+                    int newBias = engineBias.indexOf(engines[i]);
+                    if(newBias >= 0 && (bias == -1 || newBias < bias)) {
+                        bias = newBias;
+                    }
+                    if(engine == null) {
+                        engine = engines[i];
+                    }
+                }
+            }
+            if(bias != -1) {
+                engine = engineBias.get(bias);
+            } else if(engine == null) {
+                engine = "unknown"; // NOI18N
+            }
+            return engine;
+        }
+
+        /**
+         * For skipping containers we don't care about.
+         *
+         * @param container
+         * @return
+         */
+        private boolean skipContainer(String currentContainer) {
+            return container != null ? !container.equals(currentContainer) :
+                "security_ContractProvider".equals(currentContainer); // NOI18N
+        }
+
+    };
+    
     
     /**
      * Command to list resources of various types currently available on the server.

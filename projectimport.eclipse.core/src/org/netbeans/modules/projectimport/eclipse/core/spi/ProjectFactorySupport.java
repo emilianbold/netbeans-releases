@@ -335,8 +335,11 @@ public class ProjectFactorySupport {
             if (!f.exists()) {
                 importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_MissingClasspathEntry", f.getPath()));
             }
+            URL url = FileUtil.urlForArchiveOrDir(f);
             try {
-                ProjectClassPathModifier.addRoots(new URL[]{FileUtil.urlForArchiveOrDir(f)}, sourceRoot, ClassPath.COMPILE);
+                if (url != null) {
+                    ProjectClassPathModifier.addRoots(new URL[] {url}, sourceRoot, ClassPath.COMPILE);
+                }
                 entry.setImportSuccessful(Boolean.TRUE);
             } catch (UnsupportedOperationException x) {
                 // Probably should not happen any more (#147126), but handle gracefully just in case.
@@ -676,6 +679,9 @@ public class ProjectFactorySupport {
                 continue;
             }
             FileObject fo = FileUtil.toFileObject(sourceRootFile);
+            if (fo == null) { // #148256
+                continue;
+            }
             Project p = FileOwnerQuery.getOwner(fo);
             if (p != null) {
                 for (SourceGroup sg : ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {

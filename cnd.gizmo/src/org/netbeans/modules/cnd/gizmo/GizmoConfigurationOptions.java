@@ -178,7 +178,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
     }
 
     private Configuration getActiveConfiguration() {
-        return ConfigurationSupport.getProjectDescriptor(currentProject).getConfs().getActive();
+        return ConfigurationSupport.getProjectActiveConfiguration(currentProject);
     }
 
     public boolean areCollectorsTurnedOn() {

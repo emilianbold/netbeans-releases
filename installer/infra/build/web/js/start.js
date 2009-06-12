@@ -163,7 +163,7 @@ function initialize() {
                             }
                         }
 		    }
-		    if(lang_id=="") lang_id = "en";
+		    if(lang_id=="") lang_id = get_language_id();
 
 		    if(option_id != "" && platform_id != "") {
 	    	        if (useBouncer(lang_id) == 1) {

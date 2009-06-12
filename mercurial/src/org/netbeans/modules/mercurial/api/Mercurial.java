@@ -66,7 +66,7 @@ public class Mercurial {
     /**
      * Clones the given repository to the given directory. The method blocks
      * until the whole chcekout is done. Do not call in AWT.
-     * 
+     *
      * @param  repositoryUrl  URL of the Mercurial repository to be cloned
      * @param  targetDir  target where  cloned repository should be created
      * @param  cloneName  name of the cloned repository
@@ -112,6 +112,11 @@ public class Mercurial {
             throws MalformedURLException {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
 
+        if(!isClientAvailable()) {
+            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable");
+            return;
+        }
+
         if (repositoryUrl == null) {
             throw new IllegalArgumentException("repository URL is null"); //NOI18N
         }
@@ -156,7 +161,7 @@ public class Mercurial {
      * as method String.trim(). The difference is that if the passed string
      * is {@code null} or if the string contains just spaces, {@code null}
      * is returned.
-     * 
+     *
      * @param  s  string to trim the spaces off
      * @return  trimmed string, or {@code null} if the given string was
      *          {@code null} or if the given string contained just spaces
@@ -206,8 +211,8 @@ public class Mercurial {
             org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.INFO, "Trying to show history for an unmanaged file {0}", file.getAbsolutePath());
             return false;
         }
-        if(!org.netbeans.modules.mercurial.Mercurial.getInstance().isGoodVersion()) {
-            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.INFO, "Mercurial client is unavailable");
+        if(!isClientAvailable()) {
+            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable");
             return false;
         }
         /**
@@ -248,6 +253,10 @@ public class Mercurial {
      * @return true if given url denotes an existing mercurial repository
      */
     public static boolean isRepository (final String url) {
+        if(!isClientAvailable()) {
+            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable");
+            return false;
+        }
         boolean retval = false;
         HgURL hgUrl = null;
         try {
@@ -269,8 +278,16 @@ public class Mercurial {
      * @throws java.net.MalformedURLException in case the url is invalid
      */
     public static void openCloneWizard (final String url) throws MalformedURLException {
+        if(!isClientAvailable()) {
+            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable");
+            return;
+        }
         addRecentUrl(url);
         CloneWizardAction wiz = CloneWizardAction.getInstance();
         wiz.performAction();
+    }
+
+    public static boolean isClientAvailable() {
+        return org.netbeans.modules.mercurial.Mercurial.getInstance().isAvailable(true, true);
     }
 }

@@ -42,15 +42,32 @@ package org.netbeans.core;
 import java.awt.AWTEvent;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
-import java.util.EmptyStackException;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.swing.Action;
 import org.netbeans.core.startup.Main;
+import org.openide.awt.Notification;
+import org.openide.awt.NotificationDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
+import org.openide.windows.WindowManager;
 
 /**
  * Logging event queue that can report problems about too long execution times
@@ -62,19 +79,20 @@ final class TimableEventQueue extends EventQueue
 implements Runnable {
     private static final Logger LOG = Logger.getLogger(TimableEventQueue.class.getName());
     private static final RequestProcessor RP = new RequestProcessor("Timeable Event Queue Watch Dog", 1, true); // NOI18N
-    private static final int QUANTUM = Integer.getInteger("org.netbeans.core.TimeableEventQueue.quantum", 5000); // NOI18N
-    private static final int PAUSE = Integer.getInteger("org.netbeans.core.TimeableEventQueue.pause", 60000); // NOI18N
+    private static final int QUANTUM = Integer.getInteger("org.netbeans.core.TimeableEventQueue.quantum", 100); // NOI18N
+    private static final int REPORT = Integer.getInteger("org.netbeans.core.TimeableEventQueue.report", 1000); // NOI18N
+    private static final int PAUSE = Integer.getInteger("org.netbeans.core.TimeableEventQueue.pause", 15000); // NOI18N
 
-    
     private final RequestProcessor.Task TIMEOUT;
-    private volatile Map<Thread, StackTraceElement[]> stack;
     private volatile long ignoreTill;
     private volatile long start;
-    
+    private volatile ActionListener stoppable;
+    private final Queue<NotifySnapshot> pending;
 
     public TimableEventQueue() {
         TIMEOUT = RP.create(this);
         TIMEOUT.setPriority(Thread.MIN_PRIORITY);
+        pending = new LinkedList<NotifySnapshot>();
     }
 
     static void initialize() {
@@ -97,74 +115,86 @@ implements Runnable {
             e.printStackTrace();
         }
     }
+
     @Override
     protected void dispatchEvent(AWTEvent event) {
         try {
-            tick();
+            tick("dispatchEvent"); // NOI18N
             super.dispatchEvent(event);
         } finally {
             done();
         }
     }
 
-    @Override
-    public void postEvent(AWTEvent theEvent) {
-        try {
-            tick();
-            super.postEvent(theEvent);
-        } finally {
-            done();
-        }
-    }
-
-    @Override
-    public synchronized void push(EventQueue newEventQueue) {
-        try {
-            tick();
-            super.push(newEventQueue);
-        } finally {
-            done();
-        }
-    }
-
     private void done() {
-        stack = null;
         TIMEOUT.cancel();
         long time = System.currentTimeMillis() - start;
-        if (time > 50) {
-            LOG.log(Level.FINE, "done, timer stopped, took {0}", time);
+        if (time > QUANTUM) {
+            LOG.log(Level.FINE, "done, timer stopped, took {0}", time); // NOI18N
+            if (time > REPORT) {
+                LOG.log(Level.WARNING, "too much time in AWT thread {0}", stoppable); // NOI18N
+                ActionListener ss = stoppable;
+                if (ss != null) {
+                    try {
+                        ByteArrayOutputStream out = new ByteArrayOutputStream();
+                        DataOutputStream dos = new DataOutputStream(out);
+                        ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
+                        dos.close();
+                        pending.add(new NotifySnapshot(out.toByteArray(), time));
+                        if (pending.size() > 5) {
+                            pending.remove().clear();
+                        }
+                        stoppable = null;
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    ignoreTill = System.currentTimeMillis() + PAUSE;
+                }
+            }
         } else {
             LOG.log(Level.FINEST, "done, timer stopped, took {0}", time);
         }
+        ActionListener ss = stoppable;
+        if (ss != null) {
+            ss.actionPerformed(new ActionEvent(this, 0, "cancel")); // NOI18N
+            stoppable = null;
+        }
+        return;
     }
 
-    private void tick() {
-        stack = null;
+    private void tick(String name) {
         start = System.currentTimeMillis();
-        if (start >= ignoreTill) {
-            LOG.log(Level.FINEST, "tick, schedule a timer at {0}", start);
+        if (start >= ignoreTill && WindowManager.getDefault().getMainWindow().isShowing()) {
+            LOG.log(Level.FINEST, "tick, schedule a timer for {0}", name);
             TIMEOUT.schedule(QUANTUM);
         }
     }
 
     public void run() {
-        stack = Thread.getAllStackTraces();
-        LOG.log(Level.FINER, "timer running");
-        for (int i = 0; i < 10; i++) {
-            if (Thread.interrupted()) {
-                LOG.log(Level.FINER, "timer cancelled");
-                return;
-            }
-            Thread.yield();
-            System.gc();
-            System.runFinalization();
-        }
-        final Map<Thread, StackTraceElement[]> myStack = stack;
-        if (myStack == null) {
-            LOG.log(Level.FINER, "timer cancelled");
+        if (stoppable != null) {
+            LOG.log(Level.WARNING, "Still previous controller {0}", stoppable);
             return;
         }
-        
+        Runnable selfSampler = (Runnable)createSelfSampler();
+        if (selfSampler != null) {
+            selfSampler.run();
+            stoppable = (ActionListener)selfSampler;
+        }
+    }
+
+    private static Object createSelfSampler() {
+        FileObject fo = FileUtil.getConfigFile("Actions/Profile/org-netbeans-modules-profiler-actions-SelfSamplerAction.instance");
+        if (fo == null) {
+            return null;
+        }
+        Action a = (Action)fo.getAttribute("delegate"); // NOI18N
+        if (a == null) {
+            return null;
+        }
+        return a.getValue("logger-awt"); // NOI18N
+    }
+
+        /*
         long now = System.currentTimeMillis();
         ignoreTill = now + PAUSE;
         long howLong = now - start;
@@ -179,7 +209,7 @@ implements Runnable {
 //        UI_LOG.log(rec);
         LOG.log(rec);
     }
-    
+
     private static final class EQException extends Exception {
         private volatile Map<Thread, StackTraceElement[]> stack;
 
@@ -242,5 +272,42 @@ implements Runnable {
             return sb.toString();
         }
         
+    }
+    */
+
+    private static final class NotifySnapshot implements ActionListener {
+        private final byte[] content;
+        private final Notification note;
+
+        NotifySnapshot(byte[] arr, long time) {
+            content = arr;
+            note = NotificationDisplayer.getDefault().notify(
+                NbBundle.getMessage(NotifySnapshot.class, "TEQ_LowPerformance"),
+                ImageUtilities.loadImageIcon("org/netbeans/core/resources/vilik.png", true),
+                NbBundle.getMessage(NotifySnapshot.class, "TEQ_BlockedFor", time, time / 1000),
+                this, NotificationDisplayer.Priority.LOW
+            );
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            try {
+                FileObject fo = FileUtil.createMemoryFileSystem().getRoot().createData("slow.nps");
+                OutputStream os = fo.getOutputStream();
+                os.write(content);
+                os.close();
+                final Node obj = DataObject.find(fo).getNodeDelegate();
+                Action a = obj.getPreferredAction();
+                if (a instanceof ContextAwareAction) {
+                    a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(obj));
+                }
+                a.actionPerformed(e);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        public void clear() {
+            note.clear();
+        }
     }
 }

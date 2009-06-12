@@ -166,8 +166,8 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
     private boolean isWebProject() {
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         if (provider != null) {
-            Object moduleType = provider.getJ2eeModule().getModuleType();
-            if (J2eeModule.WAR.equals(moduleType)) {
+            J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
+            if (J2eeModule.Type.WAR.equals(moduleType)) {
                 return true;
             }
         }
@@ -345,7 +345,7 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
         }
 
         String contextRoot = null;
-        Object moduleType = provider.getJ2eeModule().getModuleType();
+        J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
         // need to compute from annotations
         String wsURI = null;
 
@@ -375,7 +375,7 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
 //                // this shouldn't happen'
 //            }
 //        }
-        if (J2eeModule.WAR.equals(moduleType)) {
+        if (J2eeModule.Type.WAR.equals(moduleType)) {
             J2eeModuleProvider.ConfigSupport configSupport = provider.getConfigSupport();
             try {
                 contextRoot = configSupport.getWebContextRoot();
@@ -485,7 +485,7 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
         return null;
     }
 
-    private String getServiceUri(final Object moduleType) throws UnsupportedEncodingException {
+    private String getServiceUri(final J2eeModule.Type moduleType) throws UnsupportedEncodingException {
         final String[] serviceName = new String[1];
         final String[] name = new String[1];
         final boolean[] isProvider = {false};
@@ -526,9 +526,9 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
         if (serviceName[0] == null) {
             serviceName[0] = URLEncoder.encode(implClassName + "Service", "UTF-8"); //NOI18N
         }
-        if (J2eeModule.WAR.equals(moduleType)) {
+        if (J2eeModule.Type.WAR.equals(moduleType)) {
             return serviceName[0];
-        } else if (J2eeModule.EJB.equals(moduleType)) {
+        } else if (J2eeModule.Type.EJB.equals(moduleType)) {
             if (name[0] == null) {
                 if (isProvider[0]) {
                     //per JSR 109, use qualified impl class name for EJB
@@ -544,7 +544,7 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
         }
     }
 
-    private boolean resolveServiceUrl(Object moduleType, CompilationController controller, TypeElement targetElement, TypeElement wsElement, String[] serviceName, String[] name) throws IOException {
+    private boolean resolveServiceUrl(J2eeModule.Type moduleType, CompilationController controller, TypeElement targetElement, TypeElement wsElement, String[] serviceName, String[] name) throws IOException {
         boolean foundWsAnnotation = false;
         List<? extends AnnotationMirror> annotations = targetElement.getAnnotationMirrors();
         for (AnnotationMirror anMirror : annotations) {
@@ -598,24 +598,42 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
     @Override
     public void destroy() throws java.io.IOException {
 
-        if (service.getLocalWsdl() != null) {
+        if (service.getLocalWsdl() != null) {           
+            final String serviceId = service.getId();
+
             // remove execution from pom file
-            final FileObject wsdlFileObject = getLocalWsdl();
-            if (wsdlFileObject != null) {
-                ModelOperation<POMModel> oper = new ModelOperation<POMModel>() {
-                    public void performOperation(POMModel model) {
-                        MavenModelUtils.removeWsimportExecution(model, wsdlFileObject.getName());
-                    }
-                };
-                FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
-                Utilities.performPOMModelOperations(pom, Collections.singletonList(oper));
-            }
+            ModelOperation<POMModel> oper = new ModelOperation<POMModel>() {
+                public void performOperation(POMModel model) {
+                    MavenModelUtils.removeWsimportExecution(model, serviceId);
+                }
+            };
+            FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
+            Utilities.performPOMModelOperations(pom, Collections.singletonList(oper));
+
             // remove stale file
             try {
-                removeStaleFile(wsdlFileObject.getName());
+                removeStaleFile(serviceId);
             } catch (IOException ex) {
                 Logger.getLogger(JaxWsClientNode.class.getName()).log(
                         Level.FINE, "Cannot remove stale file", ex); //NOI18N
+            }
+            //remove wsdl file
+            FileObject wsdlFileObject = getLocalWsdl();
+            JAXWSLightSupport jaxWsSupport = JAXWSLightSupport.getJAXWSLightSupport(implBeanClass);
+            if (wsdlFileObject != null && jaxWsSupport != null) {
+                // check if there are other clients/services with the same wsdl
+                boolean hasOtherServices = false;
+                List<JaxWsService> services = jaxWsSupport.getServices();
+                for (JaxWsService s : services) {
+                    if (serviceId != null && !serviceId.equals(s.getId()) && service.getLocalWsdl().equals(s.getLocalWsdl())) {
+                        hasOtherServices = true;
+                        break;
+                    }
+                }
+                if (!hasOtherServices) {
+                    // remove wsdl file
+                    wsdlFileObject.delete();
+                }
             }
         }
 

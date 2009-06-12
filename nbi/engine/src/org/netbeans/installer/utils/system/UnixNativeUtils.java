@@ -46,6 +46,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -268,6 +269,9 @@ public class UnixNativeUtils extends NativeUtils {
         LogManager.logIndent(
                 "devising the shortcut location by type: " + locationType); // NOI18N
 
+        if(shortcut.getPath()!=null) {
+            return new File(shortcut.getPath());
+        }
         final File shortcutFile;
         
         switch (locationType) {
@@ -293,11 +297,20 @@ public class UnixNativeUtils extends NativeUtils {
                 shortcutFile = new File(allUsersAppFolder,
                         getShortcutFileName(shortcut));
                 break;
+            case CUSTOM:
+                final String folder = shortcut.getRelativePath();
+
+                LogManager.log("... custom folder : " + folder);
+                shortcutFile = new File(folder,
+                        getShortcutFileName(shortcut));
+                break;
             default:
                 shortcutFile = null;
 
         }
-
+        if(shortcutFile!=null) {
+            shortcut.setPath(shortcutFile.getAbsolutePath());
+        }
         LogManager.logUnindent(
                 "shortcut file: " + shortcutFile); // NOI18N
 
@@ -480,13 +493,29 @@ public class UnixNativeUtils extends NativeUtils {
         }
         return new File(userHome, "Desktop");
     }
+    
+    private void addLocalizedMapEntry(List<String> list, String entryName, Map<Locale, String> entryMap) {
+        if (!entryMap.isEmpty()) {
+            String name = entryMap.get(new Locale(StringUtils.EMPTY_STRING));
+            if(name==null) {
+                name = entryMap.get(Locale.getDefault());
+            }
+            list.add(entryName + "=" + name);
+            for (Locale locale : entryMap.keySet()) {
+                if (!name.equals(entryMap.get(locale))) {
+                    list.add(entryName + "[" + locale + "]=" + StringUtils.getLocalizedString(entryMap, locale));
+                }
+            }
+        }
+    }
 
     private List <String> getDesktopEntry(FileShortcut shortcut) {
         final List <String> list = new ArrayList<String> ();
 
         list.add("[Desktop Entry]");
         list.add("Encoding=UTF-8");
-        list.add("Name=" + shortcut.getName());
+        addLocalizedMapEntry(list, "Name",    shortcut.getNames());
+        addLocalizedMapEntry(list, "Comment", shortcut.getDescriptions());
         list.add("Exec=/bin/sh \"" + shortcut.getTarget() + "\"" + 
                 ((shortcut.getArguments()!=null && shortcut.getArguments().size()!=0) ? 
                     StringUtils.SPACE + shortcut.getArgumentsString() : StringUtils.EMPTY_STRING)
@@ -512,7 +541,9 @@ public class UnixNativeUtils extends NativeUtils {
         final List <String> list = new ArrayList<String> ();
         list.add("[Desktop Entry]");
         list.add("Encoding=UTF-8");
-        list.add("Name=" + shortcut.getName());
+        addLocalizedMapEntry(list, "Name",    shortcut.getNames());
+        addLocalizedMapEntry(list, "Comment", shortcut.getDescriptions());
+        
         list.add("URL=" + shortcut.getURL());
         if(shortcut.getIcon()!=null) {
             list.add("Icon=" + shortcut.getIconPath());

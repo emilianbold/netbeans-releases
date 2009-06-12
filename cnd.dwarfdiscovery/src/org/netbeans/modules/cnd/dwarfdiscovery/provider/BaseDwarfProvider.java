@@ -114,6 +114,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         } finally {
             PathCache.dispose();
             grepBase.clear();
+            getCommpilerSettings().dispose();
         }
     }
 
@@ -300,7 +301,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         return list;
     }
 
-    private Map<String,List<String>> grepBase = new ConcurrentHashMap<String, List<String>>();
+    private Map<String,GrepEntry> grepBase = new ConcurrentHashMap<String, GrepEntry>();
     
     public CompilerSettings getCommpilerSettings(){
         return myCommpilerSettings;
@@ -310,6 +311,12 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         myCommpilerSettings = new CompilerSettings(project);
     }
     private CompilerSettings myCommpilerSettings;
+
+    public static class GrepEntry {
+        List<String> includes = new ArrayList<String>();
+        String firstMacro = null;
+        int firstMacroLine = -1;
+    }
 
     public static class CompilerSettings{
         private List<String> systemIncludePathsC;
@@ -368,6 +375,14 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
 
         public String getCygwinDrive() {
             return cygwinDriveDirectory;
+        }
+
+        private void dispose(){
+            systemIncludePathsC.clear();
+            systemIncludePathsCpp.clear();
+            systemMacroDefinitionsC.clear();
+            systemMacroDefinitionsCpp.clear();
+            normalizedPaths.clear();
         }
     }
 

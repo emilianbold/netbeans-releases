@@ -42,7 +42,6 @@ package org.openide.explorer.view;
 
 import org.openide.nodes.*;
 
-import java.util.Comparator;
 import java.util.EventObject;
 import java.util.LinkedList;
 import java.util.List;
@@ -138,25 +137,13 @@ abstract class VisualizerEvent extends EventObject {
     */
     static final class Reordered extends VisualizerEvent implements Runnable {
         static final long serialVersionUID = -4572356079752325870L;
-        private Comparator<VisualizerNode> comparator = null;
 
         /** Constructor for nodes reordering notification.
         * @param ch children
         * @param indx indicies of added nodes
         */
         public Reordered(VisualizerChildren ch, int[] idxs, NodeReorderEvent originalEvent) {
-            super(ch, idxs, originalEvent, originalEvent != null ? originalEvent.getSnapshot() : null);
-        }
-
-        //#37802 - provide a way to just send a comparator along to do the 
-        //sorting
-        Reordered(VisualizerChildren ch, Comparator<VisualizerNode> comparator, NodeReorderEvent originalEvent) {
-            this(ch, new int[0], originalEvent);
-            this.comparator = comparator;
-        }
-
-        public Comparator<VisualizerNode> getComparator() {
-            return comparator;
+            super(ch, idxs, originalEvent, originalEvent.getSnapshot());
         }
 
         /** Process the event

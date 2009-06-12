@@ -55,6 +55,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import org.apache.maven.archetype.metadata.ArchetypeDescriptor;
 import org.apache.maven.archetype.metadata.RequiredProperty;
@@ -230,9 +232,10 @@ public class ArchetypeWizardUtils {
                 }
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getLogger(ArchetypeWizardUtils.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+            //TODO should we do someting like delete the non-zip file? with the exception thrown the download failed?
         } catch (XmlPullParserException ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getLogger(ArchetypeWizardUtils.class.getName()).log(Level.INFO, ex.getMessage(), ex);
         } finally {
             if (jf != null) {
                 try {

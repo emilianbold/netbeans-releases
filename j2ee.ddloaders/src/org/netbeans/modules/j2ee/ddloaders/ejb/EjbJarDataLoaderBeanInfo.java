@@ -41,18 +41,21 @@
 
 package org.netbeans.modules.j2ee.ddloaders.ejb;
 
-import java.beans.*;
 import java.awt.Image;
-
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.beans.SimpleBeanInfo;
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /** BeanInfo for config file loader.
 */
 public final class EjbJarDataLoaderBeanInfo extends SimpleBeanInfo {
 
+    @Override
     public BeanInfo[] getAdditionalBeanInfo () {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (UniFileLoader.class) };
@@ -65,10 +68,12 @@ public final class EjbJarDataLoaderBeanInfo extends SimpleBeanInfo {
     /** @param type Desired type of the icon
     * @return returns the Java loader's icon
     */
+    @Override
     public Image getIcon(final int type) {
         return ImageUtilities.loadImage( "org/netbeans/modules/j2ee/ddloaders/ejb/DDDataIcon.gif"); // NOI18N
     }
     
+    @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
         return new PropertyDescriptor[0];
     }
