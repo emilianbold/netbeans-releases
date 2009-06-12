@@ -56,10 +56,10 @@ import junit.framework.Assert;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.modules.j2ee.earproject.test.EarTestCase;
 import org.netbeans.modules.j2ee.earproject.test.TestUtil;
 import org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIteratorTest;
 import org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline;
@@ -76,7 +76,7 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * @author Martin Krauskopf
  */
-public class EarProjectTest extends NbTestCase {
+public class EarProjectTest extends EarTestCase {
 
     private String oldNbUser;
 
@@ -90,20 +90,6 @@ public class EarProjectTest extends NbTestCase {
         TestUtil.makeScratchDir(this);
 
         MockLookup.setLayersAndInstances();
-
-        oldNbUser = System.getProperty("netbeans.user"); // NOI18N
-        FileObject root = FileUtil.toFileObject(getWorkDir());
-        FileUtil.createFolder(root, "ud/system"); // NOI18N
-        System.setProperty("netbeans.user", new File(getWorkDir(), "ud").getAbsolutePath()); // NOI18N
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        if (oldNbUser != null) {
-            System.setProperty("netbeans.user", oldNbUser); // NOI18N
-        }
-
-        super.tearDown();
     }
 
     // see testEarWithoutDDOpeningJ2EE()

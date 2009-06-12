@@ -55,7 +55,6 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
@@ -65,6 +64,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.earproject.EarProjectTest;
 import org.netbeans.modules.j2ee.earproject.ModuleType;
+import org.netbeans.modules.j2ee.earproject.test.EarTestCase;
 import org.netbeans.modules.j2ee.earproject.test.TestUtil;
 import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
@@ -81,7 +81,7 @@ import org.openide.modules.SpecificationVersion;
 /**
  * @author Martin Krauskopf
  */
-public class ImportBlueprintEarWizardIteratorTest extends NbTestCase {
+public class ImportBlueprintEarWizardIteratorTest extends EarTestCase {
     
     private static final String CUSTOM_CONTEXT_ROOT = "/my-context-root";
     

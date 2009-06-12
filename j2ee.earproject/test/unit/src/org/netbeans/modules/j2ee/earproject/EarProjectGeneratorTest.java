@@ -121,6 +121,7 @@ public class EarProjectGeneratorTest extends NbTestCase {
         "display.browser",
         "dist.dir",
         "dist.jar",
+        "j2ee.deploy.on.save",
         "j2ee.platform",
         "j2ee.server.type",
         "jar.compress",
@@ -136,7 +137,7 @@ public class EarProjectGeneratorTest extends NbTestCase {
         //"resource.dir",  -XXX- this is not found in project.props
         //        when the project is created from ex. sources. Bug or not???
         "source.root",
-        "file.reference.testImportProject-EARProject",
+        "file.reference.ip-EARProject",
     };
 
     public EarProjectGeneratorTest(String name) {

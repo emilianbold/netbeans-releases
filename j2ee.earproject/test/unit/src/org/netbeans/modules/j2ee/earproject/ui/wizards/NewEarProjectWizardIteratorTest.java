@@ -51,11 +51,11 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.earproject.EarProjectTest;
 import org.netbeans.modules.j2ee.earproject.TestPlatformProvider;
+import org.netbeans.modules.j2ee.earproject.test.EarTestCase;
 import org.netbeans.modules.j2ee.earproject.test.TestUtil;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -67,7 +67,7 @@ import org.openide.filesystems.FileUtil;
 /**
  * @author Martin Krauskopf
  */
-public class NewEarProjectWizardIteratorTest extends NbTestCase {
+public class NewEarProjectWizardIteratorTest extends EarTestCase {
     
     private static final String DEFAULT_PLATFORM_ROOT = "1.5";
 
@@ -118,21 +118,7 @@ public class NewEarProjectWizardIteratorTest extends NbTestCase {
         TestUtil.initLookup(this, new TestPlatformProvider(defBCP, defBCP));
         
         assertEquals("No Java platforms found.", 2, JavaPlatformManager.getDefault().getInstalledPlatforms().length);
-
-        oldNbUser = System.getProperty("netbeans.user"); // NOI18N
-        FileObject root = FileUtil.toFileObject(getWorkDir());
-        FileUtil.createFolder(root, "ud/system"); // NOI18N
-        System.setProperty("netbeans.user", new File(getWorkDir(), "ud").getAbsolutePath()); // NOI18N
     }
-
-    @Override
-    protected void tearDown() throws Exception {
-        if (oldNbUser != null) {
-            System.setProperty("netbeans.user", oldNbUser); // NOI18N
-        }
-        super.tearDown();
-    }
-
 
     public void testTestableInstantiate() throws Exception {
         File dirF = new File(getWorkDir(), "testEA");
