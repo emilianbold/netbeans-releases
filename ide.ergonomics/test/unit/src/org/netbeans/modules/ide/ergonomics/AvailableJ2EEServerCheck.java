@@ -75,14 +75,14 @@ public class AvailableJ2EEServerCheck extends NbTestCase {
         Collections.sort(providers, comparator); // ?
         for (ServerWizardProvider wizard : providers.toArray(new ServerWizardProvider[0])) {
            System.setProperty("wizard." + ++cnt, wizard.getDisplayName());
-           System.err.println("ergo: " + wizard.getDisplayName());
+           getLog().println("full: " + wizard.getDisplayName());
         }
     }
 
     public void testGetAllJ2eeServersErgo() {
         int cnt = 0;
         List<ServerWizardProvider> providers = new ArrayList<ServerWizardProvider>(Lookups.forPath(ServerRegistry.SERVERS_PATH).lookupAll(ServerWizardProvider.class));
-        for (ServerWizardProvider w : providers) {
+        for (ServerWizardProvider w : providers.toArray(new ServerWizardProvider[0])) {
             if (w.getInstantiatingIterator() == null) {
                 providers.remove(w);
             }
@@ -90,7 +90,7 @@ public class AvailableJ2EEServerCheck extends NbTestCase {
         Collections.sort(providers, comparator);
         for (ServerWizardProvider wizard : providers) {
            String name = System.getProperty("wizard." + ++cnt);
-           System.err.println("full: " + wizard.getDisplayName());
+           getLog().println("ergo: " + wizard.getDisplayName());
            assertEquals(name, wizard.getDisplayName());
         }
     }
