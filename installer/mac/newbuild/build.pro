@@ -49,7 +49,7 @@
     <!-- Sun GlassFish V3 properties   -->
     <property name="glassfish.v3.sun.build.type"      value="prelude"/>
     <property name="glassfish.v3.sun.location.prefix" value="${gf_builds_host}/java/re/glassfish_branch/10.0/promoted"/>
-    <property name="glassfish.v3.sun.build.number"    value="28d"/>
+    <property name="glassfish.v3.sun.build.number"    value="28e"/>
     <!--
     <loadresource property="glassfish.v3.sun.build.number">
           <url url="${glassfish.v3.sun.location.prefix}/prelude/latest/archive/bundles"/>
