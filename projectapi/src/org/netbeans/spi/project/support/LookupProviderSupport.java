@@ -101,12 +101,13 @@ public final class LookupProviderSupport {
         return new SourcesMerger();
     }
     
-    static class DelegatingLookupImpl extends ProxyLookup implements LookupListener {
+    static class DelegatingLookupImpl extends ProxyLookup implements LookupListener, ChangeListener {
         private final Lookup baseLookup;
         private Lookup.Result<LookupProvider> providerResult;
         private LookupListener providerListener;
         private List<LookupProvider> old = Collections.emptyList();
         private List<Lookup> currentLookups;
+        private final ChangeListener metaMergerListener;
         
         private Lookup.Result<LookupMerger> mergers;
         private final Lookup.Result<MetaLookupMerger> metaMergers;
@@ -124,6 +125,7 @@ public final class LookupProviderSupport {
             baseLookup = base;
             providerResult = providerLookup.lookup(new Lookup.Template<LookupProvider>(LookupProvider.class));
             metaMergers = providerLookup.lookupResult(MetaLookupMerger.class);
+            metaMergerListener = WeakListeners.change(this, null);
             assert isAllJustLookupProviders(providerLookup) : 
                 "Layer content at " + path + " contains other than LookupProvider instances! See messages.log file for more details."; //NOI18N
             doDelegate();
@@ -159,12 +161,14 @@ public final class LookupProviderSupport {
 
         protected @Override void beforeLookup(Lookup.Template<?> template) {
             for (MetaLookupMerger metaMerger : metaMergers.allInstances()) {
-                if (metaMerger.canNowMerge(template.getType())) {
-                    doDelegate();
-                }
+                metaMerger.probing(template.getType()); // might fire ChangeEvent, see below
             }
         }
         
+        public void stateChanged(ChangeEvent e) {
+            // A metamerger loaded its class and is now ready for service.
+            doDelegate();
+        }
         
         private synchronized void doDelegate() {
             //unregister listeners from the old results:
@@ -206,6 +210,8 @@ public final class LookupProviderSupport {
                 if (merger != null) {
                     allMergers.add(merger);
                 }
+                metaMerger.removeChangeListener(metaMergerListener);
+                metaMerger.addChangeListener(metaMergerListener);
             }
             for (LookupMerger lm : allMergers) {
                 Class<?> c = lm.getMergeableClass();
