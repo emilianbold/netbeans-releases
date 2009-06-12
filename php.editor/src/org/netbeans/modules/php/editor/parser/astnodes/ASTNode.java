@@ -49,6 +49,9 @@ public abstract class ASTNode {
     //private ASTNode parent = null;
     
     public ASTNode(int start, int end) {
+        assert start >= 0;
+        assert end >= start;
+
         this.startOffset = start;
         this.endOffset = end;
     }
@@ -68,17 +71,12 @@ public abstract class ASTNode {
         if (startOffset < 0 && endOffset != 0) {
             throw new IllegalArgumentException();
         }
+        assert startOffset >= 0;
+        assert endOffset >= startOffset;
+
         this.startOffset = startOffset;
         this.endOffset = endOffset;
     }
 
-    /*protected void setParent(ASTNode node) {
-        parent = node;
-    }
-    
-    public ASTNode getParent() {
-        return parent;
-    }*/
-    
     public abstract void accept(Visitor visitor);
 }
