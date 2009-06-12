@@ -31,4 +31,8 @@ extra/ */
 # Bundles its own stuff.
 python*/jython-*/javalib/ */
 
-
+# let's bundle JSF and Facelets libraries as they are
+enterprise5/modules/ext/facelets-1.1.14/lib/commons-beanutils.jar enterprise5/modules/ext/jsf-1_2/commons-beanutils.jar
+enterprise5/modules/ext/facelets-1.1.14/lib/commons-collections.jar enterprise5/modules/ext/jsf-1_2/commons-collections.jar
+enterprise5/modules/ext/facelets-1.1.14/lib/commons-digester.jar enterprise5/modules/ext/jsf-1_2/commons-digester.jar
+enterprise5/modules/ext/facelets-1.1.14/lib/commons-logging.jar enterprise5/modules/ext/jsf-1_2/commons-logging.jar
