@@ -68,34 +68,6 @@ public class CommentsManipulationTest extends GeneratorTest {
         return "";
     }
 
-    @Test
-    public void testCollector() throws Exception {
-        File testFile = new File(getWorkDir(), "Test.java");
-        String origin = "/**" +
-                " * This is comment *" +
-                "/*" +
-                "public class EncapsulateField {\n" +
-                "\n\n\n//TODO: Hello world" +
-                "\n\n" +
-                "/** Level of encapsulation */\n\n\n\n\n\n" +
-                "public int encapsulate = 5;\n\n //TODO: Implement body" +
-                "}\n";
-        TestUtilities.copyStringToFile(testFile, origin);
-        JavaSource src = getJavaSource(testFile);
-        Task<WorkingCopy> task = new Task<WorkingCopy>() {
-
-            public void run(WorkingCopy workingCopy) throws Exception {
-                workingCopy.toPhase(JavaSource.Phase.PARSED);
-                CommentCollector cc = new CommentCollector();
-                cc.collect(workingCopy);                
-//                CompilationUnitTree cut = workingCopy.getCompilationUnit();
-//                GeneratorUtilities gu = GeneratorUtilities.get(workingCopy);
-//                CompilationUnitTree tree = gu.importComments(cut, cut);
-//                tree = gu.importFQNs(tree);
-            }
-        };
-        ModificationResult mr = src.runModificationTask(task);        
-    }
 
     /**
      * Simulates encapsulate field refactoring with copy javadoc feature.
