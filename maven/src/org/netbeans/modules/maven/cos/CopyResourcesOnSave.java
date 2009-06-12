@@ -126,9 +126,6 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
     }
 
     private Project getOwningMavenProject(FileObject file) {
-        if (!file.isValid() || file.isVirtual()) {
-            return null;
-        }
         Project prj = FileOwnerQuery.getOwner(file);
         if (prj == null) {
             return null;
