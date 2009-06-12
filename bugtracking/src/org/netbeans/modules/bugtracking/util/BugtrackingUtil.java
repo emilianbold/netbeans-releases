@@ -178,10 +178,11 @@ public class BugtrackingUtil {
         if(criteria.equals("")) {                                               // NOI18N
             return issues;
         }
+        criteria = criteria.toLowerCase();
         List<Issue> ret = new ArrayList<Issue>();
         for (Issue issue : issues) {            
-            if(criteria.equals(issue.getID()) ||
-               issue.getSummary().indexOf(criteria) > -1)
+            if(criteria.equals(issue.getID().toLowerCase()) ||
+               issue.getSummary().toLowerCase().indexOf(criteria) > -1)
             {
                 ret.add(issue);
             }  
