@@ -119,6 +119,7 @@ public class Util {
     public static final String DOMAIN = "domain";
     public static final String TYPE = "type";
     public static final String PROP_DISPLAY_NAME = "ServInstWizard_displayName";
+    public static final String TEMP_FILE_PREFIX = "DELETEME";
 
     public static String getInstallDirName(String s) {
         try {
@@ -139,10 +140,6 @@ public class Util {
                 s = getDirName();
                 f = new File(s);
             }
-            if (!f.exists()) {
-                f.mkdirs();
-                f.deleteOnExit();
-            }
         } catch (IOException ioe) {
         }
         return s;
@@ -150,7 +147,7 @@ public class Util {
 
 
     static String getDirName() throws IOException {
-            File f = File.createTempFile("DELETEME", "IAMJUNK");
+            File f = File.createTempFile(TEMP_FILE_PREFIX, "IAMJUNK");
             f.delete();
             return f.getAbsolutePath()+File.separator+"glassfish";
     }
