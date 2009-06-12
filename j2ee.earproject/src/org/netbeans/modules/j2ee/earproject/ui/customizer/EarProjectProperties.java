@@ -954,7 +954,7 @@ public final class EarProjectProperties {
     private static void setAppClientPrivateProperties(final J2eePlatform j2eePlatform,
             final String serverInstanceID, final EditableProperties ep) {
         // XXX rather hotfix for #75518. Get rid of it with fixing or #75574
-        if (!j2eePlatform.getSupportedModuleTypes().contains(J2eeModule.CLIENT)) {
+        if (!j2eePlatform.getSupportedTypes().contains(J2eeModule.Type.CAR)) {
             return;
         }
         String mainClass = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_MAIN_CLASS);

@@ -37,22 +37,42 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.projectapi;
+package org.netbeans.modules.j2ee.earproject.test;
 
-import javax.swing.event.ChangeListener;
-import org.netbeans.spi.project.LookupMerger;
+import java.io.File;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * @see LazyLookupProviders#forLookupMerger
+ *
+ * @author Petr Hejl
  */
-public interface MetaLookupMerger {
+public class EarTestCase extends NbTestCase {
 
-    void probing(Class<?> service);
+    private String oldNbUser;
 
-    LookupMerger/*|null*/ merger();
+    public EarTestCase(String name) {
+        super(name);
+    }
 
-    void addChangeListener(ChangeListener listener);
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
 
-    void removeChangeListener(ChangeListener listener);
+        oldNbUser = System.getProperty("netbeans.user"); // NOI18N
+        FileObject root = FileUtil.toFileObject(getWorkDir());
+        FileUtil.createFolder(root, "ud/system"); // NOI18N
+        System.setProperty("netbeans.user", new File(getWorkDir(), "ud").getAbsolutePath()); // NOI18N
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        if (oldNbUser != null) {
+            System.setProperty("netbeans.user", oldNbUser); // NOI18N
+        }
+
+        super.tearDown();
+    }
 
 }
