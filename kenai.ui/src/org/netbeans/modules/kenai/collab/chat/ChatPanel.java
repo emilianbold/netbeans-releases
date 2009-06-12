@@ -465,6 +465,7 @@ public class ChatPanel extends javax.swing.JPanel {
         if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_Z) {
             try {
                 undo.undo();
+                history.resetHistory();
             } catch (CannotUndoException e) {
                 // end of the undo history
             }
@@ -473,6 +474,7 @@ public class ChatPanel extends javax.swing.JPanel {
         if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_Y) {
             try {
                 undo.redo();
+                history.resetHistory();
             } catch (CannotRedoException e) {
                 // end of the redo history
             }
@@ -491,8 +493,9 @@ public class ChatPanel extends javax.swing.JPanel {
             }
             if (evt.getKeyCode() == KeyEvent.VK_DOWN) {
                 String message = history.getNextMessage();
-                assert message != null;
-                outbox.setText(message);
+                if (message != null) {
+                    outbox.setText(message);
+                }
                 return;
             }
         }

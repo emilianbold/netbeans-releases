@@ -66,10 +66,10 @@ public final class TypeResolver {
                 //TODO: impl. doesn't count with more types
                 type = ModelUtils.getFirst(var.getTypes(offset));
             }
-            if (varScope instanceof FileScope) {
+            if (varScope instanceof NamespaceScope) {
                 varScope = null;
             } else {
-                varScope = ModelUtils.getFileScope(varScope);
+                varScope = ModelUtils.getNamespaceScope(varScope);
             }
         }
         //TODO: impl. doesn't count with more types

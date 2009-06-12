@@ -100,14 +100,14 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         for (String ifaceName : keySet) {
             List<? extends InterfaceScope> iface = ifaces.get(ifaceName);
             if (iface == null) {
-                FileScope top = (FileScope) getInScope();
-                FileScopeImpl ps = (FileScopeImpl) top;
+                NamespaceScope top = (NamespaceScope) getInScope();
+                NamespaceScopeImpl ps = (NamespaceScopeImpl) top;
                 retval.addAll(iface = ModelUtils.filter(ps.getDeclaredInterfaces(), ifaceName));
                 ifaces.put(ifaceName,iface);
                 /*for (InterfaceScopeImpl interfaceScope : iface) {
                     retval.addAll(interfaceScope.getInterfaces());
                 }*/
-                if (retval.isEmpty() && top instanceof FileScopeImpl) {
+                if (retval.isEmpty() && top instanceof NamespaceScopeImpl) {
                     IndexScope indexScope = ModelUtils.getIndexScope(ps);
                     if (indexScope != null) {
                         List<? extends InterfaceScope> cIfaces =CachingSupport.getInterfaces(ifaceName, this);
