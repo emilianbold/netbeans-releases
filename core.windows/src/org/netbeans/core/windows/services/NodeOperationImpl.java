@@ -56,7 +56,6 @@ import java.util.Set;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.DefaultEditorKit;
 import org.netbeans.core.windows.view.ui.NbSheet;
@@ -119,7 +118,7 @@ public final class NodeOperationImpl extends NodeOperation {
             map.put("delete", ExplorerUtils.actionDelete(manager, true));
             associateLookup(ExplorerUtils.createLookup (manager, map));
             setLayout(new BorderLayout());
-            add(new JScrollPane(new BeanTreeView()), BorderLayout.CENTER);
+            add(new BeanTreeView());
             setName(n.getDisplayName());
         }
         public ExplorerManager getExplorerManager() {
@@ -419,6 +418,7 @@ public final class NodeOperationImpl extends NodeOperation {
             tc.addPropertyChangeListener(this);
         }
         
+        @Override
         public void propertyChange (PropertyChangeEvent pce) {
             if ("name".equals(pce.getPropertyName())) {
                 dialog.setTitle((String) pce.getNewValue());
@@ -430,12 +430,13 @@ public final class NodeOperationImpl extends NodeOperation {
             for (int i = 0; i < nodes.length; i++) {
                 listenerSet.add(nodes[i]);
                 nodes[i].addNodeListener(this);
-            };
+            }
         }
 
         /** Fired when the node is deleted.
          * @param ev event describing the node
          */
+        @Override
         public void nodeDestroyed(NodeEvent ev) {
             Node destroyedNode = ev.getNode();
             // stop to listen to destroyed node
