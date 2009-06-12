@@ -104,6 +104,7 @@ public class BugzillaIssue extends Issue {
     static final String LABEL_NAME_STATUS       = "bugzilla.issue.status";      // NOI18N
     static final String LABEL_NAME_RESOLUTION   = "bugzilla.issue.resolution";  // NOI18N
     static final String LABEL_NAME_SUMMARY      = "bugzilla.issue.summary";     // NOI18N
+    static final String LABEL_NAME_ASSIGNED_TO  = "bugzilla.issue.assigned";    // NOI18N
 
     /**
      * Issue wasn't seen yet
@@ -280,7 +281,11 @@ public class BugzillaIssue extends Issue {
                                               loc.getString("CTL_Issue_Resolution_Desc"),       // NOI18N
                                               getLongestWordWidth(
                                                 loc.getString("CTL_Issue_Resolution_Title"),    // NOI18N
-                                                bc.getResolutions(), t))
+                                                bc.getResolutions(), t)),
+            new ColumnDescriptor<String>(LABEL_NAME_ASSIGNED_TO, String.class,
+                                              loc.getString("CTL_Issue_Assigned_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Assigned_Desc"),         // NOI18N
+                                              BugtrackingUtil.getColumnWidthInPixels(20, t))
         };
     }
 

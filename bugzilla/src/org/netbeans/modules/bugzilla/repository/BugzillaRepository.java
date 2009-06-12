@@ -423,20 +423,19 @@ public class BugzillaRepository extends Repository {
      */
     public synchronized BugzillaConfiguration getConfiguration() {
         if(bc == null) {
-            bc = createConfiguration();
+            bc = createConfiguration(false);
         }
         return bc;
     }
 
     public synchronized void refreshConfiguration() {
-        BugzillaConfiguration conf = new BugzillaConfiguration();
-        conf.initialize(this, true);
+        BugzillaConfiguration conf = createConfiguration(true);
         bc = conf;
     }
 
-    protected BugzillaConfiguration createConfiguration() {
+    protected BugzillaConfiguration createConfiguration(boolean forceRefresh) {
         BugzillaConfiguration conf = new BugzillaConfiguration();
-        conf.initialize(this, false);
+        conf.initialize(this, forceRefresh);
         return conf;
     }
 
