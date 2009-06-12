@@ -117,8 +117,8 @@
                     </FunctionDeclaration>
                 </Block>
             </NamespaceDeclaration>
-            <NamespaceDeclaration start='53' end='45' isBracketed='true'>
-                <Block start='63' end='35' isCurly='true'>
+            <NamespaceDeclaration start='53' end='98' isBracketed='true'>
+                <Block start='63' end='98' isCurly='true'>
                     <ClassDeclaration start='65' end='75' modifier='NONE'>
                         <ClassName>
                             <Identifier start='71' end='72' name='A'/>

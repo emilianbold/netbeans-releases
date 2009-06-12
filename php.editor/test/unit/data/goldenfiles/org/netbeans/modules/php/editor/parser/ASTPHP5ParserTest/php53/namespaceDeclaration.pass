@@ -23,11 +23,11 @@
         <Comments>
         </Comments>
         <Statements>
-            <NamespaceDeclaration start='6' end='16' isBracketed='false'>
+            <NamespaceDeclaration start='6' end='22' isBracketed='false'>
                 <NamespaceName start='16' end='17' isCurrent='false' isGlobal='false'>
                     <Identifier start='16' end='17' name='A'/>
                 </NamespaceName>
-                <Block start='6' end='16' isCurly='true'>
+                <Block start='6' end='22' isCurly='true'>
                     <EmptyStatement start='19' end='21'/>
                     <InLineHtml start='21' end='22'/>
                 </Block>

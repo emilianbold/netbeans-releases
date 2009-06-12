@@ -36,39 +36,66 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor.model.nodes;
 
-package org.netbeans.modules.php.editor.verification;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.Rule.AstRule;
-import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.php.editor.model.FileScope;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.model.PhpKind;
+import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 
 /**
- *
  * @author Radek Matous
  */
-abstract class ModelRule implements AstRule {
-    abstract void check (FileScope modelScope, RuleContext context, List<Hint> hints);
+public class NamespaceDeclarationInfo extends ASTNodeInfo<NamespaceDeclaration> {
+    public static final String NAMESPACE_SEPARATOR = "\\";//NOI18N
+    public static final String DEFAULT_NAMESPACE_NAME = "default";//NOI18N
+
+    NamespaceDeclarationInfo(NamespaceDeclaration node) {
+        super(node);
+    }
+
+    public static NamespaceDeclarationInfo create(NamespaceDeclaration node) {
+        return new NamespaceDeclarationInfo(node);
+    }
 
     @Override
-    public Set<? extends Object> getKinds() {
-        return Collections.singleton(PHPHintsProvider.MODEL_HINTS);
+    public Kind getKind() {
+        return Kind.NAMESPACE_DECLARATION;
     }
 
-    public boolean getDefaultEnabled() {
-        return true;
+    @Override
+    public String getName() {
+        StringBuilder sb = new StringBuilder();
+        NamespaceDeclaration node = getOriginalNode();
+        final NamespaceName nameSpaceName = node.getName();
+        if (nameSpaceName != null) {
+            for (Identifier identifier : nameSpaceName.getSegments()) {
+                if (sb.length() > 0) {
+                    sb.append(NAMESPACE_SEPARATOR);
+                }
+                sb.append(identifier.getName());
+            }
+        } else {
+            sb.append(DEFAULT_NAMESPACE_NAME);//NOI18N
+        }
+        return sb.toString();
     }
 
-    public boolean appliesTo(RuleContext context) {
-        return true;
+    @Override
+    public OffsetRange getRange() {
+        ASTNode node = getOriginalNode();
+        final NamespaceName name = ((NamespaceDeclaration) node).getName();
+        if (name != null) {
+            node = name;
+        }
+        return new OffsetRange(node.getStartOffset(), node.getEndOffset());
     }
 
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.WARNING;
+    @Override
+    public PhpKind getPhpKind() {
+        return PhpKind.NAMESPACE_DECLARATION;
     }
 }
