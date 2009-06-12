@@ -45,6 +45,7 @@ import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.IncludeInfo;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -57,6 +58,11 @@ import org.openide.filesystems.FileObject;
 class ModelElementFactory {
 
     private ModelElementFactory(){};
+
+    static NamespaceScopeImpl create(NamespaceDeclarationInfo nodeInfo, ModelBuilder context) {
+        NamespaceScopeImpl namespaceScope = new NamespaceScopeImpl(context.getFileScope(), nodeInfo);
+        return namespaceScope;
+    }
 
     @CheckForNull
     static IncludeElementImpl create(IncludeInfo info, ModelBuilder context) {
@@ -91,13 +97,4 @@ class ModelElementFactory {
         //TODO: addElement(retval);
         return new ClassConstantElementImpl(context.getCurrentScope(), clsConst);
     }
-
-    static public VariableNameImpl create(Program program, Variable node, ModelBuilder context) {
-        VariableNameImpl retval = new VariableNameImpl(context.getCurrentScope(), program, node, false);
-        //TODO: addElement(retval);
-        return retval;
-    }
-
-
-
 }
