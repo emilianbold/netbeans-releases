@@ -74,6 +74,7 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="org-netbeans-modules-dbschema-jdbcimpl-RecaptureSchemaAction.instance">
                         <attr name="position" intvalue="200"/>
+                        <attr name="misplaced.action.allowed" boolvalue="true"/>
                     </file>
           <file name="dbschema-separator-1.instance">
               <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>

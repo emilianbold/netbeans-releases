@@ -59,6 +59,7 @@ made subject to such option by the copyright holder.
                 <file name="NBMReload.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.maven.apisupport.NbmActionGoalProvider.createReloadAction"/>
                     <attr name="position" intvalue="1000"/>
+                    <attr name="misplaced.action.allowed" boolvalue="true"/>
                 </file>
             </folder>
             <folder name="Archetypes">

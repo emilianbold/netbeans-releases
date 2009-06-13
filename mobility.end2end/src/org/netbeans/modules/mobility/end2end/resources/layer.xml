@@ -143,6 +143,7 @@ made subject to such option by the copyright holder.
                     <file name="GenerateAction.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.end2end.ui.editor.GenerateAction"/>
                         <attr name="position" intvalue="400"/>
+                        <attr name="misplaced.action.allowed" boolvalue="true"/>
                     </file>
                     <file name="Separator2.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>

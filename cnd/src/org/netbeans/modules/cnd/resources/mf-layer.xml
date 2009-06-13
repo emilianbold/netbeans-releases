@@ -853,6 +853,7 @@ made subject to such option by the copyright holder.
                     <file name="MakeTargetAction.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.actions.MakeTargetAction"/>
                         <attr name="position" intvalue="900"/>
+                        <attr name="misplaced.action.allowed" boolvalue="true"/>
                     </file>
                     <file name="Separator2.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
@@ -1302,6 +1303,9 @@ made subject to such option by the copyright holder.
                 <folder name="Actions">
                     <file name="org-netbeans-modules-cnd-actions-OpenWithQtDesignerAction.instance">
                         <attr name="position" intvalue="100"/>
+                        <!-- guys you should rather use OpenAction and implement
+                         open cookie, imho -->
+                        <attr name="misplaced.action.allowed" boolvalue="true"/>
                     </file>
                     <file name="org-openide-actions-CopyAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
@@ -1371,6 +1375,7 @@ made subject to such option by the copyright holder.
                 <folder name="Actions">
                     <file name="org-netbeans-modules-cnd-actions-OpenWithQtLinguistAction.instance">
                         <attr name="position" intvalue="100"/>
+                        <attr name="misplaced.action.allowed" boolvalue="true"/>
                     </file>
                     <file name="org-openide-actions-CopyAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>

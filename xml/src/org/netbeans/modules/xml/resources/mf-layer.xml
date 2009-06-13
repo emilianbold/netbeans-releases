@@ -245,6 +245,7 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="org-netbeans-modules-xml-actions-XMLUpdateDocumentAction.instance">
                         <attr name="position" intvalue="400"/>
+                        <attr name="misplaced.action.allowed" boolvalue="true"/>
                     </file>
                     <file name="sep-1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
@@ -320,6 +321,7 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="org-netbeans-modules-xml-actions-XMLUpdateDocumentAction.instance">
                         <attr name="position" intvalue="500"/>
+                        <attr name="misplaced.action.allowed" boolvalue="true"/>
                     </file>
                     <file name="sep-1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
@@ -392,6 +394,7 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="org-netbeans-modules-xml-actions-CheckEntityAction.instance">
                         <attr name="position" intvalue="400"/>
+                        <attr name="misplaced.action.allowed" boolvalue="true"/>
                     </file>
                     <file name="sep-1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
