@@ -186,7 +186,7 @@ made subject to such option by the copyright holder.
             <folder name="Actions">
               <file name="RefactoringAll.shadow">
                         <attr name="originalFile" stringvalue="Actions/Refactoring/RefactoringAll.instance"/>
-                        <attr name="position" intvalue="1000"/>
+                        <attr name="position" intvalue="1001"/>
                     </file>
                     <file name="RenameAction.instance_hidden"/>
             </folder>

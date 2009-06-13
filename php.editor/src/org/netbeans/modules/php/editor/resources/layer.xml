@@ -205,7 +205,7 @@
         <folder name="Tools">
             <folder name="PaletteManager">
                 <file name="org-netbeans-modules-html-palette-HtmlPaletteCustomizerAction.instance_hidden"/>
-                <file name="org-netbeans-modules-php-editor-palette-o.instance">
+                <file name="org-netbeans-modules-php-editor-palette-PHPPaletteCustomizerAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-php-editor-palette-PHPPaletteCustomizerAction.instance"/>
                     <attr name="position" intvalue="450"/>
                 </file>

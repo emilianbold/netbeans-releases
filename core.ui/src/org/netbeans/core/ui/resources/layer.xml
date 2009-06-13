@@ -482,6 +482,7 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="NewTemplateAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-NewTemplateAction.instance"/>
+                        <attr name="position" intvalue="99"/>
                     </file>
                     <file name="PasteAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
@@ -493,6 +494,7 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="RenameAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
                     <file name="Separator1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
@@ -624,7 +626,7 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="RenameAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
-                        <attr name="position" intvalue="1000"/>
+                        <attr name="position" intvalue="1099"/>
                     </file>
                     <file name="Separator1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>

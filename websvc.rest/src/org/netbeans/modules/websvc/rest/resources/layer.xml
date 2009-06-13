@@ -198,8 +198,9 @@
     
     <folder name="Projects">
         <folder name="Rest_Actions_holder">
-          <file name="org.netbeans.modules.websvc.rest.projects.ProjectTestRestServicesAction.instance"/>
-          <attr name="misplaced.action.allowed" boolvalue="true"/>
+          <file name="org.netbeans.modules.websvc.rest.projects.ProjectTestRestServicesAction.instance">
+            <attr name="misplaced.action.allowed" boolvalue="true"/>
+          </file>
         </folder>
         <folder name="org-netbeans-modules-web-project">
             <!-- folder name="Customizer">
