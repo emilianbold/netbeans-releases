@@ -58,12 +58,9 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-java">
                 <folder name="Popup">
-                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance">
-                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
+                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
                         <attr name="position" intvalue="1400"/>
-                    </file>
-                    <file name="org-netbeans-modules-refactoring-java-callhierarchy-CallHierarchyAction.instance">
-                        <attr name="position" intvalue="1420"/>
                     </file>
                     <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
@@ -71,7 +68,11 @@ made subject to such option by the copyright holder.
                     </file>
                     
                             
-                    </folder>
+                        <file name="org-netbeans-modules-refactoring-java-callhierarchy-CallHierarchyAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-refactoring-java-callhierarchy-CallHierarchyAction.instance"/>
+                        <attr name="position" intvalue="1420"/>
+                    </file>
+                </folder>
 
                     <folder name="RefactoringActions">
                         <file name="org-netbeans-modules-refactoring-java-api-ui-ChangeParametersAction.shadow">
@@ -122,19 +123,19 @@ made subject to such option by the copyright holder.
     <folder name="text">
         <folder name="x-java">
             <folder name="Actions">
-              <file name="RefactoringWhereUsed.instance">
-                  <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
-                  <attr name="position" intvalue="1900"/>
+              <file name="RefactoringAll.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/RefactoringAll.instance"/>
+                        <attr name="position" intvalue="2000"/>
                     </file>
-              <file name="RefactoringAll.instance">
-                  <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
-                  <attr name="position" intvalue="2000"/>
-                    </file>
-              <file name="RefactoringSeparator-1.instance">
+                    <file name="RefactoringSeparator-1.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                   <attr name="position" intvalue="2100"/>
                     </file>
-              <file name="RenameAction.instance_hidden"/>
+              <file name="RefactoringWhereUsed.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/RefactoringWhereUsed.instance"/>
+                        <attr name="position" intvalue="1900"/>
+                    </file>
+                    <file name="RenameAction.instance_hidden"/>
             </folder>
         </folder>
     </folder>

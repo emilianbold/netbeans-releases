@@ -402,7 +402,41 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 if (fo.getPath().startsWith("Actions/")) {
                     continue;
                 }
-                if (fo.getPath().startsWith("Editor/Actions/")) {
+                if (fo.getPath().startsWith("Editors/")) {
+                    // editor is a bit different world
+                    continue;
+                }
+                if (fo.getPath().startsWith("Databases/Explorer/")) {
+                    // db explorer actions shall not influence start
+                    // => let them be for now.
+                    continue;
+                }
+                if (fo.getPath().startsWith("WelcomePage/")) {
+                    // welcome screen actions are not intended for end user
+                    continue;
+                }
+                if (fo.getPath().startsWith("Projects/org-netbeans-modules-mobility-project/Actions/")) {
+                    // I am not sure what mobility is doing, but
+                    // I guess I do not need to care
+                    continue;
+                }
+                if (fo.getPath().startsWith("NativeProjects/Actions/")) {
+                    // I should probably report a bug for NativeProjects
+                    continue;
+                }
+                if (
+                    fo.getPath().startsWith("Loaders/text/x-java/Actions/") ||
+                    fo.getPath().startsWith("Loaders/text/x-jsp/Actions/")
+                ) {
+                    // imho both java and jsp are doing something wrong, they
+                    // should refer to some standard action, not invent their
+                    // own
+                    continue;
+                }
+
+                if (Boolean.TRUE.equals(fo.getAttribute("misplaced.action.allowed"))) {
+                    // it seems necessary some actions to stay outside
+                    // of the Actions folder
                     continue;
                 }
                 if (fo.hasExt("shadow")) {
@@ -413,7 +447,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                         }
                     }
                 }
-                errors.add("File " + fo.getPath() + " represents an action which is not in Actions/ subfolder");
+                errors.add("File " + fo.getPath() + " represents an action which is not in Actions/ subfolder. Provided by " + fo.getAttribute("layers"));
             } catch (Exception ex) {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 PrintStream ps = new PrintStream(baos);
