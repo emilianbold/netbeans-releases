@@ -40,7 +40,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
   <folder name="WarmUp">
         <file name="org-netbeans-modules-web-core-JspEditorWarmUpTask.instance"/>
@@ -219,7 +219,16 @@ made subject to such option by the copyright holder.
         <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.jsploader.EditServletAction"/>
       </file>
     </folder>-->
-  </folder>
+      <folder name="Tools">
+            <file name="org-netbeans-modules-web-core-palette-JspPaletteCustomizerAction.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+                <attr name="delegate" newvalue="org.netbeans.modules.web.core.palette.JspPaletteCustomizerAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.web.core.palette.Bundle#ACT_OpenJSPCustomizer"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" boolvalue="true"/>
+            </file>
+        </folder>
+    </folder>
 
   <folder name="Services">
   <!--
@@ -286,7 +295,7 @@ made subject to such option by the copyright holder.
     
   <folder name="Shortcuts">
     <file name="C-Q.shadow">
-        <attr name='originalFile' stringvalue="Actions/Build/Set Request Parameters.instance"/>
+        <attr name="originalFile" stringvalue="Actions/Build/Set Request Parameters.instance"/>
     </file>
   </folder>      
 
@@ -312,7 +321,8 @@ made subject to such option by the copyright holder.
         <folder name="Tools">
             <folder name="PaletteManager">
                 <file name="org-netbeans-modules-html-palette-HTMLPaletteCustomizerAction.instance_hidden"/>
-                <file name="org-netbeans-modules-web-core-palette-JspPaletteCustomizerAction.instance">
+                <file name="org-netbeans-modules-web-core-palette-JspPaletteCustomizerAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-web-core-palette-JspPaletteCustomizerAction.instance"/>
                     <attr name="position" intvalue="200"/>
                 </file>
             </folder>

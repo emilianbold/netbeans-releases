@@ -422,3 +422,5 @@ org.netbeans.modules.project.libraries.ui.LibrariesCustomizerAction
 org.netbeans.modules.server.ui.manager.ServerManagerAction
 org.netbeans.modules.mobility.project.deployment.MobilityDeploymentManagerAction
 org.netbeans.modules.mobility.project.ui.security.SecurityManagerAction
+org.netbeans.modules.php.editor.palette.PHPPaletteCustomizerAction
+org.netbeans.modules.web.core.palette.JspPaletteCustomizerAction
