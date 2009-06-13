@@ -44,8 +44,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -118,7 +116,7 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
                         MobilityDeploymentManagerPanel mdmp = new MobilityDeploymentManagerPanel(deploymentTypeDisplayName, instance);
                         DialogDescriptor desc = new DialogDescriptor(mdmp,
                                 NbBundle.getMessage(
-                                    MobilityDeploymentManagerAction.class,
+                                    MobilityDeploymentManagerPanel.class,
                                     "Title_DeploymentManager"),
                                     true, new Object[]{closeButton},
                                     DialogDescriptor.CLOSED_OPTION,
