@@ -399,6 +399,9 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 if (!(o instanceof Action)) {
                     continue;
                 }
+                if (fo.hasExt("xml")) {
+                    continue;
+                }
                 if (fo.getPath().startsWith("Actions/")) {
                     continue;
                 }

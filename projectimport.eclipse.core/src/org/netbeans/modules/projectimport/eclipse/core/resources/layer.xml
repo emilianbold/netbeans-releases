@@ -48,11 +48,12 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="1426"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.projectimport.eclipse.core.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
-                <file name="org-netbeans-modules-projectimport-eclipse-core-ImportProjectAction.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.projectimport.eclipse.core.ImportProjectAction"/>
+                <file name="org-netbeans-modules-projectimport-eclipse-core-ImportProjectAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-projectimport-eclipse-core-ImportProjectAction.instance"/>
                     <attr name="position" intvalue="100"/>
                 </file>
-                <file name="org-netbeans-modules-projectimport-eclipse-core-ResynchronizeEclipseAction.instance">
+                <file name="org-netbeans-modules-projectimport-eclipse-core-ResynchronizeEclipseAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-projectimport-eclipse-core-ResynchronizeEclipseAction.instance"/>
                     <attr name="position" intvalue="200"/>
                 </file>
             </folder>
@@ -64,8 +65,20 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="Projects">
         <folder name="Actions">
-            <file name="org-netbeans-modules-projectimport-eclipse-core-UpdateProjectAction.instance">
+            <file name="org-netbeans-modules-projectimport-eclipse-core-UpdateProjectAction.shadow">
                 <attr name="position" intvalue="234"/> <!-- clarify position -->
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-projectimport-eclipse-core-UpdateProjectAction.instance"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Actions">
+        <folder name="Project">
+            <file name="org-netbeans-modules-projectimport-eclipse-core-ImportProjectAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.projectimport.eclipse.core.ImportProjectAction"/>
+            </file>
+            <file name="org-netbeans-modules-projectimport-eclipse-core-ResynchronizeEclipseAction.instance">
+            </file>
+            <file name="org-netbeans-modules-projectimport-eclipse-core-UpdateProjectAction.instance">
             </file>
         </folder>
     </folder>

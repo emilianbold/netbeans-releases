@@ -169,7 +169,7 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="1700"/>
             </file>
             <file name="org-openide-actions-SaveAsAction.shadow">
-                <attr name="originalFile" stringvalue="/Actions/System/org-openide-actions-SaveAsAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsAction.instance"/>
                 <attr name="position" intvalue="1600"/>
             </file>
             <file name="Separator3.instance">
@@ -246,7 +246,7 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="1700"/>
             </file>
             <file name="org-openide-actions-GotoAction.shadow">
-                <attr name="originalFile" stringvalue="/Actions/Edit/org-openide-actions-GotoAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-GotoAction.instance"/>
                 <attr name="position" intvalue="1800"/>
             </file>
             </folder>
