@@ -53,6 +53,7 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -61,6 +62,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -924,6 +926,52 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
     }
 
+    private static void printMap(Map<URL, List<URL>> deps, Level level) {
+        Set<URL> sortedRoots = new TreeSet<URL>(C);
+        sortedRoots.addAll(deps.keySet());
+        for(URL url : sortedRoots) {
+            LOGGER.log(level, "  {0}:\n", url); //NOI18N
+//            for(URL depUrl : deps.get(url)) {
+//                LOGGER.log(level, "  -> {0}\n", depUrl); //NOI18N
+//            }
+        }
+    }
+
+    private static StringBuilder printMap(Map<URL, List<URL>> deps, StringBuilder sb) {
+        Set<URL> sortedRoots = new TreeSet<URL>(C);
+        sortedRoots.addAll(deps.keySet());
+        for(URL url : sortedRoots) {
+            sb.append("  ").append(url).append(":\n"); //NOI18N
+//            for(URL depUrl : deps.get(url)) {
+//                sb.append("  -> ").append(depUrl).append("\n"); //NOI18N
+//            }
+        }
+        return sb;
+    }
+
+    private static void printCollection(Collection<? extends URL> collection, Level level) {
+        Set<URL> sortedRoots = new TreeSet<URL>(C);
+        sortedRoots.addAll(collection);
+        for(URL url : sortedRoots) {
+            LOGGER.log(level, "  {0}\n", url); //NOI18N
+        }
+    }
+
+    private static StringBuilder printCollection(Collection<? extends URL> collection, StringBuilder sb) {
+        Set<URL> sortedRoots = new TreeSet<URL>(C);
+        sortedRoots.addAll(collection);
+        for(URL url : sortedRoots) {
+            sb.append("  ").append(url).append("\n"); //NOI18N
+        }
+        return sb;
+    }
+
+    private static final Comparator<URL> C = new Comparator<URL>() {
+        public int compare(URL o1, URL o2) {
+            return o1.toString().compareTo(o2.toString());
+        }
+    };
+
 // we have to handle *all* mime types because of eg. tasklist indexer or goto-file indexer
 //    private static boolean isMonitoredMimeType(FileObject f, Set<String> mimeTypes) {
 //        String mimeType = FileUtil.getMIMEType(f, mimeTypes.toArray(new String[mimeTypes.size()]));
@@ -1629,11 +1677,17 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
 
             updateProgress(NbBundle.getMessage(RepositoryUpdater.class, "MSG_ProjectDependencies")); //NOI18N
+            long tm1 = System.currentTimeMillis();
             if (depCtx == null) {
                 depCtx = new DependenciesContext(scannedRoots2Dependencies, scannedBinaries, useInitialState);
                 final List<URL> newRoots = new LinkedList<URL>();
-                newRoots.addAll(PathRegistry.getDefault().getSources());
-                newRoots.addAll(PathRegistry.getDefault().getLibraries());
+                Collection<? extends URL> c = PathRegistry.getDefault().getSources();
+                LOGGER.log(Level.FINE, "PathRegistry.sources="); printCollection(c, Level.FINE); //NOI18N
+                newRoots.addAll(c);
+
+                c = PathRegistry.getDefault().getLibraries();
+                LOGGER.log(Level.FINE, "PathRegistry.libraries="); printCollection(c, Level.FINE); //NOI18N
+                newRoots.addAll(c);
 
                 depCtx.newBinariesToScan.addAll(PathRegistry.getDefault().getBinaryLibraries());
                 for (Iterator<URL> it = depCtx.newBinariesToScan.iterator(); it.hasNext(); ) {
@@ -1641,14 +1695,16 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         it.remove();
                     }
                 }
-                newRoots.addAll(PathRegistry.getDefault().getUnknownRoots());
 
-                Set<String> libraryIds = PathRecognizerRegistry.getDefault().getLibraryIds();
-                Set<String> binaryLibraryIds = PathRecognizerRegistry.getDefault().getBinaryLibraryIds();
-                LOGGER.log(Level.FINE, "LibraryIds: {0}", libraryIds);
-                LOGGER.log(Level.FINE, "BinaryLibraryIds: {0}", binaryLibraryIds);
+                if (useInitialState) {
+                    c = PathRegistry.getDefault().getUnknownRoots();
+                    LOGGER.log(Level.FINE, "PathRegistry.unknown="); printCollection(c, Level.FINE); //NOI18N
+                    newRoots.addAll(c);
+                } // else computing the deps from scratch and so will find the 'unknown' roots
+                // by following the dependencies (#166715)
+
                 for (URL url : newRoots) {
-                    findDependencies(url, depCtx, libraryIds, binaryLibraryIds);
+                    findDependencies(url, depCtx, null, null);
                 }
 
                 try {
@@ -1665,6 +1721,19 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     final Map<URL,List<URL>> addedOrChanged = new HashMap<URL,List<URL>>();
                     diff(depCtx.initialRoots2Deps, depCtx.newRoots2Deps, addedOrChanged, removed);
 
+                    final Level logLevel = Level.FINE;
+                    if (LOGGER.isLoggable(logLevel) && (addedOrChanged.size() > 0 || removed.size() > 0)) {
+                        LOGGER.log(logLevel, "Changes in dependencies detected:"); //NOI18N
+                        LOGGER.log(logLevel, "initialRoots2Deps({0})=", depCtx.initialRoots2Deps.size()); //NOI18N
+                        printMap(depCtx.initialRoots2Deps, logLevel);
+                        LOGGER.log(logLevel, "newRoots2Deps({0})=", depCtx.newRoots2Deps.size()); //NOI18N
+                        printMap(depCtx.newRoots2Deps, logLevel);
+                        LOGGER.log(logLevel, "addedOrChanged({0})=", addedOrChanged.size()); //NOI18N
+                        printMap(addedOrChanged, logLevel);
+                        LOGGER.log(logLevel, "removed({0})=", removed.size()); //NOI18N
+                        printMap(removed, logLevel);
+                    }
+
                     depCtx.oldRoots.clear();
                     depCtx.oldRoots.addAll(removed.keySet());
                     depCtx.newRootsToScan.retainAll(addedOrChanged.keySet());
@@ -1674,6 +1743,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 depCtx.scannedRoots.clear();
                 depCtx.newBinariesToScan.removeAll(depCtx.scannedBinaries);
                 depCtx.scannedBinaries.clear();
+            }
+
+            if (LOGGER.isLoggable(Level.INFO)) {
+                LOGGER.log(Level.INFO, "Resolving dependencies took: {0} ms", System.currentTimeMillis() - tm1); //NOI18N
             }
 
             if (LOGGER.isLoggable(Level.FINE)) {
@@ -1694,11 +1767,14 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             scannedBinaries.addAll(depCtx.scannedBinaries);
             scannedBinaries.removeAll(depCtx.oldBinaries);
 
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine(this + " " + (isCancelled() ? "cancelled" : "finished") + ": {"); //NOI18N
-                LOGGER.fine("  scannedRoots2Dependencies=" + scannedRoots2Dependencies); //NOI18N
-                LOGGER.fine("  scannedBinaries=" + scannedBinaries); //NOI18N
-                LOGGER.fine("} ===="); //NOI18N
+            final Level logLevel = Level.FINE;
+            if (LOGGER.isLoggable(logLevel)) {
+                LOGGER.log(logLevel, this + " " + (isCancelled() ? "cancelled" : "finished") + ": {"); //NOI18N
+                LOGGER.log(logLevel, "  scannedRoots2Dependencies(" + scannedRoots2Dependencies.size() + ")="); //NOI18N
+                printMap(scannedRoots2Dependencies, logLevel);
+                LOGGER.log(logLevel, "  scannedBinaries(" + scannedBinaries.size() + ")="); //NOI18N
+                printCollection(scannedBinaries, logLevel);
+                LOGGER.log(logLevel, "} ===="); //NOI18N
             }
 
             return finished;
@@ -1728,8 +1804,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         private static void findDependencies(
                 final URL rootURL,
                 final DependenciesContext ctx,
-                final Set<String> libraryClassPathIds,
-                final Set<String> binaryLibraryClassPathIds)
+                Set<String> libraryIds,
+                Set<String> binaryLibraryIds)
         {
             if (ctx.useInitialState && ctx.initialRoots2Deps.containsKey(rootURL)) {
                 ctx.oldRoots.remove(rootURL);
@@ -1746,54 +1822,86 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             final List<URL> deps = new LinkedList<URL>();
             ctx.cycleDetector.push(rootURL);
             try {
-                { // libraries
-                    final List<ClassPath> libraryPathToResolve = new ArrayList<ClassPath>(libraryClassPathIds.size());
-                    for (String id : libraryClassPathIds) {
-                        ClassPath cp = ClassPath.getClassPath(rootFo, id);
-                        if (cp != null) {
-                            libraryPathToResolve.add(cp);
+                if (libraryIds == null || binaryLibraryIds == null) {
+                    Set<String> ids;
+                    if (null != (ids = PathRegistry.getDefault().getSourceIdsFor(rootURL)) && !ids.isEmpty()) {
+                        LOGGER.log(Level.FINER, "Resolving Ids based on sourceIds for {0}: {1}", new Object [] { rootURL, ids }); //NOI18N
+                        Set<String> lids = new HashSet<String>();
+                        Set<String> blids = new HashSet<String>();
+                        for(String id : ids) {
+                            lids.addAll(PathRecognizerRegistry.getDefault().getLibraryIdsForSourceId(id));
+                            blids.addAll(PathRecognizerRegistry.getDefault().getBinaryLibraryIdsForSourceId(id));
+                        }
+                        if (libraryIds == null) {
+                            libraryIds = lids;
+                        }
+                        if (binaryLibraryIds == null) {
+                            binaryLibraryIds = blids;
+                        }
+                    } else if (null != (ids = PathRegistry.getDefault().getLibraryIdsFor(rootURL)) && !ids.isEmpty()) {
+                        LOGGER.log(Level.FINER, "Resolving Ids based on libraryIds for {0}: {1}", new Object [] { rootURL, ids }); //NOI18N
+                        Set<String> blids = new HashSet<String>();
+                        for(String id : ids) {
+                            blids.addAll(PathRecognizerRegistry.getDefault().getBinaryLibraryIdsForLibraryId(id));
+                        }
+                        if (libraryIds == null) {
+                            libraryIds = ids;
+                        }
+                        if (binaryLibraryIds == null) {
+                            binaryLibraryIds = blids;
                         }
                     }
+                }
 
-                    for (ClassPath cp : libraryPathToResolve) {
-                        for (ClassPath.Entry entry : cp.entries()) {
-                            final URL sourceRoot = entry.getURL();
-                            if (!sourceRoot.equals(rootURL) && !ctx.cycleDetector.contains(sourceRoot)) {
-                                deps.add(sourceRoot);
-                                findDependencies(sourceRoot, ctx, libraryClassPathIds, binaryLibraryClassPathIds);
+                LOGGER.log(Level.FINER, "LibraryIds for {0}: {1}", new Object [] { rootURL, libraryIds }); //NOI18N
+                LOGGER.log(Level.FINER, "BinaryLibraryIds for {0}: {1}", new Object [] { rootURL, binaryLibraryIds }); //NOI18N
+
+                { // libraries
+                    final Set<String> ids = libraryIds == null ? PathRecognizerRegistry.getDefault().getLibraryIds() : libraryIds;
+                    for (String id : ids) {
+                        ClassPath cp = ClassPath.getClassPath(rootFo, id);
+                        if (cp != null) {
+                            for (ClassPath.Entry entry : cp.entries()) {
+                                final URL sourceRoot = entry.getURL();
+                                if (!sourceRoot.equals(rootURL) && !ctx.cycleDetector.contains(sourceRoot)) {
+                                    deps.add(sourceRoot);
+//                                    LOGGER.log(Level.FINEST, "#1- {0}: adding dependency on {1}, from {2} with id {3}", new Object [] {
+//                                        rootURL, sourceRoot, cp, id
+//                                    });
+                                    findDependencies(sourceRoot, ctx, libraryIds, binaryLibraryIds);
+                                }
                             }
                         }
                     }
                 }
 
                 { // binary libraries
-                    final List<ClassPath> binaryLibraryPathToResolve = new ArrayList<ClassPath>(binaryLibraryClassPathIds.size());
-                    for (String id : binaryLibraryClassPathIds) {
+                    final Set<String> ids = binaryLibraryIds == null ? PathRecognizerRegistry.getDefault().getLibraryIds() : binaryLibraryIds;
+                    for (String id : ids) {
                         ClassPath cp = ClassPath.getClassPath(rootFo, id);
                         if (cp != null) {
-                            binaryLibraryPathToResolve.add(cp);
-                        }
-                    }
-
-                    for (ClassPath cp : binaryLibraryPathToResolve) {
-                        for (ClassPath.Entry entry : cp.entries()) {
-                            final URL url = entry.getURL();
-                            final URL[] sourceRoots = PathRegistry.getDefault().sourceForBinaryQuery(url, cp, false);
-                            if (sourceRoots != null) {
-                                for (URL sourceRoot : sourceRoots) {
-                                    if (!sourceRoot.equals(rootURL) && !ctx.cycleDetector.contains(sourceRoot)) {
-                                        deps.add(sourceRoot);
-                                        findDependencies(sourceRoot, ctx, libraryClassPathIds, binaryLibraryClassPathIds);
+                            for (ClassPath.Entry entry : cp.entries()) {
+                                final URL url = entry.getURL();
+                                final URL[] sourceRoots = PathRegistry.getDefault().sourceForBinaryQuery(url, cp, false);
+                                if (sourceRoots != null) {
+                                    for (URL sourceRoot : sourceRoots) {
+                                        if (!sourceRoot.equals(rootURL) && !ctx.cycleDetector.contains(sourceRoot)) {
+                                            deps.add(sourceRoot);
+//                                            LOGGER.log(Level.FINEST, "#2- {0}: adding dependency on {1}, from {2} with id {3}", new Object [] {
+//                                                rootURL, sourceRoot, cp, id
+//                                            });
+                                            findDependencies(sourceRoot, ctx, libraryIds, binaryLibraryIds);
+                                        }
                                     }
                                 }
-                            }
-                            else {
-                                //What does it mean?
-                                if (ctx.useInitialState) {
-                                    if (!ctx.initialBinaries.contains(url)) {
-                                        ctx.newBinariesToScan.add (url);
+                                else {
+                                    //What does it mean?
+                                    if (ctx.useInitialState) {
+                                        if (!ctx.initialBinaries.contains(url)) {
+                                            ctx.newBinariesToScan.add (url);
+                                        }
+                                        ctx.oldBinaries.remove(url);
                                     }
-                                    ctx.oldBinaries.remove(url);
                                 }
                             }
                         }
@@ -1838,8 +1946,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
             }
 
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine(String.format("Complete indexing of %d binary roots took: %d ms", scannedRootsCnt, completeTime)); //NOI18N
+            if (LOGGER.isLoggable(Level.INFO)) {
+                LOGGER.info(String.format("Complete indexing of %d binary roots took: %d ms", scannedRootsCnt, completeTime)); //NOI18N
             }
             TEST_LOGGER.log(Level.FINEST, "scanBinary", ctx.newBinariesToScan);       //NOI18N
 
@@ -1882,8 +1990,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
             }
 
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine(String.format("Complete indexing of %d source roots took: %d ms", scannedRootsCnt, completeTime)); //NOI18N
+            if (LOGGER.isLoggable(Level.INFO)) {
+                LOGGER.info(String.format("Complete indexing of %d source roots took: %d ms", scannedRootsCnt, completeTime)); //NOI18N
             }
             TEST_LOGGER.log(Level.FINEST, "scanSources", ctx.newRootsToScan); //NOI18N
 
@@ -1984,7 +2092,6 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
             }
         }
-
     } // End of RootsWork class
 
     private final class InitialRootsWork extends RootsWork {
@@ -2358,14 +2465,22 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             sb.append(super.toString());
             sb.append(": {\n"); //NOI18N
             sb.append("  useInitialState=" + useInitialState).append("\n"); //NOI18N
-            sb.append("  initialRoots2Deps=" + initialRoots2Deps).append("\n"); //NOI18N
-            sb.append("  initialBinaries=" + initialBinaries).append("\n"); //NOI18N
-            sb.append("  oldRoots=" + oldRoots).append("\n"); //NOI18N
-            sb.append("  oldBinaries=" + oldBinaries).append("\n"); //NOI18N
-            sb.append("  newRootsToScan=" + newRootsToScan).append("\n"); //NOI18N
-            sb.append("  newBinariesToScan=" + newBinariesToScan).append("\n"); //NOI18N
-            sb.append("  scannedRoots=" + scannedRoots).append("\n"); //NOI18N
-            sb.append("  scannedBinaries=" + scannedBinaries).append("\n"); //NOI18N
+            sb.append("  initialRoots2Deps(").append(initialRoots2Deps.size()).append(")=\n"); //NOI18N
+            printMap(initialRoots2Deps, sb);
+            sb.append("  initialBinaries(").append(initialBinaries.size()).append(")=\n"); //NOI18N
+            printCollection(initialBinaries, sb);
+            sb.append("  oldRoots(").append(oldRoots.size()).append(")=\n"); //NOI18N
+            printCollection(oldRoots, sb);
+            sb.append("  oldBinaries(").append(oldBinaries.size()).append(")=\n"); //NOI18N
+            printCollection(oldBinaries, sb);
+            sb.append("  newRootsToScan(").append(newRootsToScan.size()).append(")=\n"); //NOI18N
+            printCollection(newRootsToScan, sb);
+            sb.append("  newBinariesToScan(").append(newBinariesToScan.size()).append(")=\n"); //NOI18N
+            printCollection(newBinariesToScan, sb);
+            sb.append("  scannedRoots(").append(scannedRoots.size()).append(")=\n"); //NOI18N
+            printCollection(scannedRoots, sb);
+            sb.append("  scannedBinaries(").append(scannedBinaries.size()).append(")=\n"); //NOI18N
+            printCollection(scannedBinaries, sb);
             sb.append("} ----\n"); //NOI18N
             return sb.toString();
         }
