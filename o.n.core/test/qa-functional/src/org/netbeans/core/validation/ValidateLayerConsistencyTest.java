@@ -457,7 +457,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                         }
                     }
                 }
-                errors.add("File " + fo.getPath() + " represents an action which is not in Actions/ subfolder. Provided by " + fo.getAttribute("layers"));
+                errors.add("File " + fo.getPath() + " represents an action which is not in Actions/ subfolder. Provided by " + Arrays.toString((Object[])fo.getAttribute("layers")));
             } catch (Exception ex) {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 PrintStream ps = new PrintStream(baos);
