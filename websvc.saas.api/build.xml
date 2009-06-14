@@ -60,7 +60,8 @@
     </target>
     
     <target name="model-gen" depends="xjc-init">
-        <xjc schema="${saas.service.xsd}"
+    <echo>java.version=${java.version}, ant.version=${ant.version}</echo>
+        <xjc schema="${saas.service.xsd}"      
             package="org.netbeans.modules.websvc.saas.model.jaxb"
             destdir="src">
             <depends file="${saas-service.xsd}"/>
