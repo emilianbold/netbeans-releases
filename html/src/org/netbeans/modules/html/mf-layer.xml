@@ -40,9 +40,19 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
 
+    <folder name="Actions">
+        <folder name="Tools">
+            <file name="org-netbeans-modules-html-palette-HtmlPaletteCustomizerAction.instance">
+                <attr name="delegate" newvalue="org.netbeans.modules.html.palette.HtmlPaletteCustomizerAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.html.palette.Bundle#ACT_OpenHTMLCustomizer"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" boolvalue="true"/>
+            </file>
+        </folder>
+    </folder>
     <folder name="Templates">
         <folder name="Other">
             <file name="html.html" url="templates/html.html">
@@ -159,7 +169,8 @@ made subject to such option by the copyright holder.
     <folder name="Menu">
         <folder name="Tools">
             <folder name="PaletteManager">
-                <file name="org-netbeans-modules-html-palette-HtmlPaletteCustomizerAction.instance">
+                <file name="org-netbeans-modules-html-palette-HtmlPaletteCustomizerAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-html-palette-HtmlPaletteCustomizerAction.instance"/>
                     <attr name="position" intvalue="200"/>
                 </file>
             </folder>

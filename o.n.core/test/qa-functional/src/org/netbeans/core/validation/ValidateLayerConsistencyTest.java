@@ -395,7 +395,13 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 if (ic == null) {
                     continue;
                 }
-                Object o = ic.instanceCreate ();
+                Object o;
+                try {
+                    o = ic.instanceCreate();
+                } catch (ClassNotFoundException ok) {
+                    // wrong instances are catched by another test
+                    continue;
+                }
                 if (!(o instanceof Action)) {
                     continue;
                 }
