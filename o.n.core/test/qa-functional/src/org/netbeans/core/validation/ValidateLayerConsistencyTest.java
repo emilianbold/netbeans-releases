@@ -451,7 +451,8 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 if (fo.hasExt("shadow")) {
                     o = fo.getAttribute("originalFile");
                     if (o instanceof String) {
-                        if (((String)o).startsWith("Actions/")) {
+                        String origF = o.toString().replaceFirst("\\/*", "");
+                        if (origF.startsWith("Actions/")) {
                             continue;
                         }
                     }
