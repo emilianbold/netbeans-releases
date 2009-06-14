@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <folder name="Actions">
+        <folder name="Tools">
+            <file name="org-netbeans-modules-websvc-rest-wadl-design-actions-WadlSourceViewOpenAction.instance"/>
+            <file name="org-netbeans-modules-websvc-rest-wadl-design-actions-WadlViewOpenAction.instance"/>
+        </folder>
+    </folder>
     <folder name="Services">
         <!-- Recognize application/vnd.sun.wadl+xml: -->
         <folder name="MIMEResolver">
@@ -20,6 +26,14 @@
                     </file>
                 </folder>
                 <folder name="Actions">
+                    <file name="org-netbeans-modules-websvc-rest-wadl-design-actions-WadlSourceViewOpenAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-websvc-rest-wadl-design-actions-WadlSourceViewOpenAction.instance"/>
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="org-netbeans-modules-websvc-rest-wadl-design-actions-WadlViewOpenAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-websvc-rest-wadl-design-actions-WadlViewOpenAction.instance"/>
+                        <attr name="position" intvalue="100"/>
+                    </file>
                     <file name="org-netbeans-modules-xml-actions-CollectXMLAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-actions-CollectXMLAction.instance"/>
                         <attr name="position" intvalue="600"/>
@@ -36,13 +50,7 @@
                         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
                         <attr name="position" intvalue="1200"/>
                     </file>
-                    <file name="org-openide-actions-EditAction.instance_hidden"/>
-                    <file name="org-netbeans-modules-websvc-rest-wadl-design-actions-WadlViewOpenAction.instance">
-                        <attr name="position" intvalue="100"/>
-                    </file>                 
-                    <file name="org-netbeans-modules-websvc-rest-wadl-design-actions-WadlSourceViewOpenAction.instance">
-                        <attr name="position" intvalue="400"/>
-                    </file>
+                    <file name="org-openide-actions-EditAction.instance_hidden"/>                 
                     <file name="org-openide-actions-FileSystemAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
                         <attr name="position" intvalue="2000"/>

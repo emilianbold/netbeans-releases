@@ -42,6 +42,13 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <folder name="Actions">
+        <folder name="Tools">
+            <file name="SetStartPageAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.visualweb.project.jsf.actions.SetStartPageAction"/>
+            </file>
+        </folder>
+    </folder>
     <folder name="CreatorJspPalette">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.webui.designtime.resources.Bundle"/>
         
@@ -327,11 +334,11 @@ made subject to such option by the copyright holder.
                             <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
                             <attr name="position" intvalue="1500"/>
                         </file>
-                        <file name="SetStartPageAction.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.visualweb.project.jsf.actions.SetStartPageAction"/>
-                      <attr name="position" intvalue="100"/>
+                        <file name="SetStartPageAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Tools/SetStartPageAction.instance"/>
+                            <attr name="position" intvalue="100"/>
                         </file>
-                  <file name="ToolsAction.shadow">
+                        <file name="ToolsAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ToolsAction.instance"/>
                             <attr name="position" intvalue="1900"/>
                         </file>

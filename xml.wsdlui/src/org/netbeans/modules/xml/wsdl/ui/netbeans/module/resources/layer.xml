@@ -43,6 +43,12 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     
+    <folder name="Actions">
+        <folder name="Tools">
+            <file name="org-netbeans-modules-xml-wsdl-ui-actions-WSDLSourceViewOpenAction.instance"/>
+            <file name="org-netbeans-modules-xml-wsdl-ui-actions-WSDLViewOpenAction.instance"/>
+        </folder>
+    </folder>
     <folder name="Services">
         <folder name="JavaHelp">
             <file name="wsdlui-helpset.xml" url="wsdlui-helpset.xml">
@@ -90,6 +96,14 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-actions-CollectXMLAction.instance"/>
                         <attr name="position" intvalue="600"/>
                     </file>
+                    <file name="org-netbeans-modules-xml-wsdl-ui-actions-WSDLSourceViewOpenAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-xml-wsdl-ui-actions-WSDLSourceViewOpenAction.instance"/>
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="org-netbeans-modules-xml-wsdl-ui-actions-WSDLViewOpenAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-xml-wsdl-ui-actions-WSDLViewOpenAction.instance"/>
+                        <attr name="position" intvalue="100"/>
+                    </file>
                     <file name="org-openide-actions-CopyAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
                         <attr name="position" intvalue="900"/>
@@ -102,13 +116,7 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
                         <attr name="position" intvalue="1200"/>
                     </file>
-                    <file name="org-openide-actions-EditAction.instance_hidden"/>
-                    <file name="org-netbeans-modules-xml-wsdl-ui-actions-WSDLViewOpenAction.instance">
-                        <attr name="position" intvalue="100"/>
-                    </file>                 
-                    <file name="org-netbeans-modules-xml-wsdl-ui-actions-WSDLSourceViewOpenAction.instance">
-                        <attr name="position" intvalue="400"/>
-                    </file>
+                    <file name="org-openide-actions-EditAction.instance_hidden"/>                 
                     <file name="org-openide-actions-FileSystemAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
                         <attr name="position" intvalue="2000"/>

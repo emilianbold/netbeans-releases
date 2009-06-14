@@ -41,6 +41,12 @@
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
+    <folder name="Actions">
+        <folder name="Tools">
+            <file name="org-netbeans-modules-bpel-editors-multiview-BpelDesignViewOpenAction.instance"/>
+            <file name="org-netbeans-modules-bpel-editors-multiview-BpelSourceViewOpenAction.instance"/>
+        </folder>
+    </folder>
     <folder name="Templates">
         <folder name="SOA_BPEL">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.core.wizard.Bundle"/>
@@ -99,6 +105,14 @@
                     </file>
                 </folder>
                 <folder name="Actions">
+                    <file name="org-netbeans-modules-bpel-editors-multiview-BpelDesignViewOpenAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-bpel-editors-multiview-BpelDesignViewOpenAction.instance"/>
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="org-netbeans-modules-bpel-editors-multiview-BpelSourceViewOpenAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-bpel-editors-multiview-BpelSourceViewOpenAction.instance"/>
+                        <attr name="position" intvalue="150"/>
+                    </file>
                     <file name="org-netbeans-modules-xml-tools-actions-CheckAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-CheckAction.instance"/>
                         <attr name="position" intvalue="300"/>
@@ -119,13 +133,7 @@
                         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
                         <attr name="position" intvalue="1000"/>
                     </file>
-                    <file name="org-openide-actions-EditAction.instance_hidden"/>
-                    <file name="org-netbeans-modules-bpel-editors-multiview-BpelDesignViewOpenAction.instance">
-                        <attr name="position" intvalue="100"/>
-                    </file>                 
-                    <file name="org-netbeans-modules-bpel-editors-multiview-BpelSourceViewOpenAction.instance">
-                        <attr name="position" intvalue="150"/>
-                    </file>
+                    <file name="org-openide-actions-EditAction.instance_hidden"/>                 
                     <!--file name="org-openide-actions-OpenAction.instance">
                         <attr name="position" intvalue="100"/>
                     </file-->

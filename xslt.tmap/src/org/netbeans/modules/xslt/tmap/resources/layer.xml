@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <folder name="Actions">
+        <folder name="Tools">
+            <file name="org-netbeans-modules-xslt-tmap-multiview-TMapSourceViewOpenAction.instance"/>
+            <file name="org-netbeans-modules-xslt-tmap-multiview-TMapTreeViewOpenAction.instance"/>
+        </folder>
+    </folder>
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-tmap+xml">
@@ -14,17 +20,19 @@
                         <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-actions-CollectXMLAction.instance"/>
                         <attr name="position" intvalue="500"/>
                     </file>
+                    <file name="org-netbeans-modules-xslt-tmap-multiview-TMapSourceViewOpenAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-xslt-tmap-multiview-TMapSourceViewOpenAction.instance"/>
+                        <attr name="position" intvalue="150"/>
+                    </file>
+                    <file name="org-netbeans-modules-xslt-tmap-multiview-TMapTreeViewOpenAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-xslt-tmap-multiview-TMapTreeViewOpenAction.instance"/>
+                        <attr name="position" intvalue="100"/>
+                    </file>
                     <file name="org-openide-actions-CopyAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
                         <attr name="position" intvalue="700"/>
                     </file>
-                    <file name="org-openide-actions-EditAction.instance_hidden"/>
-                    <file name="org-netbeans-modules-xslt-tmap-multiview-TMapTreeViewOpenAction.instance">
-                        <attr name="position" intvalue="100"/>
-                    </file>                 
-                    <file name="org-netbeans-modules-xslt-tmap-multiview-TMapSourceViewOpenAction.instance">
-                        <attr name="position" intvalue="150"/>
-                    </file>
+                    <file name="org-openide-actions-EditAction.instance_hidden"/>                 
                     <!--file name="org-openide-actions-OpenAction.instance">
                         <attr name="position" intvalue="100"/>
                     </file-->
