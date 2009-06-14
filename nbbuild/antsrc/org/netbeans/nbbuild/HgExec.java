@@ -79,11 +79,25 @@ public class HgExec extends ExecTask {
         String path = System.getenv("Path");
         if (path != null) {
             for (String component : path.split(File.pathSeparator)) {
-                if (new File(component, "hg").isFile() || new File(component, "hg.exe").isFile()) {
+                File f = new File (component, "hg.bat");
+                //TDB: Check for .bat or .cmd first - if you are on windows
+                //and built mercurial from source, we want the .bat file,
+                //not the plain "hg" file or the build script will
+                //not actually be able to run cmd
+                if (f.isFile()) {
+                    return Arrays.asList ("cmd", "/c", "hg");
+                }
+                f = new File (component, "hg.bat");
+                if (f.isFile()) {
+                    return Arrays.asList ("cmd", "/c", "hg");
+                }
+                f = new File (component, "hg.cmd");
+                if (f.isFile()) {
                     return Collections.singletonList("hg");
                 }
-                if (new File(component, "hg.cmd").isFile() || new File(component, "hg.bat").isFile()) {
-                    return Arrays.asList("cmd", "/c", "hg");
+                f = new File (component, "hg");
+                if (f.isFile()) {
+                    return Collections.singletonList("hg");
                 }
             }
         }
