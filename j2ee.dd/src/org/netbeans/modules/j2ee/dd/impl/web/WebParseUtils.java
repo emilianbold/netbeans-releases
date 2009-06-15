@@ -44,14 +44,10 @@ package org.netbeans.modules.j2ee.dd.impl.web;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.dd.api.web.WebFragment;
 import org.netbeans.modules.j2ee.dd.impl.common.ParseUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 import org.xml.sax.*;
 
 
@@ -79,10 +75,15 @@ public class WebParseUtils {
     }
     
     private static class VersionHandler extends org.xml.sax.helpers.DefaultHandler {
+        @Override
         public void startElement(String uri, String localName, String rawName, Attributes atts) throws SAXException {
             if ("web-app".equals(rawName)) { //NOI18N
                 String version = atts.getValue("version"); //NOI18N
                 throw new SAXException(ParseUtils.EXCEPTION_PREFIX+(version==null?WebApp.VERSION_2_3:version));
+            }
+            if ("web-fragment".equals(rawName)) { //NOI18N
+                String version = atts.getValue("version"); //NOI18N
+                throw new SAXException(ParseUtils.EXCEPTION_PREFIX+(version==null?WebFragment.VERSION_3_0:version));
             }
         }
     }
@@ -108,10 +109,14 @@ public class WebParseUtils {
                 resource="/org/netbeans/modules/j2ee/dd/impl/resources/web-app_2_3.dtd"; //NOI18N
             } else if ("-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN".equals(publicId)) { //NOI18N
                 resource="/org/netbeans/modules/j2ee/dd/impl/resources/web-app_2_2.dtd"; //NOI18N
-            } else if (systemId!=null && systemId.endsWith("web-app_2_4.xsd")) {
+            } else if (systemId!=null && systemId.endsWith("web-app_2_4.xsd")) { //NOI18N
                 resource="/org/netbeans/modules/j2ee/dd/impl/resources/web-app_2_4.xsd"; //NOI18N
-            } else if (systemId!=null && systemId.endsWith("web-app_2_5.xsd")) {
+            } else if (systemId!=null && systemId.endsWith("web-app_2_5.xsd")) { //NOI18N
                 resource="/org/netbeans/modules/j2ee/dd/impl/resources/web-app_2_5.xsd"; //NOI18N
+            } else if (systemId!=null && systemId.endsWith("web-app_3_0.xsd")) { //NOI18N
+                resource="/org/netbeans/modules/j2ee/dd/impl/resources/web-app_3_0.xsd"; //NOI18N
+            } else if (systemId!=null && systemId.endsWith("web-fragment_3_0.xsd")) { //NOI18N
+                resource="/org/netbeans/modules/j2ee/dd/impl/resources/web-fragment_3_0.xsd"; //NOI18N
             }
             // additional logging for #127276
             if (LOGGER.isLoggable(Level.FINE)) {

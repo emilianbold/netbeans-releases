@@ -172,6 +172,22 @@ public final class DDProvider {
         }
         return webApp;
     }
+
+    /**
+     * Gets the root bean graph representing the given web.xml deployment descriptor
+     * file.
+     *
+     * @param fo the file object representing a web.xml file. Must not be null.
+     * @param useCache true if the cache should be used
+     * @return the <code>WebApp</code> representing the given <code>fo</code>.
+     * @throws IOException if the given <code>fo</code> could not be read
+     * or if parsing it failed.
+     */
+    public WebApp getDDRoot(FileObject fo, boolean useCache) throws IOException {
+        if (!useCache)
+            removeFromCache(fo);
+        return getDDRoot(fo);
+    }
     
     /**
      * Returns the root of deployment descriptor bean graph for given file object.

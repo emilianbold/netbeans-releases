@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.dd.impl.web.annotation;
+package org.netbeans.modules.j2ee.dd.impl.web.metadata;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -55,51 +55,53 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.Annotatio
 import org.openide.util.Exceptions;
 
 /**
- *
  * @author Andrei Badea
+ * @author Petr Slechta
  */
 public class WebAppMetadataModelImpl implements MetadataModelImplementation<WebAppMetadata> {
 
     private final MetadataUnit metadataUnit;
-    private final AnnotationModelHelper helper;
-    private final WebAppImpl root;
+    private AnnotationModelHelper helper;
     private final WebAppMetadata metadata;
 
-    public static WebAppMetadataModelImpl create(MetadataUnit metadataUnit, boolean merge) {
-        WebAppMetadataModelImpl result = new WebAppMetadataModelImpl(metadataUnit, merge);
+    public static WebAppMetadataModelImpl create(MetadataUnit metadataUnit) {
+        WebAppMetadataModelImpl result = new WebAppMetadataModelImpl(metadataUnit);
         result.initialize();
         return result;
     }
 
-    private WebAppMetadataModelImpl(MetadataUnit metadataUnit, boolean merge) {
+    private WebAppMetadataModelImpl(MetadataUnit metadataUnit) {
         this.metadataUnit = metadataUnit;
-        ClasspathInfo cpi = ClasspathInfo.create(metadataUnit.getBootPath(), metadataUnit.getCompilePath(), metadataUnit.getSourcePath());
-        helper = AnnotationModelHelper.create(cpi);
-        root = new WebAppImpl(helper, merge);
-        metadata = new WebAppMetadataImpl(root);
+        metadata = new WebAppMetadataImpl(metadataUnit, this);
     }
 
     private void initialize() {
         metadataUnit.addPropertyChangeListener(new DDListener());
     }
 
+    AnnotationModelHelper getHelper() {
+        if (helper == null) {
+            ClasspathInfo cpi = ClasspathInfo.create(metadataUnit.getBootPath(), metadataUnit.getCompilePath(), metadataUnit.getSourcePath());
+            helper = AnnotationModelHelper.create(cpi);
+        }
+        return helper;
+    }
+
     public <R> R runReadAction(final MetadataModelAction<WebAppMetadata, R> action) throws IOException {
-        return helper.runJavaSourceTask(new Callable<R>() {
+        return getHelper().runJavaSourceTask(new Callable<R>() {
             public R call() throws Exception {
-                root.ensureRoot(metadataUnit);
                 return action.run(metadata);
             }
         });
     }
 
     public boolean isReady() {
-        return !helper.isJavaScanInProgress();
+        return !getHelper().isJavaScanInProgress();
     }
 
     public <R> Future<R> runReadActionWhenReady(final MetadataModelAction<WebAppMetadata, R> action) throws IOException {
-        return helper.runJavaSourceTaskWhenScanFinished(new Callable<R>() {
+        return getHelper().runJavaSourceTaskWhenScanFinished(new Callable<R>() {
             public R call() throws Exception {
-                root.ensureRoot(metadataUnit);
                 return action.run(metadata);
             }
         });
@@ -112,14 +114,13 @@ public class WebAppMetadataModelImpl implements MetadataModelImplementation<WebA
                 return;
             }
             try {
-                helper.runJavaSourceTask(this);
+                getHelper().runJavaSourceTask(this);
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
             // XXX send change event
         }
         public Void call() throws IOException {
-            root.changeRoot(metadataUnit);
             return null;
         }
     }
