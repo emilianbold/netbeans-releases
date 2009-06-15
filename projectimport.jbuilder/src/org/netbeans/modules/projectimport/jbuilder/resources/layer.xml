@@ -40,22 +40,28 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC '-//NetBeans//DTD Filesystem 1.1//EN' 'http://www.netbeans.org/dtds/filesystem-1_1.dtd'>
-
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
 
+    <folder name="Actions">
+        <folder name="Tools">
+            <file name="org-netbeans-modules-projectimport-jbuilder-ImportJBProjectAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.projectimport.jbuilder.ImportAction"/>
+            </file>
+        </folder>
+    </folder>
     <folder name="Menu">
       <folder name="File">
             <folder name="Import">
                 <attr name="position" intvalue="1426"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.projectimport.jbuilder.resources.Bundle"/>
-                <file name="org-netbeans-modules-projectimport-jbuilder-ImportJBProjectAction.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.projectimport.jbuilder.ImportAction" />
+                <file name="org-netbeans-modules-projectimport-jbuilder-ImportJBProjectAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-projectimport-jbuilder-ImportJBProjectAction.instance"/>
                     <attr name="position" intvalue="300"/>
                 </file>
             </folder>
             <file name="ImporterSeparator1.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                 <attr name="position" intvalue="1430"/>
             </file>
         </folder>

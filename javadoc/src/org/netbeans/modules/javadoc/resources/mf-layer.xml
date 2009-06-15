@@ -80,10 +80,10 @@ made subject to such option by the copyright holder.
 
 
   <folder name="Shortcuts">
-      <file name="S-F1.instance">
-        <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.search.SearchDocAction"/>
-      </file>
-  </folder> 
+      <file name="S-F1.shadow">
+            <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-javadoc-search-SearchDocAction.instance"/>
+        </file>
+    </folder> 
   
     <folder name="org-netbeans-modules-java-hints">
         <folder name="rules">
