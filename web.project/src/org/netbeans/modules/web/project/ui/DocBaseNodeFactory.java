@@ -87,6 +87,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
 
@@ -382,14 +383,15 @@ public final class DocBaseNodeFactory implements NodeFactory {
         private static final long serialVersionUID = 1L;
         
         private final ChangeSupport changeSupport = new ChangeSupport(this);
-        private SourceGroup sourceGroup;
+        private final SourceGroup sourceGroup;
         
         public VisibilityQueryDataFilter(SourceGroup sourceGroup) {
             this.sourceGroup = sourceGroup;
             if (this.sourceGroup != null) {
                 this.sourceGroup.addPropertyChangeListener(this);
             }
-            VisibilityQuery.getDefault().addChangeListener( this );
+            VisibilityQuery defaultQuery = VisibilityQuery.getDefault();
+            defaultQuery.addChangeListener(WeakListeners.change(this, defaultQuery));
         }
                 
         public boolean acceptDataObject(DataObject obj) {                
