@@ -131,10 +131,10 @@ class ModelBuilder {
 
     void reset() {
         if (!currentScope.empty()) {
-            ScopeImpl removed = currentScope.pop();
-            if (removed instanceof NamespaceScopeImpl) {
+            ScopeImpl createdScope = currentScope.pop();
+            if (createdScope instanceof NamespaceScopeImpl) {
                 namespaceScope = defaultNamespaceScope;
-            }
+            } 
         }
     }
 

@@ -98,4 +98,22 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
         allMethods.addAll(getInheritedMethods());
         return allMethods;
     }
+
+    @Override
+    public String getIndexSignature() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getName().toLowerCase()).append(";");//NOI18N
+        sb.append(getName()).append(";");//NOI18N
+        sb.append(getOffset()).append(";");//NOI18N
+        List<? extends String> superInterfaces = getSuperInterfaceNames();
+        for (int i = 0; i < superInterfaces.size(); i++) {
+            String iface = superInterfaces.get(0);
+            if (i > 0) {
+                sb.append(",");
+            }
+            sb.append(iface);
+        }
+        sb.append(";");//NOI18N
+        return sb.toString();
+    }
 }

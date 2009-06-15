@@ -63,6 +63,17 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
+import org.netbeans.modules.php.editor.model.ClassConstantElement;
+import org.netbeans.modules.php.editor.model.ClassScope;
+import org.netbeans.modules.php.editor.model.ConstantElement;
+import org.netbeans.modules.php.editor.model.FieldElement;
+import org.netbeans.modules.php.editor.model.FileScope;
+import org.netbeans.modules.php.editor.model.FunctionScope;
+import org.netbeans.modules.php.editor.model.InterfaceScope;
+import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.ModelFactory;
+import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
@@ -162,9 +173,87 @@ public final class PHPIndexer extends EmbeddingIndexer {
             Exceptions.printStackTrace(ex);
             return file.getPath();
         }
-
     }
+
     @Override
+    protected void index(Indexable indexable, Result parserResult, Context context) {
+        try {
+            PHPParseResult r = (PHPParseResult) parserResult;
+            if (r.getProgram() == null) {
+                return;
+            }
+            String processedFileURL = null;
+            try {
+                processedFileURL = r.getSnapshot().getSource().getFileObject().getURL().toExternalForm();
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            if (processedFileURL == null) {
+                return;
+            }
+            List<IndexDocument> documents = new LinkedList<IndexDocument>();
+            IndexingSupport support = IndexingSupport.getInstance(context);
+            Model model = ModelFactory.getModel(r);
+            final FileScope fileScope = model.getFileScope();
+            for (ClassScope classScope : ModelUtils.getDeclaredClasses(fileScope)) {
+                IndexDocument classDocument = support.createDocument(indexable);
+                documents.add(classDocument);
+                classDocument.addPair(FIELD_CLASS, classScope.getIndexSignature(), true, true);
+                classDocument.addPair(FIELD_TOP_LEVEL, classScope.getName().toLowerCase(), true, true);
+                for (MethodScope methodScope : classScope.getDeclaredMethods()) {
+                    classDocument.addPair(FIELD_METHOD, methodScope.getIndexSignature(), false, true);
+                    if (methodScope.isConstructor()) {
+                        classDocument.addPair(FIELD_CONSTRUCTOR,methodScope.getConstructorIndexSignature(), false, true);
+                    }
+                }
+                Collection<? extends MethodScope> declaredConstructors = classScope.getDeclaredConstructors();
+                if (declaredConstructors.isEmpty()) {
+                    classDocument.addPair(FIELD_CONSTRUCTOR,classScope.getDefaultConstructorIndexSignature(), false, true);
+                }
+                for (FieldElement fieldElement : classScope.getDeclaredFields()) {
+                    classDocument.addPair(FIELD_FIELD, fieldElement.getIndexSignature(), false, true);
+                }
+                for (ClassConstantElement constantElement : classScope.getDeclaredConstants()) {
+                    classDocument.addPair(FIELD_CLASS_CONST, constantElement.getIndexSignature(), false, true);
+                }
+            }
+            for (InterfaceScope ifaceSCope : ModelUtils.getDeclaredInterfaces(fileScope)) {
+                IndexDocument classDocument = support.createDocument(indexable);
+                documents.add(classDocument);
+                classDocument.addPair(FIELD_IFACE, ifaceSCope.getIndexSignature(), true, true);
+                classDocument.addPair(FIELD_TOP_LEVEL, ifaceSCope.getName().toLowerCase(), true, true);
+                for (MethodScope methodScope : ifaceSCope.getDeclaredMethods()) {
+                    classDocument.addPair(FIELD_METHOD, methodScope.getIndexSignature(), false, true);
+                    if (methodScope.isConstructor()) {
+                        classDocument.addPair(FIELD_CONSTRUCTOR,methodScope.getConstructorIndexSignature(), false, true);
+                    }
+                }
+                for (ClassConstantElement constantElement : ifaceSCope.getDeclaredConstants()) {
+                    classDocument.addPair(FIELD_CLASS_CONST, constantElement.getIndexSignature(), false, true);
+                }
+            }
+
+            IndexDocument defaultDocument = support.createDocument(indexable);
+            documents.add(defaultDocument);
+            for (FunctionScope functionScope : ModelUtils.getDeclaredFunctions(fileScope)) {
+                defaultDocument.addPair(FIELD_BASE, functionScope.getIndexSignature(), true, true);
+                defaultDocument.addPair(FIELD_TOP_LEVEL, functionScope.getName().toLowerCase(), true, true);
+            }
+            for (ConstantElement constantElement : ModelUtils.getDeclaredConstants(fileScope)) {
+                defaultDocument.addPair(FIELD_CONST, constantElement.getIndexSignature(), true, true);
+                defaultDocument.addPair(FIELD_TOP_LEVEL, constantElement.getName().toLowerCase(), true, true);
+            }
+            for (IndexDocument d : documents) {
+                support.addDocument(d);
+            }
+
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    /*@Override
     protected void index(Indexable indexable, Result parserResult, Context context) {
         try {
             PHPParseResult r = (PHPParseResult) parserResult;
@@ -178,7 +267,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
             Exceptions.printStackTrace(ex);
         }
 
-    }
+    }*/
 
     private static class TreeAnalyzer {
         private final Indexable indexable;

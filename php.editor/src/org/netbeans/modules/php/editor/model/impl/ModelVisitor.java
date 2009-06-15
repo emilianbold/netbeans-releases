@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -634,12 +635,24 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(PHPDocVarTypeTag node) {
         Scope currentScope = modelBuilder.getCurrentScope();
+        StringBuilder sb = new StringBuilder();
         List<? extends PhpDocTypeTagInfo> tagInfos = PhpDocTypeTagInfo.create(node, currentScope);
-        for (PhpDocTypeTagInfo phpDocTypeTagInfo : tagInfos) {
+        for (Iterator<? extends PhpDocTypeTagInfo> it = tagInfos.iterator(); it.hasNext();) {
+            PhpDocTypeTagInfo phpDocTypeTagInfo = it.next();
             if (phpDocTypeTagInfo.getKind().equals(Kind.FIELD)) {
-                new FieldElementImpl(currentScope, phpDocTypeTagInfo.getTypeName(), phpDocTypeTagInfo);
+                String typeName = phpDocTypeTagInfo.getTypeName();
+                if (typeName != null) {
+                    if (sb.length() > 0) {
+                        sb.append("|");//NOI18N
+                    }
+                    sb.append(typeName);
+                }
+                if (currentScope instanceof ClassScope && !it.hasNext()) {
+                    new FieldElementImpl(currentScope, sb.length() > 0 ? sb.toString() : null, phpDocTypeTagInfo);
+                }
             }
         }
+
         occurencesBuilder.prepare(node, currentScope);
         super.visit(node);
     }

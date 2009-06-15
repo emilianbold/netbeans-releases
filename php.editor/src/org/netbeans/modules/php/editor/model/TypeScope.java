@@ -63,6 +63,7 @@ public interface TypeScope extends Scope {
     Collection<? extends ClassConstantElement> getDeclaredConstants();
     Collection<? extends ClassConstantElement> getInheritedConstants();
     Collection<? extends InterfaceScope> getSuperInterfaces();
+    Collection<? extends String> getSuperInterfaceNames();
 
     Collection<? extends ClassConstantElement> findInheritedConstants(String constName);
     Collection<? extends MethodScope> findInheritedMethods(final String queryName);

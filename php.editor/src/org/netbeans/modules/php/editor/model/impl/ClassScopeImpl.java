@@ -52,6 +52,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.openide.util.Union2;
@@ -260,7 +261,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
 
     @Override
     public String getNormalizedName() {
-        return super.getNormalizedName()+getSuperClassName();
+        return super.getNormalizedName()+(getSuperClassName() != null ? getSuperClassName() : "");//NOI18N
     }
 
     @NonNull
@@ -280,7 +281,37 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
                 return cls.getName();
             }
         }
-        return "";//NOI18N
+        return null;//NOI18N
     }
 
+    @Override
+    public String getIndexSignature() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getName().toLowerCase()).append(";");//NOI18N
+        sb.append(getName()).append(";");//NOI18N
+        sb.append(getOffset()).append(";");//NOI18N
+        sb.append(getSuperClassName()).append(";");//NOI18N
+        //TODO: add ifaces
+        return sb.toString();
+    }
+
+    public Collection<? extends MethodScope> getDeclaredConstructors() {
+        return ModelUtils.filter(getDeclaredMethods(), new ModelUtils.ElementFilter<MethodScope>() {
+            public boolean isAccepted(MethodScope methodScope) {
+                return methodScope.isConstructor();
+            }
+        });
+    }
+
+    public String getDefaultConstructorIndexSignature() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getName()).append(";");//NOI18N
+        sb.append(";");//NOI18N
+        sb.append(getOffset()).append(";");//NOI18N
+        sb.append(";");//NOI18N
+        sb.append(";");//NOI18N
+        sb.append(BodyDeclaration.Modifier.PUBLIC).append(";");
+        return sb.toString();
+
+    }
 }

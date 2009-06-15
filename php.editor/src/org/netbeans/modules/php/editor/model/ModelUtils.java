@@ -279,7 +279,7 @@ public class ModelUtils {
         return retval;
     }
 
-    public static <T extends ModelElement> List<? extends T> filter(final Collection<T> instances, final ElementFilter<T> filter) {
+    public static <T extends ModelElement> List<? extends T> filter(final Collection<? extends T> instances, final ElementFilter<T> filter) {
         List<T> retval = new ArrayList<T>();
         for (T baseElement : instances) {
             boolean accepted = filter.isAccepted(baseElement);
@@ -337,7 +337,11 @@ public class ModelUtils {
         return false;
     }
 
-    private static String toCamelCase(String plainName) {
+    public static String getCamelCaseName(ModelElement element) {
+        return toCamelCase(element.getName());
+    }
+    
+    public static String toCamelCase(String plainName) {
         char[] retval = new char[plainName.length()];
         int retvalSize = 0;
         for (int i = 0; i < retval.length; i++) {

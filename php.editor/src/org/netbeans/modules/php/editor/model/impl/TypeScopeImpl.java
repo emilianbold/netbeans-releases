@@ -93,6 +93,9 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         super(inScope, element, PhpKind.IFACE);
     }
 
+    public List<? extends String> getSuperInterfaceNames() {
+        return new ArrayList<String>(ifaces.keySet());
+    }
 
     public List<? extends InterfaceScope> getSuperInterfaces() {
         Set<InterfaceScope> retval = new LinkedHashSet<InterfaceScope>();

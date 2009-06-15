@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.editor.model;
 
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.index.PHPElement;
 import org.openide.filesystems.FileObject;
@@ -49,8 +50,9 @@ import org.openide.util.Union2;
  */
 public interface ModelElement {
     String getName();
-    String getCamelCaseName();
     String getFullyQualifiedName();
+    @CheckForNull
+    String getIndexSignature();
     PhpKind getPhpKind();
     public Union2<String, FileObject> getFile();
     FileObject getFileObject();
