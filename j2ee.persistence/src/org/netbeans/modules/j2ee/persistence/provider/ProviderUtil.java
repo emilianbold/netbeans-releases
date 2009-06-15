@@ -225,7 +225,12 @@ public class ProviderUtil {
         if(provider == null ) {
             return;
         }
-        Property tableGenerationProperty = provider.getTableGenerationProperty(tableGenerationStrategy);
+        String version=Persistence.VERSION_1_0;
+        if(persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit)
+        {
+            version=Persistence.VERSION_2_0;
+        }
+        Property tableGenerationProperty = provider.getTableGenerationProperty(tableGenerationStrategy,version);
         Properties properties = persistenceUnit.getProperties();
         if (properties == null) {
             properties = persistenceUnit.newProperties();

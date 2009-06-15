@@ -95,16 +95,16 @@ public final class PersistenceMetadata {
             if (persistence == null) {
                 InputStream is=fo.getInputStream();
                 String version=Persistence.VERSION_1_0;
-//                try {
-//                    version=JPAParseUtils.getVersion(is);
-//                } catch (SAXException ex) {
-//                    Exceptions.printStackTrace(ex);
-//                }
-//                finally
-//                {
-//                    if(is!=null)is.close();
-//                }
-//                is=fo.getInputStream();
+                try {
+                    version=JPAParseUtils.getVersion(is);
+                } catch (SAXException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                finally
+                {
+                    if(is!=null)is.close();
+                }
+                is=fo.getInputStream();
                 if(Persistence.VERSION_2_0.equals(version))
                 {
                     persistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.Persistence.createGraph(is);
