@@ -153,16 +153,16 @@ public class PUDataObject extends XmlMultiViewDataObject {
             try{
                 java.io.InputStream is = getEditorSupport().getInputStream();
                 String version=Persistence.VERSION_1_0;
-//                try {
-//                    version=JPAParseUtils.getVersion(is);
-//                } catch (SAXException ex) {
-//                    Exceptions.printStackTrace(ex);
-//                }
-//                finally
-//                {
-//                    is.close();
-//                }
-//                is = getEditorSupport().getInputStream();
+                try {
+                    version=JPAParseUtils.getVersion(is);
+                } catch (SAXException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                finally
+                {
+                    is.close();
+                }
+                is = getEditorSupport().getInputStream();
                 Persistence newPersistence = null;
                 try {
                     if(Persistence.VERSION_2_0.equals(version))

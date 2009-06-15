@@ -41,14 +41,18 @@
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 import java.awt.Toolkit;
+import java.awt.event.InputEvent;
 import java.text.MessageFormat;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.prefs.Preferences;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
@@ -61,6 +65,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionUtils;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 
@@ -238,4 +243,9 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
         return NbBundle.getMessage(CsmAbstractHyperlinkProvider.class, "MacroExpansion", CsmDisplayUtilities.htmlize(docText), CsmDisplayUtilities.htmlize(expandedText)); // NOI18N
     }
 
+    protected final CharSequence getAlternativeHyperlinkTip(Document doc, String altTextKey, CharSequence tooltip) {
+        Preferences prefs = MimeLookup.getLookup(NbEditorUtilities.getMimeType(doc)).lookup(Preferences.class);
+        int shortCut = prefs.getInt(SimpleValueNames.ALT_HYPERLINK_ACTIVATION_MODIFIERS, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK);
+        return NbBundle.getMessage(CsmAbstractHyperlinkProvider.class, altTextKey, tooltip, InputEvent.getModifiersExText(shortCut)); // NOI18N
+    }
 }
