@@ -234,7 +234,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
 
     private void appendInclStack(StringBuilder buf, List<CsmInclude> includeStack) {
         if (!includeStack.isEmpty()) {
-            buf.append(i18n("PathToCurFile")).append('\n');  // NOI18N
+            buf.append("<i>").append(i18n("PathToCurFile")).append("</i>\n");  // NOI18N
             for (CsmInclude inc : includeStack) {
                 String msg = i18n("PathToHeaderOnLine", inc.getContainingFile().getAbsolutePath(), inc.getStartPosition().getLine()); // NOI18N
                 buf.append(msg).append('\n');
@@ -244,7 +244,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
 
     private void appendPaths(StringBuilder buf, String title, List<String> includePaths) {
         if (!includePaths.isEmpty()) {
-            buf.append(title).append('\n');
+            buf.append("<i>").append(title).append("</i>\n");  // NOI18N
             for (String path : includePaths) {
                 File f = new File(path);
                 if (f.exists() && f.isDirectory()) {
