@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Application-Type: classic-lib
+Runtime-Descriptor-Version: 3.0
+
