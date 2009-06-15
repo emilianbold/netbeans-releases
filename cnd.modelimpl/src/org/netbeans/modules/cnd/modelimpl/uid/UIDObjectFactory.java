@@ -476,7 +476,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             return size;
         }
         public boolean isEmpty() {
-            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+            return size == 0;
         }
         public boolean containsKey(Object key) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
@@ -511,7 +511,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                     return size;
                 }
                 public boolean isEmpty() {
-                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                    return size == 0;
                 }
                 public boolean contains(Object o) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
@@ -764,7 +764,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             return size;
         }
         public boolean isEmpty() {
-            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+            return size == 0;
         }
         public boolean containsKey(Object key) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
@@ -799,7 +799,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                     return size;
                 }
                 public boolean isEmpty() {
-                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                    return size == 0;
                 }
                 public boolean contains(Object o) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
@@ -917,7 +917,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             return size;
         }
         public boolean isEmpty() {
-            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+            return size == 0;
         }
         public boolean containsKey(Object key) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
@@ -988,11 +988,9 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                             }
                             return null;
                         }
-
                         public void remove() {
                             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                         }
-
                     };
                 }
                 public Object[] toArray() {
@@ -1008,7 +1006,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
                 public boolean containsAll(Collection<?> c) {
-                    throw new UnsupportedOperationException("Not supported yet.");
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
                 public boolean addAll(Collection<? extends Entry<CharSequence, CsmUID<CsmNamespaceDefinition>>> c) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N

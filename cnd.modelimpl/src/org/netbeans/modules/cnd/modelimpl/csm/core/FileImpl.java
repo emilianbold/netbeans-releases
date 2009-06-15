@@ -731,8 +731,14 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     private void _clearMacros() {
-        Collection<CsmUID<CsmMacro>> copy = new ArrayList<CsmUID<CsmMacro>>(macros.values());
-        macros.clear();
+        Collection<CsmUID<CsmMacro>> copy;
+        try {
+            macrosLock.writeLock().lock();
+            copy = new ArrayList<CsmUID<CsmMacro>>(macros.values());
+            macros.clear();
+        } finally {
+            macrosLock.writeLock().unlock();
+        }
         RepositoryUtils.remove(copy);
     }
 

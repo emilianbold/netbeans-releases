@@ -128,16 +128,7 @@ public final class TinySingletonMap<K, V> implements Map<K, V> {
     }
 
     public void putAll(Map<? extends K, ? extends V> t) {
-        if (t.size() <= 1) {
-            key = null;
-            value = null;
-            for (Entry<? extends K, ? extends V> entry : t.entrySet()) {
-                key = entry.getKey();
-                value = entry.getValue();
-            }
-        } else {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-            }
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     public void clear() {

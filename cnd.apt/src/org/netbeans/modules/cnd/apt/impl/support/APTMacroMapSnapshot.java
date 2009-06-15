@@ -86,21 +86,23 @@ public final class APTMacroMapSnapshot {
         }
     }
 
-    private void prepareMacroMapToAddMacro() {
+    private void prepareMacroMapToAddMacro(CharSequence name) {
         if (macros == NO_MACROS) {
             // create LW map
             macros = createMacroMap(1);
         } else if (macros instanceof TinySingletonMap<?, ?>) {
             // copy into new map
             TinySingletonMap<CharSequence, APTMacro> lwMap = (TinySingletonMap<CharSequence, APTMacro>)macros;
-            Map<CharSequence, APTMacro> map = createMacroMap(2);
-            map.put(lwMap.getKey(), lwMap.getValue());
-            macros = map;
+            if (lwMap.getKey() != null && !lwMap.getKey().equals(name)) {
+                Map<CharSequence, APTMacro> map = createMacroMap(4);
+                map.put(lwMap.getKey(), lwMap.getValue());
+                macros = map;
+            }
         }
     }
 
     /*package*/ final void putMacro(CharSequence name, APTMacro macro) {
-        prepareMacroMapToAddMacro();
+        prepareMacroMapToAddMacro(name);
         macros.put(name, macro);
     }
 
