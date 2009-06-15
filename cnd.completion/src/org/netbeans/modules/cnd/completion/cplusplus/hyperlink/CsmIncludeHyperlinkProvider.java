@@ -189,36 +189,30 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     };
 
     protected String getTooltipText(Document doc, TokenItem<CppTokenId> token, int offset, HyperlinkType type) {
-        if (type == HyperlinkType.ALT_HYPERLINK) {
-            switch (token.id()) {
-                case PREPROCESSOR_INCLUDE:
-                case PREPROCESSOR_INCLUDE_NEXT:
-                case PREPROCESSOR_SYS_INCLUDE:
-                case PREPROCESSOR_USER_INCLUDE:
-                    return ""; // NOI18N
-            }
-        }
         CsmFile csmFile = CsmUtilities.getCsmFile(doc, true);
         CsmInclude target = null;
         if (csmFile != null) {
             target = ReferencesSupport.findInclude(csmFile, offset);
         }
         CharSequence tooltip = target == null ? null : CsmDisplayUtilities.getTooltipText(target);
-        if (tooltip != null || TRACE_INCLUDES) {
-            StringBuilder buf = new StringBuilder(tooltip == null ? "" : tooltip);
-            CsmFile includeFile = target == null ? null : target.getIncludeFile();
+        boolean extraText = (type == HyperlinkType.ALT_HYPERLINK);
+        if (tooltip != null) {
+            StringBuilder buf;
             List<CsmInclude> includeStack = CsmFileInfoQuery.getDefault().getIncludeStack(csmFile);
-            if (includeFile == null || TRACE_INCLUDES) {
-                // append include stack
+            if (extraText) {
+                buf = new StringBuilder(tooltip);
                 buf.append("<br><pre>"); // NOI18N
-                appendInclStack(buf, includeStack);
                 // append search paths
                 appendPaths(buf, i18n("SourceUserPaths"), CsmFileInfoQuery.getDefault().getUserIncludePaths(csmFile));// NOI18N
                 appendPaths(buf, i18n("SourceSystemPaths"), CsmFileInfoQuery.getDefault().getSystemIncludePaths(csmFile));// NOI18N
+                // append include stack
+                appendInclStack(buf, includeStack);
                 buf.append("</pre>"); // NOI18N
+            } else {
+                buf = new StringBuilder(getAlternativeHyperlinkTip(doc, "AltIncludeHyperlinkHint", tooltip)); // NOI18N
             }
             // for testing put info into output window
-            if (TRACE_INCLUDES || NEED_TO_TRACE_UNRESOLVED_INCLUDE) {
+            if (extraText && (TRACE_INCLUDES || NEED_TO_TRACE_UNRESOLVED_INCLUDE)) {
                 InputOutput io = IOProvider.getDefault().getIO("Test Inlcudes", false); // NOI18N
                 OutputWriter out = io.getOut();
                 if (!includeStack.isEmpty()) {
