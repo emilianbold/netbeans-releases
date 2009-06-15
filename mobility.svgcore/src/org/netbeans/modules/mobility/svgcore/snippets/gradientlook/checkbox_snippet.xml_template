@@ -1,7 +1,7 @@
  <g id="%%COMPONENT_ID%%" transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">      <!-- Metadata information. Please don't edit. -->
         <text display="none">type=checkbox</text>
         <g>
-            <image id="_0" transform="matrix(19.641613,0.0,0.0,0.73290926,7.499999,4.25)"  width="1" height="25"
+            <image transform="matrix(19.641613,0.0,0.0,0.73290926,7.499999,4.25)"  width="1" height="25"
               xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAZCAIAAAB/8tMoAAAAAXNSR0IArs4c6QAAAARnQU1BAACx
               jwv8YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAF9JREFU
               GFdFw80KRUAAgNHv/R/FmqWyUOSmRN2bJLEgkvw2Y4xJ2dxTB2MM/zdG6/d9KbQ6uU6JkgIpD4TY
@@ -12,7 +12,7 @@
             <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusin" fill="freeze" to="visible"/>
             <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusout" fill="freeze" to="hidden"/>
         </rect>
-        <rect x="7.4000015" id="_4" rx="4"  ry="4" y="3.0" width="20" height="20" fill="none" stroke="rgb(73,46,55)" stroke-width="1.5"/>
+        <rect x="7.4000015" rx="4"  ry="4" y="3.0" width="20" height="20" fill="none" stroke="rgb(73,46,55)" stroke-width="1.5"/>
 
         <g>               <!-- Metadata information. Please don't edit. -->
             <text display="none">type=mark</text>

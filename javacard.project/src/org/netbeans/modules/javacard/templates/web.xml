@@ -1,0 +1,14 @@
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         version="2.4"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/javacard/jcweb-app_3_0.xsd">
+    <display-name>${projectnamespaces}</display-name>
+    <servlet>
+        <servlet-name>${classname}</servlet-name>
+        <servlet-class>${package}.${classname}</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>${classname}</servlet-name>
+        <url-pattern>${servletmapping}</url-pattern>
+    </servlet-mapping>
+</web-app>
