@@ -602,8 +602,8 @@ public class ProviderUtil {
         }
         final FileObject[] dd = new FileObject[1];
         //get max supported version
-
-        final String version=PersistenceUtils.getJPAVersion(persistenceLocation)!=null ? PersistenceUtils.getJPAVersion(persistenceLocation) : Persistence.VERSION_1_0;
+        String ret=PersistenceUtils.getJPAVersion(project);
+        final String version=ret!=null ? ret : Persistence.VERSION_1_0;
         // must create the file using AtomicAction, see #72058
         persistenceLocation.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
