@@ -70,10 +70,10 @@
         <!--
         <xjc schema="src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
             package="org.netbeans.modules.websvc.saas.model.wadl"
+            source="2.0"
             destdir="src">
             <depends file="${wadl.xsd}"/>
             <produces dir="${saas.model.wadl}"/>
-            <arg value="-Djava.endorsed.dirs=${netbeans.dest.dir}/${nb.cluster.ide.dir}/modules/ext/jaxb/api"/>
         </xjc>
         -->
     </target>
