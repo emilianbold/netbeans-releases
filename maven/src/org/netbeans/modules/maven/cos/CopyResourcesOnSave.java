@@ -55,6 +55,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.spi.cos.AdditionalDestination;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -179,7 +180,7 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
             }
             Tuple base = findAppropriateResourceRoots(fo, owning);
             if (base != null) {
-                handleCopyFileToDestDir(base, fo);
+                handleCopyFileToDestDir(base, fo, owning);
                 FileObject parent = fo.getParent();
                 String path;
                 if (FileUtil.isParentOf(base.root, parent)) {
@@ -188,7 +189,7 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
                 } else {
                     path = fe.getName() + "." + fe.getExt(); //NOI18N
                 }
-                handleDeleteFileInDestDir(fo, path, base);
+                handleDeleteFileInDestDir(fo, path, base, owning);
             }
         } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -210,10 +211,10 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
 
     private void handleDeleteFileInDestDir(FileObject fo, String path, Project project) throws IOException {
         Tuple tuple = findAppropriateResourceRoots(fo, project);
-        handleDeleteFileInDestDir(fo, path, tuple);
+        handleDeleteFileInDestDir(fo, path, tuple, project);
     }
 
-    private void handleDeleteFileInDestDir(FileObject fo, String path, Tuple tuple) throws IOException {
+    private void handleDeleteFileInDestDir(FileObject fo, String path, Tuple tuple, Project project) throws IOException {
         if (tuple != null) {
             // inside docbase
             path = path != null ? path : FileUtil.getRelativePath(tuple.root, fo);
@@ -221,6 +222,10 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
             FileObject toDelete = tuple.destinationRoot.getFileObject(path);
             if (toDelete != null) {
                 toDelete.delete();
+            }
+            AdditionalDestination add = project.getLookup().lookup(AdditionalDestination.class);
+            if (add != null) {
+                add.delete(fo, path);
             }
         }
     }
@@ -230,19 +235,23 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
      */
     private void handleCopyFileToDestDir(FileObject fo, Project prj) throws IOException {
         Tuple tuple = findAppropriateResourceRoots(fo, prj);
-        handleCopyFileToDestDir(tuple, fo);
+        handleCopyFileToDestDir(tuple, fo, prj);
     }
     
     /** Copies a content file to an appropriate  destination directory,
      * if applicable and relevant.
      */
-    private void handleCopyFileToDestDir(Tuple tuple, FileObject fo) throws IOException {
+    private void handleCopyFileToDestDir(Tuple tuple, FileObject fo, Project project) throws IOException {
         if (tuple != null && !tuple.resource.isFiltering()) {
             //TODO what to do with filtering? for now ignore..
             String path = FileUtil.getRelativePath(tuple.root, fo);
             path = addTargetPath(path, tuple.resource);
             FileObject destFile = ensureDestinationFileExists(tuple.destinationRoot, path, fo.isFolder());
             copySrcToDest(fo, destFile);
+            AdditionalDestination add = project.getLookup().lookup(AdditionalDestination.class);
+            if (add != null) {
+                add.copy(fo, path);
+            }
         }
     }
 
