@@ -38,15 +38,20 @@
  */
 package org.netbeans.modules.wag.manager.model;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.beans.PropertyDescriptor;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import javax.swing.JTextField;
 import org.netbeans.modules.wag.manager.search.SearchEngine;
-
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -55,23 +60,51 @@ import org.netbeans.modules.wag.manager.search.SearchEngine;
 public class WagSearchResult implements Comparable<WagSearchResult> {
 
     public static final String PROP_NAME = "searchResult";
-
     private String query;
-
     private int maxResults;
- 
     private SortedSet<WagService> services;
-
     private PropertyChangeSupport pps;
 
-    public WagSearchResult(String query, int maxResults) {
-        this.query = query;
-        this.maxResults = maxResults;
+    static {
+        try {
+            BeanInfo info = Introspector.getBeanInfo(WagSearchResult.class);
+            PropertyDescriptor[] propertyDescriptors = info.getPropertyDescriptors();
+            for (int i = 0; i < propertyDescriptors.length; ++i) {
+                PropertyDescriptor pd = propertyDescriptors[i];
+                if (pd.getName().equals("services") || pd.getName().equals("pps")) {    //NOI18N
+                    pd.setValue("transient", Boolean.TRUE);
+                }
+            }
+        } catch (IntrospectionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+    }
+
+    public WagSearchResult() {
         pps = new PropertyChangeSupport(this);
+    }
+
+    public WagSearchResult(String query, int maxResults) {
+        this();
+        this.query = query;
+        this.maxResults = maxResults;        
     }
 
     public String getQuery() {
         return query;
+    }
+
+    public void setQuery(String query) {
+        this.query = query;
+    }
+
+    public int getMaxResults() {
+        return maxResults;
+    }
+
+    public void setMaxResults(int maxResults) {
+        this.maxResults = maxResults;
     }
 
     public Collection<WagService> getServices() {
@@ -100,7 +133,7 @@ public class WagSearchResult implements Comparable<WagSearchResult> {
         services.addAll(getSearchResult());
         fireChange(old, Collections.unmodifiableSortedSet(services));
     }
-   
+
     public void addPropertyChangeListener(PropertyChangeListener l) {
         pps.addPropertyChangeListener(l);
     }
