@@ -264,6 +264,38 @@ public class NbJiraIssue extends Issue {
         return repository.getTaskRepository();
     }
 
+    boolean isSubtask() {        
+        return getParentKey() != null;
+    }
+
+    boolean hasSubtasks() {
+        return getSubtaskKeys() != null;
+    }
+
+    String getParentKey() {
+        TaskAttribute attr = taskData.getRoot().getMappedAttribute(JiraAttribute.PARENT_KEY.id());
+        if(attr == null) {
+            return null;
+        }
+        String parentKey = attr.getValue();
+        if(parentKey == null || parentKey.trim().equals("")) {
+            return null;
+        }
+        return parentKey;
+    }
+
+    List<String> getSubtaskKeys() {
+        TaskAttribute attr = taskData.getRoot().getMappedAttribute(JiraAttribute.SUBTASK_KEYS.id());
+        if(attr == null) {
+            return null;
+        }
+        List<String> parentKeys = attr.getValues();
+        if(parentKeys == null || parentKeys.size() == 0) {
+            return null;
+        }
+        return parentKeys;
+    }
+
     Comment[] getComments() {
         List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, TaskAttribute.TYPE_COMMENT);
         if (attrs == null) {
@@ -1261,6 +1293,11 @@ public class NbJiraIssue extends Issue {
             };
             repository.getExecutor().execute(cmd);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "[" + getKey() + ", " + getSummary() + "]";
     }
 
     private class IssueTask extends AbstractTask {
