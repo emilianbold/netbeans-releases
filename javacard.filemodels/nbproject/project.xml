@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
+            <code-name-base>org.netbeans.modules.javacard.filemodels</code-name-base>
+            <module-dependencies/>
+            <friend-packages>
+                <friend>org.netbeans.modules.javacard.kit</friend>
+                <friend>org.netbeans.modules.javacard.project</friend>
+                <package>com.sun.javacard</package>
+                <package>com.sun.javacard.filemodels</package>
+            </friend-packages>
+        </data>
+    </configuration>
+</project>
