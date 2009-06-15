@@ -85,9 +85,11 @@ made subject to such option by the copyright holder.
         <file name="D-A.shadow">
             <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-drawingarea-actions-SelectAllAction.instance"/>
         </file>
+        <!--
         <file name="DS-5.shadow">
             <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.instance"/>
         </file>
+        -->
     </folder>
 
     <folder name="Templates">
