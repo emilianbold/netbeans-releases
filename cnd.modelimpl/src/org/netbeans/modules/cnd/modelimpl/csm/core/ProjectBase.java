@@ -115,6 +115,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     /** Creates a new instance of CsmProjectImpl */
     protected ProjectBase(ModelImpl model, Object platformProject, String name) {
+        namespaces = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>();
         RepositoryUtils.openUnit(createProjectKey(platformProject));
         setStatus(Status.Initial);
         this.name = ProjectNameCache.getManager().getString(name);
@@ -2596,7 +2597,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private volatile boolean disposing;
     private ReadWriteLock disposeLock = new ReentrantReadWriteLock();
     private CharSequence uniqueName = null; // lazy initialized
-    private Map<CharSequence, CsmUID<CsmNamespace>> namespaces = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>();
+    private final Map<CharSequence, CsmUID<CsmNamespace>> namespaces;
     //private ClassifierContainer classifierContainer = new ClassifierContainer();
     private Key classifierStorageKey;
 
@@ -2664,7 +2665,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         this.globalNamespaceUID = aFactory.readUID(aStream);
         assert globalNamespaceUID != null : "globalNamespaceUID can not be null";
 
-        aFactory.readStringToUIDMap(this.namespaces, aStream, QualifiedNameCache.getManager());
+        int collSize = aStream.readInt();
+        if (collSize <= 0) {
+            namespaces = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>(0);
+        } else {
+            namespaces = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>(collSize);
+        }
+        aFactory.readStringToUIDMap(this.namespaces, aStream, QualifiedNameCache.getManager(), collSize);
 
         fileContainerKey = ProjectComponent.readKey(aStream);
         assert fileContainerKey != null : "fileContainerKey can not be null";

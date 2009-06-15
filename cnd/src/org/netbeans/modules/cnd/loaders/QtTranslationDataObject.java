@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.cnd.loaders;
 
-import java.io.IOException;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
@@ -48,14 +47,15 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
-import org.openide.text.DataEditorSupport;
+import org.openide.util.NbBundle;
 
 public class QtTranslationDataObject extends MultiDataObject {
 
-    public QtTranslationDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
+    public QtTranslationDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
         CookieSet cookies = getCookieSet();
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
+        cookies.add(new ExternalProgramOpenCookie(
+                this, "linguist", NbBundle.getMessage(QtTranslationDataObject.class, "MSG_OpenWithQtToolFailed"))); // NOI18N
     }
 
     @Override
