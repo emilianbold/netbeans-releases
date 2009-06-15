@@ -134,6 +134,8 @@ public class FileObjectInLookupByMatteoTest extends NbTestCase {
 
     @Override
     protected void tearDown() throws Exception {
+        // clear
+        clearWorkDir();
     }
 
     public static final class MR extends MIMEResolver {
@@ -222,9 +224,6 @@ public class FileObjectInLookupByMatteoTest extends NbTestCase {
 
         // assume maximum 10 seconds!
         assertTrue("Failed Test because the event firing took more than 10 seconds!!", time < 10000);
-
-        // clear
-        clearWorkDir();
     }
 
     public static class TestDataLoader extends MultiFileLoader {
