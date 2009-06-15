@@ -217,7 +217,8 @@ public class HgHookImpl extends HgHook {
             }
 
             if(repo == null) { // don't go for the repository until we really need it
-                repo = BugtrackingOwnerSupport.getInstance().getRepository(file, false);
+                repo = BugtrackingOwnerSupport.getInstance().getRepository(file, true); // true -> ask user if repository unknown
+                                                                                        //         might have deleted in the meantime
                 if(repo == null) {
                     LOG.log(Level.WARNING, " could not find issue tracker for " + file);      // NOI18N
                     break;
