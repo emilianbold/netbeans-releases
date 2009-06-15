@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,32 +31,62 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.ejbjarproject.test;
+package org.netbeans.modules.j2ee.dd.api.web.model;
 
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.Repository;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.j2ee.dd.impl.web.metadata.ServletInfoAccessor;
 
 /**
- * Repository whose getDefaultFileSystem returns a writeable FS.
- * It is put in the default lookup,
- * thus it is returned by Repository.getDefault().
- *
- * @author Andrei Badea, Radko Najman
+ * Data object that holds information about servlet.
+ * @author Petr Slechta
  */
-public class RepositoryImpl extends Repository {
-    private static final long serialVersionUID = 6140451747920588L;
-    
-    public RepositoryImpl() {
-        super(createDefFs());
+public final class ServletInfo {
+
+    private final String name;
+    private final String servletClass;
+    private final List<String> urlPatterns;
+
+    static {
+        ServletInfoAccessor.setDefault(new ServletInfoAccessor() {
+
+            @Override
+            public ServletInfo createServletInfo(String name, String servletClass, List<String> urlPatterns) {
+                return new ServletInfo(name, servletClass, urlPatterns);
+            }
+        });
     }
-    
-    private static FileSystem createDefFs() {
-        FileSystem writeFs = FileUtil.createMemoryFileSystem();
-        // add any other file systems here
-        return new MultiFileSystem(new FileSystem[] { writeFs });
+    private ServletInfo(String name, String servletClass, List<String> urlPatterns) {
+        this.name = name;
+        this.servletClass = servletClass;
+        this.urlPatterns = urlPatterns;
     }
+
+    /**
+     * @return name of the servlet
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * @return class that implements the servlet
+     */
+    public String getServletClass() {
+        return servletClass;
+    }
+
+    /**
+     * @return URL patterns that are associated with the servlet
+     */
+    public List<String> getUrlPatterns() {
+        return Collections.unmodifiableList(urlPatterns);
+    }
+
 }

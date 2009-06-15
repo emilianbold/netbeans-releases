@@ -60,14 +60,15 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  * Test's adding generate source in addons directory to source classpath.
  */
 public class SourcePathImplAddonsTest extends TestBase{
-    private static final String SRC_ROOT_1 = "generated/addons/srcroot1";  // No I18N
-    private static final String SRC_ROOT_2 = "generated/addons/srcroot2";  // No I18N
-    private static final String SRC_ROOT_3 = "generated/addons/srcroot3";  // No I18N
+    private static final String SRC_ROOT_1 = "generated-sources/srcroot1";  // No I18N
+    private static final String SRC_ROOT_2 = "generated-sources/srcroot2";  // No I18N
+    private static final String SRC_ROOT_3 = "generated-sources/srcroot3";  // No I18N
     private static final String DEFAULT_PLATFORM_ROOT = "DefaultPlatformRoot"; // No I18N
     private static final String EJB_PROJ1 = "EJBModule1" ;
     
@@ -84,10 +85,8 @@ public class SourcePathImplAddonsTest extends TestBase{
         scratchFO = TestUtil.makeScratchDir(this);
         FileObject defaultPlatformBootRoot = scratchFO.createFolder(DEFAULT_PLATFORM_ROOT);
         ClassPath defBCP = ClassPathSupport.createClassPath(new URL[] { defaultPlatformBootRoot.getURL() });
-        
-        setLookup(new Object[] {
-            new TestPlatformProvider(defBCP, defBCP)
-        });
+
+        MockLookup.setLayersAndInstances(new TestPlatformProvider(defBCP, defBCP));
         
         assertTrue("No Java platforms found.", JavaPlatformManager.getDefault().getInstalledPlatforms().length >= 2);
         
