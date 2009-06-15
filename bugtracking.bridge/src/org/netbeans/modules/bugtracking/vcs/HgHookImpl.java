@@ -54,7 +54,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.Format;
-import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.PushAction;
+import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.PushOperation;
 import org.netbeans.modules.mercurial.hooks.spi.HgHook;
 import org.netbeans.modules.mercurial.hooks.spi.HgHookContext;
 import org.netbeans.modules.mercurial.hooks.spi.HgHookContext.LogEntry;
@@ -186,7 +186,7 @@ public class HgHookImpl extends HgHook {
             issue.addComment(msg, panel.resolveCheckBox.isSelected());
             issue.open();
         } else {
-            VCSHooksConfig.getInstance().setHgPushAction(context.getLogEntries()[0].getChangeset(), new PushAction(issue.getID(), msg, panel.resolveCheckBox.isSelected()));
+            VCSHooksConfig.getInstance().setHgPushAction(context.getLogEntries()[0].getChangeset(), new PushOperation(issue.getID(), msg, panel.resolveCheckBox.isSelected()));
             LOG.log(Level.FINE, "schedulig issue  " + file);                    // NOI18N
         }
         LOG.log(Level.FINE, "hg afterCommit end for " + file);                  // NOI18N
@@ -210,7 +210,7 @@ public class HgHookImpl extends HgHook {
         LogEntry[] entries = context.getLogEntries();
         for (LogEntry logEntry : entries) {
 
-            PushAction pa = VCSHooksConfig.getInstance().popHGPushAction(logEntry.getChangeset());
+            PushOperation pa = VCSHooksConfig.getInstance().popHGPushAction(logEntry.getChangeset());
             if(pa == null) {
                 LOG.log(Level.FINE, " no push hook scheduled for " + file);     // NOI18N
                 continue;
