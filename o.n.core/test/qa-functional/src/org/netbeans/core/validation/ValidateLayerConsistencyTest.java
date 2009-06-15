@@ -371,7 +371,10 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 PrintStream ps = new PrintStream(baos);
                 ex.printStackTrace(ps);
                 ps.flush();
-                errors.add ("File " + fo.getPath() + " threw: " + baos);
+                errors.add(
+                    "File " + fo.getPath() +
+                    "\nRead from: " + Arrays.toString((Object[])fo.getAttribute("layers")) +
+                    "\nthrew: " + baos);
             }
         }
         
