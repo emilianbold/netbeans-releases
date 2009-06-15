@@ -371,7 +371,10 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 PrintStream ps = new PrintStream(baos);
                 ex.printStackTrace(ps);
                 ps.flush();
-                errors.add ("File " + fo.getPath() + " threw: " + baos);
+                errors.add(
+                    "File " + fo.getPath() +
+                    "\nRead from: " + Arrays.toString((Object[])fo.getAttribute("layers")) +
+                    "\nthrew: " + baos);
             }
         }
         
@@ -435,6 +438,10 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 }
                 if (fo.getPath().startsWith("contextmenu/uml/")) {
                     // UML is not the most important thing to fix
+                    continue;
+                }
+                if (fo.getPath().equals("Menu/Help/org-netbeans-modules-j2ee-blueprints-ShowBluePrintsAction.instance")) {
+                    // action included in some binary blob
                     continue;
                 }
                 if (
