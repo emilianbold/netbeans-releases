@@ -6,17 +6,17 @@
         <folder name="text">
             <folder name="x-groovy">
                 <folder name="Popup">
-                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
-                        <attr name="position" intvalue="600"/>
-                    </file>
                     <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
                         <attr name="position" intvalue="700"/>
                     </file>
 
 
-                    </folder>
+                        <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                </folder>
             </folder>
         </folder>
     </folder>

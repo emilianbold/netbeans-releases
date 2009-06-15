@@ -516,7 +516,8 @@ public class LayerUtils {
             if (path == null) {
                 return null;
             }
-            return Util.getResourceDirectory(project).getFileObject(path);
+            FileObject ret = Util.getResourceDirectory(project);
+            return ret == null ? null : ret.getFileObject(path);
         }
         
         /**
