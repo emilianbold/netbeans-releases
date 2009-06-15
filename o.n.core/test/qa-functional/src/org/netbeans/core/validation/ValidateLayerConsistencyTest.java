@@ -440,6 +440,10 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                     // UML is not the most important thing to fix
                     continue;
                 }
+                if (fo.getPath().equals("Menu/Help/org-netbeans-modules-j2ee-blueprints-ShowBluePrintsAction.instance")) {
+                    // action included in some binary blob
+                    continue;
+                }
                 if (
                     fo.getPath().startsWith("Loaders/text/x-java/Actions/") ||
                     fo.getPath().startsWith("Loaders/text/x-jsp/Actions/")
