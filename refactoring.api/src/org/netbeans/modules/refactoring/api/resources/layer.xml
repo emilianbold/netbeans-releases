@@ -62,8 +62,8 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-SafeDeleteAction.instance"/>
                 <attr name="position" intvalue="350"/>
             </file>
-            <file name="RefactoringContextAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.RefactoringContextAction"/>
+            <file name="RefactoringContextAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Refactoring/RefactoringContextAction.instance"/>
                 <attr name="position" intvalue="400"/>
             </file>
             <file name="UndoSeparator.instance">
@@ -83,9 +83,9 @@ made subject to such option by the copyright holder.
         </folder>
         
         <folder name="Edit">            
-            <file name="WhereUsedAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.WhereUsedAction"/>
+            <file name="WhereUsedAction.shadow">
                 <attr name="position" intvalue="2200"/>
+                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
             </file>
             </folder>
         <folder name="Window">
@@ -123,6 +123,15 @@ made subject to such option by the copyright holder.
           <file name="org-netbeans-modules-refactoring-api-ui-CopyAction.instance">
               <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.copyAction"/>
           </file>
+        <file name="RefactoringWhereUsed.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
+        </file>
+        <file name="RefactoringAll.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
+        </file>
+        <file name="RefactoringContextAction.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.RefactoringContextAction"/>
+        </file>
     </folder>
 
   <folder name="Window">
@@ -175,11 +184,11 @@ made subject to such option by the copyright holder.
     <folder name="folder">
         <folder name="any">
             <folder name="Actions">
-              <file name="RefactoringAll.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.RSMDataObjectAction"/>
-                  <attr name="position" intvalue="1000"/>
-              </file>
-              <file name="RenameAction.instance_hidden"/>
+              <file name="RefactoringAll.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/RefactoringAll.instance"/>
+                        <attr name="position" intvalue="1001"/>
+                    </file>
+                    <file name="RenameAction.instance_hidden"/>
             </folder>
         </folder>
     </folder>
