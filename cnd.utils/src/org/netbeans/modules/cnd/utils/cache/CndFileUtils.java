@@ -45,6 +45,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -129,7 +130,7 @@ public final class CndFileUtils {
     }
 
     public static boolean exists(File file) {
-        return getFlags(file).exist;
+        return getFlags(file, true).exist;
     }
 
     /**
@@ -138,7 +139,7 @@ public final class CndFileUtils {
      * @return
      */
     public static boolean isExistingFile(File file) {
-        Flags flags = getFlags(file);
+        Flags flags = getFlags(file, true);
         return flags.exist && !flags.directory;
     }
 
@@ -148,38 +149,85 @@ public final class CndFileUtils {
      * @return
      */
     public static boolean isExistingDirectory(File file) {
-        return getFlags(file).directory;
+        return getFlags(file, false).directory;
     }
 
-    private static Flags getFlags(File file){
+    private static Flags getFlags(File file, boolean indexParentFolder) {
         String path = file.getAbsolutePath();
         Flags exists;
-        Map<String, Flags> files = getFilesMap();
+        ConcurrentMap<String, Flags> files = getFilesMap();
         exists = files.get(path);
         if (exists == null) {
-            exists = Flags.get(file);
-            files.put(path, exists);
+            String parent = file.getParent();
+            if (parent != null) {
+                Flags parentDirFlags = files.get(parent);
+                if (parentDirFlags == null || parentDirFlags == Flags.DIRECTORY) {
+                    File parentFile = file.getParentFile();
+                    if (parentDirFlags == null) {
+                        // not yet checked
+                        parentDirFlags = Flags.get(parentFile);
+                        files.put(parent, parentDirFlags);
+                    }
+                    if (parentDirFlags == Flags.NOT_FOUND || parentDirFlags == Flags.FILE) {
+                        // no need to check non existing file
+                        exists = Flags.NOT_FOUND;
+//                        files.put(path, exists);
+                    } else if (indexParentFolder) {
+                        assert (parentDirFlags == Flags.DIRECTORY) : "must be DIRECTORY but was " + parentDirFlags; // NOI18N
+                        // let's index not indexed directory
+                        index(parentFile, parent, files);
+                        exists = files.get(path);
+                    }
+                } else {
+                    // no need to check non existing file
+                    exists = Flags.NOT_FOUND;
+//                    files.put(path, exists);
+                }
+            }
+            if (exists == null) {
+                exists = Flags.get(file);
+                files.put(path, exists);
+            }
+            if (exists == Flags.DIRECTORY) {
+                // let's index not indexed directory
+                index(file, path, files);
+            }
         } else {
             //hits ++;
         }
         return exists;
     }
 
+    private static void index(File file, String path, ConcurrentMap<String, Flags> files) {
+        if (file.canRead()) {
+            File[] listFiles = file.listFiles();
+            for (int i = 0; i < listFiles.length; i++) {
+                File curFile = listFiles[i];
+                String absPath = curFile.getAbsolutePath();
+                if (curFile.isDirectory()) {
+                    files.putIfAbsent(absPath, Flags.DIRECTORY);
+                } else {
+                    files.put(absPath, Flags.FILE);
+                }
+            }
+        }
+        files.put(path, Flags.INDEXED_DIRECTORY);
+    }
 //    public static String getHitRate() {
 //	return "" + hits + "/" + calls; // NOI18N
 //    }
 //    private static int calls = 0;
 //    private static int hits = 0;
     
-    private static Map<String, Flags> getFilesMap() {
-        Map<String, Flags> map = mapRef.get();
+    private static ConcurrentMap<String, Flags> getFilesMap() {
+        ConcurrentMap<String, Flags> map = mapRef.get();
         if (map == null) {
             try {
                 maRefLock.lock();
                 map = mapRef.get();
                 if (map == null) {
                     map = new ConcurrentHashMap<String, Flags>();
-                    mapRef = new SoftReference<Map<String, Flags>>(map);
+                    mapRef = new SoftReference<ConcurrentMap<String, Flags>>(map);
                 }
             } finally {
                 maRefLock.unlock();
@@ -208,7 +256,7 @@ public final class CndFileUtils {
     private static final Lock maRefLock = new ReentrantLock();
     private static final Lock mapNormalizedRefLock = new ReentrantLock();
     
-    private static Reference<Map<String, Flags>> mapRef = new SoftReference<Map<String, Flags>>(new ConcurrentHashMap<String, Flags>());
+    private static Reference<ConcurrentMap<String, Flags>> mapRef = new SoftReference<ConcurrentMap<String, Flags>>(new ConcurrentHashMap<String, Flags>());
     private static Reference<Map<String, String>> normalizedRef = new SoftReference<Map<String, String>>(new ConcurrentHashMap<String, String>());
     private final static class Flags {
         private final boolean exist;
@@ -219,7 +267,9 @@ public final class CndFileUtils {
         }
         private static final Flags FILE = new Flags(true,false);
         private static final Flags DIRECTORY = new Flags(true,true);
+        private static final Flags INDEXED_DIRECTORY = new Flags(true,true);
         private static final Flags NOT_FOUND = new Flags(false,true);
+        private static final Flags NOT_FOUND_INDEXED_DIRECTORY = new Flags(false, true);
 
         private static Flags get(File file) {
             if (file.exists()) {
@@ -232,5 +282,23 @@ public final class CndFileUtils {
                 return NOT_FOUND;
             }
         }
+
+        @Override
+        public String toString() {
+            if (this == NOT_FOUND) {
+                return "NOT_FOUND"; // NOI18N
+            } else if (this == NOT_FOUND_INDEXED_DIRECTORY) {
+                return "NOT_FOUND_INDEXED_DIRECTORY"; // NOI18N
+            } else if (this == INDEXED_DIRECTORY) {
+                return "INDEXED_DIRECTORY"; // NOI18N
+            } else if (this == DIRECTORY) {
+                return "DIRECTORY"; // NOI18N
+            } else if (this == FILE) {
+                return "FILE"; // NOI18N
+            } else {
+                return "UNKNOWN"; // NOI18N
+            }
+        }
+
     }
 }

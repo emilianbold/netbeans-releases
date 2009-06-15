@@ -617,7 +617,7 @@ public class AppClientProjectGenerator {
         
         Deployment deployment = Deployment.getDefault();
         J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
-        if (!j2eePlatform.getSupportedProfiles(J2eeModule.CLIENT).contains(j2eeProfile)) {
+        if (!j2eePlatform.getSupportedProfiles(J2eeModule.Type.CAR).contains(j2eeProfile)) {
             Logger.getLogger("global").log(Level.WARNING,
                                            NbBundle.getMessage(AppClientProjectGenerator.class,
                                                                "MSG_Warning_SpecLevelNotSupported",

@@ -50,13 +50,13 @@ import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
-import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 
 /**
  * Tests Repository.tryGet()
  * @author Vladimir Kvashin
  */
-public class TryGetTest extends BaseTestCase {
+public class TryGetTest extends CndBaseTestCase {
 
     private abstract class BaseKey implements Key {
 

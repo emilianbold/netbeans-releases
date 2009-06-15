@@ -452,13 +452,13 @@ public class FileStatusCache {
     @SuppressWarnings("unchecked") // Need to change turbo module to remove warning at source
     public Map<File, FileInformation> getScannedFiles(File dir, Map<File, FileInformation> interestingFiles) {
         Map<File, FileInformation> files;
-        
+
         files = (Map<File, FileInformation>) turbo.readEntry(dir, FILE_STATUS_MAP);
         if (files != null) return files;
         if (isNotManagedByDefault(dir)) {
             if (interestingFiles == null) return FileStatusCache.NOT_MANAGED_MAP;
         }
-        
+
         dir = FileUtil.normalizeFile(dir);
         files = scanFolder(dir, interestingFiles);
         turbo.writeEntry(dir, FILE_STATUS_MAP, files.size() == 0 ? null : files);
@@ -518,7 +518,7 @@ public class FileStatusCache {
                     fi = FILE_INFORMATION_EXCLUDED;
                  }
              }
-        } 
+        }
         file = FileUtil.normalizeFile(file);
         dir = FileUtil.normalizeFile(dir);
         Map<File, FileInformation> newFiles = new HashMap<File, FileInformation>(files);
@@ -534,7 +534,7 @@ public class FileStatusCache {
         turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
 
         fireFileStatusChanged(file, current, fi);
-        
+
         return;
     }
 
@@ -612,6 +612,54 @@ public class FileStatusCache {
             refresh(root, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
         }
     }
+
+    /**
+     * Refreshes all files under given roots in the cache.
+     * @param rootFiles root files sorted under their's repository roots
+     */
+    void refreshAllRoots (Map<File, File> rootFiles) {
+        for (Map.Entry<File, File> refreshEntry : rootFiles.entrySet()) {
+            File repository = refreshEntry.getKey();
+            File root = refreshEntry.getValue();
+            if (Mercurial.LOG.isLoggable(Level.FINE)) {
+                Mercurial.LOG.log(Level.FINE, "refreshAllRoots() root: {0}, repositoryRoot: {1} ", new Object[] {root.getAbsolutePath(), repository.getAbsolutePath()}); // NOI18N
+            }
+            Map<File, FileInformation> files = getAllModifiedFiles();
+            Map<File, FileInformation> interestingFiles;
+            try {
+                // find all files with not up-to-date or ignored status
+                interestingFiles = HgCommand.getInterestingStatus(repository, root);
+                for (Map.Entry<File, FileInformation> interestingEntry : interestingFiles.entrySet()) {
+                    // put the file's FI into the cache
+                    File file = interestingEntry.getKey();
+                    FileInformation fi = interestingEntry.getValue();
+                    Mercurial.LOG.log(Level.FINE, "refreshAllRoots() file: {0} {1} ", new Object[] {file.getAbsolutePath(), fi}); // NOI18N
+                    refreshFileStatus(file, fi, interestingFiles);
+                }
+                // clean all files originally in the cache but now beign up-to-date or obsolete (as ignored && deleted)
+                for (Map.Entry<File, FileInformation> entry : files.entrySet()) {
+                    File file = entry.getKey();
+                    FileInformation fi = entry.getValue();
+                    boolean exists = file.exists();
+                    if (!interestingFiles.containsKey(file)             // file no longer has an interesting status
+                            && Utils.isAncestorOrEqual(root, file)      // file is under the examined root
+                            && ((fi.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) != 0 && !exists || // file was ignored and is now deleted
+                            (fi.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) == 0 && (!exists || file.isFile()))) { // file is now up-to-date
+                        Mercurial.LOG.log(Level.FINE, "refreshAllRoots() uninteresting file: {0} {1}", new Object[]{file, fi}); // NOI18N
+                        // TODO better way to detect conflicts
+                        if(HgCommand.existsConflictFile(file.getAbsolutePath())) {
+                            refreshFileStatus(file, FileStatusCache.FILE_INFORMATION_CONFLICT, interestingFiles); // set the files status to 'IN CONFLICT'
+                        } else {
+                            refreshFileStatus(file, FileStatusCache.FILE_INFORMATION_UNKNOWN, interestingFiles); // remove the file from cache
+                        }
+                    }
+                }
+            } catch (HgException ex) {
+                Mercurial.LOG.log(Level.FINE, "refreshAll() file: {0} {1} {2} ", new Object[] {repository.getAbsolutePath(), root.getAbsolutePath(), ex.toString()}); // NOI18N
+            }
+        }
+    }
+
     /**
      * Refreshes information about a given file or directory ONLY if its status is already cached. The
      * only exception are non-existing files (new-in-repository) whose statuses are cached in all cases.
@@ -716,6 +764,16 @@ public class FileStatusCache {
     }
 
     /**
+     * Returns only a cached map of modified files, will not access I/O.
+     * @param changed out parameter. If the cached map is not up-of-date, changed[0] will be set to true, otherwise false
+     * @return
+     */
+    Map<File, FileInformation> getAllModifiedFilesCached (final boolean changed[]) {
+        changed[0] = cacheProvider.modifiedFilesChanged();
+        return cacheProvider.getCachedValues();
+    }
+
+    /**
      * Refreshes given directory and all subdirectories.
      *
      * @param dir directory to refresh
@@ -768,7 +826,16 @@ public class FileStatusCache {
             if (interestingFiles == null) {
                 files = new File[0];
             } else {
-                files = interestingFiles.keySet().toArray(new File[interestingFiles.keySet().size()]);
+                // filter only interesting files that belong directly to dir
+                // by introducing refreshAllRoots interestingFiles may contain all files under repository root recursively
+                // and we surely don't want all of them to be associated with dir
+                Set<File> fileSet = new HashSet<File>(15);
+                for (File file : interestingFiles.keySet()) {
+                    if (dir.equals(file.getParentFile())) {
+                        fileSet.add(file);
+                    }
+                }
+                files = fileSet.toArray(new File[fileSet.size()]);
             }
         }
         Map<File, FileInformation> folderFiles = new HashMap<File, FileInformation>(files.length);
@@ -818,7 +885,7 @@ public class FileStatusCache {
             return folderFiles;
         }
         
-        if(!Mercurial.getInstance().isGoodVersion()) 
+        if(!Mercurial.getInstance().isAvailable())
             return folderFiles;
         
         if(interestingFiles == null){

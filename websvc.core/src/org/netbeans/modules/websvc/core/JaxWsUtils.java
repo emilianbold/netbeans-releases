@@ -546,12 +546,12 @@ public class JaxWsUtils {
                     Logger.getLogger(JaxWsUtils.class.getName()).log(Level.INFO, "Failed to find J2eePlatform", ex);
                 }
             }
-            Object moduleType = provider.getJ2eeModule().getModuleType();
-            if (J2eeModule.EJB.equals(moduleType)) {
+            J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
+            if (J2eeModule.Type.EJB.equals(moduleType)) {
                 projectType = ProjectInfo.EJB_PROJECT_TYPE;
-            } else if (J2eeModule.WAR.equals(moduleType)) {
+            } else if (J2eeModule.Type.WAR.equals(moduleType)) {
                 projectType = ProjectInfo.WEB_PROJECT_TYPE;
-            } else if (J2eeModule.CLIENT.equals(moduleType)) {
+            } else if (J2eeModule.Type.CAR.equals(moduleType)) {
                 projectType = ProjectInfo.CAR_PROJECT_TYPE;
             } else {
                 projectType = ProjectInfo.JSE_PROJECT_TYPE;

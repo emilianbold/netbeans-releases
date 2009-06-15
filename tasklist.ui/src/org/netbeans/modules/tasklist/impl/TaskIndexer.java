@@ -111,6 +111,7 @@ public class TaskIndexer extends CustomIndexer {
                     LOG.log(Level.FINE, "Cannot find file [%0] under root [%1]", new Object[] {idx.getRelativePath(), root});
                     continue;
                 }
+                is.removeDocuments(idx);
                 IndexDocument doc = null;
                 for( FileTaskScanner scanner : scanners ) {
                     List<? extends Task> tasks = scanner.scan(fo);

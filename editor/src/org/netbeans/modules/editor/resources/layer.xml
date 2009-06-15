@@ -43,10 +43,17 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
 
+    <folder name="Actions">
+        <folder name="Edit">
+            <file name="org-netbeans-modules-editor-ExportHtmlAction.instance"/>
+
+        </folder>
+    </folder>
     <folder name="Menu">
         <folder name="File">
-            <file name="org-netbeans-modules-editor-ExportHtmlAction.instance">
+            <file name="org-netbeans-modules-editor-ExportHtmlAction.shadow">
                 <attr name="position" intvalue="2400"/>
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-editor-ExportHtmlAction.instance"/>
             </file>
             </folder>
 
@@ -242,17 +249,20 @@ made subject to such option by the copyright holder.
         <file name="org-netbeans-lib-editor-hyperlink-HyperlinkOperation$HighlightFactoryImpl.instance"/>
 
         <folder name="Popup">
-            <file name="org-openide-actions-CutAction.instance">
-                <attr name="position" intvalue="2000"/>
-            </file>
-            <file name="org-openide-actions-CopyAction.instance">
+            <file name="org-openide-actions-CopyAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
                 <attr name="position" intvalue="3000"/>
             </file>
-            <file name="org-openide-actions-PasteAction.instance">
-                <attr name="position" intvalue="4000"/>
+            <file name="org-openide-actions-CutAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
+                <attr name="position" intvalue="2000"/>
             </file>
             <file name="org-netbeans-modules-editor-NbSelectInPopupAction.instance">
                 <attr name="position" intvalue="9000"/>
+            </file>
+            <file name="org-openide-actions-PasteAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
+                <attr name="position" intvalue="4000"/>
             </file>
         </folder>
 

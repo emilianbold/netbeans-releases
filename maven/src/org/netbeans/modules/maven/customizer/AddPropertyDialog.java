@@ -85,6 +85,7 @@ public class AddPropertyDialog extends javax.swing.JPanel implements ExplorerMan
     public AddPropertyDialog(NbMavenProjectImpl prj, String goalsText) {
         initComponents();
         manager = new ExplorerManager();
+        //project can be null when invoked from Tools/Options
         project = prj;
         okbutton = new JButton(NbBundle.getMessage(AddPropertyDialog.class, "BTN_OK"));
         manager.setRootContext(Node.EMPTY);
@@ -223,34 +224,36 @@ public class AddPropertyDialog extends javax.swing.JPanel implements ExplorerMan
             }
 
             Set<String> extensionsids = new HashSet<String>();
-            @SuppressWarnings("unchecked")
-            List<Plugin> plgns = project.getOriginalMavenProject().getBuildPlugins();
-            if (plgns != null) {
-                for (Plugin plg : plgns) {
-                    if (plg != null && plg.isExtensions()) {
-                        extensionsids.add(plg.getGroupId() + ":" + plg.getArtifactId() + ":" + plg.getVersion()); //NOI18N
-                        continue;
+            if (project != null) {
+                @SuppressWarnings("unchecked")
+                List<Plugin> plgns = project.getOriginalMavenProject().getBuildPlugins();
+                if (plgns != null) {
+                    for (Plugin plg : plgns) {
+                        if (plg != null && plg.isExtensions()) {
+                            extensionsids.add(plg.getGroupId() + ":" + plg.getArtifactId() + ":" + plg.getVersion()); //NOI18N
+                            continue;
+                        }
+                        //only add those with executions and goals..
                     }
-                    //only add those with executions and goals..
                 }
-            }
-            String mvnVersion = MavenSettings.getCommandLineMavenVersion();
-            String packaging = project.getOriginalMavenProject().getPackaging();
+                String mvnVersion = MavenSettings.getCommandLineMavenVersion();
+                String packaging = project.getOriginalMavenProject().getPackaging();
 
-            if (packaging != null) {
-                try {
-                    Map<String, List<String>> cycle = PluginIndexManager.getLifecyclePlugins(packaging, mvnVersion, extensionsids.toArray(new String[0]));
-                    if (cycle != null) {
-                        for (List<String> phase : cycle.values()) {
-                            for (String mapping : phase) {
-                                String[] split = StringUtils.split(mapping, ":"); //NOI18N
-                                String version = findVersion(split[0], split[1]);
-                                addPluginNode(split[0], split[1], version, split[2], rootChilds);
+                if (packaging != null) {
+                    try {
+                        Map<String, List<String>> cycle = PluginIndexManager.getLifecyclePlugins(packaging, mvnVersion, extensionsids.toArray(new String[0]));
+                        if (cycle != null) {
+                            for (List<String> phase : cycle.values()) {
+                                for (String mapping : phase) {
+                                    String[] split = StringUtils.split(mapping, ":"); //NOI18N
+                                    String version = findVersion(split[0], split[1]);
+                                    addPluginNode(split[0], split[1], version, split[2], rootChilds);
+                                }
                             }
                         }
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
                     }
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
                 }
             }
 
@@ -294,16 +297,18 @@ public class AddPropertyDialog extends javax.swing.JPanel implements ExplorerMan
     private String findVersion(String groupId, String artifactId) {
         String key = groupId + ":" + artifactId;
         List<Plugin> plugins = new ArrayList<Plugin>();
-        @SuppressWarnings("unchecked")
-        List<Plugin> bld = project.getOriginalMavenProject().getBuildPlugins();
-        if (bld != null) {
-            plugins.addAll(bld);
-        }
-        if (project.getOriginalMavenProject().getPluginManagement() != null) {
+        if (project != null) {
             @SuppressWarnings("unchecked")
-            List<Plugin> pm = project.getOriginalMavenProject().getPluginManagement().getPlugins();
-            if (pm != null) {
-                plugins.addAll(pm);
+            List<Plugin> bld = project.getOriginalMavenProject().getBuildPlugins();
+            if (bld != null) {
+                plugins.addAll(bld);
+            }
+            if (project.getOriginalMavenProject().getPluginManagement() != null) {
+                @SuppressWarnings("unchecked")
+                List<Plugin> pm = project.getOriginalMavenProject().getPluginManagement().getPlugins();
+                if (pm != null) {
+                    plugins.addAll(pm);
+                }
             }
         }
 

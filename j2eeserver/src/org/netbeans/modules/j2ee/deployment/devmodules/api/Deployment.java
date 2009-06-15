@@ -49,9 +49,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.status.ProgressObject;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.DeployOnSaveManager;
@@ -332,8 +332,23 @@ public final class Deployment {
      * @return ServerInstanceIDs of all registered server instances that meet 
      *         the specified requirements.
      * @since 1.6
+     * @deprecated {@link #getServerInstanceIDs(java.util.Collection)}
      */
     public String[] getServerInstanceIDs(Object[] moduleTypes) {
+        return getServerInstanceIDs(moduleTypes, (String) null, null);
+    }
+
+    /**
+     * Return ServerInstanceIDs of all registered server instances that support
+     * specified module types.
+     *
+     * @param moduleTypes collection of module types that the server instance must support
+     *
+     * @return ServerInstanceIDs of all registered server instances that meet
+     *         the specified requirements.
+     * @since 1.59
+     */
+    public String[] getServerInstanceIDs(Collection<J2eeModule.Type> moduleTypes) {
         return getServerInstanceIDs(moduleTypes, (Profile) null, null);
     }
 
@@ -342,18 +357,28 @@ public final class Deployment {
      * specified module types and J2EE specification versions.
      *
      * @param moduleTypes  list of module types that the server instance must support.
-     * @param specVersion  lowest J2EE specification version that the server instance must support.
+     * @param specVersion  J2EE specification version that the server instance must support.
      *
      * @return ServerInstanceIDs of all registered server instances that meet 
      *         the specified requirements.
      * @since 1.6
-     * @deprecated use {@link #getServerInstanceIDs(java.lang.Object[], org.netbeans.modules.j2ee.deployment.devmodules.api.Profile)}
+     * @deprecated use {@link #getServerInstanceIDs(java.util.Collection, org.netbeans.modules.j2ee.deployment.devmodules.api.Profile)}
      */
     public String[] getServerInstanceIDs(Object[] moduleTypes, String specVersion) {
         return getServerInstanceIDs(moduleTypes, specVersion, null);
     }
 
-    public String[] getServerInstanceIDs(Object[] moduleTypes, Profile profile) {
+    /**
+     * Return ServerInstanceIDs of all registered server instances that support
+     * specified module types and profile.
+     *
+     * @param moduleTypes  list of module types that the server instance must support
+     * @param profile profile that the server instance must support
+     * @return ServerInstanceIDs of all registered server instances that meet
+     *             the specified requirements
+     * @since 1.59
+     */
+    public String[] getServerInstanceIDs(Collection<J2eeModule.Type> moduleTypes, Profile profile) {
         return getServerInstanceIDs(moduleTypes, profile, null);
     }
     
@@ -362,54 +387,44 @@ public final class Deployment {
      * specified module types, J2EE specification version and tools.
      *
      * @param moduleTypes  list of module types that the server instance must support.
-     * @param specVersion  lowest J2EE specification version that the server instance must support.
+     * @param specVersion  J2EE specification version that the server instance must support.
      * @param tools        list of tools that the server instance must support.
      *
      * @return ServerInstanceIDs of all registered server instances that meet 
      *         the specified requirements.
      * @since 1.6
-     * @deprecated use {@link #getServerInstanceIDs(java.lang.Object[], org.netbeans.modules.j2ee.deployment.capabilities.Profile, java.lang.String[]) }
+     * @deprecated use {@link #getServerInstanceIDs(java.util.Collection, org.netbeans.modules.j2ee.deployment.capabilities.Profile, java.lang.String[]) }
      */
     public String[] getServerInstanceIDs(Object[] moduleTypes, String specVersion, String[] tools) {
-        List result = new ArrayList();
-        String[] serverInstanceIDs = getServerInstanceIDs();
-        for (int i = 0; i < serverInstanceIDs.length; i++) {
-            J2eePlatform platform = getJ2eePlatform(serverInstanceIDs[i]);
-            if (platform != null) {
-                boolean isOk = true;
-                if (moduleTypes != null) {
-                    Set platModuleTypes = platform.getSupportedModuleTypes();
-                    for (int j = 0; j < moduleTypes.length; j++) {
-                        if (!platModuleTypes.contains(moduleTypes[j])) {
-                            isOk = false;
-                        }
-                    }
-                }
-                if (isOk && specVersion != null) {
-                    Set platSpecVers = platform.getSupportedSpecVersions();
-                    if (specVersion.equals(J2eeModule.J2EE_13)) { 
-                        isOk = platSpecVers.contains(J2eeModule.J2EE_13) 
-                                || platSpecVers.contains(J2eeModule.J2EE_14);
-                    } else {
-                        isOk = platSpecVers.contains(specVersion);
-                    }
-                }
-                if (isOk && tools != null) {
-                    for (int j = 0; j < tools.length; j++) {
-                        if (!platform.isToolSupported(tools[j])) {
-                            isOk = false;
-                        }
-                    }
-                }
-                if (isOk) {
-                    result.add(serverInstanceIDs[i]);
-                }
+        Profile profile = specVersion != null ? Profile.fromPropertiesString(specVersion) : null;
+        if (profile == null && specVersion != null) {
+            // some weird spec version - return empty array to be consistent with original impl
+            return new String[0];
+        }
+
+        List<J2eeModule.Type> types = new ArrayList<J2eeModule.Type>(moduleTypes.length);
+        for (Object obj : moduleTypes) {
+            J2eeModule.Type type = J2eeModule.Type.fromJsrType(obj);
+            if (type != null) {
+                types.add(type);
             }
         }
-        return (String[])result.toArray(new String[result.size()]);
+
+        return getServerInstanceIDs(types, profile, tools);
     }
 
-    public String[] getServerInstanceIDs(Object[] moduleTypes, Profile profile, String[] tools) {
+    /**
+     * Return ServerInstanceIDs of all registered server instances that support
+     * specified module types, profile and tools.
+     *
+     * @param moduleTypes list of module types that the server instance must support
+     * @param profile profile that the server instance must support
+     * @param tools list of tools that the server instance must support
+     * @return ServerInstanceIDs of all registered server instances that meet
+     *             the specified requirements
+     * @since 1.59
+     */
+    public String[] getServerInstanceIDs(Collection<J2eeModule.Type> moduleTypes, Profile profile, String[] tools) {
         List result = new ArrayList();
         String[] serverInstanceIDs = getServerInstanceIDs();
         for (int i = 0; i < serverInstanceIDs.length; i++) {
@@ -417,22 +432,21 @@ public final class Deployment {
             if (platform != null) {
                 boolean isOk = true;
                 if (moduleTypes != null) {
-                    Set platModuleTypes = platform.getSupportedModuleTypes();
-                    for (int j = 0; j < moduleTypes.length; j++) {
-                        if (!platModuleTypes.contains(moduleTypes[j])) {
+                    Set<J2eeModule.Type> platModuleTypes = platform.getSupportedTypes();
+                    for (J2eeModule.Type type : moduleTypes) {
+                        if (!platModuleTypes.contains(type)) {
                             isOk = false;
                         }
                     }
                 }
                 if (isOk && profile != null) {
-                    boolean supported = false;
-                    for (Profile prof : platform.getSupportedProfiles()) {
-                        if (prof == profile) {
-                            supported = true;
-                            break;
-                        }
+                    Set<Profile> profiles = platform.getSupportedProfiles();
+                    if (profile.equals(Profile.J2EE_13)) {
+                        isOk = profiles.contains(Profile.J2EE_13)
+                                || profiles.contains(Profile.J2EE_14);
+                    } else {
+                        isOk = profiles.contains(profile);
                     }
-                    isOk = supported;
                 }
                 if (isOk && tools != null) {
                     for (int j = 0; j < tools.length; j++) {

@@ -204,6 +204,8 @@ public class HgCommand {
     private static final String HG_RENAME_AFTER_CMD = "-A"; // NOI18N
     private static final String HG_NEWEST_FIRST = "--newest-first"; // NOI18N
 
+    private static final String HG_RESOLVE_CMD = "resolve";             //NOI18N
+    private static final String HG_RESOLVE_MARK_RESOLVED = "--mark";   //NOI18N
 
     // TODO: replace this hack
     // Causes /usr/bin/hgmerge script to return when a merge
@@ -3011,7 +3013,7 @@ public class HgCommand {
      * @return List of the command's output or an exception if one occured
      */
     private static List<String> exec(List<? extends Object> command) throws HgException{
-        if(!Mercurial.getInstance().isGoodVersion()){
+        if(!Mercurial.getInstance().isAvailable()){
             return new ArrayList<String>();
         }
         return execEnv(command, null);
@@ -3283,6 +3285,38 @@ public class HgCommand {
         }
     }
 
+    /**
+     * Marks the given file as resolved if the resolve command is available
+     * @param repository
+     * @param file
+     * @param logger
+     * @throws HgException
+     */
+    public static void markAsResolved (File repository, File file, OutputLogger logger) throws HgException {
+        if (file == null) return;
+        if (!HgUtils.hasResolveCommand(Mercurial.getInstance().getVersion())) {
+            return;
+        }
+
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_RESOLVE_CMD);
+        command.add(HG_RESOLVE_MARK_RESOLVED);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        command.add(FileUtil.normalizeFile(file).getAbsolutePath());
+        List<String> list = exec(command);
+
+        if (!list.isEmpty()) {
+            if (isErrorNoRepository(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger);
+             } else if (isErrorAbort(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger);
+             }
+        }
+    }
+
     public static void deleteConflictFile(String path) {
         boolean success = (new File(path + HG_STR_CONFLICT_EXT)).delete();
 
@@ -3336,7 +3370,7 @@ public class HgCommand {
      */
     private static boolean execCheckClone(List<String> command) {
         final boolean[] isRepository = new boolean[] {false};
-        if(!Mercurial.getInstance().isGoodVersion()){
+        if(!Mercurial.getInstance().isAvailable(true, false)){
             Mercurial.LOG.info("Unsupported hg version");
             return isRepository[0];
         }

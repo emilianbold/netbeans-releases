@@ -1209,7 +1209,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         // gather macro map from all includes and fill preprocessor conditions state
         FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(csmFile.getAbsolutePath());
-        APTFileCacheEntry aptCacheEntry = csmFile.getAPTCacheEntry(preprocHandler, true);
+        // ask for exclusive entry if absent
+        APTFileCacheEntry aptCacheEntry = csmFile.getAPTCacheEntry(preprocHandler, Boolean.TRUE);
         APTParseFileWalker walker = new APTParseFileWalker(base, aptLight, csmFile, preprocHandler, triggerParsingActivity, pcBuilder,aptCacheEntry);
         walker.visit();
         FilePreprocessorConditionState pcState = pcBuilder.build();
@@ -1230,7 +1231,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     return csmFile;
                 }
                 synchronized (entry.getLock()) {
-                    Collection<PreprocessorStatePair> statesToKeep = new ArrayList<PreprocessorStatePair>();
+                    List<PreprocessorStatePair> statesToKeep = new ArrayList<PreprocessorStatePair>(4);
                     AtomicBoolean newStateFound = new AtomicBoolean();
                     // Phase 1: check preproc states of entry comparing to current state
                     ComparisonResult comparisonResult = fillStatesToKeepBasedOnPPState(newState, entry.getStatePairs(), statesToKeep, newStateFound);
@@ -1258,7 +1259,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
                     boolean clean;
 
-                    Collection<APTPreprocHandler.State> statesToParse = new ArrayList<APTPreprocHandler.State>();
+                    List<APTPreprocHandler.State> statesToParse = new ArrayList<APTPreprocHandler.State>(4);
                     statesToParse.add(newState);
 
                     if (comparisonResult == ComparisonResult.BETTER) {
@@ -1488,8 +1489,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      */
     private ComparisonResult fillStatesToKeepBasedOnPCState(
             FilePreprocessorConditionState pcState,
-            Collection<PreprocessorStatePair> oldStates,
-            Collection<PreprocessorStatePair> statesToKeep) {
+            List<PreprocessorStatePair> oldStates,
+            List<PreprocessorStatePair> statesToKeep) {
 
         boolean isSuperset = true; // true if this state is a superset of each old state
 
@@ -1500,8 +1501,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         // so we do *not* check isValid & isCompileContext
 
         statesToKeep.clear();
-
-        for (PreprocessorStatePair old : oldStates) {
+        // in this place use direct for loop over list with known size
+        // instead of "for (PreprocessorStatePair old : oldStates)"
+        // due to performance problem of iterator.hasNext
+        int size = oldStates.size();
+        for (int i = 0; i < size; i++) {
+            PreprocessorStatePair old = oldStates.get(i);
             if (old.pcState == FilePreprocessorConditionState.PARSING) {
                 isSuperset = false;
                 // not yet filled - file parsing is filling it right now => we don't know what it will be => keep it
@@ -2126,7 +2131,22 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     @Override
     public final String toString() {
-        return getName().toString() + ' ' + getClass().getName() + " @" + hashCode() + ":" + super.hashCode(); // NOI18N
+        return getName().toString() + ' ' + getClass().getName() + " @" + hashCode() + ":" + System.identityHashCode(this); // NOI18N
+    }
+
+    private volatile int hash = 0;
+
+    @Override
+    public int hashCode() {
+        if (hash == 0) {
+            hash = super.hashCode();
+        }
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj == this;
     }
 
     /**
@@ -2195,7 +2215,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 // for testing remember restored file
                 long time = REMEMBER_RESTORED ? System.currentTimeMillis() : 0;
                 int stackSize = inclStack.size();
-                APTWalker walker = new APTRestorePreprocStateWalker(startProject, aptLight, csmFile, preprocHandler, inclStack, FileContainer.getFileKey(interestedFile, false).toString(), csmFile.getAPTCacheEntry(preprocHandler, true));
+                // create concurrent entry if absent
+                APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(preprocHandler, Boolean.FALSE);
+                APTWalker walker = new APTRestorePreprocStateWalker(startProject, aptLight, csmFile, preprocHandler, inclStack, FileContainer.getFileKey(interestedFile, false).toString(), cacheEntry);
                 walker.visit();
                 // we do not remember cache entry because it is stopped before end of file
                 // fileImpl.setAPTCacheEntry(handler, cacheEntry, false);

@@ -43,16 +43,19 @@ package org.netbeans.modules.j2ee.persistence.dd;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappings;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.util.JPAClassPathHelper;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -148,6 +151,27 @@ public class PersistenceUtils {
             return persistenceScopes.getPersistenceScopes();
         }
         return new PersistenceScope[0];
+    }
+
+    /**
+     * method check target compile classpath for presence of persitence classes of certain version
+     * returns max supported specification
+     * @param project
+     * @return
+     */
+    public static String getJPAVersion(FileObject target)
+    {
+        String version=null;
+        ClassPath compile=ClassPath.getClassPath(target, ClassPath.COMPILE);
+        if(compile.findResource("javax/persistence/criteria/JoinType.class")!=null)
+        {
+            version=Persistence.VERSION_2_0;
+        }
+        else if(compile.findResource("javax/persistence/Entity.class")!=null)
+        {
+            version=Persistence.VERSION_1_0;
+        }
+        return version;
     }
     
     /**

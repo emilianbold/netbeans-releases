@@ -241,7 +241,9 @@ public class WebProjectUtilities {
         // create web.xml
         // PENDING : should be easier to define in layer and copy related FileObject (doesn't require systemClassLoader)
         String webXMLContent = null;
-        if (Profile.JAVA_EE_5 == j2eeProfile) {
+        if (Profile.JAVA_EE_6_FULL == j2eeProfile || Profile.JAVA_EE_6_WEB == j2eeProfile) {
+            webXMLContent = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + "web-3.0.xml")); //NOI18N
+        } else if (Profile.JAVA_EE_5 == j2eeProfile) {
             webXMLContent = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + "web-2.5.xml")); //NOI18N
         } else if (Profile.J2EE_14 == j2eeProfile) {
             webXMLContent = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + "web-2.4.xml")); //NOI18N
@@ -828,7 +830,7 @@ public class WebProjectUtilities {
         
         // set j2ee.platform.classpath
         J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
-        if (!j2eePlatform.getSupportedProfiles(J2eeModule.WAR).contains(j2eeProfile)) {
+        if (!j2eePlatform.getSupportedProfiles(J2eeModule.Type.WAR).contains(j2eeProfile)) {
             Logger.getLogger("global").log(Level.WARNING,
                     "J2EE level:" + j2eeProfile.getDisplayName() + " not supported by server " + Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID) + " for module type WAR"); // NOI18N
         }

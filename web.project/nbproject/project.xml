@@ -148,7 +148,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.38</specification-version>
+                        <specification-version>1.39</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -209,7 +209,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>4</release-version>
-                        <specification-version>1.58</specification-version>
+                        <specification-version>1.59</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -501,7 +501,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.websvc.manager</friend>
                 <friend>org.netbeans.modules.visualweb.project.jsf</friend>
                 <friend>org.netbeans.modules.visualweb.project.jsfproject</friend>
-                <friend>org.netbeans.modules.web.frameworks.facelets</friend>
+                <friend>org.netbeans.modules.web.facelets</friend>
                 <friend>org.netbeans.modules.web.frameworks.struts2</friend>
                 <friend>org.netbeans.modules.portalpack.portlets.genericportlets</friend>
                 <friend>org.netbeans.modules.portalpack.commons</friend>

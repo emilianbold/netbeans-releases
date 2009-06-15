@@ -109,11 +109,11 @@ public abstract class CommonBeanReader
             if(dc != null) {
                 J2eeModule module = dc.getJ2eeModule();
                 if(module != null) {
-                    if(J2eeModule.WAR == module.getModuleType()) {
+                    if(J2eeModule.Type.WAR == module.getType()) {
                         result = readWebAppMetadata(module.getMetadataModel(WebAppMetadata.class));
-                    } else if(J2eeModule.EJB == module.getModuleType()) {
+                    } else if(J2eeModule.Type.EJB == module.getType()) {
                         result = readEjbJarMetadata(module.getMetadataModel(EjbJarMetadata.class));
-                    } else if(J2eeModule.CLIENT == module.getModuleType()) {
+                    } else if(J2eeModule.Type.CAR == module.getType()) {
                         result = readAppClientMetadata(module.getMetadataModel(AppClientMetadata.class));
                     }
                 }

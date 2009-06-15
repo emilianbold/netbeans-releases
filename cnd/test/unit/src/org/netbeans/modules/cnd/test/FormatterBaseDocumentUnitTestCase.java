@@ -58,7 +58,7 @@ import org.netbeans.editor.BaseDocument;
  *
  * @author Miloslav Metelka
  */
-public abstract class FormatterBaseDocumentUnitTestCase extends BaseTestCase {
+public abstract class FormatterBaseDocumentUnitTestCase extends CndBaseTestCase {
     
     private EditorKit editorKit;
     

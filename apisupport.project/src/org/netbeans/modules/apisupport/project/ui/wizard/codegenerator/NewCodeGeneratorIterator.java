@@ -136,7 +136,12 @@ public class NewCodeGeneratorIterator extends BasicWizardIterator {
         cmf.add(cmf.createFileWithSubstitutions(actionPath, template, replaceTokens));
 
         // add layer entry about the action
-        String category = "Editors/text/" + model.getMimeType() + "/CodeGenerators"; // NOI18N
+        String category;
+        if (model.getMimeType().contains("/")) {
+            category = "Editors/" + model.getMimeType() + "/CodeGenerators";
+        } else {
+            category = "Editors/text/" + model.getMimeType() + "/CodeGenerators";
+        } // NOI18N
         String dashedPkgName = model.getPackageName().replace('.', '-');
         String dashedFqClassName = dashedPkgName + '-' + fileName;
         String instanceFullPath = category + "/" // NOI18N

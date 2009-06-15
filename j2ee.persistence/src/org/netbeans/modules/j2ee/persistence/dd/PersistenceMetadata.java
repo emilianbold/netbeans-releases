@@ -41,10 +41,14 @@
 
 package org.netbeans.modules.j2ee.persistence.dd;
 
+import java.io.InputStream;
 import java.util.Map;
 import java.util.WeakHashMap;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
+import org.netbeans.modules.j2ee.persistence.dd.common.JPAParseUtils;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
+import org.xml.sax.SAXException;
 
 /**
  * Provider of model based on persistence.xsd schema.
@@ -89,7 +93,27 @@ public final class PersistenceMetadata {
         synchronized (ddMap) {
             persistence = (Persistence) ddMap.get(fo);
             if (persistence == null) {
-                persistence = Persistence.createGraph(fo.getInputStream());
+                InputStream is=fo.getInputStream();
+                String version=Persistence.VERSION_1_0;
+//                try {
+//                    version=JPAParseUtils.getVersion(is);
+//                } catch (SAXException ex) {
+//                    Exceptions.printStackTrace(ex);
+//                }
+//                finally
+//                {
+//                    if(is!=null)is.close();
+//                }
+//                is=fo.getInputStream();
+                if(Persistence.VERSION_2_0.equals(version))
+                {
+                    persistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.Persistence.createGraph(is);
+                }
+                else//1.0 - default
+                {
+                    persistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence.createGraph(is);
+                }
+                is.close();
                 ddMap.put(fo, persistence);
             }
         }

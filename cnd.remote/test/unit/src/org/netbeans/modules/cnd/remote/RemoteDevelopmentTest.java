@@ -39,19 +39,25 @@
 
 package org.netbeans.modules.cnd.remote;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.modules.cnd.remote.mapper.MappingsTestCase;
 import org.netbeans.modules.cnd.remote.support.RemoteUtilTestCase;
 import org.netbeans.modules.cnd.remote.support.ServerListTestCase;
 import org.netbeans.modules.cnd.remote.support.TransportTestCase;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.remote.sync.ScpSyncWorkerTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
+import org.netbeans.modules.nativeexecution.test.RcFile;
+import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 
 /**
  *
  * @author Sergey Grinev
  */
-public class RemoteDevelopmentTest extends BaseTestSuite {
+public class RemoteDevelopmentTest extends CndBaseTestSuite {
 
 //    static {
 //        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
@@ -59,12 +65,38 @@ public class RemoteDevelopmentTest extends BaseTestSuite {
 //        System.setProperty("nativeexecution.support.logger.level", "0");
 //    }
 
+    public RemoteDevelopmentTest(Class testClass) {
+        this(testClass.getName(), testClass);
+    }
+
     public RemoteDevelopmentTest() {
-        super("Remote Development"); // NOI18N
-        addTestSuite(MappingsTestCase.class);
-        addTestSuite(TransportTestCase.class);
-        addTestSuite(RemoteUtilTestCase.class);
-        addTestSuite(ServerListTestCase.class);
+        this("Remote Development", // NOI18N
+             MappingsTestCase.class,
+             TransportTestCase.class,
+             RemoteUtilTestCase.class,
+             ServerListTestCase.class,
+             ScpSyncWorkerTestCase.class);
+    }
+
+
+    private RemoteDevelopmentTest(String name, Class... testClasses) {
+        super(name);
+        try {
+            for (Class testClass : testClasses) {
+                try {
+                    RcFile rcFile = NativeExecutionTestSupport.getRcFile();
+                    for (String platform : rcFile.getKeys("remote.platforms")) {
+                        addTest(testClass, platform);
+                    }
+                } catch (FileNotFoundException ex) {
+                    // rcfile does not exists - no tests to run
+                }
+            }
+        } catch (IOException ex) {
+            addTest(warning("Cannot get execution environment: " + exceptionToString(ex)));
+        } catch (FormatException ex) {
+            addTest(warning("Cannot get execution environment: " + exceptionToString(ex)));
+        }
     }
 
     public static Test suite() {
@@ -72,4 +104,25 @@ public class RemoteDevelopmentTest extends BaseTestSuite {
         return suite;
     }
 
+//    private ExecutionEnvironment[] getTestExecutionEnvironments() throws IOException, RcFile.FormatException {
+//        ExecutionEnvironment[] testEnvironments;
+//        List<ExecutionEnvironment> envs = new ArrayList<ExecutionEnvironment>();
+//        try {
+//            for (String platform : NativeExecutionTestSupport.getRcFile().getKeys("remote.platforms")) {
+//                ExecutionEnvironment env = NativeExecutionTestSupport.getTestExecutionEnvironment(platform);
+//                envs.add(env);
+//            }
+//        } catch (FileNotFoundException e) {
+//            // rcfile just does not exist: use old-style
+//        }
+//        testEnvironments = envs.toArray(new ExecutionEnvironment[envs.size()]);
+//        // backup to the old-style
+//        if (testEnvironments.length == 0) {
+//            ExecutionEnvironment execEnv = NativeExecutionTestSupport.getDefaultTestExecutionEnvironment(false);
+//            if (execEnv != null) {
+//                testEnvironments = new ExecutionEnvironment[] { execEnv };
+//            }
+//        }
+//        return testEnvironments;
+//    }
 }

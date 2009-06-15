@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
     <Toolbar name="Build" />
     <Toolbar name="Debug" />
     <Toolbar name="Memory"/>
-    <Toolbar name="QuickSearch" align="right" />
+    <Toolbar name="QuickSearch" align="right" draggable="false" />
   </Row>
 
 </Configuration>

@@ -59,12 +59,10 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -85,7 +83,7 @@ import org.netbeans.modules.j2ee.dd.spi.webservices.WebservicesMetadataModelFact
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarCompositePanelProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 
@@ -95,7 +93,7 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
  * @author  Pavel Buzek
  */
 public final class EjbJarProvider extends J2eeModuleProvider
-        implements EjbJarImplementation, J2eeModuleImplementation, ModuleChangeReporter, EjbChangeDescriptor, PropertyChangeListener {
+        implements EjbJarImplementation, J2eeModuleImplementation2, ModuleChangeReporter, EjbChangeDescriptor, PropertyChangeListener {
     
     public static final String FILE_DD = "ejb-jar.xml";//NOI18N
     
@@ -284,8 +282,8 @@ public final class EjbJarProvider extends J2eeModuleProvider
         return this;
     }
     
-    public Object getModuleType() {
-        return J2eeModule.EJB;
+    public J2eeModule.Type getModuleType() {
+        return J2eeModule.Type.EJB;
     }
     
     public String getModuleVersion() {

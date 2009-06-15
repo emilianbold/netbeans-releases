@@ -40,12 +40,15 @@
 package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
 import java.util.Set;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
 /**
+ * Facade allowing queries for certain capabilities provided by Java EE runtime.
  *
  * @author Petr Hejl
+ * @since 1.58
  */
 public final class Capabilities {
 
@@ -55,6 +58,7 @@ public final class Capabilities {
         this.provider = provider;
     }
 
+    @CheckForNull
     public static Capabilities forProject(Project project) {
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         if (provider == null) {
@@ -63,31 +67,56 @@ public final class Capabilities {
         return new Capabilities(provider);
     }
 
-//    public boolean isEJB21Supported() {
-//        return false;
-//    }
-//
-//    public boolean isEJB30Supported() {
-//        return false;
-//    }
-//
-//    public boolean isEJB31Supported() {
-//        return false;
-//    }
-//
-//    public boolean isEJB31LiteSupported() {
-//        return false;
-//    }
+    public boolean isEJB20Supported() {
+        J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
+        // TODO consider additional capabilities not matching the Profile (?)
+        return isProfileSupported(moduleType, Profile.J2EE_13);
+    }
+
+    public boolean isEJB21Supported() {
+        J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
+        // TODO consider additional capabilities not matching the Profile (?)
+        return isProfileSupported(moduleType, Profile.J2EE_14);
+    }
+
+    public boolean isEJB30Supported() {
+        J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
+        // TODO consider additional capabilities not matching the Profile (?)
+        return isProfileSupported(moduleType, Profile.JAVA_EE_5);
+    }
+
+    public boolean isEJB31Supported() {
+        J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
+        // TODO consider additional capabilities not matching the Profile (?)
+        return isProfileSupported(moduleType, Profile.JAVA_EE_6_FULL);
+    }
 
     public boolean hasDefaultPersistenceProvider() {
-        J2eePlatform platform  = Deployment.getDefault().getJ2eePlatform(provider.getServerInstanceID());
+        J2eePlatform platform  = getPlatform();
         if (platform == null) {
             // server probably not registered, can't resolve whether default provider is supported (see #79856)
             return false;
         }
 
-        Set<Profile> profiles = platform.getSupportedProfiles(provider.getJ2eeModule().getModuleType());
+        Set<Profile> profiles = platform.getSupportedProfiles(provider.getJ2eeModule().getType());
         return (profiles.contains(Profile.JAVA_EE_5) || profiles.contains(Profile.JAVA_EE_6_FULL))
                 && platform.isToolSupported("defaultPersistenceProviderJavaEE5");
+    }
+
+    private boolean isProfileSupported(J2eeModule.Type moduleType, Profile profile) {
+        J2eePlatform platform = getPlatform();
+        if (platform == null) {
+            return false;
+        }
+        // FIXME take info from project even when there is no server
+        return platform.getSupportedProfiles(moduleType).contains(profile);
+    }
+
+    private J2eePlatform getPlatform() {
+        try {
+            return Deployment.getDefault().getServerInstance(provider.getServerInstanceID()).getJ2eePlatform();
+        } catch (InstanceRemovedException ex) {
+            return null;
+        }
     }
 }

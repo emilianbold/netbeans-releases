@@ -43,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -76,6 +75,22 @@ public class PhpStructureScannerTest extends ParserTestBase{
      * Test of scan method, of class PhpStructureScanner.
      */
     
+    public void testNamespace() throws Exception {
+        performTest("structure/php53/namespace");
+
+    }
+    public void testMultiple_namespaces() throws Exception {
+        performTest("structure/php53/multiple_namespaces");
+
+    }
+    public void testBracketedMultipleNamespaces() throws Exception {
+        performTest("structure/php53/bracketed_multiple_namespaces");
+
+    }
+    public void testBracketedMultipleNamespacesWithDefaultOne() throws Exception {
+        performTest("structure/php53/bracketed_multiple_namespaces_with_default_one");
+
+    }
     public void testScan() throws Exception {
         performTest("interface_001");
 

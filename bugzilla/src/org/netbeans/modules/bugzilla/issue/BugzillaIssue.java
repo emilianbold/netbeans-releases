@@ -104,6 +104,7 @@ public class BugzillaIssue extends Issue {
     static final String LABEL_NAME_STATUS       = "bugzilla.issue.status";      // NOI18N
     static final String LABEL_NAME_RESOLUTION   = "bugzilla.issue.resolution";  // NOI18N
     static final String LABEL_NAME_SUMMARY      = "bugzilla.issue.summary";     // NOI18N
+    static final String LABEL_NAME_ASSIGNED_TO  = "bugzilla.issue.assigned";    // NOI18N
 
     /**
      * Issue wasn't seen yet
@@ -197,17 +198,26 @@ public class BugzillaIssue extends Issue {
     }
 
     void opened() {
-        seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
+        if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} open start", new Object[] {getID()});
+        if(!data.isNew()) {
+            // 1.) to get seen attributes makes no sense for new issues
+            // 2.) set seenAtributes on issue open, before its actuall
+            //     state is written via setSeen().
+            seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
+        }
         String refresh = System.getProperty("org.netbeans.modules.bugzilla.noIssueRefresh"); // NOI18N
         if(refresh != null && refresh.equals("true")) {                                      // NOI18N
             return;
         }
         repository.scheduleForRefresh(getID());
+        if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} open finish", new Object[] {getID()});
     }
 
     void closed() {
+        if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} close start", new Object[] {getID()});
         repository.stopRefreshing(getID());
         seenAtributes = null;
+        if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} close finish", new Object[] {getID()});
     }
 
     @Override
@@ -271,7 +281,11 @@ public class BugzillaIssue extends Issue {
                                               loc.getString("CTL_Issue_Resolution_Desc"),       // NOI18N
                                               getLongestWordWidth(
                                                 loc.getString("CTL_Issue_Resolution_Title"),    // NOI18N
-                                                bc.getResolutions(), t))
+                                                bc.getResolutions(), t)),
+            new ColumnDescriptor<String>(LABEL_NAME_ASSIGNED_TO, String.class,
+                                              loc.getString("CTL_Issue_Assigned_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Assigned_Desc"),         // NOI18N
+                                              BugtrackingUtil.getColumnWidthInPixels(20, t))
         };
     }
 
@@ -835,7 +849,6 @@ public class BugzillaIssue extends Issue {
         }
         return true;
     }
-
 
     private Map<String, String> getSeenAttributes() {
         if(seenAtributes == null) {

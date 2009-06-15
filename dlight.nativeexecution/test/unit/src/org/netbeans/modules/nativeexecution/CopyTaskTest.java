@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.PrintWriter;
@@ -49,13 +50,14 @@ import org.junit.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author ak119685
  */
-public class CopyTaskTest extends NativeExecutionTest {
+public class CopyTaskTest extends NativeExecutionBaseTestCase {
 
     public CopyTaskTest(String name) {
         super(name);
@@ -261,7 +263,7 @@ public class CopyTaskTest extends NativeExecutionTest {
 
     @Test
     public void testCopyToRemote() throws Exception {
-        ExecutionEnvironment execEnv = getTestExecutionEnvironment("intel-S2"); // NOI18N
+        ExecutionEnvironment execEnv = NativeExecutionTestSupport.getTestExecutionEnvironment("intel-S2"); // NOI18N
         assertNotNull(execEnv);
         File src = createTempFile("test-upload-1", null, false); // NOI18N
         writeFile(src, "qwe/nasd/nzxc"); // NOI18N

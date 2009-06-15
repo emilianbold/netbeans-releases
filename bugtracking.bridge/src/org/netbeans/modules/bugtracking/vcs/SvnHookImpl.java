@@ -252,14 +252,14 @@ public class SvnHookImpl extends SvnHook {
     }
 
     private void onShowRevisionFormat() {
-        FormatPanel p = new FormatPanel(VCSHooksConfig.getInstance().getSvnCommentFormat());
+        FormatPanel p = new FormatPanel(VCSHooksConfig.getInstance().getSvnCommentFormat(), VCSHooksConfig.getDefaultSvnFormat());
         if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) { // NOI18N
             VCSHooksConfig.getInstance().setSvnCommentFormat(p.getFormat());
         }
     }
 
     private void onShowIssueFormat() {
-        FormatPanel p = new FormatPanel(VCSHooksConfig.getInstance().getSvnIssueFormat());
+        FormatPanel p = new FormatPanel(VCSHooksConfig.getInstance().getSvnIssueFormat(), VCSHooksConfig.getDefaultIssueFormat());
         if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) {  // NOI18N
             VCSHooksConfig.getInstance().setSvnIssueFormat(p.getFormat());
         }

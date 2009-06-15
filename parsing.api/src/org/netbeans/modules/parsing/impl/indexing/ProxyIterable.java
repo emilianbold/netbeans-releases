@@ -48,7 +48,7 @@ import java.util.NoSuchElementException;
  * @author Tomas Zezula
  */
 //@NotThreadSafe
-class ProxyIterable<T> implements Iterable {
+class ProxyIterable<T> implements Iterable<T> {
 
     private final Collection<? extends Collection<? extends T>> delegates;
 
@@ -57,7 +57,7 @@ class ProxyIterable<T> implements Iterable {
         this.delegates = delegates;
     }
 
-    public Iterator<? extends T> iterator() {
+    public Iterator<T> iterator() {
         return new ProxyIterator<T>(delegates.iterator());
     }
 
@@ -66,7 +66,7 @@ class ProxyIterable<T> implements Iterable {
         return "ProxyIterable@" + Integer.toHexString(System.identityHashCode(this)) + " [" + delegates + "]"; //NOI18N
     }
 
-    private class ProxyIterator<T> implements Iterator {
+    private class ProxyIterator<T> implements Iterator<T> {
 
         private Iterator<? extends Collection< ? extends T>> it;
         private Iterator<? extends T> current;
@@ -80,7 +80,7 @@ class ProxyIterable<T> implements Iterable {
             return getCurrent() != null;
         }
 
-        public Object next() {
+        public T next() {
             Iterator<? extends T> curIt =  getCurrent();
             if (curIt == null) {
                 throw new NoSuchElementException();

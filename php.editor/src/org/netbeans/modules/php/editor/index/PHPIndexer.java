@@ -368,12 +368,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
         classSignature.append(className + ";"); //NOI18N
         classSignature.append(classDeclaration.getStartOffset() + ";"); //NOI18N
 
-        String superClass = ""; //NOI18N
-
-        if (classDeclaration.getSuperClass() instanceof Identifier) {
-            Identifier identifier = (Identifier) classDeclaration.getSuperClass();
-            superClass = identifier.getName();
-        }
+        String superClass = CodeUtils.extractSuperClassName(classDeclaration);
 
         classSignature.append(superClass + ";"); //NOI18N
         document.addPair(FIELD_CLASS, classSignature.toString(), true, true);
@@ -393,8 +388,8 @@ public final class PHPIndexer extends EmbeddingIndexer {
             } else if (statement instanceof FieldsDeclaration) {
                 FieldsDeclaration fieldsDeclaration = (FieldsDeclaration) statement;
                 indexFieldsDeclaration(fieldsDeclaration, document, root);
-            } else if (statement instanceof ClassConstantDeclaration) {
-                ClassConstantDeclaration constDeclaration = (ClassConstantDeclaration) statement;
+            } else if (statement instanceof ConstantDeclaration) {
+                ConstantDeclaration constDeclaration = (ConstantDeclaration) statement;
 
                 for (Identifier id : constDeclaration.getNames()){
                     StringBuilder signature = new StringBuilder();
@@ -425,9 +420,9 @@ public final class PHPIndexer extends EmbeddingIndexer {
         ifaceSign.append(ifaceDecl.getName().getName() + ";"); //NOI18N
         ifaceSign.append(ifaceDecl.getStartOffset() + ";"); //NOI18N
 
-        for (Iterator<Identifier> it = ifaceDecl.getInterfaes().iterator(); it.hasNext();) {
-            Identifier id = it.next();
-            ifaceSign.append(id.getName());
+        for (Iterator<Expression> it = ifaceDecl.getInterfaes().iterator(); it.hasNext();) {
+            Expression id = it.next();
+            ifaceSign.append(CodeUtils.extractTypeName(id));
 
             if (it.hasNext()){
                 ifaceSign.append(',');
@@ -445,8 +440,8 @@ public final class PHPIndexer extends EmbeddingIndexer {
             } else if (statement instanceof FieldsDeclaration) {
                 FieldsDeclaration fieldsDeclaration = (FieldsDeclaration) statement;
                 indexFieldsDeclaration(fieldsDeclaration, document, root);
-            } else if (statement instanceof ClassConstantDeclaration) {
-                ClassConstantDeclaration constDeclaration = (ClassConstantDeclaration) statement;
+            } else if (statement instanceof ConstantDeclaration) {
+                ConstantDeclaration constDeclaration = (ConstantDeclaration) statement;
 
                 for (Identifier id : constDeclaration.getNames()){
                     StringBuilder signature = new StringBuilder();
@@ -518,10 +513,8 @@ public final class PHPIndexer extends EmbeddingIndexer {
 
         if (expr instanceof FunctionInvocation) {
             FunctionInvocation invocation = (FunctionInvocation) expr;
-
-            if (invocation.getFunctionName().getName() instanceof Identifier) {
-                Identifier id = (Identifier) invocation.getFunctionName().getName();
-
+            Identifier id = CodeUtils.extractIdentifier(invocation.getFunctionName().getName());
+            if (id instanceof Identifier) {
                 if ("define".equals(id.getName())) {
                     if (invocation.getParameters().size() >= 2) {
                         Expression paramExpr = invocation.getParameters().get(0);

@@ -41,22 +41,21 @@ package org.netbeans.modules.cnd.discovery.project;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
  * @author Alexander Simon
  */
-public class DiscoverySuiteTest extends BaseTestSuite {
+public class DiscoverySuiteTest extends CndBaseTestSuite {
 
     public DiscoverySuiteTest() {
         super("C/C++ Discovery Test"); // NOI18N
 
         addTestSuite(PkgConfigTestCase.class);
         addTestSuite(LiteSqlTestCase.class);
-        addTestSuite(ProjectCreationTestCase.class);
-        addTestSuite(CMakeTestCase.class);
-        addTestSuite(MysqlConnectorTestCase.class);
+        addTestSuite(TesseractTestCase.class);
+        addTestSuite(QT_QLifeTestCase.class);
     }
 
     public static Test suite() {

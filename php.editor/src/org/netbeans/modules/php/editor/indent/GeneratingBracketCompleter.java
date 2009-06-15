@@ -177,7 +177,7 @@ public class GeneratingBracketCompleter {
         addVariables(doc, toAdd, "@global", indent, i.globals);
         addVariables(doc, toAdd, "@staticvar", indent, i.staticvars);
         
-        for (FormalParameter p : decl.getFormalParameters()) {
+        for (final FormalParameter p : decl.getFormalParameters()) {
             String name = "";
             Expression expr = p.getParameterName();
             Variable var = null;
@@ -195,12 +195,12 @@ public class GeneratingBracketCompleter {
             }
             AttributedType type = null;
             if (p.getParameterType() != null) {
-                final Identifier paramIdentifier = p.getParameterType();
+                final Expression paramIdentifier = p.getParameterType();
                 if (paramIdentifier != null) {
                     type = new AttributedType() {
                         @Override
                         public String getTypeName() {
-                            return paramIdentifier.getName();
+                            return CodeUtils.extractParameterTypeName(p);
                         }
                     };
                 }

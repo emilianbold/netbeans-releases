@@ -118,10 +118,10 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
                     look4Equal = false;
                     next = (APTToken) stream.nextToken();
                 }
-            } while (defNode.accept(next)); 
+            } while (defNode.accept(null, next));
             // special check for macros without values, we must set it to be 1
             if (defNode.getBody().isEmpty() && look4Equal) {
-                defNode.accept(APTUtils.DEF_MACRO_BODY.get(0));
+                defNode.accept(null, APTUtils.DEF_MACRO_BODY.get(0));
             }
             if (isSystem) {
                 defineImpl(null, defNode, Kind.COMPILER_PREDEFINED);
@@ -150,7 +150,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     }
 
     protected void putMacro(CharSequence name, APTMacro macro) {
-        active.getMacros().put(name, macro);
+        active.putMacro(name, macro);
     }
     /** method to implement in children */
     protected abstract APTMacro createMacro(CharSequence file, APTDefine define, Kind macroType);
