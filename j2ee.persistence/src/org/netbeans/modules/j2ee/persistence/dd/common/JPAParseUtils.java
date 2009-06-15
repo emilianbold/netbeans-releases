@@ -71,6 +71,7 @@ public class JPAParseUtils {
     }
 
     private static class VersionHandler extends org.xml.sax.helpers.DefaultHandler {
+        
         public void startElement(String uri, String localName, String rawName, Attributes atts) throws SAXException {
             if ("persistence".equals(rawName)) { //NOI18N
                 String version = atts.getValue("version"); //NOI18N
@@ -78,9 +79,18 @@ public class JPAParseUtils {
             }
         }
 
+
         @Override
-        public void endDocument() throws SAXException {
-            super.endDocument();
+        public InputSource resolveEntity(String publicId, String systemId) throws IOException, SAXException {
+            return super.resolveEntity(publicId, systemId);
+        }
+
+        @Override
+        public void startElement(String uri, String localName, String qName, org.xml.sax.Attributes attributes) throws SAXException {
+            if ("persistence".equals(qName)) { //NOI18N
+                String version = attributes.getValue("version"); //NOI18N
+                throw new SAXException(ParseUtils.EXCEPTION_PREFIX+(version==null?Persistence.VERSION_2_0:version));
+            }
         }
 
     }
@@ -95,6 +105,7 @@ public class JPAParseUtils {
             }
             return resolver;
         }
+
         public InputSource resolveEntity(String publicId, String systemId) {
             // additional logging for #127276
             if (LOGGER.isLoggable(Level.FINE)) {
@@ -102,14 +113,10 @@ public class JPAParseUtils {
             }
             String resource=null;
             // return a proper input source
-            if ("-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN".equals(publicId)) { //NOI18N
-                resource="/org/netbeans/modules/j2ee/dd/impl/resources/web-app_2_3.dtd"; //NOI18N
-            } else if ("-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN".equals(publicId)) { //NOI18N
-                resource="/org/netbeans/modules/j2ee/dd/impl/resources/web-app_2_2.dtd"; //NOI18N
-            } else if (systemId!=null && systemId.endsWith("web-app_2_4.xsd")) {
-                resource="/org/netbeans/modules/j2ee/dd/impl/resources/web-app_2_4.xsd"; //NOI18N
-            } else if (systemId!=null && systemId.endsWith("web-app_2_5.xsd")) {
-                resource="/org/netbeans/modules/j2ee/dd/impl/resources/web-app_2_5.xsd"; //NOI18N
+            if (systemId!=null && systemId.endsWith("persistence_2_0.xsd")) {
+                resource="/org/netbeans/modules/j2ee/persistence/dd/resources/persistence_2_0.xsd"; //NOI18N
+            } else if (systemId!=null && systemId.endsWith("persistence_1_0.xsd")) {
+                resource="/org/netbeans/modules/j2ee/persistence/dd/resources/persistence_1_0.xsd"; //NOI18N
             }
             // additional logging for #127276
             if (LOGGER.isLoggable(Level.FINE)) {

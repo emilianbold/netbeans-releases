@@ -481,22 +481,33 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     
     private static class NodeLink implements SelfPersistent, Persistent {
         
-        Set<CsmUID<CsmFile>> in = new HashSet<CsmUID<CsmFile>>();
-        Set<CsmUID<CsmFile>> out = new HashSet<CsmUID<CsmFile>>();
+        final Set<CsmUID<CsmFile>> in;
+        final Set<CsmUID<CsmFile>> out;
         
         private NodeLink(){
+            in = new HashSet<CsmUID<CsmFile>>();
+            out = new HashSet<CsmUID<CsmFile>>();
         }
         
         private NodeLink(final DataInput input) throws IOException {
             assert input != null;
-            assert in != null;
-            assert out != null;
 
             final UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
             assert factory != null;
-            
-            factory.readUIDCollection(in, input);
-            factory.readUIDCollection(out, input);
+            int collSize = input.readInt();
+            if (collSize < 0) {
+                in = new HashSet<CsmUID<CsmFile>>(0);
+            } else {
+                in = new HashSet<CsmUID<CsmFile>>(collSize);
+            }
+            factory.readUIDCollection(in, input, collSize);
+            collSize = input.readInt();
+            if (collSize < 0) {
+                out = new HashSet<CsmUID<CsmFile>>(0);
+            } else {
+                out = new HashSet<CsmUID<CsmFile>>(collSize);
+            }
+            factory.readUIDCollection(out, input, collSize);
         }
         
         private void addInLink(CsmUID<CsmFile> inLink){

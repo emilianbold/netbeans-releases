@@ -200,6 +200,7 @@ public abstract class CLIHandler extends Object {
             }
 
             if (argv[i].equals("-?") || argv[i].equals("--help") || argv[i].equals ("-help")) { // NOI18N
+                Logger.getLogger("org.netbeans.core.startup.NbEvents").setLevel(Level.OFF); // NOI18N
                 PrintWriter w = new PrintWriter(args.getOutputStream());
                 showHelp(w, handlers, -1);
                 w.flush();

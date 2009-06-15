@@ -167,7 +167,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     /** 
      * It's a map since we need to eliminate duplications 
      */
-    private SortedMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
+    private final TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> declarations;
     private WeakReference<Map<CsmDeclaration.Kind,SortedMap<NameKey, CsmUID<CsmOffsetableDeclaration>>>> sortedDeclarations;
     private final ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
     private Set<CsmUID<CsmInclude>> includes = createIncludes();
@@ -175,7 +175,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private final ReadWriteLock includesLock = new ReentrantReadWriteLock();
     private final Set<ErrorDirectiveImpl> errors = createErrors();
     private final ReadWriteLock errorsLock = new ReentrantReadWriteLock();
-    private Map<NameSortedKey, CsmUID<CsmMacro>> macros = createMacros();
+    private final TreeMap<NameSortedKey, CsmUID<CsmMacro>> macros;
     private final ReadWriteLock macrosLock = new ReentrantReadWriteLock();
     private final ReentrantReadWriteLock projectLock = new ReentrantReadWriteLock();
     private int errorCount = 0;
@@ -215,8 +215,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      * This is necessary for finding definitions/declarations 
      * since file-level static functions (i.e. c-style static functions) aren't registered in project
      */
-    private final Collection<CsmUID<CsmFunction>> staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(0);
-    private final Collection<CsmUID<CsmVariable>> staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(0);
+    private final Collection<CsmUID<CsmFunction>> staticFunctionDeclarationUIDs;
+    private final Collection<CsmUID<CsmVariable>> staticVariableUIDs;
     private final ReadWriteLock staticLock = new ReentrantReadWriteLock();
     private Reference<List<CsmReference>> lastMacroUsages = null;
     private ChangeListener fileBufferChangeListener = new ChangeListener() {
@@ -236,6 +236,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public FileImpl(FileBuffer fileBuffer, ProjectBase project, FileType fileType, NativeFileItem nativeFileItem) {
         state = State.INITIAL;
         parsingState = ParsingState.NOT_BEING_PARSED;
+        declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
+        macros = createMacros();
+        staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(0);
+        staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(0);
         setBuffer(fileBuffer);
         this.projectUID = UIDCsmConverter.projectToUID(project);
         if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
@@ -699,8 +703,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         Collection<CsmUID<CsmOffsetableDeclaration>> uids;
         try {
             declarationsLock.writeLock().lock();
-            uids = declarations.values();
-            declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
+            uids = new ArrayList<CsmUID<CsmOffsetableDeclaration>>(declarations.values());
+            declarations.clear();
+            //declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
             sortedDeclarations = null;
         } finally {
             declarationsLock.writeLock().unlock();
@@ -726,12 +731,18 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     private void _clearMacros() {
-        Collection<CsmUID<CsmMacro>> copy = macros.values();
-        macros = createMacros();
+        Collection<CsmUID<CsmMacro>> copy;
+        try {
+            macrosLock.writeLock().lock();
+            copy = new ArrayList<CsmUID<CsmMacro>>(macros.values());
+            macros.clear();
+        } finally {
+            macrosLock.writeLock().unlock();
+        }
         RepositoryUtils.remove(copy);
     }
 
-    private Map<NameSortedKey, CsmUID<CsmMacro>> createMacros() {
+    private TreeMap<NameSortedKey, CsmUID<CsmMacro>> createMacros() {
         return new TreeMap<NameSortedKey, CsmUID<CsmMacro>>();
     }
 
@@ -1034,7 +1045,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
             CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter(ppState)), flags);
             FilePreprocessorConditionState pcState = pcBuilder.build();
-            if(false)setAPTCacheEntry(preprocHandler, aptCacheEntry, false);
+            if (false) {
+                setAPTCacheEntry(preprocHandler, aptCacheEntry, false);
+            }
             startProject.setParsedPCState(this, ppState, pcState);
             long time = (emptyAstStatictics) ? System.currentTimeMillis() : 0;
             try {
@@ -1427,7 +1440,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         NameSortedKey to = NameSortedKey.getEndKey(name);
         try {
             macrosLock.readLock().lock();
-            for (Map.Entry<NameSortedKey, CsmUID<CsmMacro>> entry : ((TreeMap<NameSortedKey, CsmUID<CsmMacro>>) macros).subMap(from, to).entrySet()) {
+            for (Map.Entry<NameSortedKey, CsmUID<CsmMacro>> entry : macros.subMap(from, to).entrySet()) {
                 uids.add(entry.getValue());
             }
         } finally {
@@ -1780,10 +1793,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         PersistentUtils.readErrorDirectives(this.errors, input);
 
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        factory.readOffsetSortedToUIDMap(this.declarations, input, null);
+        this.declarations = factory.readOffsetSortedToUIDMap(input, null);
         factory.readUIDCollection(this.includes, input);
         factory.readUIDCollection(this.brokenIncludes, input);
-        factory.readNameSortedToUIDMap(this.macros, input, DefaultCache.getManager());
+        this.macros = factory.readNameSortedToUIDMap(input, DefaultCache.getManager());
         factory.readUIDCollection(this.fakeRegistrationUIDs, input);
         //state = State.valueOf(input.readUTF());
         fileType = FileType.values()[input.readByte()];
@@ -1802,8 +1815,20 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         lastParseTime = input.readInt();
         state = State.values()[input.readByte()];
         parsingState = ParsingState.NOT_BEING_PARSED;
-        UIDObjectFactory.getDefaultFactory().readUIDCollection(staticFunctionDeclarationUIDs, input);
-        UIDObjectFactory.getDefaultFactory().readUIDCollection(staticVariableUIDs, input);
+        int collSize = input.readInt();
+        if (collSize <= 0) {
+            staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(0);
+        } else {
+            staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(collSize);
+        }
+        UIDObjectFactory.getDefaultFactory().readUIDCollection(staticFunctionDeclarationUIDs, input, collSize);
+        collSize = input.readInt();
+        if (collSize <= 0) {
+            staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(0);
+        } else {
+            staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(collSize);
+        }
+        UIDObjectFactory.getDefaultFactory().readUIDCollection(staticVariableUIDs, input, collSize);
     }
 
     public 
