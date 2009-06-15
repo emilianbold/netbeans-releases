@@ -139,7 +139,7 @@ public class JiraQuery extends Query {
 
     @Override
     public ColumnDescriptor[] getColumnDescriptors() {
-        return NbJiraIssue.getColumnDescriptors();
+        return NbJiraIssue.getColumnDescriptors(repository);
     }
 
     @Override

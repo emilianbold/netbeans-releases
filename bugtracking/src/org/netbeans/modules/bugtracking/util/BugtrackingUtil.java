@@ -486,6 +486,21 @@ public class BugtrackingUtil {
         return fm.stringWidth(str);
     }
 
+    public static int getLongestWordWidth(String header, List<String> values, JComponent comp) {
+        String[] valuesArray = values.toArray(new String[values.size()]);
+        return getLongestWordWidth(header, valuesArray, comp);
+    }
+
+    public static int getLongestWordWidth(String header, String[] values, JComponent comp) {
+        int size = header.length();
+        for (String s : values) {
+            if(size < s.length()) {
+                size = s.length();
+            }
+        }
+        return getColumnWidthInPixels(size, comp);
+    }
+
     /**
      * Logs bugtracking events
      *

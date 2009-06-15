@@ -57,6 +57,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.eclipse.core.runtime.CoreException;
@@ -111,6 +112,7 @@ public class NbJiraIssue extends Issue {
     static final String LABEL_NAME_STATUS       = "jira.issue.status";      // NOI18N
     static final String LABEL_NAME_RESOLUTION   = "jira.issue.resolution";  // NOI18N
     static final String LABEL_NAME_SUMMARY      = "jira.issue.summary";     // NOI18N
+    static final String LABEL_NAME_ASSIGNED_TO  = "jira.issue.assigned";    // NOI18N
 
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";               // NOI18N
     private static final int SHORTENED_SUMMARY_LENGTH = 22;
@@ -853,28 +855,47 @@ public class NbJiraIssue extends Issue {
         return attributes;
     }   
 
-    public static ColumnDescriptor[] getColumnDescriptors() {
+    public static ColumnDescriptor[] getColumnDescriptors(JiraRepository repository) {
         if(DESCRIPTORS == null) {
             ResourceBundle loc = NbBundle.getBundle(NbJiraIssue.class);
+            JiraConfiguration conf = repository.getConfiguration();
+            JTable t = new JTable();
             DESCRIPTORS = new ColumnDescriptor[] {
                 new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
                                                   loc.getString("CTL_Issue_ID_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_ID_Desc")), // NOI18N
+                                                  loc.getString("CTL_Issue_ID_Desc"), // NOI18N
+                                                  BugtrackingUtil.getColumnWidthInPixels(20, t)),
                 new ColumnDescriptor<String>(LABEL_NAME_TYPE, String.class,
                                                   loc.getString("CTL_Issue_Type_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Type_Desc")), // NOI18N
+                                                  loc.getString("CTL_Issue_Type_Desc"), // NOI18N
+                                                  BugtrackingUtil.getLongestWordWidth(
+                                                    loc.getString("CTL_Issue_Type_Title"),      // NOI18N
+                                                    JiraUtils.toStrings(conf.getIssueTypes()), t)),
                 new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
                                                   loc.getString("CTL_Issue_Priority_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Priority_Desc")), // NOI18N
+                                                  loc.getString("CTL_Issue_Priority_Desc"), // NOI18N
+                                                  BugtrackingUtil.getLongestWordWidth(
+                                                    loc.getString("CTL_Issue_Priority_Title"),      // NOI18N
+                                                    JiraUtils.toStrings(conf.getPriorities()), t)),
                 new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
                                                   loc.getString("CTL_Issue_Status_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Status_Desc")), // NOI18N
+                                                  loc.getString("CTL_Issue_Status_Desc"), // NOI18N
+                                                  BugtrackingUtil.getLongestWordWidth(
+                                                    loc.getString("CTL_Issue_Status_Title"),      // NOI18N
+                                                    JiraUtils.toStrings(conf.getPriorities()), t)),
                 new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
                                                   loc.getString("CTL_Issue_Resolution_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Resolution_Desc")), // NOI18N
+                                                  loc.getString("CTL_Issue_Resolution_Desc"), // NOI18N
+                                                  BugtrackingUtil.getLongestWordWidth(
+                                                    loc.getString("CTL_Issue_Status_Title"),      // NOI18N
+                                                    JiraUtils.toStrings(conf.getResolutions()), t)),
                 new ColumnDescriptor<String>(LABEL_NAME_SUMMARY, String.class,
                                                   loc.getString("CTL_Issue_Summary_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Summary_Desc")) // NOI18N
+                                                  loc.getString("CTL_Issue_Summary_Desc")), // NOI18N
+                new ColumnDescriptor<String>(LABEL_NAME_ASSIGNED_TO, String.class,
+                                              loc.getString("CTL_Issue_Assigned_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Assigned_Desc"),         // NOI18N
+                                              BugtrackingUtil.getColumnWidthInPixels(20, t))
             };
         }
         return DESCRIPTORS;

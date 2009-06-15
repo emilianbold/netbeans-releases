@@ -71,6 +71,7 @@ public class JiraIssueNode extends IssueNode {
             new PriorityProperty(),
             new StatusProperty(),
             new ResolutionProperty(),
+            new AssigneeProperty(),
             new SummaryProperty(),
             new RecentChangesProperty(), // XXX move to issue node
             new SeenProperty() // XXX move to issue node
@@ -210,6 +211,25 @@ public class JiraIssueNode extends IssueNode {
             if(p == null) return 1;
             String s1 = getIssue().getSummary();
             String s2 = p.getIssue().getSummary();
+            return s1.compareTo(s2);
+        }
+    }
+
+    private class AssigneeProperty extends IssueProperty<String> {
+        public AssigneeProperty() {
+            super(NbJiraIssue.LABEL_NAME_ASSIGNED_TO,
+                  String.class,
+                  NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Assigned_Title"), // NOI18N
+                  NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Assigned_Desc")); // NOI18N
+        }
+        public String getValue() {
+            return getNbJiraIssue().getFieldValue(IssueField.ASSIGNEE);
+        }
+        @Override
+        public int compareTo(IssueProperty p) {
+            if(p == null) return 1;
+            String s1 = getNbJiraIssue().getFieldValue(IssueField.ASSIGNEE);
+            String s2 = ((NbJiraIssue)p.getIssue()).getFieldValue(IssueField.ASSIGNEE);
             return s1.compareTo(s2);
         }
     }
