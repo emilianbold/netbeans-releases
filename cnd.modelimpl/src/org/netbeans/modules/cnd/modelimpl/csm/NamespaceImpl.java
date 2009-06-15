@@ -90,11 +90,11 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private final CharSequence qualifiedName;
     
     /** maps namespaces FQN to namespaces */
-    private Map<CharSequence, CsmUID<CsmNamespace>> nestedNamespaces = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>();
+    private final Map<CharSequence, CsmUID<CsmNamespace>> nestedNamespaces;
     
     private final Key declarationsSorageKey;
 
-    private final Set<CsmUID<CsmOffsetableDeclaration>> unnamedDeclarations = Collections.synchronizedSet(new HashSet<CsmUID<CsmOffsetableDeclaration>>());
+    private final Set<CsmUID<CsmOffsetableDeclaration>> unnamedDeclarations;
     
     private Map<CharSequence,CsmUID<CsmNamespaceDefinition>> nsDefinitions = new TreeMap<CharSequence,CsmUID<CsmNamespaceDefinition>>(CharSequenceKey.Comparator);
     private ReadWriteLock nsDefinitionsLock = new ReentrantReadWriteLock();
@@ -113,7 +113,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         
         this.projectUID = UIDCsmConverter.projectToUID(project);
         assert this.projectUID != null;
-            
+        unnamedDeclarations = Collections.synchronizedSet(new HashSet<CsmUID<CsmOffsetableDeclaration>>());
+        nestedNamespaces = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>();
+
         this.projectRef = new WeakReference<ProjectBase>(project);
         this.declarationsSorageKey = fake ? null : new DeclarationContainer(this).getKey();
         if (!fake) {
@@ -130,7 +132,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         
         this.projectUID = UIDCsmConverter.projectToUID(project);
         assert this.projectUID != null;
-
+        unnamedDeclarations = Collections.synchronizedSet(new HashSet<CsmUID<CsmOffsetableDeclaration>>());
+        nestedNamespaces = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>();
+        
         this.projectRef = new WeakReference<ProjectBase>(project);
         this.qualifiedName = QualifiedNameCache.getManager().getString(qualifiedName);
         // TODO: rethink once more
@@ -668,11 +672,25 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         assert this.name != null;
         this.qualifiedName = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.qualifiedName != null;
-        theFactory.readStringToUIDMap(this.nestedNamespaces, input, QualifiedNameCache.getManager());
+
+        int collSize = input.readInt();
+        if (collSize <= 0) {
+            nestedNamespaces = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>(0);
+        } else {
+            nestedNamespaces = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>(collSize);
+        }
+        theFactory.readStringToUIDMap(this.nestedNamespaces, input, QualifiedNameCache.getManager(), collSize);
         declarationsSorageKey = ProjectComponent.readKey(input);
         assert declarationsSorageKey != null : "declarationsSorageKey can not be null";
         theFactory.readStringToUIDMap(this.nsDefinitions, input, QualifiedNameCache.getManager());
-        theFactory.readUIDCollection(this.unnamedDeclarations, input);
+
+        collSize = input.readInt();
+        if (collSize < 0) {
+            unnamedDeclarations = Collections.synchronizedSet(new HashSet<CsmUID<CsmOffsetableDeclaration>>(0));
+        } else {
+            unnamedDeclarations = Collections.synchronizedSet(new HashSet<CsmUID<CsmOffsetableDeclaration>>(collSize));
+        }
+        theFactory.readUIDCollection(this.unnamedDeclarations, input, collSize);
     }
 
     
