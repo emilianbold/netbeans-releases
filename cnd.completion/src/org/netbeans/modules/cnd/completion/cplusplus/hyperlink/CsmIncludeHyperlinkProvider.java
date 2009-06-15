@@ -199,7 +199,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         if (tooltip != null) {
             StringBuilder buf;
             List<CsmInclude> includeStack = CsmFileInfoQuery.getDefault().getIncludeStack(csmFile);
-            if (extraText) {
+            if (extraText || target.getIncludeFile() == null) {
                 buf = new StringBuilder(tooltip);
                 buf.append("<br><pre>"); // NOI18N
                 // append search paths
