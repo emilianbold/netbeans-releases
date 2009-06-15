@@ -36,74 +36,48 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.actions;
+package org.netbeans.modules.cnd.loaders;
 
-import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.cookies.OpenCookie;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
 /**
+ * {@link OpenCookie} implementation that launches external program
+ * with DataObject's primary file.
  *
  * @author Alexey Vladykin
  */
-/*package*/ class OpenWithQtLinguistAction extends NodeAction {
+/*package*/ final class ExternalProgramOpenCookie implements OpenCookie {
 
-    private static final String QTTRANSLATION_MIME_TYPE = "text/qttranslation+xml"; // NOI18N
-    private static final String LINGUIST_EXECUTABLE = "linguist"; // NOI18N
-    private final String name;
+    private final DataObject dao;
+    private final String program;
+    private final String failmsg;
 
-    public OpenWithQtLinguistAction() {
-        name = NbBundle.getMessage(OpenWithQtLinguistAction.class, "LBL_OpenWithQtLinguist"); // NOI18N
+    public ExternalProgramOpenCookie(DataObject dao, String program, String failmsg) {
+        if (dao == null) {
+            throw new NullPointerException("dao can't be null"); // NOI18N
+        }
+        if (program == null) {
+            throw new NullPointerException("program can't be null"); // NOI18N
+        }
+        this.dao = dao;
+        this.program = program;
+        this.failmsg = failmsg;
     }
 
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    protected boolean enable(Node[] activatedNodes) {
-        return getTsFile(activatedNodes) != null;
-    }
-
-    protected void performAction(Node[] activatedNodes) {
-        File file = getTsFile(activatedNodes);
-        if (file != null) {
-            ProcessBuilder pb = new ProcessBuilder(LINGUIST_EXECUTABLE, file.getAbsolutePath());
-            try {
-                pb.start();
-            } catch (IOException ex) {
+    public void open() {
+        ProcessBuilder pb = new ProcessBuilder(program, dao.getPrimaryFile().getPath());
+        try {
+            pb.start();
+        } catch (IOException ex) {
+            if (failmsg != null) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        NbBundle.getMessage(OpenWithQtDesignerAction.class, "MSG_OpenWithQtLinguistFailed", LINGUIST_EXECUTABLE))); // NOI18N
+                        MessageFormat.format(failmsg, program)));
             }
         }
-    }
-
-    private static File getTsFile(Node[] activatedNodes) {
-        if (activatedNodes != null && activatedNodes.length == 1) {
-            DataObject dataObject = activatedNodes[0].getCookie(DataObject.class);
-            if (dataObject != null) {
-                FileObject fileObject = dataObject.getPrimaryFile();
-                if (fileObject != null && QTTRANSLATION_MIME_TYPE.equals(fileObject.getMIMEType())) {
-                    File file = FileUtil.toFile(fileObject);
-                    if (file != null) {
-                        return file;
-                    }
-                }
-            }
-        }
-        return null;
     }
 }

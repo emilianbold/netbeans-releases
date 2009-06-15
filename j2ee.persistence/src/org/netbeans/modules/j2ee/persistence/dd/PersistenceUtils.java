@@ -159,10 +159,16 @@ public class PersistenceUtils {
      * @param project
      * @return
      */
-    public static String getJPAVersion(FileObject target)
+    public static String getJPAVersion(Project target)
     {
         String version=null;
-        ClassPath compile=ClassPath.getClassPath(target, ClassPath.COMPILE);
+        FileObject fo=target.getProjectDirectory().getFileObject("src/java");//works for ejb module project
+        ClassPath compile=ClassPath.getClassPath(fo, ClassPath.COMPILE);
+        if(compile==null)
+        {
+            FileObject fo2=target.getProjectDirectory().getFileObject("src");//works for j2se project
+            compile=ClassPath.getClassPath(fo2, ClassPath.COMPILE);
+        }
         if(compile.findResource("javax/persistence/criteria/JoinType.class")!=null)
         {
             version=Persistence.VERSION_2_0;
