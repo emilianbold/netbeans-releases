@@ -63,7 +63,6 @@ import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.maven.cos.CopyResourcesOnSave;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -208,7 +207,6 @@ public class ModInstall extends ModuleInstall implements ErrorHandler, EntityRes
                     }
                 }
             }
-            CopyResourcesOnSave.getInstance().checkOpenProjects();
         }
     }
 

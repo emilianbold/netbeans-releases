@@ -116,6 +116,7 @@ import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.operations.OperationsImpl;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
+import org.netbeans.modules.maven.cos.CopyResourcesOnSave;
 import org.netbeans.modules.maven.cos.CosChecker;
 import org.netbeans.modules.maven.debug.DebuggerChecker;
 import org.netbeans.modules.maven.debug.MavenDebuggerImpl;
@@ -915,6 +916,7 @@ public final class NbMavenProjectImpl implements Project {
                     new MavenDebuggerImpl(this),
                     new DefaultReplaceTokenProvider(this),
                     new MavenFileLocator(this),
+                    new CopyResourcesOnSave(this),
 
                     // default mergers..        
                     UILookupMergerSupport.createPrivilegedTemplatesMerger(),
