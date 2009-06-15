@@ -668,7 +668,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         // we call findId(..., true) because there might be qualified name - in the case of nested class template specializations
         super((name != null ? name : AstUtil.findId(ast, CPPTokenTypes.RCURLY, true)), file, ast);
         members = new ArrayList<CsmUID<CsmMember>>();
-        friends = new ArrayList<CsmUID<CsmFriend>>();
+        friends = new ArrayList<CsmUID<CsmFriend>>(0);
         kind = findKind(ast);
     }
 

@@ -55,6 +55,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
@@ -247,14 +248,6 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         return out;
     }
 
-    public <T> void readStringToUIDMap(Map<CharSequence, CsmUID<T>> aMap, DataInput aStream, APTStringManager manager) throws IOException {
-        assert aMap != null;
-        assert aStream != null;
-
-        int collSize = aStream.readInt();
-        readStringToUIDMap(aMap, aStream, manager, collSize);
-    }
-
     public <T> void readStringToUIDMap(Map<CharSequence, CsmUID<T>> aMap, DataInput aStream, APTStringManager manager, int collSize) throws IOException {
         for (int i = 0; i < collSize; ++i) {
             CharSequence key = PersistentUtils.readUTF(aStream, manager);
@@ -281,6 +274,12 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         assert aStream != null;
         HelperCharSequencesSortedMap helper = new HelperCharSequencesSortedMap(this, aStream, manager);
         return new TreeMap<CharSequence, Object>(helper);
+    }
+
+    public TreeMap<CharSequence,CsmUID<CsmNamespaceDefinition>> readStringToUIDMap(DataInput aStream, APTStringManager manager) throws IOException {
+        assert aStream != null;
+        HelperCharSequencesSortedMap2 helper = new HelperCharSequencesSortedMap2(this, aStream, manager);
+        return new TreeMap<CharSequence,CsmUID<CsmNamespaceDefinition>>(helper);
     }
 
     protected int getHandler(Object object) {
@@ -869,6 +868,149 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
                 public boolean addAll(Collection<? extends Entry<CharSequence, Object>> c) {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                public boolean retainAll(Collection<?> c) {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                public boolean removeAll(Collection<?> c) {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                public void clear() {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+            };
+        }
+    }
+
+    private static final class HelperCharSequencesSortedMap2 implements SortedMap<CharSequence, CsmUID<CsmNamespaceDefinition>> {
+        private DataInput aStream;
+        private int size;
+        private UIDObjectFactory factory;
+        private APTStringManager manager;
+
+        private HelperCharSequencesSortedMap2(UIDObjectFactory factory, DataInput aStream, APTStringManager manager) throws IOException {
+            size = aStream.readInt();
+            this.aStream = aStream;
+            this.factory = factory;
+            this.manager = manager;
+        }
+        public Comparator<? super CharSequence> comparator() {
+            return CharSequenceKey.Comparator;
+        }
+        public SortedMap<CharSequence, CsmUID<CsmNamespaceDefinition>> subMap(CharSequence fromKey, CharSequence toKey) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        public SortedMap<CharSequence, CsmUID<CsmNamespaceDefinition>> headMap(CharSequence toKey) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        public SortedMap<CharSequence, CsmUID<CsmNamespaceDefinition>> tailMap(CharSequence fromKey) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        public CharSequence firstKey() {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        public CharSequence lastKey() {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        public int size() {
+            return size;
+        }
+        public boolean isEmpty() {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        public boolean containsKey(Object key) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        public boolean containsValue(Object value) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        public CsmUID<CsmNamespaceDefinition> get(Object key) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        public CsmUID<CsmNamespaceDefinition> put(CharSequence key, CsmUID<CsmNamespaceDefinition> value) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        public CsmUID<CsmNamespaceDefinition> remove(Object key) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        public void putAll(Map<? extends CharSequence, ? extends CsmUID<CsmNamespaceDefinition>> t) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        public void clear() {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        public Set<CharSequence> keySet() {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        public Collection<CsmUID<CsmNamespaceDefinition>> values() {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        public Set<Entry<CharSequence, CsmUID<CsmNamespaceDefinition>>> entrySet() {
+            return new Set<Entry<CharSequence, CsmUID<CsmNamespaceDefinition>>>(){
+                public int size() {
+                    return size;
+                }
+                public boolean isEmpty() {
+                    return size == 0;
+                }
+                public boolean contains(Object o) {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                public Iterator<Entry<CharSequence, CsmUID<CsmNamespaceDefinition>>> iterator() {
+                    return new Iterator<Entry<CharSequence, CsmUID<CsmNamespaceDefinition>>>(){
+                        private int current = 0;
+                        public boolean hasNext() {
+                            return current < size;
+                        }
+                        public Entry<CharSequence, CsmUID<CsmNamespaceDefinition>> next() {
+                            if (current < size) {
+                                current++;
+                                try {
+                                    final CharSequence key = PersistentUtils.readUTF(aStream, manager);
+                                    assert key != null;
+                                    final CsmUID<CsmNamespaceDefinition> uid = factory.readUID(aStream);
+                                    assert uid != null;
+                                    return new Entry<CharSequence, CsmUID<CsmNamespaceDefinition>>(){
+                                        public CharSequence getKey() {
+                                            return key;
+                                        }
+                                        public CsmUID<CsmNamespaceDefinition> getValue() {
+                                            return uid;
+                                        }
+                                        public CsmUID<CsmNamespaceDefinition> setValue(CsmUID<CsmNamespaceDefinition> value) {
+                                            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                                        }
+                                    };
+                                } catch (IOException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                            return null;
+                        }
+
+                        public void remove() {
+                            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                        }
+
+                    };
+                }
+                public Object[] toArray() {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                public <T> T[] toArray(T[] a) {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                public boolean add(Entry<CharSequence, CsmUID<CsmNamespaceDefinition>> o) {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                public boolean remove(Object o) {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                public boolean containsAll(Collection<?> c) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+                public boolean addAll(Collection<? extends Entry<CharSequence, CsmUID<CsmNamespaceDefinition>>> c) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
                 public boolean retainAll(Collection<?> c) {
