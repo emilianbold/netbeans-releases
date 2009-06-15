@@ -110,6 +110,7 @@ public class ParseUtils {
         SAXParseException error;
         
         public void warning(org.xml.sax.SAXParseException sAXParseException) throws org.xml.sax.SAXException {
+            printMsg("warning", sAXParseException);
             if (errorType<0) {
                 errorType=0;
                 error=sAXParseException;
@@ -117,6 +118,7 @@ public class ParseUtils {
             //throw sAXParseException;
         }
         public void error(org.xml.sax.SAXParseException sAXParseException) throws org.xml.sax.SAXException {
+            printMsg("error", sAXParseException);
             if (errorType<1) {
                 errorType=1;
                 error=sAXParseException;
@@ -124,10 +126,15 @@ public class ParseUtils {
             //throw sAXParseException;
         }
         public void fatalError(org.xml.sax.SAXParseException sAXParseException) throws org.xml.sax.SAXException {
+            printMsg("fatal error", sAXParseException);
             errorType=2;
             throw sAXParseException;
         }
-        
+
+        private void printMsg(String type, org.xml.sax.SAXParseException e) {
+            System.out.println("&&& SAX "+type+": ["+e.getLineNumber()+":"+e.getColumnNumber()+"] "+e.getPublicId()+" / "+e.getSystemId()+" / "+e);
+        }
+
         public int getErrorType() {
             return errorType;
         }

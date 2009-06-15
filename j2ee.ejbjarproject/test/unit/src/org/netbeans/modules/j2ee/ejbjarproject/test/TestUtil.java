@@ -65,7 +65,6 @@ import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ProxyLookup;
-import org.openide.util.test.MockLookup;
 
 /**
  * Help set up org.netbeans.api.project.*Test.
@@ -73,23 +72,8 @@ import org.openide.util.test.MockLookup;
  */
 public final class TestUtil extends ProxyLookup {
     /** Do not call directly */
-    public TestUtil() {
-    }
-    
-    /**
-     * Set the global default lookup.
-     * Caution: if you don't include Lookups.metaInfServices, you may have trouble,
-     * e.g. {@link #makeScratchDir} will not work.
-     */
-    public static void setLookup(Lookup l) {
-        MockLookup.setLookup(new Lookup[] {l});
-    }
-    
-    /**
-     * Set the global default lookup with some fixed instances including META-INF/services/*.
-     */
-    public static void setLookup(Object[] instances) {
-        MockLookup.setLayersAndInstances(instances);
+    private TestUtil() {
+        super();
     }
     
     private static boolean warned = false;
