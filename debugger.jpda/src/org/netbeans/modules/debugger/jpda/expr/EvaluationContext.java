@@ -68,6 +68,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
@@ -307,7 +308,15 @@ public class EvaluationContext {
             Set<ObjectReference> collectedObjects = new HashSet<ObjectReference>(disabledCollectionObjects);
             for (ObjectReference or : collectedObjects) {
                 if (skip == null || !skip.equals(or)) {
-                    or.enableCollection();
+                    try {
+                        ObjectReferenceWrapper.enableCollection(or);
+                    } catch (InternalExceptionWrapper ex) {
+                    } catch (VMDisconnectedExceptionWrapper ex) {
+                        return ;
+                    } catch (ObjectCollectedExceptionWrapper ex) {
+                        // Should not be thrown!
+                        Exceptions.printStackTrace(ex);
+                    }
                     disabledCollectionObjects.remove(or);
                     //System.err.println("\nENABLED COLLECTION of "+or+"\n");
                 }
