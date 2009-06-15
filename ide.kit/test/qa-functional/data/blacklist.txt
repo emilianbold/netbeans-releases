@@ -413,3 +413,16 @@ org.netbeans.modules.profiler.actions.SelfSamplerAction
 org.netbeans.modules.db.explorer.node.RootNode
 org.netbeans.modules.hudson.ui.nodes.HudsonRootNode
 org.netbeans.modules.bugtracking.ui.nodes.BugtrackingRootNode
+
+# always enabled actions in tools menu
+org.netbeans.modules.java.platform.ui.PlatformsCustomizerAction
+org.netbeans.modules.project.ant.VariablesCustomizerAction
+org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizerAction
+org.netbeans.modules.project.libraries.ui.LibrariesCustomizerAction
+org.netbeans.modules.server.ui.manager.ServerManagerAction
+org.netbeans.modules.mobility.project.deployment.MobilityDeploymentManagerAction
+org.netbeans.modules.mobility.project.ui.security.SecurityManagerAction
+org.netbeans.modules.php.editor.palette.PHPPaletteCustomizerAction
+org.netbeans.modules.web.core.palette.JspPaletteCustomizerAction
+org.netbeans.modules.html.palette.HtmlPaletteCustomizerAction
+

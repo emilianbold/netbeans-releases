@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Runtime-Descriptor-Version: 3.0
+Application-Type: ${applettype}
+Classic-Package-AID: ${classicpackageaid}
+

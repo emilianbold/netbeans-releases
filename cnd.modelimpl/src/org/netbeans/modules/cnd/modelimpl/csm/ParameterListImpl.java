@@ -168,10 +168,11 @@ public class ParameterListImpl<T, K extends CsmNamedElement> extends OffsetableI
 
     public ParameterListImpl(DataInput input) throws IOException {
         super(input);
-        ArrayList<CsmUID<K>> params = new ArrayList<CsmUID<K>>();
-        this.parameters = UIDObjectFactory.getDefaultFactory().readUIDCollection(params, input);
-        if (parameters == params) {
-            params.trimToSize();
+        int collSize = input.readInt();
+        if (collSize <= 0) {
+            parameters = null;
+        } else {
+            parameters = UIDObjectFactory.getDefaultFactory().readUIDCollection(new ArrayList<CsmUID<K>>(collSize), input, collSize);
         }
     }
 

@@ -39,9 +39,28 @@ to extend the choice of license to its licensees as provided above.
 However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
---><?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+-->
+<?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
+    <folder name="Actions">
+        <folder name="Tools">
+            <file name="org-netbeans-modules-mobility-project-deployment-MobilityDeploymentManagerAction.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.Bundle"/>
+                <attr name="delegate" newvalue="org.netbeans.modules.mobility.project.deployment.MobilityDeploymentManagerAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.mobility.project.deployment.Bundle#LBL_DeploymentManagerAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" boolvalue="true"/>
+            </file>
+            <file name="org-netbeans-modules-mobility-project-ui-security-SecurityManagerAction.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.Bundle"/>
+                <attr name="delegate" newvalue="org.netbeans.modules.mobility.project.ui.security.SecurityManagerAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.mobility.project.ui.security.Bundle#NAME_SecurityManagerAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" boolvalue="true"/>
+            </file>
+        </folder>
+    </folder>
     <folder name="Projects">
         <folder name="org-netbeans-modules-mobility-project">
             <folder name="Actions">
@@ -192,12 +211,12 @@ made subject to such option by the copyright holder.
  
     <folder name="Menu">
         <folder name="Tools">
-            <file name="MobilityDeploymentManagerAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.project.deployment.MobilityDeploymentManagerAction"/>
+            <file name="org-netbeans-modules-mobility-project-deployment-MobilityDeploymentManagerAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-mobility-project-deployment-MobilityDeploymentManagerAction.instance"/>
                 <attr name="position" intvalue="900"/>
             </file>
-            <file name="SecurityManagerAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.project.ui.security.SecurityManagerAction"/>
+            <file name="org-netbeans-modules-mobility-project-ui-security-SecurityManagerAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-mobility-project-ui-security-SecurityManagerAction.instance"/>
                 <attr name="position" intvalue="950"/>
             </file>
         </folder>

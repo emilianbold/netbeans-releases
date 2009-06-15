@@ -208,6 +208,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.j2ee.dd.api.common</package>
                 <package>org.netbeans.modules.j2ee.dd.api.ejb</package>
                 <package>org.netbeans.modules.j2ee.dd.api.web</package>
+                <package>org.netbeans.modules.j2ee.dd.api.web.model</package>
                 <package>org.netbeans.modules.j2ee.dd.spi</package>
                 <package>org.netbeans.modules.j2ee.dd.spi.client</package>
                 <package>org.netbeans.modules.j2ee.dd.spi.ejb</package>
