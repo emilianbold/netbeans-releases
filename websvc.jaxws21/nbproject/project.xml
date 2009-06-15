@@ -152,6 +152,7 @@ made subject to such option by the copyright holder.
                 <package>com.sun.xml.ws.developer</package>
                 <package>com.sun.xml.ws.encoding.soap</package>
                 <package>com.sun.xml.ws.encoding.soap.streaming</package>
+                <package>com.sun.xml.ws.policy.sourcemodel.wspolicy</package>
                 <package>com.sun.xml.ws.spi</package>
                 <package>com.sun.xml.ws.util</package>
                 <package>com.sun.xml.ws.util.exception</package>
@@ -160,6 +161,9 @@ made subject to such option by the copyright holder.
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/FastInfoset.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxws21/gmbal.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/http.jar</runtime-relative-path>
@@ -174,6 +178,9 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/jaxws21/mimepull.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
+                <runtime-relative-path>ext/jaxws21/policy.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/saaj-impl.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
@@ -184,6 +191,9 @@ made subject to such option by the copyright holder.
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/streambuffer.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxws21/woodstox.jar</runtime-relative-path>
             </class-path-extension>
         </data>
     </configuration>

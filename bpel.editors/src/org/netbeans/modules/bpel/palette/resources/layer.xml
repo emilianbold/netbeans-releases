@@ -44,7 +44,8 @@
     <folder name="Menu">
         <folder name="Tools">
             <folder name="PaletteManager">
-                <file name="org-netbeans-modules-bpel-palette-SoaPaletteMenu.instance">
+                <file name="org-netbeans-modules-bpel-palette-SoaPaletteMenu.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-bpel-palette-SoaPaletteMenu.instance"/>
                     <attr name="position" intvalue="1400"/>
                 </file>
             </folder>
@@ -60,6 +61,9 @@
             <file name="org-netbeans-modules-bpel-nodes-actions-ShowBpelMapperAction.instance"/>
             <file name="org-netbeans-modules-bpel-nodes-actions-GoToLoggingAction.instance"/>
             <file name="org-netbeans-modules-bpel-nodes-actions-GoToSourceAction.instance"/>
+        </folder>
+        <folder name="Tools">
+            <file name="org-netbeans-modules-bpel-palette-SoaPaletteMenu.instance"/>
         </folder>
     </folder>
 
