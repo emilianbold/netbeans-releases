@@ -254,6 +254,7 @@ derby\.log
 ^websvc.restkit/nbms$
 ^websvc.rest.samples/src/org/netbeans/modules/websvc/rest/samples/resources/.*\.zip$
 ^websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/jaxb$
+^websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl$
 ^websvc.wsitmodelext/coverage$
 ^xml/xml-nbms\.zip$
 ^xml.axi/test/\.cfg-unit\.xml\.swp$
