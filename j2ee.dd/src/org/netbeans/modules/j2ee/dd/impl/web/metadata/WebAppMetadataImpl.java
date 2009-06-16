@@ -142,6 +142,7 @@ public class WebAppMetadataImpl implements WebAppMetadata {
         FileObject dd = metadataUnit.getDeploymentDescriptor();
         if (dd == null) {
             webXml = null;
+            webXmlLastModification = -1L;
             return;
         }
         dd.refresh();

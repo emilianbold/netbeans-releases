@@ -43,7 +43,6 @@ package org.netbeans.modules.j2ee.dd.impl.client.annotation;
 
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.AppClientMetadata;
-import org.netbeans.modules.j2ee.dd.impl.ejb.annotation.*;
 import java.io.IOException;
 import org.netbeans.modules.j2ee.dd.api.common.PortComponentRef;
 import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
