@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,58 +38,74 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.wag.manager.nodes;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+package org.netbeans.modules.wag.manager.actions;
+
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import org.netbeans.modules.wag.manager.model.WagSearchResult;
 import org.netbeans.modules.wag.manager.model.WagSearchResults;
-import org.openide.nodes.Children;
+import org.netbeans.modules.wag.manager.wizards.AddSearchDlg;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
-import org.openide.util.WeakListeners;
+import org.openide.util.actions.NodeAction;
+import org.openide.util.*;
 
-public class WagRootNodeChildren extends Children.Keys<Object> implements PropertyChangeListener {
-
-    private WagSearchResults searchResults;
-
-    public WagRootNodeChildren() {
-        searchResults = WagSearchResults.getInstance();
-        searchResults.addPropertyChangeListener(WeakListeners.propertyChange(this, searchResults));
+/**
+ * 
+ * @author  peterliu
+ */
+public class DeleteSearchAction extends NodeAction {
+    
+    protected boolean enable(org.openide.nodes.Node[] nodes) {
+        return true;
     }
-
-    @Override
-    protected void addNotify() {
-        updateKeys();
-        super.addNotify();
+    
+    public org.openide.util.HelpCtx getHelpCtx() {
+        return new HelpCtx(DeleteSearchAction.class);
     }
+    
+    public String getName() {
+        return NbBundle.getMessage(DeleteSearchAction.class, "DeleteSearchAction");
+    }
+    
+    protected void performAction(final Node[] nodes) {
+        if (nodes == null || nodes.length != 1) {
+            return;
+        }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getSource() == searchResults) {
-            updateKeys();
+        final WagSearchResults results = nodes[0].getLookup().lookup(WagSearchResults.class);
+
+        if (results == null) {
+            throw new IllegalArgumentException("Node has no WagSearchResults");
+        }
+
+        String msg = NbBundle.getMessage(this.getClass(), "DeleteSearchResults");
+
+        NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
+        Object response = DialogDisplayer.getDefault().notify(d);
+        if (null != response && response.equals(NotifyDescriptor.YES_OPTION)) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    Collection<WagSearchResult> searchesToRemove = new ArrayList<WagSearchResult>();
+
+                    for (int i = 0; i < nodes.length; i++) {
+                        searchesToRemove.add(nodes[i].getLookup().lookup(WagSearchResult.class));
+                    }
+
+                    results.removeResults(searchesToRemove);
+                }
+            });
         }
     }
-
-    protected void updateKeys() {
-        ArrayList<Object> keys = new ArrayList<Object>();
-        Collection<WagSearchResult> results = searchResults.getResults();
-        keys.addAll(results);
-        setKeys(keys);
+    
+    protected boolean asynchronous() {
+        return false;
     }
-
-    @Override
-    protected void removeNotify() {
-        java.util.List<String> emptyList = Collections.emptyList();
-        setKeys(emptyList);
-        super.removeNotify();
+    
+    protected String iconResource() {
+        return "org/netbeans/modules/wag/manager/resources/restservice.png"; // NOI18N
     }
-
-    protected Node[] createNodes(Object key) {
-        if (key instanceof WagSearchResult) {
-            return new Node[] {new WagSearchResultNode((WagSearchResult) key)};
-        }
-        return new Node[0];
-    }
+    
 }

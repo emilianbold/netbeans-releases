@@ -181,10 +181,12 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         boolean isInSources = false;
         {
             String srcRoot = getSourceRoot();
-            String[] sourceRoots = getDebugger().getEngineContext().getSourceRoots();
-            for (int i = 0; i < sourceRoots.length; i++) {
-                if (srcRoot.equals(sourceRoots[i])) {
-                    isInSources = true;
+            if (srcRoot != null) {
+                String[] sourceRoots = getDebugger().getEngineContext().getSourceRoots();
+                for (int i = 0; i < sourceRoots.length; i++) {
+                    if (srcRoot.equals(sourceRoots[i])) {
+                        isInSources = true;
+                    }
                 }
             }
         }

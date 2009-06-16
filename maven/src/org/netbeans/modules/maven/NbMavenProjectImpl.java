@@ -895,7 +895,6 @@ public final class NbMavenProjectImpl implements Project {
                     profileHandler,
                     new CustomizerProviderImpl(this),
                     new LogicalViewProviderImpl(this),
-                    new ProjectOpenedHookImpl(this),
                     new ClassPathProviderImpl(this),
                     sharability,
                     new MavenTestForSourceImpl(this),
@@ -917,6 +916,7 @@ public final class NbMavenProjectImpl implements Project {
                     new MavenFileLocator(this),
 
                     // default mergers..        
+                    UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl(this)),
                     UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                     UILookupMergerSupport.createRecommendedTemplatesMerger(),
                     LookupProviderSupport.createSourcesMerger(),
@@ -926,7 +926,7 @@ public final class NbMavenProjectImpl implements Project {
                     new BackwardCompatibilityWithMevenideChecker(),
                     new JarPackagingRunChecker(),
                     new DebuggerChecker(),
-                    new CosChecker(),
+                    new CosChecker(this),
                     CosChecker.createResultChecker(),
                     new ReactorChecker(),
                     new PrereqCheckerMerger(),
