@@ -41,8 +41,13 @@
 
 package org.netbeans.modules.wag.manager.actions;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import org.netbeans.modules.wag.manager.model.WagSearchResult;
 import org.netbeans.modules.wag.manager.model.WagSearchResults;
 import org.netbeans.modules.wag.manager.wizards.AddSearchDlg;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.*;
@@ -51,32 +56,48 @@ import org.openide.util.*;
  * 
  * @author  peterliu
  */
-public class AddSearchAction extends NodeAction {
+public class DeleteSearchAction extends NodeAction {
     
     protected boolean enable(org.openide.nodes.Node[] nodes) {
         return true;
     }
     
     public org.openide.util.HelpCtx getHelpCtx() {
-        return new HelpCtx(AddSearchAction.class);
+        return new HelpCtx(DeleteSearchAction.class);
     }
     
     public String getName() {
-        return NbBundle.getMessage(AddSearchAction.class, "AddSearchAction");
+        return NbBundle.getMessage(DeleteSearchAction.class, "DeleteSearchAction");
     }
     
-    protected void performAction(Node[] nodes) {
+    protected void performAction(final Node[] nodes) {
         if (nodes == null || nodes.length != 1) {
             return;
         }
 
-        WagSearchResults results = nodes[0].getLookup().lookup(WagSearchResults.class);
+        final WagSearchResults results = nodes[0].getLookup().lookup(WagSearchResults.class);
 
         if (results == null) {
             throw new IllegalArgumentException("Node has no WagSearchResults");
         }
 
-        new AddSearchDlg(results).displayDialog();
+        String msg = NbBundle.getMessage(this.getClass(), "DeleteSearchResults");
+
+        NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
+        Object response = DialogDisplayer.getDefault().notify(d);
+        if (null != response && response.equals(NotifyDescriptor.YES_OPTION)) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    Collection<WagSearchResult> searchesToRemove = new ArrayList<WagSearchResult>();
+
+                    for (int i = 0; i < nodes.length; i++) {
+                        searchesToRemove.add(nodes[i].getLookup().lookup(WagSearchResult.class));
+                    }
+
+                    results.removeResults(searchesToRemove);
+                }
+            });
+        }
     }
     
     protected boolean asynchronous() {
