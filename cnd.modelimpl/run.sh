@@ -62,6 +62,10 @@ done
 while [ -n "$1" ]
 do
     case "$1" in
+        --gdb)
+                echo "Enable GDB-window and do not delete gdb-cmds logs"
+                PARAMS="${PARAMS} -J-Dgdb.console.window=true -J-Dgdb.console.savelog=true"
+                ;;
 	--cache)
 		shift
                 echo "Redirecting cache to $1"

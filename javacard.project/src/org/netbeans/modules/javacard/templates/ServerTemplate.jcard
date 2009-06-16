@@ -1,0 +1,15 @@
+javacard.device.name=${devicename}
+javacard.device.secureMode=true
+javacard.device.e2pSize=4M
+javacard.device.corSize=4K
+javacard.device.proxy2idePort=7020
+javacard.device.contactedPort=9025
+javacard.device.contactedProtocol=T=1
+javacard.device.apdutool.contactedProtocol=
+javacard.device.ramSize=1M
+javacard.device.httpPort=8019
+javacard.device.proxy2cjcrePort=7019
+javacard.device.loggerLevel=debug
+javacard.device.contactlessPort=9026
+javacard.device.cardmanagerurl=http://localhost:8019/cardmanager
+javacard.device.serverurl=http://localhost:8019

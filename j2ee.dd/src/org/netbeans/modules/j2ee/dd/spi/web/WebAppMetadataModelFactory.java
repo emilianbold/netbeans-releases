@@ -42,7 +42,7 @@
 package org.netbeans.modules.j2ee.dd.spi.web;
 
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
-import org.netbeans.modules.j2ee.dd.impl.web.annotation.WebAppMetadataModelImpl;
+import org.netbeans.modules.j2ee.dd.impl.web.metadata.WebAppMetadataModelImpl;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
@@ -55,7 +55,8 @@ public class WebAppMetadataModelFactory {
 
     private WebAppMetadataModelFactory() {}
 
+    // merge option is ignored (metadata model controls merging by itself)
     public static MetadataModel<WebAppMetadata> createMetadataModel(MetadataUnit metadataUnit, boolean merge) {
-        return MetadataModelFactory.createMetadataModel(WebAppMetadataModelImpl.create(metadataUnit, merge));
+        return MetadataModelFactory.createMetadataModel(WebAppMetadataModelImpl.create(metadataUnit));
     }
 }

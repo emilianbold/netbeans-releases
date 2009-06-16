@@ -67,8 +67,8 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  */
 /*package-local*/ class ClassifierContainer extends ProjectComponent implements Persistent, SelfPersistent {
 
-    private Map<CharSequence, CsmUID<CsmClassifier>> classifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
-    private Map<CharSequence, CsmUID<CsmClassifier>> typedefs = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
+    private final Map<CharSequence, CsmUID<CsmClassifier>> classifiers;
+    private final Map<CharSequence, CsmUID<CsmClassifier>> typedefs;
     private ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
 
     // empty stub
@@ -90,17 +90,26 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
     /** Creates a new instance of ClassifierContainer */
     public ClassifierContainer(ProjectBase project) {
         super(new ClassifierContainerKey(project.getUniqueName().toString()), false);
+        classifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
+        typedefs = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
         put();
     }
 
     public ClassifierContainer(DataInput input) throws IOException {
         super(input);
-        read(input);
+        int collSize = input.readInt();
+        classifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>(collSize);
+        UIDObjectFactory.getDefaultFactory().readStringToUIDMap(this.classifiers, input, QualifiedNameCache.getManager(), collSize);
+        collSize = input.readInt();
+        typedefs = new HashMap<CharSequence, CsmUID<CsmClassifier>>(collSize);
+        UIDObjectFactory.getDefaultFactory().readStringToUIDMap(this.typedefs, input, QualifiedNameCache.getManager(), collSize);
     }
 
     // only for EMPTY static field
     private ClassifierContainer() {
         super((org.netbeans.modules.cnd.repository.spi.Key) null, false);
+        classifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
+        typedefs = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
     }
     
     public CsmClassifier getClassifier(CharSequence qualifiedName) {
@@ -214,10 +223,5 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
         } finally {
             declarationsLock.readLock().unlock();
         }
-    }
-    
-    private void read(DataInput input) throws IOException {
-        UIDObjectFactory.getDefaultFactory().readStringToUIDMap(this.classifiers, input, QualifiedNameCache.getManager());
-        UIDObjectFactory.getDefaultFactory().readStringToUIDMap(this.typedefs, input, QualifiedNameCache.getManager());
     }
 }
