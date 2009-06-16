@@ -234,7 +234,7 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
         if (platform == null) {
             return true;
         }
-        if (!platform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+        if (!platform.getSupportedTypes().contains(J2eeModule.Type.EJB)) {
             return false;
         }
         String j2eeVersion = j2eeModuleProvider.getJ2eeModule().getModuleVersion();

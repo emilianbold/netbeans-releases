@@ -56,7 +56,6 @@ import org.netbeans.modules.j2ee.dd.api.web.WebFragment;
 import org.netbeans.modules.j2ee.dd.api.web.WebFragmentProvider;
 import org.netbeans.modules.j2ee.dd.api.web.model.ServletInfo;
 import org.netbeans.modules.j2ee.dd.impl.web.annotation.AnnotationHelpers;
-import org.netbeans.modules.j2ee.dd.impl.web.annotation.WebServlet;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -101,14 +100,24 @@ public class WebAppMetadataImpl implements WebAppMetadata {
         return res;
     }
 
-    // TODO PetrS Make merging better, resolve conflicts, refactor the code, etc.
     public List<ServletInfo> getServlets() {
-        List<ServletInfo> res = new ArrayList<ServletInfo>();
+        return doMerging(MergeEngines.servletsEngine());
+    }
+
+    public List<String> getSecurityRoles() {
+        return doMerging(MergeEngines.securityRolesEngine());
+    }
+
+    // -------------------------------------------------------------------------
+    // HELPER METHODS
+    // -------------------------------------------------------------------------
+    private <T> List<T> doMerging(MergeEngine<T> eng) {
+        eng.clean();
 
         // from web.xml
         refreshWebXml();
         if (webXml != null) {
-            addServlets(res, webXml);
+            eng.addItems(webXml);
             boolean complete;
             try {
                 complete = webXml.isMetadataComplete();
@@ -118,30 +127,25 @@ public class WebAppMetadataImpl implements WebAppMetadata {
                 complete = true;
             }
             if (complete)
-                return res;
+                return eng.getResult();
         }
 
         // from web-fragment.xml files
         for (WebFragment wf : getFragments()) {
-            addServlets(res, wf);
+            eng.addItems(wf);
         }
 
         // from annotations
-        for (WebServlet ws : getAnnotationHelpers().getWebServletPOM().getObjects()) {
-            res.add(ServletInfoAccessor.getDefault().createServletInfo(
-                    ws.getName(), ws.getServletClass(), ws.getUrlPatterns()));
-        }
-        
-        return res;
+        eng.addAnnotations(getAnnotationHelpers());
+
+        return eng.getResult();
     }
 
-    // -------------------------------------------------------------------------
-    // HELPER METHODS
-    // -------------------------------------------------------------------------
     private void refreshWebXml() {
         FileObject dd = metadataUnit.getDeploymentDescriptor();
         if (dd == null) {
             webXml = null;
+            webXmlLastModification = -1L;
             return;
         }
         dd.refresh();

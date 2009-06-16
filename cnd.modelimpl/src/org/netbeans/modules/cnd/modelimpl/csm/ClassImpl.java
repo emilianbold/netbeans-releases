@@ -72,7 +72,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     private final CsmDeclaration.Kind kind;
     private final List<CsmUID<CsmMember>> members;
     private final List<CsmUID<CsmFriend>> friends;
-    private final List<CsmInheritance> inheritances = new ArrayList<CsmInheritance>();
+    private final ArrayList<CsmInheritance> inheritances = new ArrayList<CsmInheritance>(0);
     private TemplateDescriptor templateDescriptor = null;
     private /*final*/ int leftBracketPos;
 
@@ -915,6 +915,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         synchronized (this.inheritances) {
             this.inheritances.clear();
             this.inheritances.addAll(baseClasses);
+            inheritances.trimToSize();
         }
     }
     private static final int CLASS_KIND = 1;
