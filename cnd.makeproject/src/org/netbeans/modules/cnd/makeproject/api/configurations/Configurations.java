@@ -51,6 +51,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManagerEvents;
 
 public final class Configurations {
+
     public static final String PROP_ACTIVE_CONFIGURATION = "activeconfiguration"; // NOI18N
     private final PropertyChangeSupport pcs;
     private final List<Configuration> configurations = new ArrayList<Configuration>();
@@ -88,7 +89,7 @@ public final class Configurations {
                         }
                         current++;
                     } else {
-                        new Exception("Configuration["+i+"]==null").printStackTrace(); // NOI18N
+                        new Exception("Configuration[" + i + "]==null").printStackTrace(); // NOI18N
                     }
                 }
                 if (def != null) {
@@ -309,7 +310,7 @@ public final class Configurations {
         configurationsLock.readLock().lock();
         try {
             old = getActive();
-            if (!checkValidIndex(index)){
+            if (!checkValidIndex(index)) {
                 return;
             }
             def = configurations.get(index);
@@ -385,8 +386,8 @@ public final class Configurations {
     private boolean checkValidIndex(int index) {
         if (index < 0 || index >= size()) {
             new ArrayIndexOutOfBoundsException(index).printStackTrace(); // NOI18N
-            // Error ???
-            // FIXUP ???
+        // Error ???
+        // FIXUP ???
         }
         return true;
     }

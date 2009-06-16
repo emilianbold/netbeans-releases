@@ -211,7 +211,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 
         customizerPerProject.put(project, dialog);
         dialog.setVisible(true);
-        //clonedProjectdescriptor.closed();
+    //clonedProjectdescriptor.closed();
     }
 
     /** Listens to the actions on the Customizer's option buttons */
@@ -251,8 +251,8 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                 //projectDescriptor.copyFromProjectDescriptor(clonedProjectdescriptor);
                 makeCustomizer.save();
 
-                List<String> oldSourceRoots = ((MakeConfigurationDescriptor)projectDescriptor).getSourceRoots();
-                List<String> newSourceRoots = ((MakeConfigurationDescriptor)clonedProjectdescriptor).getSourceRoots();
+                List<String> oldSourceRoots = ((MakeConfigurationDescriptor) projectDescriptor).getSourceRoots();
+                List<String> newSourceRoots = ((MakeConfigurationDescriptor) clonedProjectdescriptor).getSourceRoots();
                 Configuration oldActive = projectDescriptor.getConfs().getActive();
                 Configuration newActive = clonedProjectdescriptor.getConfs().getActive();
 
