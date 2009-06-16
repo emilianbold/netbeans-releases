@@ -180,7 +180,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 confType = MakeConfiguration.TYPE_QT_STATIC_LIB;
             }
             currentConf = createNewConfiguration(projectDirectory, atts.getValue(0), confType);
-            
+
             // switch out old decoders
             for (int dx = 0; dx < decoders.size(); dx++) {
                 XMLDecoder decoder = decoders.elementAt(dx);
