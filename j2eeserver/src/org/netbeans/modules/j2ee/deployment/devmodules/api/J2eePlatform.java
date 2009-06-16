@@ -49,7 +49,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +65,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
+import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.impl.sharability.ServerLibraryTypeProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
@@ -396,10 +399,11 @@ public final class J2eePlatform {
         boolean assertsEnabled = false;
         assert assertsEnabled = true;
         if (assertsEnabled) {
-            LOGGER.log(Level.INFO, "Call to deprecated method " + J2eePlatform.class.getName() + "getSupportedSpecVersions", new Exception());
+            LOGGER.log(Level.INFO, "Call to deprecated method "
+                    + J2eePlatform.class.getName() + "getSupportedSpecVersions", new Exception());
         }
 
-        return impl.getSupportedSpecVersions();
+        return convertProfilesToKnownSpecVersions(getSupportedProfiles());
     }
 
     /**
@@ -411,13 +415,19 @@ public final class J2eePlatform {
      * @return list of supported J2EE specification versions.
      * @deprecated use {@link #getSupportedProfiles(java.lang.Object)}
      */
-    public Set <String> getSupportedSpecVersions(Object moduleType) {
+    public Set<String> getSupportedSpecVersions(Object moduleType) {
         boolean assertsEnabled = false;
         assert assertsEnabled = true;
         if (assertsEnabled) {
-            LOGGER.log(Level.INFO, "Call to deprecated method " + J2eePlatform.class.getName() + "getSupportedSpecVersions", new Exception());
+            LOGGER.log(Level.INFO, "Call to deprecated method "
+                    + J2eePlatform.class.getName() + "getSupportedSpecVersions", new Exception());
         }
-        return impl.getSupportedSpecVersions(moduleType);
+
+        J2eeModule.Type type = J2eeModule.Type.fromJsrType(moduleType);
+        if (type != null) {
+            return convertProfilesToKnownSpecVersions(getSupportedProfiles(type));
+        }
+        return Collections.emptySet();
     }
 
     /**
@@ -461,9 +471,18 @@ public final class J2eePlatform {
         boolean assertsEnabled = false;
         assert assertsEnabled = true;
         if (assertsEnabled) {
-            LOGGER.log(Level.INFO, "Call to deprecated method " + J2eePlatform.class.getName() + "getSupportedModuleTypes", new Exception());
+            LOGGER.log(Level.INFO, "Call to deprecated method "
+                    + J2eePlatform.class.getName() + "getSupportedModuleTypes", new Exception());
         }
-        return impl.getSupportedModuleTypes();
+
+        Set ret = new HashSet();
+        for (J2eeModule.Type type : getSupportedTypes()) {
+            Object obj = J2eeModuleAccessor.getDefault().getJsrModuleType(type);
+            if (obj != null) {
+                ret.add(obj);
+            }
+        }
+        return ret;
     }
 
     /**
@@ -533,6 +552,7 @@ public final class J2eePlatform {
         impl.removePropertyChangeListener(l);
     }
 
+    @Override
     public String toString() {
         return impl.getDisplayName() + " [" + getClasspathAsString() + "]"; // NOI18N
     }
@@ -625,6 +645,20 @@ public final class J2eePlatform {
      */
     public Lookup getLookup() {
         return impl.getLookup();
+    }
+
+    @NonNull
+    private Set<String> convertProfilesToKnownSpecVersions(Iterable<Profile> profiles) {
+        Set ret = new HashSet();
+        for (Profile profile : profiles) {
+            String str = profile.toPropertiesString();
+            if (J2eeModule.J2EE_13.equals(str)
+                    || J2eeModule.J2EE_14.equals(str)
+                    || J2eeModule.JAVA_EE_5.equals(str)) {
+                ret.add(str);
+            }
+        }
+        return ret;
     }
 
     private FileObject[] getVolumeContent(J2eePlatform platform, String volumeType) {

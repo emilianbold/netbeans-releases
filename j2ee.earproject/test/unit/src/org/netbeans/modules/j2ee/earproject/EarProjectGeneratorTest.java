@@ -136,8 +136,7 @@ public class EarProjectGeneratorTest extends NbTestCase {
         "platform.active",
         //"resource.dir",  -XXX- this is not found in project.props
         //        when the project is created from ex. sources. Bug or not???
-        "source.root",
-        "file.reference.ip-EARProject",
+        "source.root"
     };
 
     public EarProjectGeneratorTest(String name) {
@@ -212,7 +211,12 @@ public class EarProjectGeneratorTest extends NbTestCase {
         @SuppressWarnings("unchecked")
         List createdProperties = new ArrayList(props.keySet());
         int extFileRefCount = 0;
-        for (String propName : CREATED_PROPERTIES_EXT_SOURCES) {
+
+        List<String> extProperties = new ArrayList<String>();
+        Collections.addAll(extProperties, CREATED_PROPERTIES_EXT_SOURCES);
+        extProperties.add("file.reference." + getWorkDir().getName() + "-EARProject");
+
+        for (String propName : extProperties) {
             String propValue = props.getProperty(propName);
             assertNotNull(propName+" property cannot be found in project.properties", propValue);
             createdProperties.remove(propName);
@@ -221,7 +225,7 @@ public class EarProjectGeneratorTest extends NbTestCase {
             }
         }
         assertEquals("Found unexpected property: " + createdProperties,
-                CREATED_PROPERTIES_EXT_SOURCES.length, props.keySet().size() - extFileRefCount);
+                extProperties.size(), props.keySet().size() - extFileRefCount);
     }
 
     public void testProjectNameIsSet() throws Exception { // #73930

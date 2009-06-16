@@ -377,13 +377,14 @@
 
 	  </xsd:documentation>
 	</xsd:annotation>
+      </xsd:element>
+
       <xsd:element name="async-support"
 		   type="javaee:generic-booleanType"
 		   minOccurs="0"/>
       <xsd:element name="async-timeout"
 		   type="javaee:xsdIntegerType"
 		   minOccurs="0"/>
-      </xsd:element>
 
       <xsd:element name="init-param"
 		   type="javaee:param-valueType"

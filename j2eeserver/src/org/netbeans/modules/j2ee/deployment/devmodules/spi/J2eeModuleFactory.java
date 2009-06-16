@@ -68,6 +68,7 @@ public class J2eeModuleFactory {
      * @param impl the J2eeModule SPI object
      * 
      * @return J2eeModule API instance.
+     * @deprecated use {@link #createJ2eeApplication(org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationImplementation2)}
      */
     public static J2eeModule createJ2eeModule(J2eeModuleImplementation impl) {
         if (impl == null) {
@@ -96,6 +97,7 @@ public class J2eeModuleFactory {
      * 
      * @param impl the J2eeApplication SPI object
      * @return J2eJ2eeApplicationI instance.
+     * @deprecated use {@link #createJ2eeApplication(org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationImplementation2)}
      */
     public static J2eeApplication createJ2eeApplication(J2eeApplicationImplementation impl) {
         if (impl == null) {
