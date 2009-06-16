@@ -52,15 +52,13 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.Ar
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ParseResult;
 
 /**
- * This class represents javax.servlet.annotation.WebServlet annotation
+ * This class represents javax.annotation.security.DeclareRoles annotation
  * @author Petr Slechta
  */
-public class WebServlet extends PersistentObject implements Refreshable {
-    private String name;
-    private List<String> urlPatterns = new ArrayList<String>();
-    private String clazz;
+public class SecurityRoles extends PersistentObject implements Refreshable {
+    private List<String> roles = new ArrayList<String>();
 
-    public WebServlet(AnnotationModelHelper helper, TypeElement typeElement) {
+    public SecurityRoles(AnnotationModelHelper helper, TypeElement typeElement) {
         super(helper, typeElement);
         boolean valid = refresh(typeElement);
         assert valid;
@@ -68,66 +66,40 @@ public class WebServlet extends PersistentObject implements Refreshable {
 
     public boolean refresh(TypeElement typeElement) {
         Map<String, ? extends AnnotationMirror> annByType = getHelper().getAnnotationsByType(typeElement.getAnnotationMirrors());
-        AnnotationMirror annotationMirror = annByType.get("javax.servlet.annotation.WebServlet"); // NOI18N
+        AnnotationMirror annotationMirror = annByType.get("javax.annotation.security.DeclareRoles"); // NOI18N
         if (annotationMirror == null) {
             return false;
         }
 
         AnnotationParser parser = AnnotationParser.create(getHelper());
-        parser.expectString("name", AnnotationParser.defaultValue(typeElement.getSimpleName().toString())); // NOI18N
-        parser.expectStringArray("urlPatterns", new ArrayValueHandler() { // NOI18N
-            public Object handleArray(List<AnnotationValue> arrayMembers) {
-                for (AnnotationValue arrayMember : arrayMembers) {
-                    String value = (String)arrayMember.getValue();
-                    urlPatterns.add(value);
-                }
-                return null;
-            }
-        }, null);
         parser.expectStringArray("value", new ArrayValueHandler() { // NOI18N
             public Object handleArray(List<AnnotationValue> arrayMembers) {
                 for (AnnotationValue arrayMember : arrayMembers) {
                     String value = (String)arrayMember.getValue();
-                    urlPatterns.add(value);
+                    roles.add(value);
                 }
                 return null;
             }
         }, null);
         ParseResult parseResult = parser.parse(annotationMirror);
-        name = parseResult.get("name", String.class); // NOI18N
-        clazz = typeElement.getQualifiedName().toString();
         return true;
-    }
-
-    /**
-     * @return name of the servlet
-     */
-    public String getName() {
-        return name;
     }
 
     /**
      * @return URL patterns of the servlet
      */
-    public List<String> getUrlPatterns() {
-        return urlPatterns;
-    }
-
-    /**
-     * @return name of class that implements the servlet
-     */
-    public String getServletClass() {
-        return clazz;
+    public List<String> getRoles() {
+        return roles;
     }
 
     @Override
     public String toString() {
         StringBuilder res = new StringBuilder();
-        res.append("[WebServlet name=").append(name).append(", class=").append(clazz).append(", urlPatterns={ ");
-        for (String s : urlPatterns) {
+        res.append("[SecurityRoles: ");
+        for (String s : roles) {
             res.append('"').append(s).append("\" ");
         }
-        res.append("}]");
+        res.append("]");
         return res.toString();
     }
 
