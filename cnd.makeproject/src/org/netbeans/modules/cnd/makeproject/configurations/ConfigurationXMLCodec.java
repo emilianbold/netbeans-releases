@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfigurati
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.api.xml.VersionException;
+import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
@@ -76,6 +77,7 @@ import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.filesystems.FileObject;
@@ -113,6 +115,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private Folder currentFolder = null;
     private String relativeOffset;
     private Map<String, String> cache = new HashMap<String, String>();
+    private Vector<XMLDecoder> decoders = new Vector<XMLDecoder>();
 
     public ConfigurationXMLCodec(String tag,
             FileObject projectDirectory,
@@ -177,6 +180,23 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 confType = MakeConfiguration.TYPE_QT_STATIC_LIB;
             }
             currentConf = createNewConfiguration(projectDirectory, atts.getValue(0), confType);
+            
+            // switch out old decoders
+            for (int dx = 0; dx < decoders.size(); dx++) {
+                XMLDecoder decoder = decoders.elementAt(dx);
+                deregisterXMLDecoder(decoder);
+            }
+
+            // switch in new decoders
+            ConfigurationAuxObject[] profileAuxObjects = currentConf.getAuxObjects();
+            decoders = new Vector<XMLDecoder>();
+            for (int i = 0; i < profileAuxObjects.length; i++) {
+                if (profileAuxObjects[i].shared()) {
+                    XMLDecoder newDecoder = profileAuxObjects[i].getXMLDecoder();
+                    registerXMLDecoder(newDecoder);
+                    decoders.add(newDecoder);
+                }
+            }
         } else if (element.equals(NEO_CONF_ELEMENT)) {
             currentConf = createNewConfiguration(projectDirectory, atts.getValue(0), MakeConfiguration.TYPE_APPLICATION);
         } else if (element.equals(EXT_CONF_ELEMENT)) {
