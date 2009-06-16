@@ -71,6 +71,7 @@ public abstract class J2eeApplicationAccessor {
      *
      * @param impl SPI J2eeApplicationImplementation object
      * @return J2eeApplication
+     * @deprecated use {@link #createJ2eeApplication(org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationImplementation2)}
      */
     public abstract J2eeApplication createJ2eeApplication(J2eeApplicationImplementation impl);
 
