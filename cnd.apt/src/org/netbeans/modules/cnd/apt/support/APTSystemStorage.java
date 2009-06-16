@@ -104,7 +104,7 @@ public final class APTSystemStorage {
 //        return includesStorage.get(sysIncludes);
 //    }
     
-    public List<CharSequence> getIncludes(CharSequence configID, List<? extends CharSequence> sysIncludes) {
+    public List<IncludeDirEntry> getIncludes(CharSequence configID, List<String> sysIncludes) {
         return includesStorage.get(configID, sysIncludes);
     }   
     

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,54 +31,33 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
+package org.netbeans.modules.j2ee.dd.impl.web.metadata;
 
-package org.netbeans.modules.j2ee.archive.project;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.dd.api.web.WebFragment;
+import org.netbeans.modules.j2ee.dd.impl.web.annotation.AnnotationHelpers;
 
-import java.io.IOException;
-import java.util.Iterator;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.openide.filesystems.FileObject;
+/**
+ * @author Petr Slechta
+ */
+abstract class MergeEngine<T> {
 
-public class ArchiveModule implements J2eeModule {
-    public String getModuleVersion() {
-        return null;
+    protected List<T> res = new ArrayList<T>();
+
+    abstract void addItems(WebApp webXml);
+    abstract void addItems(WebFragment webFragment);
+    abstract void addAnnotations(AnnotationHelpers annotationHelpers);
+
+    List<T> getResult() {
+        return res;
     }
 
-    public Object getModuleType() {
-        return null;
-    }
-
-    public String getUrl() {
-        return null;
-    }
-
-    public void setUrl(String url) {
-        
-    }
-
-    public FileObject getArchive() throws IOException {
-        return null;
-    }
-
-    public Iterator getArchiveContents() throws IOException {
-        return null;
-    }
-
-    public FileObject getContentDirectory() throws IOException {
-        return null;
-    }
-
-    public org.netbeans.modules.schema2beans.BaseBean getDeploymentDescriptor(String location) {
-        return null;
-    }
-
-    public void addVersionListener(J2eeModule.VersionListener listener) {
-    }
-
-    public void removeVersionListener(J2eeModule.VersionListener listener) {
-    }
-    
-    
 }

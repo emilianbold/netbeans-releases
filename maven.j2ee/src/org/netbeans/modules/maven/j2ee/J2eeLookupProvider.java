@@ -150,7 +150,7 @@ public class J2eeLookupProvider implements LookupProvider {
                 content.add(jpa);
                 content.add(resolver);
                 content.add(supplier);
-                copyOnSave = new CopyOnSave(project, prov);
+                copyOnSave = prov.getCopyOnSaveSupport();
                 try {
                     copyOnSave.initialize();
                 } catch (FileStateInvalidException ex) {

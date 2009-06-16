@@ -55,7 +55,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.Pa
  * This class represents javax.servlet.annotation.WebServlet annotation
  * @author Petr Slechta
  */
-public class WebServlet extends PersistentObject {
+public class WebServlet extends PersistentObject implements Refreshable {
     private String name;
     private List<String> urlPatterns = new ArrayList<String>();
     private String clazz;

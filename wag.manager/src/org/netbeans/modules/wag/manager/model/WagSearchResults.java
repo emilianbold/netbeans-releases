@@ -41,11 +41,21 @@ package org.netbeans.modules.wag.manager.model;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.beans.XMLDecoder;
+import java.beans.XMLEncoder;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.openide.filesystems.FileAlreadyLockedException;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -55,7 +65,8 @@ public class WagSearchResults {
 
     public static final String WAG_HOME = System.getProperty("netbeans.user") +
             File.separator + "config" + File.separator + "WebApiGateway"; // NOI18N
-
+    public static final String WAG_SEARCH_RESULTS = "WagSearchResults";     //NOI18N
+    public static final String XML_EXT = "xml"; //NOI18N
     public static final String PROP_NAME = "searchResults";
     private static WagSearchResults instance;
     private SortedSet<WagSearchResult> results;
@@ -69,6 +80,7 @@ public class WagSearchResults {
     public synchronized static WagSearchResults getInstance() {
         if (instance == null) {
             instance = new WagSearchResults();
+            instance.load();
         }
 
         return instance;
@@ -79,16 +91,12 @@ public class WagSearchResults {
     }
 
     public void addResults(Collection<WagSearchResult> resultsToAdd) {
-        System.out.println("adding new WagSearchResult");
         SortedSet<WagSearchResult> old = new TreeSet<WagSearchResult>(results);
         results.addAll(resultsToAdd);
-        for (WagSearchResult s : results) {
-            System.out.println("s = " + s);
-        }
         fireChange(old, Collections.unmodifiableSortedSet(results));
     }
 
-    public void removeresults(Collection<WagSearchResult> resultsToRemove) {
+    public void removeResults(Collection<WagSearchResult> resultsToRemove) {
         SortedSet<WagSearchResult> old = new TreeSet<WagSearchResult>(results);
         results.removeAll(resultsToRemove);
         fireChange(old, Collections.unmodifiableSortedSet(results));
@@ -105,5 +113,58 @@ public class WagSearchResults {
     protected void fireChange(Object old, Object neu) {
         PropertyChangeEvent pce = new PropertyChangeEvent(this, PROP_NAME, old, neu);
         pps.firePropertyChange(pce);
+        save();
+    }
+
+    public static FileObject getWagHome() {
+        File wagDir = new File(WAG_HOME);
+        if (!wagDir.exists()) {
+            wagDir.mkdirs();
+        }
+        return FileUtil.toFileObject(wagDir);
+    }
+
+    public static FileObject getWagSearchResultsFile() {
+        FileObject fobj = getWagHome().getFileObject(WAG_SEARCH_RESULTS, XML_EXT);
+
+        if (fobj == null) {
+            try {
+                fobj = getWagHome().createData(WAG_SEARCH_RESULTS, XML_EXT);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        return fobj;
+    }
+
+    private void load() {
+        FileObject fobj = getWagSearchResultsFile();
+
+        if (fobj != null) {
+            try {
+                XMLDecoder d;
+                d = new XMLDecoder(new BufferedInputStream(fobj.getInputStream()));
+                Object result = (SortedSet<WagSearchResult>) d.readObject();
+                d.close();
+
+                this.results = (TreeSet<WagSearchResult>) result;
+            } catch (Exception ex) {
+                // simply ignore if the file is invalid and start fresh
+            }
+        }
+    }
+
+    private void save() {
+        try {
+            FileObject fobj = getWagSearchResultsFile();
+            XMLEncoder e = new XMLEncoder(new BufferedOutputStream(fobj.getOutputStream()));
+            e.writeObject(results);
+            e.close();
+        } catch (FileAlreadyLockedException ex) {
+            // ignore
+        } catch (IOException ex) {
+            // ignore
+        }
     }
 }

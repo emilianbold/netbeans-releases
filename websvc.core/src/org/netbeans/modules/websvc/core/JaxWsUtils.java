@@ -1321,7 +1321,7 @@ public class JaxWsUtils {
             }
             try {
                 J2eePlatform platform = Deployment.getDefault().getServerInstance(serverInstanceId).getJ2eePlatform();
-                if (platform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+                if (platform.getSupportedTypes().contains(J2eeModule.Type.EJB)) {
                     return true;
                 }
             } catch (InstanceRemovedException ex) {
