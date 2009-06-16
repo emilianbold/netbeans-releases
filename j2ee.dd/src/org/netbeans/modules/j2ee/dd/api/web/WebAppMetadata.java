@@ -69,4 +69,9 @@ public interface WebAppMetadata {
      */
     List<ServletInfo> getServlets();
 
+    /**
+     * @return list of all defined security roles
+     */
+    List<String> getSecurityRoles();
+
 }

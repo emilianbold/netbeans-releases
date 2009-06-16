@@ -69,7 +69,7 @@ public class APTHandlersSupport {
         APTHandlersSupportImpl.invalidatePreprocHandler(preprocHandler);
     }
  
-    public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<CharSequence> sysIncludePaths, List<CharSequence> userIncludePaths) {
+    public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths) {
         return APTHandlersSupportImpl.createIncludeHandler(startFile, sysIncludePaths, userIncludePaths);
     }
 
