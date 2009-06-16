@@ -168,7 +168,10 @@ public final class APTFileCacheManager {
     }
 
     public static void invalidate(APTFileBuffer buffer) {
-        getAPTCache(buffer.getAbsolutePath(), null);
+        ConcurrentMap<State, APTFileCacheEntry> fileEntry = getAPTCache(buffer.getAbsolutePath(), null);
+        if (fileEntry != null) {
+            fileEntry.clear();
+        }
     }
 
     public static void invalidateAll() {

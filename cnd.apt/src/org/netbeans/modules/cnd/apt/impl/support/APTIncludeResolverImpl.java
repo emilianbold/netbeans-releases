@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
 import org.netbeans.modules.cnd.apt.support.APTIncludeResolver;
 import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
+import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
@@ -57,12 +58,12 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 public class APTIncludeResolverImpl implements APTIncludeResolver {
     private final int baseFileIncludeDirIndex;
     private final CharSequence baseFile;
-    private final List<CharSequence> systemIncludePaths;
-    private final List<CharSequence> userIncludePaths;
+    private final List<IncludeDirEntry> systemIncludePaths;
+    private final List<IncludeDirEntry> userIncludePaths;
     
     public APTIncludeResolverImpl(CharSequence path, int baseFileIncludeDirIndex,
-                                    List<CharSequence> systemIncludePaths,
-                                    List<CharSequence> userIncludePaths) {
+                                    List<IncludeDirEntry> systemIncludePaths,
+                                    List<IncludeDirEntry> userIncludePaths) {
         this.baseFile = FilePathCache.getManager().getString(path);
         this.systemIncludePaths = systemIncludePaths;
         this.userIncludePaths = userIncludePaths;
