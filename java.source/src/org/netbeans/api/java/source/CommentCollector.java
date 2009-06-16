@@ -90,11 +90,13 @@ public final class CommentCollector {
                 if (foundComments != null) {
                     attachComments(foundComments, lastTree, newlines, ch, endPositions);
                 }
-                if (t.id() == JavaTokenId.LINE_COMMENT) {
-                    newlines += numberOfNL(t);
-                }
                 foundComments = getCommentsCollection(ts, newlines);
-                newlines = 0;
+                if (t.id() == JavaTokenId.LINE_COMMENT) {
+                    newlines = 1;
+                } else {
+                    newlines = 0;
+                }
+
             } else {
                 skipEvil(ts);
                 Tree tree = getTree(tu, ts);
@@ -108,6 +110,7 @@ public final class CommentCollector {
                     lastTree = tree;
                     foundComments = null;
                 }
+                newlines = 0;
             }
 
         }
@@ -143,22 +146,21 @@ public final class CommentCollector {
 
     private double belongsTo(int startPos, int endPos, TokenSequence<JavaTokenId> ts) {
         int index = ts.index();
-        double result = 0;
-        result = getBackwardWeight(startPos, ts, result);
-        result = getForwardWeight(endPos, ts, result);
+        double result = getForwardWeight(endPos, ts) - getBackwardWeight(startPos, ts);
         ts.moveIndex(index);
         ts.moveNext();
         return result;
     }
 
-    private double getForwardWeight(int endPos, TokenSequence<JavaTokenId> ts, double result) {
+    private double getForwardWeight(int endPos, TokenSequence<JavaTokenId> ts) {
+        double result = 0;
         ts.move(endPos);
         while (ts.moveNext()) {
             if (ts.token().id() == JavaTokenId.WHITESPACE) {
                 int nls = numberOfNL(ts.token());
-                result = nls == 0 ? 1 : result + (1 / nls);
+                result = nls == 0 ? 1 : (1 / nls);
             } else if (isComment(ts.token().id())) {
-                result = NOPOS;
+                result = 0;
                 break;
             } else {
                 break;
@@ -167,12 +169,13 @@ public final class CommentCollector {
         return result;
     }
 
-    private double getBackwardWeight(int startPos, TokenSequence<JavaTokenId> ts, double result) {
+    private double getBackwardWeight(int startPos, TokenSequence<JavaTokenId> ts) {
+        double result = 0;
         ts.move(startPos);
         while (ts.movePrevious()) {
             if (ts.token().id() == JavaTokenId.WHITESPACE) {
                 int nls = numberOfNL(ts.token());
-                result = nls == 0 ? 0 : result - (1 / nls);
+                result = nls == 0 ? 0 : (1 / nls);
             } else if (isComment(ts.token().id())) {
                 result = 0;
                 break;
@@ -238,18 +241,6 @@ public final class CommentCollector {
         return new int[]{TreeInfo.getStartPos(tree), TreeInfo.getEndPos(tree, endPositions)};
     }
 
-    private void attachTrailingComments(CommentSet cs, Iterable<Token<JavaTokenId>> foundComments) {
-        for (Token<JavaTokenId> comment : foundComments) {
-            attachComment(CommentSet.RelativePosition.TRAILING, cs, comment);
-        }
-    }
-
-    private void attachPrecedingComments(CommentSet cs, Iterable<Token<JavaTokenId>> foundComments) {
-        for (Token<JavaTokenId> comment : foundComments) {
-            attachComment(CommentSet.RelativePosition.PRECEDING, cs, comment);
-        }
-    }
-
 
     private Tree getTree(TreeUtilities tu, TokenSequence<JavaTokenId> ts) {
         int start = ts.offset();
@@ -276,6 +267,8 @@ public final class CommentCollector {
         CommentsCollection result = new CommentsCollection();
         Token<JavaTokenId> t = ts.token();
         result.add(t);
+        boolean isLC = t.id() == JavaTokenId.LINE_COMMENT;
+        int lastCommentIndex = ts.index();
         int start = ts.offset();
         int end = ts.offset() + ts.token().length();
         while (ts.moveNext()) {
@@ -283,16 +276,19 @@ public final class CommentCollector {
             if (isComment(t.id())) {
                 result.add(t);
                 start = Math.min(ts.offset(), start);
-                end = Math.max(t.length(), end);
+                end = Math.max(ts.offset() + t.length(), end);
+                isLC = t.id() == JavaTokenId.LINE_COMMENT;
+                lastCommentIndex = ts.index();
             } else if (t.id() == JavaTokenId.WHITESPACE) {
-                if (numberOfNL(t) > maxTension) {
-                    ts.movePrevious();
+                if ((numberOfNL(t) + (isLC ? 1 : 0)) > maxTension) {
                     break;
                 }
             } else {
                 break;
             }
         }
+        ts.moveIndex(lastCommentIndex);
+        ts.moveNext();
         result.setBounds(new int[]{start, end});
         return result;
     }
