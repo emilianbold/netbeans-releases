@@ -130,7 +130,7 @@ public final class CndFileUtils {
     }
 
     public static boolean exists(File file) {
-        return getFlags(file, true).exist;
+        return getFlags(file, null, true).exist;
     }
 
     /**
@@ -139,25 +139,49 @@ public final class CndFileUtils {
      * @return
      */
     public static boolean isExistingFile(File file) {
-        Flags flags = getFlags(file, true);
-        return flags.exist && !flags.directory;
+        return isExistingFile(file, null);
     }
 
+    public static boolean isExistingFile(String filePath) {
+        return isExistingFile(null, filePath);
+    }
+
+    /**
+     * Tests whether the file exists and not directory. One of file or filePath
+     * must be not null
+     * @param file
+     * @param filePath
+     * @return
+     */
+    public static boolean isExistingFile(File file, String filePath) {
+        Flags flags = getFlags(file, filePath, true);
+        return flags.exist && !flags.directory;
+    }
     /**
      * Tests whether the file is an existing directory.
      * @param file
      * @return
      */
     public static boolean isExistingDirectory(File file) {
-        return getFlags(file, false).directory;
+        return isExistingDirectory(file, null);
     }
 
-    private static Flags getFlags(File file, boolean indexParentFolder) {
-        String path = file.getAbsolutePath();
+    public static boolean isExistingDirectory(String filePath) {
+        return isExistingDirectory(null, filePath);
+    }
+
+    public static boolean isExistingDirectory(File file, String filePath) {
+        return getFlags(file, filePath, false).directory;
+    }
+
+    private static Flags getFlags(File file, String absolutePath, boolean indexParentFolder) {
+        assert file != null || absolutePath != null;
+        absolutePath = (absolutePath == null) ? file.getAbsolutePath() : absolutePath;
         Flags exists;
         ConcurrentMap<String, Flags> files = getFilesMap();
-        exists = files.get(path);
+        exists = files.get(absolutePath);
         if (exists == null) {
+            file = (file == null) ? new File(absolutePath) : file;
             String parent = file.getParent();
             if (parent != null) {
                 Flags parentDirFlags = files.get(parent);
@@ -176,7 +200,7 @@ public final class CndFileUtils {
                         assert (parentDirFlags == Flags.DIRECTORY) : "must be DIRECTORY but was " + parentDirFlags; // NOI18N
                         // let's index not indexed directory
                         index(parentFile, parent, files);
-                        exists = files.get(path);
+                        exists = files.get(absolutePath);
                     }
                 } else {
                     // no need to check non existing file
@@ -186,11 +210,11 @@ public final class CndFileUtils {
             }
             if (exists == null) {
                 exists = Flags.get(file);
-                files.put(path, exists);
+                files.put(absolutePath, exists);
             }
             if (exists == Flags.DIRECTORY) {
                 // let's index not indexed directory
-                index(file, path, files);
+                index(file, absolutePath, files);
             }
         } else {
             //hits ++;

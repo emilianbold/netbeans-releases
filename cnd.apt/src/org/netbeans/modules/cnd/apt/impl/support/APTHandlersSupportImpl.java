@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
@@ -78,7 +79,7 @@ public class APTHandlersSupportImpl {
         ((APTPreprocHandlerImpl)preprocHandler).setValid(false);
     }
     
-    public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<CharSequence> sysIncludePaths, List<CharSequence> userIncludePaths) {
+    public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths) {
         return new APTIncludeHandlerImpl(startFile, sysIncludePaths, userIncludePaths);
     }
 

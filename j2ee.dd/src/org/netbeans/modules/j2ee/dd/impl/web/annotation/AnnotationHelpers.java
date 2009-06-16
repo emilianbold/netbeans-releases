@@ -57,47 +57,73 @@ public class AnnotationHelpers {
 
     private AnnotationModelHelper helper;
     private PersistentObjectManager<WebServlet> webServletsPOM;
+    private PersistentObjectManager<SecurityRoles> securityRolesPOM;
 
     public AnnotationHelpers(AnnotationModelHelper helper) {
         this.helper = helper;
     }
 
+    // -------------------------------------------------------------------------
     public PersistentObjectManager<WebServlet> getWebServletPOM() {
         if (webServletsPOM == null)
-            webServletsPOM = helper.createPersistentObjectManager(new WebServletAnnotationProvider());
+            webServletsPOM = helper.createPersistentObjectManager(new AnnotationProvider("javax.servlet.annotation.WebServlet") {
+                @Override
+                WebServlet newItem(AnnotationModelHelper helper, TypeElement typeElement) {
+                    return new WebServlet(helper, typeElement);
+                }
+            });
         return webServletsPOM;
     }
 
-    // -------------------------------------------------------------------------
-    private final class WebServletAnnotationProvider implements ObjectProvider<WebServlet> {
+    public PersistentObjectManager<SecurityRoles> getSecurityRolesPOM() {
+        if (securityRolesPOM == null)
+            securityRolesPOM = helper.createPersistentObjectManager(new AnnotationProvider("javax.annotation.security.DeclareRoles") {
+                @Override
+                SecurityRoles newItem(AnnotationModelHelper helper, TypeElement typeElement) {
+                    return new SecurityRoles(helper, typeElement);
+                }
+            });
+        return securityRolesPOM;
+    }
 
-        public List<WebServlet> createInitialObjects() throws InterruptedException {
-            final List<WebServlet> result = new ArrayList<WebServlet>();
-            helper.getAnnotationScanner().findAnnotations("javax.servlet.annotation.WebServlet", AnnotationScanner.TYPE_KINDS, new AnnotationHandler() { // NOI18N
+    // -------------------------------------------------------------------------
+    private abstract class AnnotationProvider<T extends Refreshable> implements ObjectProvider<T> {
+
+        private String annotationName;
+
+        AnnotationProvider(String annotationName) {
+            this.annotationName = annotationName;
+        }
+
+        public List<T> createInitialObjects() throws InterruptedException {
+            final List<T> result = new ArrayList<T>();
+            helper.getAnnotationScanner().findAnnotations(annotationName, AnnotationScanner.TYPE_KINDS, new AnnotationHandler() {
                 public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
-                    result.add(new WebServlet(helper, type));
+                    result.add(newItem(helper, type));
                 }
             });
             return result;
         }
 
-        public List<WebServlet> createObjects(TypeElement type) {
-            final List<WebServlet> result = new ArrayList<WebServlet>();
-            if (helper.hasAnnotation(type.getAnnotationMirrors(), "javax.servlet.annotation.WebServlet")) { // NOI18N
-                result.add(new WebServlet(helper, type));
+        public List<T> createObjects(TypeElement type) {
+            final List<T> result = new ArrayList<T>();
+            if (helper.hasAnnotation(type.getAnnotationMirrors(), annotationName)) {
+                result.add(newItem(helper, type));
             }
             return result;
         }
 
-        public boolean modifyObjects(TypeElement type, List<WebServlet> objects) {
+        public boolean modifyObjects(TypeElement type, List<T> objects) {
             assert objects.size() == 1;
-            WebServlet ws = objects.get(0);
-            if (!ws.refresh(type)) {
+            T item = objects.get(0);
+            if (!item.refresh(type)) {
                 objects.remove(0);
                 return true;
             }
             return false;
         }
+
+        abstract T newItem(AnnotationModelHelper helper, TypeElement typeElement);
     }
 
 }

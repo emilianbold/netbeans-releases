@@ -355,7 +355,7 @@ public class SendEmailCodeGenerator implements CodeGenerator {
         if (platform == null) {
             return true;
         }
-        if (!platform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+        if (!platform.getSupportedTypes().contains(J2eeModule.Type.EJB)) {
             return false;
         }
         return ElementKind.INTERFACE != typeElement.getKind();

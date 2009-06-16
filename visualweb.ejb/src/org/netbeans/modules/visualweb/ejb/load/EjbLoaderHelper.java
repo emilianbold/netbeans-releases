@@ -118,7 +118,7 @@ public class EjbLoaderHelper {
                     serverInstanceID);
             J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
             if (displayName != null && j2eePlatform != null
-                    && j2eePlatform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+                    && j2eePlatform.getSupportedTypes().contains(J2eeModule.Type.EJB)) {
                 File[] classpath = j2eePlatform.getClasspathEntries();
                 return Arrays.asList(classpath);
             }

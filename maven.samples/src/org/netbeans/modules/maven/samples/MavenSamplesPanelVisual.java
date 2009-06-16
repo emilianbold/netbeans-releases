@@ -377,7 +377,7 @@ public class MavenSamplesPanelVisual extends JPanel implements DocumentListener 
 //        for (String serverInstanceID : Deployment.getDefault().getServerInstanceIDs()){
 //            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
 //
-//            if (j2eePlatform.getSupportedSpecVersions().contains(J2eeModule.JAVA_EE_5)){
+//            if (j2eePlatform.getSupportedProfiles().contains(Profile.JAVA_EE_5)){
 //                return true;
 //            }
 //        }
