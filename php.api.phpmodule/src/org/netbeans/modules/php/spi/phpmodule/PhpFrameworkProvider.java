@@ -41,6 +41,7 @@ package org.netbeans.modules.php.spi.phpmodule;
 
 import java.io.File;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.openide.util.Parameters;
 
 /**
@@ -125,4 +126,13 @@ public abstract class PhpFrameworkProvider {
      *         passed in the <code>phpModule</code> parameter).
      */
     public abstract PhpModuleExtender createPhpModuleExtender(PhpModule phpModule);
+
+    /**
+     * Get {@link PhpModuleProperties PHP module properties} the given PHP module. PHP framework
+     * can provide default values for any property (e.g. web root).
+     *
+     * @param  phpModule the PHP module which properties are going to be changed
+     * @return new PHP module properties
+     */
+    public abstract PhpModuleProperties getPhpModuleProperties(PhpModule phpModule);
 }
