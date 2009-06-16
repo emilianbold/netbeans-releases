@@ -82,7 +82,7 @@ public class CreateChatAction extends AbstractAction {
         final JButton source = (e.getSource() instanceof JButton)?(JButton) e.getSource():null;
         final TopComponent mainWindow = WindowManager.getDefault().findTopComponent("KenaiTopComponent"); // NOI18N
         mainWindow.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        final ProgressHandle progress = ProgressHandleFactory.createSystemHandle(NbBundle.getMessage(CreateChatAction.class, "LBL_CheckPermissions"));
+        final ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(CreateChatAction.class, "LBL_CheckPermissions"));
         progress.setInitialDelay(0);
         progress.start();
         if (source!=null) source.setEnabled(true);
@@ -94,8 +94,8 @@ public class CreateChatAction extends AbstractAction {
                         SwingUtilities.invokeLater(new Runnable() {
 
                             public void run() {
-                                JOptionPane.showMessageDialog(null, NbBundle.getMessage(CreateChatAction.class, "CTL_NotAuthorizedToCreateChat",getValue(NAME)));
                                 progress.finish();
+                                JOptionPane.showMessageDialog(null, NbBundle.getMessage(CreateChatAction.class, "CTL_NotAuthorizedToCreateChat",getValue(NAME)));
                                 mainWindow.setCursor(Cursor.getDefaultCursor());
                                 if (source!=null) source.setEnabled(true);
                             }

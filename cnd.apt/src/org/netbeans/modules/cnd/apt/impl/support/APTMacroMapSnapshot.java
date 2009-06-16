@@ -61,7 +61,7 @@ import org.netbeans.modules.cnd.utils.cache.TinySingletonMap;
  */
 public final class APTMacroMapSnapshot {
     private static final Map<CharSequence, APTMacro> NO_MACROS = Collections.unmodifiableMap(new HashMap<CharSequence, APTMacro>(0));
-    private volatile Map<CharSequence, APTMacro> macros;
+    private Map<CharSequence, APTMacro> macros;
 
     /*package*/ final APTMacroMapSnapshot parent;
     
