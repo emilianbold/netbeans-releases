@@ -89,7 +89,7 @@ public class AnnotationTypes {
     private WeakPropertyChangeSupport support;
     
     /** Static map containing all annotation types: annotation_name <-> annotation_type */
-    private Map allTypes = null;
+    private Map<String, AnnotationType> allTypes = null;
     
     /** Flag whether the annotation types were loaded or not */
     private boolean loadedTypes = false;
@@ -328,9 +328,9 @@ public class AnnotationTypes {
     }
 
     /** Iterator of all annotation type names in the system */
-    public Iterator getAnnotationTypeNames() {
+    public Iterator<String> getAnnotationTypeNames() {
         loadTypes();
-        Set temp = new HashSet();
+        Set<String> temp = new HashSet<String>();
         if (allTypes != null)
             temp.addAll(allTypes.keySet());
         return temp.iterator();
