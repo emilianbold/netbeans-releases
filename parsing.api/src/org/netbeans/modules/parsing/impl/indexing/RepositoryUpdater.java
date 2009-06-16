@@ -154,7 +154,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 EditorRegistry.addPropertyChangeListener(this);
 
                 if (force) {
-                    work = new InitialRootsWork(scannedRoots2Dependencies, scannedBinaries, false);
+                    work = new InitialRootsWork(scannedRoots2Dependencies, scannedBinaries, sourcesForBinaryRoots, false);
                 }
             }
         }
@@ -255,10 +255,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
 
             if (files.size() > 0) {
-                flw = new FileListWork(rootUrl, files, followUpJob, checkEditor, forceRefresh);
+                flw = new FileListWork(rootUrl, files, followUpJob, checkEditor, forceRefresh, sourcesForBinaryRoots.contains(rootUrl));
             }
         } else {
-            flw = new FileListWork(rootUrl, followUpJob, checkEditor, forceRefresh);
+            flw = new FileListWork(rootUrl, followUpJob, checkEditor, forceRefresh, sourcesForBinaryRoots.contains(rootUrl));
         }
 
         if (flw != null) {
@@ -305,13 +305,13 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 indexerMimeTypes = null;
             }
             
-            Work w = new RefreshIndices(indexerMimeTypes, factory, scannedRoots2Dependencies);
+            Work w = new RefreshIndices(indexerMimeTypes, factory, scannedRoots2Dependencies, sourcesForBinaryRoots);
             scheduleWork(w, false);
         }
     }
 
     public void refreshAll() {
-        scheduleWork(new RootsWork(scannedRoots2Dependencies, scannedBinaries, false), false);
+        scheduleWork(new RootsWork(scannedRoots2Dependencies, scannedBinaries, sourcesForBinaryRoots, false), false);
     }
 
     public synchronized IndexingController getController() {
@@ -364,7 +364,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         if (containsRelevantChanges) {
-            scheduleWork(new RootsWork(scannedRoots2Dependencies, scannedBinaries, !existingPathsChanged), false);
+            scheduleWork(new RootsWork(scannedRoots2Dependencies, scannedBinaries, sourcesForBinaryRoots, !existingPathsChanged), false);
         }
     }
 
@@ -387,8 +387,12 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         if (fo != null && fo.isValid() && VisibilityQuery.getDefault().isVisible(fo)) {
             root = getOwningSourceRoot(fo);
             if (root != null) {
-                scheduleWork(new FileListWork(root, Collections.singleton(fo), false, false, true), false);
-                processed = true;
+                boolean sourcForBinaryRoot = sourcesForBinaryRoots.contains(root);
+                ClassPath.Entry entry = sourcForBinaryRoot ? null : getClassPathEntry(URLMapper.findFileObject(root));
+                if (entry == null || entry.includes(fo)) {
+                    scheduleWork(new FileListWork(root, Collections.singleton(fo), false, false, true, sourcForBinaryRoot), false);
+                    processed = true;
+                }
             } else {
                 root = getOwningBinaryRoot(fo);
                 if (root != null) {
@@ -420,8 +424,12 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         if (fo != null && fo.isValid() && VisibilityQuery.getDefault().isVisible(fo)) {
             root = getOwningSourceRoot (fo);
             if (root != null) {
-                scheduleWork(new FileListWork(root, Collections.singleton(fo), false, false, true), false);
-                processed = true;
+                boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
+                ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(URLMapper.findFileObject(root));
+                if (entry == null || entry.includes(fo)) {
+                    scheduleWork(new FileListWork(root, Collections.singleton(fo), false, false, true, sourceForBinaryRoot), false);
+                    processed = true;
+                }
             } else {
                 root = getOwningBinaryRoot(fo);
                 if (root != null) {
@@ -493,12 +501,16 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
 
             if (VisibilityQuery.getDefault().isVisible(newFile) && newFile.isData()) {
-                // delaying of this task was just copied from the old java.source RepositoryUpdater
-                RequestProcessor.getDefault().create(new Runnable() {
-                    public void run() {
-                        scheduleWork(new FileListWork(root, Collections.singleton(newFile), false, false, true), false);
-                    }
-                }).schedule(FILE_LOCKS_DELAY);
+                final boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
+                ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
+                if (entry == null || entry.includes(newFile)) {
+                    // delaying of this task was just copied from the old java.source RepositoryUpdater
+                    RequestProcessor.getDefault().create(new Runnable() {
+                        public void run() {
+                            scheduleWork(new FileListWork(root, Collections.singleton(newFile), false, false, true, sourceForBinaryRoot), false);
+                        }
+                    }).schedule(FILE_LOCKS_DELAY);
+                }
             }
             processed = true;
         } else {
@@ -603,7 +615,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
                             FileListWork job = jobs.get(root);
                             if (job == null) {
-                                job = new FileListWork(root, Collections.singleton(f), false, jtc.isShowing(), true);
+                                job = new FileListWork(root, Collections.singleton(f), false, jtc.isShowing(), true, sourcesForBinaryRoots.contains(root));
                                 jobs.put(root, job);
                             } else {
                                 // XXX: strictly speaking we should set 'checkEditor' for each file separately
@@ -686,6 +698,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     private final Map<URL, List<URL>>scannedRoots2Dependencies = Collections.synchronizedMap(new HashMap<URL, List<URL>>());
     private final Set<URL>scannedBinaries = Collections.synchronizedSet(new HashSet<URL>());
     private final Set<URL>scannedUnknown = Collections.synchronizedSet(new HashSet<URL>());
+    private final Set<URL>sourcesForBinaryRoots = Collections.synchronizedSet(new HashSet<URL>());
 
     private volatile State state = State.CREATED;
     private volatile Task worker;
@@ -765,7 +778,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         for(CustomIndexerFactory factory : customIndexerFactories) {
                             try {
                                 Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root), root,
-                                        factory.getIndexerName(), factory.getIndexVersion(), null, false, true, false, null);
+                                        factory.getIndexerName(), factory.getIndexVersion(), null, false, true, false, false, null);
                                 factory.filesDirty(dirty, ctx);
                             } catch (IOException ex) {
                                 LOGGER.log(Level.WARNING, null, ex);
@@ -775,7 +788,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         for(EmbeddingIndexerFactory factory : embeddingIndexerFactories) {
                             try {
                                 Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root), root,
-                                        factory.getIndexerName(), factory.getIndexVersion(), null, false, true, false, null);
+                                        factory.getIndexerName(), factory.getIndexVersion(), null, false, true, false, false, null);
                                 factory.filesDirty(dirty, ctx);
                             } catch (IOException ex) {
                                 LOGGER.log(Level.WARNING, null, ex);
@@ -807,7 +820,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         if (scheduleExtraWork) {
-            getWorker().schedule(new InitialRootsWork(scannedRoots2Dependencies, scannedBinaries, true), false);
+            getWorker().schedule(new InitialRootsWork(scannedRoots2Dependencies, scannedBinaries, sourcesForBinaryRoots, true), false);
 
             if (work instanceof RootsWork) {
                 // if the work is the initial RootsWork it's superseeded
@@ -877,6 +890,28 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
         }
 
+        return null;
+    }
+
+    private static ClassPath.Entry getClassPathEntry (final FileObject root) {
+        try {
+            if (root != null) {
+                Set<String> ids = PathRegistry.getDefault().getSourceIdsFor(root.getURL());
+                if (ids != null) {
+                    for (String id : ids) {
+                        ClassPath cp = ClassPath.getClassPath(root, id);
+                        if (cp != null) {
+                            URL rootURL = root.getURL();
+                            for (ClassPath.Entry e : cp.entries()) {
+                                if (rootURL.equals(e.getURL())) {
+                                    return e;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (FileStateInvalidException fsie) {}
         return null;
     }
 
@@ -1088,12 +1123,12 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
 
                 for (CustomIndexerFactory factory : customIndexerFactories) {
-                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor, false, null);
+                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor, false, false, null);
                     factory.filesDeleted(deleted, ctx);
                 }
 
                 for(EmbeddingIndexerFactory factory : embeddingIndexerFactories) {
-                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor, false, null);
+                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor, false, false, null);
                     factory.filesDeleted(deleted, ctx);
                 }
             } finally {
@@ -1106,7 +1141,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
         }
 
-        protected final boolean index(final Map<String,Collection<Indexable>> resources, final URL root, final boolean allFiles) throws IOException {
+        protected final boolean index(final Map<String,Collection<Indexable>> resources, final URL root, final boolean allFiles, final boolean sourceForBinaryRoot) throws IOException {
             LinkedList<Context> transactionContexts = new LinkedList<Context>();
             try {
                 // determine the total number of files
@@ -1168,7 +1203,7 @@ out:            for (String mimeType : order) {
                         }
 
                         supportsEmbeddings &= b;
-                        final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor, allFiles, getShuttdownRequest());
+                        final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor, allFiles, sourceForBinaryRoot, getShuttdownRequest());
                         transactionContexts.add(ctx);
                         
                         final Iterable<Indexable> indexables;
@@ -1217,7 +1252,7 @@ out:            for (String mimeType : order) {
 
 //                            final SourceIndexer si = new SourceIndexer(root, cacheRoot, followUpJob, checkEditor);
 //                            si.index(indexables, transactionContexts);
-                            boolean f = indexEmbedding(cacheRoot, root, indexables, transactionContexts, scannedFilesCount, totalFilesCount);
+                            boolean f = indexEmbedding(cacheRoot, root, indexables, transactionContexts, scannedFilesCount, totalFilesCount, sourceForBinaryRoot);
                             if (!f) {
                                 return false;
                             }
@@ -1273,7 +1308,7 @@ out:            for (String mimeType : order) {
                 }
 
                 for(BinaryIndexerFactory f : factories) {
-                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, f.getIndexerName(), f.getIndexVersion(), null, false, false, false, null);
+                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, f.getIndexerName(), f.getIndexVersion(), null, false, false, false, false, null);
                     transactionContexts.add(ctx);
 
                     final BinaryIndexer indexer = f.createIndexer();
@@ -1292,7 +1327,7 @@ out:            for (String mimeType : order) {
             }
         }
 
-        private boolean indexEmbedding(final FileObject cache, final URL rootURL, Iterable<? extends Indexable> files, final List<Context> transactionContexts, int scannedFilesCount, int totalFilesCount) throws IOException {
+        private boolean indexEmbedding(final FileObject cache, final URL rootURL, Iterable<? extends Indexable> files, final List<Context> transactionContexts, int scannedFilesCount, int totalFilesCount, final boolean sourceForBinaryRoot) throws IOException {
             // XXX: Replace with multi source when done
             for (final Indexable dirty : files) {
                 if (getShuttdownRequest().isRaised()) {
@@ -1323,7 +1358,7 @@ out:            for (String mimeType : order) {
                                     if (pr != null) {
                                         final String indexerName = currentIndexerFactory.getIndexerName();
                                         final int indexerVersion = currentIndexerFactory.getIndexVersion();
-                                        final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion, null, followUpJob, checkEditor, false, null);
+                                        final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion, null, followUpJob, checkEditor, false, sourceForBinaryRoot, null);
                                         transactionContexts.add(context);
 
                                         final EmbeddingIndexer indexer = currentIndexerFactory.createIndexer(dirty, pr.getSnapshot());
@@ -1472,16 +1507,18 @@ out:            for (String mimeType : order) {
         private final URL root;
         private final Collection<FileObject> files = new HashSet<FileObject>();
         private final boolean forceRefresh;
+        private final boolean sourceForBinaryRoot;
 
-        public FileListWork (URL root, boolean followUpJob, boolean checkEditor, boolean forceRefresh) {
+        public FileListWork (URL root, boolean followUpJob, boolean checkEditor, boolean forceRefresh, boolean sourceForBinaryRoot) {
             super(followUpJob, checkEditor, true);
 
             assert root != null;
             this.root = root;
             this.forceRefresh = forceRefresh;
+            this.sourceForBinaryRoot = sourceForBinaryRoot;
         }
 
-        public FileListWork (URL root, Collection<FileObject> files, boolean followUpJob, boolean checkEditor, boolean forceRefresh) {
+        public FileListWork (URL root, Collection<FileObject> files, boolean followUpJob, boolean checkEditor, boolean forceRefresh, boolean sourceForBinaryRoot) {
             super(followUpJob, checkEditor, false);
             
             assert root != null;
@@ -1489,6 +1526,7 @@ out:            for (String mimeType : order) {
             this.root = root;
             this.files.addAll(files);
             this.forceRefresh = forceRefresh;
+            this.sourceForBinaryRoot = sourceForBinaryRoot;
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("FileListWork@" + Integer.toHexString(System.identityHashCode(this)) + ": root=" + root + ", file=" + files); //NOI18N
             }
@@ -1505,13 +1543,14 @@ out:            for (String mimeType : order) {
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo != null) {
                 try {
+                    final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
                     final Crawler crawler = files.isEmpty() ?
-                        new FileObjectCrawler(rootFo, !forceRefresh, null, getShuttdownRequest()) : // rescan the whole root (no timestamp check)
-                        new FileObjectCrawler(rootFo, files.toArray(new FileObject[files.size()]), !forceRefresh, null, getShuttdownRequest()); // rescan selected files (no timestamp check)
+                        new FileObjectCrawler(rootFo, !forceRefresh, entry, null, getShuttdownRequest()) : // rescan the whole root (no timestamp check)
+                        new FileObjectCrawler(rootFo, files.toArray(new FileObject[files.size()]), !forceRefresh, entry, null, getShuttdownRequest()); // rescan selected files (no timestamp check)
 
                     final Map<String,Collection<Indexable>> resources = crawler.getResources();
                     if (crawler.isFinished()) {
-                        if (index(resources, root, files.isEmpty() && forceRefresh)) {
+                        if (index(resources, root, files.isEmpty() && forceRefresh, sourceForBinaryRoot)) {
                             crawler.storeTimestamps();
 
                             // if we are refreshing a specific set of files, try to update
@@ -1641,12 +1680,14 @@ out:            for (String mimeType : order) {
         private final Set<String> indexerMimeTypes;
         private final CustomIndexerFactory indexerFactory;
         private final Map<URL, List<URL>> scannedRoots2Dependencies;
+        private final Set<URL> sourcesForBinaryRoots;
 
-        public RefreshIndices(Set<String> indexerMimeTypes, CustomIndexerFactory indexerFactory, Map<URL, List<URL>> scannedRoots2Depencencies) {
+        public RefreshIndices(Set<String> indexerMimeTypes, CustomIndexerFactory indexerFactory, Map<URL, List<URL>> scannedRoots2Depencencies, Set<URL> sourcesForBinaryRoots) {
             super(false, false, NbBundle.getMessage(RepositoryUpdater.class, "MSG_RefreshingIndices", indexerFactory.getIndexerName())); //NOI18N
             this.indexerMimeTypes = indexerMimeTypes;
             this.indexerFactory = indexerFactory;
             this.scannedRoots2Dependencies = scannedRoots2Depencencies;
+            this.sourcesForBinaryRoots = sourcesForBinaryRoots;
         }
 
         protected @Override boolean getDone() {
@@ -1660,7 +1701,9 @@ out:            for (String mimeType : order) {
                 try {
                     final FileObject rootFo = URLMapper.findFileObject(root);
                     if (rootFo != null) {
-                        Crawler crawler = new FileObjectCrawler(rootFo, false, indexerMimeTypes, getShuttdownRequest());
+                        boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
+                        final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
+                        Crawler crawler = new FileObjectCrawler(rootFo, false, entry, indexerMimeTypes, getShuttdownRequest());
                         final Map<String, Collection<Indexable>> resources = crawler.getResources();
                         final Collection<Indexable> deleted = crawler.getDeletedResources();
 
@@ -1673,7 +1716,7 @@ out:            for (String mimeType : order) {
                             LinkedList<Context> transactionContexts = new LinkedList<Context>();
                             try {
                                 for(String mimeType : resources.keySet()) {
-                                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, indexerFactory.getIndexerName(), indexerFactory.getIndexVersion(), null, false, false, true, null);
+                                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, indexerFactory.getIndexerName(), indexerFactory.getIndexVersion(), null, false, false, true, sourceForBinaryRoot, null);
                                     transactionContexts.add(ctx);
 
                                     // some CustomIndexers (eg. java) need to know about roots even when there
@@ -1724,14 +1767,16 @@ out:            for (String mimeType : order) {
 
         private final Map<URL, List<URL>> scannedRoots2Dependencies;
         private final Set<URL> scannedBinaries;
+        private final Set<URL> sourcesForBinaryRoots;
         private boolean useInitialState;
 
         private DependenciesContext depCtx;
 
-        public RootsWork(Map<URL, List<URL>> scannedRoots2Depencencies, Set<URL> scannedBinaries, boolean useInitialState) {
+        public RootsWork(Map<URL, List<URL>> scannedRoots2Depencencies, Set<URL> scannedBinaries, Set<URL> sourcesForBinaryRoots, boolean useInitialState) {
             super(false, false, true);
             this.scannedRoots2Dependencies = scannedRoots2Depencencies;
             this.scannedBinaries = scannedBinaries;
+            this.sourcesForBinaryRoots = sourcesForBinaryRoots;
             this.useInitialState = useInitialState;
         }
 
@@ -1747,7 +1792,7 @@ out:            for (String mimeType : order) {
             updateProgress(NbBundle.getMessage(RepositoryUpdater.class, "MSG_ProjectDependencies")); //NOI18N
             long tm1 = System.currentTimeMillis();
             if (depCtx == null) {
-                depCtx = new DependenciesContext(scannedRoots2Dependencies, scannedBinaries, useInitialState);
+                depCtx = new DependenciesContext(scannedRoots2Dependencies, scannedBinaries, sourcesForBinaryRoots, useInitialState);
                 final List<URL> newRoots = new LinkedList<URL>();
                 Collection<? extends URL> c = PathRegistry.getDefault().getSources();
                 LOGGER.log(Level.FINE, "PathRegistry.sources="); printCollection(c, Level.FINE); //NOI18N
@@ -1953,7 +1998,9 @@ out:            for (String mimeType : order) {
                                 final URL[] sourceRoots = PathRegistry.getDefault().sourceForBinaryQuery(binaryRoot, cp, false);
                                 if (sourceRoots != null) {
                                     for (URL sourceRoot : sourceRoots) {
-                                        if (!sourceRoot.equals(rootURL) && !ctx.cycleDetector.contains(sourceRoot)) {
+                                        if (sourceRoot.equals(rootURL)) {
+                                            ctx.sourcesForBinaryRoots.add(rootURL);
+                                        } else if (!ctx.cycleDetector.contains(sourceRoot)) {
                                             deps.add(sourceRoot);
 //                                            LOGGER.log(Level.FINEST, "#2- {0}: adding dependency on {1}, from {2} with id {3}", new Object [] {
 //                                                rootURL, sourceRoot, cp, id
@@ -2093,8 +2140,9 @@ out:            for (String mimeType : order) {
                         customIndexerFactories.addAll(factories);
                     }
 
+                    boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
                     for (CustomIndexerFactory factory : customIndexerFactories) {
-                        final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, isFollowUpJob(), hasToCheckEditor(), false, null);
+                        final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, isFollowUpJob(), hasToCheckEditor(), false, sourceForBinaryRoot, null);
                         CustomIndexer indexer = factory.createIndexer();
 
                         if (LOGGER.isLoggable(Level.FINE)) {
@@ -2121,12 +2169,14 @@ out:            for (String mimeType : order) {
                 //todo: optimize for java.io.Files
                 final FileObject rootFo = URLMapper.findFileObject(root);
                 if (rootFo != null) {
-                    final Crawler crawler = new FileObjectCrawler(rootFo, useInitialState, null, getShuttdownRequest());
+                    boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
+                    final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
+                    final Crawler crawler = new FileObjectCrawler(rootFo, useInitialState, entry, null, getShuttdownRequest());
                     final Map<String,Collection<Indexable>> resources = crawler.getResources();
                     final Collection<Indexable> deleted = crawler.getDeletedResources();
                     if (crawler.isFinished()) {
                         delete(deleted, root);
-                        if (index(resources, root, !useInitialState)) {
+                        if (index(resources, root, !useInitialState, sourceForBinaryRoot)) {
                             crawler.storeTimestamps();
                             return true;
                         }
@@ -2172,8 +2222,8 @@ out:            for (String mimeType : order) {
 
         private final boolean waitForProjects;
 
-        public InitialRootsWork(Map<URL, List<URL>> scannedRoots2Depencencies, Set<URL> scannedBinaries, boolean waitForProjects) {
-            super(scannedRoots2Depencencies, scannedBinaries, true);
+        public InitialRootsWork(Map<URL, List<URL>> scannedRoots2Depencencies, Set<URL> scannedBinaries, Set<URL> sourcesForBinaryRoots, boolean waitForProjects) {
+            super(scannedRoots2Depencencies, scannedBinaries, sourcesForBinaryRoots, true);
             this.waitForProjects = waitForProjects;
         }
         
@@ -2518,11 +2568,12 @@ out:            for (String mimeType : order) {
 
         private final Set<URL> scannedRoots;
         private final Set<URL> scannedBinaries;
+        private final Set<URL> sourcesForBinaryRoots;
 
         private final Stack<URL> cycleDetector;
         private final boolean useInitialState;
 
-        public DependenciesContext (final Map<URL, List<URL>> scannedRoots2Deps, final Set<URL> scannedBinaries, boolean useInitialState) {
+        public DependenciesContext (final Map<URL, List<URL>> scannedRoots2Deps, final Set<URL> scannedBinaries, final Set<URL> sourcesForBinaryRoots, boolean useInitialState) {
             assert scannedRoots2Deps != null;
             assert scannedBinaries != null;
             
@@ -2538,6 +2589,7 @@ out:            for (String mimeType : order) {
 
             this.scannedRoots = new HashSet<URL>();
             this.scannedBinaries = new HashSet<URL>();
+            this.sourcesForBinaryRoots = sourcesForBinaryRoots;
 
             this.useInitialState = useInitialState;
             cycleDetector = new Stack<URL>();
