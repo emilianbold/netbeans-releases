@@ -419,7 +419,7 @@ public class PhpProject implements Project {
         }
 
         public String getName() {
-            return PhpProject.this.getName();
+            return PropertyUtils.getUsablePropertyName(getDisplayName());
         }
 
         public Project getProject() {
