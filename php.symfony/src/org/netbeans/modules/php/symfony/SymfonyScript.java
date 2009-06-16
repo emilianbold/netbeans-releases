@@ -39,7 +39,10 @@
 
 package org.netbeans.modules.php.symfony;
 
+import java.io.File;
 import org.netbeans.modules.php.api.util.PhpProgram;
+import org.netbeans.modules.php.symfony.ui.options.SymfonyOptions;
+import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
@@ -49,5 +52,36 @@ public class SymfonyScript extends PhpProgram {
 
     public SymfonyScript(String command) {
         super(command);
+    }
+
+    /**
+     * Get the default, <b>valid only</b> Symfony script.
+     * @return the default, <b>valid only</b> Symfony script, <code>null</code> otherwise.
+     */
+    public static SymfonyScript getDefault() {
+        String symfony = SymfonyOptions.getInstance().getSymfony();
+        if (validate(symfony) == null) {
+            return new SymfonyScript(symfony);
+        }
+        return null;
+    }
+
+    public static String validate(String command) {
+        SymfonyScript symfonyScript = new SymfonyScript(command);
+        if (!symfonyScript.isValid()) {
+            return NbBundle.getMessage(SymfonyScript.class, "MSG_NoSymfony");
+        }
+
+        File file = new File(symfonyScript.getProgram());
+        if (!file.isAbsolute()) {
+            return NbBundle.getMessage(SymfonyScript.class, "MSG_SymfonyNotAbsolutePath");
+        }
+        if (!file.isFile()) {
+            return NbBundle.getMessage(SymfonyScript.class, "MSG_SymfonyNotFile");
+        }
+        if (!file.canRead()) {
+            return NbBundle.getMessage(SymfonyScript.class, "MSG_SymfonyCannotRead");
+        }
+        return null;
     }
 }

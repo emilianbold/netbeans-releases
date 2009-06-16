@@ -41,7 +41,6 @@ package org.netbeans.modules.php.symfony.ui.options;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -49,7 +48,6 @@ import org.netbeans.modules.php.symfony.SymfonyScript;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
@@ -81,7 +79,7 @@ public class SymfonyOptionsPanelController extends OptionsPanelController implem
     @Override
     public boolean isValid() {
         // warnings
-        String warning = validateSymfony(symfonyOptionsPanel.getSymfony());
+        String warning = SymfonyScript.validate(symfonyOptionsPanel.getSymfony());
         if (warning != null) {
             symfonyOptionsPanel.setWarning(warning);
             return true;
@@ -134,24 +132,5 @@ public class SymfonyOptionsPanelController extends OptionsPanelController implem
 
     private SymfonyOptions getOptions() {
         return SymfonyOptions.getInstance();
-    }
-
-    private String validateSymfony(String command) {
-        SymfonyScript symfonyScript = new SymfonyScript(command);
-        if (!symfonyScript.isValid()) {
-            return NbBundle.getMessage(SymfonyOptionsPanelController.class, "MSG_NoSymfony");
-        }
-
-        File file = new File(symfonyScript.getProgram());
-        if (!file.isAbsolute()) {
-            return NbBundle.getMessage(SymfonyOptionsPanelController.class, "MSG_SymfonyNotAbsolutePath");
-        }
-        if (!file.isFile()) {
-            return NbBundle.getMessage(SymfonyOptionsPanelController.class, "MSG_SymfonyNotFile");
-        }
-        if (!file.canRead()) {
-            return NbBundle.getMessage(SymfonyOptionsPanelController.class, "MSG_SymfonyCannotRead");
-        }
-        return null;
     }
 }
