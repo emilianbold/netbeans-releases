@@ -46,16 +46,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.actions.Command;
-import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.project.util.PhpUnit;
@@ -98,18 +96,6 @@ public final class CommandUtils {
         return DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.OK_OPTION;
     }
 
-    public static void processExecutionException(ExecutionException exc) {
-        final Throwable cause = exc.getCause();
-        assert cause != null;
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Exception(
-                        cause, NbBundle.getMessage(CommandUtils.class, "MSG_ExceptionDuringRunScript", cause.getLocalizedMessage())));
-                OptionsDisplayer.getDefault().open(PHPOptionsCategory.PATH_IN_LAYER);
-            }
-        });
-    }
-
     /**
      * Get a {@link PhpUnit} instance (path from IDE options used).
      * @param showCustomizer if <code>true</code>, IDE options dialog is shown if the path of PHP Unit is not valid.
@@ -119,7 +105,7 @@ public final class CommandUtils {
         final String phpUnitPath = PhpOptions.getInstance().getPhpUnit();
         if (Utils.validatePhpUnit(phpUnitPath) != null) {
             if (showCustomizer) {
-                OptionsDisplayer.getDefault().open(PHPOptionsCategory.PATH_IN_LAYER);
+                OptionsDisplayer.getDefault().open(UiUtils.OPTIONS_PATH);
             }
             return null;
         }

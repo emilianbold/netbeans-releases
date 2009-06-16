@@ -40,7 +40,13 @@
 package org.netbeans.modules.php.api.util;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.php.api.ui.SearchPanel;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
 /**
@@ -48,7 +54,29 @@ import org.openide.util.Parameters;
  * @author Tomas Mysik
  */
 public final class UiUtils {
+    /**
+     * SFS path where all the PHP options can be found.
+     */
+    public static final String OPTIONS_PATH = "org-netbeans-modules-php-project-ui-options-PHPOptionsCategory"; // NOI18N
+
     private UiUtils() {
+    }
+
+    /**
+     * Show a dialog that informs user about exception during running an external process.
+     * Opens IDE option, PHP options.
+     * @param exc {@link ExecutionException} thrown
+     */
+    public static void processExecutionException(ExecutionException exc) {
+        final Throwable cause = exc.getCause();
+        assert cause != null;
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Exception(
+                        cause, NbBundle.getMessage(UiUtils.class, "MSG_ExceptionDuringRunScript", cause.getLocalizedMessage())));
+                OptionsDisplayer.getDefault().open(OPTIONS_PATH);
+            }
+        });
     }
 
     /**

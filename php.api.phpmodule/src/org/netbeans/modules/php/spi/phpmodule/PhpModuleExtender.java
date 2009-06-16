@@ -45,8 +45,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  * Provides support for extending a PHP module with a PHP framework, that is,
- * it allows to modify the PHP module to make use of the framework, provide
- * more actions etc.
+ * it allows to modify the PHP module to make use of the framework.
  *
  * @author Tomas Mysik
  */
@@ -56,9 +55,9 @@ public abstract class PhpModuleExtender {
      * Called to extend the given PHP module with the PHP framework
      * corresponding to this extender.
      *
-     * @param  phpModule the PHP module to be extended; never <code>null</code>.
-     * @return the set of newly created files in the web module, can be empty but never <code>null</code>.
+     * @param  phpModule the PHP module to be extended; never <code>null</code>
+     * @return the set of newly created files in the web module, can be empty but never <code>null</code>
+     * @throws Exception if any error occurs
      */
-    public abstract Set<FileObject> extend(PhpModule phpModule);
-    // TODO: add methods for actions
+    public abstract Set<FileObject> extend(PhpModule phpModule) throws Exception;
 }

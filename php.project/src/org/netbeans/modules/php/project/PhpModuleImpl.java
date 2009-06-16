@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.project;
 
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.openide.filesystems.FileObject;
 
@@ -51,6 +52,14 @@ public class PhpModuleImpl implements PhpModule {
     public PhpModuleImpl(PhpProject phpProject) {
         assert phpProject != null;
         this.phpProject = phpProject;
+    }
+
+    public String getName() {
+        return phpProject.getLookup().lookup(ProjectInformation.class).getName();
+    }
+
+    public String getDisplayName() {
+        return phpProject.getLookup().lookup(ProjectInformation.class).getDisplayName();
     }
 
     public FileObject getSourceDirectory() {

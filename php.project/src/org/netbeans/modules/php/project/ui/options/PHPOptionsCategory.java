@@ -49,7 +49,6 @@ import org.openide.util.NbBundle;
  * @author tomslot
  */
 public class PHPOptionsCategory extends OptionsCategory {
-    public static final String PATH_IN_LAYER = "org-netbeans-modules-php-project-ui-options-PHPOptionsCategory"; // NOI18N
 
     @Override
     public Icon getIcon() {

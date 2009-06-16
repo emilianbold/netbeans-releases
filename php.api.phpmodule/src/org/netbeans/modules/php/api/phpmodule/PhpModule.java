@@ -50,6 +50,16 @@ import org.openide.filesystems.FileObject;
 public interface PhpModule {
 
     /**
+     * {@see org.netbeans.api.project.ProjectInformation#getName}
+     */
+    String getName();
+
+    /**
+     * {@see org.netbeans.api.project.ProjectInformation#getDisplayName}
+     */
+    String getDisplayName();
+
+    /**
      * Get the source directory for this PHP module.
      * @return the source directory, never <code>null</code>
      */

@@ -51,10 +51,10 @@ import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
-import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.util.PhpInterpreter;
 import org.netbeans.modules.php.api.util.PhpProgram;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -156,7 +156,7 @@ class ConfigActionScript extends ConfigAction {
                     .frontWindow(PhpOptions.getInstance().isOpenResultInOutputWindow())
                     .inputVisible(true)
                     .showProgress(true)
-                    .optionsPath(PHPOptionsCategory.PATH_IN_LAYER)
+                    .optionsPath(UiUtils.OPTIONS_PATH)
                     .outConvertorFactory(PHP_LINE_CONVERTOR_FACTORY)
                     .outProcessorFactory(redirector)
                     .postExecution(redirector)
