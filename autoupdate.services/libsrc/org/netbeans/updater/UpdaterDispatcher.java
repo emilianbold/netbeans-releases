@@ -151,6 +151,9 @@ public final class UpdaterDispatcher implements Runnable {
     }
     
     public static void touchLastModified (File cluster) {
+        if(!cluster.exists()) {
+            return;
+        }
         try {
             File stamp = new File (cluster, LAST_MODIFIED);
             if(!stamp.exists() && !stamp.createNewFile ()) {
