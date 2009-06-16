@@ -39,8 +39,10 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.usages.IndexUtil;
+import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -49,6 +51,7 @@ import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.lookup.ServiceProvider;
 
 
 /**
@@ -75,7 +78,6 @@ public abstract class SourceTestSupport extends NbTestCase{
         setLookups(
                 classPathProvider,
                 new JavaFileResolver(),
-                //new JavacParserFactory(),
                 new FakeJavaDataLoaderPool(),
                 new TestSourceLevelQueryImplementation()
                 );
@@ -194,4 +196,18 @@ public abstract class SourceTestSupport extends NbTestCase{
 
     }
     
+    @ServiceProvider(service=MimeDataProvider.class)
+    public static final class JavacParserProvider implements MimeDataProvider {
+
+        private Lookup javaLookup = Lookups.fixed(new JavacParserFactory());
+
+        public Lookup getLookup(MimePath mimePath) {
+            if (mimePath.getPath().endsWith(JavacParser.MIME_TYPE)) {
+                return javaLookup;
+            }
+
+            return Lookup.EMPTY;
+        }
+
+    }
 }
