@@ -25,7 +25,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-class QueryTableCellRenderer extends DefaultTableCellRenderer {
+public class QueryTableCellRenderer extends DefaultTableCellRenderer {
 
     private Query query;
 
@@ -86,9 +86,14 @@ class QueryTableCellRenderer extends DefaultTableCellRenderer {
     }
 
     @Override
-    protected void paintComponent(Graphics g) {
-        MessageFormat format = (MessageFormat) getClientProperty("format");     // NOI18N
-        String s = computeFitText(this, getText());
+    protected void paintComponent(Graphics g) {        
+        formatText(this);
+        super.paintComponent(g);
+    }
+
+    public static void formatText(JLabel label) {
+        MessageFormat format = (MessageFormat) label.getClientProperty("format");     // NOI18N
+        String s = computeFitText(label);
         if(format != null) {
             StringBuffer sb = new StringBuffer();
             sb.append("<html>");                                                // NOI18N
@@ -96,15 +101,18 @@ class QueryTableCellRenderer extends DefaultTableCellRenderer {
             sb.append("</html>");                                               // NOI18N
             s = sb.toString();
         }
-        setText(s);
-        super.paintComponent(g);
+        label.setText(s);
     }
 
-    private String computeFitText(JComponent comp, String text) {
+    private static String computeFitText(JLabel label) {
+        String text = label.getText();
         if (text == null || text.length() <= VISIBLE_START_CHARS + 3) return text;
-
-        FontMetrics fm = comp.getFontMetrics(getFont());
-        int width = comp.getSize().width;
+        
+        Icon icon = label.getIcon();
+        int iconWidth = icon != null ? icon.getIconWidth() : 0;
+        
+        FontMetrics fm = label.getFontMetrics(label.getFont());
+        int width = label.getSize().width - iconWidth;
 
         String sufix = "..."; // NOI18N
         int sufixLength = fm.stringWidth(sufix);
@@ -121,14 +129,14 @@ class QueryTableCellRenderer extends DefaultTableCellRenderer {
         return text;
     }
 
-    private static class IssueStyle {
-        MessageFormat format;
-        Color background;
-        Color foreground;
-        String tooltip;
+    public static class IssueStyle {
+        public MessageFormat format;
+        public Color background;
+        public Color foreground;
+        public String tooltip;
     }
 
-    private IssueStyle getIssueStyle(JTable table, IssueProperty p, boolean isSelected, int row) {
+    public IssueStyle getIssueStyle(JTable table, IssueProperty p, boolean isSelected, int row) {
         IssueStyle style = new IssueStyle();
         Issue issue = p.getIssue();
         try {

@@ -66,6 +66,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableCellRenderer;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
@@ -90,6 +91,7 @@ import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
+import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
@@ -137,6 +139,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         this.jiraFilter = jiraFilter;
 
         issueTable = new IssueTable(query, query.getColumnDescriptors());
+        setupRenderer(issueTable);
         panel = new QueryPanel(issueTable.getComponent(), this);
         panel.projectList.addListSelectionListener(this);
         panel.filterComboBox.addItemListener(this);
@@ -177,6 +180,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
             postPopulate((FilterDefinition) jiraFilter, false);
         }
+    }
+
+
+    private void setupRenderer(IssueTable issueTable) {
+//        TableCellRenderer renderer = issueTable.getRenderer();
+        issueTable.setRenderer(new QueryCellRenderer(query, new QueryTableCellRenderer(query)));
     }
 
     protected JiraFilter getJiraFilter() {

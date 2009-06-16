@@ -69,6 +69,7 @@ import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
@@ -170,8 +171,12 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
         return seenColumnIdx;
     }    
 
-    public void setRenderer(DefaultTableCellRenderer renderer) {
+    public void setRenderer(TableCellRenderer renderer) {
         table.setDefaultRenderer(Node.Property.class, renderer);
+    }
+
+    public TableCellRenderer getRenderer() {
+        return table.getDefaultRenderer(Node.Property.class);
     }
 
     public void setFilter(Filter filter) {
