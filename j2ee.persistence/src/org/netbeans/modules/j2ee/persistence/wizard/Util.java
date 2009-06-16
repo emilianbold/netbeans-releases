@@ -63,6 +63,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -295,8 +297,17 @@ public class Util {
             createPUButton.setEnabled(false);
         }
         Object result = DialogDisplayer.getDefault().notify(nd);
+        String version=PersistenceUtils.getJPAVersion(project);
         if (result == createPUButton) {
-            PersistenceUnit punit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
+            PersistenceUnit punit = null;
+            if(Persistence.VERSION_2_0.equals(version))
+            {
+                punit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit();
+            }
+            else//currently default 1.0
+            {
+                punit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
+            }
             if (isContainerManaged) {
                 PersistenceUnitWizardPanelDS puPanel = (PersistenceUnitWizardPanelDS) panel;
                 if (puPanel.getDatasource() != null && !"".equals(puPanel.getDatasource().trim())){
@@ -314,7 +325,7 @@ public class Util {
                 }
             } else {
                 PersistenceUnitWizardPanelJdbc puJdbc = (PersistenceUnitWizardPanelJdbc) panel;
-                punit = ProviderUtil.buildPersistenceUnit(puJdbc.getPersistenceUnitName(), puJdbc.getSelectedProvider(), puJdbc.getPersistenceConnection());
+                punit = ProviderUtil.buildPersistenceUnit(puJdbc.getPersistenceUnitName(), puJdbc.getSelectedProvider(), puJdbc.getPersistenceConnection(),version);
                 punit.setTransactionType("RESOURCE_LOCAL"); //NOI18N
                 Library lib = PersistenceLibrarySupport.getLibrary(puJdbc.getSelectedProvider());
                 if (lib != null){
