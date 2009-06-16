@@ -180,7 +180,7 @@ public class J2EEUtils {
             provider = ProviderUtil.TOPLINK_PROVIDER;
         }
 
-        unit = ProviderUtil.buildPersistenceUnit(puName, provider, connection);
+        unit = ProviderUtil.buildPersistenceUnit(puName, provider, connection, persistence.getVersion());
         unit.setTransactionType("RESOURCE_LOCAL"); // NOI18N
 
         // TopLink/Derby combination doesn't like empty username and password,
