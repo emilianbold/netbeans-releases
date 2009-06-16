@@ -253,13 +253,15 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 
                 List<String> oldSourceRoots = ((MakeConfigurationDescriptor)projectDescriptor).getSourceRoots();
                 List<String> newSourceRoots = ((MakeConfigurationDescriptor)clonedProjectdescriptor).getSourceRoots();
+                Configuration oldActive = projectDescriptor.getConfs().getActive();
+                Configuration newActive = clonedProjectdescriptor.getConfs().getActive();
 
                 projectDescriptor.assign(clonedProjectdescriptor);
                 projectDescriptor.setModified();
                 projectDescriptor.save(); // IZ 133606
                 ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedItems(project, folder, item);
                 ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedSourceRoots(oldSourceRoots, newSourceRoots);
-
+                ((MakeConfigurationDescriptor) projectDescriptor).checkConfigurations(oldActive, newActive);
 //                ((MakeSources) ProjectUtils.getSources(project)).descriptorChanged();// FIXUP: should be moved into ProjectDescriptorHelper...
 
                 fireActionEvent(e);

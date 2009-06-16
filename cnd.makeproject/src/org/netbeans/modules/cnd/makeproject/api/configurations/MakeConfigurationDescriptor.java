@@ -982,6 +982,10 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
     }
 
+    public void checkConfigurations(Configuration oldActive, Configuration newActive) {
+        getConfs().fireChangedActiveConfiguration(oldActive, newActive);
+    }
+
     /*
      * return copy
      */

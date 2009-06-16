@@ -51,8 +51,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManagerEvents;
 
 public final class Configurations {
-
-    public static final String PROP_DEFAULT = "default"; // NOI18N
     public static final String PROP_ACTIVE_CONFIGURATION = "activeconfiguration"; // NOI18N
     private final PropertyChangeSupport pcs;
     private final List<Configuration> configurations = new ArrayList<Configuration>();
@@ -292,7 +290,6 @@ public final class Configurations {
         }
         if (fire) {
             pcs.firePropertyChange(PROP_ACTIVE_CONFIGURATION, old, def);
-            pcs.firePropertyChange(PROP_DEFAULT, null, null);
         }
     }
 
@@ -327,7 +324,10 @@ public final class Configurations {
         }
 
         pcs.firePropertyChange(PROP_ACTIVE_CONFIGURATION, old, def);
-        pcs.firePropertyChange(PROP_DEFAULT, null, null);
+    }
+
+    public void fireChangedActiveConfiguration(Configuration oldActive, Configuration newActive) {
+        pcs.firePropertyChange(PROP_ACTIVE_CONFIGURATION, oldActive, newActive);
     }
 
     /*
