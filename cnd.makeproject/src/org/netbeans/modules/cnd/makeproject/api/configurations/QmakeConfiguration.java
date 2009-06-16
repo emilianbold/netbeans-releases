@@ -57,7 +57,7 @@ public class QmakeConfiguration implements Cloneable {
     public static final int DEBUG_MODE = 0;
     public static final int RELEASE_MODE = 1;
     private final String[] BUILD_MODE_NAMES = {"Debug", "Release"}; // NOI18N
-    private final String[] BUILD_NODE_OPTIONS = {"debug", "release"}; // NOI18N
+    private final String[] BUILD_MODE_OPTIONS = {"debug", "release"}; // NOI18N
     private static final String CORE = "core"; // NOI18N
     private static final String GUI = "gui"; // NOI18N
     private static final String NETWORK = "network"; // NOI18N
@@ -102,7 +102,7 @@ public class QmakeConfiguration implements Cloneable {
         destdir = new StringConfiguration(null, ""); // NOI18N
         target = new StringConfiguration(null, ""); // NOI18N
         version = new StringConfiguration(null, "1.0.0"); // NOI18N
-        buildMode = new IntConfiguration(null, 0, BUILD_MODE_NAMES, BUILD_NODE_OPTIONS);
+        buildMode = new IntConfiguration(null, 0, BUILD_MODE_NAMES, BUILD_MODE_OPTIONS);
         coreEnabled = new BooleanConfiguration(null, true);
         guiEnabled = new BooleanConfiguration(null, true);
         networkEnabled = new BooleanConfiguration(null, false);

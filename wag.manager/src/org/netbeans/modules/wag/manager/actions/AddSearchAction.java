@@ -49,7 +49,7 @@ import org.openide.util.*;
 
 /**
  * 
- * @author  nam
+ * @author  peterliu
  */
 public class AddSearchAction extends NodeAction {
     
@@ -62,7 +62,7 @@ public class AddSearchAction extends NodeAction {
     }
     
     public String getName() {
-        return NbBundle.getMessage(AddSearchAction.class, "Add_Search_Action");
+        return NbBundle.getMessage(AddSearchAction.class, "AddSearchAction");
     }
     
     protected void performAction(Node[] nodes) {

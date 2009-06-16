@@ -41,11 +41,12 @@ package org.netbeans.modules.wag.manager.nodes;
 
 import java.awt.Image;
 import javax.swing.Action;
-import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
+import org.netbeans.modules.wag.manager.actions.DeleteSearchAction;
 import org.netbeans.modules.wag.manager.model.WagSearchResult;
+import org.netbeans.modules.wag.manager.model.WagSearchResults;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -64,6 +65,7 @@ public class WagSearchResultNode extends AbstractNode {
     WagSearchResultNode(WagSearchResult searchResult, InstanceContent content) {
         super(new WagSearchResultNodeChildren(searchResult), new AbstractLookup(content));
         content.add(searchResult);
+        content.add(WagSearchResults.getInstance());
         this.searchResult = searchResult;
     }
     
@@ -84,13 +86,7 @@ public class WagSearchResultNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        /*
-        List<Action> actions = SaasNode.getActions(getLookup());
-        actions.add(SystemAction.get(AddServiceAction.class));
-        actions.add(SystemAction.get(AddGroupAction.class));
-        return actions.toArray(new Action[actions.size()]);
-         */
-        return null;
+        return new Action[] {SystemAction.get(DeleteSearchAction.class)};
     }
     
     static final java.awt.Image ICON =

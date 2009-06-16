@@ -58,7 +58,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.Server;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
-import javax.enterprise.deploy.shared.ModuleType;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
@@ -232,7 +231,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
      * @return string value, null if not set or not a WAR module
      */
     public String getWebContextRoot() {
-        if (!getProvider().getJ2eeModule().getModuleType().equals(J2eeModule.WAR)) {
+        if (!getProvider().getJ2eeModule().getType().equals(J2eeModule.Type.WAR)) {
             Logger.getLogger("global").log(Level.INFO, "getWebContextRoot called on other module type then WAR"); //NOI18N
             return null;
         }
@@ -259,7 +258,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
      * Set context root (context path)
      */
     public void setWebContextRoot(String contextRoot) {
-        if (!getProvider().getJ2eeModule().getModuleType().equals(J2eeModule.WAR)) {
+        if (!getProvider().getJ2eeModule().getType().equals(J2eeModule.Type.WAR)) {
             Logger.getLogger("global").log(Level.INFO, "setWebContextRoot called on other module type then WAR"); //NOI18N
             return;
         }
@@ -748,7 +747,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         if (provider == null || server == null)
             return new File[0];
         
-        ModuleType type = (ModuleType) provider.getJ2eeModule().getModuleType();
+        J2eeModule.Type type = provider.getJ2eeModule().getType();
         String[] fnames;
         if (hasCustomSupport(server, type)) {
             fnames = server.getDeploymentPlanFiles(type);
@@ -835,21 +834,15 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         return server.getShortName() + GENERIC_EXTENSION;
     }
 
-    private FileObject findPrimaryConfigurationFO() throws IOException {
-        String configFileName = getPrimaryConfigurationFileName();
-        File file = j2eeModule.getDeploymentConfigurationFile(configFileName);
-        return FileUtil.toFileObject(file);
-    }   
-
-    private ModuleType getModuleType() {
-        return (ModuleType) getProvider().getJ2eeModule().getModuleType();
+    private J2eeModule.Type getModuleType() {
+        return getProvider().getJ2eeModule().getType();
     }
     
     private boolean hasCustomSupport() {
         return hasCustomSupport(server, getModuleType());
     }
     
-    private static boolean hasCustomSupport(Server server, ModuleType type) {
+    private static boolean hasCustomSupport(Server server, J2eeModule.Type type) {
         if (server == null || server.getModuleConfigurationFactory() == null) {
             return false;
         }
@@ -876,7 +869,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     }
     
     private void collectData(Server server, Map map) {
-        if (! this.hasCustomSupport(server, getModuleType()))
+        if (!hasCustomSupport(server, getModuleType()))
             return;
         
         String [] paths = server.getDeploymentPlanFiles(getModuleType());

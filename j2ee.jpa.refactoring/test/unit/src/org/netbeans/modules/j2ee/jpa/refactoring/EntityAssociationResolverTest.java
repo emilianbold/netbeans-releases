@@ -108,6 +108,9 @@ public class EntityAssociationResolverTest extends SourceTestSupport {
 
     /**
      * TODO, resolve fail
+     * currently it fails in EntityAssociationResolver
+     * on TypeElement te = info.getElements().getTypeElement(targetClass);
+     * because te==null after this line, can't debug inside of com.sun.tools.javac, need additional invesigation
      * @throws Exception
      */
 //    public void testGetTarget() throws Exception {

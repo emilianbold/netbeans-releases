@@ -70,9 +70,11 @@ import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
+import org.netbeans.modules.cnd.apt.support.APTIncludePathStorage;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
+import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -100,7 +102,6 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
@@ -1001,8 +1002,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         List<String> origUserIncludePaths = nativeFile.getUserIncludePaths();
         List<String> origSysIncludePaths = nativeFile.getSystemIncludePaths();
-        List<CharSequence> userIncludePaths = FilePathCache.asList(origUserIncludePaths);
-        List<CharSequence> sysIncludePaths = sysAPTData.getIncludes(origSysIncludePaths.toString(), origSysIncludePaths);
+        List<IncludeDirEntry> userIncludePaths = userPathStorage.get(origUserIncludePaths.toString(), origUserIncludePaths);
+        List<IncludeDirEntry> sysIncludePaths = sysAPTData.getIncludes(origSysIncludePaths.toString(), origSysIncludePaths);
         StartEntry startEntry = new StartEntry(FileContainer.getFileKey(nativeFile.getFile(), true).toString(),
                 RepositoryUtils.UIDtoKey(getUID()));
         return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludePaths, userIncludePaths);
@@ -1192,33 +1193,34 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             return csmFile;
         }
         APTPreprocHandler.State newState = preprocHandler.getState();
-        APTPreprocHandler.State cachedOut = null;
+        PreprocessorStatePair cachedOut = null;
+        APTFileCacheEntry aptCacheEntry = null;
+        FilePreprocessorConditionState pcState;
         if (mode == ProjectBase.GATHERING_TOKENS && !APTHandlersSupport.extractIncludeStack(newState).isEmpty()) {
             cachedOut = csmFile.getCachedVisitedState(newState);
-            if (cachedOut != null) {
-                preprocHandler.getMacroMap().setState(APTHandlersSupport.extractMacroMapState(cachedOut));
+        }
+        if (cachedOut == null) {
+            APTFile aptLight = getAPTLight(csmFile);
+            if (aptLight == null) {
+                // in the case file was just removed
+                Utils.LOG.info("Can not find or build APT for file " + file); //NOI18N
                 return csmFile;
             }
-        }
 
-        APTFile aptLight = getAPTLight(csmFile);
-        if (aptLight == null) {
-            // in the case file was just removed
-            Utils.LOG.info("Can not find or build APT for file " + file); //NOI18N
-            return csmFile;
+            // gather macro map from all includes and fill preprocessor conditions state
+            FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(csmFile.getAbsolutePath());
+            // ask for exclusive entry if absent
+            aptCacheEntry = csmFile.getAPTCacheEntry(preprocHandler, Boolean.TRUE);
+            APTParseFileWalker walker = new APTParseFileWalker(base, aptLight, csmFile, preprocHandler, triggerParsingActivity, pcBuilder,aptCacheEntry);
+            walker.visit();
+            pcState = pcBuilder.build();
+            if (mode == ProjectBase.GATHERING_TOKENS && !APTHandlersSupport.extractIncludeStack(newState).isEmpty()) {
+                csmFile.cacheVisitedState(newState, preprocHandler, pcState);
+            }
+        } else {
+            preprocHandler.getMacroMap().setState(APTHandlersSupport.extractMacroMapState(cachedOut.state));
+            pcState = cachedOut.pcState;
         }
-
-        // gather macro map from all includes and fill preprocessor conditions state
-        FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(csmFile.getAbsolutePath());
-        // ask for exclusive entry if absent
-        APTFileCacheEntry aptCacheEntry = csmFile.getAPTCacheEntry(preprocHandler, Boolean.TRUE);
-        APTParseFileWalker walker = new APTParseFileWalker(base, aptLight, csmFile, preprocHandler, triggerParsingActivity, pcBuilder,aptCacheEntry);
-        walker.visit();
-        FilePreprocessorConditionState pcState = pcBuilder.build();
-        if (mode == ProjectBase.GATHERING_TOKENS && !APTHandlersSupport.extractIncludeStack(newState).isEmpty()) {
-            csmFile.cacheVisitedState(newState, preprocHandler);
-        }
-
         boolean updateFileContainer = false;
         try {
             if (disposing) {
@@ -1234,8 +1236,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 synchronized (entry.getLock()) {
                     List<PreprocessorStatePair> statesToKeep = new ArrayList<PreprocessorStatePair>(4);
                     AtomicBoolean newStateFound = new AtomicBoolean();
+                    Collection<PreprocessorStatePair> entryStatePairs = entry.getStatePairs();
                     // Phase 1: check preproc states of entry comparing to current state
-                    ComparisonResult comparisonResult = fillStatesToKeepBasedOnPPState(newState, entry.getStatePairs(), statesToKeep, newStateFound);
+                    ComparisonResult comparisonResult = fillStatesToKeepBasedOnPPState(newState, entryStatePairs, statesToKeep, newStateFound);
                     if (TRACE_FILE && FileImpl.traceFile(file)) {
                         traceIncludeStates("comparison 2 " + comparisonResult, csmFile, newState, pcState, newStateFound.get(), null, statesToKeep); // NOI18N
                     }
@@ -2602,7 +2605,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private Key classifierStorageKey;
 
     // collection of sharable system macros and system includes
-    private APTSystemStorage sysAPTData = APTSystemStorage.getDefault();
+    private final APTSystemStorage sysAPTData = APTSystemStorage.getDefault();
+    private final APTIncludePathStorage userPathStorage = new APTIncludePathStorage();
     private final Object namespaceLock = new String("namespaceLock in Projectbase " + hashCode()); // NOI18N
     private Key declarationsSorageKey;
     private Key fileContainerKey;

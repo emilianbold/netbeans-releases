@@ -49,6 +49,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Font;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
@@ -57,6 +58,7 @@ import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
@@ -65,15 +67,19 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
+import org.openide.util.NbBundle;
 import static java.util.logging.Level.FINER;
 
 /**
  *
  * @author Tomas Stupka
+ * @author Marian Petras
  */
 public class HookPanel extends VerticallyNonResizingPanel implements ItemListener, PropertyChangeListener {
 
     private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.HookPanel");  // NOI18N
+
+    private static final String LOADING_REPOSITORIES = "loading";       //NOI18N
 
     private QuickSearchComboBar qs;
     private Repository selectedRepository;
@@ -106,13 +112,49 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
     }
     private UpdateFiledsState updateFiledsState = null;
     
-    public HookPanel(Repository[] repos) {
+    public HookPanel() {
         initComponents();
 
         qs = new QuickSearchComboBar(this);
         issuePanel.add(qs, BorderLayout.NORTH);
         issueLabel.setLabelFor(qs.getCommand());
 
+        repositoryComboBox.setModel(new DefaultComboBoxModel(new Object[] {LOADING_REPOSITORIES}));
+        repositoryComboBox.setRenderer(new DefaultListCellRenderer() {
+            private final String loadingReposText = NbBundle.getMessage(
+                                    HookPanel.class,
+                                    "HookPanel.loadingRepositories");   //NOI18N
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                String text;
+                if (value == null) {
+                    text = null;
+                } else if (value == LOADING_REPOSITORIES) {
+                    text = loadingReposText;
+                } else {
+                    text = ((Repository) value).getDisplayName();
+                }
+                Component result = super.getListCellRendererComponent(list,
+                                                                      text,
+                                                                      index,
+                                                                      isSelected,
+                                                                      cellHasFocus);
+                if ((value == LOADING_REPOSITORIES) && (result instanceof JLabel)) {
+                    JLabel label = (JLabel) result;
+                    Font font = label.getFont();
+                    label.setFont(new Font(font.getName(),
+                                           font.getStyle() | Font.ITALIC,
+                                           font.getSize()));
+                }
+                return result;
+            }
+        });
+
+        repositoryComboBox.addItemListener(this);
+        enableFields();        
+    }
+
+    void setRepositories(Repository[] repos) {
         Repository[] comboData;
         if (repos == null) {
             comboData = new Repository[1];
@@ -124,21 +166,7 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
                 System.arraycopy(repos, 0, comboData, 1, repos.length);
             }
         }
-        
         repositoryComboBox.setModel(new DefaultComboBoxModel(comboData));
-        repositoryComboBox.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                if(value != null) {
-                    Repository r = (Repository) value;
-                    value = r.getDisplayName();
-                }
-                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            }
-        });
-
-        repositoryComboBox.addItemListener(this);
-        enableFields();        
     }
 
     /**
@@ -167,7 +195,7 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
             LOG.finer("preselectRepository(" + repoToPreselect.getDisplayName() + ')'); //NOI18N
         }
 
-        if (repositoryComboBox.getSelectedItem() != null) {
+        if (isRepositorySelected()) {
             LOG.finest(" - cancelled - already selected by the user");  //NOI18N
             return;
         }
@@ -193,13 +221,25 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
     }
 
     private void preselectRepositoryUnconditionally(Repository repoToPreselect) {
-        assert repositoryComboBox.getSelectedItem() == null;
+        assert !isRepositorySelected();
 
         if (LOG.isLoggable(FINER)) {
             LOG.finer("preselectRepositoryUnconditionally(" + repoToPreselect.getDisplayName() + ')'); //NOI18N
         }
 
         repositoryComboBox.setSelectedItem(repoToPreselect);
+    }
+
+    /** 
+     * Determines whether some bug-tracking repository is selected in the
+     * Issue Tracker combo-box.
+     * 
+     * @return  {@code true} if some repository is selected,
+     *          {@code false} otherwise
+     */
+    private boolean isRepositorySelected() {
+        Object selectedItem = repositoryComboBox.getSelectedItem();
+        return (selectedItem != null) && (selectedItem != LOADING_REPOSITORIES);
     }
 
     Issue getIssue() {
@@ -211,8 +251,8 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
     }
 
     private void enableFields() {
-        boolean repoSelected = repositoryComboBox.getSelectedItem() != null;
-        boolean enableUpdateFields = getIssue() != null && repoSelected;
+        boolean repoSelected = isRepositorySelected();
+        boolean enableUpdateFields = repoSelected && (getIssue() != null);
 
         if(updateFiledsState == null) {
             updateFiledsState = new UpdateFiledsState();
@@ -468,9 +508,14 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
     // End of variables declaration//GEN-END:variables
 
     public void itemStateChanged(ItemEvent e) {
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("itemStateChanged() - selected item: " + e.getItem()); //NOI18N
+        }
         enableFields();
         if(e.getStateChange() == ItemEvent.SELECTED) {
-            Repository repo = (Repository) e.getItem();
+            Object item = e.getItem();
+            Repository repo = (item != LOADING_REPOSITORIES) ? (Repository) item
+                                                             : null;
             selectedRepository = repo;
             if(repo != null) {
                 qs.setRepository(repo);

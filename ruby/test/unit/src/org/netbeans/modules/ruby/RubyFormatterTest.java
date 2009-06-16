@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.ruby;
 
 import java.util.List;
@@ -56,13 +55,13 @@ import org.openide.filesystems.FileUtil;
  * @author Tor Norbye
  */
 public class RubyFormatterTest extends RubyTestBase {
-    
+
     public RubyFormatterTest(String testName) {
         super(testName);
     }
 
     private void reformatFileContents(String file) throws Exception {
-        reformatFileContents(file, new IndentPrefs(2,2));
+        reformatFileContents(file, new IndentPrefs(2, 2));
     }
 
     // Used to test arbitrary source trees
@@ -75,7 +74,6 @@ public class RubyFormatterTest extends RubyTestBase {
     //    addAllRubyFiles(root, files);
     //    reformatAll(files);
     //}
-
     private void addAllRubyFiles(FileObject file, List<FileObject> files) {
         if (file.isFolder()) {
             for (FileObject c : file.getChildren()) {
@@ -95,7 +93,7 @@ public class RubyFormatterTest extends RubyTestBase {
     }
 
     private void reformatAll(List<FileObject> files) {
-        IndentPrefs preferences = new IndentPrefs(2,2);
+        IndentPrefs preferences = new IndentPrefs(2, 2);
         RubyFormatter formatter = getFormatter(preferences);
 
         int fileCount = files.size();
@@ -110,36 +108,42 @@ public class RubyFormatterTest extends RubyTestBase {
                 continue;
             }
 
-if (fo.getName().equals("delegating_attributes")) {
-    System.err.println("SKIPPING known bad file " + fo.getNameExt());
-    continue;
-}
+            // triggers #134931, in rails 2.3.2 the file has a 'def class' method
+            if (fo.getName().equals("deprecation") && fo.getParent().getName().equals("active_support")) {
+                System.err.println("SKIPPING known bad file " + fo.getNameExt());
+                continue;
+            }
 
-if (fo.getName().equals("sample_02") || fo.getName().equals("sample_03")) {
-    System.err.println("Can't properly format sample_02.rb yet - it's unusual" + fo.getNameExt());
-    continue;
-}
+            if (fo.getName().equals("delegating_attributes")) {
+                System.err.println("SKIPPING known bad file " + fo.getNameExt());
+                continue;
+            }
 
-// This bug triggers #108889
-if (fo.getName().equals("action_controller_dispatcher") && fo.getParent().getName().equals("dispatcher")) {
-    System.err.println("SKIPPING known bad file " + fo.getNameExt());
-    continue;
-}
-// This bug triggers #108889
-if (fo.getName().equals("parse_f95") && fo.getParent().getName().equals("parsers")) {
-    System.err.println("SKIPPING known bad file " + fo.getNameExt());
-    continue;
-}
-// Tested by RubyLexerTest#testDefRegexp
-if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick")) {
-    System.err.println("SKIPPING known bad file " + fo.getNameExt());
-    continue;
-}
-// When erubis is installed:
-if (fo.getNameExt().equals("test-enhancers.rb") || fo.getNameExt().equals("test-erubis.rb") ) {
-    System.err.println("SKIPPING " + fo.getNameExt() + " - the lexing of data after __END__ doesn't seem to work");
-    continue;
-}
+            if (fo.getName().equals("sample_02") || fo.getName().equals("sample_03")) {
+                System.err.println("Can't properly format sample_02.rb yet - it's unusual" + fo.getNameExt());
+                continue;
+            }
+
+            // This bug triggers #108889
+            if (fo.getName().equals("action_controller_dispatcher") && fo.getParent().getName().equals("dispatcher")) {
+                System.err.println("SKIPPING known bad file " + fo.getNameExt());
+                continue;
+            }
+            // This bug triggers #108889
+            if (fo.getName().equals("parse_f95") && fo.getParent().getName().equals("parsers")) {
+                System.err.println("SKIPPING known bad file " + fo.getNameExt());
+                continue;
+            }
+            // Tested by RubyLexerTest#testDefRegexp
+            if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick")) {
+                System.err.println("SKIPPING known bad file " + fo.getNameExt());
+                continue;
+            }
+            // When erubis is installed:
+            if (fo.getNameExt().equals("test-enhancers.rb") || fo.getNameExt().equals("test-erubis.rb")) {
+                System.err.println("SKIPPING " + fo.getNameExt() + " - the lexing of data after __END__ doesn't seem to work");
+                continue;
+            }
             System.err.println("Formatting file " + count + "/" + files.size() + " : " + FileUtil.getFileDisplayName(fo));
 
             // check that we end up at indentation level 0
@@ -160,7 +164,7 @@ if (fo.getNameExt().equals("test-enhancers.rb") || fo.getNameExt().equals("test-
                 while (offset > 0) {
                     offset = Utilities.getRowStart(doc, offset);
                     if (Utilities.isRowEmpty(doc, offset) || Utilities.isRowWhite(doc, offset)) {
-                        offset = offset-1;
+                        offset = offset - 1;
                         continue;
                     }
 
@@ -178,7 +182,7 @@ if (fo.getNameExt().equals("test-enhancers.rb") || fo.getNameExt().equals("test-
 
 
                     assertEquals("Failed formatting file " + count + "/" + fileCount + " \n" + fo.getNameExt() + "\n: Last line not at 0 indentation in " + FileUtil.getFileDisplayName(fo) + " indent=" + indentation + " line=" +
-                            doc.getText(offset, Utilities.getRowEnd(doc, offset)-offset), 0, indentation);
+                            doc.getText(offset, Utilities.getRowEnd(doc, offset) - offset), getExpectedIndentation(fo), indentation);
                     break;
                 }
             } catch (Exception ex) {
@@ -187,6 +191,14 @@ if (fo.getNameExt().equals("test-enhancers.rb") || fo.getNameExt().equals("test-
 
             // Also try re-lexing buffer incrementally and make sure it makes sense! (and handle bracket completion stuff)
         }
+    }
+
+    private static int getExpectedIndentation(FileObject fo) {
+        // the last statement in this file uses a ternary operator
+        if (fo.getPath().endsWith("actionpack-2.3.2/test/abstract_unit.rb")) {
+            return 2;
+        }
+        return 0;
     }
 
     public void testFormatApe() throws Exception {
@@ -234,7 +246,7 @@ if (fo.getNameExt().equals("test-enhancers.rb") || fo.getNameExt().equals("test-
 
     public void testLineContinuationAsgn() throws Exception {
         format("x =\n1",
-               "x =\n  1", null);
+                "x =\n  1", null);
     }
 
     // Separate setting for line continuations not yet supported
@@ -247,15 +259,14 @@ if (fo.getNameExt().equals("test-enhancers.rb") || fo.getNameExt().equals("test-
     //    format("x =\n1\ny = 5",
     //           "x =\n    1\ny = 5", new IndentPrefs(2,4));
     //}
-
     public void testLineContinuation4() throws Exception {
         format("def foo\nfoo\nif true\nx\nend\nend",
-               "def foo\n  foo\n  if true\n    x\n  end\nend", null);
+                "def foo\n  foo\n  if true\n    x\n  end\nend", null);
     }
 
     public void testLineContinuation5() throws Exception {
         format("def foo\nfoo\nif true\nx\nend\nend",
-               "def foo\n    foo\n    if true\n        x\n    end\nend", new IndentPrefs(4,4));
+                "def foo\n    foo\n    if true\n        x\n    end\nend", new IndentPrefs(4, 4));
     }
 
     // Trigger lexer bug!
@@ -263,10 +274,9 @@ if (fo.getNameExt().equals("test-enhancers.rb") || fo.getNameExt().equals("test-
     //    format("x\\\n= 1",
     //           "x\\\n  = 1", new IndentPrefs(2,4));
     //}
-
     public void testLineContinuationComma() throws Exception {
         format("render foo,\nbar\nbaz",
-               "render foo,\n  bar\nbaz", null);
+                "render foo,\n  bar\nbaz", null);
     }
 
     public void testQuestionmarkIndent1() throws Exception {
@@ -298,12 +308,12 @@ if (fo.getNameExt().equals("test-enhancers.rb") || fo.getNameExt().equals("test-
 
     public void testLineContinuationParens() throws Exception {
         format("foo(1,2\n3,4)\nx",
-               "foo(1,2\n  3,4)\nx", null);
+                "foo(1,2\n  3,4)\nx", null);
     }
 
     public void testLiterals() throws Exception {
         format("def foo\n  x = %q-foo\nbar-",
-               "def foo\n  x = %q-foo\nbar-", null);
+                "def foo\n  x = %q-foo\nbar-", null);
     }
 
     public void testLiterals2() throws Exception {
@@ -318,9 +328,9 @@ if (fo.getNameExt().equals("test-enhancers.rb") || fo.getNameExt().equals("test-
 
     public void testLineContinuationAlias() throws Exception {
         format("foo ==\ntrue",
-               "foo ==\n  true", null);
+                "foo ==\n  true", null);
         format("alias foo ==\ntrue",
-               "alias foo ==\ntrue", null);
+                "alias foo ==\ntrue", null);
         // Different hangingindent not yet supported in the UI
         //format("def ==\ntrue",
         //       "def ==\n  true", new IndentPrefs(2,4));
@@ -328,12 +338,12 @@ if (fo.getNameExt().equals("test-enhancers.rb") || fo.getNameExt().equals("test-
 
     public void testBrackets() throws Exception {
         format("x = [[5]\n]\ny",
-               "x = [[5]\n]\ny", null);
+                "x = [[5]\n]\ny", null);
     }
 
     public void testBrackets2() throws Exception {
         format("x = [\n[5]\n]\ny",
-               "x = [\n  [5]\n]\ny", null);
+                "x = [\n  [5]\n]\ny", null);
         // Different hangingindent not yet supported in the UI
         //format("x = [\n[5]\n]\ny",
         //       "x = [\n  [5]\n]\ny", new IndentPrefs(2,4));
@@ -355,22 +365,22 @@ if (fo.getNameExt().equals("test-enhancers.rb") || fo.getNameExt().equals("test-
 
     public void testHeredoc1() throws Exception {
         format("def foo\n  s = <<EOS\n  stuff\nEOS\nend",
-               "def foo\n  s = <<EOS\n  stuff\nEOS\nend", null);
+                "def foo\n  s = <<EOS\n  stuff\nEOS\nend", null);
     }
 
     public void testHeredoc2() throws Exception {
         format("def foo\n  s = <<-EOS\n  stuff\nEOS\nend",
-               "def foo\n  s = <<-EOS\n  stuff\n  EOS\nend", null);
+                "def foo\n  s = <<-EOS\n  stuff\n  EOS\nend", null);
     }
 
     public void testHeredoc3() throws Exception {
         format("def foo\n    s = <<EOS\nstuff\n  foo\nbar\nEOS\n  end",
-               "def foo\n  s = <<EOS\nstuff\n  foo\nbar\nEOS\nend", null);
+                "def foo\n  s = <<EOS\nstuff\n  foo\nbar\nEOS\nend", null);
     }
 
     public void testHeredoc4() throws Exception {
         format("def foo\n    s = <<-EOS\nstuff\n  foo\nbar\nEOS\n  end",
-               "def foo\n  s = <<-EOS\nstuff\n  foo\nbar\n  EOS\nend", null);
+                "def foo\n  s = <<-EOS\nstuff\n  foo\nbar\n  EOS\nend", null);
     }
 
     public void testArrayDecl() throws Exception {
@@ -380,33 +390,33 @@ if (fo.getNameExt().equals("test-enhancers.rb") || fo.getNameExt().equals("test-
 
     public void testHashDecl() throws Exception {
         String unformatted = "@foo = {\n" +
-            "'bar' => :foo,\n" +
-            "'bar2' => :bar,\n" +
-            "'bar3' => :baz\n" +
-            "}";
+                "'bar' => :foo,\n" +
+                "'bar2' => :bar,\n" +
+                "'bar3' => :baz\n" +
+                "}";
         String formatted = "@foo = {\n" +
-            "  'bar' => :foo,\n" +
-            "  'bar2' => :bar,\n" +
-            "  'bar3' => :baz\n" +
-            "}";
+                "  'bar' => :foo,\n" +
+                "  'bar2' => :bar,\n" +
+                "  'bar3' => :baz\n" +
+                "}";
         format(unformatted, formatted, null);
     }
 
     public void testParenCommaList() throws Exception {
         String unformatted = "foo(\nx,\ny,\nz\n)";
         String formatted = "foo(\n" +
-            "  x,\n" +
-            "  y,\n" +
-            "  z\n" +
-            ")";
+                "  x,\n" +
+                "  y,\n" +
+                "  z\n" +
+                ")";
         format(unformatted, formatted, null);
     }
 
     public void testDocumentRange1() throws Exception {
         format("      def foo\n%<%foo%>%\n      end\n",
-               "      def foo\n        foo\n      end\n", null);
+                "      def foo\n        foo\n      end\n", null);
         format("def foo\nfoo\nend\n",
-               "def foo\n  foo\nend\n", null);
+                "def foo\n  foo\nend\n", null);
     }
 
     public void testDocumentRange2() throws Exception {
@@ -416,44 +426,43 @@ if (fo.getNameExt().equals("test-enhancers.rb") || fo.getNameExt().equals("test-
 
     public void testDocumentRange3() throws Exception {
         format("class Foo\n  def bar\n  end\n\n\n%<%def test\nhello\nend%>%\nend\n",
-               "class Foo\n  def bar\n  end\n\n\n  def test\n    hello\n  end\nend\n", null);
+                "class Foo\n  def bar\n  end\n\n\n  def test\n    hello\n  end\nend\n", null);
     }
 
     public void testPercentWIndent110983a() throws Exception {
         insertNewline(
-            "class Apple\n  def foo\n    snark %w[a b c]^\n    blah",
-            "class Apple\n  def foo\n    snark %w[a b c]\n    ^\n    blah", null);
+                "class Apple\n  def foo\n    snark %w[a b c]^\n    blah",
+                "class Apple\n  def foo\n    snark %w[a b c]\n    ^\n    blah", null);
     }
 
     public void testPercentWIndent110983b() throws Exception {
         insertNewline(
-            "class Apple\n  def foo\n    snark %w,a b c,^\n    blah",
-            "class Apple\n  def foo\n    snark %w,a b c,\n    ^\n    blah", null);
+                "class Apple\n  def foo\n    snark %w,a b c,^\n    blah",
+                "class Apple\n  def foo\n    snark %w,a b c,\n    ^\n    blah", null);
     }
 
     public void testPercentWIndent110983c() throws Exception {
         insertNewline(
-            "class Apple\n  def foo\n    snark %w/a/^\n    blah",
-            "class Apple\n  def foo\n    snark %w/a/\n    ^\n    blah", null);
+                "class Apple\n  def foo\n    snark %w/a/^\n    blah",
+                "class Apple\n  def foo\n    snark %w/a/\n    ^\n    blah", null);
     }
 
     public void testPercentWIndent110983d() throws Exception {
         insertNewline(
-            "class Apple\n  def foo\n    snark %W[a b c]^\n    blah",
-            "class Apple\n  def foo\n    snark %W[a b c]\n    ^\n    blah", null);
+                "class Apple\n  def foo\n    snark %W[a b c]^\n    blah",
+                "class Apple\n  def foo\n    snark %W[a b c]\n    ^\n    blah", null);
     }
 
     public void testPercentWIndent110983e() throws Exception {
         insertNewline(
-            "class Apple\n  def foo\n    snark %Q[a b c]^\n    blah",
-            "class Apple\n  def foo\n    snark %Q[a b c]\n    ^\n    blah", null);
+                "class Apple\n  def foo\n    snark %Q[a b c]^\n    blah",
+                "class Apple\n  def foo\n    snark %Q[a b c]\n    ^\n    blah", null);
     }
 
     public void testEof() throws Exception {
         format("def foo\n     if true\n           %<%xxx%>%\n     end\nend\n",
                 "def foo\n     if true\n       xxx\n     end\nend\n", null);
         format("x\n",
-               "x\n", null);
+                "x\n", null);
     }
-
 }

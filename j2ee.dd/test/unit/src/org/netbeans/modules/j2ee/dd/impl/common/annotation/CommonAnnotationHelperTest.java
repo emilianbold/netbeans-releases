@@ -44,6 +44,7 @@ package org.netbeans.modules.j2ee.dd.impl.common.annotation;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.j2ee.dd.api.client.AppClientMetadata;
 import org.netbeans.modules.j2ee.dd.api.common.EnvEntry;
@@ -84,7 +85,7 @@ public class CommonAnnotationHelperTest extends CommonTestCase {
                 "}");
         createWebAppModel(false).runReadAction(new MetadataModelAction<WebAppMetadata, Void>() {
             public Void run(WebAppMetadata metadata) throws VersionNotSupportedException {
-                checkSecurityRoles(metadata.getRoot().getSecurityRole());
+                checkSecurityRoles(metadata.getSecurityRoles());
                 return null;
             }
         });
@@ -94,6 +95,13 @@ public class CommonAnnotationHelperTest extends CommonTestCase {
                 return null;
             }
         });
+    }
+
+    private void checkSecurityRoles(List<String> securityRoles) {
+        assertEquals(3, securityRoles.size());
+        assertTrue(securityRoles.contains("BusinessAdmin"));
+        assertTrue(securityRoles.contains("Visitor"));
+        assertTrue(securityRoles.contains("Administrator"));
     }
 
     private void checkSecurityRoles(SecurityRole[] securityRoles) {

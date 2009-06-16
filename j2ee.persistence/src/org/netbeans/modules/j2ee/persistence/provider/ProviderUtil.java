@@ -312,13 +312,20 @@ public class ProviderUtil {
      *
      * @return the created persistence unit.
      */
-    public static PersistenceUnit buildPersistenceUnit(String name, Provider provider, DatabaseConnection connection) {
+    public static PersistenceUnit buildPersistenceUnit(String name, Provider provider, DatabaseConnection connection, String version) {
         
         Parameters.notNull("name", name);
         Parameters.notNull("provider", provider);
         Parameters.notNull("connection", connection);
-        
-        PersistenceUnit persistenceUnit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
+        PersistenceUnit persistenceUnit = null;
+        if(Persistence.VERSION_2_0.equals(version))
+        {
+            persistenceUnit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit();
+        }
+        else//currently default 1.0
+        {
+            persistenceUnit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
+        }
         persistenceUnit.setName(name);
         persistenceUnit.setProvider(provider.getProviderClass());
         Properties properties = persistenceUnit.newProperties();
