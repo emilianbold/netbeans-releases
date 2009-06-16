@@ -65,7 +65,8 @@ made subject to such option by the copyright holder.
     <target name="amconfig-gen" depends="xjc-init">  
         <xjc schema="${amconfig_xsd_1_0}"
             package="org.netbeans.modules.identity.profile.api.configurator.impl.file.jaxb"
-            destdir="src">
+            destdir="src"
+            target="2.1">
             <depends file="${amconfig_xsd_1_0}"/>
             <produces dir="${amconfig_src_1_0}" includes="*.java"/>
         </xjc>
