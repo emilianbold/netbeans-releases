@@ -190,7 +190,7 @@ public class J2eePlatformUiSupport {
                 for (int i = 0; i < serverInstanceIDs.length; i++) {
                     J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceIDs[i]);
                     if (j2eePlatform != null) {
-                        if (j2eePlatform.getSupportedModuleTypes().contains(moduleType)
+                        if (j2eePlatform.getSupportedTypes().contains(moduleType)
                                 && j2eePlatform.getSupportedProfiles(moduleType).contains(j2eeProfile)) {
                             J2eePlatformAdapter adapter = new J2eePlatformAdapter(j2eePlatform, serverInstanceIDs[i]);
                             orderedNames.add(adapter);
