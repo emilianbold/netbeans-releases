@@ -3549,8 +3549,10 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         Value sv = invokeMethod(arg0, method, false, null, ov, argVals, evaluationContext, false);
         if (sv instanceof StringReference) {
             return ((StringReference) sv).value();
+        } else if (sv == null) {
+            return null;
         } else {
-            throw new IllegalStateException("Result of toString() call on "+ov+" is not a String, but: "+sv);
+            return "Result of toString() call on "+ov+" is not a String, but: "+sv; // NOI18N - should not ever happen.
         }
     }
 
