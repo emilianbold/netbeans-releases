@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,52 +34,23 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.options;
 
-import java.util.prefs.Preferences;
-import org.openide.util.NbPreferences;
+package org.netbeans.modules.maven.spi.cos;
+
+import org.openide.filesystems.FileObject;
 
 /**
- * Preferences class 
+ * a callback intended for maven.j2ee module that intercepts the copy on save behaviour
+ * and allows copying of resources into the expanded web application.
+ * maven.j2ee icludes the implementation class in the lookup of maven web projects.
  * @author mkleint
  */
-public final class DontShowAgainSettings {
-    private static final DontShowAgainSettings INSTANCE = new DontShowAgainSettings();
-    
-    public static DontShowAgainSettings getDefault() {
-        return INSTANCE;
-    }
+public interface AdditionalDestination {
 
-    private DontShowAgainSettings() {
-    }
-    
-    protected final Preferences getPreferences() {
-        return NbPreferences.root().node("org/netbeans/modules/maven/showQuestions"); //NOI18N
-    }
-    
-    public boolean showWarningAboutBuildWithDependencies() {
-        return getPreferences().getBoolean("showBuildWithDependenciesWarning", true);//NOI18N
-    }
+    public void copy(FileObject fo, String path);
 
-    public void dontShowWarningAboutBuildWithDependenciesAnymore() {
-        getPreferences().putBoolean("showBuildWithDependenciesWarning", false);//NOI18N
-    }
+    public void delete(FileObject fo, String path);
 
-    public boolean showWarningAboutEmbeddedBuild() {
-        return getPreferences().getBoolean("showEmbeddedBuildWarning", true);//NOI18N
-    }
-
-    public void dontshowWarningAboutEmbeddedBuildAnymore() {
-        getPreferences().putBoolean("showEmbeddedBuildWarning", false);//NOI18N
-    }
-
-    public boolean showWarningAboutApplicationCoS() {
-        return getPreferences().getBoolean("showApplicationCompileOnSave", true);//NOI18N
-    }
-
-    public void dontshowWarningAboutApplicationCoSAnymore() {
-        getPreferences().putBoolean("showApplicationCompileOnSave", false);//NOI18N
-    }
 }
