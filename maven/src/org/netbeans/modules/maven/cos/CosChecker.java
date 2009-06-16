@@ -70,6 +70,7 @@ import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
@@ -87,6 +88,7 @@ import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -96,7 +98,7 @@ import org.openide.util.Exceptions;
  *
  * @author mkleint
  */
-public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesChecker {
+public class CosChecker extends ProjectOpenedHook implements PrerequisitesChecker, LateBoundPrerequisitesChecker {
 
     static final String NB_COS = ".netbeans_automatic_build"; //NOI18N
     private static final String RUN_MAIN = ActionProvider.COMMAND_RUN_SINGLE + ".main"; //NOI18N
@@ -105,6 +107,11 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
 
     public static ExecutionResultChecker createResultChecker() {
         return new COSExChecker();
+    }
+    private final Project project;
+
+    public CosChecker(Project prj) {
+        this.project = prj;
     }
 
     public boolean checkRunConfig(RunConfig config) {
@@ -124,17 +131,29 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
     }
 
     public boolean checkRunConfig(RunConfig config, ExecutionContext con) {
-        long touch1 = getLastCoSLastTouch(config, true);
-        long touch2 = getLastCoSLastTouch(config, false);
-        if ((touch1 != 0 && touch1 != Long.MAX_VALUE) ||
-                (touch2 != 0 && touch2 != Long.MAX_VALUE)) {
+        //deleting the timestamp before every action invokation means
+        // we only can rely on Run via JavaRunner and via DeployOnSave
+        // any other means of long term execution will not keep the CoS stamp around while running..
+        // -->> ONLY DELETE FOR BUILD ACTION
+        if (ActionProvider.COMMAND_BUILD.equals(config.getActionName())) {
+            deleteCoSTimeStamp(config, true);
+            deleteCoSTimeStamp(config, false);
+            //do clean the generated class files everytime, that won't hurt anything
+            // unless the classes are missing then ?!? if the action doesn't perform the compilation step?
             try {
                 cleanGeneratedClassfiles(config);
             } catch (IOException ex) {
                 if (!"clean".equals(config.getGoals().get(0))) { //NOI18N
                     config.getGoals().add(0, "clean"); //NOI18N
-                }
+                    }
                 Logger.getLogger(CosChecker.class.getName()).log(Level.INFO, "Compile on Save Clean failed", ex);
+            }
+        } else if (!ActionProvider.COMMAND_REBUILD.equals(config.getActionName())) {
+            //now for all custom and non-build only related actions,
+            //make sure we place the stamp files into all opened projects.
+            Project[] opened = OpenProjects.getDefault().getOpenProjects();
+            for (Project openprj : opened) {
+                touchProject(openprj);
             }
         }
         return true;
@@ -462,11 +481,9 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         return true;
     }
 
-    static void cleanGeneratedClassfiles(RunConfig config) throws IOException { // #145243
+    private static void cleanGeneratedClassfiles(RunConfig config) throws IOException { // #145243
         //we execute normal maven build, but need to clean any
         // CoS classes present.
-        deleteCoSTimeStamp(config, true);
-        deleteCoSTimeStamp(config, false);
         Project p = config.getProject();
         List<ClassPath> executePaths = new ArrayList<ClassPath>();
         for (SourceGroup g : ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
@@ -537,7 +554,14 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         if (rc.getProject() == null) {
             return null;
         }
-        Build build = rc.getMavenProject().getBuild();
+        return getCoSFile(rc.getMavenProject(), test);
+    }
+
+    private static File getCoSFile(MavenProject mp, boolean test) {
+        if (mp == null) {
+            return null;
+        }
+        Build build = mp.getBuild();
         if (build == null) {
             return null;
         }
@@ -559,11 +583,11 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
     private static long getLastCoSLastTouch(RunConfig rc, boolean test) {
         File fl = getCoSFile(rc, test);
         if (fl == null) {
-            return -1;
+            return 0;
         }
         if (fl.getParentFile() == null || !(fl.getParentFile().exists())) {
             //the project was not built
-            return -2;
+            return 0;
         }
         if (!fl.exists()) {
             //wasn't yet run with CoS, assume it's been built correctly.
@@ -579,7 +603,18 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
     }
 
     private static boolean touchCoSTimeStamp(RunConfig rc, boolean test, long stamp) {
-        File fl = getCoSFile(rc, test);
+        if (rc.getProject() == null) {
+            return false;
+        }
+        return touchCoSTimeStamp(rc.getMavenProject(), test, stamp);
+    }
+
+    private static boolean touchCoSTimeStamp(MavenProject mvn, boolean test) {
+        return touchCoSTimeStamp(mvn, test, System.currentTimeMillis());
+    }
+
+    private static boolean touchCoSTimeStamp(MavenProject mvn, boolean test, long stamp) {
+        File fl = getCoSFile(mvn, test);
         if (fl == null) {
             return false;
         }
@@ -599,6 +634,13 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
 
     private static void deleteCoSTimeStamp(RunConfig rc, boolean test) {
         File fl = getCoSFile(rc, test);
+        if (fl != null && fl.exists()) {
+            fl.delete();
+        }
+    }
+
+    private static void deleteCoSTimeStamp(MavenProject mp, boolean test) {
+        File fl = getCoSFile(mp, test);
         if (fl != null && fl.exists()) {
             fl.delete();
         }
@@ -643,6 +685,40 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         }
         assert false : "Cannot convert " + actionName + " to quick actions.";
         return null;
+    }
+
+    private static void touchProject(Project project) {
+        NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
+        if (prj != null) {
+            MavenProject mvn = prj.getMavenProject();
+            if (RunUtils.hasApplicationCompileOnSaveEnabled(project)) {
+                touchCoSTimeStamp(mvn, false);
+            } else {
+                deleteCoSTimeStamp(mvn, false);
+            }
+            if (RunUtils.hasTestCompileOnSaveEnabled(project)) {
+                touchCoSTimeStamp(mvn, true);
+            } else {
+                deleteCoSTimeStamp(mvn, true);
+            }
+        }
+    }
+
+    @Override
+    protected void projectOpened() {
+        touchProject(project);
+    }
+
+    @Override
+    protected void projectClosed() {
+        NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
+        if (prj != null) {
+            MavenProject mvn = prj.getMavenProject();
+            deleteCoSTimeStamp(mvn, true);
+            deleteCoSTimeStamp(mvn, false);
+
+            //TODO also delete the IDE generated class files now?
+        }
     }
 
     private static class COSExChecker implements ExecutionResultChecker {
