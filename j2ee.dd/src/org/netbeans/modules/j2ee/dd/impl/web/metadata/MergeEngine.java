@@ -52,6 +52,10 @@ abstract class MergeEngine<T> {
 
     protected List<T> res = new ArrayList<T>();
 
+    void clean() {
+        res.clear();
+    }
+
     abstract void addItems(WebApp webXml);
     abstract void addItems(WebFragment webFragment);
     abstract void addAnnotations(AnnotationHelpers annotationHelpers);

@@ -648,6 +648,7 @@ public final class J2eePlatform {
     }
 
     @NonNull
+    @SuppressWarnings("deprecation")
     private Set<String> convertProfilesToKnownSpecVersions(Iterable<Profile> profiles) {
         Set ret = new HashSet();
         for (Profile profile : profiles) {
