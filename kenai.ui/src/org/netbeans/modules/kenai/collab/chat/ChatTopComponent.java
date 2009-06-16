@@ -464,6 +464,9 @@ public class ChatTopComponent extends TopComponent {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 chatsMouseClicked(evt);
             }
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                chatsMousePressed(evt);
+            }
         });
 
         newPanel.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -592,7 +595,7 @@ public class ChatTopComponent extends TopComponent {
         int tab = chats.getUI().tabForCoordinate(chats, evt.getX(), evt.getY());
         if (tab == chats.getTabCount() - 1) {
             showPopup(evt);
-        }
+        } 
     }//GEN-LAST:event_chatsMouseClicked
 
     private void newPanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_newPanelMouseClicked
@@ -610,6 +613,21 @@ public class ChatTopComponent extends TopComponent {
     private void loginLinkMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_loginLinkMouseClicked
         UIUtils.showLogin();
 }//GEN-LAST:event_loginLinkMouseClicked
+
+    private void chatsMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_chatsMousePressed
+        int tab = chats.getUI().tabForCoordinate(chats, evt.getX(), evt.getY());
+        if (tab != chats.getTabCount() - 1) {
+            if (evt.isPopupTrigger()) {
+                JPopupMenu menu = new JPopupMenu();
+                menu.add(new Close());
+                if (chats.getTabCount() > 2) {
+                    menu.add(new CloseAll());
+                    menu.add(new CloseAllButCurrent());
+                }
+                menu.show((Component) evt.getSource(), evt.getX(), evt.getY());
+            }
+        }
+    }//GEN-LAST:event_chatsMousePressed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTabbedPane chats;
@@ -747,4 +765,48 @@ public class ChatTopComponent extends TopComponent {
             addChat(new ChatPanel(kec.getChat(f)));
         }
     }
+
+    private class Close extends AbstractAction {
+
+        public Close() {
+            super(NbBundle.getMessage(ChatTopComponent.class, "LBL_CloseWindow"));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            ChatPanel panel = (ChatPanel) chats.getSelectedComponent();
+            removeChat(panel);
+        }
+    }
+
+    private final class CloseAll extends AbstractAction {
+
+        public CloseAll() {
+            super(NbBundle.getMessage(ChatTopComponent.class, "LBL_CloseAll"));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            for (Component c:chats.getComponents()) {
+                if (c instanceof ChatPanel) {
+                    removeChat((ChatPanel) c);
+                }
+            }
+        }
+    }
+
+    private class CloseAllButCurrent extends AbstractAction {
+
+        public CloseAllButCurrent() {
+            super(NbBundle.getMessage(ChatTopComponent.class, "LBL_CloseAllButCurrent"));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            for (Component c:chats.getComponents()) {
+                if (c instanceof ChatPanel) {
+                    if (!c.isShowing())
+                        removeChat((ChatPanel) c);
+                }
+            }
+        }
+    }
+
 }
