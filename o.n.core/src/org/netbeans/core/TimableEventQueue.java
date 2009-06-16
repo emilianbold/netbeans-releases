@@ -82,6 +82,7 @@ implements Runnable {
     private static final int QUANTUM = Integer.getInteger("org.netbeans.core.TimeableEventQueue.quantum", 100); // NOI18N
     private static final int REPORT = Integer.getInteger("org.netbeans.core.TimeableEventQueue.report", 1000); // NOI18N
     private static final int PAUSE = Integer.getInteger("org.netbeans.core.TimeableEventQueue.pause", 15000); // NOI18N
+    private static final int CLEAR = Integer.getInteger("org.netbeans.core.TimeableEventQueue.clear", 60000); // NOI18N
 
     private final RequestProcessor.Task TIMEOUT;
     private volatile long ignoreTill;
@@ -275,7 +276,8 @@ implements Runnable {
     }
     */
 
-    private static final class NotifySnapshot implements ActionListener {
+    private static final class NotifySnapshot 
+    implements ActionListener, Runnable {
         private final byte[] content;
         private final Notification note;
 
@@ -287,6 +289,9 @@ implements Runnable {
                 NbBundle.getMessage(NotifySnapshot.class, "TEQ_BlockedFor", time, time / 1000),
                 this, NotificationDisplayer.Priority.LOW
             );
+            if (CLEAR > 0) {
+                RP.post(this, CLEAR, Thread.MIN_PRIORITY);
+            }
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -304,6 +309,10 @@ implements Runnable {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }
+
+        public void run() {
+            clear();
         }
 
         public void clear() {
