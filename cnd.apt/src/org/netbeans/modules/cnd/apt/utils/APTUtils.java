@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
+import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
@@ -266,11 +267,11 @@ public class APTUtils {
         return retValue.toString();
     }
     
-    public static CharSequence includes2String(List<? extends CharSequence> includePaths) {
+    public static CharSequence includes2String(List<IncludeDirEntry> includePaths) {
         StringBuilder retValue = new StringBuilder();
-        for (Iterator<? extends CharSequence> it = includePaths.iterator(); it.hasNext();) {
-            CharSequence path = it.next();
-            retValue.append(path);
+        for (Iterator<IncludeDirEntry> it = includePaths.iterator(); it.hasNext();) {
+            IncludeDirEntry path = it.next();
+            retValue.append(path.getAsSharedCharSequence());
             if (it.hasNext()) {
                 retValue.append('\n'); // NOI18N
             }

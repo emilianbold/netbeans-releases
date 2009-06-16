@@ -67,19 +67,14 @@ public class WagRootNodeChildren extends Children.Keys<Object> implements Proper
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        System.out.println("WagRootNodeChildren.propertyChange()");
         if (evt.getSource() == searchResults) {
             updateKeys();
         }
     }
 
     protected void updateKeys() {
-        System.out.println("WagRootNodeChildren.updateKeys()");
         ArrayList<Object> keys = new ArrayList<Object>();
         Collection<WagSearchResult> results = searchResults.getResults();
-        for (WagSearchResult r : results) {
-            System.out.println("r = " + r);
-        }
         keys.addAll(results);
         setKeys(keys);
     }

@@ -106,13 +106,13 @@ public class ServerFileDistributor extends ServerProgress {
     static synchronized List getDescriptorPath(J2eeModule module) {
         if (j2eeTypeMap == null) {
             j2eeTypeMap = new HashMap();
-            j2eeTypeMap.put(J2eeModule.EJB, Arrays.asList(new String[]{J2eeModule.EJBJAR_XML, J2eeModule.EJBSERVICES_XML}));
-            j2eeTypeMap.put(J2eeModule.WAR, Arrays.asList(new String[]{J2eeModule.WEB_XML, J2eeModule.WEBSERVICES_XML}));
-            j2eeTypeMap.put(J2eeModule.CLIENT, Arrays.asList(new String[]{J2eeModule.CLIENT_XML}));
-            j2eeTypeMap.put(J2eeModule.CONN, Arrays.asList(new String[]{J2eeModule.CONNECTOR_XML}));
-            j2eeTypeMap.put(J2eeModule.EAR, Arrays.asList(new String[]{J2eeModule.APP_XML}));
+            j2eeTypeMap.put(J2eeModule.Type.EJB, Arrays.asList(new String[]{J2eeModule.EJBJAR_XML, J2eeModule.EJBSERVICES_XML}));
+            j2eeTypeMap.put(J2eeModule.Type.WAR, Arrays.asList(new String[]{J2eeModule.WEB_XML, J2eeModule.WEBSERVICES_XML}));
+            j2eeTypeMap.put(J2eeModule.Type.CAR, Arrays.asList(new String[]{J2eeModule.CLIENT_XML}));
+            j2eeTypeMap.put(J2eeModule.Type.RAR, Arrays.asList(new String[]{J2eeModule.CONNECTOR_XML}));
+            j2eeTypeMap.put(J2eeModule.Type.EAR, Arrays.asList(new String[]{J2eeModule.APP_XML}));
         }
-        return (List) j2eeTypeMap.get(module.getModuleType());
+        return (List) j2eeTypeMap.get(module.getType());
     }
 
     private J2eeModule getJ2eeModule(TargetModuleID target) {
@@ -128,7 +128,7 @@ public class ServerFileDistributor extends ServerProgress {
         J2eeModule module = getJ2eeModule(target);
         List descriptorRelativePaths = getDescriptorPath(module);
 
-        ModuleType moduleType = (ModuleType) module.getModuleType ();
+        J2eeModule.Type moduleType = module.getType();
         List serverDescriptorRelativePaths = Arrays.asList(instance.getServer().getDeploymentPlanFiles(moduleType));
         return new AppChanges(descriptorRelativePaths, serverDescriptorRelativePaths, moduleType);
     }
@@ -308,7 +308,7 @@ public class ServerFileDistributor extends ServerProgress {
                 createOrReplace(sourceFO,targetFO,destRoot,relativePath,mc,destMap, true, lastDeployTime);
             }
 
-            ModuleType moduleType = (ModuleType) dtarget.getModule ().getModuleType ();
+            J2eeModule.Type moduleType = dtarget.getModule().getType();
             String[] rPaths = instance.getServer().getDeploymentPlanFiles(moduleType);
 
             // copying serverconfiguration files if changed
@@ -384,7 +384,7 @@ public class ServerFileDistributor extends ServerProgress {
                 }
             }
 
-            ModuleType moduleType = (ModuleType) dtarget.getModule ().getModuleType ();
+            J2eeModule.Type moduleType = dtarget.getModule().getType();
             String[] rPaths = instance.getServer().getDeploymentPlanFiles(moduleType);
 
             // copying serverconfiguration files if changed
@@ -528,7 +528,7 @@ public class ServerFileDistributor extends ServerProgress {
         private boolean manifestChanged = false;
         private boolean ejbsChanged = false;
         private List changedEjbs = Collections.EMPTY_LIST;
-        private ModuleType moduleType = null;
+        private J2eeModule.Type moduleType = null;
         private List changedFiles = new ArrayList();
         private List descriptorRelativePaths;
         private List serverDescriptorRelativePaths;
@@ -537,7 +537,7 @@ public class ServerFileDistributor extends ServerProgress {
             super();
         }
 
-        AppChanges(List descriptorRelativePaths, List serverDescriptorRelativePaths, ModuleType moduleType) {
+        AppChanges(List descriptorRelativePaths, List serverDescriptorRelativePaths, J2eeModule.Type moduleType) {
             this.descriptorRelativePaths = descriptorRelativePaths;
             this.serverDescriptorRelativePaths = serverDescriptorRelativePaths;
             this.moduleType = moduleType;
@@ -582,15 +582,15 @@ public class ServerFileDistributor extends ServerProgress {
             }
 
             if (!classesChanged) {
-                boolean classes = (!moduleType.equals(ModuleType.WAR)
+                boolean classes = (!J2eeModule.Type.WAR.equals(moduleType)
                         && !relativePath.startsWith("META-INF")) // NOI18N
                             || relativePath.startsWith("WEB-INF/classes/"); // NOI18N
 
-                if (moduleType.equals(ModuleType.EAR)) {
+                if (J2eeModule.Type.EAR.equals(moduleType)) {
                     classes = false;
                 }
 
-                boolean importantLib = !moduleType.equals(ModuleType.WAR)
+                boolean importantLib = !J2eeModule.Type.WAR.equals(moduleType)
                         || relativePath.startsWith("WEB-INF/lib/"); // NOI18N
                 boolean libs = importantLib
                         && (relativePath.endsWith(".jar") // NOI18N

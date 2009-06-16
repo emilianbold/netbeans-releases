@@ -32,7 +32,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.javacard</friend>
+                <friend>org.netbeans.modules.javacard.project</friend>
                 <friend>org.netbeans.modules.javacard.console</friend>
                 <friend>org.netbeans.modules.mobility.project</friend>
                 <package>org.netbeans.spi.actions</package>

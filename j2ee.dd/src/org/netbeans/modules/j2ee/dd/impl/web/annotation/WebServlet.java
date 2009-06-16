@@ -55,7 +55,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.Pa
  * This class represents javax.servlet.annotation.WebServlet annotation
  * @author Petr Slechta
  */
-public class WebServlet extends PersistentObject {
+public class WebServlet extends PersistentObject implements Refreshable {
     private String name;
     private List<String> urlPatterns = new ArrayList<String>();
     private String clazz;
@@ -99,36 +99,16 @@ public class WebServlet extends PersistentObject {
         return true;
     }
 
-    /**
-     * @return name of the servlet
-     */
     public String getName() {
         return name;
     }
 
-    /**
-     * @return URL patterns of the servlet
-     */
     public List<String> getUrlPatterns() {
         return urlPatterns;
     }
 
-    /**
-     * @return name of class that implements the servlet
-     */
     public String getServletClass() {
         return clazz;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder res = new StringBuilder();
-        res.append("[WebServlet name=").append(name).append(", class=").append(clazz).append(", urlPatterns={ ");
-        for (String s : urlPatterns) {
-            res.append('"').append(s).append("\" ");
-        }
-        res.append("}]");
-        return res.toString();
     }
 
 }
