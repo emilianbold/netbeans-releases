@@ -12,6 +12,7 @@
     <property name="mpkg.name_nb" value="NetBeans 6.7 RC3"/>
     <property name="app.name" value="${install.dir}/${appname}.app"/>
     <property name="nbClusterDir" value="nb6.7"/>      
+    <property name="nb.check.build.number" value="0"/>
 
     <property name="appversion" value="6.7 RC3"/>
     <property name="nb.display.version.long"  value="6.7 RC3"/>
