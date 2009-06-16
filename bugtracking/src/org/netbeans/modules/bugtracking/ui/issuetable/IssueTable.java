@@ -42,9 +42,9 @@
 package org.netbeans.modules.bugtracking.ui.issuetable;
 
 import java.io.IOException;
+import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.bugtracking.spi.IssueNode.IssueProperty;
-import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
 import org.openide.util.NbBundle;
 
 import javax.swing.event.AncestorListener;
@@ -72,7 +72,6 @@ import javax.swing.UIManager;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Query.Filter;
 import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.awt.MouseUtils;
@@ -92,9 +91,28 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
     private int seenColumnIdx = -1;
     private int recentChangesColumnIdx = -1;
     private Query query;
+    private final ColumnDescriptor[] descriptors;
 
     private Filter filter;        
+    private Filter[] filters;
     private Set<Issue> issues = new HashSet<Issue>();
+
+    /**
+     * Returns the issue table filters
+     * @return
+     */
+    public Filter[] getDefinedFilters() {
+        if(filters == null) {
+            filters = new Filter[] {
+                Filter.getAllFilter(query),
+                Filter.getNewFilter(query),
+                Filter.getNotSeenFilter(),
+                Filter.getObsoleteDateFilter(query),
+                 Filter.getAllButObsoleteDateFilter(query)
+            };
+        }
+        return filters;
+    }
 
     private static final Comparator<IssueProperty> NodeComparator = new Comparator<IssueProperty>() {
         public int compare(IssueProperty p1, IssueProperty p2) {
@@ -112,9 +130,15 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
             }
         }
     };
+
     
-    public IssueTable(Query query) {
-        this.query = query; 
+    public IssueTable(Query query, ColumnDescriptor[] descriptors) {
+        assert query != null;
+        assert descriptors != null;
+        assert descriptors.length > 0;
+        
+        this.query = query;
+        this.descriptors = descriptors;
         query.addNotifyListener(new NotifyListener());
 
         tableModel = new NodeTableModel();
@@ -146,6 +170,10 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
         return seenColumnIdx;
     }    
 
+    public void setRenderer(DefaultTableCellRenderer renderer) {
+        table.setDefaultRenderer(Node.Property.class, renderer);
+    }
+
     public void setFilter(Filter filter) {
         this.filter = filter;
         List<IssueNode> issueNodes = new ArrayList<IssueNode>(issues.size());
@@ -160,9 +188,8 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
     void setDefaultColumnSizes() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                ColumnDescriptor[] descs = query.getColumnDescriptors();
-                for (int i = 0; i < descs.length; i++) {
-                    ColumnDescriptor desc = descs[i];
+                for (int i = 0; i < descriptors.length; i++) {
+                    ColumnDescriptor desc = descriptors[i];
                     int w = desc.getWidth();
                     if(w > 0) {                        
                         table.getColumnModel().getColumn(i).setMinWidth(10);
@@ -204,9 +231,8 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
      * @param columns array of column names, they must be one of SyncFileNode.COLUMN_NAME_XXXXX constants.  
      */ 
     public final void initColumns() {
-        setModelProperties(query);
-        ColumnDescriptor[] descs = query.getColumnDescriptors();
-        for (int i = 0; i < descs.length; i++) {
+        setModelProperties(query);        
+        for (int i = 0; i < descriptors.length; i++) {
             sorter.setColumnComparator(i, null);
             sorter.setSortingStatus(i, TableSorter.NOT_SORTED);
 //            if (IssueNode.COLUMN_NAME_STATUS.equals(tableColumns[i])) {
@@ -217,12 +243,11 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
         setDefaultColumnSizes();        
     }
 
-    private void setModelProperties(Query query) {
-        ColumnDescriptor[] descs = query.getColumnDescriptors();
-        List<Node.Property> properties = new ArrayList<Node.Property>(descs.length + (query.isSaved() ? 2 : 0));
+    private void setModelProperties(Query query) {        
+        List<Node.Property> properties = new ArrayList<Node.Property>(descriptors.length + (query.isSaved() ? 2 : 0));
         int i = 0;
-        for (; i < descs.length; i++) {
-            ColumnDescriptor desc = descs[i];
+        for (; i < descriptors.length; i++) {
+            ColumnDescriptor desc = descriptors[i];
             properties.add(desc);
         }
         if(query.isSaved()) {
@@ -309,7 +334,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
     }
 
     public void keyReleased(KeyEvent e) {
-    }    
+    }
 
     private class NotifyListener implements QueryNotifyListener {
         public void notifyData(final Issue issue) {

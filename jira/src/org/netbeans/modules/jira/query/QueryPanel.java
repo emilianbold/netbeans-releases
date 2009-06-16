@@ -66,7 +66,7 @@ import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
 import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.ui.issuetable.Filter;
 import org.netbeans.modules.jira.query.UserSearch.UserSearchItem;
 import org.openide.util.ImageUtilities;
 
@@ -1175,8 +1175,8 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     private static class FilterCellRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if(value instanceof Query.Filter) {
-                value = ((Query.Filter)value).getDisplayName();
+            if(value instanceof Filter) {
+                value = ((Filter)value).getDisplayName();
             }
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }

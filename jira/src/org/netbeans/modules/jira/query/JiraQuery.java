@@ -58,6 +58,8 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.spi.IssueCache;
+import org.netbeans.modules.bugtracking.ui.issuetable.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.ui.issuetable.Filter;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.commands.PerformQueryCommand;
@@ -137,7 +139,6 @@ public class JiraQuery extends Query {
         throw new IllegalStateException("wrong fileter type : " + jiraFilter.getClass().getName());
     }
 
-    @Override
     public ColumnDescriptor[] getColumnDescriptors() {
         return NbJiraIssue.getColumnDescriptors(repository);
     }
@@ -267,10 +268,8 @@ public class JiraQuery extends Query {
         super.setSaved(saved);
     }
 
-    @Override
     public void setFilter(Filter filter) {
         getController().selectFilter(filter);
-        super.setFilter(filter);
     }
 
     @Override

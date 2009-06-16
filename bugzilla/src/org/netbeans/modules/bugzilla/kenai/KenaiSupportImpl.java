@@ -49,9 +49,12 @@ import java.util.Set;
 import java.util.logging.Level;
 import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
 import org.netbeans.modules.bugtracking.spi.KenaiSupport;
+import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.ui.issuetable.Filter;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
@@ -156,6 +159,14 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
                 // refresh their taskdata with the relevant username/password
                 kr.setCredentials(user, psswd);
             }
+        }
+    }
+
+    @Override
+    public void setFilter(Query query, Filter filter) {
+        if(query instanceof BugzillaQuery) { // XXX assert instead of if
+            BugzillaQuery bq = (BugzillaQuery) query;
+            bq.setFilter(filter);
         }
     }
 }

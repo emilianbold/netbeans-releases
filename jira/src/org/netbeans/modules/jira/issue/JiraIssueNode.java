@@ -196,7 +196,7 @@ public class JiraIssueNode extends IssueNode {
         }
     }
 
-    private class SummaryProperty extends IssueProperty<String> {
+    public class SummaryProperty extends IssueProperty<String> {
         public SummaryProperty() {
             super(NbJiraIssue.LABEL_NAME_SUMMARY,
                   String.class,

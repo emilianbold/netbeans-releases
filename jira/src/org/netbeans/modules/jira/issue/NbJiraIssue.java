@@ -86,7 +86,7 @@ import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.ui.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.jira.commands.JiraCommand;
@@ -266,15 +266,15 @@ public class NbJiraIssue extends Issue {
         return repository.getTaskRepository();
     }
 
-    boolean isSubtask() {        
+    public boolean isSubtask() {
         return getParentKey() != null;
     }
 
-    boolean hasSubtasks() {
+    public boolean hasSubtasks() {
         return getSubtaskKeys() != null;
     }
 
-    String getParentKey() {
+    public String getParentKey() {
         TaskAttribute attr = taskData.getRoot().getMappedAttribute(JiraAttribute.PARENT_KEY.id());
         if(attr == null) {
             return null;
@@ -286,7 +286,7 @@ public class NbJiraIssue extends Issue {
         return parentKey;
     }
 
-    List<String> getSubtaskKeys() {
+    public List<String> getSubtaskKeys() {
         TaskAttribute attr = taskData.getRoot().getMappedAttribute(JiraAttribute.SUBTASK_KEYS.id());
         if(attr == null) {
             return null;
