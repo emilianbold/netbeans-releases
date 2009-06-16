@@ -199,25 +199,6 @@ public class DatabaseConnectionConvertorTest extends TestBase {
         assertEquals(1, instances.size()); 
     }
     
-    public void testImportOldConnections() throws Exception {
-        DatabaseConnection conn = new DatabaseConnection("org.foo.FooDriver", 
-                "foo_driver", "jdbc:foo:localhost", "schema", "user", null);
-        RootNode.getOption().getConnections().add(conn);
-        
-        DatabaseConnectionConvertor.importOldConnections();
-        
-        FileObject root = Util.getConnectionsFolder();
-        Collection instances = new FolderLookup(DataFolder.findFolder(root)).getLookup().lookup(new Lookup.Template(DatabaseConnection.class)).allInstances();
-        assertEquals(1, instances.size());
-        
-        DatabaseConnection importedConn = (DatabaseConnection)instances.iterator().next();
-        assertEquals(conn.getDriver(), importedConn.getDriver());
-        assertEquals(conn.getDriverName(), importedConn.getDriverName());
-        assertEquals(conn.getDatabase(), importedConn.getDatabase());
-        assertEquals(conn.getSchema(), importedConn.getSchema());
-        assertEquals(conn.getUser(), importedConn.getUser());
-    }
-    
     public void testDecodePassword() throws Exception {
         assertNull(DatabaseConnectionConvertor.decodePassword(new byte[0]));
         assertEquals("password", DatabaseConnectionConvertor.decodePassword("password".getBytes("UTF-8")));
