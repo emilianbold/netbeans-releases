@@ -1188,7 +1188,7 @@ public class UnitTab extends javax.swing.JPanel {
             for (Unit u : units) {
                 if (u instanceof Unit.Installed) {
                     Unit.Installed inst = (Unit.Installed)u;
-                    if (!inst.isUninstallAllowed()) {
+                    if (!inst.isUninstallAllowed() && !inst.isDeactivationAllowed()) {
                         setEnabled(false);
                         return;
                     }
@@ -1500,6 +1500,7 @@ public class UnitTab extends javax.swing.JPanel {
                 Containers.forUninstall().removeAll();
             }
             Containers.forDisable().removeAll();
+            fireUpdataUnitChange ();
             restoreSelectedRow(row);
             refreshState ();
             focusTable ();
