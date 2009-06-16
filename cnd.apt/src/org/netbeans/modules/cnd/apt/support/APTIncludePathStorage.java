@@ -41,29 +41,33 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
-import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
 public final class APTIncludePathStorage {
-    private final Map<CharSequence, List<CharSequence>> allIncludes = new HashMap<CharSequence, List<CharSequence>>();
+    private final Map<CharSequence, List<IncludeDirEntry>> allIncludes = new HashMap<CharSequence, List<IncludeDirEntry>>();
     
     public APTIncludePathStorage() {
     }
 
-    public List<CharSequence> get(CharSequence configID, List<? extends CharSequence> sysIncludes) {
+    public List<IncludeDirEntry> get(CharSequence configID, List<String> sysIncludes) {
         CharSequence key = CharSequenceKey.create(configID);
         synchronized (allIncludes) {
-            List<CharSequence> list = allIncludes.get(key);
+            List<IncludeDirEntry> list = allIncludes.get(key);
             if (list == null) {
                 // create new one with light char sequences and put in map
-                list = FilePathCache.asList(sysIncludes);
+                list = new ArrayList<IncludeDirEntry>(sysIncludes.size());
+                for (String cs : sysIncludes) {
+                    IncludeDirEntry inclEntry = IncludeDirEntry.get(cs);
+                    list.add(inclEntry);
+                }
                 allIncludes.put(key, list);
             }
             return list;

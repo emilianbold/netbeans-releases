@@ -42,6 +42,7 @@ import java.io.File;
 import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
+import org.openide.util.Utilities;
 import static org.junit.Assert.*;
 
 /**
@@ -115,6 +116,59 @@ public class QmakeConfigurationTest {
     }
 
     @Test
+    public void testGetOutputValueApp() {
+        QmakeConfiguration qconf = newQmakeConfiguration(MakeConfiguration.TYPE_QT_APPLICATION);
+        assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/QmakeConfigurationTest", qconf.getOutputValue());
+        qconf.getDestdir().setValue(".");
+        assertEquals("./QmakeConfigurationTest", qconf.getOutputValue());
+        qconf.getTarget().setValue("Dummy");
+        assertEquals("./Dummy", qconf.getOutputValue());
+        qconf.getDestdir().reset();
+        assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/Dummy", qconf.getOutputValue());
+    }
+
+    @Test
+    public void testGetOutputValueDynamicLib() {
+        QmakeConfiguration qconf = newQmakeConfiguration(MakeConfiguration.TYPE_QT_DYNAMIC_LIB);
+        if (Utilities.isWindows()) {
+            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libQmakeConfigurationTest1.dll", qconf.getOutputValue());
+            qconf.getVersion().setValue("2.0.0");
+            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libQmakeConfigurationTest2.dll", qconf.getOutputValue());
+            qconf.getDestdir().setValue(".");
+            assertEquals("./libQmakeConfigurationTest2.dll", qconf.getOutputValue());
+            qconf.getTarget().setValue("Dummy");
+            assertEquals("./libDummy2.dll", qconf.getOutputValue());
+            qconf.getDestdir().reset();
+            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libDummy2.dll", qconf.getOutputValue());
+        } else if (Utilities.isUnix()) {
+            String soext = Utilities.isMac() ? "dylib" : "so";
+            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libQmakeConfigurationTest." + soext + ".1.0.0", qconf.getOutputValue());
+            qconf.getVersion().setValue("2.3.4");
+            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libQmakeConfigurationTest." + soext + ".2.3.4", qconf.getOutputValue());
+            qconf.getDestdir().setValue(".");
+            assertEquals("./libQmakeConfigurationTest." + soext + ".2.3.4", qconf.getOutputValue());
+            qconf.getTarget().setValue("Dummy");
+            assertEquals("./libDummy." + soext + ".2.3.4", qconf.getOutputValue());
+            qconf.getDestdir().reset();
+            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libDummy." + soext + ".2.3.4", qconf.getOutputValue());
+        } else {
+            System.err.println("OS not recognized. Skipping test");
+        }
+    }
+
+    @Test
+    public void testGetOutputValueStaticLib() {
+        QmakeConfiguration qconf = newQmakeConfiguration(MakeConfiguration.TYPE_QT_STATIC_LIB);
+        assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libQmakeConfigurationTest.a", qconf.getOutputValue());
+        qconf.getDestdir().setValue(".");
+        assertEquals("./libQmakeConfigurationTest.a", qconf.getOutputValue());
+        qconf.getTarget().setValue("Dummy");
+        assertEquals("./libDummy.a", qconf.getOutputValue());
+        qconf.getDestdir().reset();
+        assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libDummy.a", qconf.getOutputValue());
+    }
+
+    @Test
     public void testGetEnabledModules() {
         for (int conftype : QT_CONF_TYPES) {
             QmakeConfiguration qconf = newQmakeConfiguration(conftype);
@@ -165,70 +219,100 @@ public class QmakeConfigurationTest {
         }
     }
 
+    private void setNonStandardProperties(QmakeConfiguration qconf) {
+        qconf.getDestdir().setValue("destdir");
+        qconf.getTarget().setValue("target");
+        qconf.getVersion().setValue("2.0.0");
+        qconf.getBuildMode().setValue("Release");
+        qconf.isCoreEnabled().setValue(false);
+        qconf.isGuiEnabled().setValue(false);
+        qconf.isNetworkEnabled().setValue(true);
+        qconf.isOpenglEnabled().setValue(true);
+        qconf.isPhononEnabled().setValue(true);
+        qconf.isQt3SupportEnabled().setValue(true);
+        qconf.isSqlEnabled().setValue(true);
+        qconf.isSvgEnabled().setValue(true);
+        qconf.isWebkitEnabled().setValue(true);
+        qconf.isXmlEnabled().setValue(true);
+        qconf.getMocDir().setValue("mocdir");
+        qconf.getRccDir().setValue("rccdir");
+        qconf.getUiDir().setValue("uidir");
+        qconf.getQmakeSpec().setValue("solaris-cc-64");
+        qconf.getCustomDefs().add("ZZZ=YYY");
+    }
+
+    private void assertNotSameButEquals(QmakeConfiguration qconf, QmakeConfiguration qconf2) {
+        assertNotSame(qconf, qconf2);
+        assertNotSame(qconf.getDestdir(), qconf2.getDestdir());
+        assertEquals(qconf.getDestdir().getValue(), qconf2.getDestdir().getValue());
+        assertNotSame(qconf.getTarget(), qconf2.getTarget());
+        assertEquals(qconf.getTarget().getValue(), qconf2.getTarget().getValue());
+        assertNotSame(qconf.getVersion(), qconf2.getVersion());
+        assertEquals(qconf.getVersion().getValue(), qconf2.getVersion().getValue());
+        assertNotSame(qconf.getBuildMode(), qconf2.getBuildMode());
+        assertEquals(qconf.getBuildMode().getValue(), qconf2.getBuildMode().getValue());
+        assertNotSame(qconf.isCoreEnabled(), qconf2.isCoreEnabled());
+        assertEquals(qconf.isCoreEnabled().getValue(), qconf2.isCoreEnabled().getValue());
+        assertNotSame(qconf.isGuiEnabled(), qconf2.isGuiEnabled());
+        assertEquals(qconf.isGuiEnabled().getValue(), qconf2.isGuiEnabled().getValue());
+        assertNotSame(qconf.isNetworkEnabled(), qconf2.isNetworkEnabled());
+        assertEquals(qconf.isNetworkEnabled().getValue(), qconf2.isNetworkEnabled().getValue());
+        assertNotSame(qconf.isOpenglEnabled(), qconf2.isOpenglEnabled());
+        assertEquals(qconf.isOpenglEnabled().getValue(), qconf2.isOpenglEnabled().getValue());
+        assertNotSame(qconf.isPhononEnabled(), qconf2.isPhononEnabled());
+        assertEquals(qconf.isPhononEnabled().getValue(), qconf2.isPhononEnabled().getValue());
+        assertNotSame(qconf.isQt3SupportEnabled(), qconf2.isQt3SupportEnabled());
+        assertEquals(qconf.isQt3SupportEnabled().getValue(), qconf2.isQt3SupportEnabled().getValue());
+        assertNotSame(qconf.isSqlEnabled(), qconf2.isSqlEnabled());
+        assertEquals(qconf.isSqlEnabled().getValue(), qconf2.isSqlEnabled().getValue());
+        assertNotSame(qconf.isSvgEnabled(), qconf2.isSvgEnabled());
+        assertEquals(qconf.isSvgEnabled().getValue(), qconf2.isSvgEnabled().getValue());
+        assertNotSame(qconf.isWebkitEnabled(), qconf2.isWebkitEnabled());
+        assertEquals(qconf.isWebkitEnabled().getValue(), qconf2.isWebkitEnabled().getValue());
+        assertNotSame(qconf.isXmlEnabled(), qconf2.isXmlEnabled());
+        assertEquals(qconf.isXmlEnabled().getValue(), qconf2.isXmlEnabled().getValue());
+        assertNotSame(qconf.getMocDir(), qconf2.getMocDir());
+        assertEquals(qconf.getMocDir().getValue(), qconf2.getMocDir().getValue());
+        assertNotSame(qconf.getRccDir(), qconf2.getRccDir());
+        assertEquals(qconf.getRccDir().getValue(), qconf2.getRccDir().getValue());
+        assertNotSame(qconf.getUiDir(), qconf2.getUiDir());
+        assertEquals(qconf.getUiDir().getValue(), qconf2.getUiDir().getValue());
+        assertNotSame(qconf.getQmakeSpec(), qconf2.getQmakeSpec());
+        assertEquals(qconf.getQmakeSpec().getValue(), qconf2.getQmakeSpec().getValue());
+        assertNotSame(qconf.getCustomDefs(), qconf2.getCustomDefs());
+        assertEquals(qconf.getCustomDefs().getValue(), qconf2.getCustomDefs().getValue());
+    }
+
+    @Test
+    public void testAssign() {
+        for (int conftype : QT_CONF_TYPES) {
+            QmakeConfiguration qconf = newQmakeConfiguration(conftype);
+            QmakeConfiguration qconf2 = newQmakeConfiguration(conftype);
+            setNonStandardProperties(qconf2);
+            qconf.assign(qconf2);
+            assertNotSameButEquals(qconf2, qconf);
+        }
+    }
+
     @Test
     public void testClone() {
         for (int conftype : QT_CONF_TYPES) {
             QmakeConfiguration qconf = newQmakeConfiguration(conftype);
-            qconf.getDestdir().setValue("destdir");
-            qconf.getTarget().setValue("target");
-            qconf.getVersion().setValue("2.0.0");
-            qconf.getBuildMode().setValue("Release");
-            qconf.isCoreEnabled().setValue(false);
-            qconf.isGuiEnabled().setValue(false);
-            qconf.isNetworkEnabled().setValue(true);
-            qconf.isOpenglEnabled().setValue(true);
-            qconf.isPhononEnabled().setValue(true);
-            qconf.isQt3SupportEnabled().setValue(true);
-            qconf.isSqlEnabled().setValue(true);
-            qconf.isSvgEnabled().setValue(true);
-            qconf.isWebkitEnabled().setValue(true);
-            qconf.isXmlEnabled().setValue(true);
-            qconf.getMocDir().setValue("mocdir");
-            qconf.getRccDir().setValue("rccdir");
-            qconf.getUiDir().setValue("uidir");
-            qconf.getQmakeSpec().setValue("solaris-cc-64");
-            qconf.getCustomDefs().add("ZZZ=YYY");
-
+            setNonStandardProperties(qconf);
             QmakeConfiguration qconf2 = qconf.clone();
-            assertNotSame(qconf, qconf2);
-            assertNotSame(qconf.getDestdir(), qconf2.getDestdir());
-            assertEquals(qconf.getDestdir().getValue(), qconf2.getDestdir().getValue());
-            assertNotSame(qconf.getTarget(), qconf2.getTarget());
-            assertEquals(qconf.getTarget().getValue(), qconf2.getTarget().getValue());
-            assertNotSame(qconf.getVersion(), qconf2.getVersion());
-            assertEquals(qconf.getVersion().getValue(), qconf2.getVersion().getValue());
-            assertNotSame(qconf.getBuildMode(), qconf2.getBuildMode());
-            assertEquals(qconf.getBuildMode().getValue(), qconf2.getBuildMode().getValue());
-            assertNotSame(qconf.isCoreEnabled(), qconf2.isCoreEnabled());
-            assertEquals(qconf.isCoreEnabled().getValue(), qconf2.isCoreEnabled().getValue());
-            assertNotSame(qconf.isGuiEnabled(), qconf2.isGuiEnabled());
-            assertEquals(qconf.isGuiEnabled().getValue(), qconf2.isGuiEnabled().getValue());
-            assertNotSame(qconf.isNetworkEnabled(), qconf2.isNetworkEnabled());
-            assertEquals(qconf.isNetworkEnabled().getValue(), qconf2.isNetworkEnabled().getValue());
-            assertNotSame(qconf.isOpenglEnabled(), qconf2.isOpenglEnabled());
-            assertEquals(qconf.isOpenglEnabled().getValue(), qconf2.isOpenglEnabled().getValue());
-            assertNotSame(qconf.isPhononEnabled(), qconf2.isPhononEnabled());
-            assertEquals(qconf.isPhononEnabled().getValue(), qconf2.isPhononEnabled().getValue());
-            assertNotSame(qconf.isQt3SupportEnabled(), qconf2.isQt3SupportEnabled());
-            assertEquals(qconf.isQt3SupportEnabled().getValue(), qconf2.isQt3SupportEnabled().getValue());
-            assertNotSame(qconf.isSqlEnabled(), qconf2.isSqlEnabled());
-            assertEquals(qconf.isSqlEnabled().getValue(), qconf2.isSqlEnabled().getValue());
-            assertNotSame(qconf.isSvgEnabled(), qconf2.isSvgEnabled());
-            assertEquals(qconf.isSvgEnabled().getValue(), qconf2.isSvgEnabled().getValue());
-            assertNotSame(qconf.isWebkitEnabled(), qconf2.isWebkitEnabled());
-            assertEquals(qconf.isWebkitEnabled().getValue(), qconf2.isWebkitEnabled().getValue());
-            assertNotSame(qconf.isXmlEnabled(), qconf2.isXmlEnabled());
-            assertEquals(qconf.isXmlEnabled().getValue(), qconf2.isXmlEnabled().getValue());
-            assertNotSame(qconf.getMocDir(), qconf2.getMocDir());
-            assertEquals(qconf.getMocDir().getValue(), qconf2.getMocDir().getValue());
-            assertNotSame(qconf.getRccDir(), qconf2.getRccDir());
-            assertEquals(qconf.getRccDir().getValue(), qconf2.getRccDir().getValue());
-            assertNotSame(qconf.getUiDir(), qconf2.getUiDir());
-            assertEquals(qconf.getUiDir().getValue(), qconf2.getUiDir().getValue());
-            assertNotSame(qconf.getQmakeSpec(), qconf2.getQmakeSpec());
-            assertEquals(qconf.getQmakeSpec().getValue(), qconf2.getQmakeSpec().getValue());
-            assertNotSame(qconf.getCustomDefs(), qconf2.getCustomDefs());
-            assertEquals(qconf.getCustomDefs().getValue(), qconf2.getCustomDefs().getValue());
+            assertNotSameButEquals(qconf, qconf2);
+        }
+    }
+
+    @Test
+    public void testCloneAndAssign() {
+        for (int conftype : QT_CONF_TYPES) {
+            QmakeConfiguration qconf = newQmakeConfiguration(conftype);
+            QmakeConfiguration qconf2 = qconf.clone();
+            assertNotSameButEquals(qconf, qconf2);
+            setNonStandardProperties(qconf2);
+            qconf.assign(qconf2);
+            assertNotSameButEquals(qconf2, qconf);
         }
     }
 }
