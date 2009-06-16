@@ -216,6 +216,28 @@ public class RemoteServerRecord implements ServerRecord {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final RemoteServerRecord other = (RemoteServerRecord) obj;
+        if (this.executionEnvironment != other.executionEnvironment && (this.executionEnvironment == null || !this.executionEnvironment.equals(other.executionEnvironment))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 79 * hash + (this.executionEnvironment != null ? this.executionEnvironment.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
     public String getServerDisplayName() {
         if (displayName == null || displayName.length() == 0) {
             // TODO: should we add ExecutionEnvironment.getHostDisplayName() ?
