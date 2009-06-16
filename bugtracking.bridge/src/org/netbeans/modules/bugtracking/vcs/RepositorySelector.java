@@ -46,38 +46,44 @@ import java.io.File;
 import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import static java.util.logging.Level.FINEST;
 
 /**
- * Determines the default issue tracking repository for the
- * {@code HookPanel} and selects it in the panel's combo-box.
+ * Loads the list of repositories and determines the default one off the AWT
+ * thread. Once the results are ready, updates the UI (the combo-box).
  * It is activated by method {@code hierarchyChanged} when the hook panel
- * is displayed. At this moment, a routine for finding the default
- * repository is started in a separated thread. Once the routine finishes,
- * the determined default repository is selected in the repository
- * combo-box in the {@code HookPanel}, unless the user has already selected
- * one.
+ * is displayed. At this moment, a routine for finding the known repositories
+ * and for determination the default repository is started in a separated
+ * thread. As soon as the list of known repositories is ready, the repositories
+ * combo-box is updated. When the default repository is determined, it is
+ * pre-selected in the combo-box, unless the user had already selected some
+ * repository.
  *
  * @author  Marian Petras
  */
-final class DefaultRepositorySelector implements HierarchyListener, Runnable {
+final class RepositorySelector implements HierarchyListener, Runnable {
 
     private static final Logger LOG
-            = Logger.getLogger(DefaultRepositorySelector.class.getName());
+            = Logger.getLogger(RepositorySelector.class.getName());
 
     private final HookPanel hookPanel;
     private final File refFile;
     private boolean tooLate;
+    private boolean repositoriesDisplayed = false;
+    private boolean defaultRepoSelected = false;
+    private transient Repository[] repositories;
+    private transient boolean defaultRepoComputed;
     private transient Repository defaultRepo;
 
     static void setup(HookPanel hookPanel, File referenceFile) {
         hookPanel.addHierarchyListener(
-                new DefaultRepositorySelector(hookPanel, referenceFile));
+                new RepositorySelector(hookPanel, referenceFile));
     }
 
-    private DefaultRepositorySelector(HookPanel hookPanel, File refFile) {
+    private RepositorySelector(HookPanel hookPanel, File refFile) {
         super();
         this.hookPanel = hookPanel;
         this.refFile = refFile;
@@ -95,6 +101,7 @@ final class DefaultRepositorySelector implements HierarchyListener, Runnable {
     }
 
     private void hookPanelDisplayed() {
+        LOG.finer("hookPanelDisplayed()");                              //NOI18N
         RequestProcessor.getDefault().post(this);
     }
 
@@ -109,11 +116,35 @@ final class DefaultRepositorySelector implements HierarchyListener, Runnable {
 
     public void run() {
         if (RequestProcessor.getDefault().isRequestProcessorThread()) {
-            findDefaultRepository();
+
+            loadRepositories();
+            EventQueue.invokeLater(this);
+
+            try {
+                findDefaultRepository();
+            } finally {
+                defaultRepoComputed = true;
+            }
+            EventQueue.invokeLater(this);
+
         } else {
             assert EventQueue.isDispatchThread();
+            if (defaultRepoSelected) {
+                /*
+                 * The default repository selection was performed during the
+                 * previous invocation of this method from AWT thread
+                 * (in one shot with displaying the list of available
+                 * repositories).
+                 */
+                LOG.finest("run() called from AWT - nothing to do - all work already done"); //NOI18N
+                return;
+            }
 
-            LOG.finest("run() called from AWT - going to select the repository"); //NOI18N
+            if (LOG.isLoggable(FINEST)) {
+                LOG.finest(!repositoriesDisplayed
+                           ? "run() called from AWT - going to display the list of repositories" //NOI18N
+                           : "run() called from AWT - going to select the repository"); //NOI18N
+            }
 
             if (tooLate) {
                 LOG.finest(" - too late - the HookPanel has been already closed"); //NOI18N
@@ -122,21 +153,53 @@ final class DefaultRepositorySelector implements HierarchyListener, Runnable {
 
             hookPanel.removeHierarchyListener(this);
 
-            if (defaultRepo == null) {
-                LOG.finest(" - default repository not determined - abort"); //NOI18N
-                return;
+            boolean repositoriesJustDisplayed = false;
+            if (!repositoriesDisplayed) {
+                hookPanel.setRepositories(repositories);
+                repositoriesJustDisplayed = true;
+                repositoriesDisplayed = true;
             }
+            if (defaultRepoComputed) {
+                if (repositoriesJustDisplayed) {
+                    LOG.finest("                      - going also to select the default repository (if any)"); //NOI18N
+                }
+                try {
+                    if (defaultRepo != null) {
+                        hookPanel.preselectRepository(defaultRepo);
+                    } else {
+                        LOG.finest(" - default repository not determined - abort"); //NOI18N
+                    }
+                } finally {
+                    defaultRepoSelected = true;
+                }
+            }
+        }
+    }
 
-            hookPanel.preselectRepository(defaultRepo);
+    private void loadRepositories() {
+        assert RequestProcessor.getDefault().isRequestProcessorThread();
+        LOG.finer("loadRepositories()");                                //NOI18N
+
+        long startTimeMillis = System.currentTimeMillis();
+
+        repositories = BugtrackingUtil.getKnownRepositories();
+
+        long endTimeMillis = System.currentTimeMillis();
+        if (LOG.isLoggable(FINEST)) {
+            LOG.finest("BugtrackingUtil.getKnownRepositories() took "   //NOI18N
+                       + (endTimeMillis - startTimeMillis) + " ms.");   //NOI18N
         }
     }
 
     private void findDefaultRepository() {
         assert RequestProcessor.getDefault().isRequestProcessorThread();
+        LOG.finer("findDefaultRepository()");                           //NOI18N
+
         long startTimeMillis, endTimeMillis;
         Repository result;
 
         startTimeMillis = System.currentTimeMillis();
+
         if (refFile != null) {
             result = BugtrackingOwnerSupport.getInstance()
                      .getRepository(refFile, false);
@@ -147,6 +210,7 @@ final class DefaultRepositorySelector implements HierarchyListener, Runnable {
             result = BugtrackingOwnerSupport.getInstance()
                     .getRepository(BugtrackingOwnerSupport.ContextType.ALL_PROJECTS);
         }
+
         endTimeMillis = System.currentTimeMillis();
 
         if (LOG.isLoggable(FINEST)) {
@@ -159,7 +223,6 @@ final class DefaultRepositorySelector implements HierarchyListener, Runnable {
                 LOG.finest(" - default repository: " + result.getDisplayName()); //NOI18N
             }
             defaultRepo = result;
-            EventQueue.invokeLater(this);
         } else {
             LOG.finest(" - default repository: <null>");                //NOI18N
         }
