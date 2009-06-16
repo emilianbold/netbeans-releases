@@ -561,8 +561,8 @@ public class TraceModelBase {
         return Collections.unmodifiableList(files);
     }
 
-    public List<CharSequence> getQuoteIncludePaths() {
-        return FilePathCache.asList(quoteIncludePaths);
+    public List<String> getQuoteIncludePaths() {
+        return quoteIncludePaths;
     }
 
     public void setUseCSysDefines(boolean set) {
