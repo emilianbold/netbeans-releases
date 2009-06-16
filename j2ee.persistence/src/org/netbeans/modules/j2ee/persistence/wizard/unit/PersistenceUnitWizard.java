@@ -51,6 +51,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
+import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
@@ -128,9 +130,17 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
     public Set instantiate() throws java.io.IOException {
         PersistenceUnit punit = null;
         LOG.fine("Instantiating...");
+        String version=PersistenceUtils.getJPAVersion(project);
         if (descriptor.isContainerManaged()) {
             LOG.fine("Creating a container managed PU");
-            punit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
+            if(Persistence.VERSION_2_0.equals(version))
+            {
+                punit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit();
+            }
+            else//currently default 1.0
+            {
+                punit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
+            }
             if (descriptor.getDatasource() != null && !"".equals(descriptor.getDatasource())){
                 if (descriptor.isJTA()) {
                     punit.setJtaDataSource(descriptor.getDatasource());
@@ -155,7 +165,7 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
         } else {
             LOG.fine("Creating an application managed PU");
             punit = ProviderUtil.buildPersistenceUnit(descriptor.getPersistenceUnitName(),
-                    descriptor.getSelectedProvider(), descriptor.getPersistenceConnection());
+                    descriptor.getSelectedProvider(), descriptor.getPersistenceConnection(), version);
             punit.setTransactionType("RESOURCE_LOCAL");
             Library lib = PersistenceLibrarySupport.getLibrary(descriptor.getSelectedProvider());
             if (lib != null){
