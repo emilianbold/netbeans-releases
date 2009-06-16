@@ -49,6 +49,9 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.ui.LocalServer;
@@ -60,12 +63,15 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.Uploa
 import org.netbeans.modules.php.project.util.PhpProjectGenerator;
 import org.netbeans.modules.php.project.util.PhpProjectGenerator.ProjectProperties;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -127,14 +133,20 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
 
-        PhpProjectGenerator.ProjectProperties projectProperties = new PhpProjectGenerator.ProjectProperties(
+        PhpFrameworkProvider frameworkProvider = null;
+//        for (PhpFrameworkProvider provider : PhpFrameworks.getFrameworks()) {
+//            frameworkProvider = provider;
+//            break;
+//        }
+
+        PhpProjectGenerator.ProjectProperties createProperties = new PhpProjectGenerator.ProjectProperties(
                 getProjectDirectory(),
                 getSources(),
                 (String) descriptor.getProperty(ConfigureProjectPanel.PROJECT_NAME),
                 wizardType == WizardType.REMOTE ? RunAsType.REMOTE : getRunAsType(),
                 (Charset) descriptor.getProperty(ConfigureProjectPanel.ENCODING),
                 getUrl(),
-                wizardType == WizardType.REMOTE ? null : getIndexFile(), // no index file for remote needed
+                wizardType == WizardType.REMOTE ? null : getIndexFile(frameworkProvider),
                 descriptor,
                 isCopyFiles(),
                 getCopySrcTarget(),
@@ -155,32 +167,51 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 throw new IllegalArgumentException("Unknown wizard type: " + wizardType);
         }
 
-        AntProjectHelper helper = PhpProjectGenerator.createProject(projectProperties, monitor);
+        AntProjectHelper helper = PhpProjectGenerator.createProject(createProperties, monitor);
         resultSet.add(helper.getProjectDirectory());
 
-        FileObject sources = FileUtil.toFileObject(projectProperties.getSourcesDirectory());
+        Project project = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+        PhpModule phpModule = project.getLookup().lookup(PhpModule.class);
+        assert phpModule != null : "PHP module must exist!";
+        FileObject sources = FileUtil.toFileObject(createProperties.getSourcesDirectory());
         resultSet.add(sources);
 
-        String indexFile = projectProperties.getIndexFile();
+        // post process
         switch (wizardType) {
+            case NEW:
+                if (frameworkProvider != null) {
+                    try {
+                        Set<FileObject> newFiles = frameworkProvider.createPhpModuleExtender(phpModule).extend(phpModule);
+                        assert frameworkProvider.isInPhpModule(phpModule);
+                        resultSet.addAll(newFiles);
+                    } catch (Exception exception) {
+                        Exceptions.printStackTrace(exception);
+                    }
+                }
+                break;
             case REMOTE:
-                downloadRemoteFiles(projectProperties, monitor);
-                // try to find index file for downloaded files
-                indexFile = getIndexFile();
+                downloadRemoteFiles(createProperties, monitor);
                 break;
         }
 
-        if (indexFile != null) {
-            FileObject fo = sources.getFileObject(indexFile);
-            if (fo != null && fo.isValid()) {
-                resultSet.add(fo);
-                switch (wizardType) {
-                    case REMOTE:
-                        saveIndexFile(helper, indexFile);
-                        break;
-                }
-            }
+        // update project properties
+        EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        PhpModuleProperties phpModuleProperties = null;
+        if (frameworkProvider != null) {
+            phpModuleProperties = frameworkProvider.getPhpModuleProperties(phpModule);
         }
+
+        FileObject indexFile = setIndexFile(createProperties, projectProperties, privateProperties, phpModuleProperties);
+        if (indexFile != null && indexFile.isValid()) {
+            resultSet.add(indexFile);
+        }
+        setWebRoot(createProperties, projectProperties, privateProperties, phpModuleProperties);
+        setTests(createProperties, projectProperties, privateProperties, phpModuleProperties);
+
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
+        ProjectManager.getDefault().saveProject(project);
 
         return resultSet;
     }
@@ -314,7 +345,11 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return url;
     }
 
-    private String getIndexFile() {
+    private String getIndexFile(PhpFrameworkProvider frameworkProvider) {
+        if (frameworkProvider != null) {
+            // no index for php framework
+            return null;
+        }
         String indexName = (String) descriptor.getProperty(RunConfigurationPanel.INDEX_FILE);
         if (indexName == null) {
             // run configuration panel not shown at all
@@ -374,12 +409,69 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         remoteMonitor.finishingDownload();
     }
 
-    private void saveIndexFile(AntProjectHelper helper, String indexFile) throws IOException {
-        EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+    private FileObject setIndexFile(PhpProjectGenerator.ProjectProperties createProperties, EditableProperties projectProperties,
+            EditableProperties privateProperties, PhpModuleProperties phpModuleProperties) {
+        String indexFile = createProperties.getIndexFile();
+        switch (wizardType) {
+            case NEW:
+                if (indexFile == null
+                        && phpModuleProperties != null) {
+                    FileObject frameworkIndex = phpModuleProperties.getIndexFile();
+                    if (frameworkIndex != null) {
+                        indexFile = PropertyUtils.relativizeFile(createProperties.getSourcesDirectory(), FileUtil.toFile(frameworkIndex));
+                        assert !indexFile.startsWith("../");
+                    }
+                }
+                break;
+            case REMOTE:
+                // try to find index file for downloaded files
+                indexFile = getIndexFile(null);
+                break;
+        }
+
+        if (indexFile == null) {
+            return null;
+        }
+
         privateProperties.setProperty(PhpProjectProperties.INDEX_FILE, indexFile);
-        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
-        Project project = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
-        ProjectManager.getDefault().saveProject(project);
+        return FileUtil.toFileObject(createProperties.getSourcesDirectory()).getFileObject(indexFile);
+    }
+
+    private void setWebRoot(PhpProjectGenerator.ProjectProperties createProperties, EditableProperties projectProperties,
+            EditableProperties privateProperties, PhpModuleProperties phpModuleProperties) {
+        if (phpModuleProperties == null) {
+            return;
+        }
+        FileObject webRoot = phpModuleProperties.getWebRoot();
+        if (webRoot != null) {
+            String relPath = PropertyUtils.relativizeFile(createProperties.getSourcesDirectory(), FileUtil.toFile(webRoot));
+            assert relPath != null && !relPath.startsWith("../") : "WebRoot must be underneath Sources";
+            projectProperties.setProperty(PhpProjectProperties.WEB_ROOT, relPath);
+        }
+    }
+
+    private void setTests(PhpProjectGenerator.ProjectProperties createProperties, EditableProperties projectProperties,
+            EditableProperties privateProperties, PhpModuleProperties phpModuleProperties) {
+        if (phpModuleProperties == null) {
+            return;
+        }
+        FileObject tests = phpModuleProperties.getTests();
+        if (tests != null) {
+            File projectDir = createProperties.getProjectDirectory();
+            if (projectDir == null) {
+                projectDir = createProperties.getSourcesDirectory();
+            }
+            assert projectDir != null;
+
+            File testDir = FileUtil.toFile(tests);
+            // relativize path
+            String testPath = PropertyUtils.relativizeFile(projectDir, testDir);
+            if (testPath == null) {
+                // path cannot be relativized => use absolute path (any VCS can be hardly use, of course)
+                testPath = testDir.getAbsolutePath();
+            }
+            projectProperties.setProperty(PhpProjectProperties.TEST_SRC_DIR, testPath);
+        }
     }
 
     private static final class LocalProgressMonitor implements PhpProjectGenerator.Monitor {
