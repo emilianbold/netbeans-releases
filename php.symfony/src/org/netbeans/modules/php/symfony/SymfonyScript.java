@@ -40,15 +40,25 @@
 package org.netbeans.modules.php.symfony;
 
 import java.io.File;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.PhpProgram;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.symfony.ui.options.SymfonyOptions;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
 public class SymfonyScript extends PhpProgram {
-    public static final String SCRIPT_NAME = "symfony";
+    public static final String SCRIPT_NAME = "symfony"; // NOI18N
+
+    private static final String CMD_INIT_PROJECT = "generate:project"; // NOI18N
 
     public SymfonyScript(String command) {
         super(command);
@@ -83,5 +93,28 @@ public class SymfonyScript extends PhpProgram {
             return NbBundle.getMessage(SymfonyScript.class, "MSG_SymfonyCannotRead");
         }
         return null;
+    }
+
+    public void initProject(PhpModule phpModule) throws InterruptedException {
+        String projectName = phpModule.getDisplayName();
+        ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(getProgram())
+                .workingDirectory(FileUtil.toFile(phpModule.getSourceDirectory()))
+                .addArgument(CMD_INIT_PROJECT)
+                .addArgument(projectName);
+        ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
+                .optionsPath(UiUtils.OPTIONS_PATH)
+                .frontWindow(true)
+                .showProgress(true);
+        String tabTitle = String.format("%s %s \"%s\"", getProgram(), CMD_INIT_PROJECT, projectName);
+        final ExecutionService service = ExecutionService.newService(
+                processBuilder,
+                executionDescriptor,
+                tabTitle);
+        final Future<Integer> result = service.run();
+        try {
+            result.get();
+        } catch (ExecutionException exc) {
+            UiUtils.processExecutionException(exc);
+        }
     }
 }
