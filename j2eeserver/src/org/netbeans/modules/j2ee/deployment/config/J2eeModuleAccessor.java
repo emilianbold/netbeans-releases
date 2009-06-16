@@ -85,6 +85,7 @@ public abstract class J2eeModuleAccessor {
      * @param impl SPI J2eeModuleImplementation object
      *
      * @return J2eeModule for the J2eeModuleImplementation.
+     * @deprecated use {@link #createJ2eeModule(org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2)}
      */
     public abstract J2eeModule createJ2eeModule(J2eeModuleImplementation impl);
 
