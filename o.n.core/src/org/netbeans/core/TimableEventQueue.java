@@ -40,8 +40,13 @@
 package org.netbeans.core;
 
 import java.awt.AWTEvent;
+import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.EventQueue;
+import java.awt.Frame;
+import java.awt.KeyboardFocusManager;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.ByteArrayOutputStream;
@@ -53,6 +58,7 @@ import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.core.startup.Main;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
@@ -88,6 +94,7 @@ implements Runnable {
     private volatile long ignoreTill;
     private volatile long start;
     private volatile ActionListener stoppable;
+    private volatile boolean isWaitCursor;
     private final Queue<NotifySnapshot> pending;
 
     public TimableEventQueue() {
@@ -129,10 +136,13 @@ implements Runnable {
 
     private void done() {
         TIMEOUT.cancel();
+        LOG.log(Level.FINE, "isWait cursor {0}", isWaitCursor); // NOI18N
+        long r = isWaitCursor ? REPORT * 10 : REPORT;
+        isWaitCursor = false;
         long time = System.currentTimeMillis() - start;
         if (time > QUANTUM) {
             LOG.log(Level.FINE, "done, timer stopped, took {0}", time); // NOI18N
-            if (time > REPORT) {
+            if (time > r) {
                 LOG.log(Level.WARNING, "too much time in AWT thread {0}", stoppable); // NOI18N
                 ActionListener ss = stoppable;
                 if (ss != null) {
@@ -181,6 +191,7 @@ implements Runnable {
             selfSampler.run();
             stoppable = (ActionListener)selfSampler;
         }
+        isWaitCursor |= isWaitCursor();
     }
 
     private static Object createSelfSampler() {
@@ -193,6 +204,29 @@ implements Runnable {
             return null;
         }
         return a.getValue("logger-awt"); // NOI18N
+    }
+
+    private static boolean isWaitCursor() {
+        Component focus = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        if (focus != null) {
+            if (focus.getCursor().getType() == Cursor.WAIT_CURSOR) {
+                LOG.finer("wait cursor on focus owner"); // NOI18N
+                return true;
+            }
+            Window w = SwingUtilities.windowForComponent(focus);
+            if (w != null && w.getCursor().getType() == Cursor.WAIT_CURSOR) {
+                LOG.finer("wait cursor on window"); // NOI18N
+                return true;
+            }
+        }
+        for (Frame f : Frame.getFrames()) {
+            if (f.getCursor().getType() == Cursor.WAIT_CURSOR) {
+                LOG.finer("wait cursor on frame"); // NOI18N
+                return true;
+            }
+        }
+        LOG.finest("no wait cursor"); // NOI18N
+        return false;
     }
 
         /*
