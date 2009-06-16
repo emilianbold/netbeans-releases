@@ -1193,33 +1193,34 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             return csmFile;
         }
         APTPreprocHandler.State newState = preprocHandler.getState();
-        APTPreprocHandler.State cachedOut = null;
+        PreprocessorStatePair cachedOut = null;
+        APTFileCacheEntry aptCacheEntry = null;
+        FilePreprocessorConditionState pcState;
         if (mode == ProjectBase.GATHERING_TOKENS && !APTHandlersSupport.extractIncludeStack(newState).isEmpty()) {
             cachedOut = csmFile.getCachedVisitedState(newState);
-            if (cachedOut != null) {
-                preprocHandler.getMacroMap().setState(APTHandlersSupport.extractMacroMapState(cachedOut));
+        }
+        if (cachedOut == null) {
+            APTFile aptLight = getAPTLight(csmFile);
+            if (aptLight == null) {
+                // in the case file was just removed
+                Utils.LOG.info("Can not find or build APT for file " + file); //NOI18N
                 return csmFile;
             }
-        }
 
-        APTFile aptLight = getAPTLight(csmFile);
-        if (aptLight == null) {
-            // in the case file was just removed
-            Utils.LOG.info("Can not find or build APT for file " + file); //NOI18N
-            return csmFile;
+            // gather macro map from all includes and fill preprocessor conditions state
+            FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(csmFile.getAbsolutePath());
+            // ask for exclusive entry if absent
+            aptCacheEntry = csmFile.getAPTCacheEntry(preprocHandler, Boolean.TRUE);
+            APTParseFileWalker walker = new APTParseFileWalker(base, aptLight, csmFile, preprocHandler, triggerParsingActivity, pcBuilder,aptCacheEntry);
+            walker.visit();
+            pcState = pcBuilder.build();
+            if (mode == ProjectBase.GATHERING_TOKENS && !APTHandlersSupport.extractIncludeStack(newState).isEmpty()) {
+                csmFile.cacheVisitedState(newState, preprocHandler, pcState);
+            }
+        } else {
+            preprocHandler.getMacroMap().setState(APTHandlersSupport.extractMacroMapState(cachedOut.state));
+            pcState = cachedOut.pcState;
         }
-
-        // gather macro map from all includes and fill preprocessor conditions state
-        FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(csmFile.getAbsolutePath());
-        // ask for exclusive entry if absent
-        APTFileCacheEntry aptCacheEntry = csmFile.getAPTCacheEntry(preprocHandler, Boolean.TRUE);
-        APTParseFileWalker walker = new APTParseFileWalker(base, aptLight, csmFile, preprocHandler, triggerParsingActivity, pcBuilder,aptCacheEntry);
-        walker.visit();
-        FilePreprocessorConditionState pcState = pcBuilder.build();
-        if (mode == ProjectBase.GATHERING_TOKENS && !APTHandlersSupport.extractIncludeStack(newState).isEmpty()) {
-            csmFile.cacheVisitedState(newState, preprocHandler);
-        }
-
         boolean updateFileContainer = false;
         try {
             if (disposing) {

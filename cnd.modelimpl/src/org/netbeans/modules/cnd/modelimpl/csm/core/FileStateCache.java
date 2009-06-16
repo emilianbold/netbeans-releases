@@ -67,7 +67,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
     /*package-local*/ FileStateCache(FileImpl file){
         this.file = file;
     }
-    void cacheVisitedState(APTPreprocHandler.State inputState, APTPreprocHandler outputHandler) {
+    void cacheVisitedState(APTPreprocHandler.State inputState, APTPreprocHandler outputHandler, FilePreprocessorConditionState pcState) {
         if (cacheStates && inputState.isCompileContext()) {
             stateCacheLock.writeLock().lock();
             try {
@@ -87,7 +87,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
                         }
                         stateCache.remove(key);
                     }
-                    stateCache.put(createKey(inputState), new Value(outputHandler.getState()));
+                    stateCache.put(createKey(inputState), new Value(new PreprocessorStatePair(outputHandler.getState(), pcState)));
                 }
             } finally {
                 stateCacheLock.writeLock().unlock();
@@ -95,8 +95,8 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
         }
     }
 
-    /*package-local*/ APTPreprocHandler.State getCachedVisitedState(APTPreprocHandler.State inputState) {
-        APTPreprocHandler.State res = null;
+    /*package-local*/ PreprocessorStatePair getCachedVisitedState(APTPreprocHandler.State inputState) {
+        PreprocessorStatePair res = null;
         if (cacheStates && inputState.isCompileContext()) {
             if (TRACE) {stateCacheAttempt++;}
             stateCacheLock.readLock().lock();
@@ -141,12 +141,12 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
     private boolean isCacheableState(APTPreprocHandler.State inputState) {
         return APTHandlersSupport.getMacroSize(inputState) < MAX_KEY_SIZE;
     }
-    
+
     private static class Value {
-        private final SoftReference<APTPreprocHandler.State> value;
+        private final SoftReference<PreprocessorStatePair> value;
         private int count;
-        private Value(APTPreprocHandler.State value){
-            this.value = new SoftReference<APTPreprocHandler.State>(value);
+        private Value(PreprocessorStatePair value){
+            this.value = new SoftReference<PreprocessorStatePair>(value);
         }
     }
 }

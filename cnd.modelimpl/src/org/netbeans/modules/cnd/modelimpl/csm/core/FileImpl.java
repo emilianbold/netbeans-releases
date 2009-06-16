@@ -1920,11 +1920,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     private final FileStateCache stateCache = new FileStateCache(this);
-    /*package-local*/ void cacheVisitedState(APTPreprocHandler.State inputState, APTPreprocHandler outputHandler) {
-        stateCache.cacheVisitedState(inputState, outputHandler);
+    /*package-local*/ void cacheVisitedState(APTPreprocHandler.State inputState, APTPreprocHandler outputHandler, FilePreprocessorConditionState pcState) {
+        stateCache.cacheVisitedState(inputState, outputHandler, pcState);
     }
 
-    /*package-local*/ APTPreprocHandler.State getCachedVisitedState(APTPreprocHandler.State inputState) {
+    /*package-local*/ PreprocessorStatePair getCachedVisitedState(APTPreprocHandler.State inputState) {
         return stateCache.getCachedVisitedState(inputState);
     }
 
@@ -2094,6 +2094,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public static boolean traceFile(CharSequence file) {
-        return file.toString().endsWith("vehicle.h");// || file.toString().endsWith("shared.h"); // NOI18N
+        return true; // file.toString().endsWith("newfile.h") || file.toString().endsWith("shared.h"); // NOI18N
     }
 }
