@@ -76,18 +76,25 @@ import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.classfile.Access;
+import org.netbeans.modules.classfile.Annotation;
+import org.netbeans.modules.classfile.AnnotationComponent;
+import org.netbeans.modules.classfile.ArrayElementValue;
 import org.netbeans.modules.classfile.CPClassInfo;
 import org.netbeans.modules.classfile.CPFieldInfo;
 import org.netbeans.modules.classfile.CPInterfaceMethodInfo;
 import org.netbeans.modules.classfile.CPMethodInfo;
+import org.netbeans.modules.classfile.ClassElementValue;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.ClassName;
 import org.netbeans.modules.classfile.Code;
 import org.netbeans.modules.classfile.ConstantPool;
+import org.netbeans.modules.classfile.ElementValue;
+import org.netbeans.modules.classfile.EnumElementValue;
 import org.netbeans.modules.classfile.InvalidClassFormatException;
 import org.netbeans.modules.classfile.LocalVariableTableEntry;
 import org.netbeans.modules.classfile.LocalVariableTypeTableEntry;
 import org.netbeans.modules.classfile.Method;
+import org.netbeans.modules.classfile.NestedElementValue;
 import org.netbeans.modules.classfile.Variable;
 import org.netbeans.modules.classfile.Parameter;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
@@ -95,6 +102,7 @@ import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
+import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
 import org.netbeans.modules.java.source.util.LowMemoryEvent;
 import org.netbeans.modules.java.source.util.LowMemoryListener;
 import org.netbeans.modules.java.source.util.LowMemoryNotifier;
@@ -112,7 +120,7 @@ import org.openide.util.Exceptions;
  * @author Petr Hrebejk, Tomas Zezula
  */
 public class BinaryAnalyser implements LowMemoryListener {
-    
+
     public enum Result {
         FINISHED,
         CANCELED,
@@ -466,6 +474,9 @@ public class BinaryAnalyser implements LowMemoryListener {
         }                     
 
         if (FULL_INDEX) {
+            //1a. Add type annotations:
+            handleAnnotations(usages, classFile.getAnnotations());
+
             //2. Add filed usages 
             final ConstantPool constantPool = classFile.getConstantPool();
             Collection<? extends CPFieldInfo> fields = constantPool.getAllConstants(CPFieldInfo.class);            
@@ -495,6 +506,8 @@ public class BinaryAnalyser implements LowMemoryListener {
             //4, 5, 6, 8 Add method type refs (return types, param types, exception types) and local variables.
             Collection<Method> methods = classFile.getMethods();
             for (Method method : methods) {
+                handleAnnotations(usages, method.getAnnotations());
+                
                 String jvmTypeId = method.getReturnType();
                 ClassName type = ClassFileUtil.getType (jvmTypeId);
                 if (type != null) {
@@ -551,6 +564,8 @@ public class BinaryAnalyser implements LowMemoryListener {
             //7. Add Filed Type References                        
             Collection<Variable> vars = classFile.getVariables();
             for (Variable var : vars) {
+                handleAnnotations(usages, var.getAnnotations());
+                
                 String jvmTypeId = var.getDescriptor();
                 ClassName type = ClassFileUtil.getType (jvmTypeId);
                 if (type != null) {
@@ -595,7 +610,49 @@ public class BinaryAnalyser implements LowMemoryListener {
         return (ArrayList<String>) cr[0];
     }
     
+    private void handleAnnotations(final Map<ClassName, Set<UsageType>> usages, Iterable<? extends Annotation> annotations) {
+        for (Annotation a : annotations) {
+            addUsage(usages, a.getType(), ClassIndexImpl.UsageType.TYPE_REFERENCE);
+
+            List<ElementValue> toProcess = new LinkedList<ElementValue>();
+
+            for (AnnotationComponent ac : a.getComponents()) {
+                toProcess.add(ac.getValue());
+            }
+
+            while (!toProcess.isEmpty()) {
+                ElementValue ev = toProcess.remove(0);
+
+                if (ev instanceof ArrayElementValue) {
+                    toProcess.addAll(Arrays.asList(((ArrayElementValue) ev).getValues()));
+                }
+
+                if (ev instanceof NestedElementValue) {
+                    Annotation nested = ((NestedElementValue) ev).getNestedValue();
+
+                    addUsage(usages, nested.getType(), ClassIndexImpl.UsageType.TYPE_REFERENCE);
+
+                    for (AnnotationComponent ac : nested.getComponents()) {
+                        toProcess.add(ac.getValue());
+                    }
+                }
+
+                if (ev instanceof ClassElementValue) {
+                    addUsage(usages, ((ClassElementValue) ev).getClassName(), ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                }
                 
+                if (ev instanceof EnumElementValue) {
+                    String type = ((EnumElementValue) ev).getEnumType();
+                    ClassName className = ClassFileUtil.getType(type);
+
+                    if (className != null) {
+                        addUsage(usages, className, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                    }
+                }
+            }
+        }
+    }
+
     // Static private methods ---------------------------------------------------------          
     
     private static String nameToString( ClassName name ) {
