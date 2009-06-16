@@ -60,11 +60,8 @@ import java.util.MissingResourceException;
 import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JList;
-import javax.swing.JTextField;
-import javax.swing.ListModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -77,17 +74,13 @@ import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ContentFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.CurrentUserFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.eclipse.mylyn.internal.jira.core.model.filter.IssueTypeFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.NobodyFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.PriorityFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ResolutionFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.SpecificUserFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.StatusFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.UserFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.UserInGroupFilter;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -119,22 +112,28 @@ import org.openide.util.RequestProcessor.Task;
  * @author Tomas Stupka
  */
 public class QueryController extends BugtrackingController implements DocumentListener, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
-    protected QueryPanel panel;
+    private QueryPanel panel;
 
     private RequestProcessor rp = new RequestProcessor("Jira query", 1, true);  // NOI18N
-    private Task task;
 
     private final JiraRepository repository;
     protected JiraQuery query;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // NOI18N
-    private QueryTask searchTask;
     private QueryTask refreshTask;
+    private final boolean modifiable;
+    private final JiraFilter jiraFilter;
 
-    public QueryController(JiraRepository repository, JiraQuery query, JiraFilter jiraFilter) {
+    public QueryController(JiraRepository repository, JiraQuery query, FilterDefinition fd) {
+        this(repository, query, fd, true);
+    }
+
+    public QueryController(JiraRepository repository, JiraQuery query, JiraFilter jiraFilter, boolean modifiable) {
         this.repository = repository;
         this.query = query;
-        
+        this.modifiable = modifiable;
+        this.jiraFilter = jiraFilter;
+
         panel = new QueryPanel(query.getTableComponent(), this);
 
         panel.projectList.addListSelectionListener(this);
@@ -163,82 +162,31 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.queryTextField.addActionListener(this);
         panel.assigneeTextField.addActionListener(this);
         panel.reporterTextField.addActionListener(this);
+        panel.idTextField.getDocument().addDocumentListener(this);
 
+        panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
+                    
         if(query.isSaved()) {
             setAsSaved();
         }
-        postPopulate((FilterDefinition) jiraFilter, false);
-    }
-
-    @Override
-    public void opened() {
-        boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
-        if(autoRefresh) {
-            scheduleForRefresh();
-        }
-        if(query.isSaved()) {
-            setIssueCount(query.getSize()); // XXX this probably won't work
-                                            // if the query is alredy open and
-                                            // a refresh is invoked on kenai
-            if(!query.wasRun()) {
-                onRefresh();
+        if(modifiable) {
+            if(jiraFilter != null) {
+                 assert jiraFilter instanceof FilterDefinition;
             }
+            postPopulate((FilterDefinition) jiraFilter, false);
         }
     }
 
-    private void setIssueCount(final int count) {
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                panel.tableSummaryLabel.setText(
-                        NbBundle.getMessage(
-                            QueryController.class,
-                            NbBundle.getMessage(QueryController.class, "LBL_MATCHINGISSUES"),                           // NOI18N
-                            new Object[] { count }
-                        )
-                );
-            }
-        });
-    }
-
-
-    @Override
-    public void closed() {
-        onCancelChanges();
-        if(task != null) {
-            task.cancel();
+    protected JiraFilter getJiraFilter() {
+        if(modifiable) {
+            return getFilterDefinition();
+        } else {
+            return jiraFilter;
         }
-        if(query.isSaved()) {
-            repository.stopRefreshing(query);
-        }
-    }
-
-    protected void scheduleForRefresh() {
-        if(query.isSaved()) {
-            repository.scheduleForRefresh(query);
-        }
-    }
-
-    @Override
-    public JComponent getComponent() {
-        return panel;
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(JiraQuery.class);
-    }
-
-    @Override
-    public boolean isValid() {
-        return true;
-    }
-
-    @Override
-    public void applyChanges() {
-        
     }
 
     public FilterDefinition getFilterDefinition() {
+        assert modifiable;
         FilterDefinition fd = new FilterDefinition();
 
         // text search
@@ -332,7 +280,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private UserSearch reporterUserSearch;
     private UserSearch assigneeUserSearch;
-    public void populate(final FilterDefinition filterDefinition) {
+    private void populate(final FilterDefinition filterDefinition) {
         if(Jira.LOG.isLoggable(Level.FINE)) {
             Jira.LOG.fine("Starting populate query controller" + (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
         }
@@ -345,8 +293,16 @@ public class QueryController extends BugtrackingController implements DocumentLi
                         // XXX nice errro msg?
                         return;
                     }
-                    
+
                     populateList(panel.projectList, jc.getProjects());
+                    if (jc.getProjects().length == 1) {
+                        panel.setIssuePrefixText(jc.getProjects()[0].getKey() + "-"); //NOI18N
+                    } else if (filterDefinition != null) {
+                        ProjectFilter pf = filterDefinition.getProjectFilter();
+                        if (pf != null && pf.getProjects().length == 1) {
+                            panel.setIssuePrefixText(pf.getProjects()[0].getKey() + "-"); //NOI18N
+                        }
+                    }
                     populateList(panel.typeList, jc.getIssueTypes());
                     populateList(panel.statusList, jc.getStatuses());
                     populateList(panel.resolutionList, jc.getResolutions());
@@ -357,48 +313,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     if(filterDefinition != null && filterDefinition instanceof FilterDefinition) {
                         setFilterDefinition(filterDefinition);
                     }
-
-                    panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
-//
-//                    if(query.isSaved()) {
-//                        final boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
-//                        panel.refreshCheckBox.setSelected(autoRefresh);
-//                    }
-
-//                    JiraConfiguration bc = repository.getConfiguration();
-//                    if(bc == null) {
-//                        // XXX nice errro msg?
-//                        return;
-//                    }
-//                    productParameter.setParameterValues(toParameterValues(bc.getProducts()));
-//                    if (panel.productList.getModel().getSize() > 0) {
-//                        panel.productList.setSelectedIndex(0);
-//                        populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
-//                    }
-//                    severityParameter.setParameterValues(toParameterValues(bc.getSeverities()));
-//                    statusParameter.setParameterValues(toParameterValues(bc.getStatusValues()));
-//                    resolutionParameter.setParameterValues(toParameterValues(bc.getResolutions()));
-//                    priorityParameter.setParameterValues(toParameterValues(bc.getPriorities()));
-//                    changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
-//                    summaryParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
-//                    commentsParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
-//                    keywordsParameter.setParameterValues(QueryParameter.PV_KEYWORDS_VALUES);
-//                    peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
-//                    panel.changedToTextField.setText(CHANGED_NOW);
-//
-//                    // XXX
-//                    if (urlParameters != null) {
-//                        setParameters(urlParameters);
-//                    }
-//
-//                    panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
-//
-//                    if(query.isSaved()) {
-//                        final boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
-//                        panel.refreshCheckBox.setSelected(autoRefresh);
-//                    }
                 }
-
             };
             repository.getExecutor().execute(cmd);
         } finally {
@@ -414,378 +329,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
             model.addElement(v);
         }
         list.setModel(model);
-    }
-
-    protected void enableFields(boolean bl) {
-        // set all non parameter fields
-        panel.enableFields(bl);        
-    }
-
-    public void disableProject() {
-        panel.projectList.setEnabled(false);
-        panel.projectLabel.setEnabled(false);
-    }
-    
-    public void insertUpdate(DocumentEvent e) {
-        fireDataChanged();
-    }
-
-    public void removeUpdate(DocumentEvent e) {
-        fireDataChanged();
-    }
-
-    public void changedUpdate(DocumentEvent e) {
-        fireDataChanged();
-    }
-
-    public void itemStateChanged(ItemEvent e) {
-        fireDataChanged();
-        if(e.getSource() == panel.filterComboBox) {
-            onFilterChange((Query.Filter)e.getItem());
-        }
-    }
-
-    public void valueChanged(ListSelectionEvent e) {        
-        fireDataChanged();            // XXX do we need this ???
-    }
-
-    public void focusGained(FocusEvent e) {
-//        if(panel.changedFromTextField.getText().equals("")) {                   // NOI18N
-//            String lastChangeFrom = JiraConfig.getInstance().getLastChangeFrom();
-//            panel.changedFromTextField.setText(lastChangeFrom);
-//            panel.changedFromTextField.setSelectionStart(0);
-//            panel.changedFromTextField.setSelectionEnd(lastChangeFrom.length());
-//        }
-    }
-
-    public void focusLost(FocusEvent e) {
-        // do nothing
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        if(e.getSource() == panel.searchButton) {
-            onSearch();
-        } else if (e.getSource() == panel.gotoIssueButton) {
-            onGotoIssue();
-        } else if (e.getSource() == panel.searchButton) {
-            onSearch();
-        } else if (e.getSource() == panel.saveChangesButton) {
-            onSave();
-        } else if (e.getSource() == panel.cancelChangesButton) {
-            onCancelChanges();
-        } else if (e.getSource() == panel.gotoIssueButton) {
-            onGotoIssue();
-        } else if (e.getSource() == panel.webButton) {
-            onWeb();
-        } else if (e.getSource() == panel.saveButton) {
-            onSave();
-        } else if (e.getSource() == panel.refreshButton) {
-            onRefresh();
-        } else if (e.getSource() == panel.modifyButton) {
-            onModify();
-        } else if (e.getSource() == panel.seenButton) {
-            onMarkSeen();
-        } else if (e.getSource() == panel.removeButton) {
-            onRemove();
-        } else if (e.getSource() == panel.refreshCheckBox) {
-            onAutoRefresh();
-        } else if (e.getSource() == panel.reloadAttributesButton) {
-            onReloadAttributes();
-        } else if (e.getSource() == panel.idTextField) {
-            if(!panel.idTextField.getText().trim().equals("")) {                // NOI18N
-                onGotoIssue();
-            }
-        } else if (e.getSource() == panel.idTextField ||
-                   e.getSource() == panel.queryTextField ||
-                   e.getSource() == panel.reporterTextField ||
-                   e.getSource() == panel.assigneeTextField )
-        {
-            onSearch();
-        }
-    }
-
-    public void keyTyped(KeyEvent e) {
-        // do nothing
-    }
-
-    public void keyPressed(KeyEvent e) {
-        // do nothing
-    }
-
-    public void keyReleased(KeyEvent e) {
-        if(e.getKeyCode() != KeyEvent.VK_ENTER) {
-            return;
-        }
-        if(e.getSource() == panel.projectList ||
-           e.getSource() == panel.typeList ||
-           e.getSource() == panel.statusList ||
-           e.getSource() == panel.resolutionList ||
-           e.getSource() == panel.priorityList)
-        {
-            onSearch();
-        }
-    }
-
-    private void onFilterChange(Query.Filter filter) {
-        query.setFilter(filter);
-    }
-
-    private void onSave() {
-       Jira.getInstance().getRequestProcessor().post(new Runnable() {
-            public void run() {
-                String name = query.getDisplayName();
-                boolean firstTime = false;
-                if(!query.isSaved()) {
-                    firstTime = true;
-                    name = getSaveName();
-                    if(name == null) {
-                        return;
-                    }
-                    panel.queryNameTextField.setText("");                       // NOI18N
-                }
-                assert name != null;
-                save(name, firstTime);
-            }
-       });
-    }
-
-    private String getSaveName() {
-        String name = null;
-        if(JiraUtils.show(
-                panel.savePanel,
-                NbBundle.getMessage(QueryController.class, "LBL_SaveQuery"),    // NOI18N
-                NbBundle.getMessage(QueryController.class, "LBL_Save"),         // NOI18N
-                new HelpCtx("org.netbeans.modules.jira.query.savePanel")))  // NOI18N
-        {
-            name = panel.queryNameTextField.getText();
-            if(name == null || name.trim().equals("")) { // NOI18N
-                return null;
-            }
-            Query[] queries = repository.getQueries();
-            for (Query q : queries) {
-                if(q.getDisplayName().equals(name)) {
-                    panel.saveErrorLabel.setVisible(true);
-                    name = getSaveName();
-                    panel.saveErrorLabel.setVisible(false);
-                    break;
-                }
-            }
-        } else {
-            return null;
-        }
-        return name;
-    }
-
-    private void save(String name, boolean firstTime) {
-        query.setName(name);
-        repository.saveQuery(query);
-        query.setSaved(true); // XXX
-        setAsSaved();
-        if(!query.wasRun()) {
-            if (firstTime) {
-                onSearch();
-            } else {
-                onRefresh();
-            }
-        }
-    }
-
-    private void onCancelChanges() {
-        if(query.getDisplayName() != null) { // XXX need a better semantic - isSaved?
-            // XXX
-//            String urlParameters = JiraConfig.getInstance().getUrlParams(repository, query.getDisplayName());
-//            if(urlParameters != null) {
-//                setfilterDefinition(fil);
-//            }
-        }
-        setAsSaved();
-    }
-
-    public void selectFilter(Filter filter) {
-        if(filter != null) {
-            panel.filterComboBox.setSelectedItem(filter);
-        }
-    }
-
-    private void setAsSaved() {
-        panel.setSaved(query.getDisplayName(), getLastRefresh());
-        panel.setModifyVisible(false);
-        panel.refreshCheckBox.setVisible(true);
-    } 
-
-    private String getLastRefresh() throws MissingResourceException {
-        long l = query.getLastRefresh();
-        return l > -1 ?
-            dateFormat.format(new Date(l)) :
-            NbBundle.getMessage(QueryController.class, "LBL_Never"); // NOI18N
-    }
-
-    private void onGotoIssue() {
-        final String key = panel.idTextField.getText().trim();
-        if(key == null || key.trim().equals("") ) {                               // NOI18N
-            return;
-        }
-        final Task[] t = new Task[1];
-        Cancellable c = new Cancellable() {
-            public boolean cancel() {
-                if(t[0] != null) {
-                    return t[0].cancel();
-                }
-                return true;
-            }
-        };
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_Opening", new Object[] {key}), c); // NOI18N
-        t[0] = Jira.getInstance().getRequestProcessor().create(new Runnable() {
-            public void run() {
-                handle.start();
-                try {
-                    Issue issue = repository.getIssue(key.toUpperCase()); // XXX always uppercase?
-                    if (issue != null) {
-                        issue.open();
-                    } else {
-                        // XXX nice message?
-                    }
-                } finally {
-                    handle.finish();
-                }
-            }
-        });
-        t[0].schedule(0);
-    }
-
-    private void onWeb() {
-        final String repoURL = repository.getTaskRepository().getRepositoryUrl() + "/secure/IssueNavigator.jspa"; // NOI18N //XXX need constants
-        Jira.getInstance().getRequestProcessor().post(new Runnable() {
-            public void run() {
-                URL url;
-                try {
-                    url = new URL(repoURL);
-                } catch (MalformedURLException ex) {
-                    Jira.LOG.log(Level.SEVERE, null, ex);
-                    return;
-                }
-                HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
-                if (displayer != null) {
-                    displayer.showURL (url);
-                } else {
-                    // XXX nice error message?
-                    Jira.LOG.warning("No URLDisplayer found.");             // NOI18N
-                }
-            }
-        });
-    }
-
-    private void onSearch() {
-        if(searchTask == null) {
-            searchTask = new QueryTask() {
-                public void executeQuery() {
-                    try {
-                        refreshIntern(false);
-                    } finally {
-                        
-                    }
-                }
-            };
-        }
-        post(searchTask);
-    }
-
-    public void autoRefresh() {
-        onRefresh(true);
-    }
-
-    public void onRefresh() {
-        onRefresh(false);
-    }
-
-    private void onRefresh(final boolean auto) {
-        if(refreshTask == null) {            
-            refreshTask = new QueryTask() {
-                public void executeQuery() {
-                    panel.setQueryRunning(true);
-                    try {
-                        refreshIntern(auto);
-                    } finally {
-                        panel.setQueryRunning(false);
-                        task = null;
-                    }
-                }
-            };
-        }
-        post(refreshTask);
-    }
-
-    private void refreshIntern(boolean autoRefresh) {
-        query.refresh(getFilterDefinition(), autoRefresh);
-    }
-
-    private void post(Runnable r) {
-        if(task != null) {
-            task.cancel();
-        }
-        task = rp.create(r);
-        task.schedule(0);
-    }
-
-    private void onModify() {
-        panel.setModifyVisible(true);
-    }
-
-    private void onMarkSeen() {
-        Jira.getInstance().getRequestProcessor().post(new Runnable() {
-            public void run() {
-                Issue[] issues = query.getIssues();
-                for (Issue issue : issues) {
-                    try {
-                        ((NbJiraIssue) issue).setSeen(true);
-                    } catch (IOException ex) {
-                        Jira.LOG.log(Level.SEVERE, null, ex);
-                    }
-                }
-            }
-        });
-    }
-
-    private void onRemove() {
-        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-            NbBundle.getMessage(QueryController.class, "MSG_RemoveQuery", new Object[] { query.getDisplayName() }), // NOI18N
-            NbBundle.getMessage(QueryController.class, "CTL_RemoveQuery"),      // NOI18N
-            NotifyDescriptor.OK_CANCEL_OPTION);
-
-        if(DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
-            Jira.getInstance().getRequestProcessor().post(new Runnable() {
-                public void run() {
-                    remove();
-                }
-            });
-        }
-    }
-
-    private void onAutoRefresh() {
-        final boolean autoRefresh = panel.refreshCheckBox.isSelected();
-        JiraConfig.getInstance().setQueryAutoRefresh(query.getDisplayName(), autoRefresh);
-        logAutoRefreshEvent(autoRefresh);
-        if(autoRefresh) {
-            scheduleForRefresh();
-        } else {
-            repository.stopRefreshing(query);
-        }
-    }
-
-    protected void logAutoRefreshEvent(boolean autoRefresh) {
-        BugtrackingUtil.logAutoRefreshEvent(
-            JiraConnector.getConnectorName(),
-            query.getDisplayName(),
-            false,
-            autoRefresh
-        );
-    }
-
-    private void remove() {
-        if (task != null) {
-            task.cancel();
-        }
-        query.remove();
     }
 
     private void setFilterDefinition(FilterDefinition fd) {
@@ -854,13 +397,457 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
-    private void onReloadAttributes() {
-        postPopulate(getFilterDefinition(), true);
+    @Override
+    public void opened() {
+        boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
+        if(autoRefresh) {
+            scheduleForRefresh();
+        }
+        if(query.isSaved()) {
+            setIssueCount(query.getSize()); // XXX this probably won't work
+                                            // if the query is alredy open and
+                                            // a refresh is invoked on kenai
+            if(!query.wasRun()) {
+                onRefresh();
+            }
+        }
+    }   
+
+    protected void setIssueCount(final int count) {
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                panel.tableSummaryLabel.setText(
+                        NbBundle.getMessage(
+                            QueryController.class,
+                            NbBundle.getMessage(QueryController.class, "LBL_MATCHINGISSUES"),                           // NOI18N
+                            new Object[] { count }
+                        )
+                );
+            }
+        });
     }
 
-    private abstract class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
+
+    @Override
+    public void closed() {
+        onCancelChanges();
+        if(refreshTask != null) {
+            refreshTask.cancel();
+        }
+        if(query.isSaved()) {
+            repository.stopRefreshing(query);
+        }
+    }
+
+    protected void scheduleForRefresh() {
+        if(query.isSaved()) {
+            repository.scheduleForRefresh(query);
+        }
+    }
+
+    @Override
+    public JComponent getComponent() {
+        return panel;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(JiraQuery.class);
+    }
+
+    @Override
+    public boolean isValid() {
+        return true;
+    }
+
+    @Override
+    public void applyChanges() {
+        
+    }
+
+    protected void enableFields(boolean bl) {
+        // set all non parameter fields
+        panel.enableFields(bl);
+        if(!modifiable) {
+            // can't change the controllers data
+            // so alwasy keep those fields disabled
+            panel.modifyButton.setEnabled(false);
+            panel.removeButton.setEnabled(false);
+            panel.reloadAttributesButton.setEnabled(false);
+        }
+    }
+
+    protected void disableProject() {
+        panel.projectList.setEnabled(false);
+        panel.projectLabel.setEnabled(false);
+    }
+    
+    public void insertUpdate(DocumentEvent e) {
+        documentChanged(e);
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        documentChanged(e);
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+        documentChanged(e);
+    }
+
+    public void itemStateChanged(ItemEvent e) {
+        fireDataChanged();
+        if(e.getSource() == panel.filterComboBox) {
+            onFilterChange((Query.Filter)e.getItem());
+        }
+    }
+
+    public void valueChanged(ListSelectionEvent e) {        
+        fireDataChanged();            // XXX do we need this ???
+    }
+
+    public void focusGained(FocusEvent e) {
+//        if(panel.changedFromTextField.getText().equals("")) {                   // NOI18N
+//            String lastChangeFrom = JiraConfig.getInstance().getLastChangeFrom();
+//            panel.changedFromTextField.setText(lastChangeFrom);
+//            panel.changedFromTextField.setSelectionStart(0);
+//            panel.changedFromTextField.setSelectionEnd(lastChangeFrom.length());
+//        }
+    }
+
+    public void focusLost(FocusEvent e) {
+        // do nothing
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        if(e.getSource() == panel.searchButton) {
+            onRefresh();
+        } else if (e.getSource() == panel.gotoIssueButton) {
+            onGotoIssue();
+        } else if (e.getSource() == panel.searchButton) {
+            onRefresh();
+        } else if (e.getSource() == panel.saveChangesButton) {
+            onSave();
+        } else if (e.getSource() == panel.cancelChangesButton) {
+            onCancelChanges();
+        } else if (e.getSource() == panel.gotoIssueButton) {
+            onGotoIssue();
+        } else if (e.getSource() == panel.webButton) {
+            onWeb();
+        } else if (e.getSource() == panel.saveButton) {
+            onSave();
+        } else if (e.getSource() == panel.refreshButton) {
+            onRefresh();
+        } else if (e.getSource() == panel.modifyButton) {
+            onModify();
+        } else if (e.getSource() == panel.seenButton) {
+            onMarkSeen();
+        } else if (e.getSource() == panel.removeButton) {
+            onRemove();
+        } else if (e.getSource() == panel.refreshCheckBox) {
+            onAutoRefresh();
+        } else if (e.getSource() == panel.reloadAttributesButton) {
+            onReloadAttributes();
+        } else if (e.getSource() == panel.idTextField) {
+            if(!panel.idTextField.getText().trim().equals("")) {                // NOI18N
+                onGotoIssue();
+            }
+        } else if (e.getSource() == panel.idTextField ||
+                   e.getSource() == panel.queryTextField ||
+                   e.getSource() == panel.reporterTextField ||
+                   e.getSource() == panel.assigneeTextField )
+        {
+            onRefresh();
+        }
+    }
+
+    public void keyTyped(KeyEvent e) {
+        // do nothing
+    }
+
+    public void keyPressed(KeyEvent e) {
+        // do nothing
+    }
+
+    public void keyReleased(KeyEvent e) {
+        if(e.getKeyCode() != KeyEvent.VK_ENTER) {
+            return;
+        }
+        if(e.getSource() == panel.projectList ||
+           e.getSource() == panel.typeList ||
+           e.getSource() == panel.statusList ||
+           e.getSource() == panel.resolutionList ||
+           e.getSource() == panel.priorityList)
+        {
+            onRefresh();
+        }
+    }
+
+    private void onFilterChange(Query.Filter filter) {
+        query.setFilter(filter);
+    }
+
+    private void onSave() {
+       Jira.getInstance().getRequestProcessor().post(new Runnable() {
+            public void run() {
+                String name = query.getDisplayName();
+                boolean firstTime = false;
+                if(!query.isSaved()) {
+                    firstTime = true;
+                    name = getSaveName();
+                    if(name == null) {
+                        return;
+                    }
+                    panel.queryNameTextField.setText("");                       // NOI18N
+                }
+                assert name != null;
+                save(name, firstTime);
+            }
+       });
+    }
+
+    private String getSaveName() {
+        String name = null;
+        if(JiraUtils.show(
+                panel.savePanel,
+                NbBundle.getMessage(QueryController.class, "LBL_SaveQuery"),    // NOI18N
+                NbBundle.getMessage(QueryController.class, "LBL_Save"),         // NOI18N
+                new HelpCtx("org.netbeans.modules.jira.query.savePanel")))  // NOI18N
+        {
+            name = panel.queryNameTextField.getText();
+            if(name == null || name.trim().equals("")) { // NOI18N
+                return null;
+            }
+            Query[] queries = repository.getQueries();
+            for (Query q : queries) {
+                if(q.getDisplayName().equals(name)) {
+                    panel.saveErrorLabel.setVisible(true);
+                    name = getSaveName();
+                    panel.saveErrorLabel.setVisible(false);
+                    break;
+                }
+            }
+        } else {
+            return null;
+        }
+        return name;
+    }
+
+    private void save(String name, boolean firstTime) {
+        query.setName(name);
+        repository.saveQuery(query);
+        query.setSaved(true); // XXX
+        setAsSaved();
+        if(!query.wasRun()) {
+            onRefresh();
+        }
+    }
+
+    private void onCancelChanges() {
+        if(query.getDisplayName() != null) { // XXX need a better semantic - isSaved?
+            // XXX
+//            String urlParameters = JiraConfig.getInstance().getUrlParams(repository, query.getDisplayName());
+//            if(urlParameters != null) {
+//                setfilterDefinition(fil);
+//            }
+        }
+        setAsSaved();
+    }
+
+    public void selectFilter(Filter filter) {
+        if(filter != null) {
+            panel.filterComboBox.setSelectedItem(filter);
+        }
+    }
+
+    /**
+     * Returns a modified id entered by user.
+     * e.g.: adds prefix, suffix or whatever
+     * @param id pure id from the textfield
+     * @return
+     */
+    protected String getIdTextField () {
+        return panel.getIssuePrefixText() + panel.idTextField.getText().trim();
+    }
+
+    private void setAsSaved() {
+        panel.setSaved(query.getDisplayName(), getLastRefresh());
+        panel.setModifyVisible(false);
+        panel.refreshCheckBox.setVisible(true);
+    } 
+
+    protected String getLastRefresh() throws MissingResourceException {
+        long l = query.getLastRefresh();
+        return l > -1 ?
+            dateFormat.format(new Date(l)) :
+            NbBundle.getMessage(QueryController.class, "LBL_Never"); // NOI18N
+    }
+
+    private boolean validateIssueKey (String key) {
+        boolean retval = false;
+        // TODO more sofisticated: e.g. with a JiraIssueFinder?
+        try {
+            Long.parseLong(key);
+        } catch (NumberFormatException e) {
+            // not a number, will not cause an InsufficientRightsException in mylyn
+            retval = true;
+        }
+        if (!retval) {
+            panel.lblIssueKeyWarning.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "MSG_InvalidIssueKey", new Object[] {key})); //NOI18N
+            panel.lblIssueKeyWarning.setVisible(true);
+        }
+        return retval;
+    }
+
+    private void documentChanged (DocumentEvent e) {
+        if (e.getDocument() == panel.idTextField.getDocument()) {
+            panel.lblIssueKeyWarning.setVisible(false);
+        } else {
+            fireDataChanged();
+        }
+    }
+
+    private void onGotoIssue() {
+        final String key = getIdTextField();
+        if(key == null || key.trim().equals("") || !validateIssueKey(key)) { //NOI18N
+            return;
+        }
+        final Task[] t = new Task[1];
+        Cancellable c = new Cancellable() {
+            public boolean cancel() {
+                if(t[0] != null) {
+                    return t[0].cancel();
+                }
+                return true;
+            }
+        };
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_Opening", new Object[] {key}), c); // NOI18N
+        t[0] = Jira.getInstance().getRequestProcessor().create(new Runnable() {
+            public void run() {
+                handle.start();
+                try {
+                    Issue issue = repository.getIssue(key.toUpperCase()); // XXX always uppercase?
+                    if (issue != null) {
+                        issue.open();
+                    } else {
+                        // XXX nice message?
+                    }
+                } finally {
+                    handle.finish();
+                }
+            }
+        });
+        t[0].schedule(0);
+    }
+
+    private void onWeb() {
+        final String repoURL = repository.getTaskRepository().getRepositoryUrl() + "/secure/IssueNavigator.jspa"; // NOI18N //XXX need constants
+        Jira.getInstance().getRequestProcessor().post(new Runnable() {
+            public void run() {
+                URL url;
+                try {
+                    url = new URL(repoURL);
+                } catch (MalformedURLException ex) {
+                    Jira.LOG.log(Level.SEVERE, null, ex);
+                    return;
+                }
+                HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
+                if (displayer != null) {
+                    displayer.showURL (url);
+                } else {
+                    // XXX nice error message?
+                    Jira.LOG.warning("No URLDisplayer found.");             // NOI18N
+                }
+            }
+        });
+    }
+
+    public void autoRefresh() {
+        onRefresh(true);
+    }
+
+    public void onRefresh() {
+        onRefresh(false);
+    }
+
+    private void onRefresh(final boolean autoRefresh) {
+        if(refreshTask == null) {            
+            refreshTask = new QueryTask();
+        }
+        refreshTask.post(autoRefresh);
+    }    
+
+    private void onModify() {
+        panel.setModifyVisible(true);
+    }
+
+    private void onMarkSeen() {
+        Jira.getInstance().getRequestProcessor().post(new Runnable() {
+            public void run() {
+                Issue[] issues = query.getIssues();
+                for (Issue issue : issues) {
+                    try {
+                        ((NbJiraIssue) issue).setSeen(true);
+                    } catch (IOException ex) {
+                        Jira.LOG.log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        });
+    }
+
+    private void onRemove() {
+        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+            NbBundle.getMessage(QueryController.class, "MSG_RemoveQuery", new Object[] { query.getDisplayName() }), // NOI18N
+            NbBundle.getMessage(QueryController.class, "CTL_RemoveQuery"),      // NOI18N
+            NotifyDescriptor.OK_CANCEL_OPTION);
+
+        if(DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
+            Jira.getInstance().getRequestProcessor().post(new Runnable() {
+                public void run() {
+                    remove();
+                }
+            });
+        }
+    }
+
+    private void onAutoRefresh() {
+        final boolean autoRefresh = panel.refreshCheckBox.isSelected();
+        JiraConfig.getInstance().setQueryAutoRefresh(query.getDisplayName(), autoRefresh);
+        logAutoRefreshEvent(autoRefresh);
+        if(autoRefresh) {
+            scheduleForRefresh();
+        } else {
+            repository.stopRefreshing(query);
+        }
+    }
+
+    protected void logAutoRefreshEvent(boolean autoRefresh) {
+        BugtrackingUtil.logAutoRefreshEvent(
+            JiraConnector.getConnectorName(),
+            query.getDisplayName(),
+            false,
+            autoRefresh
+        );
+    }
+
+    private void remove() {
+        if (refreshTask != null) {
+            refreshTask.cancel();
+        }
+        query.remove();
+    }
+
+    protected void onReloadAttributes() {
+        if(modifiable) {
+            postPopulate(getFilterDefinition(), true);
+        }
+    }
+
+    private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
         private ProgressHandle handle;
         private int counter;
+        private Task task;
+        private boolean autoRefresh;
 
         public QueryTask() {
             query.addNotifyListener(this);
@@ -897,7 +884,15 @@ public class QueryController extends BugtrackingController implements DocumentLi
             });
         }
 
-        public abstract void executeQuery();
+        public void executeQuery() {
+            panel.setQueryRunning(true);
+            try {
+                query.refresh(getJiraFilter(), autoRefresh);
+            } finally {
+                panel.setQueryRunning(false);
+                task = null;
+            }
+        }
 
         public void run() {
             startQuery();
@@ -908,16 +903,28 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         }
 
-        public boolean cancel() {
+        synchronized void post(boolean autoRefresh) {
             if(task != null) {
                 task.cancel();
             }
-            finnishQuery();
+            task = rp.create(this);
+            this.autoRefresh = autoRefresh;
+            task.schedule(0);
+        }
+
+        public boolean cancel() {
+            if(task != null) {
+                task.cancel();
+                finnishQuery();
+            }
             return true;
         }
 
         public void notifyData(final Issue issue) {
             setIssueCount(++counter);
+            if(counter == 1) {
+                panel.showNoContentPanel(false);
+            }
         }
 
         public void started() {
@@ -928,181 +935,5 @@ public class QueryController extends BugtrackingController implements DocumentLi
         public void finished() { }
 
     }
-
-    private class UserSearch implements ItemListener{
-        private String savedText;
-        private final JTextField txt;
-        private final JComboBox combo;
-        public UserSearch(JComboBox combo, JTextField txt, String nobodyDisplayName) {
-            this.txt = txt;
-            this.combo = combo;
-            combo.addItemListener(this);
-
-            DefaultComboBoxModel model = new DefaultComboBoxModel();
-            AnyUserSearch anyUser = new AnyUserSearch();
-            model.addElement(anyUser);
-            model.addElement(new NobodySearch(nobodyDisplayName));
-            model.addElement(new CurrentUserSearch());
-            model.addElement(new SpecificUserSearch());
-            model.addElement(new SpecificGroupSearch());
-            combo.setModel(model);
-            ((UserSearchItem)combo.getSelectedItem()).selected(this);
-
-        }
-        public void itemStateChanged(ItemEvent e) {
-            if(e.getStateChange() == ItemEvent.SELECTED) {
-                ((UserSearchItem)e.getItem()).selected(this);
-            }
-        }
-        void disable() {
-            if(!txt.getText().equals("")) {
-                savedText = txt.getText();
-            }
-            txt.setText("");
-            txt.setEnabled(false);
-        }
-        void enable() {
-            txt.setText(savedText);
-            txt.setEnabled(true);
-        }
-        public JTextField getTextField() {
-            return txt;
-        }
-        public UserFilter getFilter() {
-            Object item = combo.getSelectedItem();
-            if(item == null) {
-                return null;
-            }
-            return ((UserSearchItem)item).getFilter(this);
-        }
-        public void setFilter (UserFilter filter) {
-            ListModel model = combo.getModel();
-            for (int i = 0; i < model.getSize(); ++i) {
-                UserSearchItem usItem = (UserSearchItem) model.getElementAt(i);
-                if (usItem.reconstructFrom(filter, this)) {
-                    combo.setSelectedItem(usItem);
-                    break;
-                }
-            }
-        }
-    }
-
-    abstract class UserSearchItem  {
-        private final String displayName;
-        public UserSearchItem(String displayName) {
-            this.displayName = displayName;
-        }
-        public abstract UserFilter getFilter(UserSearch us);
-        public abstract void selected(UserSearch us);
-        public String getDisplayName() {
-            return displayName;
-        }
-        /**
-         * Reconstructs itself from the given filter if is owner of the filter
-         * @param filter
-         * @return true if is owner of the filter and successfully reconstructed
-         */
-        protected abstract boolean reconstructFrom (UserFilter filter, UserSearch us);
-    }
-
-    private class AnyUserSearch extends UserSearchItem {
-        public AnyUserSearch() {
-            super("Any User");
-        }
-        @Override
-        public UserFilter getFilter(UserSearch us) {
-            return null;
-        }
-        @Override
-        public void selected(UserSearch us) {
-            us.disable();
-        }
-        @Override
-        protected boolean reconstructFrom(UserFilter filter, UserSearch us) {
-            return false;
-        }
-    }
-
-    private class NobodySearch extends UserSearchItem {
-        private UserFilter filter = new NobodyFilter();
-        public NobodySearch(String displayName) {
-            super(displayName);
-        }
-        @Override
-        public UserFilter getFilter(UserSearch us) {
-            return filter;
-        }
-        @Override
-        public void selected(UserSearch us) {
-            us.disable();
-        }
-        @Override
-        protected boolean reconstructFrom(UserFilter filter, UserSearch us) {
-            return filter instanceof NobodyFilter;
-        }
-    }
-    private class CurrentUserSearch extends UserSearchItem {
-        private UserFilter filter = new CurrentUserFilter();
-        public CurrentUserSearch() {
-            super("Current User");
-        }        
-        @Override
-        public UserFilter getFilter(UserSearch us) {
-            return filter;
-        }
-        @Override
-        public void selected(UserSearch us) {
-            us.disable();
-        }
-        @Override
-        protected boolean reconstructFrom(UserFilter filter, UserSearch us) {
-            return filter instanceof CurrentUserFilter;
-        }
-    }
-    private class SpecificUserSearch extends UserSearchItem {
-        public SpecificUserSearch() {
-            super("Specify User");
-        }
-        @Override
-        public UserFilter getFilter(UserSearch us) {
-            return new SpecificUserFilter(us.getTextField().getText());
-        }
-        @Override
-        public void selected(UserSearch us) {
-            us.enable();
-        }
-        @Override
-        protected boolean reconstructFrom(UserFilter filter, UserSearch us) {
-            boolean retval = false;
-            if (filter instanceof SpecificUserFilter) {
-                us.savedText = ((SpecificUserFilter) filter).getUser();
-                retval = true;
-            }
-            return retval;
-        }
-    }
-    private class SpecificGroupSearch extends UserSearchItem {
-        public SpecificGroupSearch() {
-            super("Specify Group");
-        }
-        @Override
-        public UserFilter getFilter(UserSearch us) {
-            return new UserInGroupFilter(us.getTextField().getText());
-        }
-        @Override
-        public void selected(UserSearch us) {
-            us.enable();
-        }
-        @Override
-        protected boolean reconstructFrom(UserFilter filter, UserSearch us) {
-            boolean retval = false;
-            if (filter instanceof UserInGroupFilter) {
-                us.savedText = ((UserInGroupFilter) filter).getGroup();
-                retval = true;
-            }
-            return retval;
-        }
-    }
-
 
 }

@@ -47,4 +47,5 @@ public interface Parameter {
     String getName();
     String getDefaultValue();
     boolean isMandatory();
+    TypeScope getType();
 }

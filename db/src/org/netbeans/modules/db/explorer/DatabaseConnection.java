@@ -858,44 +858,49 @@ public class DatabaseConnection implements DBConnection {
     }
 
     public void selectInExplorer() {
-        ConnectionNode node = null;
-        try {
-            node = findConnectionNode(getName());
-        } catch (DatabaseException e) {
-            Exceptions.printStackTrace(e);
-            return;
-        }
-
-        // find the Runtime panel top component
-        // quite hacky, but it will be replaced by the Server Navigator
-
-        TopComponent runtimePanel = null;
-        ExplorerManager runtimeExplorer = null;
-
+        TopComponent servicesTab = null;
+        ExplorerManager explorer = null;
         for (TopComponent component : TopComponent.getRegistry().getOpened()) {
-            Component[] children = component.getComponents();
-            if (children.length > 0) {
-                ExplorerManager explorer = ExplorerManager.find(children[0]);
-                if ("Runtime".equals(explorer.getRootContext().getName())) { // NOI18N
-                    runtimePanel = component;
-                    runtimeExplorer = explorer;
-                    break;
-                }
+            if (component.getClass().getName().equals("org.netbeans.core.ide.ServicesTab")) {  //NOI18N
+                servicesTab = component;
+                assert servicesTab instanceof ExplorerManager.Provider;
+                explorer = ((ExplorerManager.Provider) servicesTab).getExplorerManager();
+                break;
             }
         }
-
-        if (runtimePanel == null) {
+        if (explorer == null) {
+            // Services tab not open
             return;
         }
-
+        // find connection node in explorer
+        Node root = explorer.getRootContext();
+        Node databasesNode = null;
+        Node connectionNode = null;
+        Node[] children = root.getChildren().getNodes();
+        for (Node node : children) {
+            if (node.getName().equals("Databases")) {  //NOI18N
+                databasesNode = node;
+                break;
+            }
+        }
+        assert databasesNode != null;
+        children = databasesNode.getChildren().getNodes();
+        for (Node node : children) {
+            if (node.getName().equals(getName())) {
+                connectionNode = node;
+                break;
+            }
+        }
+        // select node
         try {
-            runtimeExplorer.setSelectedNodes(new Node[] { node });
+            if (connectionNode != null) {
+                explorer.setSelectedNodes(new Node[] { connectionNode });
+                servicesTab.requestActive();
+            }
         } catch (PropertyVetoException e) {
             Exceptions.printStackTrace(e);
             return;
         }
-
-        runtimePanel.requestActive();
     }
 
     public void showConnectionDialog() {

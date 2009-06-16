@@ -42,8 +42,6 @@
 package org.netbeans.modules.j2ee.clientproject.test;
 
 import java.beans.PropertyVetoException;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -51,81 +49,35 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 import junit.framework.Assert;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.j2ee.clientproject.TestPlatformProvider;
-import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
-import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
-import org.xml.sax.SAXException;
 
 /**
  * Help set up org.netbeans.api.project.*Test.
  * @author Jesse Glick
  * @author Lukas Jungmann
  */
-public final class TestUtil extends ProxyLookup {
-    
-    static {
-        TestUtil.class.getClassLoader().setDefaultAssertionStatus(true);
-        System.setProperty("org.openide.util.Lookup", TestUtil.class.getName());
-        Assert.assertEquals(TestUtil.class, Lookup.getDefault().getClass());
-    }
-    
-    private static TestUtil DEFAULT;
-    private static final int BUFFER = 2048;
+public final class TestUtil {
+
+    // coming from test layer.xml in j2eeserver
+    public static final String SERVER_URL = "fooservice";
     
     /** Do not call directly */
-    public TestUtil() {
-        Assert.assertNull(DEFAULT);
-        DEFAULT = this;
-        setLookup(new Object[0]);
-    }
-    
-    /**
-     * Set the global default lookup.
-     * Caution: if you don't include Lookups.metaInfServices, you may have trouble,
-     * e.g. {@link #makeScratchDir} will not work.
-     */
-    public static void setLookup(Lookup l) {
-        DEFAULT.setLookups(new Lookup[] {l});
-    }
-    
-    /**
-     * Set the global default lookup with some fixed instances including META-INF/services/*.
-     */
-    public static void setLookup(Object[] instances) {
-        ClassLoader l = TestUtil.class.getClassLoader();
-        DEFAULT.setLookups(new Lookup[] {
-            Lookups.fixed(instances),
-            Lookups.metaInfServices(l),
-            Lookups.singleton(l),
-        });
-    }
-    
-    public static void initLookup(NbTestCase test) throws Exception {
-        TestUtil.setLookup(new Object[] {new Repo(test)});
+    private TestUtil() {
+        super();
     }
     
     private static boolean warned = false;
@@ -248,80 +200,6 @@ public final class TestUtil extends ProxyLookup {
      */
     public static void notifyDeleted(Project p) {
         ((TestProject)p).state.notifyDeleted();
-    }
-    
-    /**
-     * Register Sun Application Server in the "IDE" to be used by unit test.
-     * This method creates dummy userdir as well as dummy NetBeans home
-     * in test's working directory. Both properties - <code>netbeans.home</code>
-     * and <code>netbeans.user</code> - will be set by this method if they are
-     * not already defined.
-     *
-     * @param test a test which requires SunAppServer
-     * @return id of registered server
-     */
-    public static String registerSunAppServer(NbTestCase test) throws Exception {
-        String oldNbHome = System.getProperty("netbeans.home"); // NOI18N
-        String oldNbUser = System.getProperty("netbeans.user"); // NOI18N
-        File workDir = test.getWorkDir();
-        File systemDir = new File(workDir, "ud/system"); // NOI18N
-        FileUtil.createFolder(new File(systemDir, "J2EE/InstalledServers"));
-        FileUtil.createFolder(new File(systemDir, "J2EE/DeploymentPlugins"));
-        FileUtil.createFolder(new File(workDir, "nb"));
-        System.setProperty("netbeans.home", new File(workDir, "nb").getAbsolutePath()); // NOI18N
-        System.setProperty("netbeans.user", new File(workDir, "ud").getAbsolutePath()); // NOI18N
-        TestUtil.setLookup(new Object[] {new Repo(test), new TestPlatformProvider()});
-        File asRoot = extractAppSrv(workDir, new File(test.getDataDir(), "SunAppServer.zip")); // NOI18N
-        FileObject dir = FileUtil.getConfigFile("J2EE/InstalledServers"); // NOI18N
-        String name = FileUtil.findFreeFileName(dir, "instance", null); // NOI18N
-        FileObject instanceFO = dir.createData(name);
-        String serverID = "[" + asRoot.getAbsolutePath() + "]deployer:Sun:AppServer::localhost:4848"; // NOI18N
-        instanceFO.setAttribute(InstanceProperties.URL_ATTR, serverID);
-        instanceFO.setAttribute(InstanceProperties.USERNAME_ATTR, "admin"); // NOI18N
-        instanceFO.setAttribute(InstanceProperties.PASSWORD_ATTR, "adminadmin"); // NOI18N
-        instanceFO.setAttribute(InstanceProperties.DISPLAY_NAME_ATTR, "testdname"); // NOI18N
-        instanceFO.setAttribute(InstanceProperties.HTTP_PORT_NUMBER, "4848"); // NOI18N
-        instanceFO.setAttribute("DOMAIN", "testdomain1"); // NOI18N
-        instanceFO.setAttribute("LOCATION", new File(asRoot, "domains").getAbsolutePath()); // NOI18N
-        ServerRegistry sr = ServerRegistry.getInstance();
-        sr.addInstance(instanceFO);
-        if (oldNbHome != null) {
-            System.setProperty("netbeans.home", oldNbHome); // NOI18N
-        }
-        if (oldNbUser != null) {
-            System.setProperty("netbeans.user", oldNbUser); // NOI18N
-        }
-        return serverID;
-    }
-    
-    private static File extractAppSrv(File destDir, File archiveFile) throws IOException {
-        ZipInputStream zis = null;
-        BufferedOutputStream dest = null;
-        try {
-            FileInputStream fis = new FileInputStream(archiveFile);
-            zis = new ZipInputStream(new BufferedInputStream(fis));
-            ZipEntry entry;
-            while((entry = zis.getNextEntry()) != null) {
-                byte data[] = new byte[BUFFER];
-                File entryFile = new File(destDir, entry.getName());
-                if (entry.isDirectory()) {
-                    FileUtil.createFolder(entryFile);
-                } else {
-                    FileUtil.createFolder(entryFile.getParentFile());
-                    FileOutputStream fos = new FileOutputStream(entryFile);
-                    dest = new BufferedOutputStream(fos, BUFFER);
-                    int count;
-                    while ((count = zis.read(data, 0, BUFFER)) != -1) {
-                        dest.write(data, 0, count);
-                    }
-                    dest.flush();
-                }
-            }
-        } finally {
-            if (zis != null) { zis.close(); }
-            if (dest != null) { dest.close(); }
-        }
-        return new File(destDir, archiveFile.getName().substring(0, archiveFile.getName().length() - 4));
     }
     
     /**
@@ -496,40 +374,40 @@ public final class TestUtil extends ProxyLookup {
         return fo;
     }
 
-    private static final class Repo extends Repository {
-        private static final long serialVersionUID = 1L;
-
-        public Repo(NbTestCase t) throws Exception {
-            super(mksystem(t));
-        }
-        
-        private static FileSystem mksystem(NbTestCase t) throws Exception {
-            LocalFileSystem lfs = new LocalFileSystem();
-            File systemDir = new File(t.getWorkDir(), "ud/system");
-            FileUtil.createFolder(systemDir);
-            lfs.setRootDirectory(systemDir);
-            lfs.setReadOnly(false);
-            List<FileSystem> layers = new ArrayList<FileSystem>();
-            layers.add(lfs);
-            // get layer for the AS/GlassFish
-            addLayer(layers, "org/netbeans/modules/j2ee/sun/ide/j2ee/layer.xml");
-            // get layer for the j2ee/clientproject
-            addLayer(layers, "org/netbeans/modules/j2ee/clientproject/ui/resources/layer.xml");
-            // get layer for the websvc/core
-            addLayer(layers, "org/netbeans/modules/websvc/core/resources/mf-layer.xml");
-            // get layer for the java support (for Main class template)
-            addLayer(layers, "org/netbeans/modules/java/project/layer.xml");
-            MultiFileSystem mfs = new MultiFileSystem(layers.toArray(new FileSystem[layers.size()]));
-            return mfs;
-        }
-        
-        private static void addLayer(List<FileSystem> layers, String layerRes) throws SAXException {
-            URL layerFile = Repo.class.getClassLoader().getResource(layerRes);
-            assert layerFile != null : "Cannot find layer file " + layerRes;
-            layers.add(new XMLFileSystem(layerFile));
-        }
-        
-    }
+//    private static final class Repo extends Repository {
+//        private static final long serialVersionUID = 1L;
+//
+//        public Repo(NbTestCase t) throws Exception {
+//            super(mksystem(t));
+//        }
+//
+//        private static FileSystem mksystem(NbTestCase t) throws Exception {
+//            LocalFileSystem lfs = new LocalFileSystem();
+//            File systemDir = new File(t.getWorkDir(), "ud/system");
+//            FileUtil.createFolder(systemDir);
+//            lfs.setRootDirectory(systemDir);
+//            lfs.setReadOnly(false);
+//            List<FileSystem> layers = new ArrayList<FileSystem>();
+//            layers.add(lfs);
+//            // get layer for the AS/GlassFish
+//            addLayer(layers, "org/netbeans/modules/j2ee/sun/ide/j2ee/layer.xml");
+//            // get layer for the j2ee/clientproject
+//            addLayer(layers, "org/netbeans/modules/j2ee/clientproject/ui/resources/layer.xml");
+//            // get layer for the websvc/core
+//            addLayer(layers, "org/netbeans/modules/websvc/core/resources/mf-layer.xml");
+//            // get layer for the java support (for Main class template)
+//            addLayer(layers, "org/netbeans/modules/java/project/layer.xml");
+//            MultiFileSystem mfs = new MultiFileSystem(layers.toArray(new FileSystem[layers.size()]));
+//            return mfs;
+//        }
+//
+//        private static void addLayer(List<FileSystem> layers, String layerRes) throws SAXException {
+//            URL layerFile = Repo.class.getClassLoader().getResource(layerRes);
+//            assert layerFile != null : "Cannot find layer file " + layerRes;
+//            layers.add(new XMLFileSystem(layerFile));
+//        }
+//
+//    }
     
     /**
      * Make a temporary copy of a whole folder into some new dir in the scratch

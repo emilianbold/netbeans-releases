@@ -90,13 +90,13 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private final CharSequence qualifiedName;
     
     /** maps namespaces FQN to namespaces */
-    private Map<CharSequence, CsmUID<CsmNamespace>> nestedNamespaces = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>();
+    private final Map<CharSequence, CsmUID<CsmNamespace>> nestedNamespaces;
     
     private final Key declarationsSorageKey;
 
-    private final Set<CsmUID<CsmOffsetableDeclaration>> unnamedDeclarations = Collections.synchronizedSet(new HashSet<CsmUID<CsmOffsetableDeclaration>>());
+    private final Set<CsmUID<CsmOffsetableDeclaration>> unnamedDeclarations;
     
-    private Map<CharSequence,CsmUID<CsmNamespaceDefinition>> nsDefinitions = new TreeMap<CharSequence,CsmUID<CsmNamespaceDefinition>>(CharSequenceKey.Comparator);
+    private final TreeMap<CharSequence,CsmUID<CsmNamespaceDefinition>> nsDefinitions;
     private ReadWriteLock nsDefinitionsLock = new ReentrantReadWriteLock();
     private final ReentrantReadWriteLock projectLock = new ReentrantReadWriteLock();
     
@@ -113,7 +113,10 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         
         this.projectUID = UIDCsmConverter.projectToUID(project);
         assert this.projectUID != null;
-            
+        unnamedDeclarations = Collections.synchronizedSet(new HashSet<CsmUID<CsmOffsetableDeclaration>>());
+        nestedNamespaces = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>();
+        nsDefinitions = new TreeMap<CharSequence,CsmUID<CsmNamespaceDefinition>>(CharSequenceKey.Comparator);
+
         this.projectRef = new WeakReference<ProjectBase>(project);
         this.declarationsSorageKey = fake ? null : new DeclarationContainer(this).getKey();
         if (!fake) {
@@ -130,6 +133,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         
         this.projectUID = UIDCsmConverter.projectToUID(project);
         assert this.projectUID != null;
+        unnamedDeclarations = Collections.synchronizedSet(new HashSet<CsmUID<CsmOffsetableDeclaration>>());
+        nestedNamespaces = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>();
+        nsDefinitions = new TreeMap<CharSequence,CsmUID<CsmNamespaceDefinition>>(CharSequenceKey.Comparator);
 
         this.projectRef = new WeakReference<ProjectBase>(project);
         this.qualifiedName = QualifiedNameCache.getManager().getString(qualifiedName);
@@ -215,6 +221,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         } finally {
             projectLock.writeLock().unlock();
         }
+        weakDeclarationContainer = null;
     }
     
     private static final String UNNAMED_PREFIX = "<unnamed>";  // NOI18N
@@ -247,7 +254,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return out;
     }
 
-    private WeakReference<DeclarationContainer> weakDeclarationContainer;
+    private WeakReference<DeclarationContainer> weakDeclarationContainer = TraceFlags.USE_WEAK_MEMORY_CACHE ?  new WeakReference<DeclarationContainer>(null) : null;
     private DeclarationContainer getDeclarationsSorage() {
         if (declarationsSorageKey == null) {
             return DeclarationContainer.empty();
@@ -267,7 +274,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         if (dc == null) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get DeclarationsSorage by key " + declarationsSorageKey)); // NOI18N
         }
-        if (TraceFlags.USE_WEAK_MEMORY_CACHE && dc != null) {
+        if (TraceFlags.USE_WEAK_MEMORY_CACHE && dc != null && weakDeclarationContainer != null) {
             weakDeclarationContainer = new WeakReference<DeclarationContainer>(dc);
         }
         return dc != null ? dc : DeclarationContainer.empty();
@@ -363,6 +370,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
                 unnamedNrs.remove(Integer.valueOf(0));
             }
         }
+        RepositoryUtils.put(this);
     }
 
     /**
@@ -453,7 +461,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             getDeclarationsSorage().removeDeclaration(declaration);
         }
         // do not clean repository, it must be done from physical container of declaration
-        if (false) { RepositoryUtils.remove(declarationUid); }
+        if (false) { RepositoryUtils.remove(declarationUid, declaration); }
         // update repository
         RepositoryUtils.put(this);
         notify(declaration, NotifyEvent.DECLARATION_REMOVED);
@@ -530,7 +538,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             nsDefinitionsLock.writeLock().unlock();
         }
         // does not remove unregistered declaration from repository, it's responsibility of physical container
-        if (false) { RepositoryUtils.remove(definitionUid); }
+        if (false) { RepositoryUtils.remove(definitionUid, def); }
         // update repository about itself
         RepositoryUtils.put(this);
         if (remove) {
@@ -666,11 +674,26 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         assert this.name != null;
         this.qualifiedName = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.qualifiedName != null;
-        theFactory.readStringToUIDMap(this.nestedNamespaces, input, QualifiedNameCache.getManager());
+
+        int collSize = input.readInt();
+        if (collSize <= 0) {
+            nestedNamespaces = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>(0);
+        } else {
+            nestedNamespaces = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>(collSize);
+        }
+        theFactory.readStringToUIDMap(this.nestedNamespaces, input, QualifiedNameCache.getManager(), collSize);
         declarationsSorageKey = ProjectComponent.readKey(input);
         assert declarationsSorageKey != null : "declarationsSorageKey can not be null";
-        theFactory.readStringToUIDMap(this.nsDefinitions, input, QualifiedNameCache.getManager());
-        theFactory.readUIDCollection(this.unnamedDeclarations, input);
+
+        this.nsDefinitions = theFactory.readStringToUIDMap(input, QualifiedNameCache.getManager());
+
+        collSize = input.readInt();
+        if (collSize < 0) {
+            unnamedDeclarations = Collections.synchronizedSet(new HashSet<CsmUID<CsmOffsetableDeclaration>>(0));
+        } else {
+            unnamedDeclarations = Collections.synchronizedSet(new HashSet<CsmUID<CsmOffsetableDeclaration>>(collSize));
+        }
+        theFactory.readUIDCollection(this.unnamedDeclarations, input, collSize);
     }
 
     

@@ -97,6 +97,7 @@ import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -535,16 +536,16 @@ public class WebLogicalViewProvider implements LogicalViewProvider2 {
             }
 
             public void actionPerformed(ActionEvent e) {
-                String j2eeSpec = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).
-                        getProperty(WebProjectProperties.J2EE_PLATFORM);
-                if (j2eeSpec == null) {
-                    j2eeSpec = J2EEProjectProperties.JAVA_EE_5; // NOI18N
+                Profile j2eeProfile = Profile.fromPropertiesString(helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).
+                        getProperty(WebProjectProperties.J2EE_PLATFORM));
+                if (j2eeProfile == null) {
+                    j2eeProfile = Profile.JAVA_EE_5; // NOI18N
                     Logger.getLogger(WebLogicalViewProvider.class.getName()).warning(
                             "project ["+project.getProjectDirectory()+"] is missing "+WebProjectProperties.J2EE_PLATFORM+". " + // NOI18N
-                            "default value will be used instead: "+j2eeSpec); // NOI18N
-                    updateJ2EESpec(project, project.getAntProjectHelper(), j2eeSpec);
+                            "default value will be used instead: "+j2eeProfile); // NOI18N
+                    updateJ2EESpec(project, project.getAntProjectHelper(), j2eeProfile);
                 }
-                String instance = BrokenServerSupport.selectServer(j2eeSpec, J2eeModule.WAR);
+                String instance = BrokenServerSupport.selectServer(j2eeProfile, J2eeModule.Type.WAR);
                 if (instance != null) {
                     WebProjectProperties.setServerInstance(
                             project, helper, instance);
@@ -552,12 +553,12 @@ public class WebLogicalViewProvider implements LogicalViewProvider2 {
                 checkMissingServer();
             }
 
-            private void updateJ2EESpec(final Project project, final AntProjectHelper helper, final String j2eeSpec) {
+            private void updateJ2EESpec(final Project project, final AntProjectHelper helper, final Profile j2eeProfile) {
                 ProjectManager.mutex().postWriteRequest(new Runnable() {
                     public void run() {
                         try {
                             EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                            projectProps.put(WebProjectProperties.J2EE_PLATFORM, j2eeSpec);
+                            projectProps.put(WebProjectProperties.J2EE_PLATFORM, j2eeProfile.toPropertiesString());
                             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
                             ProjectManager.getDefault().saveProject(project);
                         } catch (IOException e) {

@@ -55,6 +55,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
@@ -156,7 +158,7 @@ public class FindFileListener implements OutputListener {
                         Line.Set lines = lc.getLineSet();
                         Line l = lines.getCurrent(line - 1);
                         if (l != null) {
-                            l.show(Line.SHOW_GOTO);
+                            l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
                             return true;
                         }
                     } catch (IndexOutOfBoundsException ioobe) {

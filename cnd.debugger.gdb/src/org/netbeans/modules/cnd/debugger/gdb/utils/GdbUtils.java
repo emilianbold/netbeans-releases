@@ -42,11 +42,13 @@
 package org.netbeans.modules.cnd.debugger.gdb.utils;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.debugger.gdb.GdbVariable;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -57,32 +59,6 @@ import org.openide.util.Utilities;
  * @author Gordon Prieur
  */
 public class GdbUtils {
-    
-    /**
-     * Extract gdb version. We're only interested in major/minor release information so we ignore any
-     * micro release information.
-     *
-     * @param verstring The version string returned by gdb (with extra stuff...)
-     * @return ver The version in the form of major/minor
-     */
-    protected static double extractGdbVersion(String verstring) {
-        double ver;
-        int last = verstring.lastIndexOf('.');
-        int first = verstring.indexOf('.');
-        
-        if (last != first) {
-            verstring = verstring.substring(0, last); // Strip off micro
-        }
-        
-        try {
-            ver = Double.parseDouble(verstring);
-        } catch (NumberFormatException ex) {
-            ver = 0.0;
-        }
-        
-        return ver;
-    }
-
     /**
      *  Ignoring array and pointer information, is this type a keyword type? We may check more
      *  than one type here as a function type will have all argument types checked.
@@ -882,5 +858,55 @@ public class GdbUtils {
             }
             return z;
         }
+    }
+
+    public static boolean comparePaths(int platform, String path1, String path2) {
+        path1 = path1.trim();
+        path2 = path2.trim();
+        // we need to convert paths to unix-like style, so that normalization works correctly
+        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+            path1 = WinPath.win2cyg(path1).toLowerCase();
+            path2 = WinPath.win2cyg(path2).toLowerCase();
+        }
+        // see isssue 152489, normalization is required to correctly compare paths with ..
+        try {
+            String norPath1 = new URI(path1).normalize().getPath();
+            String norPath2 = new URI(path2).normalize().getPath();
+            // use normalized paths only if both paths have been normalized correctly
+            path1 = norPath1;
+            path2 = norPath2;
+        } catch (Exception e) {
+            // do nothing
+        }
+        return path1.equals(path2);
+    }
+
+    /**
+     * Compare the executable path from gdb (via the <i>info files</i> command to the executable path
+     * from the project data. This comparison is <b>very</b> system dependent. For MacOS, all compares
+     * are done in lower case. For Unix, they're done as-is. The most difficult platform is Windows,
+     * where, depending on the gdb provider, I can see a Cygwin name, either forward or backward slashes,
+     * either single or double backslashes (MinGW). The ".exe" may also be missing in some cases.
+     *
+     * @param exe1 The first path
+     * @param exe2 The second path
+     * @return True if exe1 and exe2 resolve to the same executable
+     */
+    public static boolean compareExePaths(int platform, String exe1, String exe2) {
+        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+            exe1 = removeExe(exe1);
+            exe2 = removeExe(exe2);
+        } else if (platform == PlatformTypes.PLATFORM_MACOSX) {
+            exe1 = exe1.toLowerCase();
+            exe2 = exe2.toLowerCase();
+        }
+        return comparePaths(platform, exe1, exe2);
+    }
+
+    private static String removeExe(String exe) {
+        if (exe.endsWith(".exe")) { // NOI18N
+            return exe.substring(0, exe.length() - 4);
+        }
+        return exe;
     }
 }

@@ -1119,6 +1119,7 @@ class J2SEActionProvider implements ActionProvider {
 
     private void bypassAntBuildScript(String command, Lookup context, Map<String, Object> p) throws IllegalArgumentException {
         boolean run = true;
+        boolean hasMainMethod = true;
 
         if (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_STEP_INTO.equals(command)) {
             final String mainClass = project.evaluator().getProperty(J2SEProjectProperties.MAIN_CLASS);
@@ -1138,6 +1139,7 @@ class J2SEActionProvider implements ActionProvider {
 
             if (files == null || files.length != 1) {
                 files = findTestSources(context, false);
+                hasMainMethod = J2SEProjectUtil.hasMainMethod(files[0]);
                 run = false;
             }
 
@@ -1153,7 +1155,11 @@ class J2SEActionProvider implements ActionProvider {
                 copyMultiValue(J2SEProjectProperties.APPLICATION_ARGS, p);
                 JavaRunner.execute(debug ? JavaRunner.QUICK_DEBUG : JavaRunner.QUICK_RUN, p);
             } else {
-                JavaRunner.execute(debug ? JavaRunner.QUICK_DEBUG : JavaRunner.QUICK_RUN, p);
+                if (hasMainMethod) {
+                    JavaRunner.execute(debug ? JavaRunner.QUICK_DEBUG : JavaRunner.QUICK_RUN, p);
+                } else {
+                    JavaRunner.execute(debug ? JavaRunner.QUICK_TEST_DEBUG : JavaRunner.QUICK_TEST, p);
+                }
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

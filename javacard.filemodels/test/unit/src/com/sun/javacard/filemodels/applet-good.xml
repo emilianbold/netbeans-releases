@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<applet-app xmlns="http://java.sun.com/xml/ns/javacard"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://java.sun.com/xml/ns/javacard http://java.sun.com/xml/ns/javacard/applet-app_3_0.xsd"
+            version="3.0">
+    <applet>
+        <display-name>AppletOne</display-name>
+        <applet-class>com.foo.bar.MyApplet</applet-class>
+        <applet-AID>//aid/F880E6C8B8/7D</applet-AID>
+    </applet>
+    <applet>
+        <display-name>AppletTwo</display-name>
+        <applet-class>com.foo.baz.SomeOtherApplet</applet-class>
+        <applet-AID>//aid/F880E6C8B8/7E</applet-AID>
+    </applet>
+</applet-app>

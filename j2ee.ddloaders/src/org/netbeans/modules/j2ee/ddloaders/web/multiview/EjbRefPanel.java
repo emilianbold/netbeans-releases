@@ -53,7 +53,6 @@ public class EjbRefPanel extends javax.swing.JPanel {
     /** Creates new form ResRefPanel */
     public EjbRefPanel() {
         initComponents();
-        org.netbeans.modules.xml.multiview.Utils.makeTextAreaLikeTextField(descriptionTA, nameTF);
     }
 
     void setEjbName(String name) {
@@ -151,6 +150,7 @@ public class EjbRefPanel extends javax.swing.JPanel {
         linkLabel = new javax.swing.JLabel();
         linkTF = new javax.swing.JTextField();
         descriptionLabel = new javax.swing.JLabel();
+        descSP = new javax.swing.JScrollPane();
         descriptionTA = new javax.swing.JTextArea();
 
         setLayout(new java.awt.GridBagLayout());
@@ -278,16 +278,18 @@ public class EjbRefPanel extends javax.swing.JPanel {
         add(descriptionLabel, gridBagConstraints);
 
         descriptionTA.setRows(3);
+        descSP.setViewportView(descriptionTA);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
-        add(descriptionTA, gridBagConstraints);
+        add(descSP, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void interfaceTypeCBItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_interfaceTypeCBItemStateChanged
-// TODO add your handling code here:
         if ("Remote".equals(interfaceTypeCB.getSelectedItem())) { //NOI18N
             interfaceLabel.setText(org.openide.util.NbBundle.getMessage(EjbRefPanel.class, "LBL_EjbRemote"));
         } else {
@@ -300,6 +302,7 @@ public class EjbRefPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox beanTypeCB;
     private javax.swing.JLabel beanTypeLabel;
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JScrollPane descSP;
     private javax.swing.JLabel descriptionLabel;
     private javax.swing.JTextArea descriptionTA;
     private javax.swing.JLabel homeLabel;

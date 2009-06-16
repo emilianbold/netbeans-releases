@@ -882,7 +882,7 @@ class EditablePropertyDisplayer extends EditorPropertyDisplayer implements Prope
 
         public String getBeanName() {
             if (modelRef != null) {
-                PropertyModel pm = (PropertyModel) modelRef.get();
+                PropertyModel pm = modelRef.get();
 
                 if (pm instanceof NodePropertyModel) {
                     return ((NodePropertyModel) pm).getBeanName();

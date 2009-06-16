@@ -69,6 +69,7 @@ import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
 import org.netbeans.modules.java.source.usages.ResultConvertor;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -522,6 +523,7 @@ public final class ClassIndex {
         
         public void typesAdded (final ClassIndexImplEvent event) {
             assert event != null;
+            assertParserEventThread();
             TypesEvent _event = new TypesEvent (ClassIndex.this,event.getTypes());
             for (ClassIndexListener l : listeners) {
                 l.typesAdded(_event);
@@ -530,6 +532,7 @@ public final class ClassIndex {
         
         public void typesRemoved (final ClassIndexImplEvent event) {
             assert event != null;
+            assertParserEventThread();
             TypesEvent _event = new TypesEvent (ClassIndex.this,event.getTypes());
             for (ClassIndexListener l : listeners) {
                 l.typesRemoved(_event);
@@ -538,6 +541,7 @@ public final class ClassIndex {
         
         public void typesChanged (final ClassIndexImplEvent event) {
             assert event != null;
+            assertParserEventThread();
             TypesEvent _event = new TypesEvent (ClassIndex.this,event.getTypes());
             for (ClassIndexListener l : listeners) {
                 l.typesChanged(_event);
@@ -547,6 +551,7 @@ public final class ClassIndex {
         public void classIndexAdded (final ClassIndexManagerEvent event) {
             final Set<? extends URL> roots = event.getRoots();
             assert roots != null;
+            assertParserEventThread();
             List<URL> ar = new LinkedList<URL>();
             boolean srcF = containsRoot (sourcePath,roots,ar, false);
             boolean depF = containsRoot (bootPath, roots, ar, true);
@@ -680,6 +685,7 @@ public final class ClassIndex {
                         JavaSourceAccessor.getINSTANCE().runSpecialTask(new Mutex.ExceptionAction<Void>() {
                             
                             public Void run() {
+                                assertParserEventThread();
                                 if (ae != null) {
                                     for (ClassIndexListener l : listeners) {
                                         l.rootsAdded(ae);
@@ -699,5 +705,10 @@ public final class ClassIndex {
                 }
             }
         }
-    }   
+    }
+
+    private static void assertParserEventThread() {
+//issue #166210 uncommenting this assert proves that events are fired outside dispatch tread
+//        assert Utilities.isTaskProcessorThread(Thread.currentThread());
+    }
 }

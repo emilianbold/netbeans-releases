@@ -95,6 +95,8 @@ public class OptionsDisplayerImpl {
     private static Logger log = Logger.getLogger(OptionsDisplayerImpl.class.getName ());    
     private boolean modal;
     static final LookupListener lookupListener = new LookupListenerImpl();
+    /** OK button. */
+    private JButton bOK;
     /** Advanced Options button. */
     private JButton bClassic;
     /** Export Options button */
@@ -152,7 +154,7 @@ public class OptionsDisplayerImpl {
         OptionsPanel optionsPanel = null;
         if (descriptor == null) {
             optionsPanel = categoryID == null ? new OptionsPanel () : new OptionsPanel(categoryID);            
-            JButton bOK = (JButton) loc(new JButton(), "CTL_OK");//NOI18N
+            bOK = (JButton) loc(new JButton(), "CTL_OK");//NOI18N
             bOK.getAccessibleContext().setAccessibleDescription(loc("ACS_OKButton"));//NOI18N
             bClassic = (JButton) loc(new JButton(), "CTL_Classic");//NOI18N
             bClassic.getAccessibleContext().setAccessibleDescription(loc("ACS_ClassicButton"));//NOI18N
@@ -300,6 +302,7 @@ public class OptionsDisplayerImpl {
                 Dialog d = dialog;
                 dialog = null;
                 optionsPanel.cancel ();
+                bOK.setEnabled(true);
                 d.dispose ();                
             } else
             if (e.getSource () == bClassic) {
@@ -351,7 +354,7 @@ public class OptionsDisplayerImpl {
     private class MyWindowListener implements WindowListener {        
         private OptionsPanel optionsPanel;
         private Dialog originalDialog;
-        
+
                 
         MyWindowListener (OptionsPanel optionsPanel) {
             this.optionsPanel = optionsPanel;
@@ -362,6 +365,7 @@ public class OptionsDisplayerImpl {
             if (dialog == null) return;
             log.fine("Options Dialog - windowClosing "); //NOI18N
             optionsPanel.cancel ();
+            bOK.setEnabled(true);
             if (this.originalDialog == dialog) {
                 dialog = null;            
             }

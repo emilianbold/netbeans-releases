@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
+            <code-name-base>org.netbeans.modules.xml.jaxb.api</code-name-base>
+            <module-dependencies/>
+            <public-packages>
+                <package>javax.activation</package>
+                <package>javax.xml.bind</package>
+                <package>javax.xml.bind.annotation</package>
+                <package>javax.xml.bind.annotation.adapters</package>
+                <package>javax.xml.bind.attachment</package>
+                <package>javax.xml.bind.helpers</package>
+                <package>javax.xml.bind.util</package>
+                <package>javax.xml.stream</package>
+                <package>javax.xml.stream.events</package>
+                <package>javax.xml.stream.util</package>
+              </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxb/activation.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxb/api/jaxb-api.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxb/api/jsr173_api.jar</runtime-relative-path>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>

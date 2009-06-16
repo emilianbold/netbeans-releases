@@ -75,7 +75,6 @@ import org.netbeans.editor.*;
 import org.netbeans.editor.BaseKit.DeleteCharAction;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
-import org.netbeans.editor.ext.html.*;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
@@ -83,6 +82,7 @@ import org.netbeans.modules.csl.core.SelectCodeElementAction;
 import org.netbeans.modules.csl.editor.InstantRenameAction;
 import org.netbeans.modules.csl.editor.ToggleBlockCommentAction;
 import org.netbeans.modules.editor.NbEditorKit;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.html.editor.gsf.HtmlCommentHandler;
 import org.openide.util.Exceptions;
 
@@ -239,26 +239,28 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
     public static class HtmlDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
 
         private JTextComponent currentTarget;
-        private String insertedText;
 
         @Override
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            currentTarget = target;
-            
-            //hack - I need to call the handleTagClosingSymbol() if a character was really typed into the editor
-            //but outside of the insertStringMethod() which is called under document atomic lock.
-            insertedText = null;
-            int dotPos = target.getCaret().getDot();
-            super.actionPerformed(evt, target);
-            
-            if(insertedText != null) {
+        public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
+            if (target != null) {
+                currentTarget = target;
+                BaseDocument doc = (BaseDocument) target.getDocument();
+                final Indent indent = Indent.get(doc);
+                indent.lock();
                 try {
-                    handleTagClosingSymbol((BaseDocument)target.getDocument(), dotPos, insertedText.charAt(0));
-                } catch (BadLocationException ble) {
-                    
+                    doc.runAtomic(new Runnable() {
+                        public void run() {
+                            HtmlDefaultKeyTypedAction.super.actionPerformed(evt, target);
+                        }
+                    });
+                } finally {
+                    indent.unlock();
                 }
+                currentTarget = null;
+            } else {
+                //backw comp.
+                super.actionPerformed(evt, target);
             }
-            currentTarget = null;
         }
 
         @Override
@@ -277,7 +279,6 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
                     if (!handled) {
                         super.insertString(doc, dotPos, caret, str, overwrite);
-                        insertedText = str;
                         handled = bracketCompletion.afterCharInserted(doc, dotPos, currentTarget,
                                 str.charAt(0));
                     }
@@ -287,7 +288,6 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             }
 
             super.insertString(doc, dotPos, caret, str, overwrite);
-            insertedText = str;
         }
 
         @Override
@@ -342,38 +342,29 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                 TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
                 for (final LanguagePath languagePath : (Set<LanguagePath>) tokenHierarchy.languagePaths()) {
                     if (languagePath.innerLanguage() == HTMLTokenId.language()) {
-                        HtmlLexerFormatter htmlFormatter = new HtmlLexerFormatter(languagePath);
-
-                        if (htmlFormatter.isJustAfterClosingTag(doc, dotPos)) {
+                        final Indent indent = Indent.get(doc);
+                        indent.lock();
+                        try {
                             doc.runAtomic(new Runnable() {
+
                                 public void run() {
-                                    HtmlIndenter.indentEndTag(doc, languagePath, dotPos, null);
+                                    try {
+                                        int startOffset = Utilities.getRowStart(doc, dotPos);
+                                        int endOffset = Utilities.getRowEnd(doc, dotPos);
+                                        indent.reindent(startOffset, endOffset);
+                                    } catch (BadLocationException ex) {
+                                        //ignore
+                                    }
                                 }
                             });
-
-//                            //PUT BACK ONCE WE PROPERY IMPLEMENT HTML INDENT TASK                            
-//                            final Indent indent = Indent.get(doc);
-//                            indent.lock();
-//                            try {
-//                                doc.runAtomic(new Runnable() {
-//                                public void run() {
-//                                        try {
-//                                            int startOffset = Utilities.getRowStart(doc, dotPos);
-//                                            int endOffset = Utilities.getRowEnd(doc, dotPos);
-//                                            indent.reindent(startOffset, endOffset);
-//                                        } catch (BadLocationException ex) {
-//                                            //ignore
-//                                        }
-//                                } 
-//                            });
-//                            } finally {
-//                                indent.unlock();
-//                            }
+                        } finally {
+                            indent.unlock();
                         }
                     }
                 }
             }
         }
+
     }
 
     public static class HtmlDeleteCharAction extends DeleteCharAction {

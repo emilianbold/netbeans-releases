@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
 import org.netbeans.modules.cnd.settings.ShellSettings;
@@ -67,6 +66,7 @@ public class ShellExecSupport extends ExecutionSupport {
 
     private static final String PROP_RUN_DIRECTORY = "rundirectory"; // NOI18N
     private static final String PROP_SHELL_COMMAND = "shellcommand"; // NOI18N
+    private static final String PROP_ENVIRONMENT = "environment"; // NOI18N
 
     /** new ShellExecSupport */
     public ShellExecSupport(Entry entry) {
@@ -75,9 +75,10 @@ public class ShellExecSupport extends ExecutionSupport {
 
     @Override
     public void addProperties(Sheet.Set set) {
-        set.put(createParamsProperty());
+        set.put(createParamsProperty(PROP_FILE_PARAMS, getString("PROP_fileParams"), getString("HINT_fileParams"))); // NOI18N;
         set.put(createRunDirectoryProperty());
         set.put(createShellCommandProperty());
+        set.put(createEnvironmentProperty(PROP_ENVIRONMENT, getString("PROP_ENVIRONMENT"), getString("HINT_ENVIRONMENT"))); // NOI18N
     }
 
     /**
@@ -276,63 +277,6 @@ public class ShellExecSupport extends ExecutionSupport {
         }
     }
 
-    /** Creates the fileparams property for entry.
-     * @return the property
-     */
-    private PropertySupport<String> createParamsProperty() {
-        PropertySupport<String> result = new PropertySupport.ReadWrite<String>(
-                PROP_FILE_PARAMS,
-                String.class,
-                getString("PROP_fileParams"),
-                getString("HINT_fileParams")) {
-
-            public String getValue() {
-                String[] args = getArguments();
-                StringBuilder b = new StringBuilder();
-                for (int i = 0; i < args.length; i++) {
-                    b.append(args[i]).append(' ');
-                }
-                return b.toString();
-            }
-
-            public void setValue(String val) throws InvocationTargetException {
-                if (val != null) {
-                    try {
-                        // Keep user arguments as is in args[0]
-                        setArguments(new String[]{val});
-                    } catch (IOException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                } else {
-                    throw new IllegalArgumentException();
-                }
-            }
-
-            @Override
-            public boolean supportsDefaultValue() {
-                return true;
-            }
-
-            @Override
-            public void restoreDefaultValue() throws InvocationTargetException {
-                try {
-                    setArguments(null);
-                } catch (IOException e) {
-                    throw new InvocationTargetException(e);
-                }
-            }
-
-            @Override
-            public boolean canWrite() {
-                Boolean isReadOnly = (Boolean) getEntry().getFile().getAttribute(READONLY_ATTRIBUTES);
-                return (isReadOnly == null) ? false : (!isReadOnly.booleanValue());
-            }
-        };
-        //String editor hint to use a JTextField, not a JTextArea for the
-        //custom editor.  Arguments can't be multiline anyway.
-        result.setValue("oneline", Boolean.TRUE);// NOI18N
-        return result;
-    }
     private ResourceBundle bundle = null;
 
     private String getString(String s) {

@@ -46,13 +46,13 @@ import org.junit.Test;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
 import org.openide.util.NbPreferences;
-import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 
 /**
  *
  * @author Alexander Simon
  */
-public class PackageConfigTestCase extends BaseTestCase {
+public class PackageConfigTestCase extends CndBaseTestCase {
 
     private static final boolean TRACE = false;
 

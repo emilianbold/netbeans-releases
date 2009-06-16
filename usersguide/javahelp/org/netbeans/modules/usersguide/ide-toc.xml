@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright © 2008 Sun Microsystems, Inc. All rights reserved.
+*     Copyright (©) 2009 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 
@@ -112,7 +112,6 @@
       <tocitem text="Checking an XML Document for Well-Formedness" target="xml_checkxml" />
       <tocitem text="Creating a DTD" target="xml_createdtd" />
       <tocitem text="Generating DTD Documentation" target="xml_documentdtd" />
-      <tocitem text="Working With XML Schemas" target="xml_schemas" />
       <tocitem text="Registering a Local DTD or XML Schema Resource" target="xml_mountcatalogs" />
       <tocitem text="XML Catalogs" >
         <tocitem text="About XML Catalogs" target="xml_catalogs" />

@@ -61,11 +61,11 @@ import javax.swing.DefaultComboBoxModel;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import javax.swing.filechooser.FileFilter;
 import org.openide.filesystems.FileObject;
 
 import org.openide.filesystems.FileUtil;
@@ -76,6 +76,7 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.db.util.DriverListUtil;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.Exceptions;
 
 public class AddDriverDialog extends javax.swing.JPanel {
@@ -393,39 +394,36 @@ public class AddDriverDialog extends javax.swing.JPanel {
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         stopProgress();
-        
-        JFileChooser fc = new JFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(fc, null);
-        fc.setDialogTitle(NbBundle.getMessage (AddDriverDialog.class, "AddDriver_Chooser_Title")); //NOI18N
-        fc.setMultiSelectionEnabled(true);
-        fc.setAcceptAllFileFilterUsed(false);
-        
+
+        FileChooserBuilder fileChooserBuilder = new FileChooserBuilder(AddDriverDialog.class);
+        fileChooserBuilder.setTitle(NbBundle.getMessage(AddDriverDialog.class, "AddDriver_Chooser_Title")); //NOI18N
         //.jar and .zip file filter
-        fc.setFileFilter(new javax.swing.filechooser.FileFilter() {
+        fileChooserBuilder.setFileFilter(new FileFilter() {
+
             public boolean accept(File f) {
                 return (f.isDirectory() || f.getName().endsWith(".jar") || f.getName().endsWith(".zip")); //NOI18N
             }
-            
+
             public String getDescription() {
-                return NbBundle.getMessage (AddDriverDialog.class, "AddDriver_Chooser_Filter"); //NOI18N
+                return NbBundle.getMessage(AddDriverDialog.class, "AddDriver_Chooser_Filter"); //NOI18N
             }
         });
-        
-        if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) { //NOI18N
-            File[] files = fc.getSelectedFiles();            
-            for (int i = 0; i < files.length; i++)
-                if (files[i] != null && files[i].isFile()) {
-                    dlm.addElement(files[i].toString());
+
+        File[] selectedFiles = fileChooserBuilder.showMultiOpenDialog();
+        if (selectedFiles != null) {
+            for (File file : selectedFiles) {
+                if (file.isFile()) {
+                    dlm.addElement(file.toString());
                     try {
-                        drvs.add(files[i].toURI().toURL());
+                        drvs.add(file.toURI().toURL());
                     } catch (MalformedURLException exc) {
-                        LOGGER.log(Level.WARNING, 
-                            "Unable to add driver jar file " +
-                            files[i].getAbsolutePath() + 
-                            ": can not convert to URL", exc);
+                        LOGGER.log(Level.WARNING,
+                                "Unable to add driver jar file " +
+                                file.getAbsolutePath() +
+                                ": can not convert to URL", exc);
                     }
                 }
-            
+            }
             findDriverClass();
         }
     }//GEN-LAST:event_browseButtonActionPerformed

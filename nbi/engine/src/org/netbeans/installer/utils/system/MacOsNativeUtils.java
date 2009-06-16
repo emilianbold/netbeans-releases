@@ -118,18 +118,30 @@ public class MacOsNativeUtils extends UnixNativeUtils {
     }
     @Override
     public File getShortcutLocation(Shortcut shortcut, LocationType locationType) throws NativeException {
+        if(shortcut.getPath()!=null) {
+            return new File(shortcut.getPath());
+        }
+
         String fileName = getShortcutFilename(shortcut);
-        
+        File file = null;
         switch (locationType) {
             case CURRENT_USER_DESKTOP:
-                return new File(SystemUtils.getUserHomeDirectory(), "Desktop/" + fileName);
+                file = new File(SystemUtils.getUserHomeDirectory(), "Desktop/" + fileName);
+                break;
             case ALL_USERS_DESKTOP:
-                return new File(SystemUtils.getUserHomeDirectory(), "Desktop/" + fileName);
+                file = new File(SystemUtils.getUserHomeDirectory(), "Desktop/" + fileName);
+                break;
             case CURRENT_USER_START_MENU:
-                return getDockPropertiesFile();
+                file = getDockPropertiesFile();
+                break;
             case ALL_USERS_START_MENU:
-                return getDockPropertiesFile();
+                file = getDockPropertiesFile();
+                break;
+            case CUSTOM:
+                file = new File(shortcut.getRelativePath(), fileName);
+                break;
         }
+        shortcut.setPath(file.getAbsolutePath());
         return null;
     }
     
@@ -147,29 +159,37 @@ public class MacOsNativeUtils extends UnixNativeUtils {
     }
     @Override
     public File createShortcut(Shortcut shortcut, LocationType locationType) throws NativeException {
-        final File shortcutFile = getShortcutLocation(shortcut, locationType);
-        
         try {
-            
-            if (locationType == LocationType.CURRENT_USER_DESKTOP ||
-                    locationType == LocationType.ALL_USERS_DESKTOP ) {
-                // create a symlink on desktop for files/directories and .url for internet shortcuts
-                if(!shortcutFile.exists()) {
-                    if(shortcut instanceof FileShortcut) {
-                        createSymLink(shortcutFile, ((FileShortcut) shortcut).getTarget());
-                    } else if(shortcut instanceof InternetShortcut) {
-                        createURLShortcut((InternetShortcut)shortcut);
+            final File shortcutFile = getShortcutLocation(shortcut, locationType);            
+            switch (locationType) {
+                case CURRENT_USER_DESKTOP:
+                case ALL_USERS_DESKTOP:
+                case CUSTOM:
+                    // create a symlink for files/directories and .url for internet shortcuts
+                    if (!shortcutFile.exists()) {
+                        if (shortcut instanceof FileShortcut) {
+                            createSymLink(shortcutFile, ((FileShortcut) shortcut).getTarget());
+                        } else if (shortcut instanceof InternetShortcut) {
+                            createURLShortcut((InternetShortcut) shortcut);
+                        }
                     }
-                    
-                }
-            } else if(shortcut instanceof FileShortcut &&
-                    convertDockProperties(true)==0) { //create link in the Dock
-                if (modifyDockLink((FileShortcut)shortcut, shortcutFile, true)) {
-                    LogManager.log(ErrorLevel.DEBUG,
-                            "    Updating Dock");
-                    convertDockProperties(false);
-                    SystemUtils.executeCommand(null,UPDATE_DOCK_COMMAND);
-                }
+                    break;
+                case CURRENT_USER_START_MENU:
+                case ALL_USERS_START_MENU:
+                    if (shortcut instanceof FileShortcut &&
+                            convertDockProperties(true) == 0) {
+                        //create link in the Dock
+                        if (modifyDockLink((FileShortcut) shortcut, shortcutFile, true)) {
+                            LogManager.log(ErrorLevel.DEBUG,
+                                    "    Updating Dock");
+                            convertDockProperties(false);
+                            SystemUtils.executeCommand(null, UPDATE_DOCK_COMMAND);
+                        }
+                    }
+                    break;
+                default:
+                    LogManager.log("... unknown shortcut type " + locationType);
+                    return null;
             }
             return shortcutFile;
         } catch (IOException e) {
@@ -178,24 +198,32 @@ public class MacOsNativeUtils extends UnixNativeUtils {
     }
     @Override
     public void removeShortcut(Shortcut shortcut, LocationType locationType, boolean cleanupParents) throws NativeException {
-        final File shortcutFile = getShortcutLocation(shortcut, locationType);
-        
         try {
-            if (locationType == LocationType.CURRENT_USER_DESKTOP ||
-                    locationType == LocationType.ALL_USERS_DESKTOP ) {
-                // create a symlink on desktop
-                if(shortcutFile.exists()) {
-                    FileUtils.deleteFile(shortcutFile,false);
-                }
-            } else if(shortcut instanceof FileShortcut &&
-                    convertDockProperties(true)==0) {//create link in the Dock
-                if(modifyDockLink((FileShortcut) shortcut,shortcutFile,false)) {
-                    LogManager.log(ErrorLevel.DEBUG,
-                            "    Updating Dock");
-                    if(convertDockProperties(false)==0) {
-                        SystemUtils.executeCommand(null,UPDATE_DOCK_COMMAND);
+            final File shortcutFile = getShortcutLocation(shortcut, locationType);
+            switch(locationType) {
+                case CURRENT_USER_DESKTOP:
+                case ALL_USERS_DESKTOP:
+                case CUSTOM:
+                    // remove symlink from desktop
+                    if(shortcutFile.exists()) {
+                        FileUtils.deleteFile(shortcutFile,false);
                     }
-                }
+                    break;
+                case CURRENT_USER_START_MENU :
+                case ALL_USERS_START_MENU :
+                    if (shortcut instanceof FileShortcut &&
+                            convertDockProperties(true) == 0) {
+                        //remove link from the Dock
+                        if (modifyDockLink((FileShortcut) shortcut, shortcutFile, false)) {
+                            LogManager.log(ErrorLevel.DEBUG, "... updating Dock");
+                            if (convertDockProperties(false) == 0) {
+                                SystemUtils.executeCommand(null, UPDATE_DOCK_COMMAND);
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    LogManager.log("... unknown shortcut type " + locationType);
             }
         } catch (IOException e) {
             throw new NativeException("Cannot remove shortcut", e);
@@ -222,9 +250,12 @@ public class MacOsNativeUtils extends UnixNativeUtils {
     public boolean isTiger() {
         return (getOSVersion().startsWith("10.4"));
     }
-    
+
     public boolean isLeopard() {
         return (getOSVersion().startsWith("10.5"));
+    }
+    public boolean isSnowLeopard() {
+        return (getOSVersion().startsWith("10.6"));
     }
     
     // private //////////////////////////////////////////////////////////////////////
@@ -488,7 +519,7 @@ public class MacOsNativeUtils extends UnixNativeUtils {
         int returnResult = 0;
         try {
             if(!isCheetah() && !isPuma()) {
-                if((!decode && (isTiger() || isLeopard())) || decode) {
+                if((!decode && (isTiger() || isLeopard() || isSnowLeopard())) || decode) {
                     // decode for all except Cheetah and Puma
                     // code only for Tiger and Leopard
                     

@@ -44,6 +44,15 @@ made subject to such option by the copyright holder.
 <filesystem>
 
     <!-- register templates -->
+    <folder name="Actions">
+        <folder name="Tools">
+            <file name="org-netbeans-modules-xml-schema-actions-GenerateXMLAction.instance"/>
+            <file name="org-netbeans-modules-xml-schema-actions-SchemaSourceViewOpenAction.instance"/>
+            <file name="org-netbeans-modules-xml-schema-actions-SchemaTransformAction.instance"/>
+            <file name="org-netbeans-modules-xml-schema-actions-SchemaViewOpenAction.instance"/>
+            <file name="org-netbeans-modules-xml-schema-refactoring-query-actions-QueryAction.instance"/>
+        </folder>
+    </folder>
     <folder name="Templates">
         <folder name="XML">
             <file name="XmlSchema.xsd" url="nbresloc:/org/netbeans/modules/xml/schema/wizard/templates/XMLSchema.xml">
@@ -167,92 +176,109 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
                 <folder name="Actions">
-		    <file name="org-openide-actions-EditAction.instance_hidden"/>
-                    <file name="org-netbeans-modules-xml-schema-actions-SchemaViewOpenAction.instance">
+		    <file name="RefactoringAll.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/RefactoringAll.instance"/>
+                        <attr name="position" intvalue="2000"/>
+                    </file>
+                    <file name="RefactoringWhereUsed.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/RefactoringWhereUsed.instance"/>
+                        <attr name="position" intvalue="1900"/>
+                    </file>
+                    <file name="org-netbeans-modules-xml-actions-CollectXMLAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-actions-CollectXMLAction.instance"/>
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                    <file name="org-netbeans-modules-xml-schema-actions-GenerateXMLAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-xml-schema-actions-GenerateXMLAction.instance"/>
+                        <attr name="position" intvalue="350"/>
+                    </file>
+                    <file name="org-netbeans-modules-xml-schema-actions-SchemaSourceViewOpenAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-xml-schema-actions-SchemaSourceViewOpenAction.instance"/>
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                    <file name="org-netbeans-modules-xml-schema-actions-SchemaTransformAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-xml-schema-actions-SchemaTransformAction.instance"/>
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="org-netbeans-modules-xml-schema-actions-SchemaViewOpenAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-xml-schema-actions-SchemaViewOpenAction.instance"/>
                         <attr name="position" intvalue="100"/>
                     </file>
-                    <file name="org-netbeans-modules-xml-schema-actions-SchemaSourceViewOpenAction.instance">
-                        <attr name="position" intvalue="200"/>
+                    <file name="org-netbeans-modules-xml-schema-refactoring-query-actions-QueryAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-xml-schema-refactoring-query-actions-QueryAction.instance"/>
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                    <file name="org-openide-actions-CopyAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                    <file name="org-openide-actions-CutAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="org-openide-actions-DeleteAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
+                        <attr name="position" intvalue="1400"/>
+                    </file>
+                    <file name="org-openide-actions-EditAction.instance_hidden"/>
+                    <file name="org-openide-actions-FileSystemAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
+                        <attr name="position" intvalue="2200"/>
+                    </file>
+                    <file name="org-openide-actions-PasteAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>
+                        <attr name="position" intvalue="2500"/>
+                    </file>
+                    <file name="org-openide-actions-SaveAsTemplateAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
+                        <attr name="position" intvalue="1700"/>
+                    </file>
+                    <file name="org-openide-actions-ToolsAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ToolsAction.instance"/>
+                        <attr name="position" intvalue="2400"/>
                     </file>
                     <file name="sep-0.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="300"/>
                     </file>   
-                    <file name="org-netbeans-modules-xml-schema-actions-GenerateXMLAction.instance">
-                        <attr name="position" intvalue="350"/>
-                    </file>
-                    <file name="org-netbeans-modules-xml-schema-actions-SchemaTransformAction.instance">
-                        <attr name="position" intvalue="400"/>
-                    </file>                    
+                                        
                     <file name="sep-1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="500"/>
                     </file>
-                    <file name="org-netbeans-modules-xml-actions-CollectXMLAction.instance">
-                        <attr name="position" intvalue="600"/>
-                    </file>
-		    <file name="sep-2.instance">
+                    <file name="sep-2.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="700"/>
                     </file> 
-                    <file name="org-netbeans-modules-xml-schema-refactoring-query-actions-QueryAction.instance">
-                        <attr name="position" intvalue="800"/>
-                    </file>
-		    <file name="sep-3.instance">
+                    <file name="sep-3.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="900"/>
                     </file> 
-                    <file name="org-openide-actions-CutAction.instance">
-                        <attr name="position" intvalue="1000"/>
-                    </file>
-                    <file name="org-openide-actions-CopyAction.instance">
-                        <attr name="position" intvalue="1100"/>
-                    </file>
-                    <file name="org-openide-actions-PasteAction.instance">
-                        <attr name="position" intvalue="1200"/>
-                    </file>
                     <file name="sep-4.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1300"/>
-                    </file>
-                    <file name="org-openide-actions-DeleteAction.instance">
-                        <attr name="position" intvalue="1400"/>
                     </file>                                
                     <file name="sep-5.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1600"/>
                     </file>
-                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
-                        <attr name="position" intvalue="1700"/>
-                    </file>
                     <file name="sep-6.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1800"/>
                     </file>                           
-                    <file name="RefactoringWhereUsed.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
-                        <attr name="position" intvalue="1900"/>
-                    </file>                   
-                    <file name="RefactoringAll.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
-                        <attr name="position" intvalue="2000"/>
-                    </file>                                  
+                                       
+                                                      
                     <file name="sep-7.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="2100"/>
                     </file>                    
-                    <file name="org-openide-actions-FileSystemAction.instance">
-                        <attr name="position" intvalue="2200"/>
-                    </file>
                     <file name="sep-8.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="2300"/>
-                    </file>
-                    <file name="org-openide-actions-ToolsAction.instance">
-                        <attr name="position" intvalue="2400"/>
-                    </file>
-                    <file name="org-openide-actions-PropertiesAction.instance">
-                        <attr name="position" intvalue="2500"/>
                     </file>
                     <file name="org-openide-actions-RenameAction.instance_hidden"/>
                 </folder>

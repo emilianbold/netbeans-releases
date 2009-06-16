@@ -174,19 +174,19 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         allConfigurationComboBox.getAccessibleContext().setAccessibleDescription(getString("CONFIGURATION_COMBOBOX_AD"));
         allConfigurationComboBox.setToolTipText(getString("ALL_CONFIGURATIONS_TOOLTIP"));
     }
+    private Map<Item, Map<Configuration, ItemConfiguration>> itemConfigurations = new HashMap<Item, Map<Configuration, ItemConfiguration>>();
 
-    private Map<Item,Map<Configuration,ItemConfiguration>> itemConfigurations = new HashMap<Item,Map<Configuration,ItemConfiguration>>();
-    private ItemConfiguration getItemConfiguration(Item item, Configuration configuration){
-        Map<Configuration,ItemConfiguration> map = itemConfigurations.get(item);
+    private ItemConfiguration getItemConfiguration(Item item, Configuration configuration) {
+        Map<Configuration, ItemConfiguration> map = itemConfigurations.get(item);
         if (map == null) {
-            map = new HashMap<Configuration,ItemConfiguration>();
+            map = new HashMap<Configuration, ItemConfiguration>();
             itemConfigurations.put(item, map);
         }
         ItemConfiguration res = map.get(configuration);
         if (res == null) {
             res = new ProxyItemConfiguration(configuration, item);
             map.put(configuration, res);
-            ItemConfiguration old = (ItemConfiguration)configuration.removeAuxObject(res);
+            ItemConfiguration old = (ItemConfiguration) configuration.removeAuxObject(res);
             configuration.addAuxObject(res);
         }
         return res;
@@ -326,7 +326,14 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         dl.setVisible(true);
         // Update data structure
         Configuration[] editedConfs = configurationsEditor.getListData().toArray(new Configuration[configurationsEditor.getListData().size()]);
-        projectDescriptor.getConfs().init(editedConfs, -1);
+        int active = -1;
+        for (int i = 0; i < editedConfs.length; i++) {
+            if (editedConfs[i].isDefault()) {
+                active = i;
+                break;
+            }
+        }
+        projectDescriptor.getConfs().init(editedConfs, active);
         // Update gui with changes
         ActionListener[] actionListeners = configurationComboBox.getActionListeners();
         configurationComboBox.removeActionListener(actionListeners[0]); // assuming one and only one!
@@ -658,9 +665,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             descriptions.add(createCodeAssistantDescription(project, compilerSet, null, null, isCompileConfiguration));
         }
         //add all which are not included yet
-        List<CustomizerNode> nodes  = CustomizerRootNodeProvider.getInstance().getCustomizerNodes();
-        for (CustomizerNode cN : nodes){
-            if (!descriptions.contains(cN)){
+        List<CustomizerNode> nodes = CustomizerRootNodeProvider.getInstance().getCustomizerNodes();
+        for (CustomizerNode cN : nodes) {
+            if (!descriptions.contains(cN)) {
                 descriptions.add(cN);
             }
         }
@@ -1126,7 +1133,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
             return ((MakeConfiguration) configuration).getQmakeConfiguration().getGeneralSheet();
         }
-
     }
 
     // Packaging
@@ -1243,7 +1249,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         private Item item;
         private Folder folder;
         private boolean isCompilerConfiguration;
-    
+
         public CCCompilerCustomizerNode(String name, String displayName, CustomizerNode[] children, Item item, Folder folder, boolean isCompilerConfiguration) {
             super(name, displayName, children);
             this.item = item;
@@ -1556,8 +1562,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
         return bundle.getString(s);
     }
-    
+
     private static class ProxyItemConfiguration extends ItemConfiguration {
+
         private AssemblerConfiguration assemblerConfiguration;
         private CCCompilerConfiguration cCCompilerConfiguration;
         private CCompilerConfiguration cCompilerConfiguration;
@@ -1574,8 +1581,8 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 return super.getAssemblerConfiguration();
             } else {
                 if (assemblerConfiguration == null) {
-                    assemblerConfiguration = new AssemblerConfiguration(((MakeConfiguration)getConfiguration()).getBaseDir(),
-                            ((MakeConfiguration)getConfiguration()).getAssemblerConfiguration());
+                    assemblerConfiguration = new AssemblerConfiguration(((MakeConfiguration) getConfiguration()).getBaseDir(),
+                            ((MakeConfiguration) getConfiguration()).getAssemblerConfiguration());
                 }
                 return assemblerConfiguration;
             }
@@ -1586,12 +1593,12 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             if (getTool() == Tool.CCCompiler) {
                 return super.getCCCompilerConfiguration();
             } else {
-                if (cCCompilerConfiguration == null){
+                if (cCCompilerConfiguration == null) {
                     FolderConfiguration folderConfiguration = getItem().getFolder().getFolderConfiguration(getConfiguration());
                     if (folderConfiguration != null) {
-                        cCCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration)getConfiguration()).getBaseDir(), folderConfiguration.getCCCompilerConfiguration());
+                        cCCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration) getConfiguration()).getBaseDir(), folderConfiguration.getCCCompilerConfiguration());
                     } else {
-                        cCCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration)getConfiguration()).getBaseDir(), null);
+                        cCCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration) getConfiguration()).getBaseDir(), null);
                     }
                 }
                 return cCCompilerConfiguration;
@@ -1627,7 +1634,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
 
         @Override
         public synchronized CustomToolConfiguration getCustomToolConfiguration() {
-            if (getTool() == Tool.FortranCompiler) {
+            if (getTool() == Tool.CustomTool) {
                 return super.getCustomToolConfiguration();
             } else {
                 if (customToolConfiguration == null) {
@@ -1636,6 +1643,5 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 return customToolConfiguration;
             }
         }
-
     }
 }

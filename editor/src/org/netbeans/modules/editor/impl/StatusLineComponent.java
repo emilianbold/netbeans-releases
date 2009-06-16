@@ -61,7 +61,7 @@ public final class StatusLineComponent extends JLabel {
 
     private static final Insets NULL_INSETS = new Insets(0, 0, 0, 0);
 
-    private static final String MAX_LINE_COLUMN_STRING = "99999:999";
+    private static final String MAX_LINE_COLUMN_STRING = "99999 | 999";
 
     private static final String INSERT_LOCALE = "status-bar-insert"; // NOI18N
 

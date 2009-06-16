@@ -41,7 +41,6 @@ package org.netbeans.modules.maven.output;
 import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -94,12 +93,15 @@ public class JavaOutputListenerProvider implements OutputProcessor {
                             for (SourceGroup grp : srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
                                 if (FileUtil.isParentOf(grp.getRootFolder(), file)) {
                                     newclazz = FileUtil.getRelativePath(grp.getRootFolder(), file);
+                                    if (newclazz.endsWith(".java")) { //NOI18N
+                                        newclazz = newclazz.substring(0, newclazz.length() - ".java".length()); //NOI18N
+                                    }
                                 }
                             }
                         }
                     }
                 }
-                line = line.replace(clazz, newclazz);
+                line = line.replace(clazz, newclazz); //NOI18N
                 visitor.setLine(line);
             }
     }

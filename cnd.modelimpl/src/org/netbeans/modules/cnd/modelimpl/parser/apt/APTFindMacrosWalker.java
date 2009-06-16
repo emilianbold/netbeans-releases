@@ -43,14 +43,12 @@ package org.netbeans.modules.cnd.modelimpl.parser.apt;
 
 import antlr.TokenStream;
 import antlr.TokenStreamException;
-import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
@@ -77,37 +75,40 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
-import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.cnd.utils.cache.TextCache;
 
 
 /**
- * Basic walker to find macroes for semantic highlighting
- * TODO: maybe it should be one walker for any semantic HL activity, because
- * they used altogether.
+ * Walker to find macros used in file for semantic highlighting
  *
  * @author Sergey Grinev
+ * @author Vladimir Voskresensky
  */
-public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
-    protected final Map<CharSequence, CsmFile> macro2file = new HashMap<CharSequence, CsmFile>();
-
+public final class APTFindMacrosWalker extends APTSelfWalker {
+    private final List<CsmReference> references = new ArrayList<CsmReference>();
+    private final CsmFile csmFile;
     public APTFindMacrosWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
-        super(apt, csmFile, preprocHandler, null);
+        super(apt, preprocHandler, cacheEntry);
+        this.csmFile = csmFile;
     }
 
     @Override
     protected void onDefine(APT apt) {
         APTDefine defineNode = (APTDefine) apt;
-        APTToken name = defineNode.getName();
-        if (name != null) {
-            MacroInfo mi = new MacroInfo(csmFile, defineNode.getOffset(), defineNode.getEndOffset(), null);
-            CsmReference mf = new MacroReference(csmFile, name, mi);
-            references.add(mf);
-        }
+        int index = references.size();
         analyzeList(defineNode.getBody());
         super.onDefine(apt);
+        APTToken name = defineNode.getName();
+        if (name != null) {
+            APTMacro m = getMacroMap().getMacro(name);
+            if (m != null) {
+                MacroReference mr = new MacroReference(csmFile, name, m, CsmReferenceKind.DECLARATION);
+                if (references.size() == index) {
+                    references.add(mr);
+                } else {
+                    references.add(index, mr);
+                }
+            }
+        }
     }
 
     @Override
@@ -133,7 +134,6 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
         analyzeToken(((APTIfdef) apt).getMacroName(), false);
         return super.onIfdef(apt);
     }
-    private final List<CsmReference> references = new ArrayList<CsmReference>();
 
     @Override
     protected void onUndef(APT apt) {
@@ -153,15 +153,10 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
         super.onIncludeNext(apt);
     }
 
-    public List<CsmReference> getCollectedData() {
-        return references;
-    }
-
-    @Override
-    public TokenStream getTokenStream() {
+    public List<CsmReference> collectMacros() {
         TokenStream ts = super.getTokenStream();
         analyzeStream(ts, true);
-        return null; // tokenstream set to EOF? it's no good
+        return references;
     }
 
     private CsmReference analyzeToken(APTToken token, boolean addOnlyIfNotFunLikeMacro) {
@@ -174,19 +169,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
                 funLike = m.isFunctionLike();
                 switch(m.getKind()){
                     case DEFINED:
-                        MacroInfo mi = getMacroInfo(token);
-                        if (mi == null) {
-                            CsmFile macroContainter = getMacroFile(m);
-                            if (macroContainter != null) {
-                                mi = new MacroInfo(macroContainter, m.getName().getOffset(), m.getName().getEndOffset(), m.getFile());
-                            }
-                        }
-                        if (mi != null) {
-                            mf = new MacroReference(csmFile, token, mi);
-                        } else {
-                            // as backup
-                            mf = new SysMacroReference(csmFile, token, m);
-                        }
+                        mf = new MacroReference(csmFile, token, m, CsmReferenceKind.DIRECT_USAGE);
                         break;
                     case COMPILER_PREDEFINED:
                     case POSITION_PREDEFINED:
@@ -238,12 +221,13 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
         }
     }
 
-    private static class SysMacroReference extends OffsetableBase implements CsmReference {
+    private static final class SysMacroReference extends OffsetableBase implements CsmReference {
 
         private final CsmObject ref;
-
+        private final CharSequence text;
         public SysMacroReference(CsmFile file, APTToken token, APTMacro macro) {
             super(file, token.getOffset(), token.getEndOffset());
+            text = token.getTextID();
             CsmMacro.Kind kind;
             switch(macro.getKind()) {
                 case COMPILER_PREDEFINED:
@@ -271,112 +255,104 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
         }
 
         public CsmObject getOwner() {
-            return null;
+            return getContainingFile();
         }
 
         public CsmReferenceKind getKind() {
-            return CsmReferenceKind.DECLARATION;
+            return CsmReferenceKind.DIRECT_USAGE;
         }
 
         @Override
         public CharSequence getText() {
-            return TextCache.getManager().getString(super.getText());
+            return text;
         }        
     }
 
-    private static class MacroReference extends OffsetableBase implements CsmReference {
+    private static final class MacroReference extends OffsetableBase implements CsmReference {
 
-        private CsmObject ref;
+        private volatile CsmMacro ref = null;
         private final CharSequence macroName;
-        private final MacroInfo mi;
-
-        public MacroReference(CsmFile file, APTToken macro, MacroInfo mi) {
-            super(file, macro.getOffset(), macro.getEndOffset());
-            this.macroName = macro.getTextID();
+        private final APTMacro macro;
+        private final CsmReferenceKind kind;
+        public MacroReference(CsmFile macroUsageFile, APTToken macroUsageToken, APTMacro macro, CsmReferenceKind kind) {
+            super(macroUsageFile, macroUsageToken.getOffset(), macroUsageToken.getEndOffset());
+            this.macroName = macroUsageToken.getTextID();
             assert macroName != null;
-//        this.isSystem = isSystem != null ? isSystem.booleanValue() : mi != null;
-//        assert !(isSystem != null && isSystem.booleanValue() && mi != null);
-            this.mi = mi;
+            this.macro = macro;
+            this.kind = kind;
         }
 
         public CsmObject getReferencedObject() {
-            if (ref == null && mi != null) {
-                CsmFile target = getTargetFile();
-                if (target != null) {
-                    CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(macroName, true, true, false);
-                    for (Iterator<CsmMacro> it = CsmSelect.getMacros(target, filter); it.hasNext();) {
-                        CsmMacro macro = it.next();
-                        if (macro!=null && mi.startOffset == macro.getStartOffset()) {
-                            ref = macro;
+            CsmMacro refObj = ref;
+            if (refObj == null && macro != null) {
+                synchronized (this) {
+                    refObj = ref;
+                    if (refObj == null) {
+                        int macroStartOffset = macro.getDefineNode().getOffset();
+                        CsmFile target = getTargetFile();
+                        if (target != null) {
+                            CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(macroName, true, true, false);
+                            for (Iterator<CsmMacro> it = CsmSelect.getMacros(target, filter); it.hasNext();) {
+                                CsmMacro targetFileMacro = it.next();
+                                if (targetFileMacro!=null && macroStartOffset == targetFileMacro.getStartOffset()) {
+                                    refObj = targetFileMacro;
+                                    break;
+                                }
+                            }
+                            if (refObj == null) {
+                                // reference was made so it was macro during APTFindMacrosWalker's walk. Parser missed this variance of header and
+                                // we have to create MacroImpl for skipped filepart on the spot (see IZ#130897)
+                                if (target instanceof Unresolved.UnresolvedFile) {
+                                    refObj = MacroImpl.createSystemMacro(macroName, "", target, CsmMacro.Kind.USER_SPECIFIED);
+                                } else {
+                                    refObj = new MacroImpl(macroName, null, "", target, new OffsetableBase(target, macroStartOffset, macroStartOffset + macroName.length()), CsmMacro.Kind.DEFINED);
+                                    org.netbeans.modules.cnd.modelimpl.csm.core.Utils.setSelfUID(refObj);
+                                }
+                            }
                         }
-                    }
-                    if (ref == null) {
-                        // reference was made so it was macro during APTFindMacrosWalker's walk. Parser missed this variance of header and
-                        // we have to create MacroImpl for skipped filepart on the spot (see IZ#130897)
-                        if (target instanceof Unresolved.UnresolvedFile) {
-                            ref = MacroImpl.createSystemMacro(macroName, "", target, CsmMacro.Kind.USER_SPECIFIED);
-                        } else {
-                            ref = new MacroImpl(macroName, null, "", target, new OffsetableBase(target, mi.startOffset, mi.endOffset), CsmMacro.Kind.DEFINED);
-                        }
+                        ref = refObj;
                     }
                 }
             }
-            return ref;
+            return refObj;
         }
 
         private CsmFile getTargetFile() {
-            CsmFile current = UIDCsmConverter.UIDtoFile(mi.targetFile);
-            if (current != null && mi.includePath != null && mi.includePath.length() > 0) {
-                File searchFile = new File(mi.includePath.toString());
-                ProjectBase targetPrj = ((ProjectBase) current.getProject()).findFileProject(searchFile.getAbsolutePath());
-                if (targetPrj == null) {
-                    searchFile = CndFileUtils.normalizeFile(searchFile);
-                    targetPrj = ((ProjectBase) current.getProject()).findFileProject(searchFile.getAbsolutePath());
+            CsmFile current = this.getContainingFile();
+            CsmFile target;
+            if (kind == CsmReferenceKind.DECLARATION) {
+                target = current;
+            } else {
+                target = null;
+                CharSequence macroContainerFile = macro.getFile();
+                if (current != null && macroContainerFile.length() > 0) {
+                    ProjectBase targetPrj = ((ProjectBase) current.getProject()).findFileProject(macroContainerFile);
+                    if (targetPrj != null) {
+                        target = targetPrj.findFile(macroContainerFile);
+                    }
+                    // try full model?
+                    if (target == null) {
+                        target = CsmModelAccessor.getModel().findFile(macroContainerFile);
+                    }
+                    if (target == null && targetPrj != null) {
+                        target = targetPrj.getUnresolvedFile();
+                    }
                 }
-                if (targetPrj != null) {
-                    current = targetPrj.getFile(searchFile, false);
-                    // if file belongs to project, it should be not null
-                    // but info could be obsolete
-                }
-                // try full model?
-//                if (current == null) {
-//                    current = CsmModelAccessor.getModel().findFile(mi.includePath);
-//                }
             }
-            return current;
+            return target;
         }
 
         public CsmObject getOwner() {
-            return getTargetFile();
+            return (kind == CsmReferenceKind.DECLARATION) ? getContainingFile() : getReferencedObject();
         }
         
         public CsmReferenceKind getKind() {
-            return CsmReferenceKind.DECLARATION;
+            return kind;
         }
 
         @Override
         public CharSequence getText() {
-            return DefaultCache.getManager().getString(super.getText());
+            return macroName;
         }
-    }
-
-    private CsmFile getMacroFile(APTMacro m) {
-        CsmFile out = null;
-        CharSequence path = m.getFile();
-        if (path.length() > 0) {
-            out = macro2file.get(path);
-            if (out == null) {
-                ProjectBase targetPrj = ((ProjectBase) csmFile.getProject()).findFileProject(path);
-                if (targetPrj != null) {
-                    out = targetPrj.getFile(new File(path.toString()), false);
-                    // if file belongs to project, it should be not null
-                    // but info could be obsolete
-                }
-                if (out != null) {
-                    macro2file.put(path, out);
-                }
-            }
-        }
-        return out;
     }
 }

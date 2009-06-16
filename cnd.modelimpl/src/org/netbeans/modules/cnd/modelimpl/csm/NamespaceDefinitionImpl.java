@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -67,7 +66,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<CsmNamespaceDefinition>
     implements CsmNamespaceDefinition, MutableDeclarationsContainer, Disposable {
 
-    private List<CsmUID<CsmOffsetableDeclaration>> declarations = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>());
+    private final List<CsmUID<CsmOffsetableDeclaration>> declarations;
     
     private final CharSequence name;
     
@@ -77,6 +76,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     
     public NamespaceDefinitionImpl(AST ast, CsmFile file, NamespaceImpl parent) {
         super(ast, file);
+        declarations = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>());
         assert ast.getType() == CPPTokenTypes.CSM_NAMESPACE_DECLARATION;
         name = NameCache.getManager().getString(ast.getText());
         NamespaceImpl nsImpl = ((ProjectBase) file.getProject()).findNamespaceCreateIfNeeded(parent, name);
@@ -183,7 +183,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         CsmUID<CsmOffsetableDeclaration> uid = UIDCsmConverter.declarationToUID(declaration);
         assert uid != null;
         declarations.remove(uid);
-        RepositoryUtils.remove(uid);
+        RepositoryUtils.remove(uid, declaration);
         // update repository
         RepositoryUtils.put(this);
     }
@@ -241,7 +241,8 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         synchronized (this) {
             decls = getDeclarations();
             uids = declarations;
-            declarations  = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>());
+            declarations.clear();
+            //declarations  = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>());
         }
         Utils.disposeAll(decls);            
         RepositoryUtils.remove(uids);                      
@@ -291,7 +292,13 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     public NamespaceDefinitionImpl(DataInput input) throws IOException {
         super(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        this.declarations = factory.readUIDCollection(Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>()), input);
+        int collSize = input.readInt();
+        if (collSize < 0) {
+            declarations = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>());
+        } else {
+            declarations = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>(collSize));
+        }
+        factory.readUIDCollection(declarations, input, collSize);
         
         this.namespaceUID = factory.readUID(input);
         // not null UID

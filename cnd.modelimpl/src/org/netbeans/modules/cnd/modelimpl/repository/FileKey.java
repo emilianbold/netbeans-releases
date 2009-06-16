@@ -83,4 +83,9 @@ final class FileKey extends ProjectFileNameBasedKey {
 	assert level == 0;
 	return KeyObjectFactory.KEY_FILE_KEY;
     }
+
+    @Override
+    public boolean hasCache() {
+        return true;
+    }
 }

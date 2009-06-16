@@ -62,33 +62,33 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-ruby">
                 <folder name="Popup">
-                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
-                        <attr name="position" intvalue="600"/>
-                    </file>
                     <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
                         <attr name="position" intvalue="700"/>
                     </file>
                     
                             
-                    </folder>
+                        <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                </folder>
             </folder>
         </folder>
         <folder name="application">
             <folder name="x-httpd-eruby">
                 <folder name="Popup">
-                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
-                        <attr name="position" intvalue="600"/>
-                    </file>
                     <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
                         <attr name="position" intvalue="700"/>
                     </file>
                     
                             
-                    </folder>
+                        <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                </folder>
             </folder>
         </folder>
     </folder>
@@ -96,12 +96,8 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-ruby">
                 <folder name="Actions">
-                    <file name="RefactoringWhereUsed.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
-                        <attr name="position" intvalue="1700"/>
-                    </file>
-                    <file name="RefactoringAll.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
+                    <file name="RefactoringAll.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/RefactoringAll.instance"/>
                         <attr name="position" intvalue="1800"/>
                     </file>
                     <file name="RefactoringSeparator-1.instance">
@@ -112,6 +108,10 @@ made subject to such option by the copyright holder.
               <attr boolvalue="true" name="RefactoringSeparator-1.instance/ToolsAction.instance"/>
               <file name="RenameAction.instance_hidden"/>
               -->
+                    <file name="RefactoringWhereUsed.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/RefactoringWhereUsed.instance"/>
+                        <attr name="position" intvalue="1700"/>
+                    </file>
                 </folder>
             </folder>
         </folder>

@@ -356,6 +356,20 @@ public class I18nServiceImpl implements I18nService {
         List list = new ArrayList();
         list.add(dobj.getPrimaryEntry());
         list.addAll(dobj.secondaryEntries());
+        try {
+            String baseName = dobj.getName() + "_"; // NOI18N
+            for (FileObject fo : dobj.getPrimaryFile().getParent().getChildren()) {
+                String fileName = fo.getNameExt();
+                if (fileName.endsWith(".properties") && fileName.startsWith(baseName)) { // NOI18N
+                    DataObject dobj2 = DataObject.find(fo);
+                    if (dobj2 instanceof PropertiesDataObject) {
+                        list.add(((MultiDataObject)dobj2).getPrimaryEntry());
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
         Collections.sort(list, new Comparator() {
             public int compare(Object o1, Object o2) {
                 MultiDataObject.Entry e1 = (MultiDataObject.Entry) o1;

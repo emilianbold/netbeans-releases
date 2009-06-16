@@ -169,7 +169,7 @@ public class RPMPackager implements PackagerDescriptor {
 
             bw.write("# Ensure proper rpm build environment\n"); // NOI18N
             bw.write("RPMMACROS=~/.rpmmacros\n"); // NOI18N
-            bw.write("NBTOPDIR=~/.netbeans/6.5/cnd2/rpms\n"); // NOI18N
+            bw.write("NBTOPDIR=~/.netbeans/6.7/cnd2/rpms\n"); // NOI18N
             bw.write("\n"); // NOI18N
             bw.write("if [ ! -f ${RPMMACROS} ]\n"); // NOI18N
             bw.write("then\n"); // NOI18N

@@ -207,10 +207,10 @@ public class ModelIndexTest extends ModelTestBase {
             assertNotNull(indexScope);
             testIndexScope(model, fileScope, indexScope);
             testFileScope(model, fileScope, indexScope);
-            for (ClassScope classScope : fileScope.getDeclaredClasses()) {
+            for (ClassScope classScope : ModelUtils.getDeclaredClasses(fileScope)) {
                 testClassScope(model, fileScope, classScope, indexScope);
             }
-            for (InterfaceScope ifaceScope : fileScope.getDeclaredInterfaces()) {
+            for (InterfaceScope ifaceScope : ModelUtils.getDeclaredInterfaces(fileScope)) {
                 testIfaceScope(model, fileScope, ifaceScope, indexScope);
             }
         }
@@ -293,7 +293,7 @@ public class ModelIndexTest extends ModelTestBase {
 
         @Override
         void testIndexScope(Model model, FileScope fScope, IndexScope iScope) {
-            Collection<? extends ClassScope> declaredClasses = fScope.getDeclaredClasses();
+            Collection<? extends ClassScope> declaredClasses = ModelUtils.getDeclaredClasses(fScope);
             for (ClassScope classScope : declaredClasses) {
                 assertNotNull(classScope.getName(), getFirst(iScope.findClasses(classScope.getName())));
             }
@@ -301,8 +301,8 @@ public class ModelIndexTest extends ModelTestBase {
 
         @Override
         void testFileScope(Model model, FileScope fScope, IndexScope iScope) {
-            assertExactElements(fScope.getDeclaredClasses(), getClsNames());
-            assertExactElements(fScope.getDeclaredInterfaces(), getIfaceNames());
+            assertExactElements(ModelUtils.getDeclaredClasses(fScope), getClsNames());
+            assertExactElements(ModelUtils.getDeclaredInterfaces(fScope), getIfaceNames());
         }
 
         @Override

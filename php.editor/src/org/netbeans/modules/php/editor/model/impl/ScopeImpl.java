@@ -50,6 +50,7 @@ import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.openide.filesystems.FileObject;
@@ -76,7 +77,7 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
     ScopeImpl(Scope inScope, String name, Union2<String/*url*/, FileObject> file,
             OffsetRange offsetRange, PhpKind kind) {
         super(inScope, name, file, offsetRange, kind);
-        assert isScopeKind(kind);
+        assert isScopeKind(kind): kind.toString();
     }
 
     ScopeImpl(Scope inScope, String name, Union2<String/*url*/, FileObject> file,
@@ -89,6 +90,7 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
     private static boolean isScopeKind(PhpKind kind) {
         switch (kind) {
             case PROGRAM:
+            case NAMESPACE_DECLARATION:
             case INDEX:
             case CLASS:
             case FUNCTION:
@@ -132,7 +134,7 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
             this.blockRange = new OffsetRange(block.getStartOffset(), block.getEndOffset());
         }
     }
-    void setBlockRange(Program program) {
+    void setBlockRange(ASTNode program) {
         this.blockRange = new OffsetRange(program.getStartOffset(), program.getEndOffset());
     }
 

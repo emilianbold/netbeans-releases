@@ -56,7 +56,8 @@ made subject to such option by the copyright holder.
     <folder name="Menu">
         <folder name="Tools">
             <folder name="PaletteManager">
-                <file name="org-netbeans-modules-vmd-midp-palette-MidpPaletteManagerAction.instance">
+                <file name="org-netbeans-modules-vmd-midp-palette-MidpPaletteManagerAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-vmd-midp-palette-MidpPaletteManagerAction.instance"/>
                     <attr name="position" intvalue="1000"/>
                 </file>
             </folder>

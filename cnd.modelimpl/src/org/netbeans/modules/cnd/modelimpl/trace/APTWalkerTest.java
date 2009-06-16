@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.trace;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.structure.APT;
@@ -86,16 +85,11 @@ public class APTWalkerTest extends APTAbstractWalker {
 
     protected boolean include(ResolvedPath resolvedPath, APTInclude aptInclude, APTMacroMap.State postIncludeState) {
         resolvingTime += System.currentTimeMillis() - lastTime;
-        if (resolvedPath != null && 
-                getIncludeHandler().pushInclude(
-                                                resolvedPath.getPath(), 
-                                                aptInclude.getToken().getLine(), 
-                                                resolvedPath.getIndex())
-                                                ) {
+        if (resolvedPath != null && getIncludeHandler().pushInclude(resolvedPath.getPath(), aptInclude, resolvedPath.getIndex())) {
             APTFile apt;
             boolean res = false;
             try {
-                apt = APTDriver.getInstance().findAPTLight(new FileBufferFile(new File(resolvedPath.getPath().toString())));
+                apt = APTDriver.getInstance().findAPTLight(new FileBufferFile(resolvedPath.getPath()));
                 APTWalkerTest walker = new APTWalkerTest(apt, getPreprocHandler());
                 walker.visit();
                 resolvingTime += walker.resolvingTime;

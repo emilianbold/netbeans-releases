@@ -24,6 +24,5 @@ CLASS      Number                                     null
 CLASS      NumberFormatException                      null
 METHOD     notify()                        [PUBLIC]   void
 METHOD     notifyAll()                     [PUBLIC]   void
-VARIABLE   no                                         Object
 KEYWORD    native                                     null
 KEYWORD    new                                        null

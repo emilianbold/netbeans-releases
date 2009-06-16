@@ -136,7 +136,7 @@ public final class BugtrackingManager implements LookupListener {
         connectorsLookup.addLookupListener(this);
         refreshConnectors();
 
-        BugtrackingRuntime.getInstance().init();
+        BugtrackingRuntime.getInstance(); // force init
         LOG.fine("Bugtracking manager initialized"); // NOI18N
         initialized = true;
     }

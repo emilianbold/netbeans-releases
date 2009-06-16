@@ -91,6 +91,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectType;
 import org.netbeans.modules.j2ee.ejbjarproject.Utils;
@@ -313,8 +314,8 @@ final public class EjbJarProjectProperties {
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
         SpecificationVersion minimalSourceLevel = null;
-        if (J2EEProjectProperties.JAVA_EE_5.equals(evaluator.getProperty(J2EE_PLATFORM))) {
-            minimalSourceLevel = new SpecificationVersion(J2EEProjectProperties.JAVA_EE_5);
+        if (Profile.JAVA_EE_5.equals(Profile.fromPropertiesString(evaluator.getProperty(J2EE_PLATFORM)))) {
+            minimalSourceLevel = new SpecificationVersion("1.5");
         }
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET), minimalSourceLevel);
         JAVAC_SOURCE_RENDERER = PlatformUiSupport.createSourceLevelListCellRenderer ();
@@ -474,10 +475,10 @@ final public class EjbJarProjectProperties {
         }        
         
         // Update the deployment descriptor if upgrading from J2EE 1.3 to 1.4 and set the new J2EE spec version
-        String oldJ2eeVersion = projectProperties.getProperty(J2EE_PLATFORM);
-        String newJ2eeVersion = J2eePlatformUiSupport.getSpecVersion(J2EE_PLATFORM_MODEL.getSelectedItem());
+        Profile oldJ2eeVersion = Profile.fromPropertiesString(projectProperties.getProperty(J2EE_PLATFORM));
+        Profile newJ2eeVersion = J2eePlatformUiSupport.getJavaEEProfile(J2EE_PLATFORM_MODEL.getSelectedItem());
         if (oldJ2eeVersion != null && newJ2eeVersion != null) {
-            if (oldJ2eeVersion.equals(J2EEProjectProperties.J2EE_1_3) && newJ2eeVersion.equals(J2EEProjectProperties.J2EE_1_4)) {
+            if (oldJ2eeVersion.equals(Profile.J2EE_13) && newJ2eeVersion.equals(Profile.J2EE_14)) {
                 org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbJarModules[] = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJars(project);
                 if (ejbJarModules.length > 0) {
                     FileObject ddFo = ejbJarModules[0].getDeploymentDescriptor();
@@ -492,7 +493,7 @@ final public class EjbJarProjectProperties {
             }
             
             // Set the new J2EE spec version 
-            projectProperties.setProperty(J2EE_PLATFORM, newJ2eeVersion);
+            projectProperties.setProperty(J2EE_PLATFORM, newJ2eeVersion.toPropertiesString());
         }
         
         projectProperties.putAll(additionalProperties);

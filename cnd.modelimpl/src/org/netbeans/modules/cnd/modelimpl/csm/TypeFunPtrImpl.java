@@ -267,6 +267,11 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
         super(input);
         functionPointerDepth = input.readShort();
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        functionParameters = factory.readUIDCollection(new ArrayList<CsmUID<CsmParameter>>(), input);
+        int collSize = input.readInt();
+        if (collSize < 0) {
+            functionParameters = null;
+        } else {
+            functionParameters = factory.readUIDCollection(new ArrayList<CsmUID<CsmParameter>>(collSize), input, collSize);
+        }
     }
 }

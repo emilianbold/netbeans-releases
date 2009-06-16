@@ -63,62 +63,14 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
     }
 
     protected void create() throws Throwable {
+        boolean isWindows = hostInfo.getOSFamily() == OSFamily.WINDOWS;
+
         try {
-            boolean isWindows = hostInfo.getOSFamily() == OSFamily.WINDOWS;
-
-            if (isWindows && hostInfo.getShell() == null) {
-                throw new IOException(loc("NativeProcess.shellNotFound.text")); // NOI18N
-            }
-
-            // Get working directory ....
-            String workingDirectory = info.getWorkingDirectory(true);
-
-            if (workingDirectory != null) {
-                workingDirectory = new File(workingDirectory).getAbsolutePath();
-                workingDirectory = CommandLineHelper.getInstance(info.getExecutionEnvironment()).toShellPath(workingDirectory);
-            }
-
-            final MacroMap env = info.getEnvVariables();
-
-            UnbufferSupport.initUnbuffer(info, env);
-
-            // Always prepend /bin and /usr/bin to PATH
-            String path = env.get("PATH"); // NOI18N
-
             if (isWindows) {
-                path = CommandLineHelper.getInstance(info.getExecutionEnvironment()).toShellPaths(path);
+                createWin();
+            } else {
+                createNonWin();
             }
-
-            env.put("PATH", "/bin:/usr/bin:" + path); // NOI18N
-
-            final ProcessBuilder pb = new ProcessBuilder(hostInfo.getShell(), "-s"); // NOI18N
-
-            if (isInterrupted()) {
-                throw new InterruptedException();
-            }
-
-            process = pb.start();
-
-            processInput = process.getOutputStream();
-            processError = process.getErrorStream();
-            processOutput = process.getInputStream();
-
-            processInput.write("echo $$\n".getBytes()); // NOI18N
-            processInput.flush();
-
-            EnvWriter ew = new EnvWriter(processInput);
-            ew.write(env);
-
-            if (workingDirectory != null) {
-                processInput.write(("cd " + workingDirectory + "\n").getBytes()); // NOI18N
-            }
-
-            String cmd = "exec " + info.getCommandLineForShell() + "\n"; // NOI18N
-
-            processInput.write(cmd.getBytes());
-            processInput.flush();
-
-            readPID(processOutput);
         } catch (Throwable ex) {
             String msg = ex.getMessage() == null ? ex.toString() : ex.getMessage();
             processOutput = new ByteArrayInputStream(new byte[0]);
@@ -126,6 +78,101 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             processInput = new ByteArrayOutputStream();
             throw ex;
         }
+    }
+
+    private void createNonWin() throws IOException, InterruptedException {
+        // Get working directory ....
+        String workingDirectory = info.getWorkingDirectory(true);
+
+        if (workingDirectory != null) {
+            workingDirectory = new File(workingDirectory).getAbsolutePath();
+            workingDirectory = CommandLineHelper.getInstance(info.getExecutionEnvironment()).toShellPath(workingDirectory);
+        }
+
+        final MacroMap env = info.getEnvVariables();
+
+        UnbufferSupport.initUnbuffer(info, env);
+
+        // Always prepend /bin and /usr/bin to PATH
+        String path = env.get("PATH"); // NOI18N
+
+        env.put("PATH", "/bin:/usr/bin:" + path); // NOI18N
+
+        final ProcessBuilder pb = new ProcessBuilder(hostInfo.getShell(), "-s"); // NOI18N
+
+        if (isInterrupted()) {
+            throw new InterruptedException();
+        }
+
+        process = pb.start();
+
+        processInput = process.getOutputStream();
+        processError = process.getErrorStream();
+        processOutput = process.getInputStream();
+
+        processInput.write("echo $$\n".getBytes()); // NOI18N
+        processInput.flush();
+
+        EnvWriter ew = new EnvWriter(processInput);
+        ew.write(env);
+
+        if (workingDirectory != null) {
+            processInput.write(("cd " + workingDirectory + "\n").getBytes()); // NOI18N
+        }
+
+        String cmd = "exec " + info.getCommandLineForShell() + "\n"; // NOI18N
+
+        processInput.write(cmd.getBytes());
+        processInput.flush();
+
+        readPID(processOutput);
+    }
+
+    private void createWin() throws IOException, InterruptedException {
+        // Don't use shell wrapping on Windows...
+        // Mostly this is because exec works not as expected and we cannot
+        // control processes started with exec method....
+
+        final MacroMap env = info.getEnvVariables();
+        final ProcessBuilder pb = new ProcessBuilder(); // NOI18N
+
+        if (isInterrupted()) {
+            throw new InterruptedException();
+        }
+
+        UnbufferSupport.initUnbuffer(info, env);
+
+        pb.command(info.getCommand());
+
+
+        String val = null;
+
+        if (!env.isEmpty()) {
+            for (String var : env.keySet()) {
+                val = env.get(var);
+                if (val != null) {
+                    pb.environment().put(var, val);
+                }
+            }
+        }
+
+        String wdir = info.getWorkingDirectory(true);
+        if (wdir != null) {
+            File wd = new File(wdir);
+            if (wd.exists()) {
+                pb.directory(wd);
+            }
+        }
+
+        process = pb.start();
+
+        processInput = process.getOutputStream();
+        processError = process.getErrorStream();
+        processOutput = process.getInputStream();
+
+        // Fake PID...
+        ByteArrayInputStream bis = new ByteArrayInputStream("12345".getBytes()); // NOI18N
+        readPID(bis);
     }
 
     @Override

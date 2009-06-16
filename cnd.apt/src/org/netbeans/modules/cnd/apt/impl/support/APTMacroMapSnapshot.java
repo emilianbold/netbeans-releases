@@ -46,22 +46,27 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.*;
+import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
+import org.netbeans.modules.cnd.utils.cache.TinySingletonMap;
 
 /**
  *
  * @author gorrus
  */
 public final class APTMacroMapSnapshot {
-    private final Map<CharSequence/*getTokenTextKey(token)*/, APTMacro> macros = new HashMap<CharSequence, APTMacro>(2);
+    private static final Map<CharSequence, APTMacro> NO_MACROS = Collections.unmodifiableMap(new HashMap<CharSequence, APTMacro>(0));
+    private volatile Map<CharSequence, APTMacro> macros;
+
     /*package*/ final APTMacroMapSnapshot parent;
     
     public APTMacroMapSnapshot(APTMacroMapSnapshot parent) {
+        macros = createMacroMap(0);
         assert (parent == null || parent.parent == null || !parent.parent.isEmtpy()) : "how grand father could be empty " + parent;
         // optimization to prevent chaining of empty snapshots
         while (parent != null && parent.isEmtpy()) {
@@ -70,8 +75,35 @@ public final class APTMacroMapSnapshot {
         this.parent = parent;
     }
 
-    /*package*/ final Map<CharSequence, APTMacro> getMacros() {
-        return macros;
+    private Map<CharSequence, APTMacro> createMacroMap(int prefferedSize) {
+        if (prefferedSize == 0) {
+            return NO_MACROS;
+        }
+        if (prefferedSize == 1) {
+            return new TinySingletonMap<CharSequence, APTMacro>();
+        } else {
+            return new HashMap<CharSequence, APTMacro>(prefferedSize);
+        }
+    }
+
+    private void prepareMacroMapToAddMacro(CharSequence name) {
+        if (macros == NO_MACROS) {
+            // create LW map
+            macros = createMacroMap(1);
+        } else if (macros instanceof TinySingletonMap<?, ?>) {
+            // copy into new map
+            TinySingletonMap<CharSequence, APTMacro> lwMap = (TinySingletonMap<CharSequence, APTMacro>)macros;
+            if (lwMap.getKey() != null && !lwMap.getKey().equals(name)) {
+                Map<CharSequence, APTMacro> map = createMacroMap(4);
+                map.put(lwMap.getKey(), lwMap.getValue());
+                macros = map;
+            }
+        }
+    }
+
+    /*package*/ final void putMacro(CharSequence name, APTMacro macro) {
+        prepareMacroMapToAddMacro(name);
+        macros.put(name, macro);
     }
 
     public final APTMacro getMacro(APTToken token) {
@@ -136,12 +168,15 @@ public final class APTMacroMapSnapshot {
     
     public APTMacroMapSnapshot(DataInput input) throws IOException {
         this.parent = APTSerializeUtils.readSnapshot(input);
-        APTSerializeUtils.readStringToMacroMap(this.macros, input);
+        int collSize = input.readInt();
+        macros = createMacroMap(collSize);
+        APTSerializeUtils.readStringToMacroMap(collSize, this.macros, input);
     }  
         
     //This is a single instance of a class to indicate that macro is undefined,
     //not a child of APTMacro to track errors more easily
     public static final APTMacro UNDEFINED_MACRO = new UndefinedMacro();
+
     private static final class UndefinedMacro implements APTMacro {
         @Override
         public String toString() {
@@ -170,6 +205,10 @@ public final class APTMacroMapSnapshot {
 
         public TokenStream getBody() {
             throw new UnsupportedOperationException("Not supported in fake impl"); // NOI18N
+        }
+
+        public APTDefine getDefineNode() {
+            throw new UnsupportedOperationException("Not supported in fake impl."); // NOI18N
         }
 
     }

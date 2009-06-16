@@ -76,7 +76,7 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMeta
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.JoinColumn;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.ManyToOne;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.OneToMany;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;

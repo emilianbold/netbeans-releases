@@ -102,7 +102,7 @@ class FileSetScanner {
     /**
      */
     FileSetScanner(FileSet fileSet) {
-        this.fileSet = fileSet;
+         this.fileSet = fileSet;
     }
     
     /**
@@ -143,7 +143,8 @@ class FileSetScanner {
     private void findMatchingFiles(
             final File directory,
             final Collection<PatternTest> patternTests) {
-        
+
+        if (directory == null) return;
         final File[] children = directory.listFiles();
         if (children == null) {
             /*

@@ -54,7 +54,7 @@ import java.awt.Color;
 import java.awt.event.KeyEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import org.netbeans.editor.ext.html.javadoc.HelpManager;
+import org.netbeans.modules.html.editor.javadoc.HelpManager;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 import org.openide.xml.XMLUtil;
@@ -69,12 +69,12 @@ public class HtmlCompletionItem implements CompletionItem {
     private static final int DEFAULT_SORT_PRIORITY = 20;
 
     //----------- Factory methods --------------
-    public static HtmlCompletionItem createTag(String name, int substitutionOffset, String helpId) {
-        return new Tag(name, substitutionOffset, helpId);
+    public static HtmlCompletionItem createTag(String name, int substitutionOffset, String helpId, boolean possible) {
+        return new Tag(name, substitutionOffset, helpId, possible);
     }
-
-    public static HtmlCompletionItem createEndTag(String name, int substitutionOffset, String helpId, int order) {
-        return new EndTag(name, substitutionOffset, helpId, order);
+ 
+    public static HtmlCompletionItem createEndTag(String name, int substitutionOffset, String helpId, int order, EndTag.Type type) {
+        return new EndTag(name, substitutionOffset, helpId, order, type);
     }
 
     public static HtmlCompletionItem createAutocompleteEndTag(String name, int substitutionOffset) {
@@ -96,6 +96,16 @@ public class HtmlCompletionItem implements CompletionItem {
     public static HtmlCompletionItem createCharacterReference(String name, char value, int substitutionOffset, String helpId) {
         return new CharRefItem(name, value, substitutionOffset, helpId);
     }
+
+    public static HtmlCompletionItem createFileCompletionItem(String value, int substitutionOffset, Color color, ImageIcon icon) {
+        return new FileAttributeValue(value, substitutionOffset, color, icon);
+    }
+
+    public static HtmlCompletionItem createGoUpFileCompletionItem(int substitutionOffset, Color color, ImageIcon icon) {
+        return new GoUpFileAttributeValue(substitutionOffset, color, icon);
+    }
+
+
     //------------------------------------------
     protected int substitutionOffset;
     protected String text, helpId;
@@ -306,8 +316,12 @@ public class HtmlCompletionItem implements CompletionItem {
      */
     public static class Tag extends HtmlCompletionItem {
 
-        Tag(String text, int substitutionOffset, String helpId) {
+        private String GRAY_COLOR_CODE = hexColorCode(Color.GRAY);
+        private boolean possible;
+
+        Tag(String text, int substitutionOffset, String helpId, boolean possible) {
             super(text, substitutionOffset, helpId);
+            this.possible = possible;
         }
 
         @Override
@@ -316,8 +330,15 @@ public class HtmlCompletionItem implements CompletionItem {
         }
 
         @Override
+        public int getSortPriority() {
+            return super.getSortPriority() + (possible ? -1 : 0);
+        }
+
+        @Override
         protected String getLeftHtmlText() {
-            return "<font color=#0000ff>&lt;" + getItemText() + "&gt;</font>";
+            return possible ? 
+                "<b><font color=#0000ff>&lt;" + getItemText() + "&gt;</font></b>" :
+                "<font color=#" + GRAY_COLOR_CODE + ">&lt;" + getItemText() + "&gt;</font>";
         }
     }
 
@@ -325,12 +346,33 @@ public class HtmlCompletionItem implements CompletionItem {
      * Completion item representing a JSP tag including its prefix eg. <jsp:useBean />
      */
     public static class EndTag extends HtmlCompletionItem {
+ 
+        public enum Type {
+            DEFAULT("0000ff", false, DEFAULT_SORT_PRIORITY),
+            OPTIONAL_EXISTING(hexColorCode(Color.GRAY), false, DEFAULT_SORT_PRIORITY),
+            OPTIONAL_MISSING(hexColorCode(Color.GRAY), true, DEFAULT_SORT_PRIORITY),
+            REQUIRED_EXISTING("0000ff", false, DEFAULT_SORT_PRIORITY),
+            REQUIRED_MISSING("0000ff", true, DEFAULT_SORT_PRIORITY - 1); //NOI18N
+                    
+            private String colorCode;
+            private boolean bold;
+            private int sortPriority;
+
+            private Type(String colorCode, boolean bold, int sortPriority) {
+                this.colorCode = colorCode;
+                this.bold = bold;
+                this.sortPriority = sortPriority;
+            }
+
+        }
 
         private int orderIndex;
+        private Type type;
 
-        EndTag(String text, int substitutionOffset, String helpId, int order) {
+        EndTag(String text, int substitutionOffset, String helpId, int order, Type type) {
             super(text, substitutionOffset, helpId);
             this.orderIndex = order;
+            this.type = type;
         }
 
         @Override
@@ -354,15 +396,22 @@ public class HtmlCompletionItem implements CompletionItem {
         }
 
         @Override
+        public int getSortPriority() {
+            return this.type.sortPriority;
+        }
+
+        @Override
         protected String getLeftHtmlText() {
-            return "<font color=#0000ff>&lt;/" + getItemText() + "&gt;</font>";
+            return (type.bold ? "<b>" : "") +
+                    "<font color=#" + type.colorCode + ">&lt;/" + getItemText() + "&gt;</font>" +
+                    (type.bold ? "</b>" : "");
         }
     }
 
     public static class AutocompleteEndTag extends EndTag {
 
         public AutocompleteEndTag(String text, int substitutionOffset) {
-            super(text, substitutionOffset, null, -1);
+            super(text, substitutionOffset, null, -1, Type.DEFAULT);
         }
 
         @Override

@@ -62,6 +62,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.event.ChangeListener;
 import javax.swing.JPanel;
@@ -109,6 +111,7 @@ import org.openide.filesystems.FileUtil;
 public class PropertiesOpen extends CloneableOpenSupport
                             implements OpenCookie, CloseCookie {
 
+    private static final Logger LOG = Logger.getLogger(PropertiesOpen.class.getName());
     /** Main properties dataobject */
     @Deprecated
     PropertiesDataObject propDataObject;
@@ -152,20 +155,6 @@ public class PropertiesOpen extends CloneableOpenSupport
         dataObjectList = new ArrayList<PropertiesDataObject>();
         weakModifiedListeners = new HashMap<PropertiesDataObject, PropertyChangeListener>();
         modifL = new ModifiedListener();
-    }
-
-    private void addModifiedListeners() {
-        BundleStructure structure = bundleStructure;
-        dataObjectList = new ArrayList<PropertiesDataObject>();
-        PropertiesDataObject dataObject;
-        modifL = new ModifiedListener();
-        weakModifiedListeners = new HashMap<PropertiesDataObject, PropertyChangeListener>();
-        for (int i=0;i<structure.getEntryCount();i++) {
-            dataObject = (PropertiesDataObject) structure.getNthEntry(i).getDataObject();
-            weakModifiedListeners.put(dataObject, WeakListeners.propertyChange(modifL, dataObject));
-            dataObject.addPropertyChangeListener(weakModifiedListeners.get(dataObject));
-            dataObjectList.add(dataObject);
-        }
     }
 
     protected void removeModifiedListener(PropertiesDataObject dataObject) {
@@ -1031,6 +1020,8 @@ public class PropertiesOpen extends CloneableOpenSupport
             if (l != null) {
                 dataObject.removePropertyChangeListener(l);
             }
+            if (!dataObjectsList.remove(dataObject))
+                LOG.log(Level.WARNING, dataObject.getName()+" not in the list");  //NOI18N
         }
 
         /**
@@ -1044,46 +1035,15 @@ public class PropertiesOpen extends CloneableOpenSupport
                 weakNameUpdateListeners.put(dataObject, WeakListeners.propertyChange(nameUpdaterListener, dataObject));
             }
             dataObject.addPropertyChangeListener(weakNameUpdateListeners.get(dataObject));
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    updateDataObjects();
-                    if (EventQueue.isDispatchThread()) {
-                        updateName();
-                        updateDisplayName();
-                    }
-                }
-            });
+            if (dataObjectsList.indexOf(dataObject) == -1) {
+                dataObjectsList.add(dataObject);
+            }
+            if (EventQueue.isDispatchThread()) {
+                updateName();
+                updateDisplayName();
+            }
         }
 
-        /**
-         * update dataObjectList with new data
-         */
-        private void updateDataObjects() {
-            if (bundleStructure==null) {
-                dataObjectsList = null;
-                return;
-            }
-            bundleStructure.updateEntries();
-            int entryCount = bundleStructure.getEntryCount();
-            if (entryCount == 0) {
-                dataObjectsList = null;
-                return;
-            }
-            synchronized(UPDATE_LOCK) {
-                for (PropertiesDataObject DO: dataObjectsList) {
-                    if (bundleStructure.getEntryIndexByFileName(DO.getName())==-1) {
-                        dataObjectsList.remove(DO);
-                    }
-                }
-                PropertiesDataObject DO = null;
-                for (int i=0;i<entryCount;i++) {
-                    DO = (PropertiesDataObject)bundleStructure.getNthEntry(i).getDataObject();
-                    if (!dataObjectsList.contains(DO)) {
-                        dataObjectsList.add(DO);
-                    }
-                }
-            }
-        }
         /* Based on class DataNode.PropL. */
         final class NameUpdater implements PropertyChangeListener,
                                            FileStatusListener,
@@ -1266,8 +1226,10 @@ public class PropertiesOpen extends CloneableOpenSupport
          */
         private String addModifiedInfo(String name) {
             boolean modified = false;
+            PropertiesFileEntry entry;
             for (int i=0;i<bundleStructure.getEntryCount();i++) {
-                if(bundleStructure.getNthEntry(i).getDataObject().getCookie(SaveCookie.class) != null) {
+                entry = bundleStructure.getNthEntry(i);
+                if(entry != null && entry.getDataObject().getCookie(SaveCookie.class) != null) {
                     modified = true;
                     break;
                 }
