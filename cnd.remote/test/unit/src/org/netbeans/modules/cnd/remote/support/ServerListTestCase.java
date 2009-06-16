@@ -38,12 +38,17 @@
  */
 package org.netbeans.modules.cnd.remote.support;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.logging.Level;
 import junit.framework.Test;
+import org.junit.AfterClass;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 /**
  * There hardly is a way to unit test remote operations.
@@ -56,21 +61,68 @@ public class ServerListTestCase extends RemoteTestBase {
     static {
 //        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
 //        System.setProperty("cnd.remote.logger.level", "0");
-//        System.setProperty("nativeexecution.support.logger.level", "0");
+//        System.setProperty("nativeexecution.support.logger.level", "0");        
     }
     public ServerListTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
+        //log.setLevel(Level.FINEST);
     }
 
-    public void testRun() throws Exception {        
+    // NB: this test should go first
+    public void testAdd() throws Exception {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         ServerRecord rec = ServerList.addServer(execEnv, execEnv.getDisplayName(), RemoteSyncFactory.getDefault(), false, true);
         assertNotNull("Null server record", rec);
         assertEquals(rec.getExecutionEnvironment(), execEnv);
+        rec = ServerList.get(execEnv);
+        assertEquals(rec.getExecutionEnvironment(), execEnv);
+    }
+
+    @AfterClass
+    public void cleanup() {
+        ServerRecord local = ServerList.get(ExecutionEnvironmentFactory.getLocal());
+        ServerList.set(Arrays.asList(local), 0);
+    }
+
+    public void testGetEnvironments() throws Exception {
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        assertTrue("getEnvironments should contain " + execEnv, ServerList.getEnvironments().contains(execEnv));
+    }
+
+    public void testGetRecords() throws Exception {
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        Collection<? extends ServerRecord> records = ServerList.getRecords();
+        for (ServerRecord rec : records) {
+            if (execEnv.equals(rec.getExecutionEnvironment())) {
+                return;
+            }
+        }
+        assertTrue("getRecords should contain " + execEnv, false);
+    }
+
+    public void testDefaultRecord() throws Exception {
+        Collection<? extends ServerRecord> tcoll = ServerList.getRecords();
+        ServerRecord[] records = tcoll.toArray(new ServerRecord[tcoll.size()]);
+        for (int i = 0; i < records.length; i++) {
+            ServerRecord rec = records[i];
+            ServerList.setDefaultIndex(i);
+            assertTrue(ServerList.getDefaultRecord().equals(rec));
+            assertTrue(ServerList.getDefaultRecord().getExecutionEnvironment().equals(rec.getExecutionEnvironment()));
+        }
+    }
+
+    private void dumpRecords(String title) {
+        if (log.isLoggable(Level.FINEST)) {
+            Collection<? extends ServerRecord> records = ServerList.getRecords();
+            System.err.printf("RECORDS %s:\n", title);
+            for (ServerRecord rec : records) {
+                System.err.printf("%s\n", rec);
+                log.finest("" + rec);
+            }
+        }
     }
 
     public static Test suite() {
         return new RemoteDevelopmentTest(ServerListTestCase.class);
     }
-
 }
