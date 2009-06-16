@@ -244,8 +244,8 @@ public class HgHookImpl extends HgHook {
         } else {
             referenceFile = context.getFiles()[0];
         }
-        panel = new HookPanel(getKnownRepositories());
-        DefaultRepositorySelector.setup(panel, referenceFile);
+        panel = new HookPanel();
+        RepositorySelector.setup(panel, referenceFile);
         panel.changeRevisionFormatButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onShowRevisionFormat();
@@ -257,18 +257,6 @@ public class HgHookImpl extends HgHook {
             }
         });
         return panel;
-    }
-
-    private static Repository[] getKnownRepositories() {
-        Repository[] repos;
-        long startTimeMillis = System.currentTimeMillis();
-        repos = BugtrackingUtil.getKnownRepositories();
-        long endTimeMillis = System.currentTimeMillis();
-        if (LOG.isLoggable(Level.FINEST)) {
-            LOG.finest("BugtrackingUtil.getKnownRepositories() took "   //NOI18N
-                       + (endTimeMillis - startTimeMillis) + " ms.");   //NOI18N
-        }
-        return repos;
     }
 
     @Override

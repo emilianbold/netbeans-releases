@@ -86,12 +86,9 @@ public final class WebFragmentProvider {
         try {
             String version = WebParseUtils.getVersion(fo.getInputStream());
             // preparsing
-            // TODO PetrS Fix validation (validation does not work for web-common_3_0.sxd)
-            /*
             SAXParseException error = WebParseUtils.parse(fo);
             if (error != null)
                 throw error;
-            */
             return createWebFragment(fo.getInputStream(), version);
         }
         catch (SAXException ex) {
