@@ -50,7 +50,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.ui.issuetable.Filter;
+import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.query.JiraQuery;

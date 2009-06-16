@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.bugtracking.spi;
 
-import org.netbeans.modules.bugtracking.ui.issuetable.Filter;
+import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.kenai.api.KenaiProject;
 
 /**

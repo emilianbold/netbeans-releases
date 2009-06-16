@@ -1,4 +1,4 @@
-package org.netbeans.modules.bugtracking.ui.issuetable;
+package org.netbeans.modules.bugtracking.issuetable;
 
 import java.awt.Component;
 import javax.swing.Icon;

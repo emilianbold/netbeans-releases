@@ -1,5 +1,5 @@
 
-package org.netbeans.modules.bugtracking.ui.issuetable;
+package org.netbeans.modules.bugtracking.issuetable;
 
 import java.awt.Color;
 import java.awt.Component;

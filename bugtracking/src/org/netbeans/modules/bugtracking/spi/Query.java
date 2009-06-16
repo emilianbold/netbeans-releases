@@ -43,7 +43,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.bugtracking.ui.issuetable.IssueTable;
+import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 

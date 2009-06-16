@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.bugtracking.ui.issuetable;
+package org.netbeans.modules.bugtracking.issuetable;
 
 import java.awt.Component;
 import java.awt.Font;

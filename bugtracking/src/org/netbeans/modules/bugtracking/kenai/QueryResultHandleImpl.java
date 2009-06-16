@@ -47,7 +47,7 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.ui.issuetable.Filter;
+import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
 import org.openide.util.NbBundle;

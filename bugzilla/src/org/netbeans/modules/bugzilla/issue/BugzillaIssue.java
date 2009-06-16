@@ -70,7 +70,7 @@ import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.ui.issuetable.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;

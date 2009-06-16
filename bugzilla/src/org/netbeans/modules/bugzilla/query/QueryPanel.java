@@ -62,7 +62,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.plaf.basic.BasicTreeUI;
-import org.netbeans.modules.bugtracking.ui.issuetable.Filter;
+import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ParameterValueCellRenderer;
 import org.openide.util.ImageUtilities;
 

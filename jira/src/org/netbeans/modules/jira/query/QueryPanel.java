@@ -66,7 +66,7 @@ import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
 import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
-import org.netbeans.modules.bugtracking.ui.issuetable.Filter;
+import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.jira.query.UserSearch.UserSearchItem;
 import org.openide.util.ImageUtilities;
 

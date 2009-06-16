@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.bugtracking.ui.issuetable;
+package org.netbeans.modules.bugtracking.issuetable;
 
 import java.io.IOException;
 import javax.swing.table.DefaultTableCellRenderer;
