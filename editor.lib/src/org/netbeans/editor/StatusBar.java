@@ -112,7 +112,7 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
 
     public static final String OVERWRITE_LOCALE = "status-bar-overwrite"; // NOI18N
 
-    private static final String[] POS_MAX_STRINGS = new String[] { "99999:999" }; // NOI18N
+    private static final String[] POS_MAX_STRINGS = new String[] { "99999 | 999" }; // NOI18N
 
     private static final Insets NULL_INSETS = new Insets(0, 0, 0, 0);
 
@@ -626,7 +626,7 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
                     BaseDocument doc = Utilities.getDocument(editorUI.getComponent());
                     if (doc != null && doc.getDefaultRootElement().getElementCount()>0) {
                         int pos = c.getDot();
-                        String s = Utilities.debugPosition(doc, pos);
+                        String s = Utilities.debugPosition(doc, pos, " | ");
                         setText(CELL_POSITION, s);
                     }
                 }
