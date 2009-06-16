@@ -206,8 +206,8 @@ public class SvnHookImpl extends SvnHook {
         } else {
             referenceFile = context.getFiles()[0];
         }
-        panel = new HookPanel(getKnownRepositories());
-        DefaultRepositorySelector.setup(panel, referenceFile);
+        panel = new HookPanel();
+        RepositorySelector.setup(panel, referenceFile);
         panel.commitRadioButton.setVisible(false);
         panel.pushRadioButton.setVisible(false);
         panel.changeRevisionFormatButton.addActionListener(new ActionListener() {
@@ -221,18 +221,6 @@ public class SvnHookImpl extends SvnHook {
             }
         });
         return panel;
-    }
-
-    private static Repository[] getKnownRepositories() {
-        Repository[] repos;
-        long startTimeMillis = System.currentTimeMillis();
-        repos = BugtrackingUtil.getKnownRepositories();
-        long endTimeMillis = System.currentTimeMillis();
-        if (LOG.isLoggable(Level.FINEST)) {
-            LOG.finest("BugtrackingUtil.getKnownRepositories() took "   //NOI18N
-                       + (endTimeMillis - startTimeMillis) + " ms.");   //NOI18N
-        }
-        return repos;
     }
 
     @Override

@@ -55,7 +55,7 @@ public final class ResolvedPath {
     private final int index;
     
     public ResolvedPath(CharSequence folder, CharSequence path, CharSequence notNormalizedPath, boolean isDefaultSearchPath, int index) {
-        this.folder = FilePathCache.getManager().getString(folder);
+        this.folder = folder;// should be already shared
         this.path = FilePathCache.getManager().getString(path);
         this.notNormalizedPath = FilePathCache.getManager().getString(notNormalizedPath);
         this.isDefaultSearchPath = isDefaultSearchPath;
