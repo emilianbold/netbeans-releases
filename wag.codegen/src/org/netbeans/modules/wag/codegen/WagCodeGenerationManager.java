@@ -65,10 +65,9 @@ public abstract class WagCodeGenerationManager {
         if (providers == null) {
             providers = Lookup.getDefault().lookupAll(WagCodeGenerationProvider.class);
         }
-        System.out.println("providers = " + providers + " size = " + providers.size());
+
         WagCodeGenerationProvider theProvider = null;
         for (WagCodeGenerationProvider provider : providers) {
-            System.out.println("provider = " + provider);
             if (provider.canAccept(service, doc)) {
                 if (theProvider == null) {
                     theProvider = provider;
@@ -78,8 +77,6 @@ public abstract class WagCodeGenerationManager {
             }
         }
 
-        System.out.println("theProvider = " + theProvider);
-        
         if (theProvider != null) {
             try {
                 theProvider.init(service, doc);
