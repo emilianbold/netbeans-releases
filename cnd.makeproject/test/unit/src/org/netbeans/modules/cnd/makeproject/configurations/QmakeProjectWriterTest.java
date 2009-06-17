@@ -63,20 +63,24 @@ public class QmakeProjectWriterTest extends CndBaseTestCase {
         super(name);
     }
 
-    @Test
-    public void testHelloQtWorld() throws IOException {
-        FileObject templateFO = FileUtil.getConfigFile("Templates/Project/Samples/Native/HelloQtWorld");
-        assertNotNull("FileObject for HelloQtWorld sample not found", templateFO);
+    private static void instantiateSample(String name, File destdir) throws IOException {
+        FileObject templateFO = FileUtil.getConfigFile("Templates/Project/Samples/Native/" + name);
+        assertNotNull("FileObject for " + name + " sample not found", templateFO);
         DataObject templateDO = DataObject.find(templateFO);
-        assertNotNull("DataObject for HelloQtWorld sample not found", templateDO);
+        assertNotNull("DataObject for " + name + " sample not found", templateDO);
         MakeSampleProjectIterator projectCreator = new MakeSampleProjectIterator();
         TemplateWizard wiz = new TemplateWizard();
         wiz.setTemplate(templateDO);
         projectCreator.initialize(wiz);
-        File projectDir = new File(getWorkDir(), "HelloQtWorld_1");
-        wiz.putProperty("name", projectDir.getName());
-        wiz.putProperty("projdir", projectDir);
+        wiz.putProperty("name", destdir.getName());
+        wiz.putProperty("projdir", destdir);
         projectCreator.instantiate(wiz);
+    }
+
+    @Test
+    public void testHelloQtWorld() throws IOException {
+        File projectDir = new File(getWorkDir(), "HelloQtWorld_1");
+        instantiateSample("HelloQtWorld", projectDir);
 
         FileObject projectDirFO = FileUtil.toFileObject(projectDir);
         ConfigurationDescriptorProvider descriptorProvider = new ConfigurationDescriptorProvider(projectDirFO);
