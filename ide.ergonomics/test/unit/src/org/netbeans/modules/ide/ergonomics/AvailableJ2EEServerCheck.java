@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.server.ServerRegistry;
 import org.netbeans.spi.server.ServerWizardProvider;
@@ -53,11 +54,13 @@ import org.openide.util.lookup.Lookups;
  */
 public class AvailableJ2EEServerCheck extends NbTestCase {
 
+    private static final Logger LOG = Logger.getAnonymousLogger();
+    
     public AvailableJ2EEServerCheck(final String name) {
         super(name);
     }
     
-    Comparator<ServerWizardProvider> comparator = new Comparator<ServerWizardProvider>() {
+    private final Comparator<ServerWizardProvider> comparator = new Comparator<ServerWizardProvider>() {
 
         public int compare(ServerWizardProvider arg0, ServerWizardProvider arg1) {
             return arg0.getDisplayName().compareTo(arg1.getDisplayName());
@@ -75,7 +78,7 @@ public class AvailableJ2EEServerCheck extends NbTestCase {
         Collections.sort(providers, comparator); // ?
         for (ServerWizardProvider wizard : providers.toArray(new ServerWizardProvider[0])) {
            System.setProperty("wizard." + ++cnt, wizard.getDisplayName());
-           getLog().println("full: " + wizard.getDisplayName());
+           LOG.info("full: " + wizard.getDisplayName());
         }
     }
 
@@ -90,7 +93,7 @@ public class AvailableJ2EEServerCheck extends NbTestCase {
         Collections.sort(providers, comparator);
         for (ServerWizardProvider wizard : providers) {
            String name = System.getProperty("wizard." + ++cnt);
-           getLog().println("ergo: " + wizard.getDisplayName());
+           LOG.info("ergo: " + wizard.getDisplayName());
            assertEquals(name, wizard.getDisplayName());
         }
     }

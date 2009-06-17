@@ -535,6 +535,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
     
     private void findDriverClassByInspection() {
         drvClassComboBox.removeAllItems();
+        findButton.setEnabled(false);
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 startProgress();
@@ -545,7 +546,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
                 // implements java.sql.Driver
                 URLClassLoader jarloader = 
                     new URLClassLoader(drvs.toArray(new URL[drvs.size ()]),this.getClass ().getClassLoader ());
-                
+
                 for (int i = 0; i < dlm.size(); i++) {
                     try {
                         String file  = (String)dlm.get(i);
@@ -559,7 +560,13 @@ public class AddDriverDialog extends javax.swing.JPanel {
                                     className = className.replace('/', '.');
                                     className = className.substring(0, className.length() - 6);
                                     if ( isDriverClass(jarloader, className) ) {
-                                        addDriverClass(className);
+                                        if (progressHandle != null) {
+                                            addDriverClass(className);
+                                        } else {
+                                            // already stopped
+                                            updateState();
+                                            return;
+                                        }
                                     }
                                 }
                             }
@@ -570,8 +577,8 @@ public class AddDriverDialog extends javax.swing.JPanel {
                         //PENDING
                     }
                 }
-                
                 stopProgress();
+                updateState();
             }
         }, 0);
     }
@@ -618,7 +625,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
         // update Remove button state
         removeButton.setEnabled(drvList.getSelectedIndices().length > 0);
         // update Find button state
-        findButton.setEnabled(drvList.getModel().getSize() > 0);
+        findButton.setEnabled(progressHandle == null && drvList.getModel().getSize() > 0);
         // update status line and OK button
         String message = null;
         if (drvList.getModel().getSize() == 0) {
@@ -627,7 +634,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
             message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverMissingClass");
         } else if (nameTextField.getText().length() == 0) {
             message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverMissingName");
-        } else if (nameTextField.getText().length() > 0) {
+        } else if (!customizer && nameTextField.getText().length() > 0) {
             String newDisplayName = nameTextField.getText();
             for (JDBCDriver driver : JDBCDriverManager.getDefault().getDrivers()) {
                 if (driver.getDisplayName().equalsIgnoreCase(newDisplayName)) {

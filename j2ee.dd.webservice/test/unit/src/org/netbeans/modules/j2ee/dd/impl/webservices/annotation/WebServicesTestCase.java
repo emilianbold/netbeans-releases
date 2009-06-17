@@ -66,10 +66,15 @@ public class WebServicesTestCase extends JavaSourceTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        URL root1 = FileUtil.getArchiveRoot(javax.ejb.Stateless.class.getProtectionDomain().getCodeSource().getLocation());
-        URL root2 = FileUtil.getArchiveRoot(javax.jws.WebService.class.getProtectionDomain().getCodeSource().getLocation());
         List<URL> roots = new ArrayList<URL>();
-        roots.add(root1);roots.add(root2);
+        java.security.CodeSource codeSource = javax.ejb.Stateless.class.getProtectionDomain().getCodeSource();
+        if (codeSource != null) {
+            roots.add(FileUtil.getArchiveRoot(codeSource.getLocation()));
+        }
+        codeSource = javax.jws.WebService.class.getProtectionDomain().getCodeSource();
+        if (codeSource != null) {
+            roots.add(FileUtil.getArchiveRoot(codeSource.getLocation()));
+        }
         addCompileRoots(roots);
     }
     
