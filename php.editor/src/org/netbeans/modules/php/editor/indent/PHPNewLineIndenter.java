@@ -60,6 +60,10 @@ import org.openide.util.Exceptions;
 public class PHPNewLineIndenter {
     private Context context;
 
+    private static final Collection<PHPTokenId> CONTROL_STATEMENT_TOKENS = Arrays.asList(
+            PHPTokenId.PHP_DO, PHPTokenId.PHP_WHILE, PHPTokenId.PHP_FOR,
+            PHPTokenId.PHP_FOREACH, PHPTokenId.PHP_IF, PHPTokenId.PHP_ELSE);
+    
     private Collection<ScopeDelimiter> scopeDelimiters = null;
     private int indentSize;
     private int continuationSize;
@@ -106,7 +110,8 @@ public class PHPNewLineIndenter {
                         if (delimiter.tokenId == PHPTokenId.PHP_SEMICOLON) {
                             // handle "break;" in the switch statement
 
-                            if (breakProceededByCase(ts)){
+                            if (breakProceededByCase(ts)
+                                    || breakProceededByControlStatementWithoutBraces(ts)){
                                 newIndent = getIndentAtOffset(doc, ts.offset()) - indentSize;
                                 break;
                             }
@@ -147,6 +152,31 @@ public class PHPNewLineIndenter {
         });
     }
 
+    private boolean breakProceededByControlStatementWithoutBraces(TokenSequence ts){
+        boolean retunValue = false;
+        int origOffset = ts.offset();
+
+        if (ts.movePrevious()){
+            while (ts.movePrevious()) {
+                Token token = ts.token();
+                ScopeDelimiter delimiter = getScopeDelimiter(token);
+
+                if (delimiter != null){
+
+                    if (CONTROL_STATEMENT_TOKENS.contains(delimiter.tokenId)){
+                        retunValue = true;
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        ts.move(origOffset);
+        ts.moveNext();
+        return retunValue;
+    }
+
     private boolean breakProceededByCase(TokenSequence ts){
         boolean retunValue = false;
         int origOffset = ts.offset();
@@ -159,12 +189,7 @@ public class PHPNewLineIndenter {
                     if (tid == PHPTokenId.PHP_CASE) {
                         retunValue = true;
                         break;
-                    } else if (tid == PHPTokenId.PHP_CURLY_OPEN 
-                            || tid == PHPTokenId.PHP_DO
-                            || tid == PHPTokenId.PHP_WHILE
-                            || tid == PHPTokenId.PHP_FOR
-                            || tid == PHPTokenId.PHP_FOREACH) {
-                        
+                    } else if (CONTROL_STATEMENT_TOKENS.contains(tid)) {
                         break;
                     }
                 }
@@ -173,7 +198,7 @@ public class PHPNewLineIndenter {
         }
 
         ts.move(origOffset);
-            ts.moveNext();
+        ts.moveNext();
         
         return retunValue;
     }
