@@ -54,18 +54,22 @@ public class QueryCellRenderer implements TableCellRenderer {
         if(!(value instanceof JiraIssueNode.SummaryProperty)) {
             return defaultIssueRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
+
         IssueProperty issueProperty = (IssueProperty) value;
         NbJiraIssue issue = (NbJiraIssue) issueProperty.getIssue();
 
         IssueStyle style = null;
         if(issue.hasSubtasks()) {
             TwoLabelPanel panel = getTwoLabelPanel(table.getFont());
+            
             if(query.isSaved()) {
-                style = defaultIssueRenderer.getIssueStyle(table, issueProperty, isSelected, row);
+                style = QueryTableCellRenderer.getIssueStyle(table, query, issueProperty, isSelected, row);
+            } else {
+                style = QueryTableCellRenderer.getDefaultIssueStyle(table, isSelected, row);
             }
 
             panel.north.setText(value.toString()); // XXX toString ???
-            panel.north.putClientProperty("format", style != null ? style.format : null);                        // NOI18N
+            panel.north.putClientProperty("format", style != null ? style.getFormat() : null);                        // NOI18N
 
             List<String> keys = issue.getSubtaskKeys();
             StringBuffer keysBuffer = new StringBuffer();
@@ -76,27 +80,30 @@ public class QueryCellRenderer implements TableCellRenderer {
             }
 
             panel.south.setText(keysBuffer.toString()); 
-            panel.south.putClientProperty("format", parentFormat);                        // NOI18N
+            panel.south.putClientProperty("format", isSelected ? null : parentFormat); // NOI18N
 
             panel.setToolTipText(value.toString());  // XXX toString ???
-            setColors(panel, style);
+            setRowColors(style, panel);
             adjustRowSize(panel, table, row);
             
             return panel;
         } else if(issue.isSubtask() ) {
             TwoLabelPanel panel = getTwoLabelPanel(table.getFont());
+
             if(query.isSaved()) {
-                style = defaultIssueRenderer.getIssueStyle(table, issueProperty, isSelected, row);
+                style = QueryTableCellRenderer.getIssueStyle(table, query, issueProperty, isSelected, row);
+            } else {
+                style = QueryTableCellRenderer.getDefaultIssueStyle(table, isSelected, row);
             }
             
             panel.north.setText(issue.getParentKey());
-            panel.north.putClientProperty("format", style != null ? style.format : null);            // NOI18N
+            panel.north.putClientProperty("format", style != null ? style.getFormat() : null); // NOI18N
 
             panel.south.setText(value.toString()); // XXX toString ???
-            panel.south.putClientProperty("format", subtasksFormat);            // NOI18N
+            panel.south.putClientProperty("format", isSelected ? null : subtasksFormat); // NOI18N
 
             panel.setToolTipText(value.toString());  // XXX toString ???
-            setColors(panel, style);
+            setRowColors(style, panel);
             adjustRowSize(panel, table, row);
             
             return panel;
@@ -117,16 +124,6 @@ public class QueryCellRenderer implements TableCellRenderer {
         return new MessageFormat(NbBundle.getMessage(QueryCellRenderer.class, key));
     }    
 
-    private void setColors(TwoLabelPanel panel, IssueStyle style) {
-        if(style == null) return;
-        if (style.background != null) {
-            panel.setBackground(style.background);
-        }
-        if (style.foreground != null) {
-            panel.setForeground(style.foreground);
-        }
-    }
-
     private TwoLabelPanel getTwoLabelPanel(Font font) {
         if(twoLabelPanel == null) {
             twoLabelPanel = new TwoLabelPanel(font);
@@ -134,11 +131,17 @@ public class QueryCellRenderer implements TableCellRenderer {
         return twoLabelPanel;
     }
 
+    private void setRowColors(IssueStyle style, TwoLabelPanel panel) {
+        QueryTableCellRenderer.setRowColors(style, panel.north);
+        QueryTableCellRenderer.setRowColors(style, panel.south);
+        QueryTableCellRenderer.setRowColors(style, panel);
+    }
+
     private class TwoLabelPanel extends JPanel {
         AdjustableJLabel north = new AdjustableJLabel();
         AdjustableJLabel south = new AdjustableJLabel();
         public TwoLabelPanel(Font font) {
-            setOpaque(false);
+//            setOpaque(false);
             setLayout(new BorderLayout());
             add(north, BorderLayout.NORTH);
             add(south, BorderLayout.SOUTH);
@@ -151,7 +154,7 @@ public class QueryCellRenderer implements TableCellRenderer {
     private class AdjustableJLabel extends JLabel {
         @Override
         public void paint(Graphics g) {
-            QueryTableCellRenderer.formatText(this);
+            QueryTableCellRenderer.fitText(this);
             super.paint(g);
         }
     }
