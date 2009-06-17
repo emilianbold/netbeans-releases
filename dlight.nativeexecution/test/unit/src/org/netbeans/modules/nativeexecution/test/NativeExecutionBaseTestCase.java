@@ -106,6 +106,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         super(name);
         System.setProperty("nativeexecution.mode.unittest", "true");
         this.testExecutionEnvironment = testExecutionEnvironment;
+        assertNotNull(testExecutionEnvironment);
     }
 
 
