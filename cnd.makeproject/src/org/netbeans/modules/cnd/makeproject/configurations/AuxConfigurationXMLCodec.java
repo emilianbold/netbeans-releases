@@ -95,9 +95,11 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                     currentConf.getAuxObjects();
             decoders = new Vector<XMLDecoder>();
             for (int i = 0; i < profileAuxObjects.length; i++) {
-                XMLDecoder newDecoder = profileAuxObjects[i].getXMLDecoder();
-                registerXMLDecoder(newDecoder);
-                decoders.add(newDecoder);
+                if (!profileAuxObjects[i].shared()) {
+                    XMLDecoder newDecoder = profileAuxObjects[i].getXMLDecoder();
+                    registerXMLDecoder(newDecoder);
+                    decoders.add(newDecoder);
+                }
             }
         }
     }

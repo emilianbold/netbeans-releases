@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.remote.support;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
@@ -63,6 +64,8 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
 //    protected RemoteTestBase(String testName) {
 //        super(testName);
 //    }
+
+    protected final Logger log = Logger.getLogger("cnd.remote.logger");
 
     protected RemoteTestBase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
