@@ -90,11 +90,15 @@ public final class ToolchainManager {
 
         MakeDescriptor getMake();
 
-        Map<String, String> getDefaultLocations();
+        Map<String, List<String>> getDefaultLocations();
 
         DebuggerDescriptor getDebugger();
 
         String getMakefileWriter();
+
+        QMakeDescriptor getQMake();
+
+        CMakeDescriptor getCMake();
     }
 
     public interface BaseFolder {
@@ -194,6 +198,12 @@ public final class ToolchainManager {
     }
 
     public interface DebuggerDescriptor extends ToolDescriptor {
+    }
+
+    public interface QMakeDescriptor extends ToolDescriptor {
+    }
+
+    public interface CMakeDescriptor extends ToolDescriptor {
     }
 
     public interface LinkerDescriptor {

@@ -70,11 +70,9 @@ public class RefactoringBaseTestCase extends ProjectBasedTestCase {
     }
 
     protected final File getQuoteDataDir() {
-        String dataPath = getDataDir().getAbsolutePath().replaceAll("cnd.refactoring", "cnd.modelimpl"); //NOI18N
-        String filePath = "common/quote_nosyshdr";
-        return Manager.normalizeFile(new File(dataPath, filePath));
+        return Manager.normalizeFile(new File(getDataDir(), "common/quote_nosyshdr"));
     }
-    
+
     protected final CsmReference getReference(String source, int line, int column) throws Exception {
         File testSourceFile = super.getDataFile(source);
         int offset = super.getOffset(testSourceFile, line, column);

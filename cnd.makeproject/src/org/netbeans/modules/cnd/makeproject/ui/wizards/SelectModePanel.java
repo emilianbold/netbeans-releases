@@ -43,12 +43,16 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.html.HTMLEditorKit;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -284,11 +288,24 @@ public class SelectModePanel extends javax.swing.JPanel {
                     messageKind = alreadyNbPoject;
                     return false;
                 }
+                if (file.isDirectory()) {
+                    FileObject fo = FileUtil.toFileObject(file);
+                    if (fo != null) {
+                        try {
+                            if (ProjectManager.getDefault().findProject(fo) != null) {
+                                messageKind = alreadyNbPoject;
+                                return false;
+                            }
+                        } catch (IOException ex) {
+                        } catch (IllegalArgumentException ex) {
+                        }
+                    }
+                }
             }
-            if (SelectModeDescriptorPanel.findMakefile(path) != null){
+            if (ConfigureUtils.findMakefile(path) != null){
                 return true;
             }
-            if (SelectModeDescriptorPanel.findConfigureScript(path) != null){
+            if (ConfigureUtils.findConfigureScript(path) != null){
                 return true;
             }
             if (simpleMode.isSelected()) {

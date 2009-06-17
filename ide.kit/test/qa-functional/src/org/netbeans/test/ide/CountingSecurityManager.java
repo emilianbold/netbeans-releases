@@ -57,6 +57,7 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Assert;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -460,7 +461,10 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
                 }
             }
         }
-        
+        if (file.endsWith("harness/modules/org-netbeans-modules-nbjunit.jar")) {
+            return false;
+        }
+
         // mac osx
         dirs = System.getProperty("java.ext.dirs");
         if (dirs != null) {
@@ -469,6 +473,9 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
                     return false;
                 }
             }
+        }
+        if (Utilities.isMac() && file.startsWith("/System/Library/Frameworks/JavaVM.framework/")) {
+            return false;
         }
 
         return true;

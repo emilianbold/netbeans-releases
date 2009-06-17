@@ -41,11 +41,37 @@
 
 package org.netbeans.modules.j2ee.dd.api.web;
 
+import java.util.List;
+import org.netbeans.modules.j2ee.dd.api.web.model.ServletInfo;
+
 /**
- *
- * @author Andrei Badea
+ * Interface for access metadata for web application.
+ * @author Petr Slechta
  */
 public interface WebAppMetadata {
 
+    /**
+     * @return object model of main web.xml deployment descriptor. Returns null
+     * if web.xml is not present.
+     */
     WebApp getRoot();
+
+    /**
+     * @return list of object models for web-fragment.xml deployment descriptors.
+     * Never returns null.
+     */
+    List<WebFragment> getFragments();
+
+    /**
+     * @return list of objects that hold information about servlets (information
+     * aggregated from web.xml file, web-fragment.xml files, and annotations).
+     * Never returns null.
+     */
+    List<ServletInfo> getServlets();
+
+    /**
+     * @return list of all defined security roles
+     */
+    List<String> getSecurityRoles();
+
 }

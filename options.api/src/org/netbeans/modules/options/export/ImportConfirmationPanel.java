@@ -100,7 +100,7 @@ public class ImportConfirmationPanel extends javax.swing.JPanel {
         cbRestart = new javax.swing.JCheckBox();
         lblMessage = new javax.swing.JLabel();
 
-        setPreferredSize(new java.awt.Dimension(332, 40));
+        setPreferredSize(new java.awt.Dimension(332, 90));
         setLayout(new java.awt.BorderLayout());
 
         cbRestart.setSelected(true);

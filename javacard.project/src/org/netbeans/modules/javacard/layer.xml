@@ -1,0 +1,717 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+
+-->
+
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="org-netbeans-modules-javacard-options-javacardAdvancedOption.instance">
+                <attr name="controller" newvalue="org.netbeans.modules.javacard.options.JavacardOptionsPanelController"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.options.Bundle#AdvancedOption_DisplayName_javacard"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
+                <attr name="keywords" bundlevalue="org.netbeans.modules.javacard.options.Bundle#AdvancedOption_Keywords_javacard"/>
+                <attr name="keywordsCategory" stringvalue="Advanced/null"/>
+                <attr name="toolTip" bundlevalue="org.netbeans.modules.javacard.options.Bundle#AdvancedOption_Tooltip_javacard"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="org-netbeans-api-java">
+        <folder name="platform">
+            <folder name="installers">
+                <file name="JavacardInstaller.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.java.platform.PlatformInstall"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.platform.JavacardPlatformInstall.create"/>
+                    <attr name="position" intvalue="600"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Actions">
+        <folder name="JavaCard3">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+            <file name="org-netbeans-modules-javacard-directactions-DeployAndRunOnJavaCard.instance"/>
+            <file name="org-netbeans-modules-javacard-apdusupport-SendUsingAPDUTool.instance"/>
+        </folder>
+    </folder>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-apduscr">
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-javacard-apdusupport-SendUsingAPDUTool-separatorAfter.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="950"/>
+                    </file>
+                    <file name="org-netbeans-modules-javacard-apdusupport-SendUsingAPDUTool.shadow">
+                        <attr name="originalFile" stringvalue="Actions/JavaCard3/org-netbeans-modules-javacard-apdusupport-SendUsingAPDUTool.instance"/>
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Loaders">
+        <folder name="application">
+            <folder name="javacard">
+                <folder name="Actions">
+                    <file name="org-openide-actions-CopyAction.instance">
+                        <attr name="position" intvalue="300"/>
+                    </file>
+                    <file name="org-openide-actions-CutAction.instance">
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                    <file name="org-openide-actions-DeleteAction.instance">
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="org-openide-actions-FileSystemAction.instance">
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.instance">
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+                    <file name="org-openide-actions-RenameAction.instance">
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                    <file name="org-openide-actions-ToolsAction.instance">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="700"/>
+                    </file>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="sep-5.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                </folder>
+                <folder name="Factories">
+                    <file name="JavacardPlatformDataLoader.instance">
+                        <attr name="dataObjectClass" stringvalue="org.netbeans.modules.javacard.platform.loader.JavacardPlatformDataObject"/>
+                        <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
+                        <attr name="mimeType" stringvalue="application/javacard"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/ri.png"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-javacardserver">
+                <folder name="Actions">
+                    <!--
+                    <file name="org-openide-actions-CopyAction.instance">
+                        <attr name="position" intvalue="300"/>
+                    </file>
+                    <file name="org-openide-actions-CutAction.instance">
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                    <file name="org-openide-actions-DeleteAction.instance">
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="org-openide-actions-FileSystemAction.instance">
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.instance">
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+                    <file name="org-openide-actions-RenameAction.instance">
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                    <file name="org-openide-actions-ToolsAction.instance">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="700"/>
+                    </file>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="sep-5.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                    -->
+                </folder>
+                <folder name="Factories">
+                    <file name="ServerDataLoader.instance">
+                        <attr name="dataObjectClass" stringvalue="org.netbeans.modules.javacard.card.loader.CardDataObject"/>
+                        <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
+                        <attr name="mimeType" stringvalue="application/x-javacardserver"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/card.png"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+        <folder name="text">
+            <folder name="x-apduscr">
+                <folder name="Factories">
+                    <file name="ApduLoader.instance">
+                        <attr name="dataObjectClass" stringvalue="org.netbeans.modules.javacard.apdusupport.APDUFileDataObject"/>
+                        <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
+                        <attr name="mimeType" stringvalue="text/x-apduscr"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/apdufile.png"/>
+                    </file>
+                </folder>
+                <folder name="Actions">
+                    <file name="org-netbeans-modules-javacard-apdusupport-SendUsingAPDUTool-separatorAfter.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1450"/>
+                    </file>
+                    <file name="org-netbeans-modules-javacard-apdusupport-SendUsingAPDUTool.shadow">
+                        <attr name="originalFile" stringvalue="Actions/JavaCard3/org-netbeans-modules-javacard-apdusupport-SendUsingAPDUTool.instance"/>
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-apduscr">
+                <folder name="Actions">
+                    <file name="org-openide-actions-CopyAction.instance">
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="org-openide-actions-CutAction.instance">
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="org-openide-actions-DeleteAction.instance">
+                        <attr name="position" intvalue="700"/>
+                    </file>
+                    <file name="org-openide-actions-FileSystemAction.instance">
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                    <file name="org-openide-actions-OpenAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.instance">
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+                    <file name="org-openide-actions-RenameAction.instance">
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="org-openide-actions-ToolsAction.instance">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="300"/>
+                    </file>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="APDUFileResolver.xml" url="resources/APDUFileResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                <attr name="position" intvalue="9000"/>
+            </file>
+            <file name="JavacardPlatformResolver.xml" url="resources/JavacardPlatformResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                <attr name="position" intvalue="9100"/>
+            </file>
+            <file name="JavaCardResolver.xml" url="resources/CardResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                <attr name="position" intvalue="9200"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Templates">
+        <folder name="Project">
+            <!-- The main project types of Java Card 3.0 -->
+            <folder name="javacard">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                <attr name="position" intvalue="471"/>
+
+                <file name="capproject.properties" url="templates/cap-project-template.properties">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="position" intvalue="100"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/capproject.png"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javacard.wizard.ProjectWizardIterator.create"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/CapProjectDescription.html"/>
+                    <attr name="projectType" stringvalue="CLASSIC_APPLET"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+                <file name="eapproject.properties" url="templates/eap-project-template.properties">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="position" intvalue="300"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/eapproject.png"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javacard.wizard.ProjectWizardIterator.create"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/EapProjectDescription.html"/>
+                    <attr name="projectType" stringvalue="EXTENDED_APPLET"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+                <file name="clslibproject.properties" url="templates/clslib-project-template.properties">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="position" intvalue="400"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/clslibproject.png"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javacard.wizard.ProjectWizardIterator.create"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/ClsLibProjectDescription.html"/>
+                    <attr name="projectType" stringvalue="CLASSIC_LIBRARY"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+                <file name="extlibproject.properties" url="templates/extlib-project-template.properties">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="position" intvalue="500"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/extlibproject.png"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javacard.wizard.ProjectWizardIterator.create"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/ExtLibProjectDescription.html"/>
+                    <attr name="projectType" stringvalue="EXTENSION_LIBRARY"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+                <file name="webproject.properties" url="templates/web-project-template.properties">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="position" intvalue="600"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/webproject.png"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javacard.wizard.ProjectWizardIterator.create"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/WebProjectDescription.html"/>
+                    <attr name="projectType" stringvalue="WEB"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+            </folder>
+        </folder>
+
+        <!-- Templates for "New file..." wizards specific for Java Card 3.0 -->
+        <folder name="javacard">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+            <file name="APDUFileTemplate.scr" url="templates/APDUFileTemplate.scr">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.templates.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/javacard/resources/apdufile.png"/>
+                <attr name="template" boolvalue="true"/>
+            </file>
+            <file name="Servlet.java" url="templates/Servlet.template">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.templates.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javacard/templates/ServletDescription.html"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javacard.templates.ServletWizardIterator"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+            <file name="ExtendedApplet.java" url="templates/ExtendedApplet.template">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.templates.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javacard/templates/ExtendedAppletDescription.html"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javacard.templates.ClassicAppletWizardIterator"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+            <file name="ClassicApplet.java" url="templates/ClassicApplet.template">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.templates.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javacard/templates/ClassicAppletDescription.html"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javacard.templates.ClassicAppletWizardIterator"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+        </folder>
+    </folder>
+
+    <folder name="Projects">
+        <folder name="org-netbeans-modules-javacard-webproject">
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/webproject.png"/>
+            <folder name="Nodes">
+                <file name="org-netbeans-modules-javacard-project-JCProjectSourceNodeFactory.instance">
+                    <attr name="position" intvalue="100"/>
+                </file>
+            </folder>
+            <folder name="ImportantFiles">
+                <file name="org-netbeans-modules-javacard-project-JCImportantFilesNodeFactory.instance">
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+            <folder name="Customizer">
+                <file name="Sources.instance">
+                    <attr name="position" intvalue="0"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.templates.Bundle"/>
+                </file>
+                <file name="Dependencies.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                    <attr name="position" intvalue="200"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.templates.Bundle"/>
+                </file>
+                <file name="Web.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                    <attr name="position" intvalue="300"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.templates.Bundle"/>
+                </file>
+                <folder name="Build">
+                    <attr name="position" intvalue="400"/>
+                    <file name="Compiling.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                        <attr name="position" intvalue="100"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                    </file>
+                    <file name="Security.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                        <attr name="position" intvalue="300"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                    </file>
+                </folder>
+                <file name="Run.instance">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.templates.Bundle"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                    <attr name="position" intvalue="500"/>
+                </file>
+            </folder>
+        </folder>
+        <folder name="org-netbeans-modules-javacard-eapproject">
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/eapproject.png"/>
+            <folder name="Nodes">
+                <file name="org-netbeans-modules-javacard-project-JCProjectSourceNodeFactory.instance">
+                    <attr name="position" intvalue="100"/>
+                </file>
+            </folder>
+            <folder name="ImportantFiles">
+                <file name="org-netbeans-modules-javacard-project-JCImportantFilesNodeFactory.instance">
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+            <folder name="Customizer">
+                <file name="Sources.instance">
+                    <attr name="position" intvalue="0"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                </file>
+                <file name="Dependencies.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="Applets.instance">
+                    <attr name="position" intvalue="300"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                </file>
+                <folder name="Build">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="position" intvalue="300"/>
+                    <file name="Compiling.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                        <attr name="position" intvalue="100"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                    </file>
+                    <file name="Security.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                        <attr name="position" intvalue="200"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                    </file>
+                </folder>
+                <file name="Run.instance">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                    <attr name="position" intvalue="400"/>
+                </file>
+            </folder>
+        </folder>
+
+        <folder name="org-netbeans-modules-javacard-capproject">
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/capproject.png"/>
+            <folder name="Nodes">
+                <file name="org-netbeans-modules-javacard-project-JCProjectSourceNodeFactory.instance">
+                    <attr name="position" intvalue="100"/>
+                </file>
+            </folder>
+            <folder name="ImportantFiles">
+                <file name="org-netbeans-modules-javacard-project-JCImportantFilesNodeFactory.instance">
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+            <folder name="Customizer">
+                <file name="Sources.instance">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="position" intvalue="0"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                </file>
+                <file name="Dependencies.instance">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="Applets.instance">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="position" intvalue="300"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                </file>
+                <folder name="Build">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="position" intvalue="400"/>
+                    <file name="Compiling.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                        <attr name="position" intvalue="100"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                    </file>
+                    <file name="Packaging.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                        <attr name="position" intvalue="200"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                    </file>
+                    <file name="Security.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                        <attr name="position" intvalue="300"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                    </file>
+                </folder>
+                <file name="Run.instance">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                    <attr name="position" intvalue="500"/>
+                </file>
+            </folder>
+        </folder>
+
+        <folder name="org-netbeans-modules-javacard-extlibproject">
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/extlibproject.png"/>
+            <folder name="Nodes">
+                <file name="org-netbeans-modules-javacard-project-JCProjectSourceNodeFactory.instance">
+                    <attr name="position" intvalue="100"/>
+                </file>
+            </folder>
+            <folder name="ImportantFiles">
+                <file name="org-netbeans-modules-javacard-project-JCImportantFilesNodeFactory.instance">
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+            <folder name="Customizer">
+                <file name="Sources.instance">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="position" intvalue="100"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                </file>
+                <file name="Dependencies.instance">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <folder name="Build">
+                    <attr name="position" intvalue="300"/>
+                    <file name="Compiling.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                        <attr name="position" intvalue="100"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                    </file>
+                    <file name="Security.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                        <attr name="position" intvalue="300"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                    </file>
+                </folder>
+                <file name="Run.instance">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                    <attr name="position" intvalue="400"/>
+                </file>
+            </folder>
+        </folder>
+
+        <folder name="org-netbeans-modules-javacard-clslibproject">
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/clslibproject.png"/>
+            <folder name="Nodes">
+                <file name="org-netbeans-modules-javacard-project-JCProjectSourceNodeFactory.instance">
+                    <attr name="position" intvalue="100"/>
+                </file>
+            </folder>
+            <folder name="ImportantFiles">
+                <file name="org-netbeans-modules-javacard-project-JCImportantFilesNodeFactory.instance">
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+            <folder name="Customizer">
+                <file name="Sources.instance">
+                    <attr name="position" intvalue="100"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                </file>
+                <file name="Dependencies.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <folder name="Build">
+                    <attr name="position" intvalue="300"/>
+                    <file name="Compiling.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                        <attr name="position" intvalue="100"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                    </file>
+                    <file name="Packaging.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                        <attr name="position" intvalue="200"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                    </file>
+                    <file name="Security.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
+                        <attr name="position" intvalue="300"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                    </file>
+                </folder>
+                <file name="Run.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.project.customizer.JCProjectCategoryProvider.create"/>
+                    <attr name="position" intvalue="300"/>
+                </file>
+            </folder>
+        </folder>
+
+    </folder>
+
+    <!-- Services window now contains "Java Card" node -->
+    <folder name="UI">
+        <folder name="Runtime">
+            <file name="org.netbeans.modules.javacard.nodes-ServicesNode.instance">
+                <attr name="position" intvalue="152"/>
+            </file>
+        </folder>
+    </folder>
+
+    <folder name="org-netbeans-modules-javacard">
+        <folder name="servers">
+            <!-- subdirs here with card name, each containing SunJavaCardServer instances
+            for all known servers on that platform.  These will be written by the
+            UI when it sets itself up-->
+        </folder>
+        <folder name="eeproms">
+            <!-- eeprom files corresponding with devices go here -->
+        </folder>
+        <folder name="stylesheets">
+            <file name="build.xsl" url="resources/build.xsl"/>
+            <file name="build-impl.xsl" url="resources/build-impl.xsl"/>
+        </folder>
+        <!-- This folder is for templates used in project creation but which do
+             not make sense to make user-visible -->
+        <folder name="templates">
+            <file name="applet.xml" url="templates/applet.xml">
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+            <file name="javacard.xml" url="templates/javacard.xml">
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+            <file name="web.xml" url="templates/web.xml">
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+            <file name="MANIFEST.MF" url="templates/MANIFEST.MF">
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+            <file name="EAP_MANIFEST.MF" url="templates/EAP_MANIFEST.MF">
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+            <file name="CSLIB_MANIFEST.MF" url="templates/CSLIB_MANIFEST.MF">
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+            <file name="EXTLIB_MANIFEST.MF" url="templates/EXTLIB_MANIFEST.MF">
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+            <file name="WEB_MANIFEST.MF" url="templates/WEB_MANIFEST.MF">
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+            <file name="test.scr" url="templates/test.scr">
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+            <file name="platform-private.properties" url="templates/platform-private.properties">
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+            <file name="web-index.html" url="templates/web-index.html">
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+            <file name="HelloServlet.java" url="templates/HelloServlet.template">
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+            <file name="ServerTemplate.jcard" url="templates/ServerTemplate.jcard">
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+            <file name="deployment.xml" url="templates/deployment.xml">
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+        </folder>
+    </folder>
+
+</filesystem>

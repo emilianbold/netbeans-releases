@@ -124,6 +124,7 @@ made subject to such option by the copyright holder.
             
             <file name="org-netbeans-core-windows-actions-ToolbarsListAction.instance">
                 <attr name="position" intvalue="700"/>
+                <attr name="misplaced.action.allowed" boolvalue="true"/>
             </file>
 
             <file name="Separator3.instance">

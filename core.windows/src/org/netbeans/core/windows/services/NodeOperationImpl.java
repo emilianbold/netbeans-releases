@@ -63,6 +63,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
+import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
 import org.openide.nodes.NodeAdapter;
@@ -116,6 +117,9 @@ public final class NodeOperationImpl extends NodeOperation {
             map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(manager));
             map.put("delete", ExplorerUtils.actionDelete(manager, true));
             associateLookup(ExplorerUtils.createLookup (manager, map));
+            setLayout(new BorderLayout());
+            add(new BeanTreeView());
+            setName(n.getDisplayName());
         }
         public ExplorerManager getExplorerManager() {
             return manager;
@@ -414,6 +418,7 @@ public final class NodeOperationImpl extends NodeOperation {
             tc.addPropertyChangeListener(this);
         }
         
+        @Override
         public void propertyChange (PropertyChangeEvent pce) {
             if ("name".equals(pce.getPropertyName())) {
                 dialog.setTitle((String) pce.getNewValue());
@@ -425,12 +430,13 @@ public final class NodeOperationImpl extends NodeOperation {
             for (int i = 0; i < nodes.length; i++) {
                 listenerSet.add(nodes[i]);
                 nodes[i].addNodeListener(this);
-            };
+            }
         }
 
         /** Fired when the node is deleted.
          * @param ev event describing the node
          */
+        @Override
         public void nodeDestroyed(NodeEvent ev) {
             Node destroyedNode = ev.getNode();
             // stop to listen to destroyed node

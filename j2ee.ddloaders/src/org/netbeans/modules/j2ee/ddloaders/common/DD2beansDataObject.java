@@ -47,12 +47,11 @@ import org.openide.loaders.MultiFileLoader;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.j2ee.ddloaders.common.xmlutils.XMLJ2eeDataObject;
 import org.netbeans.modules.j2ee.ddloaders.common.xmlutils.XMLJ2eeUtils;
-
-import javax.swing.*;
 import javax.swing.text.Document;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 
 /** Represents a DD2beansDataObject in the Repository.
  *
@@ -137,6 +136,7 @@ public abstract class DD2beansDataObject extends XMLJ2eeDataObject implements or
     /** Setter for property nodeDirty.
      * @param dirty New value of property nodeDirty.
      */
+    @Override
     public void setNodeDirty(boolean dirty){
         //System.out.println("setNodeDirty("+dirty+")");
         if (dirty) {

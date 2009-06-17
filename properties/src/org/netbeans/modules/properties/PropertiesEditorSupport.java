@@ -1075,7 +1075,13 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             if (entry.getCookie(SaveCookie.class) == null) {
                 entry.getCookieSet().add(this);
             }
-            ((PropertiesDataObject)entry.getDataObject()).updateModificationStatus();
+            //Need to add cookie to DataObject since saveAll use it, and
+            //OpenCookie may not be initialized
+            PropertiesDataObject dataObject = (PropertiesDataObject) getDataObject();
+            dataObject.updateModificationStatus();
+            if (dataObject.getCookie(SaveCookie.class) == null){
+                dataObject.getCookieSet0().add(this);
+            }
         }
             
         /** Helper method. Removes save cookie from the entry. */
@@ -1087,10 +1093,12 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             if (sc != null && sc.equals(this)) {
                 entry.getCookieSet().remove(this);
             }
-            
+            final SaveCookie cookie = this;
             PropertiesRequestProcessor.getInstance().post(new Runnable() {
                 public void run() {
-                    ((PropertiesDataObject)entry.getDataObject()).updateModificationStatus();
+                    PropertiesDataObject dataObject = (PropertiesDataObject) getDataObject();
+                    dataObject.updateModificationStatus();
+                    dataObject.getCookieSet0().remove(cookie);
                 }
             });
         }

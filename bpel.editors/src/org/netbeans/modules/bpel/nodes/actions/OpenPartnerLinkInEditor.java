@@ -35,6 +35,8 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.soa.ui.SoaUtil;
 
@@ -76,7 +78,7 @@ public class OpenPartnerLinkInEditor extends BpelNodeAction {
             final Line l = lc.getLineSet().getOriginal(1);
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    l.show(Line.SHOW_GOTO);
+                    l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
                 }
             });
         } catch (DataObjectNotFoundException ex) {

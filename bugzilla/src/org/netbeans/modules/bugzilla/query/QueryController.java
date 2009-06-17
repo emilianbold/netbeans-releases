@@ -122,15 +122,13 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private final ListParameter severityParameter;
 
     private final Map<String, QueryParameter> parameters;
-    
+
     private RequestProcessor rp = new RequestProcessor("Bugzilla query", 1, true);  // NOI18N
-    private Task task;
 
     private final BugzillaRepository repository;
     protected BugzillaQuery query;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // NOI18N
-    private QueryTask searchTask;
     private QueryTask refreshTask;
 
     public QueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters) {
@@ -140,7 +138,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     public QueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters, boolean urlDef) {
         this.repository = repository;
         this.query = query;
-        
+
         panel = new QueryPanel(query.getTableComponent(), this);
 
         panel.productList.addListSelectionListener(this);
@@ -159,6 +157,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.seenButton.addActionListener(this);
         panel.removeButton.addActionListener(this);
         panel.refreshConfigurationButton.addActionListener(this);
+        panel.findIssuesButton.addActionListener(this);
         panel.changedFromTextField.addFocusListener(this);
 
         panel.idTextField.addActionListener(this);
@@ -193,7 +192,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         priorityParameter = createQueryParameter(ListParameter.class, panel.priorityList, "priority");              // NOI18N
         changedFieldsParameter = createQueryParameter(ListParameter.class, panel.changedList, "chfield");           // NOI18N
         severityParameter = createQueryParameter(ListParameter.class, panel.severityList, "bug_severity");          // NOI18N
-        
+
         createQueryParameter(TextFieldParameter.class, panel.summaryTextField, "short_desc");                       // NOI18N
         createQueryParameter(TextFieldParameter.class, panel.commentTextField, "long_desc");                        // NOI18N
         createQueryParameter(TextFieldParameter.class, panel.keywordsTextField, "keywords");                        // NOI18N
@@ -214,7 +213,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(urlDef) {
             panel.switchQueryFields(false);
             panel.urlTextField.setText(urlParameters);
-        } else {            
+        } else {
             postPopulate(urlParameters, false);
         }
     }
@@ -238,8 +237,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
     @Override
     public void closed() {
         onCancelChanges();
-        if(task != null) {
-            task.cancel();
+        if(refreshTask != null) {
+            refreshTask.cancel();
         }
         if(query.isSaved()) {
             repository.stopRefreshing(query);
@@ -281,7 +280,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     @Override
     public void applyChanges() {
-        
+
     }
 
     public String getUrlParameters() {
@@ -432,13 +431,13 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == panel.searchButton) {
-            onSearch();
+            onRefresh();
         } else if (e.getSource() == panel.gotoIssueButton) {
             onGotoIssue();
         } else if (e.getSource() == panel.keywordsButton) {
             onKeywords();
         } else if (e.getSource() == panel.searchButton) {
-            onSearch();
+            onRefresh();
         } else if (e.getSource() == panel.saveChangesButton) {
             onSave();
         } else if (e.getSource() == panel.cancelChangesButton) {
@@ -463,6 +462,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
             onAutoRefresh();
         } else if (e.getSource() == panel.refreshConfigurationButton) {
             onRefreshConfiguration();
+        } else if (e.getSource() == panel.findIssuesButton) {
+            onFindIssues();
         } else if (e.getSource() == panel.idTextField) {
             if(!panel.idTextField.getText().trim().equals("")) {                // NOI18N
                 onGotoIssue();
@@ -476,7 +477,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                    e.getSource() == panel.newValueTextField ||
                    e.getSource() == panel.changedToTextField)
         {
-            onSearch();
+            onRefresh();
         }
     }
 
@@ -500,7 +501,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
            e.getSource() == panel.priorityList ||
            e.getSource() == panel.changedList)
         {
-            onSearch();
+            onRefresh();
         }
     }
 
@@ -511,10 +512,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private void onSave() {
        Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             public void run() {
-                String name = query.getDisplayName();
-                boolean firstTime = false;
-                if(!query.isSaved()) {
-                    firstTime = true;
+                Bugzilla.LOG.fine("on save start");
+                String name = query.getDisplayName();                
+                if(!query.isSaved()) {                
                     name = getSaveName();
                     if(name == null) {
                         return;
@@ -522,9 +522,28 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     panel.queryNameTextField.setText("");                       // NOI18N
                 }
                 assert name != null;
-                save(name, firstTime);
+                save(name);
+                Bugzilla.LOG.fine("on save finnish");
             }
+
        });
+    }
+
+    /**
+     * Saves the query under the given name
+     * @param name
+     */
+    private void save(String name) {
+        Bugzilla.LOG.log(Level.FINE, "saving query '{0}'", new Object[]{name});
+        query.setName(name);
+        repository.saveQuery(query);
+        query.setSaved(true); // XXX
+        setAsSaved();
+        if (!query.wasRun()) {
+            Bugzilla.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
+            onRefresh();
+        }
+        Bugzilla.LOG.log(Level.FINE, "query '{0}' saved", new Object[]{name});
     }
 
     private String getSaveName() {
@@ -552,20 +571,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
             return null;
         }
         return name;
-    }
-
-    private void save(String name, boolean firstTime) {
-        query.setName(name);
-        repository.saveQuery(query);
-        query.setSaved(true); // XXX
-        setAsSaved();
-        if(!query.wasRun()) {
-            if (firstTime) {
-                onSearch();
-            } else {
-                onRefresh();
-            }
-        }
     }
 
     private void onCancelChanges() {
@@ -598,7 +603,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.setSaved(query.getDisplayName(), getLastRefresh());
         panel.setModifyVisible(false);
         panel.refreshCheckBox.setVisible(true);
-    } 
+    }
 
     private String getLastRefresh() throws MissingResourceException {
         long l = query.getLastRefresh();
@@ -612,7 +617,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(id == null || id.trim().equals("") ) {                               // NOI18N
             return;
         }
-        
+
         final Task[] t = new Task[1];
         Cancellable c = new Cancellable() {
             public boolean cancel() {
@@ -686,26 +691,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
-    private void onSearch() {
-        if(searchTask == null) {
-            searchTask = new QueryTask() {
-                public void executeQuery() {
-                    try {
-                        // XXX isn't persistent and should be merged with refresh
-                        String lastChageFrom = panel.changedFromTextField.getText().trim();
-                        if(lastChageFrom != null && !lastChageFrom.equals("")) {    // NOI18N
-                            BugzillaConfig.getInstance().setLastChangeFrom(lastChageFrom);
-                        }
-                        refreshIntern(false);
-                    } finally {
-                        
-                    }
-                }
-            };
-        }
-        post(searchTask);
-    }
-
     public void autoRefresh() {
         onRefresh(true);
     }
@@ -715,38 +700,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onRefresh(final boolean auto) {
-        if(refreshTask == null) {            
-            refreshTask = new QueryTask() {
-                public void executeQuery() {
-                    panel.setQueryRunning(true);
-                    try {
-                        refreshIntern(auto);
-                    } finally {
-                        panel.setQueryRunning(false);
-                        task = null;
-                    }
-                }
-            };
-        }
-        post(refreshTask);
-        }
-
-    private void refreshIntern(boolean autoRefresh) {
-        if (panel.urlPanel.isVisible()) {
-            // XXX check url format etc...
-            // XXX what if there is a different host in queries repository as in the url?
-            query.refresh(panel.urlTextField.getText(), autoRefresh);
+        if(refreshTask == null) {
+            refreshTask = new QueryTask();
         } else {
-            query.refresh(getUrlParameters(), autoRefresh);
+            refreshTask.cancel();
         }
-    }
-
-    private void post(Runnable r) {
-        if(task != null) {
-            task.cancel();
-        }
-        task = rp.create(r);
-        task.schedule(0);
+        refreshTask.post(auto);
     }
 
     private void onModify() {
@@ -783,6 +742,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
+    private void onFindIssues() {
+        Query.openNew(repository);
+    }
+
     private void onAutoRefresh() {
         final boolean autoRefresh = panel.refreshCheckBox.isSelected();
         BugzillaConfig.getInstance().setQueryAutoRefresh(query.getDisplayName(), autoRefresh);
@@ -807,10 +770,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private void onRefreshConfiguration() {
         postPopulate(getUrlParameters(), true);
     }
-    
+
     private void remove() {
-        if (task != null) {
-            task.cancel();
+        if (refreshTask != null) {
+            refreshTask.cancel();
         }
         query.remove();
     }
@@ -904,9 +867,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
         return panel.urlPanel.isVisible();
     }
 
-    private abstract class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
+    private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
         private ProgressHandle handle;
+        private Task task;
         private int counter;
+        private boolean autoRefresh;
 
         public QueryTask() {
             query.addNotifyListener(this);
@@ -937,13 +902,33 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 public void run() {
                     panel.setQueryRunning(false);
                     panel.setLastRefresh(getLastRefresh());
-                    panel.showNoContentPanel(false);                    
+                    panel.showNoContentPanel(false);
                     enableFields(true);
                 }
             });
         }
 
-        public abstract void executeQuery();
+        public void executeQuery() {
+            panel.setQueryRunning(true);
+            // XXX isn't persistent and should be merged with refresh
+            String lastChageFrom = panel.changedFromTextField.getText().trim();
+            if(lastChageFrom != null && !lastChageFrom.equals("")) {    // NOI18N
+                BugzillaConfig.getInstance().setLastChangeFrom(lastChageFrom);
+            }
+            try {
+                if (panel.urlPanel.isVisible()) {
+                    // XXX check url format etc...
+                    // XXX what if there is a different host in queries repository as in the url?
+                    query.refresh(panel.urlTextField.getText(), autoRefresh);
+                } else {
+                    query.refresh(getUrlParameters(), autoRefresh);
+                }
+            } finally {
+                panel.setQueryRunning(false);
+                task = null;
+            }
+
+        }
 
         public void run() {
             startQuery();
@@ -954,11 +939,20 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         }
 
-        public boolean cancel() {
+        synchronized void post(boolean autoRefresh) {
             if(task != null) {
                 task.cancel();
             }
-            finnishQuery();
+            task = rp.create(this);
+            this.autoRefresh = autoRefresh;
+            task.schedule(0);
+        }
+
+        public boolean cancel() {
+            if(task != null) {
+                task.cancel();
+                finnishQuery();
+            }
             return true;
         }
 
@@ -972,7 +966,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
 
         public void finished() { }
-
     }
 
 }

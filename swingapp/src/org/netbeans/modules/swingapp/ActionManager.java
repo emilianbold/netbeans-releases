@@ -103,6 +103,8 @@ import org.netbeans.modules.form.FormModelListener;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 
 /**
  * The ActionManager is a singleton which tracks all actions throughout the project.
@@ -368,7 +370,7 @@ public class ActionManager {
             if (lineObj == null) {
                 Toolkit.getDefaultToolkit().beep();
             } else {
-                lineObj.show(Line.SHOW_GOTO);
+                lineObj.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
             }
         } catch (Exception ex) {
             Logger.getLogger(ActionMethodTask.class.getName()).log(Level.INFO, null, ex);

@@ -39,29 +39,14 @@
 
 package org.netbeans.modules.db.explorer.action;
 
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.net.URL;
-import java.util.List;
-import org.netbeans.api.db.explorer.DatabaseException;
-
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.nodes.Node; 
-
 import org.netbeans.modules.db.explorer.dlg.AddDriverDialog;
-import org.netbeans.api.db.explorer.JDBCDriver;
-import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.explorer.node.DriverNode;
-import org.openide.util.Exceptions;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 public class CustomizeDriverAction extends BaseAction {
-    private Dialog dialog;
     
     @Override
     public String getName() {
@@ -80,61 +65,8 @@ public class CustomizeDriverAction extends BaseAction {
     public void performAction(Node[] activatedNodes) {
         Lookup lookup = activatedNodes[0].getLookup();
         final DriverNode node = lookup.lookup(DriverNode.class);
-        
         if (node != null) {
-            JDBCDriver driver = node.getDatabaseDriver().getJDBCDriver();
-            final AddDriverDialog dlgPanel = new AddDriverDialog(driver);
-
-            ActionListener actionListener = new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
-                    if (event.getSource() == DialogDescriptor.OK_OPTION) {
-                        String displayName = dlgPanel.getDisplayName();
-                        List<URL> drvLoc = dlgPanel.getDriverLocation();
-                        String drvClass = dlgPanel.getDriverClass();
-
-                        StringBuffer err = new StringBuffer();
-                        if (drvLoc.size() < 1)
-                            err.append(NbBundle.getMessage (CustomizeDriverAction.class, "AddDriverDialog_MissingFile")); //NOI18N
-                        if (drvClass == null || drvClass.equals("")) {
-                            if (err.length() > 0)
-                                err.append(", "); //NOI18N
-
-                            err.append(NbBundle.getMessage (CustomizeDriverAction.class, "AddDriverDialog_MissingClass")); //NOI18N
-                        }
-                        if (err.length() > 0) {
-                            String message = NbBundle.getMessage (CustomizeDriverAction.class, "AddDriverDialog_ErrorMessage", err.toString()); //NOI18N
-                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE));
-
-                            return;
-                        }
-
-                        closeDialog();
-
-                        //create driver instance and save it in the XML format
-                        if (displayName == null || displayName.equals(""))
-                            displayName = drvClass;
-
-                        try {
-                            String oldName = node.getDatabaseDriver().getJDBCDriver().getName();
-                            node.destroy();
-                            JDBCDriverManager.getDefault().addDriver(JDBCDriver.create(oldName, displayName, drvClass, drvLoc.toArray(new URL[0])));
-                        } catch (DatabaseException exc) {
-                            Exceptions.printStackTrace(exc);
-                        }
-                    }
-                }
-            };
-
-            DialogDescriptor descriptor = new DialogDescriptor(dlgPanel, NbBundle.getMessage (CustomizeDriverAction.class, "AddDriverDialogTitle"), true, actionListener); //NOI18N
-            Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
-            descriptor.setClosingOptions(closingOptions);
-            dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-            dialog.setVisible(true);
+            AddDriverDialog.showDialog(node);
         }
-    }
-    
-    private void closeDialog() {
-        if (dialog != null)
-            dialog.dispose();
     }
 }

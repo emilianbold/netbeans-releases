@@ -58,6 +58,7 @@ import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.diff.DiffController;
+import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
 import org.netbeans.modules.mercurial.ui.diff.DiffStreamSource;
 
@@ -73,7 +74,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     protected DiffTreeTable treeView;
     private JSplitPane    diffView;
     
-    protected ShowDiffAbstractTask            currentTask;
+    protected HgProgressSupport            currentTask;
     private RequestProcessor.Task   currentShowDiffTask;
     
     protected DiffController            currentDiff;
@@ -213,7 +214,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         diffView.setDividerLocation(dl);
     }
 
-    protected ShowDiffAbstractTask createShowDiffTask(RepositoryRevision.Event header, String revision1, String revision2, boolean showLastDifference) {
+    protected HgProgressSupport createShowDiffTask(RepositoryRevision.Event header, String revision1, String revision2, boolean showLastDifference) {
         return new ShowDiffTask(header, revision1, revision2, showLastDifference);
     }
 
@@ -232,8 +233,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
             } else {
                 currentTask = createShowDiffTask(header, revision1, revision2, showLastDifference);
             }
-            currentShowDiffTask = rp.create(currentTask);
-            currentShowDiffTask.schedule(0);
+            currentShowDiffTask = currentTask.start(rp, header.getLogInfoHeader().getRepositoryRoot(), NbBundle.getMessage(DiffResultsView.class, "LBL_SearchHistory_Diffing"));
         }
     }
 
@@ -342,17 +342,12 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         treeView.setSelection(container);
     }
 
-    protected abstract class ShowDiffAbstractTask implements Runnable, Cancellable {
-
-    }
-
-    private class ShowDiffTask extends ShowDiffAbstractTask {
+    private class ShowDiffTask extends HgProgressSupport {
         
         private final RepositoryRevision.Event header;
         private final String revision1;
         private final String revision2;
         private boolean showLastDifference;
-        private volatile boolean cancelled;
 
         public ShowDiffTask(RepositoryRevision.Event header, String revision1, String revision2, boolean showLastDifference) {
             this.header = header;
@@ -361,18 +356,21 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
             this.showLastDifference = showLastDifference;
         }
 
-        public void run() { 
+        public void perform () {
+            showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_LoadingDiff")); //NOI18N
             final DiffStreamSource s1 = new DiffStreamSource(header.getFile(), revision1, revision1);
             final DiffStreamSource s2 = new DiffStreamSource(header.getFile(), revision2, revision2);
 
             // it's enqueued at ClientRuntime queue and does not return until previous request handled
             s1.getMIMEType();  // triggers s1.init()
-            if (cancelled) {
+            if (isCanceled()) {
+                showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions")); // NOI18N
                 return;
             }
 
             s2.getMIMEType();  // triggers s2.init()
-            if (cancelled) {
+            if (isCanceled()) {
+                showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions")); // NOI18N
                 return;
             }
 
@@ -381,7 +379,8 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     try {
-                        if (cancelled) {
+                        if (isCanceled()) {
+                            showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions")); // NOI18N
                             return;
                         }
                         final DiffController view = DiffController.create(s1, s2);
@@ -399,11 +398,6 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                     }
                 }
             });
-        }
-
-        public boolean cancel() {
-            cancelled = true;            
-            return true;
         }
     }
     

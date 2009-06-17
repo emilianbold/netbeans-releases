@@ -868,12 +868,12 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                        workingCopy);
 
         /* Generate test method names: */
-        TypeElement tstClassElem
-                = (TypeElement) trees.getElement(tstClassTreePath);
+//        TypeElement tstClassElem
+//                = (TypeElement) trees.getElement(tstClassTreePath);
         List<String> testMethodNames
                 = TestMethodNameGenerator.getTestMethodNames(srcMethods,
-                                                             tstClassElem,
-                                                             clsMap.getNoArgMethods(),
+// passing null's to get the names as for newly created class to avoid creating all test methods every time we generating the tests
+                                                             null, null,
                                                              workingCopy);
 
         Iterator<ExecutableElement> srcMethodsIt = srcMethods.iterator();
@@ -1712,7 +1712,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
             }
 
             TreePath nestedClassPath = new TreePath(tstClassPath, nestedClass);
-            TypeMirror nestedClassType = trees.getTypeMirror(nestedClassPath);
+            TypeMirror nestedClassType = trees.getElement(nestedClassPath).asType();
             if (srcClassType == null) {
                 srcClassType = srcClass.asType();
             }

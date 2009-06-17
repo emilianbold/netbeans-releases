@@ -229,6 +229,7 @@ public class HgExtProperties implements ActionListener, DocumentListener {
         // No rows selected
         if (rows.length == 0) return;
         HgPropertiesNode[] hgPropertiesNodes = propTable.getNodes();
+        if (hgPropertiesNodes.length == 0) return; // no prop to remove
         HgPropertiesNode[] hgProps = new HgPropertiesNode[hgPropertiesNodes.length - rows.length];        
         // Translate view index to model index
         for(int i = 0; i < rows.length; i++){

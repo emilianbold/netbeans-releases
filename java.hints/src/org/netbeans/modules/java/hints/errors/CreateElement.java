@@ -77,7 +77,6 @@ import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.modules.java.hints.FieldForUnusedParam;
 import org.netbeans.modules.java.hints.errors.CreateClassFix.CreateInnerClassFix;
 import org.netbeans.modules.java.hints.errors.CreateClassFix.CreateOuterClassFix;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
@@ -491,6 +490,11 @@ public final class CreateElement implements ErrorRule<Void> {
 
         ClassPath cp = info.getClasspathInfo().getClassPath(PathKind.SOURCE);
         FileObject root = cp.findOwnerRoot(info.getFileObject());
+
+        if (root == null) { //File not part of any project
+            return Collections.<Fix>emptyList();
+        }
+
         TypeElement outer = info.getElementUtilities().outermostTypeElement(source);
         PackageElement packageElement = (PackageElement) outer.getEnclosingElement();
 

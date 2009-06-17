@@ -128,9 +128,13 @@ public class DDUtils {
             if (WebApp.VERSION_2_3.equals(version)) {
                 return org.netbeans.modules.j2ee.dd.impl.web.model_2_3.WebApp.createGraph(is);
             } else if (WebApp.VERSION_2_4.equals(version)) {
-                return org.netbeans.modules.j2ee.dd.impl.web .model_2_4.WebApp.createGraph(is);
-            } else /*if (WebApp.VERSION_2_5.equals(version))*/ {
-                return org.netbeans.modules.j2ee.dd.impl.web .model_2_5.WebApp.createGraph(is);
+                return org.netbeans.modules.j2ee.dd.impl.web.model_2_4.WebApp.createGraph(is);
+            } else if (WebApp.VERSION_2_5.equals(version)) {
+                return org.netbeans.modules.j2ee.dd.impl.web.model_2_5.WebApp.createGraph(is);
+            } else if (WebApp.VERSION_3_0.equals(version)) {
+                return org.netbeans.modules.j2ee.dd.impl.web.model_3_0.WebApp.createGraph(is);
+            } else {
+                throw new IOException("Unsupported version of web.xml found! Version: "+version);
             }
         } catch (RuntimeException ex) {
             throw new SAXException(ex);

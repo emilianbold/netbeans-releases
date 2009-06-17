@@ -72,13 +72,11 @@ public class SmartCompletionInQuoteTestCase extends CompletionBaseTestCase {
     protected File getTestCaseDataDir() {
         return getQuoteDataDir();
     } 
-    
+
     protected final File getQuoteDataDir() {
-        String dataPath = getDataDir().getAbsolutePath().replaceAll("cnd.completion", "cnd.modelimpl"); //NOI18N
-        String filePath = "common/quote_nosyshdr";
-        return Manager.normalizeFile(new File(dataPath, filePath));
+        return Manager.normalizeFile(new File(getDataDir(), "common/quote_nosyshdr"));
     }
-    
+
     @Override
     protected CompletionTestPerformer createTestPerformer() {
         return new CompletionTestPerformer(CsmCompletionQuery.QueryScope.SMART_QUERY);

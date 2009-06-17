@@ -27,7 +27,7 @@ token #25 PHP_SEMICOLON ;
 token #26 WHITESPACE \n
 token #27 PHP_CURLY_CLOSE }
 token #28 WHITESPACE \n
-token #29 PHP_STRING goto
+token #29 PHP_GOTO goto
 token #30 WHITESPACE  
 token #31 PHP_STRING L1
 token #32 PHP_SEMICOLON ;

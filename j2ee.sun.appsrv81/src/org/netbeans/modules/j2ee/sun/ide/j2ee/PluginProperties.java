@@ -51,6 +51,7 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.logging.Level;
 
+import org.netbeans.modules.glassfish.eecommon.api.RegisterDatabase;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.Asenv;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
@@ -171,6 +172,8 @@ public class PluginProperties  {
                 needToRegisterDefaultServer = true;
             }
             NbPreferences.forModule(PluginProperties.class).putBoolean(PROP_FIRST_RUN, true);
+            String prop = System.getProperty(ServerLocationManager.INSTALL_ROOT_PROP_NAME);
+            RegisterDatabase.getDefault().setupDerby(prop);
         } else {
             if (!NbPreferences.forModule(PluginProperties.class).getBoolean(REMOVED_DEFAULT_GFV2, false)) {
                 needToRegisterDefaultServer = true;

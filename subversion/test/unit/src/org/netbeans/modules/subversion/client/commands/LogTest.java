@@ -95,58 +95,58 @@ public class LogTest extends AbstractCommandTest {
    
     // XXX test log copied
     
-    public void testLogWrong() throws Exception {                                
+    public void testLogWrong() throws Exception {
         // XXX add ref client
         // no file
         File file = new File(getWC(), "file");
-        
+
         ISVNClientAdapter c = getNbClient();
-        
-        SVNClientException e = null;        
+
+        SVNClientException e = null;
         try {
             c.getLogMessages(file, new SVNRevision.Number(0), SVNRevision.HEAD);
         } catch (SVNClientException ex) {
             e = ex;
-        }                        
+        }
         assertNotNull(e);
-        
+
         // unversioned file
         file = createFile("file");
-        e = null;        
+        e = null;
         try {
             c.getLogMessages(file, new SVNRevision.Number(0), SVNRevision.HEAD);
         } catch (SVNClientException ex) {
             e = ex;
-        }                        
+        }
         assertNotNull(e);
-        
+
         // wrong url
         file = createFile("file");
-        e = null;        
+        e = null;
         try {
             c.getLogMessages(getFileUrl(file), new SVNRevision.Number(0), SVNRevision.HEAD);
         } catch (SVNClientException ex) {
             e = ex;
-        }                        
+        }
         assertNotNull(e);
     }
-    
+
     public void testLogNullAuthor() throws Exception {
         File file = createFile("file");
-        add(file);   
-        write(file, "hira bancha");        
+        add(file);
+        write(file, "hira bancha");
         commit(file, "hira bancha");
-        ISVNInfo info1 = getInfo(file);        
-        
-        write(file, "bancha muso");        
+        ISVNInfo info1 = getInfo(file);
+
+        write(file, "bancha muso");
         commit(file, "bancha muso");
-        ISVNInfo info2 = getInfo(file);        
+        ISVNInfo info2 = getInfo(file);
 
         ISVNLogMessage[] logsRef = getReferenceClient().getLogMessages(file, new SVNRevision.Number(0), SVNRevision.HEAD, false, false);
-        ISVNLogMessage[] logsNb = getNbClient().getLogMessages(file, new SVNRevision.Number(0), SVNRevision.HEAD, false, false);    
-        
-        // test 
-        assertEquals(2, logsNb.length);       
+        ISVNLogMessage[] logsNb = getNbClient().getLogMessages(file, new SVNRevision.Number(0), SVNRevision.HEAD, false, false);
+
+        // test
+        assertEquals(2, logsNb.length);
         assertEquals("", logsNb[0].getAuthor());
         assertEquals("", logsNb[1].getAuthor());
 
@@ -154,78 +154,78 @@ public class LogTest extends AbstractCommandTest {
         assertEquals(info1.getLastChangedDate(), logsNb[0].getDate());
         assertEquals("hira bancha", logsNb[0].getMessage());
         assertEquals(info1.getRevision(), logsNb[0].getRevision());
-        
+
         assertEquals("", logsNb[1].getAuthor());
         assertEquals(info2.getLastChangedDate(), logsNb[1].getDate());
         assertEquals("bancha muso", logsNb[1].getMessage());
         assertEquals(info2.getRevision(), logsNb[1].getRevision());
-        
+
         assertLogs(logsRef, logsNb);
     }
-           
-    public void testLogCopied() throws Exception {                                
+
+    public void testLogCopied() throws Exception {
         File file = createFile("file");
-        add(file);   
-        write(file, "hira bancha");        
+        add(file);
+        write(file, "hira bancha");
         commit(file, "hira bancha");
-        ISVNInfo info1 = getInfo(file);        
-        
-        write(file, "bancha muso");        
+        ISVNInfo info1 = getInfo(file);
+
+        write(file, "bancha muso");
         commit(file, "bancha muso");
-        ISVNInfo info2 = getInfo(file);        
+        ISVNInfo info2 = getInfo(file);
 
         File copy = new File(getWC(), "copy");
-               
+
         copy(file, copy);
-        
+
         ISVNLogMessage[] logsRef = getReferenceClient().getLogMessages(copy, new SVNRevision.Number(0), SVNRevision.HEAD, false, false);
-        ISVNLogMessage[] logsNb = getNbClient().getLogMessages(copy, new SVNRevision.Number(0), SVNRevision.HEAD, false, false);    
-        
-        // test 
-        assertEquals(2, logsNb.length);       
+        ISVNLogMessage[] logsNb = getNbClient().getLogMessages(copy, new SVNRevision.Number(0), SVNRevision.HEAD, false, false);
+
+        // test
+        assertEquals(2, logsNb.length);
         assertLogMessage(info1, logsNb[0], "hira bancha",  new ISVNLogMessageChangePath[] { });
         assertLogMessage(info2, logsNb[1], "bancha muso",  new ISVNLogMessageChangePath[] { });
-        
-        assertLogs(logsRef, logsNb);        
+
+        assertLogs(logsRef, logsNb);
     }
-    
-    public void testLogFileChangePaths() throws Exception {                                
+
+    public void testLogFileChangePaths() throws Exception {
         log(Log.file, true, false);
     }
-    
-    public void testLogUrlChangePaths() throws Exception {                                
+
+    public void testLogUrlChangePaths() throws Exception {
         log(Log.url, true, false);
-    }    
-    
-    public void testLogFileChangePathsStopCopy() throws Exception {                                
+    }
+
+    public void testLogFileChangePathsStopCopy() throws Exception {
         log(Log.file, true, true);
     }
-    
-    public void testLogUrlChangePathsStopCopy() throws Exception {                                
+
+    public void testLogUrlChangePathsStopCopy() throws Exception {
         log(Log.url, true, true);
     }
-    
-    public void testLogFileNoChangePaths() throws Exception {                                
+
+    public void testLogFileNoChangePaths() throws Exception {
         log(Log.file, false, false);
     }
-    
-    public void testLogUrlNoChangePaths() throws Exception {                                
+
+    public void testLogUrlNoChangePaths() throws Exception {
         log(Log.url, false, false);
     }
-    
-    public void testLogFileNoChangePathsStopCopy() throws Exception {                                
+
+    public void testLogFileNoChangePathsStopCopy() throws Exception {
         log(Log.file, false, true);
     }
-    
-    public void testLogUrlNoChangePathsStopCopy() throws Exception {                                
+
+    public void testLogUrlNoChangePathsStopCopy() throws Exception {
         log(Log.url, false, true);
     }
-    
-    public void testLogFileLimit() throws Exception {                                
+
+    public void testLogFileLimit() throws Exception {
         logLimit(Log.file);
     }
-    
-    public void testLogUrlLimit() throws Exception {                                
+
+    public void testLogUrlLimit() throws Exception {
         logLimit(Log.url);
     }
     
@@ -259,11 +259,11 @@ public class LogTest extends AbstractCommandTest {
         
         // test
         String testName = getName();    
-        String changePath1 = "/" + testName + "/" + testName + "_wc/file1";
-        String changePath2 = "/" + testName + "/" + testName + "_wc/file2";
+        String changePath1 = testName + "/" + testName + "_wc/file1";
+        String changePath2 = testName + "/" + testName + "_wc/file2";
         ISVNLogMessage[] logsNb = 
             getNbClient().getLogMessages(
-                getFileUrl(getWC()), 
+                getRepoUrl(),
                 new String [] {changePath1, changePath2}, 
                 new SVNRevision.Number(0), 
                 SVNRevision.HEAD, 
@@ -271,20 +271,21 @@ public class LogTest extends AbstractCommandTest {
                 true);
         ISVNLogMessage[] logsRef = 
             getReferenceClient().getLogMessages(
-                getFileUrl(getWC()), 
+                getRepoUrl(),
                 new String [] {changePath1, changePath2}, 
                 new SVNRevision.Number(0), 
                 SVNRevision.HEAD, 
                 false, 
                 true);        
-        
+        changePath1 = "/" + changePath1;
+        changePath2 = "/" + changePath2;
         assertLogMessage(
             info11, 
             logsNb[0], 
             "msg1",  
             new ISVNLogMessageChangePath[] { 
-                new ChangePath('A', "/" + testName + "/" + testName + "_wc/folder1", null, null), 
-                new ChangePath('A', "/" + testName + "/" + testName + "_wc/folder2", null, null), 
+                new ChangePath('A', "/" + testName + "/" + testName + "_wc/folder1", null, null),
+                new ChangePath('A', "/" + testName + "/" + testName + "_wc/folder2", null, null),
                 new ChangePath('A', changePath1, null, null),                     
                 new ChangePath('A', changePath2, null, null) 
             }
@@ -294,8 +295,8 @@ public class LogTest extends AbstractCommandTest {
             logsNb[0], 
             "msg1",  
             new ISVNLogMessageChangePath[] { 
-                new ChangePath('A', "/" + testName + "/" + testName + "_wc/folder1", null, null), 
-                new ChangePath('A', "/" + testName + "/" + testName + "_wc/folder2", null, null), 
+                new ChangePath('A', "/" + testName + "/" + testName + "_wc/folder1", null, null),
+                new ChangePath('A', "/" + testName + "/" + testName + "_wc/folder2", null, null),
                 new ChangePath('A', changePath1, null, null),                     
                 new ChangePath('A', changePath2, null, null) 
             }
@@ -449,7 +450,7 @@ public class LogTest extends AbstractCommandTest {
 
     private void assertLogMessage(ISVNInfo info, ISVNLogMessage logsNb, String msg, ISVNLogMessageChangePath[] changePaths) {
         assertEquals(info.getLastCommitAuthor(), logsNb.getAuthor());
-        assertEquals(info.getLastChangedDate(), logsNb.getDate());
+        assertEquals(info.getLastChangedDate().toString(), logsNb.getDate().toString());
         assertEquals(msg, logsNb.getMessage());
         assertEquals(info.getRevision(), logsNb.getRevision());
         assertChangePaths(changePaths, logsNb.getChangedPaths());
@@ -462,7 +463,7 @@ public class LogTest extends AbstractCommandTest {
             ISVNLogMessage logref = logsRef[i];            
             
             assertEquals(logref.getAuthor(), lognb.getAuthor());
-            assertEquals(logref.getDate(), lognb.getDate());
+            assertEquals(logref.getDate().toString(), lognb.getDate().toString());
             assertEquals(logref.getMessage(), lognb.getMessage());
             assertEquals(logref.getRevision(), lognb.getRevision());
             

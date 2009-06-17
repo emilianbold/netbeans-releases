@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -61,7 +62,7 @@ import static org.junit.Assert.*;
  *
  * @author ak119685
  */
-public class LocalNativeProcessTest extends NativeExecutionTest {
+public class LocalNativeProcessTest extends NativeExecutionBaseTestCase {
 
     ExecutionEnvironment execEnv;
 

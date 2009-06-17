@@ -61,7 +61,7 @@ public interface SceneListener  extends  EventListener {
 	public void layerPositionChanged(Scene sourceScene, Layer layer, Point oldPosition, Point newPosition, boolean inTransition);
 	
 	public void layerLockChanged(Scene sourceScene, Layer layer, boolean locked);
-	
+
 	public void layerVisibilityChanged(Scene sourceScene, Layer layer, boolean visible);
 	
 }

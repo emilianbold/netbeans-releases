@@ -46,18 +46,17 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.earproject.test.TestUtil;
 import org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIteratorTest;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  * @author Martin Krauskopf
  */
 public class ProjectEarProviderTest extends NbTestCase {
-
-    private String serverID;
 
     public ProjectEarProviderTest(String testName) {
         super(testName);
@@ -67,15 +66,15 @@ public class ProjectEarProviderTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         TestUtil.makeScratchDir(this);
-        serverID = TestUtil.registerSunAppServer(this);
+
+        MockLookup.setLayersAndInstances();
     }
 
     public void testFindEarJavaEE() throws Exception {
         File earDirF = new File(getWorkDir(), "testEA");
         String name = "Test EnterpriseApplication";
-        String j2eeLevel = J2eeModule.JAVA_EE_5;
-        String ejbName = "testEA-ejb";
-        NewEarProjectWizardIteratorTest.generateEARProject(earDirF, name, j2eeLevel, serverID);
+        Profile j2eeProfile = Profile.JAVA_EE_5;
+        NewEarProjectWizardIteratorTest.generateEARProject(earDirF, name, j2eeProfile, TestUtil.SERVER_URL);
         FileObject earDirFO = FileUtil.toFileObject(earDirF);
         Project createdEjbJarProject = ProjectManager.getDefault().findProject(earDirFO);
         assertNotNull("Ear found", Ear.getEar(earDirFO));
@@ -88,9 +87,8 @@ public class ProjectEarProviderTest extends NbTestCase {
     public void testFindEarJ2EE() throws Exception {
         File earDirF = new File(getWorkDir(), "testEA");
         String name = "Test EnterpriseApplication";
-        String j2eeLevel = J2eeModule.J2EE_14;
-        String ejbName = "testEA-ejb";
-        NewEarProjectWizardIteratorTest.generateEARProject(earDirF, name, j2eeLevel, serverID);
+        Profile j2eeProfile = Profile.J2EE_14;
+        NewEarProjectWizardIteratorTest.generateEARProject(earDirF, name, j2eeProfile, TestUtil.SERVER_URL);
         FileObject earDirFO = FileUtil.toFileObject(earDirF);
         Project createdEjbJarProject = ProjectManager.getDefault().findProject(earDirFO);
         assertNotNull("Ear found", Ear.getEar(earDirFO));

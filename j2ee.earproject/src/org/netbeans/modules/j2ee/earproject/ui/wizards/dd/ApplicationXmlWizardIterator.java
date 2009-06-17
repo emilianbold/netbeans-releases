@@ -111,6 +111,7 @@ public final class ApplicationXmlWizardIterator implements WizardDescriptor.Inst
         EarImplementation projectEar = panel.getProject().getLookup().lookup(EarImplementation.class);
         if (confRoot != null && projectEar != null) {
             try {
+                // FIXME mix of two API constants
                 FileObject dd =
                         EarProjectGenerator.setupDD(projectEar.getJ2eePlatformVersion(), projectEar.getMetaInf(), panel.getProject(), true);
                 return Collections.singleton(dd);

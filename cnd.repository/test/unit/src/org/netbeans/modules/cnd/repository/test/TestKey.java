@@ -147,4 +147,7 @@ public class TestKey implements Key, SelfPersistent {
         output.writeBoolean(behavior == Behavior.LargeAndMutable);
     }
 
+    public boolean hasCache() {
+        return false;
+    }
 }

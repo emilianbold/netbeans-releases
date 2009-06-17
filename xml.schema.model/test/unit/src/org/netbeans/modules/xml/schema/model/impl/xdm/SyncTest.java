@@ -66,6 +66,7 @@ import org.netbeans.modules.xml.schema.model.impl.SequenceImpl;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.w3c.dom.Element;
@@ -665,4 +666,15 @@ public class SyncTest extends TestCase {
         clistener.assertNoEvents(ComponentEvent.EventType.CHILD_REMOVED, appInfo);
         clistener.assertNoEvents(ComponentEvent.EventType.CHILD_ADDED, appInfo);
     }
+
+    public void testIssue166393() throws Exception {
+        SchemaModel sModel = Util.loadSchemaModel("resources/testIssue166393.xsd");
+        assertEquals(State.VALID, sModel.getState());
+        //
+        Util.setDocumentContentTo(sModel, "resources/testIssue166393_changed.xsd");
+        sModel.sync();
+        //
+        assertEquals(State.VALID, sModel.getState());
+    }
+
 }

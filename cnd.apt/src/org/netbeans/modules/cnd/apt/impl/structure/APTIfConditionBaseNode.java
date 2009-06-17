@@ -47,7 +47,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.utils.APTTraceUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
 
@@ -97,7 +99,7 @@ public abstract class APTIfConditionBaseNode extends APTTokenAndChildBasedNode
         return condition != null ? new ListBasedTokenStream(condition) : APTUtils.EMPTY_STREAM;
     }
     
-    public boolean accept(APTToken token) {
+    public boolean accept(APTFile curFile,APTToken token) {
         assert (token != null);
         int ttype = token.getType();
         assert (!APTUtils.isEOF(ttype)) : "EOF must be handled in callers"; // NOI18N
@@ -106,11 +108,11 @@ public abstract class APTIfConditionBaseNode extends APTTokenAndChildBasedNode
             endOffset = token.getOffset();
             if (condition == null) {
                 if (DebugUtils.STANDALONE) {
-                    System.err.printf("line %d: %s with no expression\n", // NOI18N
-                        getToken().getLine(), getToken().getText().trim());
+                    System.err.printf("%s, line %d: %s with no expression\n", // NOI18N
+                        APTTraceUtils.toFileString(curFile), getToken().getLine(), getToken().getText().trim()); // NOI18N
                 } else {
-                    APTUtils.LOG.log(Level.SEVERE, "line {0}: {1} with no expression", // NOI18N
-                            new Object[] {getToken().getLine(), getToken().getText().trim()} );                
+                    APTUtils.LOG.log(Level.SEVERE, "{0}, line {1}: {2} with no expression", // NOI18N
+                            new Object[] {APTTraceUtils.toFileString(curFile), getToken().getLine(), getToken().getText().trim()} );  // NOI18N
                 }
             }
             if (condition != null){

@@ -279,7 +279,7 @@ class CachingSupport {
     private List<? extends InterfaceScope> getMergedIfaces(String ifaceName) {
         List<? extends InterfaceScope> ifaces = getCachedInterfaces(ifaceName);
         if (ifaces.isEmpty()) {
-            ifaces = (ifaceName != null ? ModelUtils.filter(fileScope.getDeclaredInterfaces(), ifaceName) : Collections.<InterfaceScopeImpl>emptyList());
+            ifaces = (ifaceName != null ? ModelUtils.filter(ModelUtils.getDeclaredInterfaces(fileScope), ifaceName) : Collections.<InterfaceScopeImpl>emptyList());
             if (ifaces.isEmpty()) {
                 IndexScope indexScope = fileScope.getIndexScope();
                 ifaces = (ifaceName != null ? indexScope.findInterfaces(ifaceName) : Collections.<InterfaceScopeImpl>emptyList());
@@ -299,7 +299,7 @@ class CachingSupport {
     private List<? extends ClassScope> getMergedClasses(String clzName) {
         List<? extends ClassScope> classes = getCachedClasses(clzName);
         if (classes.isEmpty()) {            
-            classes = (clzName != null ? ModelUtils.filter(fileScope.getDeclaredClasses(), clzName) : Collections.<ClassScopeImpl>emptyList());
+            classes = (clzName != null ? ModelUtils.filter(ModelUtils.getDeclaredClasses(fileScope), clzName) : Collections.<ClassScopeImpl>emptyList());
             if (classes.isEmpty()) {
                 IndexScope indexScope = fileScope.getIndexScope();
                 classes = (clzName != null ? indexScope.findClasses(clzName) : Collections.<ClassScopeImpl>emptyList());
@@ -319,7 +319,7 @@ class CachingSupport {
     private Collection<? extends TypeScope> getMergedTypes(String typeName) {
         Collection<? extends TypeScope> types = getCachedTypes(typeName);
         if (types.isEmpty()) {
-            types = (typeName != null ? ModelUtils.filter(fileScope.getDeclaredTypes(), typeName) : Collections.<TypeScope>emptyList());
+            types = (typeName != null ? ModelUtils.filter(ModelUtils.getDeclaredTypes(fileScope), typeName) : Collections.<TypeScope>emptyList());
             if (types.isEmpty()) {
                 IndexScope indexScope = fileScope.getIndexScope();
                 types =  (typeName != null) ? indexScope.findTypes(typeName) : Collections.<TypeScopeImpl>emptyList();
@@ -338,7 +338,7 @@ class CachingSupport {
     private List<? extends ConstantElement> getMergedConstants(String constantName) {
         List<? extends ConstantElement> constants = getCachedConstants(constantName);
         if (constants.isEmpty()) {
-            constants = (constantName != null ? ModelUtils.filter(fileScope.getDeclaredConstants(), constantName) : Collections.<ConstantElement>emptyList());
+            constants = (constantName != null ? ModelUtils.filter(ModelUtils.getDeclaredConstants(fileScope), constantName) : Collections.<ConstantElement>emptyList());
             if (constants.isEmpty()) {
                 IndexScope indexScope = fileScope.getIndexScope();
                 constants = (constantName != null ? indexScope.findConstants(constantName) : Collections.<ConstantElementImpl>emptyList());
@@ -351,7 +351,7 @@ class CachingSupport {
     private List<? extends FunctionScope> getMergedFunctions(String fncName) {
         List<? extends FunctionScope> functions = getCachedFunctions(fncName);
         if (functions.isEmpty()) {
-            functions = (fncName != null ? ModelUtils.filter(fileScope.getDeclaredFunctions(), fncName) : Collections.<FunctionScope>emptyList());
+            functions = (fncName != null ? ModelUtils.filter(ModelUtils.getDeclaredFunctions(fileScope), fncName) : Collections.<FunctionScope>emptyList());
             if (functions.isEmpty()) {
                 IndexScope indexScope = fileScope.getIndexScope();
                 functions = (fncName != null ? indexScope.findFunctions(fncName) : Collections.<FunctionScope>emptyList());

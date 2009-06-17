@@ -52,6 +52,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
+import org.netbeans.modules.cnd.remote.support.SystemIncludesUtils;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.ServerListImplementation;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -250,6 +251,8 @@ public class RemoteServerList implements ServerListImplementation {
     }
 
     public synchronized void removeServer(ServerRecord record) {
+        log.finest("ServerList: remove " + record);
+        SystemIncludesUtils.cancel(record.getExecutionEnvironment());
         if (items.remove(record)) {
             removeFromPreferences(record);
             refresh();
@@ -258,20 +261,26 @@ public class RemoteServerList implements ServerListImplementation {
     
     @Override
     public synchronized void set(List<ServerRecord> records, int defaultIndex) {
-        clear();
+        log.finest("ServerList: set " + records);
+        Collection<ExecutionEnvironment> removed = clear();
         for (ServerRecord rec : records) {
             addServer(rec.getExecutionEnvironment(), rec.getDisplayName(), rec.getSyncFactory(), false, false);
+            removed.remove(rec.getExecutionEnvironment());
         }
         setDefaultIndex(defaultIndex);
+        SystemIncludesUtils.cancel(removed);
     }
 
-    private void clear() {
+    private Collection<ExecutionEnvironment> clear() {
+        Collection<ExecutionEnvironment> removed = new ArrayList<ExecutionEnvironment>();
         for (RemoteServerRecord record : items) {
             record.setDeleted(true);
+            removed.add(record.getExecutionEnvironment());
         }
         getPreferences().remove(REMOTE_SERVERS);
         unlisted.addAll(items);
         items.clear();
+        return removed;
     }
 
     private void removeFromPreferences(ServerRecord recordToRemove) {

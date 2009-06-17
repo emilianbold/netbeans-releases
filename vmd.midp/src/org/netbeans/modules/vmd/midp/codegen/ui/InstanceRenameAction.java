@@ -51,12 +51,12 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-import javax.swing.Action;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -73,6 +73,7 @@ import org.netbeans.modules.refactoring.api.ProgressListener;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
+import org.netbeans.modules.vmd.api.codegen.ModelUpdatePresenter;
 import org.netbeans.modules.vmd.api.inspector.common.RenameAction;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
@@ -80,10 +81,12 @@ import org.netbeans.modules.vmd.api.io.providers.DataObjectInterface;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionContext;
 import org.netbeans.modules.vmd.midp.codegen.InstaceRenameRefactoring;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.netbeans.modules.vmd.midp.components.general.ClassCode.GeneratedCodePresenter;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
@@ -115,6 +118,27 @@ public class InstanceRenameAction extends SystemAction implements ActionContext 
             return;
         }
 
+        final boolean[] proceed = new boolean [1];
+        myComponent.get().getDocument().getTransactionManager().
+                        readAccess(new Runnable() {
+
+                    public void run() {
+                        GeneratedCodePresenter presenter =
+                                myComponent.get().getPresenter(GeneratedCodePresenter.class);
+                        if ( presenter == null  ){
+                            proceed[0] = true;
+                        }
+                        else if (presenter.isCodeGenerated())
+                        {
+                            proceed[0] = true;
+                        }
+                    }
+        });
+
+        if ( !proceed[0]){
+            SystemAction.get(RenameAction.class).actionPerformed(e);
+            return;
+        }
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
@@ -200,6 +224,8 @@ public class InstanceRenameAction extends SystemAction implements ActionContext 
                                     visitor.getInfo(), oldName, myComponent.get(),
                                     visitor.getMethod() != null && names[1] != null);
                             UI.openRefactoringUI(ui, activetc);
+
+                            LifecycleManager.getDefault().saveAll();
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                         }

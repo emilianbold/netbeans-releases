@@ -57,6 +57,7 @@ import org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPa
 import org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.web.project.ProjectWebModule;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -237,8 +238,8 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         //rather setting to null that refreshing filesystem from a performance reason
         if (webXml != null && !webXml.isValid())
             webXml = null;
-        String j2eeLevel = (String) wizardDescriptor.getProperty(ProjectServerWizardPanel.J2EE_LEVEL);
-        if (webXml == null && (j2eeLevel.equals(J2eeModule.J2EE_13) || j2eeLevel.equals(J2eeModule.J2EE_14)))
+        Profile j2eeProfile = (Profile) wizardDescriptor.getProperty(ProjectServerWizardPanel.J2EE_LEVEL);
+        if (webXml == null && (j2eeProfile == Profile.J2EE_13 || j2eeProfile == Profile.J2EE_14))
             return NbBundle.getMessage(PanelSourceFolders.class, "MSG_FileNotFound", webInf.getPath()); //NOI18N
         
         for (int i=0; i<sources.length;i++) {

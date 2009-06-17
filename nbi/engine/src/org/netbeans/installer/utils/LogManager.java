@@ -87,8 +87,12 @@ public final class LogManager {
         try {
             if(logFile!=null) {
                 logFile.getParentFile().mkdirs();
-                logFile.createNewFile();
+                if(logFile.exists()) {
+                   logFile.delete();
+                }
+                logFile.createNewFile();                
                 logWriter = new PrintWriter(new FileWriter(logFile));
+                System.setProperty(LOG_FILE_PROPERTY, logFile.getAbsolutePath());
             }
             
             // here is a small assumption that there will be no calls to log*(*)
@@ -271,6 +275,8 @@ public final class LogManager {
             "nbi.utils.log.level"; // NOI18N
     public static final String LOG_TO_CONSOLE_PROPERTY =
             "nbi.utils.log.to.console"; // NOI18N
+    public static final String LOG_FILE_PROPERTY =
+            "nbi.utils.log.file"; // NOI18N
     
     public static final String INDENT =
             "    "; // NOI18N

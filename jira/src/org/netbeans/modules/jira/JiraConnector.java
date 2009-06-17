@@ -45,7 +45,7 @@ import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.jira.issue.JiraIssueFinder;
-import org.netbeans.modules.jira.query.kenai.KenaiSupportImpl;
+import org.netbeans.modules.jira.kenai.KenaiSupportImpl;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 

@@ -49,24 +49,11 @@ package org.netbeans.modules.hudson.api;
 public interface HudsonView {
     
     /**
-     * Default all view name
-     */
-    public static final String ALL_VIEW = "All"; // NOI18N
-    
-    
-    /**
      * Returns name of the hudson view
      *
      * @return Hudson's view name
      */
     public String getName();
-    
-    /**
-     * Returns description of the hudson view
-     *
-     * @return Hudson's view description
-     */
-    public String getDescription();
     
     /**
      * Returns url of the hudson view

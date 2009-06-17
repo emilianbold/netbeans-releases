@@ -583,7 +583,8 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
 
                             //need to adjust the last embedding
                             //1. remove the embedding from the list
-                            assert embeddings.remove(state.lastInlinedJavscriptEmbedding);
+                            boolean removed = embeddings.remove(state.lastInlinedJavscriptEmbedding);
+                            assert removed;
 
                             //2. create new embedding with the adjusted length
                             embeddings.add(snapshot.create(sourceStart, sourceLength, JsTokenId.JAVASCRIPT_MIME_TYPE));

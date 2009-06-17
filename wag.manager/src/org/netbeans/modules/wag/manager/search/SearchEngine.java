@@ -48,10 +48,9 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.netbeans.modules.wag.manager.model.WagService;
 import org.netbeans.modules.wag.manager.model.WagServiceParameter;
-import com.sun.zembly.oauth.api.Parameter;
-import com.sun.zembly.popzcl.Zembly;
-import com.sun.zembly.popzcl.config.Configuration;
-import com.sun.zembly.popzcl.config.impl.DefaultConfiguration;
+import com.zembly.oauth.api.Parameter;
+import com.zembly.gateway.client.Zembly;
+
 
 /**
  *
@@ -66,6 +65,8 @@ public class SearchEngine {
     private static final String GET_ITEM_INFO_URI = "platform/repository/GetItemInfo;exec";
 
     private static final String SEARCH_STRING_PARAM = "searchString";
+    private static final String SEARCH_FOR = "searchFor";
+    private static final String START_INDEX = "startIndex";
     private static final String MAX_RESULTS_PARAM = "maxResults";
     private static final String ITEM_URI_PARAM = "itemURI";
     private static final String VERSION_PARAM = "version";
@@ -81,14 +82,11 @@ public class SearchEngine {
     private Zembly zembly;
 
     private SearchEngine() {
-        Configuration config = new DefaultConfiguration();
-        config.setBaseUrl(BASE_URL);
-        config.setHttpMethod(HTTP_METHOD);
-
-        try {
-            zembly = new Zembly(config);
+        try {        
+            zembly = Zembly.getInstance();
         } catch (Exception ex) {
-            // RESOLVE need to figure what to do when getting an exception;
+            ex.printStackTrace();
+            // ignore
         }
     }
 
@@ -100,11 +98,13 @@ public class SearchEngine {
         return instance;
     }
 
-    public List<WagService> search(String query, int maxResults) {
+    public List<WagService> search(String query, int maxResults, int startIndex) {
         try {
             List<Parameter> params = new ArrayList<Parameter>();
             params.add(Parameter.create(SEARCH_STRING_PARAM, query));
             params.add(Parameter.create(MAX_RESULTS_PARAM, Integer.toString(maxResults)));
+            params.add(Parameter.create(SEARCH_FOR, "SERVICE"));
+            params.add(Parameter.create(START_INDEX, Integer.toString(startIndex)));
             String result = zembly.callService(SEARCH_ITEM_URI, params);
 
             return parse(result);

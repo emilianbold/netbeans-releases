@@ -50,7 +50,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 
 /**
@@ -100,6 +99,11 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
                 public boolean isMandatory() {
                     return idx < mandatoryArgSize;
                 }
+
+                //TODO: not implemented yet
+                public TypeScope getType() {
+                    return null;
+                }
             });
 
         }
@@ -111,9 +115,14 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
     
 
     public final Collection<? extends TypeScope> getReturnTypes() {
-        return (returnType != null && returnType.length() > 0) ?
-            CachingSupport.getTypes(returnType.split("\\|")[0], this) :
-            Collections.<TypeScopeImpl>emptyList();
+        Collection<TypeScope> retval = Collections.<TypeScope>emptyList();
+        if (returnType != null && returnType.length() > 0) {
+            retval = new ArrayList<TypeScope>();
+            for (String typeName : returnType.split("\\|")) {
+                retval.addAll(CachingSupport.getTypes(typeName, this));
+            }
+        }
+        return retval;
     }
 
     @NonNull
@@ -183,8 +192,8 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
             }
         });
     }
-  public VariableNameImpl createElement(Program program, Variable node) {
-        VariableNameImpl retval = new VariableNameImpl(this, program, node, false);
+  public VariableNameImpl createElement(Variable node) {
+        VariableNameImpl retval = new VariableNameImpl(this, node, false);
         addElement(retval);
         return retval;
     }

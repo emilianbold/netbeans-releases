@@ -42,10 +42,8 @@
 package org.netbeans.editor;
 
 import java.beans.PropertyChangeListener;
-import org.netbeans.editor.Mark;
 import java.beans.PropertyChangeSupport;
 import java.awt.Image;
-import org.netbeans.editor.AnnotationTypes;
 import javax.swing.Action;
 
 /** Description of the annotation. The annotations is defined by
@@ -54,7 +52,7 @@ import javax.swing.Action;
  * @author David Konecny
  * @since 07/2001
  */
-public abstract class AnnotationDesc extends Object {
+public abstract class AnnotationDesc extends Object implements Comparable<AnnotationDesc> {
 
     /** Property name of the tip text */
     public static final String PROP_SHORT_DESCRIPTION = "shortDescription"; // NOI18N
@@ -110,6 +108,17 @@ public abstract class AnnotationDesc extends Object {
     public Image getGlyph() {
         if (type == null) updateAnnotationType();
         return (type != null) ? type.getGlyphImage() : null;
+    }
+
+    /**
+     * Gets annotation priority. This is pass through method to annotation type
+     * @return priority, defaults to zero.
+     */
+    private int getPriority() {
+        if (type == null) {
+            updateAnnotationType();
+        }
+        return type.getPriority();
     }
 
     /** Checks whether the annotation type has its own glyph icon */
@@ -197,6 +206,13 @@ public abstract class AnnotationDesc extends Object {
         support.firePropertyChange(propertyName, oldValue, newValue);
     }
 
+    public int compareTo(AnnotationDesc o) {
+        int p1 = this.getPriority();
+        int p2 = o.getPriority();
+        return (p1 > p2 ? -1 : (p1 == p2 ? 0 : 1));
+    }
+
+    @Override
     public String toString() {
         return "Annotation: type='" + getAnnotationType() + "', line=" + getLine() + // NOI18N
             ", offset=" + getOffset() + ", length=" + length + // NOI18N

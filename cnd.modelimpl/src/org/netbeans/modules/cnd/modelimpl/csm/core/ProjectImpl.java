@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
+import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -116,6 +117,7 @@ public final class ProjectImpl extends ProjectBase {
                 editedFiles.add(impl);
             }
             APTDriver.getInstance().invalidateAPT(buf);
+            APTFileCacheManager.invalidate(buf);
             schedule(buf, impl);
             buf.addChangeListener(new ChangeListener() {
 
@@ -207,6 +209,7 @@ public final class ProjectImpl extends ProjectBase {
             impl.dispose();
             removeFile(impl.getAbsolutePath());
             APTDriver.getInstance().invalidateAPT(impl.getBuffer());
+            APTFileCacheManager.invalidate(impl.getBuffer());
             ParserQueue.instance().remove(impl);
         }
         return impl;

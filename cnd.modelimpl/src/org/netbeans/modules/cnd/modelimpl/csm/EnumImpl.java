@@ -59,10 +59,11 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  */
 public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     
-    private final List<CsmUID<CsmEnumerator>> enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
+    private final List<CsmUID<CsmEnumerator>> enumerators;
     
     private EnumImpl(AST ast, CsmFile file) {
         super(findName(ast), file, ast);
+        enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
     }
     
     private void init(CsmScope scope, AST ast, boolean register) {
@@ -155,8 +156,8 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     
     @Override
     public void dispose() {
-        _clearEnumerators();
         super.dispose();
+        _clearEnumerators();
     }
     
     private void _clearEnumerators() {
@@ -176,6 +177,12 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     
     public EnumImpl(DataInput input) throws IOException {
         super(input);
-        UIDObjectFactory.getDefaultFactory().readUIDCollection(this.enumerators, input);
+        int collSize = input.readInt();
+        if (collSize < 0) {
+            enumerators = new ArrayList<CsmUID<CsmEnumerator>>(0);
+        } else {
+            enumerators = new ArrayList<CsmUID<CsmEnumerator>>(collSize);
+        }
+        UIDObjectFactory.getDefaultFactory().readUIDCollection(this.enumerators, input, collSize);
     }
 }

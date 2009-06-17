@@ -110,12 +110,15 @@ public class UnbufferSupport {
                             }
 
                             try {
-                                if (!HostInfoUtils.fileExists(execEnv, remotePath + "/" + unbufferLib)) { // NOI18N
+                                String remoteLib_32 = remotePath + "/" + unbufferLib; // NOI18N
+                                String remoteLib_64 = remotePath + "_64/" + unbufferLib; // NOI18N
+
+                                if (!HostInfoUtils.fileExists(execEnv, remoteLib_32)) { // NOI18N
                                     String fullLocalPath = file.getParentFile().getAbsolutePath(); // NOI18N
                                     Future<Integer> copyTask;
-                                    copyTask = CommonTasksSupport.uploadFile(fullLocalPath + "/" + unbufferLib, execEnv, remotePath, 0755, null); // NOI18N
+                                    copyTask = CommonTasksSupport.uploadFile(fullLocalPath + "/" + unbufferLib, execEnv, remoteLib_32, 0755, null); // NOI18N
                                     copyTask.get();
-                                    copyTask = CommonTasksSupport.uploadFile(fullLocalPath + "_64/" + unbufferLib, execEnv, remotePath + "_64", 0755, null); // NOI18N
+                                    copyTask = CommonTasksSupport.uploadFile(fullLocalPath + "_64/" + unbufferLib, execEnv, remoteLib_64, 0755, null); // NOI18N
                                     copyTask.get();
                                 }
                             } catch (InterruptedException ex) {
@@ -154,7 +157,7 @@ public class UnbufferSupport {
                     // with path to it to LD_PRELOAD/DYLD_INSERT_LIBRARIES
                     // Reason: no luck to make it work using PATH ;(
                     ldPreload = ((ldPreload == null) ? "" : (ldPreload + ";")) + // NOI18N
-                            unbufferPath + "/" + unbufferLib; // NOI18N
+                            new File(unbufferPath, unbufferLib).getAbsolutePath(); // NOI18N
 
                     ldPreload = CommandLineHelper.getInstance(execEnv).toShellPaths(ldPreload);
                 } else if (isMacOS) {

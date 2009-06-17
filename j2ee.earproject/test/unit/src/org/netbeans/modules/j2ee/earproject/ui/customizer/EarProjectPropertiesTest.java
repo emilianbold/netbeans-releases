@@ -57,6 +57,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
 import org.netbeans.modules.j2ee.earproject.EarProjectTest;
@@ -71,6 +72,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  * @author Martin Krauskopf
@@ -83,27 +85,29 @@ public class EarProjectPropertiesTest extends NbTestCase {
     private static final String EJB_REFERENCE_EXPECTED_VALUE = "${project.testEA-ejb}/dist/testEA-ejb.jar";
     private static final String WEB_REFERENCE_EXPECTED_KEY = "reference.testEA-web.dist-ear";
     private static final String WEB_REFERENCE_EXPECTED_VALUE = "${project.testEA-web}/dist/testEA-web.war";
-    private String serverID;
+
     private EarProject earProject;
     private EarProjectProperties earProjectProperties;
     
     public EarProjectPropertiesTest(String testName) {
         super(testName);
     }
-    
+
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         TestUtil.makeScratchDir(this);
-        serverID = TestUtil.registerSunAppServer(this);
-        
+
+        MockLookup.setLayersAndInstances();
+
         // create project
         File earDirF = new File(getWorkDir(), "testEA");
         String name = "Test EnterpriseApplication";
-        String j2eeLevel = J2eeModule.JAVA_EE_5;
+        Profile j2eeProfile = Profile.JAVA_EE_5;
         String ejbName = "testEA-ejb";
         String carName = "testEA-app-client";
-        NewEarProjectWizardIteratorTest.generateEARProject(earDirF, name, j2eeLevel,
-                serverID, null, ejbName, carName, null, null, null);
+        NewEarProjectWizardIteratorTest.generateEARProject(earDirF, name, j2eeProfile,
+                TestUtil.SERVER_URL, null, ejbName, carName, null, null, null);
         FileObject prjDirFO = FileUtil.toFileObject(earDirF);
         EarProject project = (EarProject) ProjectManager.getDefault().findProject(prjDirFO);
         
@@ -132,7 +136,7 @@ public class EarProjectPropertiesTest extends NbTestCase {
     public void testPropertiesWithoutDDJ2EE() throws Exception { // see #73751
         File proj = new File(getWorkDir(), "EARProject");
         AntProjectHelper aph = EarProjectGenerator.createProject(proj,
-                "test-project", J2eeModule.J2EE_14, serverID, "1.4", null, null);
+                "test-project", Profile.J2EE_14, TestUtil.SERVER_URL, "1.4", null, null);
         FileObject prjDirFO = aph.getProjectDirectory();
         // simulateing #73751
         prjDirFO.getFileObject("src/conf/application.xml").delete();
@@ -145,7 +149,7 @@ public class EarProjectPropertiesTest extends NbTestCase {
     public void testPropertiesWithoutDDJavaEE() throws Exception {
         File proj = new File(getWorkDir(), "EARProject");
         AntProjectHelper aph = EarProjectGenerator.createProject(proj,
-                "test-project", J2eeModule.JAVA_EE_5, serverID, "1.5", null, null);
+                "test-project", Profile.JAVA_EE_5, TestUtil.SERVER_URL, "1.5", null, null);
         FileObject prjDirFO = aph.getProjectDirectory();
         assertNull("application should not exist", prjDirFO.getFileObject("src/conf/application.xml"));
         EarProject p = (EarProject)ProjectManager.getDefault().findProject(prjDirFO);
@@ -155,19 +159,19 @@ public class EarProjectPropertiesTest extends NbTestCase {
     }
     
     public void testPathInEARChangingJ2EE() throws Exception { // see #76008
-        testPathInEARChanging(J2eeModule.J2EE_14);
+        testPathInEARChanging(Profile.J2EE_14);
     }
     
     public void testPathInEARChangingJavaEE() throws Exception { // see #76008
-        testPathInEARChanging(J2eeModule.JAVA_EE_5);
+        testPathInEARChanging(Profile.JAVA_EE_5);
     }
     
-    private void testPathInEARChanging(String j2eeLevel) throws Exception { // see #76008
+    private void testPathInEARChanging(Profile j2eeProfile) throws Exception { // see #76008
         File earDirF = new File(getWorkDir(), "testEA-1");
         String name = "Test EnterpriseApplication";
         String ejbName = "testEA-ejb";
-        NewEarProjectWizardIteratorTest.generateEARProject(earDirF, name, j2eeLevel,
-                serverID, null, ejbName, null, null, null, null);
+        NewEarProjectWizardIteratorTest.generateEARProject(earDirF, name, j2eeProfile,
+                TestUtil.SERVER_URL, null, ejbName, null, null, null, null);
         EarProject earProject = (EarProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(earDirF));
         Application app = earProject.getAppModule().getApplication();
         assertEquals("ejb path", "testEA-ejb.jar", app.getModule(0).getEjb());
@@ -279,9 +283,9 @@ public class EarProjectPropertiesTest extends NbTestCase {
         WebProjectCreateData createData = new WebProjectCreateData();
         createData.setProjectDir(FileUtil.normalizeFile(webAppDir));
         createData.setName(warName);
-        createData.setServerInstanceID(this.serverID);
+        createData.setServerInstanceID(TestUtil.SERVER_URL);
         createData.setSourceStructure(WebProjectUtilities.SRC_STRUCT_BLUEPRINTS);
-        createData.setJavaEEVersion(EarProjectGenerator.checkJ2eeVersion(J2eeModule.JAVA_EE_5, serverID, J2eeModule.WAR));
+        createData.setJavaEEProfile(EarProjectGenerator.getAcceptableProfile(Profile.JAVA_EE_5, TestUtil.SERVER_URL, J2eeModule.Type.WAR));
         createData.setContextPath("/" + warName);
         AntProjectHelper webHelper = WebProjectUtilities.createProject(createData);
 

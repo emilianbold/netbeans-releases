@@ -47,23 +47,6 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.html.editor.lib</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.api.progress</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.editor.completion</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.editor.indent</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -79,14 +62,6 @@ made subject to such option by the copyright holder.
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.27</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.editor.structure</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -191,7 +166,6 @@ made subject to such option by the copyright holder.
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                     </test-dependency>
-                    
                     <test-dependency>
                         <code-name-base>org.openide.loaders</code-name-base>
                         <compile-dependency/>
@@ -222,14 +196,9 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.html</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.javascript.editing</friend>
-                <friend>org.netbeans.modules.php.prado</friend>
-                <friend>org.netbeans.modules.php.symfony</friend>
-                <friend>org.netbeans.modules.web.core</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
-                <friend>org.netbeans.modules.web.frameworks.facelets</friend>
-                <package>org.netbeans.editor.ext.html</package>
+                <friend>org.netbeans.modules.web.facelets</friend>
                 <package>org.netbeans.editor.ext.html.dtd</package>
-                <package>org.netbeans.editor.ext.html.javadoc</package>
                 <package>org.netbeans.editor.ext.html.parser</package>
             </friend-packages>
         </data>

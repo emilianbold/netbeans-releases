@@ -44,6 +44,7 @@ package org.netbeans.modules.j2ee.ejbjarproject;
 import java.io.File;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.ejbjarproject.test.TestBase;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
@@ -60,7 +61,7 @@ import org.openide.util.test.MockLookup;
  *
  * @author Martin Krauskopf, Andrei Badea
  */
-public class EjbJarActionProviderTest extends TestBase {
+public class EjbJarActionProviderTest extends NbTestCase {
     
     private Project project;
     private ActionProvider ap;
@@ -71,7 +72,7 @@ public class EjbJarActionProviderTest extends TestBase {
     
     @Override
     protected void setUp() throws Exception {
-        MockLookup.init();
+        MockLookup.setLayersAndInstances();
         File f = new File(getDataDir().getAbsolutePath(), "projects/EJBModule1");
         project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
         ap = project.getLookup().lookup(ActionProvider.class);

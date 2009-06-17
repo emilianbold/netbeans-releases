@@ -59,8 +59,9 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.derby.api.DerbyDatabases;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
-import org.openide.util.NbBundle;
+import org.openide.filesystems.FileObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -71,13 +72,16 @@ import org.w3c.dom.Node;
 public class DatabaseUsingSampleWizardIterator extends JavaEESamplesWizardIterator {
     private static final String DB_RES_FILE = "CustomerCMP-ejb/setup/derby_netPool.sun-resource"; //NOI18N
 
-    @Override protected WizardDescriptor.Panel[] createPanels() {
+    @Override
+    protected WizardDescriptor.Panel[] createPanels() {
+        boolean specifyPrjName = "web".equals(Templates.getTemplate(wiz).getAttribute("prjType"));
         return new WizardDescriptor.Panel[] {
-            new JavaEESamplesWizardPanel(true)
+            new JavaEESamplesWizardPanel(true, specifyPrjName)
         };
     }
     
-    @Override public Set/*<FileObject>*/ instantiate() throws IOException{
+    @Override
+    public Set<FileObject> instantiate() throws IOException{
         String dbName = (String) wiz.getProperty(WizardProperties.DB_NAME);
         try {
             DerbyDatabases.createDatabase(dbName, "app", "app"); //NOI18N
@@ -106,7 +110,6 @@ public class DatabaseUsingSampleWizardIterator extends JavaEESamplesWizardIterat
     }
 
     private static void setValueInXMLFile(File srcFile, String xPathPath, String value) {
-        
         try {
             DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             Document document = builder.parse(srcFile);

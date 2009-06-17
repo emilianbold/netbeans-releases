@@ -82,7 +82,8 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -917,11 +918,11 @@ final class JavaActions implements ActionProvider {
         LineCookie lines = fileDO.getCookie(LineCookie.class);
         if (lines != null) {
             try {
-                lines.getLineSet().getCurrent(line).show(Line.SHOW_GOTO);
+                lines.getLineSet().getCurrent(line).show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
             } catch (IndexOutOfBoundsException e) {
                 // XXX reproducibly thrown if the document was already open. Why?? (file.refresh() above does not help.)
                 ErrorManager.getDefault().getInstance(JavaActions.class.getName()).log(ErrorManager.WARNING, e + " [file=" + file + " match=" + match + " line=" + line + "]"); // NOI18N
-                lines.getLineSet().getCurrent(0).show(Line.SHOW_GOTO);
+                lines.getLineSet().getCurrent(0).show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
             }
         }
     }

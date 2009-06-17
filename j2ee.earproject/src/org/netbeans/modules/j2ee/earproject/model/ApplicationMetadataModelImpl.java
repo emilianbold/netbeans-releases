@@ -133,7 +133,7 @@ public class ApplicationMetadataModelImpl implements MetadataModelImplementation
                 && EarProjectUtil.isDDCompulsory(earProject)) {
             try {
                 ddFO = EarProjectGenerator.setupDD(
-                        earProject.getJ2eePlatformVersion(),
+                        earProject.getJ2eeProfile(),
                         earProject.getAppModule().getMetaInf(),
                         earProject,
                         true);

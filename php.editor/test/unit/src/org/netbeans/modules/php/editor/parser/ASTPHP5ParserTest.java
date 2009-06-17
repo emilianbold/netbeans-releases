@@ -66,7 +66,63 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         super.tearDown();
     }
     
-   
+    public void testGotoStatment() throws Exception {
+        performTest("php53/gotostatement");
+    }
+    public void testLambdaFunction() throws Exception {
+        performTest("php53/lambdaFunction");
+    }
+    public void testLambdaFunctionWithParams() throws Exception {
+        performTest("php53/lambdaFunctionWithParams");
+    }
+    public void testLambdaFunctionWithParamsWithVars() throws Exception {
+        performTest("php53/lambdaFunctionWithParamsWithVars");
+    }
+    public void testLambdaFunctionWithParamsWithVarsWithStatements() throws Exception {
+        performTest("php53/lambdaFunctionWithParamsWithVarsWithStatements");
+    }
+    public void testMultipleBracketedNamespaces() throws Exception {
+        performTest("php53/multipleBracketedNamespaces");
+    }
+    public void testMultipleUnBracketedNamespaces1() throws Exception {
+        performTest("php53/multipleUnBracketedNamespaces1");
+    }
+    public void testMultipleUnBracketedNamespaces2() throws Exception {
+        performTest("php53/multipleUnBracketedNamespaces2");
+    }
+    public void testNamespaceDeclaration() throws Exception {
+        performTest("php53/namespaceDeclaration");
+    }
+    public void testSubNamespaceDeclaration() throws Exception {
+        performTest("php53/subNamespaceDeclaration");
+    }
+    public void testNamespaceElementDeclarations() throws Exception {
+        performTest("php53/namespaceElementDeclarations");
+    }
+    public void testNowDoc() throws Exception {
+        performTest("php53/nowDoc");
+    }
+    public void testRefLambdaFunctionWithParamsWithVarsWithStatements() throws Exception {
+        performTest("php53/refLambdaFunctionWithParamsWithVarsWithStatements");
+    }
+    public void testTernaryOperator() throws Exception {
+        performTest("php53/ternaryOperator");
+    }
+    public void testUseGlobal() throws Exception {
+        performTest("php53/useGlobal");
+    }
+    public void testUseGlobalSubNamespace() throws Exception {
+        performTest("php53/useGlobalSubNamespace");
+    }
+    public void testUseNamespaceAs() throws Exception {
+        performTest("php53/useNamespaceAs");
+    }
+    public void testUseSimple() throws Exception {
+        performTest("php53/useSimple");
+    }
+    public void testUseSubNamespace() throws Exception {
+        performTest("php53/useSubNamespace");
+    }
     public void testTextSearchQuery () throws Exception {
         // testing real file from phpwiki
         performTest("TextSearchQuery");
@@ -133,7 +189,7 @@ public class ASTPHP5ParserTest extends ParserTestBase {
     public void testVarCommentMixedType02() throws Exception {
         performTest("varcomment/mixed02");
     }
-
+    
     @Override
     protected String getTestResult(String filename) throws Exception {
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");

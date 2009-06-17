@@ -61,6 +61,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.modules.j2ee.clientproject.AppClientProjectType;
 import org.netbeans.modules.j2ee.clientproject.AppClientProvider;
@@ -504,7 +505,7 @@ public class AppClientProjectWebServicesClientSupport implements WebServicesClie
     public List<ClientStubDescriptor> getStubDescriptors() {
         ArrayList<ClientStubDescriptor> stubs = new ArrayList<ClientStubDescriptor>(2);
         String version = project.getCarModule().getJ2eePlatformVersion();
-        if(J2eeModule.J2EE_14.equals(version)) {
+        if (EjbProjectConstants.J2EE_14_LEVEL.equals(version)) {
             stubs.add(jsr109ClientStub);
         }
         stubs.add(jaxrpcClientStub);

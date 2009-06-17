@@ -60,6 +60,8 @@ public class Tool {
     public static final int Assembler = 4;
     public static final int MakeTool = 5;
     public static final int DebuggerTool = 6;
+    public static final int QMakeTool = 7;
+    public static final int CMakeTool = 8;
     private static final String[] TOOL_NAMES = {
         getString("CCompiler"), // NOI18N
         getString("CCCompiler"), // NOI18N
@@ -68,6 +70,8 @@ public class Tool {
         getString("Assembler"), // NOI18N
         getString("MakeTool"), // NOI18N
         getString("DebuggerTool"), // NOI18N
+        getString("QMakeTool"), // NOI18N
+        getString("CMakeTool"), // NOI18N
     };
     private static final String[] COMPILER_TOOL_NAMES = {
         getString("CCompiler"), // NOI18N

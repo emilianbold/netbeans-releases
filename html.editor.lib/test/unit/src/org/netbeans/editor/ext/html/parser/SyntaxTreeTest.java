@@ -45,15 +45,13 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.html.HtmlSyntaxSupport;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.Registry;
 import org.netbeans.editor.ext.html.dtd.Utils;
 import org.netbeans.editor.ext.html.parser.AstNode.Description;
 import org.netbeans.editor.ext.html.test.TestBase;
+import org.netbeans.modules.html.editor.NbReaderProvider;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -64,15 +62,19 @@ public class SyntaxTreeTest extends TestBase {
 
     private static final String DATA_DIR_BASE = "testfiles/syntaxtree/";
 
-    private static final LanguagePath languagePath = LanguagePath.get(HTMLTokenId.language());
-
     public SyntaxTreeTest(String testName) {
         super(testName);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        NbReaderProvider.setupReaders();
+    }
+
     public static Test xsuite(){
 	TestSuite suite = new TestSuite();
-        suite.addTest(new SyntaxTreeTest("testTable2"));
+        suite.addTest(new SyntaxTreeTest("testLogicalEndOfTagWithOptinalEnd"));
         return suite;
     }
 
@@ -106,7 +108,7 @@ public class SyntaxTreeTest extends TestBase {
         assertAST("<p>one\n<p>two</p>");
         assertAST("<p></p><div>", 1); //last DIV is unmatched
         assertAST("<p><p><p>");
-        assertAST("<html><head><title></title><script></script></head><body></body></html>");
+        assertAST("<html><head><title></title><script type=''></script></head><body></body></html>");
     }
 
     public void testEmptyFileWithOpenTag() throws Exception {
@@ -150,7 +152,7 @@ public class SyntaxTreeTest extends TestBase {
 
     public void testOptionalEndTag() throws Exception {
         //HEAD has optional end tag
-//        assertAST("<html><head><title></title><body></body></html>");
+        assertAST("<html><head><title></title><body></body></html>");
 
         //test invalid element after optional end
         assertAST("<html><head><title></title><div><body></body></html>",
@@ -167,19 +169,19 @@ public class SyntaxTreeTest extends TestBase {
 
         //STYLE is not allowed in BODY; Issue 164903
         AstNode.Description[] expectedErrors = new AstNode.Description[]{
-            desc(SyntaxTree.UNEXPECTED_TAG_KEY, 40, 47, Description.ERROR),
-            desc(SyntaxTree.UNMATCHED_TAG, 47, 55, Description.WARNING)
+            desc(SyntaxTree.UNEXPECTED_TAG_KEY, 40, 46, Description.ERROR),
+            desc(SyntaxTree.UNMATCHED_TAG, 55, 63, Description.WARNING)
         };
-        assertAST("<html><head><title></title></head><body><style></style></body></html>", expectedErrors);
+        assertAST("<html><head><title></title></head><body><style type=''></style></body></html>", expectedErrors);
         //         0123456789012345678901234567890123456789012345678901234567890123456789
         //         0         1         2         3         4         5         6
 
     }
 
     public void testIssue162576() throws Exception {
-        String code = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\"" +
+        String code = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" " +
                 "\"http://www.w3.org/TR/html4/strict.dtd\">" +
-                "<form>" +
+                "<form action=''>" +
                 "<fieldset title=\"requestMethod\">" +
                 "<legend>requestMethod</legend>" +
                 "<input>" +
@@ -254,12 +256,12 @@ public class SyntaxTreeTest extends TestBase {
     }
 
     public void testEmptyTags() throws Exception{
-        assertAST("<html><head><meta></meta><title></title></head><body></body></html>",
-                desc(SyntaxTree.UNMATCHED_TAG, 18, 25, Description.WARNING));
+        assertAST("<html><head><meta content=''></meta><title></title></head><body></body></html>",
+                desc(SyntaxTree.UNMATCHED_TAG, 29, 36, Description.WARNING));
     }
 
     public void testEmptyXhtmlTags() throws Exception{
-        assertAST("<html><head><meta></meta><title></title></head><body></body></html>", Utils.XHTML_STRINCT_PUBLIC_ID);
+        assertAST("<html><head><meta content=''></meta><title></title></head><body></body></html>", Utils.XHTML_STRINCT_PUBLIC_ID);
     }
 
     public void testOptinalEndTagsInTable() throws Exception{
@@ -274,14 +276,117 @@ public class SyntaxTreeTest extends TestBase {
                 desc(SyntaxTree.UNRESOLVED_TAG_KEY, 71, 75, Description.ERROR));
     }
 
+    public void testOptinalHtmlEndTags() throws Exception{
+        String code = "<html><head><title></title></head><body></body>";
+        AstNode root = assertAST(code);
+
+        //check the logical range e.g. end offset which should be the end of the code
+        //(html unterminated, but optional end tag)
+        assertLogicalRange(root, "html", 0, code.length());
+        
+    }
+
+    public void testLogicalRanges() throws Exception {
+        String code = "<html><head><title></title></head><body><table><tr><td><tr><td></table></body></html>";
+        //             012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+        //             0         1         2         3         4         5         6         7         8
+        AstNode root = assertAST(code);
+        AstNodeUtils.dumpTree(root);
+
+        assertLogicalRange(root, "html", 0, code.length());
+        assertLogicalRange(root, "html/head", 6, 34);
+        assertLogicalRange(root, "html/body", 34, 78);
+        assertLogicalRange(root, "html/body/table", 40, 71);
+        assertLogicalRange(root, "html/body/table/tr", 47, 55); //closed by next <tr> open tag
+        assertLogicalRange(root, "html/body/table/tr|1", 55, 63); //closed by next </table> open tag
+
+    }
+
+    public void testLogicalRangesOfBrokenSource() throws Exception {
+        String code = "<html><head><title></title></head><body><table><tr><td><p><style></style><tr></table></body></html>";
+        //             012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+        //             0         1         2         3         4         5         6         7         8
+        AstNode root = assertAST(code,
+                desc(SyntaxTree.MISSING_REQUIRED_ATTRIBUTES, 58, 65, Description.WARNING), //style attr type required
+                desc(SyntaxTree.UNEXPECTED_TAG_KEY, 58, 65, Description.ERROR), //style should be here
+                desc(SyntaxTree.UNMATCHED_TAG, 65, 73, Description.WARNING), // </style> is unmatched
+                desc(SyntaxTree.UNRESOLVED_TAG_KEY, 73, 77, Description.ERROR)); //<tr> doesn't contain required content
+        
+        AstNodeUtils.dumpTree(root);
+
+        assertLogicalRange(root, "html", 0, code.length());
+        assertLogicalRange(root, "html/head", 6, 34);
+        assertLogicalRange(root, "html/body", 34, 92);
+        assertLogicalRange(root, "html/body/table", 40, 85);
+        assertLogicalRange(root, "html/body/table/tr", 47, 73); //closed by next <tr> open tag
+        assertLogicalRange(root, "html/body/table/tr/td", 51, 73); //closed by next <tr> open tag
+        assertLogicalRange(root, "html/body/table/tr|1", 73, 77); //closed by next </table> open tag
+
+    }
+
     public void testTable2() throws Exception {
         String code = "<table><tr><td>r1c1<tr><td>r2c1</table>";
 
         assertAST(code);
     }
 
+    //issue 165680, currently failing
+    public void testUnexpectedContentAfterBody() throws Exception {
+        String code = "<html><head><title></title></head><body>" +
+                "</body><tr><td></tr></html>";
+
+//        assertAST(code, 1);
+    }
+
+
     public void testXhtmlNamespaceAttrs() throws Exception {
-        assertAST("<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:ui=\"http://java.sun.com/jsf/facelets\"><head><meta></meta><title></title></head><body></body></html>", Utils.XHTML_STRINCT_PUBLIC_ID);
+        assertAST("<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:ui="+
+                "\"http://java.sun.com/jsf/facelets\"><head><meta content=\"\"></meta>"+
+                "<title></title></head><body></body></html>",
+                Utils.XHTML_STRINCT_PUBLIC_ID);
+    }
+
+    public void testMissingRequiredAttribute() throws Exception{
+        //missing content attribute of meta tag
+        assertAST("<html><head><title></title><meta></head><body>" +
+                "<table><tr><td>r1c1<tr><td>r2c2</table>" +
+                "</body></html>",
+                desc(SyntaxTree.MISSING_REQUIRED_ATTRIBUTES, 27, 33, Description.WARNING));
+    }
+
+    public void testUnknownAttribute() throws Exception{
+        assertAST("<html><head><title></title><body dummy='value'></body></html>",
+                desc(SyntaxTree.UNKNOWN_ATTRIBUTE_KEY, 33, 38, Description.WARNING));
+
+        //try it also in optional end tag
+        assertAST("<html><head><title></title><body><table><tr><td dummy='value'></table></body></html>",
+                desc(SyntaxTree.UNKNOWN_ATTRIBUTE_KEY, 48, 53, Description.WARNING));
+    }
+
+    public void testLogicalEndOfUnclosedTag() throws BadLocationException {
+        String code = "<div></";
+        //             01234567
+        AstNode root = parse(code, null);
+
+        AstNode divNode = root.children().get(0);
+        AstNode errorNode = divNode.children().get(0);
+
+        assertEquals(5, errorNode.startOffset());
+        assertEquals(7, errorNode.endOffset());
+
+        //check div logical end
+        assertEquals(7, divNode.getLogicalRange()[1]);
+    }
+
+    public void testErrorDescriptionsOnOpenTags() throws Exception {
+        //error descriptions attached to open tags should span either the whole
+        //tag area if there are no attributes or just the opening symbol and
+        //tag name if there are some.
+        assertAST("<title>",
+                desc(SyntaxTree.UNMATCHED_TAG, 0, 7, Description.WARNING));
+        //         01234567
+        assertAST("<title lang=''>",
+                desc(SyntaxTree.UNMATCHED_TAG, 0, 6, Description.WARNING));
     }
 
     public void testTagsMatching() throws Exception {
@@ -314,16 +419,15 @@ public class SyntaxTreeTest extends TestBase {
 
     }
 
+
+    //------------------------ private methods ---------------------------
+
+    
     private void testSyntaxTree(String testFile) throws Exception {
         FileObject source = getTestFile(DATA_DIR_BASE + testFile);
         BaseDocument doc = getDocument(source);
-        HtmlSyntaxSupport sup = HtmlSyntaxSupport.get(doc);
-        assertNotNull(sup);
-        DTD dtd = sup.getDTD();
-        assertNotNull(dtd);
-        SyntaxParser parser = SyntaxParser.get(doc, languagePath);
-        parser.forceParse();
-        AstNode root = SyntaxTree.makeTree(parser.elements(), dtd);
+        String code = doc.getText(0, doc.getLength());
+        AstNode root = SyntaxParser.parse(code).getASTRoot();
         StringBuffer output = new StringBuffer();
         AstNodeUtils.dumpTree(root, output);
         assertDescriptionMatches(source, output.toString(), false, ".pass", true);
@@ -344,15 +448,28 @@ public class SyntaxTreeTest extends TestBase {
         return buf.toString();
     }
 
-    private void assertAST(final String code) throws Exception {
-        assertAST(code,0);
+    private void assertLogicalRange(AstNode base, String pathToTheNode, int logicalStart, int logicalEnd) {
+        AstNode node = AstNodeUtils.query(base, pathToTheNode);
+        assertNotNull("Node " + pathToTheNode + " couldn't be found!", node);
+
+        //probably not correct assumption, but ok for testing
+        assertEquals(AstNode.NodeType.OPEN_TAG, node.type()); 
+
+        int[] logicalRange = node.getLogicalRange();
+        assertNotNull(logicalRange);        
+        assertEquals(logicalStart, logicalRange[0]); //assert the start offset
+        assertEquals(logicalEnd, logicalRange[1]); //assert the end offset
     }
 
-    private void assertAST(final String code, int expectedErrorsNumber) throws Exception {
-        assertAST(code, null, expectedErrorsNumber);
+    private AstNode assertAST(final String code) throws Exception {
+        return assertAST(code,0);
     }
 
-    private void assertAST(final String code, String publicId, int expectedErrorsNumber) throws Exception {
+    private AstNode assertAST(final String code, int expectedErrorsNumber) throws Exception {
+        return assertAST(code, null, expectedErrorsNumber);
+    }
+
+    private AstNode assertAST(final String code, String publicId, int expectedErrorsNumber) throws Exception {
         AstNode root = parse(code, publicId);
 //        System.out.println("AST for code: " + code);
 //        AstNodeUtils.dumpTree(root);
@@ -372,13 +489,14 @@ public class SyntaxTreeTest extends TestBase {
 
         assertEquals("Unexpected number of errors, current errors: " + errorsAsString(errorslist) ,expectedErrorsNumber, errors[0]);
 
+        return root;
     }
 
-    private void assertAST(final String code, AstNode.Description... expectedErrors) throws Exception {
-        assertAST(code, null, expectedErrors);
+    private AstNode assertAST(final String code, AstNode.Description... expectedErrors) throws Exception {
+        return assertAST(code, null, expectedErrors);
     }
 
-    private void assertAST(final String code, String publicId, AstNode.Description... expectedErrors) throws Exception {
+    private AstNode assertAST(final String code, String publicId, AstNode.Description... expectedErrors) throws Exception {
         AstNode root = parse(code, publicId);
 //        System.out.println("AST for code: " + code);
 //        AstNodeUtils.dumpTree(root);
@@ -401,26 +519,22 @@ public class SyntaxTreeTest extends TestBase {
         }
         assertEquals("Some expected errors are missing: " + errorsAsString(missing), expectedErrors.length, expectedErrors.length - missing.size());
 
+        return root;
+
     }
 
     private AstNode parse(String code, String publicId) throws BadLocationException {
-        BaseDocument doc = createDocument();
-        doc.insertString(0, code, null);
-        HtmlSyntaxSupport sup = HtmlSyntaxSupport.get(doc);
-        assertNotNull(sup);
-
+        SyntaxParserResult result = SyntaxParser.parse(code);
         DTD dtd;
         if(publicId == null) {
-            dtd = sup.getDTD();
+            dtd = result.getDTD();
+            assertNotNull("Likely invalid public id: " + result.getPublicID(), dtd);
         } else {
             dtd = Registry.getDTD(publicId, null);
             assertEquals(publicId, dtd.getIdentifier());
         }
-
         assertNotNull(dtd);
-        SyntaxParser parser = SyntaxParser.get(doc, languagePath);
-        parser.forceParse();
-        return SyntaxTree.makeTree(parser.elements(), dtd);
+        return SyntaxTree.makeTree(result.getElements(), dtd);
     }
 
 }

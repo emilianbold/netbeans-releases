@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.subversion;
 
+import java.net.MalformedURLException;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.client.*;
@@ -224,7 +225,7 @@ public class Subversion {
                 password = new String(pa.getPassword());
             }
         } else {
-            RepositoryConnection rc = SvnModuleConfig.getDefault().getRepositoryConnection(repositoryUrl.toString());
+            RepositoryConnection rc = findRepositoryConnection(repositoryUrl);
             if(rc != null) {
                 username = rc.getUsername();
                 password = rc.getPassword();
@@ -546,6 +547,20 @@ public class Subversion {
         List<HyperlinkProvider> providersList = new ArrayList<HyperlinkProvider>(providersCol.size());
         providersList.addAll(providersCol);
         return Collections.unmodifiableList(providersList);
+    }
+
+    private RepositoryConnection findRepositoryConnection(SVNUrl repositoryUrl) {
+        RepositoryConnection rc = null;
+        try {
+            // this will remove username from the hostname
+            rc = SvnModuleConfig.getDefault().getRepositoryConnection(new RepositoryConnection(repositoryUrl.toString()).getSvnUrl().toString());
+        } catch (MalformedURLException ex) {
+            // not interested
+        }
+        if (rc == null) {
+            rc = SvnModuleConfig.getDefault().getRepositoryConnection(repositoryUrl.toString());
+        }
+        return rc;
     }
     
 }

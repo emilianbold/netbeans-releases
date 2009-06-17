@@ -50,7 +50,6 @@ import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.JavaCompatibleProperties;
-import static org.netbeans.installer.utils.system.launchers.LauncherResource.Type.*;
 
 /**
  *
@@ -71,7 +70,9 @@ public class LauncherProperties implements Cloneable {
     protected String mainClass;
     protected String testJVMClass;
     protected List <JavaCompatibleProperties> compatibleJava;
-     
+    protected String i18nPrefix;
+    protected String i18nBundleBaseName;
+
     public LauncherResource getTestJVMFile() {
         return testJVMFile;
     }
@@ -80,6 +81,8 @@ public class LauncherProperties implements Cloneable {
         appArguments = nl.appArguments;
         jvmArguments = nl.jvmArguments;
         i18nMap = nl.i18nMap;
+        i18nPrefix = nl.i18nPrefix;
+        i18nBundleBaseName = nl.i18nBundleBaseName;
         jars = nl.jars;
         jvms = nl.jvms;
         outputFile = nl.outputFile;
@@ -96,6 +99,8 @@ public class LauncherProperties implements Cloneable {
         jvmArguments = new ArrayList <String>();
         appArguments = new ArrayList <String>();
         i18nMap = new HashMap <String, PropertyResourceBundle>();
+        i18nPrefix = null;
+        i18nBundleBaseName = null;
         jars = new ArrayList <LauncherResource> ();
         jvms = new ArrayList <LauncherResource> ();
         otherResources = new ArrayList<LauncherResource> ();        
@@ -140,6 +145,19 @@ public class LauncherProperties implements Cloneable {
         loadPropertiesMap(resources);
     }
     
+    public void setI18nPrefix(String i18nPrefix) throws IOException {
+        this.i18nPrefix = i18nPrefix;
+    }
+    public void setI18nBundleBaseName(String i18nBundleBaseName) throws IOException {
+        this.i18nBundleBaseName = i18nBundleBaseName;
+    }
+    public String getI18NResourcePrefix() {
+        return i18nPrefix;
+    }
+    public String getI18NBundleBaseName() {
+        return i18nBundleBaseName;
+    }
+
     public void setOutput(File output) {
         setOutput(output, false);
     }

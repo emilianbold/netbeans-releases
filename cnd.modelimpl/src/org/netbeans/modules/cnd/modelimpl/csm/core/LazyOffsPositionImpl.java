@@ -81,7 +81,9 @@ public final class LazyOffsPositionImpl implements CsmOffsetable.Position {
         return col;
     }
     
+    @Override
     public String toString() {
-        return "" + getLine() + ':' + getColumn() + '/' + getOffset();
+        int end = getOffset();
+        return "" + getLine() + ':' + getColumn() + '/' + (end == Integer.MAX_VALUE ? "FILE_LENGTH" : end); // NOI18N
     }
 }       

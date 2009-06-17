@@ -52,6 +52,9 @@ import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.stmt.Statement;
 import org.netbeans.editor.BaseDocument;
 import org.openide.util.Exceptions;
 
@@ -62,17 +65,18 @@ import org.openide.util.Exceptions;
  * @author Martin Adamek
  */
 public class AstPath implements Iterable<ASTNode> {
+    
     private ArrayList<ASTNode> path = new ArrayList<ASTNode>(30);
 
-    public AstPath() {
-    }
+    private int lineNumber = -1;
 
-    public AstPath(ArrayList<ASTNode> path) {
-        this.path = path;
+    private int columnNumber = -1;
+
+    public AstPath() {
+        super();
     }
 
     public AstPath(ASTNode root, int caretOffset, BaseDocument document) {
-
         try {
             // make sure offset is not higher than document length, see #138353
             int length = document.getLength();
@@ -88,17 +92,23 @@ public class AstPath implements Iterable<ASTNode> {
                 line++;
             }
             int column = lineText.length();
+
+            this.lineNumber = line;
+            this.columnNumber = column;
+
             findPathTo(root, line, column);
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
         }
-        
     }
 
     /**
      * Initialize a node path to the given caretOffset
      */
     public AstPath(ASTNode root, int line, int column) {
+        this.lineNumber = line;
+        this.columnNumber = column;
+
         findPathTo(root, line, column);
     }
 
@@ -114,6 +124,14 @@ public class AstPath implements Iterable<ASTNode> {
             // When I get time rewrite the find method to build the list that way in the first place
             Collections.reverse(path);
         }
+    }
+
+    public int getLineNumber() {
+        return lineNumber;
+    }
+
+    public int getColumnNumber() {
+        return columnNumber;
     }
 
     public void descend(ASTNode node) {
@@ -140,7 +158,7 @@ public class AstPath implements Iterable<ASTNode> {
 
         // in scripts ClassNode is not in path, let's add it
         // find class that has same name as the file
-        if (path.size() == 0 || !(path.get(0) instanceof ClassNode)) {
+        if (path.isEmpty() || !(path.get(0) instanceof ClassNode)) {
             ModuleNode moduleNode = (ModuleNode) node;
             String name = moduleNode.getContext().getName();
             int index = name.lastIndexOf(".groovy"); // NOI18N
@@ -160,10 +178,28 @@ public class AstPath implements Iterable<ASTNode> {
             }
         }
 
+        // let's fix script class - run method
+        // FIXME this should be more accurate - package
+        // and imports are not in the method ;)
+        if (!path.isEmpty() && (path.get(0) instanceof ClassNode)) {
+            ClassNode clazz = (ClassNode) path.get(0);
+            if (clazz.isScript()
+                    && (path.size() == 1 || path.get(1) instanceof Expression || path.get(1) instanceof Statement)) {
+
+                MethodNode method = clazz.getMethod("run", new Parameter[]{}); // NOI18N
+                if (method != null) {
+                    if (method.getCode() != null && (path.size() <= 1 || method.getCode() != path.get(1))) {
+                        path.add(1, method.getCode());
+                    }
+                    path.add(1, method);
+                }
+            }
+        }
+
         path.add(0, node);
 
         ASTNode result = path.get(path.size() - 1);
-        
+
         return result;
     }
 

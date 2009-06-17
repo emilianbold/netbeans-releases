@@ -61,34 +61,32 @@ made subject to such option by the copyright holder.
     
     <folder name="Shortcuts">
         
-        <file name="M-BACK_SPACE.instance">
-	    <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction"/>
-        </file>
+        
 
         <!-- On the mac, alt left-right is select, etc. next/prev word-->
-        <file name="C-LEFT.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.core.windows.actions.PreviousTabAction" />
-        </file>
         <file name="A-LEFT.shadow_hidden"/>
 
-        <file name="C-RIGHT.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.core.windows.actions.NextTabAction"/>
-	</file>
+        <file name="C-LEFT.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-PreviousTabAction.instance"/>
+        </file>
         <file name="A-RIGHT.shadow_hidden"/>
 
-        <file name="M-J.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.core.windows.actions.PreviousTabAction" />
+        <file name="C-RIGHT.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-NextTabAction.instance"/>
+        </file>
+        <file name="M-BACK_SPACE.shadow">
+            <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
         </file>
 
-        <file name="M-R.instance">
-	    <attr name="instanceClass" stringvalue="org.openide.actions.ReplaceAction"/>
+        <file name="M-J.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-PreviousTabAction.instance"/>
         </file>
         
         <file name="D-BACK_QUOTE.shadow_hidden"/>
 
-        <file name="O-G.instance">
-	    <attr name="instanceClass" stringvalue="org.openide.actions.GotoAction"/>
-	</file>
+        <file name="M-R.shadow">
+            <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-ReplaceAction.instance"/>
+        </file>
         
         <file name="D-W.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
@@ -100,6 +98,9 @@ made subject to such option by the copyright holder.
 
         <file name="M-M.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.applemenu.MinimizeWindowAction"/>
+        </file>
+        <file name="O-G.shadow">
+            <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-GotoAction.instance"/>
         </file>
     </folder>
 

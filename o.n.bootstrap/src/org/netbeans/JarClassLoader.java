@@ -77,6 +77,7 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import org.openide.util.Utilities;
 
 /**
@@ -447,10 +448,15 @@ public class JarClassLoader extends ProxyClassLoader {
             if (nonexistentResources.contains(path)) {
                 return null;
             }
-            ZipEntry ze;
-            JarFile jf = getJarFile(path);
+            JarFile jf;
             try {
-                ze = jf.getEntry(path);
+                jf = getJarFile(path);
+            } catch (ZipException ex) {
+                LOGGER.log(Level.INFO, "Cannot open " + file, ex);
+                return null;
+            }
+            try {
+                ZipEntry ze = jf.getEntry(path);
                 if (ze == null) {
                     nonexistentResources.add(path);
                     return null;
