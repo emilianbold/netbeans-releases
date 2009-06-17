@@ -185,7 +185,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private void setupRenderer(IssueTable issueTable) {
 //        TableCellRenderer renderer = issueTable.getRenderer();
-        issueTable.setRenderer(new JiraQueryCellRenderer(query, new QueryTableCellRenderer(query)));
+        issueTable.setRenderer(new JiraQueryCellRenderer(query, issueTable, new QueryTableCellRenderer(query)));
     }
 
     protected JiraFilter getJiraFilter() {
